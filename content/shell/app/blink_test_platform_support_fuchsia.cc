@@ -4,7 +4,7 @@
 
 #include "content/shell/app/blink_test_platform_support.h"
 
-#include "skia/ext/fontmgr_default_android.h"
+#include "skia/ext/fontmgr_default.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 
@@ -23,7 +23,7 @@ bool BlinkTestPlatformInitialize() {
   custom.fFallbackFontsXml = "/pkg/test_fonts/android_fallback_fonts.xml";
   custom.fIsolated = false;
 
-  SetDefaultSkiaFactory(SkFontMgr_New_Android(&custom));
+  skia::OverrideDefaultSkFontMgr(SkFontMgr_New_Android(&custom));
 
   return true;
 }
