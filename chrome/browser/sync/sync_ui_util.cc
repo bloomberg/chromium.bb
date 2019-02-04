@@ -62,17 +62,17 @@ void GetStatusForActionableError(syncer::ClientAction action,
   DCHECK(link_label);
   switch (action) {
     case syncer::UPGRADE_CLIENT:
-      status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT));
-      link_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL));
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
+      *link_label =
+          l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL);
       *action_type = UPGRADE_CLIENT;
       break;
     case syncer::ENABLE_SYNC_ON_ACCOUNT:
-      status_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT));
+      *status_label =
+          l10n_util::GetStringUTF16(IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT);
       break;
     default:
-      status_label->clear();
+      *status_label = base::string16();
       break;
   }
 }
@@ -91,20 +91,19 @@ void GetStatusForUnrecoverableError(Profile* profile,
                               link_label, action_type);
   if (status_label->empty()) {
     *action_type = REAUTHENTICATE;
-    link_label->assign(
-        l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
+    *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
 
 #if !defined(OS_CHROMEOS)
-    status_label->assign(l10n_util::GetStringUTF16(
-        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR));
+    *status_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_STATUS_UNRECOVERABLE_ERROR);
     // The message for managed accounts is the same as that of the cros.
     if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
-      status_label->assign(l10n_util::GetStringUTF16(
-          IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT));
+      *status_label = l10n_util::GetStringUTF16(
+          IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
     }
 #else
-    status_label->assign(l10n_util::GetStringUTF16(
-        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT));
+    *status_label = l10n_util::GetStringUTF16(
+        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
 #endif
   }
 }
@@ -122,12 +121,10 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
       NOTREACHED();
       break;
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      status_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE);
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
-      status_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_SERVER_IS_UNREACHABLE));
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SERVER_IS_UNREACHABLE);
       // Note that there is little the user can do if the server is not
       // reachable. Since attempting to re-connect is done automatically by
       // the Syncer, we do not show the (re)login link.
@@ -137,9 +134,8 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
     default:
-      status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_ERROR));
-      link_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_ERROR);
+      *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
       *action_type = REAUTHENTICATE;
       break;
   }
@@ -183,8 +179,8 @@ MessageType GetStatusInfo(Profile* profile,
     if (primary_account_mutator &&
         primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress()) {
       if (status_label) {
-        status_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL);
       }
       return PRE_SYNCED;
     }
@@ -214,10 +210,10 @@ MessageType GetStatusInfo(Profile* profile,
     // Check for a passphrase error.
     if (service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
       if (status_label && link_label) {
-        status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
-        link_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL));
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD);
+        *link_label = l10n_util::GetStringUTF16(
+            IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL);
         *action_type = ENTER_PASSPHRASE;
       }
       return SYNC_ERROR;
@@ -232,15 +228,14 @@ MessageType GetStatusInfo(Profile* profile,
             syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
         status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
       if (status_label) {
-        status_label->assign(
-            GetSyncedStateStatusLabel(service, sync_everything));
+        *status_label = GetSyncedStateStatusLabel(service, sync_everything);
       }
       return PRE_SYNCED;
     }
 
     // There is no error. Display "Last synced..." message.
     if (status_label) {
-      status_label->assign(GetSyncedStateStatusLabel(service, sync_everything));
+      *status_label = GetSyncedStateStatusLabel(service, sync_everything);
     }
     return SYNCED;
   }
@@ -251,8 +246,7 @@ MessageType GetStatusInfo(Profile* profile,
   if (service->IsFirstSetupInProgress()) {
     result_type = PRE_SYNCED;
     if (status_label) {
-      status_label->assign(
-          l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
     }
 
     GoogleServiceAuthError auth_error =
@@ -260,8 +254,8 @@ MessageType GetStatusInfo(Profile* profile,
     if (primary_account_mutator &&
         primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress()) {
       if (status_label) {
-        status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL);
       }
     } else if (auth_error.state() != GoogleServiceAuthError::NONE &&
                auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
@@ -280,10 +274,10 @@ MessageType GetStatusInfo(Profile* profile,
   } else {
     if (ShouldRequestSyncConfirmation(service)) {
       if (status_label && link_label) {
-        status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED));
-        link_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON));
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED);
+        *link_label = l10n_util::GetStringUTF16(
+            IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON);
       }
       *action_type = CONFIRM_SYNC_SETTINGS;
       result_type = SYNC_ERROR;
@@ -291,8 +285,8 @@ MessageType GetStatusInfo(Profile* profile,
       // The user is signed in, but sync has been stopped.
       result_type = PRE_SYNCED;
       if (status_label) {
-        status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED));
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
       }
     }
   }
