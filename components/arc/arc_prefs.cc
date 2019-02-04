@@ -87,9 +87,6 @@ const char kArcSkippedReportingNotice[] = "arc.skipped.reporting.notice";
 // the user directory (i.e., the user finished required migration.)
 const char kArcCompatibleFilesystemChosen[] =
     "arc.compatible_filesystem.chosen";
-// A preference that indicates that user accepted Voice Interaction Value Prop.
-const char kArcVoiceInteractionValuePropAccepted[] =
-    "arc.voice_interaction_value_prop.accepted";
 // Integer pref indicating the ecryptfs to ext4 migration strategy. One of
 // options: forbidden = 0, migrate = 1, wipe = 2 or ask the user = 3.
 const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
@@ -179,7 +176,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
-  registry->RegisterBooleanPref(kArcVoiceInteractionValuePropAccepted, false);
   registry->RegisterTimeDeltaPref(kEngagementTimeBackground, base::TimeDelta());
   registry->RegisterIntegerPref(kEngagementTimeDayId, 0);
   registry->RegisterTimeDeltaPref(kEngagementTimeForeground, base::TimeDelta());
