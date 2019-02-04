@@ -79,6 +79,7 @@ source_set("metrics") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
     "//ios/web",
+    "//url",
   ]
 }
 

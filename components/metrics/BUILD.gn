@@ -118,6 +118,7 @@ jumbo_static_library("metrics") {
     "//crypto",
     "//extensions/buildflags",
     "//third_party/zlib/google:compression_utils",
+    "//url",
   ]
 
   if (is_chromeos) {

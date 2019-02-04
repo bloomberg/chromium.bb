@@ -31,12 +31,12 @@ bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
   return false;
 }
 
-std::string MetricsServiceClient::GetMetricsServerUrl() {
-  return kNewMetricsServerUrl;
+GURL MetricsServiceClient::GetMetricsServerUrl() {
+  return GURL(kNewMetricsServerUrl);
 }
 
-std::string MetricsServiceClient::GetInsecureMetricsServerUrl() {
-  return kNewMetricsServerUrlInsecure;
+GURL MetricsServiceClient::GetInsecureMetricsServerUrl() {
+  return GURL(kNewMetricsServerUrlInsecure);
 }
 
 bool MetricsServiceClient::SyncStateAllowsUkm() {

@@ -46,11 +46,11 @@ LogStore* MetricsReportingService::log_store() {
   return &metrics_log_store_;
 }
 
-std::string MetricsReportingService::GetUploadUrl() const {
+GURL MetricsReportingService::GetUploadUrl() const {
   return client()->GetMetricsServerUrl();
 }
 
-std::string MetricsReportingService::GetInsecureUploadUrl() const {
+GURL MetricsReportingService::GetInsecureUploadUrl() const {
   return client()->GetInsecureMetricsServerUrl();
 }
 

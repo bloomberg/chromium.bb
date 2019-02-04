@@ -16,6 +16,7 @@
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -84,16 +85,16 @@ class MetricsServiceClient {
       const base::Closure& done_callback) = 0;
 
   // Get the URL of the metrics server.
-  virtual std::string GetMetricsServerUrl();
+  virtual GURL GetMetricsServerUrl();
 
   // Get the fallback HTTP URL of the metrics server.
-  virtual std::string GetInsecureMetricsServerUrl();
+  virtual GURL GetInsecureMetricsServerUrl();
 
   // Creates a MetricsLogUploader with the specified parameters (see comments on
   // MetricsLogUploader for details).
   virtual std::unique_ptr<MetricsLogUploader> CreateUploader(
-      base::StringPiece server_url,
-      base::StringPiece insecure_server_url,
+      const GURL& server_url,
+      const GURL& insecure_server_url,
       base::StringPiece mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete) = 0;

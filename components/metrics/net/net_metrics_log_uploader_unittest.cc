@@ -41,8 +41,8 @@ class NetMetricsLogUploaderTest : public testing::Test {
     ReportingInfo reporting_info;
     reporting_info.set_attempt_count(10);
     uploader_.reset(new NetMetricsLogUploader(
-        test_shared_url_loader_factory_, "https://dummy_server", "dummy_mime",
-        MetricsLogUploader::UMA,
+        test_shared_url_loader_factory_, GURL("https://dummy_server"),
+        "dummy_mime", MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::OnUploadCompleteReuseUploader,
                    base::Unretained(this))));
     uploader_->UploadLog("initial_dummy_data", "initial_dummy_hash",
@@ -52,7 +52,7 @@ class NetMetricsLogUploaderTest : public testing::Test {
   void CreateUploaderAndUploadToSecureURL(const std::string& url) {
     ReportingInfo dummy_reporting_info;
     uploader_.reset(new NetMetricsLogUploader(
-        test_shared_url_loader_factory_, url, "dummy_mime",
+        test_shared_url_loader_factory_, GURL(url), "dummy_mime",
         MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
                    base::Unretained(this))));
@@ -63,7 +63,7 @@ class NetMetricsLogUploaderTest : public testing::Test {
   void CreateUploaderAndUploadToInsecureURL() {
     ReportingInfo dummy_reporting_info;
     uploader_.reset(new NetMetricsLogUploader(
-        test_shared_url_loader_factory_, "http://dummy_insecure_server",
+        test_shared_url_loader_factory_, GURL("http://dummy_insecure_server"),
         "dummy_mime", MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
                    base::Unretained(this))));

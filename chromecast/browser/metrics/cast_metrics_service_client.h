@@ -71,10 +71,10 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   ::metrics::SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
-  std::string GetMetricsServerUrl() override;
+  GURL GetMetricsServerUrl() override;
   std::unique_ptr<::metrics::MetricsLogUploader> CreateUploader(
-      base::StringPiece server_url,
-      base::StringPiece insecure_server_url,
+      const GURL& server_url,
+      const GURL& insecure_server_url,
       base::StringPiece mime_type,
       ::metrics::MetricsLogUploader::MetricServiceType service_type,
       const ::metrics::MetricsLogUploader::UploadCallback& on_upload_complete)

@@ -40,13 +40,13 @@ constexpr int kMinPersistedBytes = 300000;
 // limit is exceeded.
 constexpr size_t kMaxLogRetransmitSize = 100 * 1024;
 
-std::string GetServerUrl() {
+GURL GetServerUrl() {
   constexpr char kDefaultServerUrl[] = "https://clients4.google.com/ukm";
   std::string server_url =
       base::GetFieldTrialParamValueByFeature(kUkmFeature, "ServerUrl");
   if (!server_url.empty())
-    return server_url;
-  return kDefaultServerUrl;
+    return GURL(server_url);
+  return GURL(kDefaultServerUrl);
 }
 
 }  // namespace
@@ -75,12 +75,12 @@ metrics::LogStore* UkmReportingService::log_store() {
   return &persisted_logs_;
 }
 
-std::string UkmReportingService::GetUploadUrl() const {
+GURL UkmReportingService::GetUploadUrl() const {
   return GetServerUrl();
 }
 
-std::string UkmReportingService::GetInsecureUploadUrl() const {
-  return "";
+GURL UkmReportingService::GetInsecureUploadUrl() const {
+  return GURL();
 }
 
 base::StringPiece UkmReportingService::upload_mime_type() const {
