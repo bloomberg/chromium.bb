@@ -27,7 +27,7 @@ void CrostiniRepositorySearchProvider::OnStart(
   new_results.reserve(app_names.size());
   for (auto& app_name : app_names) {
     new_results.emplace_back(
-        std::make_unique<CrostiniRepositorySearchResult>(app_name));
+        std::make_unique<CrostiniRepositorySearchResult>(profile_, app_name));
     // Todo(https://crbug.com/921429): Improve relevance logic, this will likely
     // be implemented in garcon then piped to Chrome
     new_results.back()->set_relevance(static_cast<float>(query_.size()) /

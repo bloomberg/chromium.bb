@@ -18,6 +18,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace crostini {
@@ -25,6 +26,7 @@ namespace crostini {
 namespace {
 const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
+const char kPackageID[] = "package;1;;";
 constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
 }  // namespace
 
@@ -159,6 +161,27 @@ class CrostiniManagerTest : public testing::Test {
     EXPECT_TRUE(fake_concierge_client_->list_usb_devices_called());
     EXPECT_EQ(expected_result, result);
     EXPECT_EQ(devices.size(), expected_size);
+    std::move(closure).Run();
+  }
+
+  void SearchAppCallback(base::OnceClosure closure,
+                         const std::vector<std::string>& expected_result,
+                         const std::vector<std::string>& result) {
+    EXPECT_THAT(result, testing::ContainerEq(expected_result));
+    std::move(closure).Run();
+  }
+
+  void GetLinuxPackageInfoFromAptCallback(
+      base::OnceClosure closure,
+      const LinuxPackageInfo& expected_result,
+      const LinuxPackageInfo& result) {
+    EXPECT_EQ(result.success, expected_result.success);
+    EXPECT_EQ(result.failure_reason, expected_result.failure_reason);
+    EXPECT_EQ(result.package_id, expected_result.package_id);
+    EXPECT_EQ(result.name, expected_result.name);
+    EXPECT_EQ(result.version, expected_result.version);
+    EXPECT_EQ(result.summary, expected_result.summary);
+    EXPECT_EQ(result.description, expected_result.description);
     std::move(closure).Run();
   }
 
@@ -993,6 +1016,142 @@ TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
   run_loop2.Run();
   EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
   EXPECT_FALSE(crostini_manager()->GetContainerInfo(kVmName, kContainerName));
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalNotConnectedError) {
+  fake_cicerone_client_->set_install_linux_package_progress_signal_connected(
+      false);
+  crostini_manager()->InstallLinuxPackageFromApt(
+      kVmName, kContainerName, kPackageID,
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalSuccess) {
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+  crostini_manager()->InstallLinuxPackageFromApt(
+      kVmName, kContainerName, kPackageID,
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalFailure) {
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+  response.set_failure_reason(
+      "Unit tests can't install Linux package from apt!");
+  fake_cicerone_client_->set_install_linux_package_response(response);
+  crostini_manager()->InstallLinuxPackageFromApt(
+      kVmName, kContainerName, kPackageID,
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalOperationBlocked) {
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(
+      vm_tools::cicerone::InstallLinuxPackageResponse::INSTALL_ALREADY_ACTIVE);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+  crostini_manager()->InstallLinuxPackageFromApt(
+      kVmName, kContainerName, kPackageID,
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, SearchAppSuccess) {
+  vm_tools::cicerone::AppSearchResponse response;
+  vm_tools::cicerone::AppSearchResponse::AppSearchResult* app =
+      response.add_packages();
+  app->set_package_name("fake app");
+  app = response.add_packages();
+  app->set_package_name("fake app1");
+  app = response.add_packages();
+  app->set_package_name("fake app2");
+  fake_cicerone_client_->set_search_app_response(response);
+  std::vector<std::string> expected = {"fake app", "fake app1", "fake app2"};
+  crostini_manager()->SearchApp(
+      kVmName, kContainerName, "fake ap",
+      base::BindOnce(&CrostiniManagerTest::SearchAppCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     expected));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, SearchAppNoResults) {
+  vm_tools::cicerone::AppSearchResponse response;
+  fake_cicerone_client_->set_search_app_response(response);
+  std::vector<std::string> expected = {};
+  crostini_manager()->SearchApp(
+      kVmName, kContainerName, "fake ap",
+      base::BindOnce(&CrostiniManagerTest::SearchAppCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     expected));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptFailedToGetInfo) {
+  const char kFailMessage[] = "Failed to get package info.";
+  vm_tools::cicerone::LinuxPackageInfoResponse response;
+  response.set_success(false);
+  response.set_failure_reason(kFailMessage);
+  fake_cicerone_client_->set_linux_package_info_response(response);
+  LinuxPackageInfo expected;
+  expected.success = false;
+  expected.failure_reason = kFailMessage;
+  crostini_manager()->GetLinuxPackageInfoFromApt(
+      kVmName, kContainerName, "fake app",
+      base::BindOnce(&CrostiniManagerTest::GetLinuxPackageInfoFromAptCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     expected));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptInvalidID) {
+  vm_tools::cicerone::LinuxPackageInfoResponse response;
+  response.set_success(true);
+  response.set_package_id("Bad;;id;");
+  fake_cicerone_client_->set_linux_package_info_response(response);
+  LinuxPackageInfo expected;
+  expected.success = false;
+  expected.failure_reason = "Linux package info contained invalid package id.";
+  crostini_manager()->GetLinuxPackageInfoFromApt(
+      kVmName, kContainerName, "fake app",
+      base::BindOnce(&CrostiniManagerTest::GetLinuxPackageInfoFromAptCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     expected));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptSuccess) {
+  vm_tools::cicerone::LinuxPackageInfoResponse response;
+  response.set_success(true);
+  response.set_package_id("good;1.1;id;");
+  response.set_summary("A summary");
+  response.set_description("A description");
+  fake_cicerone_client_->set_linux_package_info_response(response);
+  LinuxPackageInfo expected;
+  expected.success = true;
+  expected.package_id = "good;1.1;id;";
+  expected.name = "good";
+  expected.version = "1.1";
+  expected.summary = "A summary";
+  expected.description = "A description";
+  crostini_manager()->GetLinuxPackageInfoFromApt(
+      kVmName, kContainerName, "fake app",
+      base::BindOnce(&CrostiniManagerTest::GetLinuxPackageInfoFromAptCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     expected));
+  run_loop()->Run();
 }
 
 }  // namespace crostini

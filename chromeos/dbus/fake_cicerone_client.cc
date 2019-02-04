@@ -105,8 +105,25 @@ void FakeCiceroneClient::GetLinuxPackageInfo(
       base::BindOnce(std::move(callback), get_linux_package_info_response_));
 }
 
+void FakeCiceroneClient::GetLinuxPackageInfoFromApt(
+    const vm_tools::cicerone::LinuxPackageInfoFromAptRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), get_linux_package_info_response_));
+}
+
 void FakeCiceroneClient::InstallLinuxPackage(
     const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), install_linux_package_response_));
+}
+
+void FakeCiceroneClient::InstallLinuxPackageFromApt(
+    const vm_tools::cicerone::InstallLinuxPackageFromAptRequest& request,
     DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

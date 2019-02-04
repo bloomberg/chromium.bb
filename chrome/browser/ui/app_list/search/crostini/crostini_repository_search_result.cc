@@ -10,6 +10,8 @@
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/chromeos/crostini/crostini_package_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,13 +22,14 @@ namespace app_list {
 namespace {
 
 // TODO(https://crbug.com/921429): Need UX spec.
-constexpr SkColor kListIconColor = SkColorSetARGB(0xDE, 0xAD, 0xAD, 0xAD);
+constexpr SkColor kListIconColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
 
 }  // namespace
 
 CrostiniRepositorySearchResult::CrostiniRepositorySearchResult(
+    Profile* profile,
     const std::string& app_name)
-    : app_name_(app_name), weak_ptr_factory_(this) {
+    : profile_(profile), app_name_(app_name), weak_ptr_factory_(this) {
   // TODO(https://crbug.com/921429): Need UX spec.
   set_id("crostini:" + app_name_);
   SetResultType(ash::SearchResultType::kOmnibox);
@@ -37,14 +40,35 @@ CrostiniRepositorySearchResult::CrostiniRepositorySearchResult(
       icon, AppListConfig::instance().search_list_icon_dimension(),
       kListIconColor));
   SetTitle(l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_PLACEHOLDER_TEXT,
+      IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_TITLE_PLACEHOLDER_TEXT,
       base::UTF8ToUTF16(app_name_)));
+  SetDetails(l10n_util::GetStringUTF16(
+      IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_DETAILS_PLACEHOLDER_TEXT));
 }
 
 CrostiniRepositorySearchResult::~CrostiniRepositorySearchResult() = default;
 
+// TODO(https://crbug.com/921429): Change Open() to open up an installation
+// confirmation dialogue that then calls crostini::InstallLinuxPackageFromApt.
+
+void CrostiniRepositorySearchResult::OnOpen(
+    const crostini::LinuxPackageInfo& package_info) {
+  if (package_info.success) {
+    crostini::CrostiniPackageService::GetForProfile(profile_)
+        ->InstallLinuxPackageFromApt(crostini::kCrostiniDefaultVmName,
+                                     crostini::kCrostiniDefaultContainerName,
+                                     package_info.package_id,
+                                     base::DoNothing());
+  }
+}
+
 void CrostiniRepositorySearchResult::Open(int event_flags) {
-  // TODO(https://crbug.com/921429): connect to logic in crostini_manager.
+  crostini::CrostiniManager::GetForProfile(profile_)
+      ->GetLinuxPackageInfoFromApt(
+          crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName, app_name_,
+          base::BindOnce(&CrostiniRepositorySearchResult::OnOpen,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace app_list

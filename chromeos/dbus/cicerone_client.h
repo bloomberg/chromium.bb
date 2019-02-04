@@ -125,10 +125,25 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse>
           callback) = 0;
 
+  // Gets information about a Linux package via it's name from an APT
+  // repository inside a container. |callback| is called after the method
+  // call finishes.
+  virtual void GetLinuxPackageInfoFromApt(
+      const vm_tools::cicerone::LinuxPackageInfoFromAptRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse>
+          callback) = 0;
+
   // Installs a package inside the container.
   // |callback| is called after the method call finishes.
   virtual void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) = 0;
+
+  // Installs a package inside the container from an APT repository using a
+  // package_id. |callback| is called after the method call finishes.
+  virtual void InstallLinuxPackageFromApt(
+      const vm_tools::cicerone::InstallLinuxPackageFromAptRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
           callback) = 0;
 

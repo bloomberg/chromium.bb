@@ -145,6 +145,31 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetLinuxPackageInfoFromApt(
+      const vm_tools::cicerone::LinuxPackageInfoFromAptRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback)
+      override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kGetLinuxPackageInfoFromAptMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR)
+          << "Failed to encode GetLinuxPackageInfoFromAptRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::LinuxPackageInfoResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
@@ -156,6 +181,30 @@ class CiceroneClientImpl : public CiceroneClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode InstallLinuxPackageRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::InstallLinuxPackageResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void InstallLinuxPackageFromApt(
+      const vm_tools::cicerone::InstallLinuxPackageFromAptRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kInstallLinuxPackageFromAptMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR)
+          << "Failed to encode InstallLinuxPackageFromAptRequest protobuf";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
