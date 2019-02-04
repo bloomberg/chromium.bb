@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/child/child_process.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -286,6 +287,12 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
 
 blink::WebString TestBlinkWebUnitTestSupport::DefaultLocale() {
   return blink::WebString::FromASCII("en-US");
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+TestBlinkWebUnitTestSupport::GetIOTaskRunner() const {
+  return ChildProcess::current() ? ChildProcess::current()->io_task_runner()
+                                 : nullptr;
 }
 
 blink::WebURLLoaderMockFactory*
