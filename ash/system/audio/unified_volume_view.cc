@@ -143,7 +143,8 @@ void UnifiedVolumeView::Update(bool by_user) {
   // Indicate that the slider is inactive when it's muted.
   slider()->UpdateState(!is_muted);
 
-  button()->SetToggled(is_muted);
+  // The button should be gray whay muted and colored otherwise.
+  button()->SetToggled(!is_muted);
   button()->SetVectorIcon(is_muted ? kUnifiedMenuVolumeMuteIcon
                                    : GetVolumeIconForLevel(level));
 
