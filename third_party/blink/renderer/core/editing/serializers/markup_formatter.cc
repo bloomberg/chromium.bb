@@ -326,21 +326,6 @@ void MarkupFormatter::AppendCloseTag(StringBuilder& result,
   result.Append('>');
 }
 
-void MarkupFormatter::AppendAttribute(StringBuilder& result,
-                                      const Element& element,
-                                      const Attribute& attribute,
-                                      Namespaces* namespaces) {
-  String value = ResolveURLIfNeeded(element, attribute);
-  if (SerializeAsHTMLDocument(element)) {
-    AppendAttributeAsHTML(result, attribute, value);
-  } else if (!namespaces) {
-    AppendAttributeAsXMLWithoutNamespace(result, attribute, value);
-  } else {
-    AppendAttributeAsXMLWithNamespace(result, element, attribute, value,
-                                      *namespaces);
-  }
-}
-
 void MarkupFormatter::AppendAttributeAsHTML(StringBuilder& result,
                                             const Attribute& attribute,
                                             const String& value) {

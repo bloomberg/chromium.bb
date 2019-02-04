@@ -82,6 +82,9 @@ class StyledMarkupAccumulator final {
   String StringValueForRange(const Text&);
 
   void AppendEndMarkup(StringBuilder&, const Element&);
+  void AppendAttribute(StringBuilder& result,
+                       const Element& element,
+                       const Attribute& attribute);
 
   MarkupFormatter formatter_;
   const TextOffset start_;

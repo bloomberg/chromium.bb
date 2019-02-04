@@ -73,6 +73,17 @@ class MarkupFormatter final {
 
  public:
   static void AppendAttributeValue(StringBuilder&, const String&, bool);
+  static void AppendAttributeAsHTML(StringBuilder& result,
+                                    const Attribute& attribute,
+                                    const String& value);
+  static void AppendAttributeAsXMLWithoutNamespace(StringBuilder& result,
+                                                   const Attribute& attribute,
+                                                   const String& value);
+  static void AppendAttributeAsXMLWithNamespace(StringBuilder& result,
+                                                const Element& element,
+                                                const Attribute& attribute,
+                                                const String& value,
+                                                Namespaces& namespaces);
   static void AppendAttribute(StringBuilder& result,
                               const AtomicString& prefix,
                               const AtomicString& local_name,
@@ -107,29 +118,13 @@ class MarkupFormatter final {
   void AppendText(StringBuilder&, Text&);
   void AppendOpenTag(StringBuilder&, const Element&);
   void AppendCloseTag(StringBuilder&, const Element&);
-  void AppendAttribute(StringBuilder&,
-                       const Element&,
-                       const Attribute&,
-                       Namespaces*);
 
   static bool ShouldAddNamespaceAttribute(const Attribute&, const Element&);
   EntityMask EntityMaskForText(const Text&) const;
   bool ShouldSelfClose(const Element&) const;
+  String ResolveURLIfNeeded(const Element&, const Attribute& attribute) const;
 
  private:
-  String ResolveURLIfNeeded(const Element&, const Attribute& attribute) const;
-  static void AppendAttributeAsHTML(StringBuilder& result,
-                                    const Attribute& attribute,
-                                    const String& value);
-  static void AppendAttributeAsXMLWithoutNamespace(StringBuilder& result,
-                                                   const Attribute& attribute,
-                                                   const String& value);
-  static void AppendAttributeAsXMLWithNamespace(StringBuilder& result,
-                                                const Element& element,
-                                                const Attribute& attribute,
-                                                const String& value,
-                                                Namespaces& namespaces);
-
   const EAbsoluteURLs resolve_urls_method_;
   SerializationType serialization_type_;
 

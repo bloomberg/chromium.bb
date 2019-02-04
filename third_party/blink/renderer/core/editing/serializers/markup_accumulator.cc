@@ -155,7 +155,14 @@ void MarkupAccumulator::AppendAttribute(StringBuilder& result,
                                         const Element& element,
                                         const Attribute& attribute,
                                         Namespaces* namespaces) {
-  formatter_.AppendAttribute(result, element, attribute, namespaces);
+  DCHECK(namespaces);
+  String value = formatter_.ResolveURLIfNeeded(element, attribute);
+  if (SerializeAsHTMLDocument(element)) {
+    MarkupFormatter::AppendAttributeAsHTML(result, attribute, value);
+  } else {
+    MarkupFormatter::AppendAttributeAsXMLWithNamespace(
+        result, element, attribute, value, *namespaces);
+  }
 }
 
 EntityMask MarkupAccumulator::EntityMaskForText(const Text& text) const {
@@ -222,7 +229,7 @@ static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
       Element* enclosing_element = auxiliary_pair.second;
       if (auxiliary_tree) {
         if (auxiliary_pair.second)
-          accumulator.AppendStartTag(*enclosing_element);
+          accumulator.AppendStartTag(*enclosing_element, &namespace_hash);
         current = Strategy::FirstChild(*auxiliary_tree);
         for (; current; current = Strategy::NextSibling(*current)) {
           SerializeNodesWithNamespaces<Strategy>(accumulator, *current,
