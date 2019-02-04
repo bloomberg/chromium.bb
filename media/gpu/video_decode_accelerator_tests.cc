@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "media/base/test_data_util.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
@@ -15,86 +11,16 @@
 #include "media/gpu/test/video_player/video_collection.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/gpu/test/video_player/video_player.h"
+#include "media/gpu/test/video_player/video_player_test_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
-#if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_wrapper.h"
-#endif
 
 namespace media {
 namespace test {
 
 namespace {
-// Test environment for video decode tests. Performs setup and teardown once for
-// the entire test run.
-class VideoDecoderTestEnvironment : public ::testing::Environment {
- public:
-  explicit VideoDecoderTestEnvironment(const Video* video) : video_(video) {}
-  virtual ~VideoDecoderTestEnvironment() {}
 
-  // Set up the video decode test environment, only called once.
-  void SetUp() override;
-  // Tear down the video decode test environment, only called once.
-  void TearDown() override;
-
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
-  const Video* const video_;
-
-  // An exit manager is required to run callbacks on shutdown.
-  base::AtExitManager at_exit_manager;
-
-#if defined(USE_OZONE)
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
-#endif
-};
-
-void VideoDecoderTestEnvironment::SetUp() {
-  // Setting up a task environment will create a task runner for the current
-  // thread and allow posting tasks to other threads. This is required for the
-  // test video player to function correctly.
-  TestTimeouts::Initialize();
-  task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
-
-  // Set the default test data path.
-  media::test::Video::SetTestDataPath(media::GetTestDataPath());
-
-  // Perform all static initialization that is required when running video
-  // decoders in a test environment.
-#if BUILDFLAG(USE_VAAPI)
-  media::VaapiWrapper::PreSandboxInitialization();
-#endif
-
-#if defined(USE_OZONE)
-  // Initialize Ozone. This is necessary to gain access to the GPU for hardware
-  // video decode acceleration.
-  LOG(WARNING) << "Initializing Ozone Platform...\n"
-                  "If this hangs indefinitely please call 'stop ui' first!";
-  ui::OzonePlatform::InitParams params = {.single_process = false};
-  ui::OzonePlatform::InitializeForUI(params);
-  ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-
-  // Initialize the Ozone GPU helper. If this is not done an error will occur:
-  // "Check failed: drm. No devices available for buffer allocation."
-  // Note: If a task environment is not set up initialization will hang
-  // indefinitely here.
-  gpu_helper_.reset(new ui::OzoneGpuTestHelper());
-  gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
-#endif
-}
-
-void VideoDecoderTestEnvironment::TearDown() {
-  task_environment_.reset();
-}
-
-media::test::VideoDecoderTestEnvironment* g_env;
+media::test::VideoPlayerTestEnvironment* g_env;
 
 // Video decode test class. Performs setup and teardown for each single test.
 class VideoDecoderTest : public ::testing::Test {
@@ -323,12 +249,15 @@ int main(int argc, char** argv) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   LOG_ASSERT(logging::InitLogging(settings));
 
+  // Set the default test data path.
+  media::test::Video::SetTestDataPath(media::GetTestDataPath());
+
   // Set up our test environment
   const media::test::Video* video =
       &media::test::kDefaultTestVideoCollection[0];
-  media::test::g_env = static_cast<media::test::VideoDecoderTestEnvironment*>(
+  media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
       testing::AddGlobalTestEnvironment(
-          new media::test::VideoDecoderTestEnvironment(video)));
+          new media::test::VideoPlayerTestEnvironment(video)));
 
   return RUN_ALL_TESTS();
 }
