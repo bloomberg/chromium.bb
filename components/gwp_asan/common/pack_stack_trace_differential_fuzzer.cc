@@ -24,23 +24,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
 
   // We don't need a buffer large than Size*10 as the longest variable length
   // encoding of a 64-bit integer is 10 bytes long.)
-  size_t array_size = std::min(Size * 10, packed_max_size);
-  std::unique_ptr<uint8_t[]> packed(new uint8_t[array_size]);
-  size_t packed_size =
+  size_t packed_array_size = std::min(Size * 10, packed_max_size);
+  std::unique_ptr<uint8_t[]> packed(new uint8_t[packed_array_size]);
+  size_t packed_out =
       gwp_asan::internal::Pack(reinterpret_cast<const uintptr_t*>(Data),
                                entries, packed.get(), packed_max_size);
-  if (packed_size > array_size)
+  if (packed_out > packed_array_size)
     __builtin_trap();
 
-  uintptr_t unpacked[std::min(unpacked_max_size, entries)];
-  size_t unpacked_size = gwp_asan::internal::Unpack(
-      packed.get(), packed_size, unpacked, unpacked_max_size);
+  size_t unpacked_array_size = std::min(unpacked_max_size, entries);
+  std::unique_ptr<uintptr_t[]> unpacked(new uintptr_t[unpacked_array_size]);
+  size_t unpacked_out = gwp_asan::internal::Unpack(
+      packed.get(), packed_out, unpacked.get(), unpacked_max_size);
   // We can only be sure there was enough room to pack the entire input when
-  // packed_max_size was larger than Size*10.
-  if (packed_max_size > array_size &&
-      unpacked_size != std::min(entries, unpacked_max_size))
+  // packed_max_size was larger than the space allocated for packed data.
+  if (packed_max_size > packed_array_size &&
+      unpacked_out != unpacked_array_size)
     __builtin_trap();
-  if (memcmp(Data, unpacked, unpacked_size * sizeof(uintptr_t)))
+  if (memcmp(Data, unpacked.get(), unpacked_out * sizeof(uintptr_t)))
     __builtin_trap();
   return 0;
 }
