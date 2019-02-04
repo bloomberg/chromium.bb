@@ -31,7 +31,7 @@ class NGTextFragmentPainterTest : public PaintControllerPaintTest,
         ScopedLayoutNGForTest(true) {}
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(NGTextFragmentPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(NGTextFragmentPainterTest);
 
 TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   SetBodyInnerHTML(R"HTML(

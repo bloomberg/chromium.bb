@@ -152,7 +152,7 @@ class LayoutSelectionTest : public ::testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, LayoutSelectionTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LayoutSelectionTest, ::testing::Bool());
 
 TEST_P(LayoutSelectionTest, TraverseLayoutObject) {
   SetBodyContent("foo<br>bar");

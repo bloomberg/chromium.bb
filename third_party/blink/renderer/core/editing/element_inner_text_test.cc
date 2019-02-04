@@ -18,7 +18,7 @@ class ElementInnerTest : public testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ElementInnerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ElementInnerTest, testing::Bool());
 
 // http://crbug.com/877498
 TEST_P(ElementInnerTest, ListItemWithLeadingWhiteSpace) {

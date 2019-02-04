@@ -27,7 +27,7 @@ class LayoutBoxTest : public testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, LayoutBoxTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LayoutBoxTest, testing::Bool());
 
 TEST_P(LayoutBoxTest, BackgroundObscuredInRect) {
   SetBodyInnerHTML(R"HTML(

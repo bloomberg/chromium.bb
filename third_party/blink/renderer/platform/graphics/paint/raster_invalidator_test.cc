@@ -61,7 +61,7 @@ class RasterInvalidatorTest : public testing::Test,
       [](const IntRect& rect) {};
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(RasterInvalidatorTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(RasterInvalidatorTest);
 
 #define EXPECT_CHUNK_INVALIDATION_CUSTOM(                               \
     invalidations, index, chunk, expected_reason, layer_offset, mapper) \

@@ -343,14 +343,14 @@ TEST_F(FindBufferTest, FindMatchInRange) {
 class FindBufferBlockTest : public FindBufferTest,
                             public testing::WithParamInterface<std::string> {};
 
-INSTANTIATE_TEST_CASE_P(Blocks,
-                        FindBufferBlockTest,
-                        testing::Values("block",
-                                        "table",
-                                        "flow-root",
-                                        "grid",
-                                        "flex",
-                                        "list-item"));
+INSTANTIATE_TEST_SUITE_P(Blocks,
+                         FindBufferBlockTest,
+                         testing::Values("block",
+                                         "table",
+                                         "flow-root",
+                                         "grid",
+                                         "flex",
+                                         "list-item"));
 
 TEST_P(FindBufferBlockTest, FindBlock) {
   SetBodyContent("text<div id='block' style='display: " + GetParam() +
@@ -396,16 +396,16 @@ class FindBufferSeparatorTest
     : public FindBufferTest,
       public testing::WithParamInterface<std::string> {};
 
-INSTANTIATE_TEST_CASE_P(Separators,
-                        FindBufferSeparatorTest,
-                        testing::Values("br",
-                                        "hr",
-                                        "legend",
-                                        "meter",
-                                        "object",
-                                        "progress",
-                                        "select",
-                                        "video"));
+INSTANTIATE_TEST_SUITE_P(Separators,
+                         FindBufferSeparatorTest,
+                         testing::Values("br",
+                                         "hr",
+                                         "legend",
+                                         "meter",
+                                         "object",
+                                         "progress",
+                                         "select",
+                                         "video"));
 
 TEST_P(FindBufferSeparatorTest, FindSeparatedElements) {
   SetBodyContent("a<" + GetParam() + ">a</" + GetParam() + ">a");

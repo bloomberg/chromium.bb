@@ -114,7 +114,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(VisualRectMappingTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(VisualRectMappingTest);
 
 TEST_P(VisualRectMappingTest, LayoutText) {
   SetBodyInnerHTML(R"HTML(

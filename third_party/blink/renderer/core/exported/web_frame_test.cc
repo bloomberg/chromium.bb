@@ -10157,10 +10157,10 @@ class WebFrameOverscrollTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        WebFrameOverscrollTest,
-                        testing::Values(kWebGestureDeviceTouchpad,
-                                        kWebGestureDeviceTouchscreen));
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebFrameOverscrollTest,
+                         testing::Values(kWebGestureDeviceTouchpad,
+                                         kWebGestureDeviceTouchscreen));
 
 TEST_P(WebFrameOverscrollTest,
        AccumulatedRootOverscrollAndUnsedDeltaValuesOnOverscroll) {

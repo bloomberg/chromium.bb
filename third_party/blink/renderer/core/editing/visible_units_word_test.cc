@@ -71,9 +71,9 @@ class ParameterizedVisibleUnitsWordTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedVisibleUnitsWordTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedVisibleUnitsWordTest,
+                         ::testing::Bool());
 
 TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordBasic) {
   EXPECT_EQ("<p> |(1) abc def</p>", DoStartOfWord("<p>| (1) abc def</p>"));

@@ -63,7 +63,7 @@ class PaintLayerScrollableAreaTestBase : public RenderingTest {
 class PaintLayerScrollableAreaTest : public PaintLayerScrollableAreaTestBase,
                                      public PaintTestConfigurations {};
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerScrollableAreaTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintLayerScrollableAreaTest);
 using PaintLayerScrollableAreaTestSPv1 = PaintLayerScrollableAreaTestBase;
 
 TEST_P(PaintLayerScrollableAreaTest,

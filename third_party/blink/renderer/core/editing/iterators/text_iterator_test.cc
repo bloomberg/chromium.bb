@@ -152,7 +152,7 @@ Range* TextIteratorTest::GetBodyRange() const {
   return range;
 }
 
-INSTANTIATE_TEST_CASE_P(All, TextIteratorTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, TextIteratorTest, testing::Bool());
 
 TEST_P(TextIteratorTest, BitStackOverflow) {
   const unsigned kBitsInWord = sizeof(unsigned) * 8;

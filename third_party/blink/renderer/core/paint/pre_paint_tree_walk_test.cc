@@ -54,7 +54,7 @@ class PrePaintTreeWalkTest : public PaintControllerPaintTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(PrePaintTreeWalkTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PrePaintTreeWalkTest);
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
   SetBodyInnerHTML(R"HTML(

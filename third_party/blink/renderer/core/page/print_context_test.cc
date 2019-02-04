@@ -151,7 +151,7 @@ class PrintContextFrameTest : public PrintContextTest {
   EXPECT_EQ(expectedWidth, actualRect.width());                               \
   EXPECT_EQ(expectedHeight, actualRect.height());
 
-INSTANTIATE_PAINT_TEST_CASE_P(PrintContextTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PrintContextTest);
 
 TEST_P(PrintContextTest, LinkTarget) {
   MockPageContextCanvas canvas;
@@ -312,7 +312,7 @@ TEST_P(PrintContextTest, LinkTargetBoundingBox) {
   EXPECT_SKRECT_EQ(50, 60, 200, 100, operations[0].rect);
 }
 
-INSTANTIATE_PAINT_TEST_CASE_P(PrintContextFrameTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PrintContextFrameTest);
 
 TEST_P(PrintContextFrameTest, WithSubframe) {
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));

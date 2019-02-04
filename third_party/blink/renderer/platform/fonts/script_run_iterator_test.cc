@@ -390,9 +390,9 @@ class JapaneseMixedScriptTest
     : public ScriptRunIteratorTest,
       public testing::WithParamInterface<JapaneseMixedScript> {};
 
-INSTANTIATE_TEST_CASE_P(ScriptRunIteratorTest,
-                        JapaneseMixedScriptTest,
-                        testing::ValuesIn(japanese_mixed_scripts));
+INSTANTIATE_TEST_SUITE_P(ScriptRunIteratorTest,
+                         JapaneseMixedScriptTest,
+                         testing::ValuesIn(japanese_mixed_scripts));
 
 TEST_P(JapaneseMixedScriptTest, Data) {
   const auto& data = GetParam();

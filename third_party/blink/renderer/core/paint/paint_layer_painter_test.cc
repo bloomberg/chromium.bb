@@ -52,7 +52,7 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintLayerPainterTest);
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   SetBodyInnerHTML(R"HTML(
@@ -978,7 +978,7 @@ TEST_P(PaintLayerPainterTest,
 
 using PaintLayerPainterTestCAP = PaintLayerPainterTest;
 
-INSTANTIATE_CAP_TEST_CASE_P(PaintLayerPainterTestCAP);
+INSTANTIATE_CAP_TEST_SUITE_P(PaintLayerPainterTestCAP);
 
 TEST_P(PaintLayerPainterTestCAP, SimpleCullRect) {
   SetBodyInnerHTML(R"HTML(

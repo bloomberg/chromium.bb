@@ -992,6 +992,6 @@ TEST_P(KURLPortTest, SetHostAndPort) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(, KURLPortTest, ::testing::ValuesIn(port_test_cases));
+INSTANTIATE_TEST_SUITE_P(, KURLPortTest, ::testing::ValuesIn(port_test_cases));
 
 }  // namespace blink

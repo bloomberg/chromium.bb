@@ -29,12 +29,12 @@ class HTMLDocumentParserLoadingTest : public HTMLDocumentParserSimTest,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Threaded,
-                        HTMLDocumentParserLoadingTest,
-                        testing::Values(true));
-INSTANTIATE_TEST_CASE_P(NotThreaded,
-                        HTMLDocumentParserLoadingTest,
-                        testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(Threaded,
+                         HTMLDocumentParserLoadingTest,
+                         testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(NotThreaded,
+                         HTMLDocumentParserLoadingTest,
+                         testing::Values(false));
 
 TEST_P(HTMLDocumentParserLoadingTest,
        ShouldNotPauseParsingForExternalStylesheetsInHead) {

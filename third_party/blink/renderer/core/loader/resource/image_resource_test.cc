@@ -979,9 +979,9 @@ TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
   EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ImageResourceReloadTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ImageResourceReloadTest,
+                         testing::Bool());
 
 TEST(ImageResourceTest, SVGImage) {
   KURL url("http://127.0.0.1:8000/foo");

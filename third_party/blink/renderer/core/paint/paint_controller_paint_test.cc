@@ -20,10 +20,10 @@ using testing::ElementsAre;
 
 namespace blink {
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintControllerPaintTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintControllerPaintTest);
 
 using PaintControllerPaintTestForCAP = PaintControllerPaintTest;
-INSTANTIATE_CAP_TEST_CASE_P(PaintControllerPaintTestForCAP);
+INSTANTIATE_CAP_TEST_SUITE_P(PaintControllerPaintTestForCAP);
 
 TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   SetBodyInnerHTML(

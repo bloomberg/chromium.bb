@@ -157,7 +157,7 @@ class ScrollingCoordinatorTest : public testing::Test,
   frame_test_helpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     ScrollingCoordinatorTest,
     ::testing::Values(kScrollingCoordinatorTestNoFlags,
@@ -1426,7 +1426,7 @@ class ScrollingCoordinatorTestWithAcceleratedContext
   FakeGLES2Interface gl_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     ScrollingCoordinatorTestWithAcceleratedContext,
     ::testing::Values(kScrollingCoordinatorTestNoFlags,

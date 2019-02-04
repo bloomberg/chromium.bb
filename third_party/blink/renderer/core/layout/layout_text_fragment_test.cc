@@ -53,9 +53,9 @@ class ParameterizedLayoutTextFragmentTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedLayoutTextFragmentTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedLayoutTextFragmentTest,
+                         testing::Bool());
 
 TEST_P(ParameterizedLayoutTextFragmentTest, Basics) {
   SetBasicBody("foo");

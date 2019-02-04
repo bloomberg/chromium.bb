@@ -41,9 +41,9 @@ class NGLogicalRectUniteTest
     : public testing::Test,
       public testing::WithParamInterface<LogicalRectUniteTestData> {};
 
-INSTANTIATE_TEST_CASE_P(NGGeometryUnitsTest,
-                        NGLogicalRectUniteTest,
-                        testing::ValuesIn(logical_rect_unite_test_data));
+INSTANTIATE_TEST_SUITE_P(NGGeometryUnitsTest,
+                         NGLogicalRectUniteTest,
+                         testing::ValuesIn(logical_rect_unite_test_data));
 
 TEST_P(NGLogicalRectUniteTest, Data) {
   const auto& data = GetParam();

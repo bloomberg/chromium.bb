@@ -190,7 +190,7 @@ static void FontScriptValue(FontBuilder& b) {
   b.SetLocale(LayoutLocale::Get("se"));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AllFields,
     FontBuilderAdditiveTest,
     testing::Values(

@@ -535,8 +535,8 @@ const ColorSpaceUMATest::ParamType kColorSpaceUMATestParams[] = {
     // any samples.
     {"cs-uma-two-channels-jfif-marker.jpg", false}};
 
-INSTANTIATE_TEST_CASE_P(JPEGImageDecoderTest,
-                        ColorSpaceUMATest,
-                        ::testing::ValuesIn(kColorSpaceUMATestParams));
+INSTANTIATE_TEST_SUITE_P(JPEGImageDecoderTest,
+                         ColorSpaceUMATest,
+                         ::testing::ValuesIn(kColorSpaceUMATestParams));
 
 }  // namespace blink

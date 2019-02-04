@@ -20,12 +20,12 @@ class CapitalizeTest : public testing::Test,
                        public testing::WithParamInterface<CapitalizeTestData> {
 };
 
-INSTANTIATE_TEST_CASE_P(CapitalizeTest,
-                        CapitalizeTest,
-                        testing::Values(CapitalizeTestData{String(), String()},
-                                        CapitalizeTestData{"", ""},
-                                        CapitalizeTestData{"hello, world",
-                                                           "Hello, World"}));
+INSTANTIATE_TEST_SUITE_P(CapitalizeTest,
+                         CapitalizeTest,
+                         testing::Values(CapitalizeTestData{String(), String()},
+                                         CapitalizeTestData{"", ""},
+                                         CapitalizeTestData{"hello, world",
+                                                            "Hello, World"}));
 
 TEST_P(CapitalizeTest, Data) {
   const auto& data = GetParam();

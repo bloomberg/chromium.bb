@@ -90,9 +90,9 @@ static const LineBreakType all_break_types[] = {
 class BreakTypeTest : public TextBreakIteratorTest,
                       public testing::WithParamInterface<LineBreakType> {};
 
-INSTANTIATE_TEST_CASE_P(TextBreakIteratorTest,
-                        BreakTypeTest,
-                        testing::ValuesIn(all_break_types));
+INSTANTIATE_TEST_SUITE_P(TextBreakIteratorTest,
+                         BreakTypeTest,
+                         testing::ValuesIn(all_break_types));
 
 TEST_P(BreakTypeTest, EmptyString) {
   LazyLineBreakIterator iterator(g_empty_string);

@@ -109,7 +109,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_LAYER_LIST_TEST_CASE_P(WebLayerListTest);
+INSTANTIATE_LAYER_LIST_TEST_SUITE_P(WebLayerListTest);
 
 TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
@@ -267,7 +267,7 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
   }
 };
 
-INSTANTIATE_LAYER_LIST_TEST_CASE_P(WebLayerListSimTest);
+INSTANTIATE_LAYER_LIST_TEST_SUITE_P(WebLayerListSimTest);
 
 TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and

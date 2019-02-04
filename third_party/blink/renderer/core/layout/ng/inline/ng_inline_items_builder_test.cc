@@ -367,11 +367,11 @@ TEST_F(NGInlineItemsBuilderTest, Empty) {
 class CollapsibleSpaceTest : public NGInlineItemsBuilderTest,
                              public testing::WithParamInterface<UChar> {};
 
-INSTANTIATE_TEST_CASE_P(NGInlineItemsBuilderTest,
-                        CollapsibleSpaceTest,
-                        testing::Values(kSpaceCharacter,
-                                        kTabulationCharacter,
-                                        kNewlineCharacter));
+INSTANTIATE_TEST_SUITE_P(NGInlineItemsBuilderTest,
+                         CollapsibleSpaceTest,
+                         testing::Values(kSpaceCharacter,
+                                         kTabulationCharacter,
+                                         kNewlineCharacter));
 
 TEST_P(CollapsibleSpaceTest, CollapsedSpaceAfterNoWrap) {
   UChar space = GetParam();

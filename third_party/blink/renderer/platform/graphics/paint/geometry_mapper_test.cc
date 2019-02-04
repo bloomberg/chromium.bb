@@ -51,7 +51,7 @@ class GeometryMapperTest : public testing::Test,
   FloatRect expected_transformed_rect;
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(GeometryMapperTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(GeometryMapperTest);
 
 #define EXPECT_FLOAT_RECT_NEAR(expected, actual)                             \
   do {                                                                       \
