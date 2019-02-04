@@ -72,11 +72,27 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback)
       override;
 
+  // Fake version of the method that gets information about a Linux package via
+  // its name, inside a Container. |callback| is called after the method call
+  // finishes.
+  void GetLinuxPackageInfoFromApt(
+      const vm_tools::cicerone::LinuxPackageInfoFromAptRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback)
+      override;
+
   // Fake version of the method that installs an application inside a running
   // Container. |callback| is called after the method call finishes. This does
   // not cause progress events to be fired.
   void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) override;
+
+  // Fake version of the method that installs an application inside a running
+  // Container. |callback| is called after the method call finishes. This does
+  // not cause progress events to be fired.
+  void InstallLinuxPackageFromApt(
+      const vm_tools::cicerone::InstallLinuxPackageFromAptRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
           callback) override;
 
@@ -227,6 +243,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::SetUpLxdContainerUserResponse&
           setup_lxd_container_user_response) {
     setup_lxd_container_user_response_ = setup_lxd_container_user_response;
+  }
+
+  void set_search_app_response(
+      const vm_tools::cicerone::AppSearchResponse& search_app_response) {
+    search_app_response_ = search_app_response;
   }
 
   // Additional functions to allow tests to trigger Signals.
