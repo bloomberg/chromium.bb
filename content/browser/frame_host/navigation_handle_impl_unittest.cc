@@ -109,7 +109,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
     test_handle_->WillRedirectRequest(
-        GURL(), "GET", GURL(), false, scoped_refptr<net::HttpResponseHeaders>(),
+        GURL(), false, scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1, nullptr,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
@@ -149,7 +149,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     test_handle_->WillProcessResponse(
         main_test_rfh(), scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::CONNECTION_INFO_QUIC_35, net::HostPortPair(),
-        net::SSLInfo(), GlobalRequestID(), false, false, false, false, false,
+        net::SSLInfo(), GlobalRequestID(), false, false, false, false,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -237,23 +237,13 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         main_test_rfh()->frame_tree_node(), CommonNavigationParams(),
         CommitNavigationParams(), false /* browser-initiated */, std::string(),
         *frame_entry, nullptr, nullptr, nullptr);
-    test_handle_ =
-        base::WrapUnique<NavigationHandleImpl>(new NavigationHandleImpl(
-            request_.get(), GURL(), base::nullopt, std::vector<GURL>(),
-            true,   // is_renderer_initiated
-            false,  // is_same_document
-            base::TimeTicks::Now(), 0,
-            false,                  // started_from_context_menu
-            false,                  // is_form_submission
-            nullptr,                // navigation_ui_data
-            "GET", net::HttpRequestHeaders(),
-            nullptr,  // resource_request_body
-            Referrer(),
-            false,  // has_user_gesture
-            ui::PAGE_TRANSITION_LINK,
-            false,  // is_external_protocol
-            std::string(),        // href_translate
-            base::TimeTicks()));  // input_start
+    test_handle_ = base::WrapUnique<NavigationHandleImpl>(
+        new NavigationHandleImpl(request_.get(), std::vector<GURL>(),
+                                 false,  // is_same_document
+                                 0,
+                                 nullptr,  // navigation_ui_data
+                                 net::HttpRequestHeaders(), Referrer(),
+                                 false));  // is_external_protocol
   }
 
  private:

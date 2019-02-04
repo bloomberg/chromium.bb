@@ -6157,6 +6157,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   DCHECK(committed_request);
   DCHECK(committed_request->navigation_handle());
 
+  // Update the page transition. For subframe navigations, the renderer process
+  // only gives the correct page transition at commit time.
+  // TODO(clamy): We should get the correct page transition when starting the
+  // request.
+  committed_request->set_transition(validated_params->transition);
+
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
 
   accessibility_reset_count_ = 0;

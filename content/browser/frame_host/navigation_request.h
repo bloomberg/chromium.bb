@@ -225,6 +225,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // for commit. Only used with PerNavigationMojoInterface enabled.
   mojom::NavigationClient* GetCommitNavigationClient();
 
+  void SetOriginPolicy(const std::string& policy);
+
+  void set_transition(ui::PageTransition transition) {
+    common_params_.transition = transition;
+  }
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
