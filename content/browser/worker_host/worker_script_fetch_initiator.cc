@@ -330,6 +330,16 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // NetworkService (PlzWorker):
+  // If a URLLoaderFactory for AppCache is supplied, use that.
+  if (subresource_loader_params &&
+      subresource_loader_params->appcache_loader_factory_info) {
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    subresource_loader_factories->appcache_factory_info() =
+        std::move(subresource_loader_params->appcache_loader_factory_info);
+  }
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback),
