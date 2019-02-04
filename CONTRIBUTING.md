@@ -98,7 +98,9 @@ See [notes on commit messages] for a recommended reading on writing commit
 messages.
 
 Your patches should also include a Signed-off-by line with your name and
-email address.  If you're not the patch's original author, you should
+email address which indicates that you agree to the
+[Developer's Certificate of Origin 1.1](DCO-1.1.txt).
+If you're not the patch's original author, you should
 also gather S-o-b's by them (and/or whomever gave the patch to you.) The
 significance of this is that it certifies that you created the patch,
 that it was created under an appropriate open source license, or
