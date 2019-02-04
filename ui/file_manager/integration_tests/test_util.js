@@ -10,11 +10,11 @@
  * the 'name' of the command, and any required or optional arguments of the
  * command, e.g.,
  *
- *   sendTestMessage({
+ *   await sendTestMessage({
  *     name: 'addEntries', // command with volume and entries arguments
  *     volume: volume,
  *     entries: entries
- *   }).then(...);
+ *   });
  *
  * @param {Object} command Test command to send. The object is converted to
  *     a JSON string prior to sending.
@@ -51,14 +51,12 @@ function wait(time) {
  * @param {function()} callback Completion callback.
  * @return {Promise} Promise to be fulfilled on completion.
  */
-function checkIfNoErrorsOccuredOnApp(app, callback) {
-  var countPromise = app.callRemoteTestUtil('getErrorCount', null, []);
-  return countPromise.then(function(count) {
-    chrome.test.assertEq(0, count, 'The error count is not 0.');
-    if (callback) {
-      callback();
-    }
-  });
+async function checkIfNoErrorsOccuredOnApp(app, callback) {
+  const count = await app.callRemoteTestUtil('getErrorCount', null, []);
+  chrome.test.assertEq(0, count, 'The error count is not 0.');
+  if (callback) {
+    callback();
+  }
 }
 
 /**
@@ -66,18 +64,19 @@ function checkIfNoErrorsOccuredOnApp(app, callback) {
  * @param {Promise} promise Promise to add the check to.
  * @param {Array<!RemoteCall>} apps An array of RemoteCall interfaces.
  */
-function testPromiseAndApps(promise, apps) {
-  promise.then(function() {
-    return Promise.all(
-        apps.map(function(app) {
-          return new Promise(checkIfNoErrorsOccuredOnApp.bind(null, app));
-        }));
-  }).then(chrome.test.callbackPass(function() {
+async function testPromiseAndApps(promise, apps) {
+  const finished = chrome.test.callbackPass(function() {
     // The callbackPass is necessary to avoid prematurely finishing tests.
     // Don't use chrome.test.succeed() here to avoid doubled success log.
-  }), function(error) {
-    chrome.test.fail(error.stack || error);
   });
+  try {
+    await promise;
+    await Promise.all(apps.map(app => checkIfNoErrorsOccuredOnApp(app)));
+  } catch (error) {
+    chrome.test.fail(error.stack || error);
+    return;
+  }
+  finished();
 }
 
 /**
@@ -150,22 +149,19 @@ function pending(caller, message, var_args) {
  *     checkFunction when the checkFunction reutrns a value but a pending
  *     marker.
  */
-function repeatUntil(checkFunction) {
+async function repeatUntil(checkFunction) {
   var logTime = Date.now() + LOG_INTERVAL;
-  var step = function() {
-    return Promise.resolve(checkFunction()).then(function(result) {
-      if (result instanceof pending) {
-        if (Date.now() > logTime) {
-          console.warn(result.message);
-          logTime += LOG_INTERVAL;
-        }
-        return wait(REPEAT_UNTIL_INTERVAL).then(step);
-      } else {
-        return result;
-      }
-    });
-  };
-  return step();
+  while (true) {
+    const result = await checkFunction();
+    if (!(result instanceof pending)) {
+      return result;
+    }
+    if (Date.now() > logTime) {
+      console.warn(result.message);
+      logTime += LOG_INTERVAL;
+    }
+    await wait(REPEAT_UNTIL_INTERVAL);
+  }
 }
 
 /**
@@ -176,28 +172,28 @@ function repeatUntil(checkFunction) {
  * @param {function(string)} callback Completion callback.
  * @param {Object=} opt_debug If truthy, log the result.
  */
-function sendBrowserTestCommand(command, callback, opt_debug) {
+async function sendBrowserTestCommand(command, callback, opt_debug) {
   const caller = getCaller();
   if (typeof command.name !== 'string') {
     chrome.test.fail('Invalid test command: ' + JSON.stringify(command));
   }
-  repeatUntil(function sendTestCommand() {
+  const result = await repeatUntil(async () => {
     const tryAgain = pending(caller, 'Sent BrowserTest ' + command.name);
-    return sendTestMessage(command)
-        .then((result) => {
-          if (typeof result !== 'string') {
-            return tryAgain;
-          }
-          if (opt_debug) {
-            console.log('BrowserTest ' + command.name + ': ' + result);
-          }
-          callback(result);
-        })
-        .catch((error) => {
-          console.log(error.stack || error);
-          return tryAgain;
-        });
+    try {
+      const result = await sendTestMessage(command);
+      if (typeof result !== 'string') {
+        return tryAgain;
+      }
+      return result;
+    } catch (error) {
+      console.log(error.stack || error);
+      return tryAgain;
+    }
   });
+  if (opt_debug) {
+    console.log('BrowserTest ' + command.name + ': ' + result);
+  }
+  callback(result);
 }
 
 /**
@@ -209,13 +205,12 @@ function sendBrowserTestCommand(command, callback, opt_debug) {
 function waitForAppWindow(windowUrl) {
   const caller = getCaller();
   const command = {'name': 'getAppWindowId', 'windowUrl': windowUrl};
-  return repeatUntil(function() {
-    return sendTestMessage(command).then((result) => {
-      if (result == 'none') {
-        return pending(caller, 'getAppWindowId ' + windowUrl);
-      }
-      return result;
-    });
+  return repeatUntil(async () => {
+    const result = await sendTestMessage(command);
+    if (result == 'none') {
+      return pending(caller, 'getAppWindowId ' + windowUrl);
+    }
+    return result;
   });
 }
 
@@ -229,13 +224,11 @@ function waitForAppWindow(windowUrl) {
 function waitForAppWindowCount(appId, expectedCount) {
   const caller = getCaller();
   const command = {'name': 'countAppWindows', 'appId': appId};
-  return repeatUntil(function() {
-    return sendTestMessage(command).then((result) => {
-      if (result != expectedCount) {
-        return pending(caller, 'waitForAppWindowCount ' + appId + ' ' + result);
-      }
-      return true;
-    });
+  return repeatUntil(async () => {
+    if (await sendTestMessage(command) != expectedCount) {
+      return pending(caller, 'waitForAppWindowCount ' + appId + ' ' + result);
+    }
+    return true;
   });
 }
 
@@ -247,7 +240,7 @@ function waitForAppWindowCount(appId, expectedCount) {
  *     result of function. The argument is true on success.
  * @return {Promise} Promise to be fulfilled when the entries are added.
  */
-function addEntries(volumeNames, entries, opt_callback) {
+async function addEntries(volumeNames, entries, opt_callback) {
   if (volumeNames.length == 0) {
     callback(true);
     return;
@@ -259,12 +252,16 @@ function addEntries(volumeNames, entries, opt_callback) {
       entries: entries
     });
   });
-  var resultPromise = Promise.all(volumeResultPromises);
-  if (opt_callback) {
-    resultPromise.then(opt_callback.bind(null, true),
-                       opt_callback.bind(null, false));
+  if (!opt_callback) {
+    return volumeResultPromises;
   }
-  return resultPromise;
+  try {
+    await Promise.all(volumeResultPromises);
+  } catch (error) {
+    opt_callback(false);
+    throw error;
+  }
+  opt_callback(true);
 }
 
 /**

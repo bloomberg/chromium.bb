@@ -12,14 +12,14 @@ async function setupForDirectoryTreeContextMenuTest() {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Add destination directory.
-  await new addEntries(['local'], [new TestEntryInfo({
-                         type: EntryType.DIRECTORY,
-                         targetPath: 'destination',
-                         lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
-                         nameText: 'destination',
-                         sizeText: '--',
-                         typeText: 'Folder'
-                       })]);
+  await addEntries(['local'], [new TestEntryInfo({
+                     type: EntryType.DIRECTORY,
+                     targetPath: 'destination',
+                     lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+                     nameText: 'destination',
+                     sizeText: '--',
+                     typeText: 'Folder'
+                   })]);
   return appId;
 }
 
@@ -358,14 +358,14 @@ testcase.dirRenameUpdateChildrenBreadcrumbs = async function() {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Add child-folder inside /photos/
-  await new addEntries(['local'], [new TestEntryInfo({
-                         type: EntryType.DIRECTORY,
-                         targetPath: 'photos/child-folder',
-                         lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
-                         nameText: 'child-folder',
-                         sizeText: '--',
-                         typeText: 'Folder'
-                       })]);
+  await addEntries(['local'], [new TestEntryInfo({
+                     type: EntryType.DIRECTORY,
+                     targetPath: 'photos/child-folder',
+                     lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+                     nameText: 'child-folder',
+                     sizeText: '--',
+                     typeText: 'Folder'
+                   })]);
 
   // Navigate to child folder.
   await remoteCall.navigateWithDirectoryTree(
