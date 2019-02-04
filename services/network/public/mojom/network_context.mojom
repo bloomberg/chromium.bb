@@ -38,6 +38,9 @@ import "url/mojom/url.mojom";
 [EnableIf=is_ct_supported]
 import "services/network/public/mojom/ct_log_info.mojom";
 
+[EnableIf=is_trial_comparison_cert_verifier_supported]
+import "services/network/public/mojom/trial_comparison_cert_verifier.mojom";
+
 // Config for setting a custom proxy config that will be used if a request
 // matches the proxy rules and would otherwise be direct. This config allows
 // headers to be set on requests to the proxies from the config before and/or
@@ -285,6 +288,12 @@ struct NetworkContextParams {
   // validation.
   [EnableIf=is_chromeos]
   AdditionalCertificates? initial_additional_certificates;
+
+  // Parameters for the cert verifier comparison trial. This is a temporary
+  // interface and embedders should not use it.
+  // See https://crbug.com/649026
+  [EnableIf=is_trial_comparison_cert_verifier_supported]
+  TrialComparisonCertVerifierParams? trial_comparison_cert_verifier_params;
 
   // Parameters for constructing the cookie manager.
   CookieManagerParams? cookie_manager_params;

@@ -142,6 +142,13 @@
 #include "base/android/application_status_listener.h"
 #endif
 
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+#include "net/cert/caching_cert_verifier.h"
+#include "net/cert/cert_verify_proc.h"
+#include "net/cert/cert_verify_proc_builtin.h"
+#include "services/network/trial_comparison_cert_verifier_mojo.h"
+#endif
+
 namespace network {
 
 namespace {
@@ -2100,9 +2107,21 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
       cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
     }
-#else
-    cert_verifier = net::CertVerifier::CreateDefault();
+#elif BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+    if (params_->trial_comparison_cert_verifier_params) {
+      cert_verifier = std::make_unique<net::CachingCertVerifier>(
+          std::make_unique<TrialComparisonCertVerifierMojo>(
+              params_->trial_comparison_cert_verifier_params->initial_allowed,
+              std::move(params_->trial_comparison_cert_verifier_params
+                            ->config_client_request),
+              std::move(params_->trial_comparison_cert_verifier_params
+                            ->report_client),
+              net::CertVerifyProc::CreateDefault(),
+              net::CreateCertVerifyProcBuiltin()));
+    }
 #endif
+    if (!cert_verifier)
+      cert_verifier = net::CertVerifier::CreateDefault();
   }
 
   builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(

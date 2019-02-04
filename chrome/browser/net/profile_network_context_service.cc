@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -42,7 +41,6 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/http/http_util.h"
-#include "net/net_buildflags.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 
@@ -51,6 +49,10 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user.h"
+#endif
+
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+#include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -465,6 +467,32 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
+
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+  if (!in_memory &&
+      TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
+    network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client;
+    auto config_client_request = mojo::MakeRequest(&config_client);
+
+    network_context_params->trial_comparison_cert_verifier_params =
+        network::mojom::TrialComparisonCertVerifierParams::New();
+
+    if (!trial_comparison_cert_verifier_controller_) {
+      trial_comparison_cert_verifier_controller_ =
+          std::make_unique<TrialComparisonCertVerifierController>(profile_);
+    }
+    trial_comparison_cert_verifier_controller_->AddClient(
+        std::move(config_client),
+        mojo::MakeRequest(
+            &network_context_params->trial_comparison_cert_verifier_params
+                 ->report_client));
+    network_context_params->trial_comparison_cert_verifier_params
+        ->initial_allowed =
+        trial_comparison_cert_verifier_controller_->IsAllowed();
+    network_context_params->trial_comparison_cert_verifier_params
+        ->config_client_request = std::move(config_client_request);
+  }
+#endif
 
   if (domain_reliability::DomainReliabilityServiceFactory::
           ShouldCreateService()) {

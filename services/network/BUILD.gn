@@ -269,6 +269,13 @@ jumbo_component("network_service") {
   if (is_chromecast) {
     defines += [ "IS_CHROMECAST" ]
   }
+
+  if (trial_comparison_cert_verifier_supported) {
+    sources += [
+      "trial_comparison_cert_verifier_mojo.cc",
+      "trial_comparison_cert_verifier_mojo.h",
+    ]
+  }
 }
 
 source_set("tests") {

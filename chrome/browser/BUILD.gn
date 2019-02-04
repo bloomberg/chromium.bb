@@ -4765,10 +4765,10 @@ jumbo_split_static_library("browser") {
     }
   }
 
-  if (is_desktop_linux || is_mac) {
+  if (trial_comparison_cert_verifier_supported) {
     sources += [
-      "net/trial_comparison_cert_verifier.cc",
-      "net/trial_comparison_cert_verifier.h",
+      "net/trial_comparison_cert_verifier_controller.cc",
+      "net/trial_comparison_cert_verifier_controller.h",
     ]
   }
 

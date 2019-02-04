@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//net/features.gni")
 import("//services/network/public/cpp/features.gni")
 
 # These interfaces are put in their own target to avoid a circular dependency,
@@ -140,5 +141,10 @@ mojom("mojom") {
   # because IS_CHROMECAST is not available in build/build_config.h.
   if (is_linux && !is_chromeos) {
     enabled_features += [ "needs_crypt_config" ]
+  }
+
+  if (trial_comparison_cert_verifier_supported) {
+    enabled_features += [ "is_trial_comparison_cert_verifier_supported" ]
+    sources += [ "trial_comparison_cert_verifier.mojom" ]
   }
 }
