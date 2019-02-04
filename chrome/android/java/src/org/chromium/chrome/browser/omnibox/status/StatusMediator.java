@@ -22,7 +22,6 @@ class StatusMediator {
     private boolean mDarkTheme;
     private boolean mUrlHasFocus;
     private boolean mFirstSuggestionIsSearchQuery;
-    private boolean mVerboseStatusAllowed;
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
     private boolean mPageIsOffline;
