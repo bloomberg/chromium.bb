@@ -37,6 +37,7 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   static std::unique_ptr<CompositorAnimation> CreateWorkletAnimation(
       cc::WorkletAnimationId,
       const String& name,
+      double playback_rate,
       std::unique_ptr<CompositorScrollTimeline>,
       std::unique_ptr<cc::AnimationOptions>);
 
@@ -64,6 +65,7 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   void UpdateScrollTimeline(base::Optional<cc::ElementId>,
                             base::Optional<double> start_scroll_offset,
                             base::Optional<double> end_scroll_offset);
+  void UpdatePlaybackRate(double playback_rate);
 
  private:
   // cc::AnimationDelegate implementation.

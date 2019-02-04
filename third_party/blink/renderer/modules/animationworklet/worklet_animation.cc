@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -132,6 +133,17 @@ void StartEffectOnCompositor(CompositorAnimation* animation,
   int group = 0;
   base::Optional<double> start_time = base::nullopt;
   double time_offset = 0;
+
+  // Normally the playback rate of a blink animation gets translated into
+  // equivalent playback rate of cc::KeyframeModels.
+  // This has worked for regular animations since their current time was not
+  // exposed in cc. However, for worklet animations this does not work because
+  // the current time is exposed and it is an animation level concept as
+  // opposed to a keyframe model level concept.
+  // So it makes sense here that we use "1" as playback rate for KeyframeModels
+  // and separately plumb the playback rate to cc worklet animation.
+  // TODO(majidvp): Remove playbackRate from KeyframeModel in favor of having
+  // it on animation. https://crbug.com/925373.
   double playback_rate = 1;
 
   effect->StartAnimationOnCompositor(group, start_time, time_offset,
@@ -229,6 +241,7 @@ WorkletAnimation::WorkletAnimation(
       animator_name_(animator_name),
       play_state_(Animation::kIdle),
       last_play_state_(play_state_),
+      playback_rate_(1),
       document_(document),
       effects_(effects),
       timeline_(timeline),
@@ -330,6 +343,69 @@ void WorkletAnimation::UpdateIfNecessary() {
   // TODO(crbug.com/833846): This is updating more often than necessary. This
   // gets fixed once WorkletAnimation becomes a subclass of Animation.
   Update(kTimingUpdateOnDemand);
+}
+
+double WorkletAnimation::playbackRate(ScriptState* script_state) const {
+  return playback_rate_;
+}
+
+void WorkletAnimation::setPlaybackRate(ScriptState* script_state,
+                                       double playback_rate) {
+  if (playback_rate == playback_rate_)
+    return;
+
+  // TODO(https://crbug.com/821910): Implement 0 playback rate after pause()
+  // support is in.
+  if (!playback_rate) {
+    if (document_->GetFrame() && ExecutionContext::From(script_state)) {
+      document_->GetFrame()->Console().AddMessage(
+          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                                 "WorkletAnimation currently does not support "
+                                 "playback rate of Zero."));
+    }
+    return;
+  }
+
+  // TODO(gerchiko): Implement support playback_rate for scroll-linked
+  // animations. http://crbug.com/852475.
+  if (timeline_->IsScrollTimeline()) {
+    if (document_->GetFrame() && ExecutionContext::From(script_state)) {
+      document_->GetFrame()->Console().AddMessage(
+          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                                 "Scroll-linked WorkletAnimation currently "
+                                 "does not support setting playback rate."));
+    }
+    return;
+  }
+  SetPlaybackRateInternal(playback_rate);
+}
+
+void WorkletAnimation::SetPlaybackRateInternal(double playback_rate) {
+  DCHECK(std::isfinite(playback_rate));
+  DCHECK_NE(playback_rate, playback_rate_);
+  DCHECK(playback_rate);
+  DCHECK(!timeline_->IsScrollTimeline());
+
+  if (start_time_) {
+    base::Optional<base::TimeDelta> current_time = CurrentTime();
+    // TODO(gerchiko): support unresolved current time.
+    // Blocked by ability to change timeline.
+    if (current_time) {
+      // Update startTime in order to maintain previous currentTime and, as a
+      // result, prevent the animation from jumping.
+      // See currentTime calculation in CurrentTime().
+      bool is_null;
+      double timeline_time_ms = timeline_->currentTime(is_null);
+      DCHECK(!is_null);
+
+      start_time_ = base::TimeDelta::FromMillisecondsD(timeline_time_ms) -
+                    current_time.value() / playback_rate;
+    }
+  }
+  playback_rate_ = playback_rate;
+
+  if (Playing())
+    document_->GetWorkletAnimationController().InvalidateAnimation(*this);
 }
 
 void WorkletAnimation::EffectInvalidated() {
@@ -445,7 +521,7 @@ bool WorkletAnimation::StartOnCompositor() {
     // update the compositor to have the correct orientation and start/end
     // offset information.
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
-        id_, animator_name_,
+        id_, animator_name_, playback_rate_,
         scroll_timeline_util::ToCompositorScrollTimeline(timeline_),
         std::move(options_));
     compositor_animation_->SetAnimationDelegate(this);
@@ -506,6 +582,7 @@ void WorkletAnimation::UpdateOnCompositor() {
         scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
         start_scroll_offset, end_scroll_offset);
   }
+  compositor_animation_->UpdatePlaybackRate(playback_rate_);
 }
 
 void WorkletAnimation::DestroyCompositorAnimation() {
@@ -551,7 +628,7 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTime() const {
   if (timeline_->IsScrollTimeline())
     return timeline_time;
   DCHECK(start_time_);
-  return timeline_time - start_time_.value();
+  return (timeline_time - start_time_.value()) * playback_rate_;
 }
 
 bool WorkletAnimation::NeedsPeek(base::TimeDelta current_time) {

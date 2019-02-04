@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
+#include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
@@ -256,4 +257,87 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 }
 
+// Verifies correctness of current time when playback rate is set while the
+// animation is in idle state.
+TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
+  GetDocument().GetAnimationClock().ResetTimeForTesting();
+  GetDocument().Timeline().ResetForTesting();
+  double error = base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF();
+
+  WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
+  base::TimeTicks first_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0);
+  base::TimeTicks second_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0 + 123.4);
+  double playback_rate = 2.0;
+
+  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation_->setPlaybackRate(nullptr, playback_rate);
+  worklet_animation_->play(exception_state);
+  worklet_animation_->UpdateCompositingState();
+
+  std::unique_ptr<AnimationWorkletDispatcherInput> state =
+      std::make_unique<AnimationWorkletDispatcherInput>();
+  worklet_animation_->UpdateInputState(state.get());
+
+  std::unique_ptr<AnimationWorkletInput> input =
+      state->TakeWorkletState(id.worklet_id);
+
+  // Zero current time is not impacted by playback rate.
+  EXPECT_NEAR(0, input->added_and_updated_animations[0].current_time, error);
+  state.reset(new AnimationWorkletDispatcherInput);
+
+  // Play the animation until second_ticks.
+  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
+  worklet_animation_->UpdateInputState(state.get());
+  input = state->TakeWorkletState(id.worklet_id);
+
+  // Verify that the current time is updated playback_rate faster than the
+  // timeline time.
+  EXPECT_NEAR(123.4 * playback_rate, input->updated_animations[0].current_time,
+              error);
+}
+
+// Verifies correctness of current time when playback rate is set while the
+// animation is playing.
+TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRateWhilePlaying) {
+  GetDocument().GetAnimationClock().ResetTimeForTesting();
+  GetDocument().Timeline().ResetForTesting();
+  double error = base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF();
+
+  WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
+  base::TimeTicks first_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0);
+  base::TimeTicks second_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0 + 123.4);
+  base::TimeTicks third_ticks =
+      base::TimeTicks() +
+      base::TimeDelta::FromMillisecondsD(111.0 + 123.4 + 200.0);
+  double playback_rate = 0.5;
+
+  // Start animation.
+  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation_->play(exception_state);
+  worklet_animation_->UpdateCompositingState();
+  std::unique_ptr<AnimationWorkletDispatcherInput> state =
+      std::make_unique<AnimationWorkletDispatcherInput>();
+  worklet_animation_->UpdateInputState(state.get());
+  state.reset(new AnimationWorkletDispatcherInput);
+
+  // Update playback rate after second tick.
+  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
+  worklet_animation_->UpdateInputState(state.get());
+  worklet_animation_->setPlaybackRate(nullptr, playback_rate);
+  state.reset(new AnimationWorkletDispatcherInput);
+
+  // Verify current time after third tick.
+  GetDocument().GetAnimationClock().ResetTimeForTesting(third_ticks);
+  worklet_animation_->UpdateInputState(state.get());
+  std::unique_ptr<AnimationWorkletInput> input =
+      state->TakeWorkletState(id.worklet_id);
+  EXPECT_NEAR(123.4 + 200.0 * playback_rate,
+              input->updated_animations[0].current_time, error);
+}
 }  //  namespace blink

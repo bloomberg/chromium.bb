@@ -73,6 +73,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   AnimationTimeline* timeline() { return timeline_; }
   String playState();
   double currentTime(bool& is_null);
+  double playbackRate(ScriptState* script_state) const;
+  void setPlaybackRate(ScriptState* script_state, double playback_rate);
   void play(ExceptionState& exception_state);
   void cancel();
 
@@ -142,6 +144,13 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   bool CheckCanStart(String* failure_message);
   void SetStartTimeToNow();
 
+  // For DocumentTimeline animations, adjusts start_time_ according to playback
+  // rate change to preserve current time and avoid the animation output from
+  // jumping.
+  // Setting playback rate is currently not supported for scroll-linked
+  // animations.
+  void SetPlaybackRateInternal(double);
+
   // Updates a running animation on the compositor side.
   void UpdateOnCompositor();
 
@@ -161,6 +170,9 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const String animator_name_;
   Animation::AnimationPlayState play_state_;
   Animation::AnimationPlayState last_play_state_;
+  // Controls speed of the animation.
+  // https://drafts.csswg.org/web-animations-2/#animation-effect-playback-rate
+  double playback_rate_;
   base::Optional<base::TimeDelta> start_time_;
   Vector<base::Optional<base::TimeDelta>> local_times_;
   // We use this to skip updating if current time has not changed since last
