@@ -57,7 +57,7 @@ void MarkupAccumulator::AppendString(const String& string) {
 }
 
 void MarkupAccumulator::AppendEndTag(const Element& element) {
-  AppendEndMarkup(markup_, element);
+  AppendEndMarkup(element);
 }
 
 void MarkupAccumulator::AppendStartMarkup(Node& node, Namespaces& namespaces) {
@@ -66,7 +66,7 @@ void MarkupAccumulator::AppendStartMarkup(Node& node, Namespaces& namespaces) {
       formatter_.AppendText(markup_, ToText(node));
       break;
     case Node::kElementNode:
-      AppendElement(markup_, ToElement(node), namespaces);
+      AppendElement(ToElement(node), namespaces);
       break;
     case Node::kAttributeNode:
       // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
@@ -79,14 +79,11 @@ void MarkupAccumulator::AppendStartMarkup(Node& node, Namespaces& namespaces) {
   }
 }
 
-void MarkupAccumulator::AppendEndMarkup(StringBuilder& result,
-                                        const Element& element) {
-  formatter_.AppendEndMarkup(result, element);
+void MarkupAccumulator::AppendEndMarkup(const Element& element) {
+  formatter_.AppendEndMarkup(markup_, element);
 }
 
-void MarkupAccumulator::AppendCustomAttributes(StringBuilder&,
-                                               const Element&,
-                                               Namespaces&) {}
+void MarkupAccumulator::AppendCustomAttributes(const Element&, Namespaces&) {}
 
 bool MarkupAccumulator::ShouldIgnoreAttribute(
     const Element& element,
@@ -98,11 +95,10 @@ bool MarkupAccumulator::ShouldIgnoreElement(const Element& element) const {
   return false;
 }
 
-void MarkupAccumulator::AppendElement(StringBuilder& result,
-                                      const Element& element,
+void MarkupAccumulator::AppendElement(const Element& element,
                                       Namespaces& namespaces) {
   // https://html.spec.whatwg.org/multipage/parsing.html#html-fragment-serialisation-algorithm
-  AppendStartTagOpen(result, element, namespaces);
+  AppendStartTagOpen(element, namespaces);
 
   AttributeCollection attributes = element.Attributes();
   if (SerializeAsHTMLDocument(element)) {
@@ -110,52 +106,46 @@ void MarkupAccumulator::AppendElement(StringBuilder& result,
     // element does not have an is attribute in its attribute list, ...
     const AtomicString& is_value = element.IsValue();
     if (!is_value.IsNull() && !attributes.Find(html_names::kIsAttr)) {
-      AppendAttribute(result, element, Attribute(html_names::kIsAttr, is_value),
+      AppendAttribute(element, Attribute(html_names::kIsAttr, is_value),
                       namespaces);
     }
   }
   for (const auto& attribute : attributes) {
     if (!ShouldIgnoreAttribute(element, attribute))
-      AppendAttribute(result, element, attribute, namespaces);
+      AppendAttribute(element, attribute, namespaces);
   }
 
   // Give an opportunity to subclasses to add their own attributes.
-  AppendCustomAttributes(result, element, namespaces);
+  AppendCustomAttributes(element, namespaces);
 
-  AppendStartTagClose(result, element);
+  AppendStartTagClose(element);
 }
 
-void MarkupAccumulator::AppendStartTagOpen(StringBuilder& result,
-                                           const Element& element,
+void MarkupAccumulator::AppendStartTagOpen(const Element& element,
                                            Namespaces& namespaces) {
-  formatter_.AppendStartTagOpen(result, element);
+  formatter_.AppendStartTagOpen(markup_, element);
   if (!SerializeAsHTMLDocument(element) &&
       ShouldAddNamespaceElement(element, namespaces)) {
-    AppendNamespace(result, element.prefix(), element.namespaceURI(),
-                    namespaces);
+    AppendNamespace(element.prefix(), element.namespaceURI(), namespaces);
   }
 }
 
-void MarkupAccumulator::AppendStartTagClose(StringBuilder& result,
-                                            const Element& element) {
-  formatter_.AppendStartTagClose(result, element);
+void MarkupAccumulator::AppendStartTagClose(const Element& element) {
+  formatter_.AppendStartTagClose(markup_, element);
 }
 
-void MarkupAccumulator::AppendAttribute(StringBuilder& result,
-                                        const Element& element,
+void MarkupAccumulator::AppendAttribute(const Element& element,
                                         const Attribute& attribute,
                                         Namespaces& namespaces) {
   String value = formatter_.ResolveURLIfNeeded(element, attribute);
   if (SerializeAsHTMLDocument(element)) {
-    MarkupFormatter::AppendAttributeAsHTML(result, attribute, value);
+    MarkupFormatter::AppendAttributeAsHTML(markup_, attribute, value);
   } else {
-    AppendAttributeAsXMLWithNamespace(result, element, attribute, value,
-                                      namespaces);
+    AppendAttributeAsXMLWithNamespace(element, attribute, value, namespaces);
   }
 }
 
 void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
-    StringBuilder& result,
     const Element& element,
     const Attribute& attribute,
     const String& value,
@@ -218,11 +208,10 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
       }
       // 3.5.3.2. Append the following to result, in the order listed:
       DCHECK(candidate_prefix);
-      AppendNamespace(result, candidate_prefix, attribute_namespace,
-                      namespaces);
+      AppendNamespace(candidate_prefix, attribute_namespace, namespaces);
     }
   }
-  MarkupFormatter::AppendAttribute(result, candidate_prefix,
+  MarkupFormatter::AppendAttribute(markup_, candidate_prefix,
                                    attribute.LocalName(), value, false);
 }
 
@@ -244,8 +233,7 @@ bool MarkupAccumulator::ShouldAddNamespaceAttribute(const Attribute& attribute,
   return !element.hasAttribute(WTF::g_xmlns_with_colon + attribute.Prefix());
 }
 
-void MarkupAccumulator::AppendNamespace(StringBuilder& result,
-                                        const AtomicString& prefix,
+void MarkupAccumulator::AppendNamespace(const AtomicString& prefix,
                                         const AtomicString& namespace_uri,
                                         Namespaces& namespaces) {
   const AtomicString& lookup_key = (!prefix) ? g_empty_atom : prefix;
@@ -253,10 +241,10 @@ void MarkupAccumulator::AppendNamespace(StringBuilder& result,
   if (!EqualIgnoringNullity(found_uri, namespace_uri)) {
     namespaces.Set(lookup_key, namespace_uri);
     if (prefix.IsEmpty()) {
-      MarkupFormatter::AppendAttribute(result, g_null_atom, g_xmlns_atom,
+      MarkupFormatter::AppendAttribute(markup_, g_null_atom, g_xmlns_atom,
                                        namespace_uri, false);
     } else {
-      MarkupFormatter::AppendAttribute(result, g_xmlns_atom, prefix,
+      MarkupFormatter::AppendAttribute(markup_, g_xmlns_atom, prefix,
                                        namespace_uri, false);
     }
   }
