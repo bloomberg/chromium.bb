@@ -487,6 +487,10 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
     return;
 
   drag_view_ = view;
+
+  // Dragged view should have focus. This also fixed the issue
+  // https://crbug.com/834682.
+  drag_view_->RequestFocus();
   drag_view_init_index_ = GetIndexOfView(drag_view_);
   drag_view_offset_ = location;
   drag_start_page_ = pagination_model_.selected_page();
@@ -753,6 +757,10 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
                           false /* is_in_folder */);
   AddChildView(view);
   drag_view_ = view;
+
+  // Dragged view should have focus. This also fixed the issue
+  // https://crbug.com/834682.
+  drag_view_->RequestFocus();
   drag_view_->SetBoundsRect(drag_view_rect);
   drag_view_->SetDragUIState();  // Hide the title of the drag_view_.
 
