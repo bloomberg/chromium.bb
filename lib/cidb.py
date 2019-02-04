@@ -1182,20 +1182,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return stage[0] if stage else None
 
   @minimum_schema(30)
-  def GetBuildStages(self, build_id):
-    """Gets all the stages of a given build.
-
-    Args:
-      build_id: build id of the build to fetch the stages for.
-
-    Returns:
-      A list containing, for each stage of the build found, a dictionary with
-      keys (id, build_id, name, board, status, last_updated, start_time,
-      finish_time, final).
-    """
-    return self.GetBuildsStages([build_id])
-
-  @minimum_schema(30)
   def GetBuildsStages(self, build_ids):
     """Gets all the stages for all listed build_ids.
 

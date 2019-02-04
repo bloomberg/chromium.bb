@@ -464,6 +464,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         slave_status._GetRetriableBuilds(self._GetCompletedAllSet()),
         set())
 
+    for _ in range(5):
+      self.db.InsertBuild('builder_name', 'build_number',
+                          'master-paladin', 'bot_hostname')
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_PASSED)
     self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',
@@ -498,6 +501,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     """Retry the slave if it fails to pass the critical stage."""
     self._MockForGetRetriableBuildsTests()
 
+    for _ in range(5):
+      self.db.InsertBuild('builder_name', 'build_number',
+                          'master-paladin', 'bot_hostname')
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_FAILED)
     self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',
@@ -524,6 +530,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     """Retry the slave if it fails to pass the critical stage."""
     self._MockForGetRetriableBuildsTests()
 
+    for _ in range(5):
+      self.db.InsertBuild('builder_name', 'build_number',
+                          'master-paladin', 'bot_hostname')
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_PLANNED)
     self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',

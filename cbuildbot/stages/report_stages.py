@@ -758,7 +758,7 @@ class ReportStage(generic_stages.BuilderStage,
     timeline = os.path.join(archive_path, timeline_file)
 
     # Gather information about this build from CIDB.
-    stages = db.GetBuildStages(build_id)
+    stages = db.GetBuildsStages([build_id])
     # Many stages are started in parallel after the build finishes. Stages are
     # sorted by start_time first bceause it shows that progression most
     # clearly. Sort by finish_time secondarily to display those paralllel

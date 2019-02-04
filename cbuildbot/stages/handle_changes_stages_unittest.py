@@ -88,13 +88,12 @@ class CommitQueueHandleChangesStageTests(
     """Test _GetBuildsPassedSyncStage."""
     stage = self.ConstructStage()
     mock_cidb = mock.Mock()
-    mock_cidb.GetBuildStatusesWithBuildbucketIds.return_value = []
     mock_cidb.GetBuildsStages.return_value = [
         {'build_config': 's_1', 'status': 'pass', 'name': 'CommitQueueSync'},
         {'build_config': 's_2', 'status': 'pass', 'name': 'CommitQueueSync'},
-        {'build_config': 's_3', 'status': 'fail', 'name': 'CommitQueueSync'}]
-    mock_cidb.GetBuildStages.return_value = [
-        {'status': 'pass', 'name': 'CommitQueueSync'}]
+        {'build_config': 's_3', 'status': 'fail', 'name': 'CommitQueueSync'},
+        {'build_config': 'master-paladin', 'status': 'pass',
+         'name': 'CommitQueueSync'}]
 
     builds = stage._GetBuildsPassedSyncStage(
         'build_id', mock_cidb, ['id_1', 'id_2'])

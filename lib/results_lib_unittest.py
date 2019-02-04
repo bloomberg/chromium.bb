@@ -244,7 +244,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def testSuccessTestWithDB(self):
     """Test BuildSucceededSoFar with DB instance"""
-    build_id = 'dummy_build_id'
+    build_id = self.db.InsertBuild('builder_name', 'build_number',
+                                   'build_config', 'bot_hostname')
 
     results_lib.Results.Record('stage1', results_lib.Results.SUCCESS)
     results_lib.Results.Record('stage2', results_lib.Results.SKIPPED)

@@ -110,7 +110,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       build_stages_dict.setdefault(stage['build_config'], []).append(stage)
 
     # Get master stages.
-    master_stages = db.GetBuildStages(build_id)
+    master_stages = db.GetBuildsStages([build_id])
     for stage in master_stages:
       build_stages_dict.setdefault(self._run.config.name, []).append(stage)
 

@@ -435,12 +435,6 @@ class FakeCIDBConnection(object):
     """
     return self.buildStageTable.get(build_stage_id)
 
-  def GetBuildStages(self, build_id):
-    """Gets build stages given the build_id"""
-    return [self.buildStageTable[_id]
-            for _id in self.buildStageTable
-            if self.buildStageTable[_id]['build_id'] == build_id]
-
   def GetBuildsStages(self, build_ids):
     """Quick implementation of fake GetBuildsStages."""
     build_stages = []

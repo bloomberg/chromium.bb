@@ -303,8 +303,8 @@ class SlaveStatus(object):
 
         assert self.db is not None
 
-        build_stages = self.db.GetBuildStages(
-            self.new_cidb_status_dict[build].build_id)
+        build_stages = self.db.GetBuildsStages([
+            self.new_cidb_status_dict[build].build_id])
         accepted_stages = {stage['name'] for stage in build_stages
                            if stage['status'] in self.ACCEPTED_STATUSES}
 

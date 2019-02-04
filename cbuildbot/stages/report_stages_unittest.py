@@ -252,18 +252,21 @@ class ReportStageTest(AbstractReportStageTestCase):
 
     stages = [
         {
+            'build_config': 'build1',
             'name': 'stage1',
             'start_time': dt.datetime.now() - dt.timedelta(0, 500),
             'finish_time': dt.datetime.now() - dt.timedelta(0, 300),
             'status': constants.BUILDER_STATUS_PASSED,
         },
         {
+            'build_config': 'build1',
             'name': 'stage2',
             'start_time': dt.datetime.now() - dt.timedelta(0, 500),
             'finish_time': dt.datetime.now() - dt.timedelta(0, 200),
             'status': constants.BUILDER_STATUS_PASSED,
         },
         {
+            'build_config': 'build1',
             'name': 'stage3',
             'start_time': dt.datetime.now() - dt.timedelta(0, 200),
             'finish_time': dt.datetime.now() - dt.timedelta(0, 100),
@@ -293,7 +296,7 @@ class ReportStageTest(AbstractReportStageTestCase):
             'status': constants.BUILDER_STATUS_PASSED,
         },
     ]
-    self.mock_cidb.GetBuildStages = mock.Mock(return_value=stages)
+    self.mock_cidb.GetBuildsStages = mock.Mock(return_value=stages)
     self.mock_cidb.GetSlaveStatuses = mock.Mock(return_value=statuses)
     self._SetupUpdateStreakCounter()
     self.PatchObject(report_stages.ReportStage, '_LinkArtifacts')

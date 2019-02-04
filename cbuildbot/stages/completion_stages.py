@@ -804,7 +804,7 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     stage_name = 'BinhostTest'
 
     if self._build_stage_id is not None and db is not None:
-      stages = db.GetBuildStages(build_id)
+      stages = db.GetBuildsStages([build_id])
 
       # No stages found. BinhostTest stage didn't start or got skipped,
       # in both case we don't need to push commits to the temp pfq branch.

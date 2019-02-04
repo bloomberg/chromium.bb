@@ -88,7 +88,7 @@ def FixUpBuildStatus(buildstore, build_status):
         build_status['metadata_url'])
 
   # Find stage information.
-  build_status['stages'] = db.GetBuildStages(build_status['id'])
+  build_status['stages'] = db.GetBuildsStages([build_status['id']])
 
   return build_status
 

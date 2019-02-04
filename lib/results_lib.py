@@ -128,7 +128,7 @@ class _Results(object):
       name: stage name of current stage.
     """
     if db is not None and build_id is not None:
-      stages = db.GetBuildStages(build_id)
+      stages = db.GetBuildsStages([build_id])
       for stage in stages:
         if name is not None and stage['name'] == name:
           logging.info("Ignore status of %s as it's the current stage.",

@@ -315,7 +315,7 @@ class TriageRelevantChanges(object):
 
     Returns:
       A dict mapping all child config names (strings) to their stages (a list
-        of dicts, see cidb.CIDBConnection.GetBuildStages for details.)
+        of dicts, see cidb.CIDBConnection.GetBuildsStages for details.)
     """
     slave_stages_dict = {}
     slave_buildbucket_ids = []
