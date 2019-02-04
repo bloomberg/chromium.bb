@@ -10,13 +10,9 @@
 // Utility for handling the animation of a page closing.
 namespace page_animation_util {
 
-// Animates |view| to its final position following |delay| seconds, then calls
-// the given completion block when finished.
-void AnimateOutWithCompletion(UIView* view,
-                              NSTimeInterval delay,
-                              BOOL clockwise,
-                              BOOL isPortrait,
-                              void (^completion)(void));
+// Animates |view| to its final position, then calls the given completion block
+// when finished.
+void AnimateOutWithCompletion(UIView* view, void (^completion)(void));
 
 }  // namespace page_animation_util
 
