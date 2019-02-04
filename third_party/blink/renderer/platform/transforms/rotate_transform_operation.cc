@@ -48,6 +48,9 @@ scoped_refptr<TransformOperation> RotateTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
+  if (from && !IsMatchingOperationType(from->GetType()))
+    return this;
+
   if (blend_to_identity)
     return RotateTransformOperation::Create(
         Rotation(Axis(), Angle() * (1 - progress)), type_);
