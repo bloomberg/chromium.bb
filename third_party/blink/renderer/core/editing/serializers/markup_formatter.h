@@ -30,7 +30,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/editing/editing_strategy.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -39,8 +38,6 @@ class Attribute;
 class DocumentType;
 class Element;
 class Node;
-
-typedef HashMap<AtomicString, AtomicString> Namespaces;
 
 enum EntityMask {
   kEntityAmp = 0x0001,
@@ -79,11 +76,6 @@ class MarkupFormatter final {
   static void AppendAttributeAsXMLWithoutNamespace(StringBuilder& result,
                                                    const Attribute& attribute,
                                                    const String& value);
-  static void AppendAttributeAsXMLWithNamespace(StringBuilder& result,
-                                                const Element& element,
-                                                const Attribute& attribute,
-                                                const String& value,
-                                                Namespaces& namespaces);
   static void AppendAttribute(StringBuilder& result,
                               const AtomicString& prefix,
                               const AtomicString& local_name,
@@ -97,10 +89,6 @@ class MarkupFormatter final {
                                                 EntityMask);
   static void AppendComment(StringBuilder&, const String&);
   static void AppendDocumentType(StringBuilder&, const DocumentType&);
-  static void AppendNamespace(StringBuilder&,
-                              const AtomicString& prefix,
-                              const AtomicString& namespace_uri,
-                              Namespaces&);
   static void AppendProcessingInstruction(StringBuilder&,
                                           const String& target,
                                           const String& data);
@@ -119,7 +107,6 @@ class MarkupFormatter final {
   void AppendOpenTag(StringBuilder&, const Element&);
   void AppendCloseTag(StringBuilder&, const Element&);
 
-  static bool ShouldAddNamespaceAttribute(const Attribute&, const Element&);
   EntityMask EntityMaskForText(const Text&) const;
   bool ShouldSelfClose(const Element&) const;
   String ResolveURLIfNeeded(const Element&, const Attribute& attribute) const;

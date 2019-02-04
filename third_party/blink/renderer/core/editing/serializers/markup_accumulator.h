@@ -40,6 +40,8 @@ class Attribute;
 class Element;
 class Node;
 
+using Namespaces = HashMap<AtomicString, AtomicString>;
+
 class MarkupAccumulator {
   STACK_ALLOCATED();
 
@@ -85,6 +87,17 @@ class MarkupAccumulator {
 
  private:
   bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
+  static void AppendAttributeAsXMLWithNamespace(StringBuilder& result,
+                                                const Element& element,
+                                                const Attribute& attribute,
+                                                const String& value,
+                                                Namespaces& namespaces);
+  static bool ShouldAddNamespaceAttribute(const Attribute& attribute,
+                                          const Element& element);
+  static void AppendNamespace(StringBuilder& result,
+                              const AtomicString& prefix,
+                              const AtomicString& namespace_uri,
+                              Namespaces& namespaces);
 
   MarkupFormatter formatter_;
   StringBuilder markup_;

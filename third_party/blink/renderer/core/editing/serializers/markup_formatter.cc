@@ -221,21 +221,6 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
   result.Append('"');
 }
 
-void MarkupFormatter::AppendNamespace(StringBuilder& result,
-                                      const AtomicString& prefix,
-                                      const AtomicString& namespace_uri,
-                                      Namespaces& namespaces) {
-  const AtomicString& lookup_key = (!prefix) ? g_empty_atom : prefix;
-  AtomicString found_uri = namespaces.at(lookup_key);
-  if (!EqualIgnoringNullity(found_uri, namespace_uri)) {
-    namespaces.Set(lookup_key, namespace_uri);
-    if (prefix.IsEmpty())
-      AppendAttribute(result, g_null_atom, g_xmlns_atom, namespace_uri, false);
-    else
-      AppendAttribute(result, g_xmlns_atom, prefix, namespace_uri, false);
-  }
-}
-
 void MarkupFormatter::AppendText(StringBuilder& result, Text& text) {
   const String& str = text.data();
   AppendCharactersReplacingEntities(result, str, 0, str.length(),
@@ -363,78 +348,6 @@ void MarkupFormatter::AppendAttributeAsXMLWithoutNamespace(
                   false);
 }
 
-void MarkupFormatter::AppendAttributeAsXMLWithNamespace(
-    StringBuilder& result,
-    const Element& element,
-    const Attribute& attribute,
-    const String& value,
-    Namespaces& namespaces) {
-  // https://w3c.github.io/DOM-Parsing/#serializing-an-element-s-attributes
-
-  // 3.3. Let attribute namespace be the value of attr's namespaceURI value.
-  const AtomicString& attribute_namespace = attribute.NamespaceURI();
-
-  // 3.4. Let candidate prefix be null.
-  AtomicString candidate_prefix;
-
-  // 3.5. If attribute namespace is not null, then run these sub-steps:
-
-  // 3.5.1. Let candidate prefix be the result of retrieving a preferred
-  // prefix string from map given namespace attribute namespace with preferred
-  // prefix being attr's prefix value.
-  // TODO(tkent): Implement it. crbug.com/906807
-  candidate_prefix = attribute.Prefix();
-
-  // 3.5.2. If the value of attribute namespace is the XMLNS namespace, then
-  // run these steps:
-  if (attribute_namespace == xmlns_names::kNamespaceURI) {
-    if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
-      candidate_prefix = g_xmlns_atom;
-    // Account for the namespace attribute we're about to append.
-    const AtomicString& lookup_key =
-        (!attribute.Prefix()) ? g_empty_atom : attribute.LocalName();
-    namespaces.Set(lookup_key, attribute.Value());
-  } else if (attribute_namespace == xml_names::kNamespaceURI) {
-    // TODO(tkent): Remove this block when we implement 'retrieving a
-    // preferred prefix string'.
-    if (!candidate_prefix)
-      candidate_prefix = g_xml_atom;
-  } else {
-    // TODO(tkent): Remove this block. The standard and Firefox don't
-    // have this behavior.
-    if (attribute_namespace == xlink_names::kNamespaceURI) {
-      if (!candidate_prefix)
-        candidate_prefix = g_xlink_atom;
-    }
-
-    // 3.5.3. Otherwise, the attribute namespace in not the XMLNS namespace.
-    // Run these steps:
-    if (ShouldAddNamespaceAttribute(attribute, element)) {
-      if (!candidate_prefix) {
-        // This behavior is in process of being standardized. See
-        // crbug.com/248044 and
-        // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
-        String prefix_prefix("ns", 2u);
-        for (unsigned i = attribute_namespace.Impl()->ExistingHash();; ++i) {
-          AtomicString new_prefix(String(prefix_prefix + String::Number(i)));
-          AtomicString found_uri = namespaces.at(new_prefix);
-          if (found_uri == attribute_namespace || found_uri == g_null_atom) {
-            // We already generated a prefix for this namespace.
-            candidate_prefix = new_prefix;
-            break;
-          }
-        }
-      }
-      // 3.5.3.2. Append the following to result, in the order listed:
-      DCHECK(candidate_prefix);
-      AppendNamespace(result, candidate_prefix, attribute_namespace,
-                      namespaces);
-    }
-  }
-  AppendAttribute(result, candidate_prefix, attribute.LocalName(), value,
-                  false);
-}
-
 void MarkupFormatter::AppendCDATASection(StringBuilder& result,
                                          const String& section) {
   // FIXME: CDATA content is not escaped, but XMLSerializer (and possibly other
@@ -442,24 +355,6 @@ void MarkupFormatter::AppendCDATASection(StringBuilder& result,
   result.Append("<![CDATA[");
   result.Append(section);
   result.Append("]]>");
-}
-
-bool MarkupFormatter::ShouldAddNamespaceAttribute(const Attribute& attribute,
-                                                  const Element& element) {
-  // xmlns and xmlns:prefix attributes should be handled by another branch in
-  // appendAttribute.
-  DCHECK_NE(attribute.NamespaceURI(), xmlns_names::kNamespaceURI);
-
-  // Attributes are in the null namespace by default.
-  if (!attribute.NamespaceURI())
-    return false;
-
-  // Attributes without a prefix will need one generated for them, and an xmlns
-  // attribute for that prefix.
-  if (!attribute.Prefix())
-    return true;
-
-  return !element.hasAttribute(WTF::g_xmlns_with_colon + attribute.Prefix());
 }
 
 EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
