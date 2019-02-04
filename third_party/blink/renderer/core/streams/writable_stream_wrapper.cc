@@ -131,6 +131,7 @@ ScriptPromise WritableStreamWrapper::abort(ScriptState* script_state,
   if (locked(script_state, exception_state) &&
       !exception_state.HadException()) {
     exception_state.ThrowTypeError("Cannot abort a locked stream");
+    return ScriptPromise();
   }
 
   v8::Local<v8::Value> args[] = {
