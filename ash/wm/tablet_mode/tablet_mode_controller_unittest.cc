@@ -724,6 +724,8 @@ TEST_F(TabletModeControllerTest, RecordLidAngle) {
 TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
+  // TODO(sammiequon): Investigate whether RunUntilIdle() calls like this one
+  // are really necessary. Remove them or add a comment explaining the purpose.
   base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
   base::RunLoop().RunUntilIdle();
@@ -801,6 +803,50 @@ TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Test that docked mode prevents entering tablet mode on detaching an external
+// mouse while in tablet position.
+TEST_F(TabletModeControllerTest, ExternalMouseInDockedMode) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  UpdateDisplay("800x600, 800x600");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+
+  // Set the current list of devices with an external mouse.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  base::RunLoop().RunUntilIdle();
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Enter tablet position.
+  SetTabletMode(true);
+  ASSERT_FALSE(IsTabletModeStarted());
+
+  // Detach the external mouse.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  // Still expect clamshell mode.
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
 // Test that the ui mode and input event blocker should be both correctly
