@@ -28,12 +28,6 @@ class LocalSiteCharacteristicsWebContentsObserver
       public TabLoadTracker::Observer,
       public PageSignalObserver {
  public:
-  // Allows skipping the observer registration in the constructor for the
-  // unittests that don't have all the services enabled
-  // (e.g. PageSignalReceiver), these features should be tested in integration
-  // tests instead.
-  static void SkipObserverRegistrationForTesting();
-
   explicit LocalSiteCharacteristicsWebContentsObserver(
       content::WebContents* contents);
   ~LocalSiteCharacteristicsWebContentsObserver() override;

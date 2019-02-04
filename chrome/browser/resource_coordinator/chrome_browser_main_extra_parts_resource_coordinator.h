@@ -12,9 +12,8 @@
 #include "chrome/browser/resource_coordinator/performance_measurement_manager.h"
 
 namespace resource_coordinator {
-
+class PerformanceManager;
 class ProcessResourceCoordinator;
-
 }  // namespace resource_coordinator
 
 class ChromeBrowserMainExtraPartsResourceCoordinator
@@ -28,7 +27,10 @@ class ChromeBrowserMainExtraPartsResourceCoordinator
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) override;
   void PreBrowserStart() override;
+  void PostMainMessageLoopRun() override;
 
+  std::unique_ptr<resource_coordinator::PerformanceManager>
+      performance_manager_;
   std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
       process_resource_coordinator_;
 

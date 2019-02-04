@@ -14,8 +14,8 @@
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/performance_manager/system_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
-#include "services/resource_coordinator/public/cpp/system_resource_coordinator.h"
 
 namespace resource_coordinator {
 
