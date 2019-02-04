@@ -29,6 +29,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature
     kOffMainThreadDedicatedWorkerScriptFetch;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kOffMainThreadSharedWorkerScriptFetch;
 BLINK_COMMON_EXPORT extern const base::Feature kOnionSoupDOMStorage;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
@@ -64,6 +66,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kAlwaysAccelerateCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
+
+// Returns true when off-the-main-thread shared worker script fetch is enabled.
+BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();
 
 }  // namespace features
 }  // namespace blink

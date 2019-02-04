@@ -5,6 +5,7 @@
 #include "third_party/blink/public/common/features.h"
 
 #include "build/build_config.h"
+#include "services/network/public/cpp/features.h"
 
 namespace blink {
 namespace features {
@@ -74,6 +75,11 @@ const base::Feature kNavigationPredictor{"NavigationPredictor",
 const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
     "OffMainThreadDedicatedWorkerScriptFetch",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable off-the-main-thread shared worker script fetch.
+// (https://crbug.com/924041)
+const base::Feature kOffMainThreadSharedWorkerScriptFetch{
+    "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
@@ -189,6 +195,19 @@ const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 const base::Feature kWebFontsCacheAwareTimeoutAdaption{
     "WebFontsCacheAwareTimeoutAdaption", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
+  // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
+  // (NetworkService).
+  DCHECK(!base::FeatureList::IsEnabled(
+             features::kOffMainThreadSharedWorkerScriptFetch) ||
+         base::FeatureList::IsEnabled(network::features::kNetworkService))
+      << "OffMainThreadSharedWorkerScriptFetch is enabled but NetworkService "
+      << "isn't. OffMainThreadSharedWorkerScriptFetch requires NetworkService.";
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         base::FeatureList::IsEnabled(
+             features::kOffMainThreadSharedWorkerScriptFetch);
+}
 
 }  // namespace features
 }  // namespace blink

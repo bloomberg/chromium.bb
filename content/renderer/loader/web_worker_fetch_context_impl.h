@@ -40,6 +40,7 @@ class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
+struct NavigationResponseOverrideParameters;
 
 // This class is used for fetching resource requests from workers (dedicated
 // worker and shared worker). This class is created on the main thread and
@@ -123,6 +124,11 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_is_secure_context(bool flag);
   void set_origin_url(const GURL& origin_url);
   void set_client_id(const std::string& client_id);
+
+  // PlzWorker with off-the-main-thread worker script fetch:
+  // Sets the response for the worker main script loaded by the browser process.
+  void SetResponseOverrideForMainScript(
+      std::unique_ptr<NavigationResponseOverrideParameters> response_override);
 
   using RewriteURLFunction = blink::WebURL (*)(const std::string&, bool);
   static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
@@ -264,6 +270,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       websocket_handshake_throttle_provider_;
 
   std::unique_ptr<service_manager::Connector> service_manager_connection_;
+
+  std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 
   blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
 };
