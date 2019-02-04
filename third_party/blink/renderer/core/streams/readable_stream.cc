@@ -535,7 +535,9 @@ void ReadableStream::LockAndDisturb(ScriptState* script_state,
   if (reader.IsEmpty())
     return;
 
-  ReadableStreamOperations::DefaultReaderRead(script_state, reader);
+  ScriptPromise promise =
+      ReadableStreamOperations::DefaultReaderRead(script_state, reader);
+  promise.MarkAsHandled();
 }
 
 void ReadableStream::Serialize(ScriptState* script_state,
