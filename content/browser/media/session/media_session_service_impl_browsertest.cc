@@ -110,10 +110,15 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
   bool ExecuteScriptToSetUpMediaSessionSync() {
     bool result = ExecuteScript(shell(), kSetUpMediaSessionScript);
     media_session::test::MockMediaSessionMojoObserver observer(*GetSession());
-    observer.WaitForActions();
-    EXPECT_TRUE(base::ContainsKey(
-        observer.actions_set(),
-        media_session::mojom::MediaSessionAction::kSeekForward));
+
+    std::set<media_session::mojom::MediaSessionAction> expected_actions;
+    expected_actions.insert(media_session::mojom::MediaSessionAction::kPlay);
+    expected_actions.insert(media_session::mojom::MediaSessionAction::kPause);
+    expected_actions.insert(media_session::mojom::MediaSessionAction::kStop);
+    expected_actions.insert(
+        media_session::mojom::MediaSessionAction::kSeekForward);
+
+    observer.WaitForExpectedActions(expected_actions);
     return result;
   }
 
