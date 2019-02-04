@@ -404,7 +404,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   auto codec_factory =
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToService<fuchsia::mediacodec::CodecFactory>();
-  codec_factory->CreateDecoder2(std::move(codec_params), codec_.NewRequest());
+  codec_factory->CreateDecoder(std::move(codec_params), codec_.NewRequest());
 
   codec_.set_error_handler(
       [this](zx_status_t status) {
