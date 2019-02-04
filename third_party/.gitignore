@@ -59,6 +59,7 @@
 /cros_system_api
 /custom_tabs_client/src
 /cygwin
+/dav1d/libdav1d
 /dawn
 /depot_tools
 /devtools-node-modules
