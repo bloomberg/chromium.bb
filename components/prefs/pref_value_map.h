@@ -34,11 +34,6 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
   bool GetValue(const std::string& key, const base::Value** value) const;
   bool GetValue(const std::string& key, base::Value** value);
 
-  // Sets a new |value| for |key|. |value| must be non-null. Returns true if the
-  // value changed.
-  // DEPRECATED. Use |SetValue(const std::string&, base::Value)| instead.
-  bool SetValue(const std::string& key, std::unique_ptr<base::Value> value);
-
   // Sets a new |value| for |key|. Returns true if the value changed.
   bool SetValue(const std::string& key, base::Value value);
 

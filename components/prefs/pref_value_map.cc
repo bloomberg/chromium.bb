@@ -38,12 +38,6 @@ bool PrefValueMap::GetValue(const std::string& key, base::Value** value) {
   return true;
 }
 
-bool PrefValueMap::SetValue(const std::string& key,
-                            std::unique_ptr<base::Value> value) {
-  DCHECK(value);
-  return SetValue(key, base::Value::FromUniquePtrValue(std::move(value)));
-}
-
 bool PrefValueMap::SetValue(const std::string& key, base::Value value) {
   base::Value& existing_value = prefs_[key];
   if (value == existing_value)

@@ -16,9 +16,9 @@ TEST(PrefValueMapTest, SetValue) {
   EXPECT_FALSE(map.GetValue("key", &result));
   EXPECT_FALSE(result);
 
-  EXPECT_TRUE(map.SetValue("key", std::make_unique<Value>("test")));
-  EXPECT_FALSE(map.SetValue("key", std::make_unique<Value>("test")));
-  EXPECT_TRUE(map.SetValue("key", std::make_unique<Value>("hi mom!")));
+  EXPECT_TRUE(map.SetValue("key", Value("test")));
+  EXPECT_FALSE(map.SetValue("key", Value("test")));
+  EXPECT_TRUE(map.SetValue("key", Value("hi mom!")));
 
   EXPECT_TRUE(map.GetValue("key", &result));
   EXPECT_TRUE(Value("hi mom!").Equals(result));
@@ -26,7 +26,7 @@ TEST(PrefValueMapTest, SetValue) {
 
 TEST(PrefValueMapTest, GetAndSetIntegerValue) {
   PrefValueMap map;
-  ASSERT_TRUE(map.SetValue("key", std::make_unique<Value>(5)));
+  ASSERT_TRUE(map.SetValue("key", Value(5)));
 
   int int_value = 0;
   EXPECT_TRUE(map.GetInteger("key", &int_value));
@@ -39,7 +39,7 @@ TEST(PrefValueMapTest, GetAndSetIntegerValue) {
 
 TEST(PrefValueMapTest, SetDoubleValue) {
   PrefValueMap map;
-  ASSERT_TRUE(map.SetValue("key", std::make_unique<Value>(5.5)));
+  ASSERT_TRUE(map.SetValue("key", Value(5.5)));
 
   const Value* result = nullptr;
   ASSERT_TRUE(map.GetValue("key", &result));
@@ -52,7 +52,7 @@ TEST(PrefValueMapTest, RemoveValue) {
   PrefValueMap map;
   EXPECT_FALSE(map.RemoveValue("key"));
 
-  EXPECT_TRUE(map.SetValue("key", std::make_unique<Value>("test")));
+  EXPECT_TRUE(map.SetValue("key", Value("test")));
   EXPECT_TRUE(map.GetValue("key", nullptr));
 
   EXPECT_TRUE(map.RemoveValue("key"));
@@ -63,7 +63,7 @@ TEST(PrefValueMapTest, RemoveValue) {
 
 TEST(PrefValueMapTest, Clear) {
   PrefValueMap map;
-  EXPECT_TRUE(map.SetValue("key", std::make_unique<Value>("test")));
+  EXPECT_TRUE(map.SetValue("key", Value("test")));
   EXPECT_TRUE(map.GetValue("key", nullptr));
 
   map.Clear();
@@ -73,9 +73,9 @@ TEST(PrefValueMapTest, Clear) {
 
 TEST(PrefValueMapTest, GetDifferingKeys) {
   PrefValueMap reference;
-  EXPECT_TRUE(reference.SetValue("b", std::make_unique<Value>("test")));
-  EXPECT_TRUE(reference.SetValue("c", std::make_unique<Value>("test")));
-  EXPECT_TRUE(reference.SetValue("e", std::make_unique<Value>("test")));
+  EXPECT_TRUE(reference.SetValue("b", Value("test")));
+  EXPECT_TRUE(reference.SetValue("c", Value("test")));
+  EXPECT_TRUE(reference.SetValue("e", Value("test")));
 
   PrefValueMap check;
   std::vector<std::string> differing_paths;
@@ -87,9 +87,9 @@ TEST(PrefValueMapTest, GetDifferingKeys) {
   expected_differing_paths.push_back("e");
   EXPECT_EQ(expected_differing_paths, differing_paths);
 
-  EXPECT_TRUE(check.SetValue("a", std::make_unique<Value>("test")));
-  EXPECT_TRUE(check.SetValue("c", std::make_unique<Value>("test")));
-  EXPECT_TRUE(check.SetValue("d", std::make_unique<Value>("test")));
+  EXPECT_TRUE(check.SetValue("a", Value("test")));
+  EXPECT_TRUE(check.SetValue("c", Value("test")));
+  EXPECT_TRUE(check.SetValue("d", Value("test")));
 
   reference.GetDifferingKeys(&check, &differing_paths);
   expected_differing_paths.clear();
@@ -102,14 +102,14 @@ TEST(PrefValueMapTest, GetDifferingKeys) {
 
 TEST(PrefValueMapTest, SwapTwoMaps) {
   PrefValueMap first_map;
-  EXPECT_TRUE(first_map.SetValue("a", std::make_unique<Value>("test")));
-  EXPECT_TRUE(first_map.SetValue("b", std::make_unique<Value>("test")));
-  EXPECT_TRUE(first_map.SetValue("c", std::make_unique<Value>("test")));
+  EXPECT_TRUE(first_map.SetValue("a", Value("test")));
+  EXPECT_TRUE(first_map.SetValue("b", Value("test")));
+  EXPECT_TRUE(first_map.SetValue("c", Value("test")));
 
   PrefValueMap second_map;
-  EXPECT_TRUE(second_map.SetValue("d", std::make_unique<Value>("test")));
-  EXPECT_TRUE(second_map.SetValue("e", std::make_unique<Value>("test")));
-  EXPECT_TRUE(second_map.SetValue("f", std::make_unique<Value>("test")));
+  EXPECT_TRUE(second_map.SetValue("d", Value("test")));
+  EXPECT_TRUE(second_map.SetValue("e", Value("test")));
+  EXPECT_TRUE(second_map.SetValue("f", Value("test")));
 
   first_map.Swap(&second_map);
 
