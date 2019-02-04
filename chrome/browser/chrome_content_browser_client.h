@@ -499,9 +499,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
-  scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
+  std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      content::WebContents* web_contents,
       const content::GlobalRequestID& request_id,
       bool is_request_for_main_frame,
       const GURL& url,

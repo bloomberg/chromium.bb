@@ -37,7 +37,8 @@ class AuthChallengeInfo;
 
 // This is the base implementation for the OS-specific classes that prompt for
 // authentication information.
-class LoginHandler : public content::NotificationObserver,
+class LoginHandler : public content::LoginDelegate,
+                     public content::NotificationObserver,
                      public content::WebContentsObserver {
  public:
   // The purpose of this struct is to enforce that BuildViewImpl receives either
@@ -224,18 +225,12 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
   DISALLOW_COPY_AND_ASSIGN(AuthSuppliedLoginNotificationDetails);
 };
 
-// Prompts the user for their username and password.  This is designed to
-// be called on the background (I/O) thread, in response to
-// net::URLRequest::Delegate::OnAuthRequired.  The prompt will be created
-// on the main UI thread via a call to UI loop's InvokeLater, and will send the
-// credentials back to the net::URLRequest on the calling thread.
-// A LoginDelegate object (which lives on the calling thread) is returned,
-// which can be used to set or cancel authentication programmatically.  The
-// caller must invoke OnRequestCancelled() on this LoginDelegate before
-// destroying the net::URLRequest.
-scoped_refptr<content::LoginDelegate> CreateLoginPrompt(
+// Prompts the user for their username and password. The caller may cancel the
+// request by destroying the returned LoginDelegate. It must do this before
+// invalidating the callback.
+std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& url,

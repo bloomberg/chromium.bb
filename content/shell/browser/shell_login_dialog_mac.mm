@@ -99,13 +99,17 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
 
 void ShellLoginDialog::PlatformCleanUp() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  [helper_ release];
-  helper_ = nil;
+  if (helper_) {
+    [helper_ release];
+    helper_ = nil;
+  }
 }
 
 void ShellLoginDialog::PlatformRequestCancelled() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  [helper_ cancel];
+  if (helper_) {
+    [helper_ cancel];
+  }
 }
 
 }  // namespace content
