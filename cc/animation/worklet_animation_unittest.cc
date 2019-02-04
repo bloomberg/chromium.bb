@@ -4,6 +4,7 @@
 
 #include "cc/animation/worklet_animation.h"
 
+#include <utility>
 #include "base/memory/ptr_util.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/test/animation_test_common.h"
@@ -35,7 +36,7 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
     client_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
     worklet_animation_ = WrapRefCounted(
-        new WorkletAnimation(1, worklet_animation_id_, "test_name", nullptr,
+        new WorkletAnimation(1, worklet_animation_id_, "test_name", 1, nullptr,
                              nullptr, true /* controlling instance*/));
     worklet_animation_->AttachElement(element_id_);
     host_->AddAnimationTimeline(timeline_);
@@ -64,7 +65,7 @@ TEST_F(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe) {
 
   scoped_refptr<WorkletAnimation> worklet_animation =
       WrapRefCounted(new WorkletAnimation(
-          1, worklet_animation_id_, "test_name", nullptr, nullptr,
+          1, worklet_animation_id_, "test_name", 1, nullptr, nullptr,
           false /* not impl instance*/, std::move(effect)));
 
   EXPECT_CALL(*mock_effect, Tick(_)).Times(0);
@@ -109,8 +110,9 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWhenTicking) {
 TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
   auto scroll_timeline = std::make_unique<MockScrollTimeline>();
   EXPECT_CALL(*scroll_timeline, CurrentTime(_, _)).WillRepeatedly(Return(1234));
-  scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
-      worklet_animation_id_, "test_name", std::move(scroll_timeline), nullptr);
+  scoped_refptr<WorkletAnimation> worklet_animation =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name", 1,
+                               std::move(scroll_timeline), nullptr);
 
   ScrollTree scroll_tree;
   std::unique_ptr<MutatorInputState> state =
@@ -125,7 +127,7 @@ TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
 TEST_F(WorkletAnimationTest,
        CurrentTimeFromRegularTimelineIsOffsetByStartTime) {
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
-      worklet_animation_id_, "test_name", nullptr, nullptr);
+      worklet_animation_id_, "test_name", 1, nullptr, nullptr);
 
   base::TimeTicks first_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
@@ -154,6 +156,56 @@ TEST_F(WorkletAnimationTest,
                                       true);
   input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(246.8, input->updated_animations[0].current_time);
+}
+
+// Verifies correctness of current time when playback rate is set on
+// initializing the animation and while the animation is playing.
+TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
+  const double playback_rate_double = 2;
+  const double playback_rate_half = 0.5;
+  scoped_refptr<WorkletAnimation> worklet_animation =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name",
+                               playback_rate_double, nullptr, nullptr);
+
+  base::TimeTicks first_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
+  base::TimeTicks second_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
+  base::TimeTicks third_ticks =
+      base::TimeTicks() +
+      base::TimeDelta::FromMillisecondsD(111 + 123.4 + 200.0);
+
+  ScrollTree scroll_tree;
+  std::unique_ptr<MutatorInputState> state =
+      std::make_unique<MutatorInputState>();
+  // Start the animation.
+  worklet_animation->UpdateInputState(state.get(), first_ticks, scroll_tree,
+                                      true);
+  state.reset(new MutatorInputState);
+
+  // Play until second_ticks.
+  worklet_animation->UpdateInputState(state.get(), second_ticks, scroll_tree,
+                                      true);
+  std::unique_ptr<AnimationWorkletInput> input =
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
+
+  // Verify that the current time is updated twice faster than the timeline
+  // time.
+  EXPECT_EQ(123.4 * playback_rate_double,
+            input->updated_animations[0].current_time);
+
+  // Update the playback rate.
+  worklet_animation->SetPlaybackRateForTesting(playback_rate_half);
+  state.reset(new MutatorInputState());
+
+  // Play until third_ticks.
+  worklet_animation->UpdateInputState(state.get(), third_ticks, scroll_tree,
+                                      true);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
+
+  // Verify that the current time is updated half as fast as the timeline time.
+  EXPECT_EQ(123.4 * playback_rate_double + 200.0 * playback_rate_half,
+            input->updated_animations[0].current_time);
 }
 
 // This test verifies that worklet animation state is properly updated.

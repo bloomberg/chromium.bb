@@ -25,6 +25,13 @@ class ScrollTimeline;
 // A WorkletAnimation is an animation that allows its animation
 // timing to be controlled by an animator instance that is running in a
 // AnimationWorkletGlobalScope.
+
+// Two instances of this class are created for Blink WorkletAnimation:
+// 1. UI thread instance that keeps all the meta data.
+// 2. Impl thread instance that ticks the animations on the Impl thread.
+// When Blink WorkletAnimation is updated, it calls the UI thread instance to
+// modify its properties. The updated properties are pushed by the UI thread
+// instance to the Impl thread instance during commit.
 class CC_ANIMATION_EXPORT WorkletAnimation final
     : public SingleKeyframeEffectAnimation {
  public:
@@ -32,12 +39,14 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   WorkletAnimation(int cc_animation_id,
                    WorkletAnimationId worklet_animation_id,
                    const std::string& name,
+                   double playback_rate,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
                    bool is_controlling_instance);
   static scoped_refptr<WorkletAnimation> Create(
       WorkletAnimationId worklet_animation_id,
       const std::string& name,
+      double playback_rate,
       std::unique_ptr<ScrollTimeline> scroll_timeline,
       std::unique_ptr<AnimationOptions> options);
   scoped_refptr<Animation> CreateImplInstance() const override;
@@ -70,6 +79,12 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // require updating the ElementId for the ScrollTimeline scroll source.
   void PromoteScrollTimelinePendingToActive() override;
 
+  // Called by Blink WorkletAnimation when its playback rate is updated.
+  void UpdatePlaybackRate(double playback_rate);
+  void SetPlaybackRateForTesting(double playback_rate) {
+    SetPlaybackRate(playback_rate);
+  }
+
   void RemoveKeyframeModel(int keyframe_model_id) override;
 
  private:
@@ -78,6 +93,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   WorkletAnimation(int cc_animation_id,
                    WorkletAnimationId worklet_animation_id,
                    const std::string& name,
+                   double playback_rate,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
                    bool is_controlling_instance,
@@ -101,6 +117,10 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
     return options_ ? options_->Clone() : nullptr;
   }
 
+  // Updates the playback rate of the Impl thread instance.
+  // Called by the UI thread WorletAnimation instance during commit.
+  void SetPlaybackRate(double playback_rate);
+
   WorkletAnimationId worklet_animation_id_;
   std::string name_;
 
@@ -111,6 +131,15 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // which must exist but can either be a DocumentTimeline, ScrollTimeline, or
   // some other future implementation.
   std::unique_ptr<ScrollTimeline> scroll_timeline_;
+
+  // Controls speed of the animation.
+  // https://drafts.csswg.org/web-animations-2/#animation-effect-playback-rate
+
+  // For UI thread instance contains the meta value to be pushed to the Impl
+  // thread instance.
+  // For the Impl thread instance contains the actual playback rate of the
+  // animation.
+  double playback_rate_;
 
   std::unique_ptr<AnimationOptions> options_;
 

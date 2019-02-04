@@ -10274,10 +10274,12 @@ interface WorkletAnimation
     attribute @@toStringTag
     getter currentTime
     getter playState
+    getter playbackRate
     getter timeline
     method cancel
     method constructor
     method play
+    setter playbackRate
 interface WritableStream
     attribute @@toStringTag
     getter locked
