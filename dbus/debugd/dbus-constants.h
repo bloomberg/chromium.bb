@@ -46,6 +46,8 @@ const char kQueryDevFeatures[] = "QueryDevFeatures";
 const char kSetOomScoreAdj[] = "SetOomScoreAdj";
 const char kStartVmConcierge[] = "StartVmConcierge";
 const char kStopVmConcierge[] = "StopVmConcierge";
+const char kStartVmPluginDispatcher[] = "StartVmPluginDispatcher";
+const char kStopVmPluginDispatcher[] = "StopVmPluginDispatcher";
 const char kSetRlzPingSent[] = "SetRlzPingSent";
 
 // Values.
