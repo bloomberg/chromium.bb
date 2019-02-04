@@ -24,9 +24,11 @@
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/safe_browsing/db/database_manager.h"
+#include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/origin_policy_error_reason.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
@@ -404,6 +406,13 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 }
 #endif
 
+security_interstitials::SecurityInterstitialPage*
+CreateOriginPolicyInterstitialPage(content::WebContents* web_contents) {
+  return security_interstitials::OriginPolicyUI::GetBlockingPage(
+      content::OriginPolicyErrorReason::kCannotLoadPolicy, web_contents,
+      GURL("https://example.com/broken/origin/policy"));
+}
+
 }  //  namespace
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
@@ -468,6 +477,9 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (path_without_query == "/captiveportal") {
     interstitial_delegate.reset(CreateCaptivePortalBlockingPage(web_contents));
 #endif
+  } else if (path_without_query == "/origin_policy") {
+    interstitial_delegate.reset(
+        CreateOriginPolicyInterstitialPage(web_contents));
   }
 
   if (path_without_query == "/supervised_user") {

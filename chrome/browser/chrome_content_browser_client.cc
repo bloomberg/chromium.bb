@@ -5144,10 +5144,9 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
 base::Optional<std::string>
 ChromeContentBrowserClient::GetOriginPolicyErrorPage(
     content::OriginPolicyErrorReason error_reason,
-    const url::Origin& origin,
-    const GURL& url) {
-  return security_interstitials::OriginPolicyUI::GetErrorPage(error_reason,
-                                                              origin, url);
+    content::NavigationHandle* handle) {
+  return security_interstitials::OriginPolicyUI::GetErrorPageAsHTML(
+      error_reason, handle);
 }
 
 bool ChromeContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {

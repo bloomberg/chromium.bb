@@ -55,6 +55,12 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   static std::unique_ptr<NavigationThrottle> MaybeCreateThrottleFor(
       NavigationHandle* handle);
 
+  // Adds an exception for the given url, despite it serving a broken (or
+  // otherwise invalid) policy. This is meant to be called by the security
+  // interstitial.
+  // This will exempt the entire origin, rather than only the given URL.
+  static void AddExceptionFor(const GURL& url);
+
   ~OriginPolicyThrottle() override;
 
   ThrottleCheckResult WillStartRequest() override;

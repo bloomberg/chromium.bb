@@ -439,12 +439,8 @@ void NetErrorHelper::LoadErrorPage(const std::string& html,
 }
 
 void NetErrorHelper::EnablePageHelperFunctions(net::Error net_error) {
-  if (net::IsCertificateError(net_error)) {
-    SSLCertificateErrorPageController::Install(
-        render_frame(),
-        weak_ssl_error_controller_delegate_factory_.GetWeakPtr());
-    return;
-  }
+  SSLCertificateErrorPageController::Install(
+      render_frame(), weak_ssl_error_controller_delegate_factory_.GetWeakPtr());
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
 
