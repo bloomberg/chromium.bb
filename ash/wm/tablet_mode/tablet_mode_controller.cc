@@ -629,13 +629,14 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   // Enter clamshell mode whenever an external pointing device is attached.
   if (has_external_pointing_device) {
     AttemptLeaveTabletMode();
-  } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
-    // If there is no external pointing device, only enter tablet mode if 1) the
-    // lid angle can be detected and is in tablet mode angle range. or 2) if the
-    // lid angle can't be detected (e.g., tablet device or clamshell device) and
-    // |tablet_mode_switch_is_on_| is true (it can only happen for tablet device
-    // as |tablet_mode_switch_is_on_| should never be true for a clamshell
-    // device).
+  } else if (HasActiveInternalDisplay() &&
+             (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_)) {
+    // If there is no external pointing device, only enter tablet mode if docked
+    // mode is inactive and 1) the lid angle can be detected and is in tablet
+    // mode angle range. or 2) if the lid angle can't be detected (e.g., tablet
+    // device or clamshell device) and |tablet_mode_switch_is_on_| is true (it
+    // can only happen for tablet device as |tablet_mode_switch_is_on_| should
+    // never be true for a clamshell device).
     AttemptEnterTabletMode();
   }
 }
