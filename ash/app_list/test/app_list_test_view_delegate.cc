@@ -115,6 +115,11 @@ void AppListTestViewDelegate::GetSearchResultContextMenuModel(
   std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
 }
 
+ash::AssistantViewDelegate*
+AppListTestViewDelegate::GetAssistantViewDelegate() {
+  return nullptr;
+}
+
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
   return true;
 }

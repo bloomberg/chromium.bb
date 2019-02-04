@@ -33,6 +33,7 @@ class AppListFolderItem;
 class AppListMainView;
 class AppsContainerView;
 class AppsGridView;
+class AssistantPageView;
 class ExpandArrowView;
 class HorizontalPageContainer;
 class PaginationModel;
@@ -70,6 +71,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // ShowSearchResults(true) was invoked.
   void ShowSearchResults(bool show);
   bool IsShowingSearchResults() const;
+
+  // Shows/hides the Assistant page. Hiding the Assistant page will
+  // cause the app list to return to the page that was displayed before
+  // ShowSearchResults(true) was invoked.
+  void ShowEmbeddedAssistantUI(bool show);
+  bool IsShowingEmbeddedAssistantUI() const;
 
   void ShowFolderContent(AppListFolderItem* folder);
 
@@ -175,7 +182,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
   void SetActiveStateInternal(int page_index,
-                              bool show_search_results,
+                              bool show_search_or_assistant_results,
                               bool animate);
 
   // Invoked when active view is changed.
@@ -200,6 +207,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Updates the expand arrow's focus behavior based on the current state.
   void UpdateExpandArrowFocusBehavior(ash::AppListState current_state);
+
+  // Updates search box visibility based on the current state.
+  void UpdateSearchBoxVisibility(ash::AppListState current_state);
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
   // view is inserted as a child of the ContentsView. There is no name
@@ -229,6 +239,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   AppListModel* model_ = nullptr;
 
   // Sub-views of the ContentsView. All owned by the views hierarchy.
+  AssistantPageView* assistant_page_view_ = nullptr;
   HorizontalPageContainer* horizontal_page_container_ = nullptr;
   SearchResultPageView* search_results_page_view_ = nullptr;
   SearchResultAnswerCardView* search_result_answer_card_view_ = nullptr;

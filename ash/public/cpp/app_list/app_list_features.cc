@@ -32,6 +32,8 @@ const base::Feature kEnableAppSearchResultRanker{
     "EnableAppSearchResultRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableEmbeddedAssistantUI{
+    "EnableEmbeddedAssistantUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -77,6 +79,10 @@ bool IsAppSearchResultRankerEnabled() {
 
 bool IsAppReinstallZeroStateEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppReinstallZeroState);
+}
+
+bool IsEmbeddedAssistantUIEnabled() {
+  return base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
 }
 
 std::string AnswerServerUrl() {

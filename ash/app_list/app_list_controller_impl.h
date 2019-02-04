@@ -186,6 +186,7 @@ class ASH_EXPORT AppListControllerImpl
   bool CanProcessEventsOnApplistViews() override;
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
+  ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
@@ -240,6 +241,9 @@ class ASH_EXPORT AppListControllerImpl
       int64_t display_id,
       app_list::AppListShowSource show_source,
       base::TimeTicks event_time_stamp);
+
+  // Returns current visibility of the Assistant page.
+  bool IsShowingEmbeddedAssistantUI() const;
 
  private:
   syncer::StringOrdinal GetOemFolderPos();

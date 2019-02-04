@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_ui_controller.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
@@ -316,6 +317,9 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
            .value_or(false)) {
     return;
   }
+
+  if (Shell::Get()->app_list_controller()->IsShowingEmbeddedAssistantUI())
+    return;
 
   // TODO(dmblack): Show a more helpful message to the user.
   if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() ==

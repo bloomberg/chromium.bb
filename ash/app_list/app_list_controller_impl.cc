@@ -18,6 +18,8 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -33,6 +35,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/common/constants.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -46,6 +49,15 @@ bool IsTabletMode() {
   return Shell::Get()
       ->tablet_mode_controller()
       ->IsTabletModeWindowManagerEnabled();
+}
+
+bool IsAssistantEnabled() {
+  if (!chromeos::switches::IsAssistantEnabled())
+    return false;
+
+  auto* controller = Shell::Get()->voice_interaction_controller();
+  return controller->settings_enabled().value_or(false) &&
+         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
 }
 
 }  // namespace
@@ -661,6 +673,10 @@ ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
+bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
+  return presenter_.IsShowingEmbeddedAssistantUI();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods of |client_|:
 
@@ -705,8 +721,17 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     }
   }
 
-  if (client_)
-    client_->OpenSearchResult(result_id, event_flags);
+  if (presenter_.IsVisible() && result->is_omnibox_search() &&
+      IsAssistantEnabled() &&
+      app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    presenter_.ShowEmbeddedAssistantUI(/*show=*/true);
+    Shell::Get()->assistant_controller()->OpenUrl(
+        ash::assistant::util::CreateAssistantQueryDeepLink(
+            base::UTF16ToUTF8(result->title())));
+  } else {
+    if (client_)
+      client_->OpenSearchResult(result_id, event_flags);
+  }
 
   if (IsTabletMode() && presenter_.IsVisible())
     presenter_.GetView()->CloseOpenedPage();
@@ -840,6 +865,10 @@ void AppListControllerImpl::GetNavigableContentsFactory(
     client_->GetNavigableContentsFactory(std::move(request));
 }
 
+ash::AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {
+  return Shell::Get()->assistant_controller()->view_delegate();
+}
+
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -953,13 +982,7 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
 }
 
 void AppListControllerImpl::UpdateAssistantVisibility() {
-  if (!chromeos::switches::IsAssistantEnabled())
-    return;
-
-  auto* controller = Shell::Get()->voice_interaction_controller();
-  GetSearchModel()->search_box()->SetShowAssistantButton(
-      controller->settings_enabled().value_or(false) &&
-      controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED);
+  GetSearchModel()->search_box()->SetShowAssistantButton(IsAssistantEnabled());
 }
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {

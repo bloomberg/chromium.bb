@@ -1487,6 +1487,10 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
   if (event->handled())
     return;
 
+  // Allow text input inside the Assistant page.
+  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI())
+    return;
+
   views::Textfield* search_box = search_box_view_->search_box();
   const bool is_search_box_focused = search_box->HasFocus();
   const bool is_folder_header_view_focused = GetAppsContainerView()

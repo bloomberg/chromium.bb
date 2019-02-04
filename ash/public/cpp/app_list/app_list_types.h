@@ -22,7 +22,7 @@ enum class AppListState {
   kStateApps = 0,
   kStateSearchResults,
   kStateStart,
-  kStateCustomLauncherPageDeprecated,  // Don't use over IPC
+  kStateEmbeddedAssistant,
   // Add new values here.
 
   kInvalidState,               // Don't use over IPC

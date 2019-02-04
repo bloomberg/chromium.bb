@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       mojom::AssistantImageDownloader::DownloadCallback callback) = 0;
 
   // Returns the cursor_manager.
-  virtual wm::CursorManager* GetCursorManager() = 0;
+  virtual ::wm::CursorManager* GetCursorManager() = 0;
 
   // Acquires a NavigableContentsFactory from the Content Service to allow
   // Assistant to display embedded web contents.

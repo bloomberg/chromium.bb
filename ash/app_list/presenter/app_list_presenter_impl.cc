@@ -270,6 +270,21 @@ void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
               : base::NullCallback());
 }
 
+void AppListPresenterImpl::ShowEmbeddedAssistantUI(bool show) {
+  if (view_)
+    view_->app_list_main_view()->contents_view()->ShowEmbeddedAssistantUI(show);
+}
+
+bool AppListPresenterImpl::IsShowingEmbeddedAssistantUI() const {
+  if (view_) {
+    return view_->app_list_main_view()
+        ->contents_view()
+        ->IsShowingEmbeddedAssistantUI();
+  }
+
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl, private:
 

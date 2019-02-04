@@ -47,7 +47,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void DownloadImage(
       const GURL& url,
       mojom::AssistantImageDownloader::DownloadCallback callback) override;
-  wm::CursorManager* GetCursorManager() override;
+  ::wm::CursorManager* GetCursorManager() override;
   void GetNavigableContentsFactoryForView(
       content::mojom::NavigableContentsFactoryRequest request) override;
   aura::Window* GetRootWindowForNewWindows() override;

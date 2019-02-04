@@ -55,6 +55,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppSearchResultRanker;
 // zero-state.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
 
+// Enables the embedded Assistant UI in the app list.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableEmbeddedAssistantUI;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
@@ -66,6 +69,7 @@ bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
 bool ASH_PUBLIC_EXPORT IsAppSearchResultRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
+bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
