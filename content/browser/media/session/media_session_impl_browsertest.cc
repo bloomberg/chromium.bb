@@ -743,7 +743,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   EXPECT_TRUE(IsControllable());
@@ -763,7 +763,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   EXPECT_FALSE(IsControllable());
@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   EXPECT_FALSE(IsControllable());
@@ -811,17 +811,15 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     SetPlaybackState(blink::mojom::MediaSessionPlaybackState::NONE);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   EXPECT_FALSE(IsControllable());
   EXPECT_TRUE(IsActive());
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-IN_PROC_BROWSER_TEST_P(
-    MediaSessionImplParamBrowserTest,
-    DISABLED_ControlsShowForTransientAndPlaybackStatePaused) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsShowForTransientAndPlaybackStatePaused) {
   EnsureMediaSessionService();
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
       shell()->web_contents()->GetMainFrame());
@@ -837,17 +835,15 @@ IN_PROC_BROWSER_TEST_P(
     SetPlaybackState(blink::mojom::MediaSessionPlaybackState::PAUSED);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   EXPECT_TRUE(IsControllable());
   EXPECT_TRUE(IsActive());
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-IN_PROC_BROWSER_TEST_P(
-    MediaSessionImplParamBrowserTest,
-    DISABLED_ControlsShowForTransientAndPlaybackStatePlaying) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsShowForTransientAndPlaybackStatePlaying) {
   EnsureMediaSessionService();
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
       shell()->web_contents()->GetMainFrame());
@@ -863,7 +859,7 @@ IN_PROC_BROWSER_TEST_P(
     SetPlaybackState(blink::mojom::MediaSessionPlaybackState::PLAYING);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   EXPECT_TRUE(IsControllable());
@@ -883,8 +879,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -895,8 +891,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
+    observer.WaitForControllable(false);
 
-    EXPECT_FALSE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -916,8 +912,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -929,8 +925,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -950,8 +946,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(false);
 
-    EXPECT_FALSE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -964,8 +960,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -985,8 +981,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -997,8 +993,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1011,8 +1007,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1033,8 +1029,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   RemovePlayer(player_observer.get(), 0);
@@ -1042,7 +1037,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   EXPECT_TRUE(IsControllable());
@@ -1053,7 +1048,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   EXPECT_FALSE(IsControllable());
@@ -1072,8 +1067,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   RemovePlayers(player_observer.get());
@@ -1081,7 +1075,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   EXPECT_FALSE(IsControllable());
@@ -1100,8 +1094,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1111,8 +1105,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1125,8 +1119,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1146,8 +1140,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1157,8 +1151,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1178,8 +1172,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1191,8 +1185,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1212,8 +1206,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1222,10 +1216,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
-
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
+    observer.WaitForControllable(false);
 
-    EXPECT_FALSE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1245,8 +1238,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1257,8 +1250,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
+    observer.WaitForControllable(false);
 
-    EXPECT_FALSE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1278,8 +1271,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1289,8 +1282,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1304,8 +1297,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(false);
 
-    EXPECT_FALSE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1325,8 +1318,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1336,8 +1329,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1350,8 +1343,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1371,8 +1364,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1382,8 +1375,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1396,8 +1389,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1417,8 +1410,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1428,8 +1421,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1449,8 +1442,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1460,8 +1453,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPaused,
               observer.session_info()->playback_state);
   }
@@ -1471,8 +1464,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1485,8 +1478,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+    observer.WaitForControllable(true);
 
-    EXPECT_TRUE(observer.session_info()->is_controllable);
     EXPECT_EQ(MediaPlaybackState::kPlaying,
               observer.session_info()->playback_state);
   }
@@ -1495,9 +1488,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_TRUE(IsActive());
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       DISABLED_ControlsDontShowWhenOneShotIsPresent) {
+                       ControlsDontShowWhenOneShotIsPresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1507,7 +1499,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
 
     EXPECT_FALSE(IsControllable());
     EXPECT_TRUE(IsActive());
@@ -1519,7 +1511,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
 
     EXPECT_FALSE(IsControllable());
     EXPECT_TRUE(IsActive());
@@ -1531,17 +1523,15 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
 
     EXPECT_FALSE(IsControllable());
     EXPECT_TRUE(IsActive());
   }
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-IN_PROC_BROWSER_TEST_P(
-    MediaSessionImplParamBrowserTest,
-    DISABLED_ControlsHiddenAfterRemoveOneShotWithoutOtherPlayers) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsHiddenAfterRemoveOneShotWithoutOtherPlayers) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1551,7 +1541,7 @@ IN_PROC_BROWSER_TEST_P(
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   RemovePlayer(player_observer.get(), 0);
@@ -1559,17 +1549,15 @@ IN_PROC_BROWSER_TEST_P(
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   EXPECT_FALSE(IsControllable());
   EXPECT_FALSE(IsActive());
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-IN_PROC_BROWSER_TEST_P(
-    MediaSessionImplParamBrowserTest,
-    DISABLED_ControlsShowAfterRemoveOneShotWithPersistentPresent) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       ControlsShowAfterRemoveOneShotWithPersistentPresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1581,7 +1569,7 @@ IN_PROC_BROWSER_TEST_P(
     ResolveAudioFocusSuccess();
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_FALSE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(false);
   }
 
   RemovePlayer(player_observer.get(), 0);
@@ -1589,7 +1577,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    EXPECT_TRUE(observer.session_info()->is_controllable);
+    observer.WaitForControllable(true);
   }
 
   EXPECT_TRUE(IsControllable());
@@ -2187,13 +2175,11 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.source_title = GetExpectedSourceTitle();
-  EXPECT_EQ(expected_metadata, observer.WaitForMetadata());
+  observer.WaitForExpectedMetadata(expected_metadata);
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-IN_PROC_BROWSER_TEST_P(
-    MediaSessionImplParamBrowserTest,
-    DISABLED_AddingMojoObserverNotifiesCurrentInformation_WithInfo) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       AddingMojoObserverNotifiesCurrentInformation_WithInfo) {
   // Set up the service and information.
   EnsureMediaSessionService();
 
@@ -2219,7 +2205,7 @@ IN_PROC_BROWSER_TEST_P(
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
     ResolveAudioFocusSuccess();
 
-    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+    observer.WaitForExpectedMetadata(expected_metadata);
   }
 }
 

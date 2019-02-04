@@ -568,8 +568,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_WithInfo) {
   {
     test::TestMediaControllerObserver observer(controller());
     media_session.SimulateMetadataChanged(test_metadata);
-    observer.WaitForNonEmptyMetadata();
-    EXPECT_EQ(metadata, observer.session_metadata());
+    observer.WaitForExpectedMetadata(metadata);
   }
 }
 
@@ -614,8 +613,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_WithInfo) {
 
   {
     test::TestMediaControllerObserver observer(controller());
-    observer.WaitForNonEmptyMetadata();
-    EXPECT_EQ(metadata, observer.session_metadata());
+    observer.WaitForExpectedMetadata(metadata);
   }
 }
 
@@ -744,8 +742,7 @@ TEST_F(MediaControllerTest, ActiveController_Actions_AddObserver_Empty) {
 
   {
     test::TestMediaControllerObserver observer(controller());
-    observer.WaitForActions();
-    EXPECT_TRUE(observer.actions().empty());
+    observer.WaitForEmptyActions();
   }
 }
 
@@ -763,15 +760,14 @@ TEST_F(MediaControllerTest, ActiveController_Actions_AddObserver_WithInfo) {
 
   {
     test::TestMediaControllerObserver observer(controller());
-    observer.WaitForActions();
 
-    EXPECT_EQ(1u, observer.actions().size());
-    EXPECT_EQ(mojom::MediaSessionAction::kPlay, observer.actions()[0]);
+    std::set<mojom::MediaSessionAction> expected_actions;
+    expected_actions.insert(mojom::MediaSessionAction::kPlay);
+    observer.WaitForExpectedActions(expected_actions);
   }
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-TEST_F(MediaControllerTest, DISABLED_ActiveController_Actions_Observer_Empty) {
+TEST_F(MediaControllerTest, ActiveController_Actions_Observer_Empty) {
   test::MockMediaSession media_session;
   media_session.EnableAction(mojom::MediaSessionAction::kPlay);
   media_session.SetIsControllable(true);
@@ -785,15 +781,11 @@ TEST_F(MediaControllerTest, DISABLED_ActiveController_Actions_Observer_Empty) {
   {
     test::TestMediaControllerObserver observer(controller());
     media_session.DisableAction(mojom::MediaSessionAction::kPlay);
-    observer.WaitForActions();
-
-    EXPECT_TRUE(observer.actions().empty());
+    observer.WaitForEmptyActions();
   }
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
-TEST_F(MediaControllerTest,
-       DISABLED_ActiveController_Actions_Observer_WithInfo) {
+TEST_F(MediaControllerTest, ActiveController_Actions_Observer_WithInfo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
@@ -806,10 +798,10 @@ TEST_F(MediaControllerTest,
   {
     test::TestMediaControllerObserver observer(controller());
     media_session.EnableAction(mojom::MediaSessionAction::kPlay);
-    observer.WaitForActions();
 
-    EXPECT_EQ(1u, observer.actions().size());
-    EXPECT_EQ(mojom::MediaSessionAction::kPlay, observer.actions()[0]);
+    std::set<mojom::MediaSessionAction> expected_actions;
+    expected_actions.insert(mojom::MediaSessionAction::kPlay);
+    observer.WaitForExpectedActions(expected_actions);
   }
 }
 
@@ -828,8 +820,7 @@ TEST_F(MediaControllerTest, ActiveController_Actions_Observer_Abandoned) {
 
   {
     test::TestMediaControllerObserver observer(controller());
-    observer.WaitForActions();
-    EXPECT_TRUE(observer.actions().empty());
+    observer.WaitForEmptyActions();
   }
 }
 
@@ -851,8 +842,7 @@ TEST_F(MediaControllerTest, ActiveController_Observer_Abandoned) {
     // controller is no longer bound to a media session.
     observer.WaitForEmptyInfo();
     observer.WaitForEmptyMetadata();
-    observer.WaitForActions();
-    EXPECT_TRUE(observer.actions().empty());
+    observer.WaitForEmptyActions();
   }
 }
 
@@ -875,8 +865,7 @@ TEST_F(MediaControllerTest, ActiveController_AddObserver_Abandoned) {
     // controller is no longer bound to a media session.
     observer.WaitForEmptyInfo();
     observer.WaitForEmptyMetadata();
-    observer.WaitForActions();
-    EXPECT_TRUE(observer.actions().empty());
+    observer.WaitForEmptyActions();
   }
 }
 

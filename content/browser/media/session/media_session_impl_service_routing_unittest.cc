@@ -80,9 +80,11 @@ class MediaSessionImplServiceRoutingTest
         std::make_unique<content::TestServiceManagerContext>();
 
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
+    contents()->NavigateAndCommit(GURL("http://www.example.com"));
+
     main_frame_ = contents()->GetMainFrame();
     sub_frame_ = main_frame_->AppendChild("sub_frame");
-    empty_metadata_.source_title = GetExpectedSourceTitle();
+    empty_metadata_.source_title = base::ASCIIToUTF16("http://www.example.com");
   }
 
   void TearDown() override {
@@ -126,11 +128,6 @@ class MediaSessionImplServiceRoutingTest
 
     MediaSessionImpl::Get(contents())
         ->RemovePlayer(players_[frame].get(), kPlayerId);
-  }
-
-  base::string16 GetExpectedSourceTitle() {
-    return base::ASCIIToUTF16(
-        contents()->GetLastCommittedURL().GetOrigin().host());
   }
 
   MockMediaSessionPlayerObserver* GetPlayerForFrame(
@@ -280,20 +277,17 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   services_[main_frame_]->SetMetadata(nullptr);
   services_[main_frame_]->EnableAction(MediaSessionAction::kPlay);
 
-  observer.WaitForActions();
-  EXPECT_TRUE(observer.actions().empty());
-
-  EXPECT_TRUE(observer.WaitForMetadata()->IsEmpty());
+  observer.WaitForEmptyActions();
+  observer.WaitForEmptyMetadata();
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       DISABLED_NotifyMetadataAndActionsChangeWhenControllable) {
+       NotifyMetadataAndActionsChangeWhenControllable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetExpectedSourceTitle();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
@@ -302,10 +296,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
 
-    observer.WaitForActions();
-
-    EXPECT_EQ(default_actions(), observer.actions_set());
-    EXPECT_EQ(empty_metadata(), observer.WaitForNonEmptyMetadata());
+    observer.WaitForExpectedActions(default_actions());
+    observer.WaitForExpectedMetadata(empty_metadata());
   }
 
   {
@@ -321,22 +313,19 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     services_[main_frame_]->SetMetadata(std::move(spec_metadata));
     services_[main_frame_]->EnableAction(MediaSessionAction::kSeekForward);
 
-    observer.WaitForActions();
-
-    EXPECT_EQ(GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward),
-              observer.actions_set());
-    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+    observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForExpectedActions(
+        GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward));
   }
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       DISABLED_NotifyMetadataAndActionsChangeWhenTurningControllable) {
+       NotifyMetadataAndActionsChangeWhenTurningControllable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetExpectedSourceTitle();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
 
@@ -356,10 +345,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
 
-    observer.WaitForActions();
-
-    EXPECT_TRUE(observer.actions_set().empty());
-    EXPECT_EQ(empty_metadata(), observer.WaitForNonEmptyMetadata());
+    observer.WaitForEmptyActions();
+    observer.WaitForExpectedMetadata(empty_metadata());
   }
 
   {
@@ -368,22 +355,19 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
     StartPlayerForFrame(main_frame_);
 
-    observer.WaitForActions();
-
-    EXPECT_EQ(GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward),
-              observer.actions_set());
-    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+    observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForExpectedActions(
+        GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward));
   }
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       DISABLED_NotifyActionsAndMetadataChangeWhenTurningUncontrollable) {
+       NotifyActionsAndMetadataChangeWhenTurningUncontrollable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetExpectedSourceTitle();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
 
@@ -403,10 +387,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
 
-    observer.WaitForActions();
-
-    EXPECT_EQ(default_actions(), observer.actions_set());
-    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+    observer.WaitForExpectedActions(default_actions());
+    observer.WaitForExpectedMetadata(expected_metadata);
   }
 
   {
@@ -415,10 +397,8 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
     ClearPlayersForFrame(main_frame_);
 
-    observer.WaitForActions();
-
-    EXPECT_TRUE(observer.actions_set().empty());
-    EXPECT_EQ(empty_metadata(), observer.WaitForNonEmptyMetadata());
+    observer.WaitForEmptyActions();
+    observer.WaitForExpectedMetadata(empty_metadata());
   }
 }
 
@@ -592,7 +572,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetExpectedSourceTitle();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
@@ -609,7 +589,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
     services_[main_frame_]->SetMetadata(std::move(spec_metadata));
 
-    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+    observer.WaitForExpectedMetadata(expected_metadata);
   }
 }
 
@@ -618,9 +598,6 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
 
-  media_session::MediaMetadata expected_metadata;
-  expected_metadata.source_title = GetExpectedSourceTitle();
-
   {
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
@@ -628,7 +605,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
     // When the session becomes controllable we should receive default
     // metadata. The |is_controllable| boolean will also become true.
-    EXPECT_EQ(expected_metadata, observer.WaitForMetadata());
+    observer.WaitForExpectedMetadata(empty_metadata());
     EXPECT_TRUE(observer.session_info()->is_controllable);
   }
 }
@@ -659,15 +636,11 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverWhenActionsChange) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-
-  EXPECT_EQ(GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward),
-            observer.actions_set());
+  observer.WaitForExpectedActions(
+      GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward));
 
   services_[main_frame_]->DisableAction(MediaSessionAction::kSeekForward);
-  observer.WaitForActions();
-
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest, DefaultActionsAlwaysSupported) {
@@ -678,34 +651,26 @@ TEST_F(MediaSessionImplServiceRoutingTest, DefaultActionsAlwaysSupported) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 
   services_[main_frame_]->DisableAction(MediaSessionAction::kPlay);
 
   // This will cause the observer to be flushed with the latest actions and
   // kPlay should still be there even though we disabled it.
   services_[main_frame_]->EnableAction(MediaSessionAction::kSeekForward);
-  observer.WaitForActions();
-
-  EXPECT_EQ(GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward),
-            observer.actions_set());
+  observer.WaitForExpectedActions(
+      GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward));
 }
 
-// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       DISABLED_DefaultActionsRemovedIfUncontrollable) {
+       DefaultActionsRemovedIfUncontrollable) {
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_, media::MediaContentType::OneShot);
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
-    observer.WaitForActions();
-
-    std::set<MediaSessionAction> expected_actions;
-    EXPECT_EQ(expected_actions, observer.actions_set());
+    observer.WaitForEmptyActions();
   }
 
   {
@@ -713,11 +678,10 @@ TEST_F(MediaSessionImplServiceRoutingTest,
         *GetMediaSession());
 
     services_[main_frame_]->EnableAction(MediaSessionAction::kPlay);
-    observer.WaitForActions();
 
     std::set<MediaSessionAction> expected_actions;
     expected_actions.insert(MediaSessionAction::kPlay);
-    EXPECT_EQ(expected_actions, observer.actions_set());
+    observer.WaitForExpectedActions(expected_actions);
   }
 }
 
@@ -728,7 +692,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverOnNavigation) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.source_title = base::ASCIIToUTF16("http://www.google.com");
-  EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
+  observer.WaitForExpectedMetadata(expected_metadata);
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
@@ -739,9 +703,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
@@ -753,9 +715,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
@@ -769,18 +729,14 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-
-  EXPECT_EQ(GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward),
-            observer.actions_set());
+  observer.WaitForExpectedActions(
+      GetDefaultActionsWithExtra(MediaSessionAction::kSeekForward));
 
   DestroyServiceForFrame(main_frame_);
 
   EXPECT_EQ(nullptr, ComputeServiceForRouting());
 
-  observer.WaitForActions();
-
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 }  // namespace content

@@ -352,8 +352,7 @@ TEST_F(MediaSessionImplTest, SuspendUI) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
@@ -371,8 +370,7 @@ TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
@@ -390,8 +388,7 @@ TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
@@ -408,8 +405,7 @@ TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, ResumeUI) {
@@ -425,8 +421,7 @@ TEST_F(MediaSessionImplTest, ResumeUI) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
@@ -444,8 +439,7 @@ TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
@@ -463,8 +457,7 @@ TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
@@ -482,8 +475,7 @@ TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
 
   media_session::test::MockMediaSessionMojoObserver observer(
       *GetMediaSession());
-  observer.WaitForActions();
-  EXPECT_EQ(default_actions(), observer.actions_set());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 #if !defined(OS_ANDROID)

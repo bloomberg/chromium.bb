@@ -40,9 +40,14 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
-  const base::Optional<MediaMetadata>& WaitForMetadata();
-  const MediaMetadata& WaitForNonEmptyMetadata();
-  void WaitForActions();
+  void WaitForControllable(bool is_controllable);
+
+  void WaitForEmptyMetadata();
+  void WaitForExpectedMetadata(const MediaMetadata& metadata);
+
+  void WaitForEmptyActions();
+  void WaitForExpectedActions(
+      const std::set<mojom::MediaSessionAction>& actions);
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -53,12 +58,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     return session_metadata_;
   }
 
-  const std::vector<mojom::MediaSessionAction>& actions() const {
-    return session_actions_;
-  }
-
-  const std::set<mojom::MediaSessionAction>& actions_set() const {
-    return session_actions_set_;
+  const std::set<mojom::MediaSessionAction>& actions() const {
+    return *session_actions_;
   }
 
  private:
@@ -66,12 +67,12 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
-  std::vector<mojom::MediaSessionAction> session_actions_;
-  std::set<mojom::MediaSessionAction> session_actions_set_;
+  base::Optional<std::set<mojom::MediaSessionAction>> session_actions_;
 
-  bool waiting_for_metadata_ = false;
-  bool waiting_for_non_empty_metadata_ = false;
-  bool waiting_for_actions_ = false;
+  base::Optional<MediaMetadata> expected_metadata_;
+  base::Optional<std::set<mojom::MediaSessionAction>> expected_actions_;
+  base::Optional<bool> expected_controllable_;
+  bool waiting_for_empty_metadata_ = false;
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
