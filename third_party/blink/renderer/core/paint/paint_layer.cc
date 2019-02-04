@@ -599,20 +599,20 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
   if (!paint_invalidation_layer->GroupedMapping())
     return;
 
-  LayoutBoxModelObject& transformed_ancestor =
-      paint_invalidation_layer->TransformAncestorOrRoot().GetLayoutObject();
+  GraphicsLayer* squashing_layer =
+      paint_invalidation_layer->GroupedMapping()->SquashingLayer();
 
-  // |paintInvalidationContainer| may have a local 2D transform on it, so take
-  // that into account when mapping into the space of the transformed ancestor.
-  point = paint_invalidation_container.LocalToAncestorPoint(
-      point, &transformed_ancestor);
-  // Don't include composited scroll offsets, since
-  // SquashingOffsetFromTransformedAncestor does not.
-  if (transformed_ancestor.UsesCompositedScrolling())
-    point.Move(ToLayoutBox(transformed_ancestor).ScrolledContentOffset());
+  PropertyTreeState source_state =
+      paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
+  PropertyTreeState dest_state = squashing_layer->GetPropertyTreeState();
 
-  point.MoveBy(-paint_invalidation_layer->GroupedMapping()
-                    ->SquashingOffsetFromTransformedAncestor());
+  // Move the point into the source_state transform space, map to dest_state
+  // transform space, then move into squashing layer state.
+  point.MoveBy(paint_invalidation_container.FirstFragment().PaintOffset());
+  point = GeometryMapper::SourceToDestinationProjection(
+              source_state.Transform(), dest_state.Transform())
+              .MapPoint(point);
+  point.MoveBy(-squashing_layer->GetOffsetFromTransformNode());
 }
 
 void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
@@ -622,22 +622,20 @@ void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
   if (!paint_invalidation_layer->GroupedMapping())
     return;
 
-  LayoutBoxModelObject& transformed_ancestor =
-      paint_invalidation_layer->TransformAncestorOrRoot().GetLayoutObject();
+  GraphicsLayer* squashing_layer =
+      paint_invalidation_layer->GroupedMapping()->SquashingLayer();
 
-  // |paintInvalidationContainer| may have a local 2D transform on it, so take
-  // that into account when mapping into the space of the transformed ancestor.
-  rect = LayoutRect(
-      paint_invalidation_container
-          .LocalToAncestorQuad(FloatRect(rect), &transformed_ancestor)
-          .BoundingBox());
-  // Don't include composited scroll offsets, since
-  // SquashingOffsetFromTransformedAncestor does not.
-  if (transformed_ancestor.UsesCompositedScrolling())
-    rect.Move(ToLayoutBox(transformed_ancestor).ScrolledContentOffset());
+  PropertyTreeState source_state =
+      paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
+  PropertyTreeState dest_state = squashing_layer->GetPropertyTreeState();
 
-  rect.MoveBy(-paint_invalidation_layer->GroupedMapping()
-                   ->SquashingOffsetFromTransformedAncestor());
+  // Move the point into the source_state transform space, map to dest_state
+  // transform space, then move into squashing layer state.
+  rect.MoveBy(paint_invalidation_container.FirstFragment().PaintOffset());
+  rect = GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
+                                                       dest_state.Transform())
+             .MapRect(rect);
+  rect.MoveBy(-squashing_layer->GetOffsetFromTransformNode());
 }
 
 void PaintLayer::DirtyVisibleContentStatus() {
