@@ -138,12 +138,14 @@ class InterceptedRequest : public network::mojom::URLLoader,
 
   // TODO(timvolodine): consider factoring this out of this class.
   void OnReceivedErrorToCallback(int error_code);
+  bool ShouldNotInterceptRequest();
 
   const int process_id_;
   const uint64_t request_id_;
   const int32_t routing_id_;
   const uint32_t options_;
   bool input_stream_previously_failed_ = false;
+  bool request_was_redirected_ = false;
 
   network::ResourceRequest request_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -247,15 +249,16 @@ void InterceptedRequest::Restart() {
   request_.load_flags =
       UpdateLoadFlags(request_.load_flags, io_thread_client.get());
 
-  if (!input_stream_previously_failed_ &&
-      (request_.url.SchemeIs(url::kContentScheme) ||
-       android_webview::IsAndroidSpecialFileUrl(request_.url))) {
-    // Do not call shouldInterceptRequest callback for special android urls,
-    // unless they fail to load on first attempt. Special android urls are urls
-    // such as "file:///android_asset/", "file:///android_res/" urls or
-    // "content:" scheme urls.
+  if (ShouldNotInterceptRequest()) {
+    // equivalent to no interception
     InterceptResponseReceived(nullptr);
   } else {
+    if (request_.referrer.is_valid()) {
+      // intentionally override if referrer header already exists
+      request_.headers.SetHeader(net::HttpRequestHeaders::kReferer,
+                                 request_.referrer.spec());
+    }
+
     // TODO: verify the case when WebContents::RenderFrameDeleted is called
     // before network request is intercepted (i.e. if that's possible and
     // whether it can result in any issues).
@@ -264,6 +267,20 @@ void InterceptedRequest::Restart() {
         base::BindOnce(&InterceptedRequest::InterceptResponseReceived,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+// logic for when not to invoke shouldInterceptRequest callback
+bool InterceptedRequest::ShouldNotInterceptRequest() {
+  if (request_was_redirected_)
+    return true;
+
+  // Do not call shouldInterceptRequest callback for special android urls,
+  // unless they fail to load on first attempt. Special android urls are urls
+  // such as "file:///android_asset/", "file:///android_res/" urls or
+  // "content:" scheme urls.
+  return !input_stream_previously_failed_ &&
+         (request_.url.SchemeIs(url::kContentScheme) ||
+          android_webview::IsAndroidSpecialFileUrl(request_.url));
 }
 
 void SetRequestedWithHeader(net::HttpRequestHeaders& headers) {
@@ -440,6 +457,7 @@ void InterceptedRequest::OnReceiveRedirect(
     const network::ResourceResponseHead& head) {
   // TODO(timvolodine): handle redirect override.
   // TODO(timvolodine): handle unsafe redirect case.
+  request_was_redirected_ = true;
   target_client_->OnReceiveRedirect(redirect_info, head);
   request_.url = redirect_info.new_url;
   request_.method = redirect_info.new_method;
