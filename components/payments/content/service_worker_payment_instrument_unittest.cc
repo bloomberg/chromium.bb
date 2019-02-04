@@ -8,8 +8,10 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -237,6 +239,23 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, CreateCanMakePaymentEvent) {
   EXPECT_EQ(event_data->modifiers[0]->total->amount->currency, "USD");
   EXPECT_EQ(event_data->modifiers[0]->method_data->supported_method,
             "https://bobpay.com");
+}
+
+// Test the case when CanMakePaymentEvent cannot be fired. The instrument should
+// be considered valid, but not ready for payment.
+TEST_F(ServiceWorkerPaymentInstrumentTest, ValidateCanMakePayment) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPaymentRequestHasEnrolledInstrument);
+
+  // CanMakePaymentEvent is not fired because this test instrument does not have
+  // any explicitly verified methods.
+  CreateServiceWorkerPaymentInstrument(/*with_url_method=*/true);
+  GetInstrument()->ValidateCanMakePayment(
+      base::BindOnce([](ServiceWorkerPaymentInstrument*, bool result) {
+        EXPECT_TRUE(result);
+      }));
+  EXPECT_FALSE(GetInstrument()->IsValidForCanMakePayment());
 }
 
 // Test modifiers can be matched based on capabilities.

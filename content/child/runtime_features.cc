@@ -322,6 +322,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnablePaymentRequest(
       base::FeatureList::IsEnabled(features::kWebPayments));
 
+  WebRuntimeFeatures::EnablePaymentRequestHasEnrolledInstrument(
+      base::FeatureList::IsEnabled(
+          features::kPaymentRequestHasEnrolledInstrument));
+
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps))
     WebRuntimeFeatures::EnablePaymentApp(true);
 
