@@ -54,13 +54,13 @@ base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service,
                       : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
 }
 
-void GetStatusForActionableError(const syncer::SyncProtocolError& error,
+void GetStatusForActionableError(syncer::ClientAction action,
                                  base::string16* status_label,
                                  base::string16* link_label,
                                  ActionType* action_type) {
   DCHECK(status_label);
   DCHECK(link_label);
-  switch (error.action) {
+  switch (action) {
     case syncer::UPGRADE_CLIENT:
       status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT));
       link_label->assign(
@@ -87,7 +87,7 @@ void GetStatusForUnrecoverableError(Profile* profile,
   // unrecoverable error message.
   syncer::SyncStatus status;
   service->QueryDetailedSyncStatus(&status);
-  GetStatusForActionableError(status.sync_protocol_error, status_label,
+  GetStatusForActionableError(status.sync_protocol_error.action, status_label,
                               link_label, action_type);
   if (status_label->empty()) {
     *action_type = REAUTHENTICATE;
@@ -111,16 +111,16 @@ void GetStatusForUnrecoverableError(Profile* profile,
 
 // Depending on the authentication state, returns labels to be used to display
 // information about the sync status.
-void GetStatusForAuthError(Profile* profile,
+void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
                            base::string16* status_label,
                            base::string16* link_label,
                            ActionType* action_type) {
   DCHECK(status_label);
   DCHECK(link_label);
-  const GoogleServiceAuthError::State state =
-      SigninErrorControllerFactory::GetForProfile(profile)->
-          auth_error().state();
-  switch (state) {
+  switch (auth_error.state()) {
+    case GoogleServiceAuthError::NONE:
+      NOTREACHED();
+      break;
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
@@ -160,7 +160,8 @@ MessageType GetStatusInfo(Profile* profile,
   }
 
   // Needed to check the state of the authentication process below.
-  auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
+  const auto* primary_account_mutator =
+      identity_manager->GetPrimaryAccountMutator();
 
   if (service->GetUserSettings()->IsFirstSetupComplete() ||
       service->HasDisableReason(
@@ -193,7 +194,8 @@ MessageType GetStatusInfo(Profile* profile,
         SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
     if (auth_error.state() != GoogleServiceAuthError::NONE) {
       if (status_label && link_label) {
-        GetStatusForAuthError(profile, status_label, link_label, action_type);
+        GetStatusForAuthError(auth_error, status_label, link_label,
+                              action_type);
       }
       return SYNC_ERROR;
     }
@@ -202,16 +204,15 @@ MessageType GetStatusInfo(Profile* profile,
     syncer::SyncStatus status;
     service->QueryDetailedSyncStatus(&status);
     if (status_label && link_label) {
-      GetStatusForActionableError(status.sync_protocol_error, status_label,
-                                  link_label, action_type);
+      GetStatusForActionableError(status.sync_protocol_error.action,
+                                  status_label, link_label, action_type);
       if (!status_label->empty()) {
         return SYNC_ERROR;
       }
     }
 
     // Check for a passphrase error.
-    if (service->GetUserSettings()->IsPassphraseRequired() &&
-        service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
+    if (service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
       if (status_label && link_label) {
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
@@ -222,7 +223,7 @@ MessageType GetStatusInfo(Profile* profile,
       return SYNC_ERROR;
     }
 
-    bool sync_everything =
+    const bool sync_everything =
         service->GetUserSettings()->IsSyncEverythingEnabled();
 
     // Check to see if sync has been disabled via the dasboard and needs to be
@@ -265,7 +266,8 @@ MessageType GetStatusInfo(Profile* profile,
     } else if (auth_error.state() != GoogleServiceAuthError::NONE &&
                auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
       if (status_label && link_label) {
-        GetStatusForAuthError(profile, status_label, link_label, action_type);
+        GetStatusForAuthError(auth_error, status_label, link_label,
+                              action_type);
       }
       result_type = SYNC_ERROR;
     }
@@ -275,7 +277,7 @@ MessageType GetStatusInfo(Profile* profile,
       GetStatusForUnrecoverableError(profile, service, status_label, link_label,
                                      action_type);
     }
-  } else if (identity_manager->HasPrimaryAccount()) {
+  } else {
     if (ShouldRequestSyncConfirmation(service)) {
       if (status_label && link_label) {
         status_label->assign(
@@ -396,16 +398,15 @@ MessageType GetStatus(Profile* profile,
 }
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
-  return !service->IsSetupInProgress() &&
-         !service->GetUserSettings()->IsFirstSetupComplete() &&
-         !service->HasDisableReason(
-             syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
-         service->IsAuthenticatedAccountPrimary();
+  return !service->IsLocalSyncEnabled() &&
+         service->GetUserSettings()->IsSyncRequested() &&
+         service->IsAuthenticatedAccountPrimary() &&
+         !service->IsSetupInProgress() &&
+         !service->GetUserSettings()->IsFirstSetupComplete();
 }
 
 bool ShouldShowPassphraseError(const syncer::SyncService* service) {
   return service->GetUserSettings()->IsFirstSetupComplete() &&
-         service->GetUserSettings()->IsPassphraseRequired() &&
          service->GetUserSettings()->IsPassphraseRequiredForDecryption();
 }
 
