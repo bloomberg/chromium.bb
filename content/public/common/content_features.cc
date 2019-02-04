@@ -416,7 +416,7 @@ const base::Feature kSharedArrayBuffer {
 // Origin-Signed HTTP Exchanges (for WebPackage Loading)
 // https://www.chromestatus.com/features/5745285984681984
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Send "Accept: application/signed-exchange" header to origins who opt-in.
 const base::Feature kSignedHTTPExchangeAcceptHeader{

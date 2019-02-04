@@ -46,6 +46,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -3714,7 +3715,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
   ASSERT_TRUE(dict);
 
   // Default headers are present.
-  EXPECT_TRUE(CheckHeader(*dict, "accept", network::kFrameAcceptHeader));
+  EXPECT_TRUE(CheckHeader(*dict, "accept",
+                          std::string(network::kFrameAcceptHeader) +
+                              std::string(kAcceptHeaderSignedExchangeSuffix)));
   // Injected headers are present.
   EXPECT_TRUE(CheckHeader(*dict, "x-injected", "injected value"));
 
