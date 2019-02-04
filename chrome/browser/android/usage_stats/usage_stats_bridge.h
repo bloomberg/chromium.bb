@@ -45,7 +45,7 @@ class UsageStatsBridge {
 
   void AddEvents(JNIEnv* j_env,
                  const JavaRef<jobject>& j_this,
-                 const JavaRef<jobjectArray>& j_events,
+                 const JavaRef<jobject>& j_events,
                  const JavaRef<jobject>& j_callback);
 
   void DeleteAllEvents(JNIEnv* j_env,
