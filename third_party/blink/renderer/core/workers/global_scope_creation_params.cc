@@ -63,7 +63,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       if (this->off_main_thread_fetch_option ==
           OffMainThreadWorkerScriptFetchOption::kEnabled) {
         DCHECK(base::FeatureList::IsEnabled(
-            features::kOffMainThreadDedicatedWorkerScriptFetch));
+                   features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+               features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
       }
       break;
     case mojom::ScriptType::kModule:

@@ -357,13 +357,16 @@ void WorkerGlobalScope::ImportClassicScript(
     FetchClientSettingsObjectSnapshot* outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadDedicatedWorkerScriptFetch));
+             features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+         features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   DCHECK(!IsContextPaused());
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
   // destination, and inside settings."
   mojom::RequestContextType destination = GetDestinationForMainScript();
-  DCHECK_EQ(mojom::RequestContextType::WORKER, destination);
+  DCHECK(destination == mojom::RequestContextType::WORKER ||
+         destination == mojom::RequestContextType::SHARED_WORKER)
+      << "A wrong destination (" << destination << ") is specified.";
 
   // Step 12.1. "Set request's reserved client to inside settings."
   // The browesr process takes care of this.
@@ -390,7 +393,8 @@ void WorkerGlobalScope::DidReceiveResponseForClassicScript(
     WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
   DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadDedicatedWorkerScriptFetch));
+             features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+         features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   probe::didReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
@@ -400,7 +404,8 @@ void WorkerGlobalScope::DidImportClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
   DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadDedicatedWorkerScriptFetch));
+             features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+         features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
 
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {

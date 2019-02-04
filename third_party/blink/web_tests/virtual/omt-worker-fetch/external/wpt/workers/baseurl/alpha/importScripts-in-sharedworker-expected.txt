@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL importScripts assert_equals: expected "gamma/script.js" but got "beta/script.js"
+Harness: the test ran to completion.
+

@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
@@ -29,6 +28,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
@@ -252,6 +252,33 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
+  if (blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
+    // PlzSharedWorker w/ off-the-main-thread shared worker script fetch:
+    // |response_override_| will be passed to WebWorkerFetchContextImpl in
+    // CreateWorkerFetchContext() and consumed during off-the-main-thread
+    // shared worker script fetch.
+    DCHECK(response_override_);
+    return WebServiceWorkerNetworkProviderImplForWorker::Create(
+        std::move(service_worker_provider_info_),
+        std::move(main_script_loader_factory_), std::move(controller_info_),
+        subresource_loader_factories_, IsOriginSecure(url_),
+        nullptr /* response_override */);
+  }
+
+#if DCHECK_IS_ON()
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // PlzSharedWorker:
+    // |response_override_| is passed to DocumentLoader and consumed during
+    // on-the-main-thread shared worker script fetch.
+    DCHECK(response_override_);
+  } else {
+    // Legacy loading path:
+    // This path will be removed once PlzSharedWorker and off-the-main-thread
+    // shared worker script fetch are enabled by default.
+    DCHECK(!response_override_);
+  }
+#endif  // DCHECK_IS_ON()
+
   return WebServiceWorkerNetworkProviderImplForWorker::Create(
       std::move(service_worker_provider_info_),
       std::move(main_script_loader_factory_), std::move(controller_info_),
@@ -300,6 +327,12 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
+
+  if (response_override_) {
+    DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
+    worker_fetch_context->SetResponseOverrideForMainScript(
+        std::move(response_override_));
+  }
 
   return worker_fetch_context;
 }

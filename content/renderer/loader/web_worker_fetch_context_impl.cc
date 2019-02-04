@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "content/child/child_thread_impl.h"
@@ -15,7 +14,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -35,6 +33,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -373,6 +372,12 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
         ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
   }
+  if (response_override_) {
+    DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
+    DCHECK_EQ(blink::mojom::RequestContextType::SHARED_WORKER,
+              request.GetRequestContext());
+    extra_data->set_navigation_response_override(std::move(response_override_));
+  }
   request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);
 
@@ -480,6 +485,13 @@ void WebWorkerFetchContextImpl::set_origin_url(const GURL& origin_url) {
 
 void WebWorkerFetchContextImpl::set_client_id(const std::string& client_id) {
   client_id_ = client_id;
+}
+
+void WebWorkerFetchContextImpl::SetResponseOverrideForMainScript(
+    std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
+  DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
+  DCHECK(!response_override_);
+  response_override_ = std::move(response_override);
 }
 
 void WebWorkerFetchContextImpl::SetApplicationCacheHostID(int id) {
