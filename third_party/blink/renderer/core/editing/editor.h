@@ -162,10 +162,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   static bool FindString(LocalFrame&, const String&, FindOptions);
 
-  static Range* FindRangeOfString(Document&,
-                                  const String& target,
-                                  const EphemeralRange& reference_range,
-                                  FindOptions);
   static Range* FindRangeOfString(
       Document&,
       const String& target,

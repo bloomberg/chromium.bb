@@ -770,17 +770,16 @@ bool Editor::FindString(LocalFrame& frame,
 // TODO(yosin) We should return |EphemeralRange| rather than |Range|. We use
 // |Range| object for checking whether start and end position crossing shadow
 // boundaries, however we can do it without |Range| object.
-template <typename Strategy>
 static Range* FindStringBetweenPositions(
     const String& target,
-    const EphemeralRangeTemplate<Strategy>& reference_range,
+    const EphemeralRangeInFlatTree& reference_range,
     FindOptions options) {
-  EphemeralRangeTemplate<Strategy> search_range(reference_range);
+  EphemeralRangeInFlatTree search_range(reference_range);
 
   bool forward = !(options & kBackwards);
 
   while (true) {
-    EphemeralRangeTemplate<Strategy> result_range =
+    EphemeralRangeInFlatTree result_range =
         FindPlainText(search_range, target, options);
     if (result_range.IsCollapsed())
       return nullptr;
@@ -797,12 +796,12 @@ static Range* FindStringBetweenPositions(
     // next occurrence.
     // TODO(yosin) Handle this case.
     if (forward) {
-      search_range = EphemeralRangeTemplate<Strategy>(
+      search_range = EphemeralRangeInFlatTree(
           NextPositionOf(result_range.StartPosition(),
                          PositionMoveType::kGraphemeCluster),
           search_range.EndPosition());
     } else {
-      search_range = EphemeralRangeTemplate<Strategy>(
+      search_range = EphemeralRangeInFlatTree(
           search_range.StartPosition(),
           PreviousPositionOf(result_range.EndPosition(),
                              PositionMoveType::kGraphemeCluster));
@@ -813,11 +812,10 @@ static Range* FindStringBetweenPositions(
   return nullptr;
 }
 
-template <typename Strategy>
-static Range* FindRangeOfStringAlgorithm(
+Range* Editor::FindRangeOfString(
     Document& document,
     const String& target,
-    const EphemeralRangeTemplate<Strategy>& reference_range,
+    const EphemeralRangeInFlatTree& reference_range,
     FindOptions options) {
   if (target.IsEmpty())
     return nullptr;
@@ -825,26 +823,27 @@ static Range* FindRangeOfStringAlgorithm(
   // Start from an edge of the reference range. Which edge is used depends on
   // whether we're searching forward or backward, and whether startInSelection
   // is set.
-  EphemeralRangeTemplate<Strategy> document_range =
-      EphemeralRangeTemplate<Strategy>::RangeOfContents(document);
-  EphemeralRangeTemplate<Strategy> search_range(document_range);
+  EphemeralRangeInFlatTree document_range =
+      EphemeralRangeInFlatTree::RangeOfContents(document);
+  EphemeralRangeInFlatTree search_range(document_range);
 
   bool forward = !(options & kBackwards);
   bool start_in_reference_range = false;
   if (reference_range.IsNotNull()) {
     start_in_reference_range = options & kStartInSelection;
-    if (forward && start_in_reference_range)
-      search_range = EphemeralRangeTemplate<Strategy>(
-          reference_range.StartPosition(), document_range.EndPosition());
-    else if (forward)
-      search_range = EphemeralRangeTemplate<Strategy>(
-          reference_range.EndPosition(), document_range.EndPosition());
-    else if (start_in_reference_range)
-      search_range = EphemeralRangeTemplate<Strategy>(
-          document_range.StartPosition(), reference_range.EndPosition());
-    else
-      search_range = EphemeralRangeTemplate<Strategy>(
-          document_range.StartPosition(), reference_range.StartPosition());
+    if (forward && start_in_reference_range) {
+      search_range = EphemeralRangeInFlatTree(reference_range.StartPosition(),
+                                              document_range.EndPosition());
+    } else if (forward) {
+      search_range = EphemeralRangeInFlatTree(reference_range.EndPosition(),
+                                              document_range.EndPosition());
+    } else if (start_in_reference_range) {
+      search_range = EphemeralRangeInFlatTree(document_range.StartPosition(),
+                                              reference_range.EndPosition());
+    } else {
+      search_range = EphemeralRangeInFlatTree(document_range.StartPosition(),
+                                              reference_range.StartPosition());
+    }
   }
 
   Range* result_range =
@@ -855,16 +854,16 @@ static Range* FindRangeOfStringAlgorithm(
   // to remove collapsed whitespace. Compare ranges instead of selection
   // objects to ignore the way that the current selection was made.
   if (result_range && start_in_reference_range &&
-      NormalizeRange(EphemeralRangeTemplate<Strategy>(result_range)) ==
+      NormalizeRange(EphemeralRangeInFlatTree(result_range)) ==
           reference_range) {
     if (forward)
-      search_range = EphemeralRangeTemplate<Strategy>(
-          FromPositionInDOMTree<Strategy>(result_range->EndPosition()),
+      search_range = EphemeralRangeInFlatTree(
+          ToPositionInFlatTree(result_range->EndPosition()),
           search_range.EndPosition());
     else
-      search_range = EphemeralRangeTemplate<Strategy>(
+      search_range = EphemeralRangeInFlatTree(
           search_range.StartPosition(),
-          FromPositionInDOMTree<Strategy>(result_range->StartPosition()));
+          ToPositionInFlatTree(result_range->StartPosition()));
     result_range = FindStringBetweenPositions(target, search_range, options);
   }
 
@@ -872,22 +871,6 @@ static Range* FindRangeOfStringAlgorithm(
     return FindStringBetweenPositions(target, document_range, options);
 
   return result_range;
-}
-
-Range* Editor::FindRangeOfString(Document& document,
-                                 const String& target,
-                                 const EphemeralRange& reference,
-                                 FindOptions options) {
-  return FindRangeOfStringAlgorithm<EditingStrategy>(document, target,
-                                                     reference, options);
-}
-
-Range* Editor::FindRangeOfString(Document& document,
-                                 const String& target,
-                                 const EphemeralRangeInFlatTree& reference,
-                                 FindOptions options) {
-  return FindRangeOfStringAlgorithm<EditingInFlatTreeStrategy>(
-      document, target, reference, options);
 }
 
 void Editor::SetMarkedTextMatchesAreHighlighted(bool flag) {
