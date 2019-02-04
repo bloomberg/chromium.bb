@@ -30,6 +30,10 @@ bool ShouldDisplayManagedUi(Profile* profile) {
   // Don't show the UI in demo mode.
   if (chromeos::DemoSession::IsDeviceInDemoMode())
     return false;
+
+  // Don't show the UI for Unicorn accounts.
+  if (profile->IsSupervised())
+    return false;
 #endif
 
   // This profile may have policies configured.
