@@ -1298,6 +1298,15 @@ void DownloadManagerImpl::BeginDownloadInternal(
   }
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Ideally everywhere a blob: URL is downloaded a URLLoaderFactory for that
+    // blob URL is also passed, but since that isn't always the case, create
+    // a new factory if we don't have one already.
+    if (!blob_url_loader_factory && params->url().SchemeIsBlob()) {
+      blob_url_loader_factory =
+          ChromeBlobStorageContext::URLLoaderFactoryForUrl(browser_context_,
+                                                           params->url());
+    }
+
     auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
                                         params->render_frame_host_routing_id());
     bool content_initiated = params->content_initiated();
