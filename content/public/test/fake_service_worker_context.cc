@@ -63,7 +63,6 @@ void FakeServiceWorkerContext::PerformStorageCleanup(
 }
 void FakeServiceWorkerContext::CheckHasServiceWorker(
     const GURL& url,
-    const GURL& other_url,
     CheckHasServiceWorkerCallback callback) {
   NOTREACHED();
 }

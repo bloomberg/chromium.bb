@@ -713,12 +713,11 @@ void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
 
 void ServiceWorkerContextCore::CheckHasServiceWorker(
     const GURL& url,
-    const GURL& other_url,
     ServiceWorkerContext::CheckHasServiceWorkerCallback callback) {
   storage()->FindRegistrationForDocument(
       url, base::BindOnce(&ServiceWorkerContextCore::
                               DidFindRegistrationForCheckHasServiceWorker,
-                          AsWeakPtr(), other_url, std::move(callback)));
+                          AsWeakPtr(), std::move(callback)));
 }
 
 void ServiceWorkerContextCore::UpdateVersionFailureCount(
@@ -868,16 +867,10 @@ ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {
 }
 
 void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
-    const GURL& other_url,
     ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    std::move(callback).Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
-    return;
-  }
-
-  if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), other_url)) {
     std::move(callback).Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
     return;
   }

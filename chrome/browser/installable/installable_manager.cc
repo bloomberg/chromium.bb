@@ -562,10 +562,9 @@ void InstallableManager::CheckServiceWorker() {
   DCHECK(!manifest().IsEmpty());
   DCHECK(manifest().start_url.is_valid());
 
-  // Check to see if there is a single service worker controlling this page
-  // and the manifest's start url.
+  // Check to see if there is a service worker for the manifest's start url.
   service_worker_context_->CheckHasServiceWorker(
-      GetWebContents()->GetLastCommittedURL(), manifest().start_url,
+      manifest().start_url,
       base::Bind(&InstallableManager::OnDidCheckHasServiceWorker,
                  weak_factory_.GetWeakPtr()));
 }

@@ -1332,6 +1332,30 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(NOT_OFFLINE_CAPABLE, tester->error_code());
 }
 
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckPageWithNestedServiceWorkerCanBeInstalled) {
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(browser(), tester.get(), GetWebAppParams(),
+                                   "/banners/nested_sw_test_page.html");
+
+  RunInstallableManager(browser(), tester.get(), GetWebAppParams());
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+
+  EXPECT_FALSE(tester->primary_icon_url().is_empty());
+  EXPECT_NE(nullptr, tester->primary_icon());
+  EXPECT_TRUE(tester->valid_manifest());
+  EXPECT_TRUE(tester->has_worker());
+  EXPECT_TRUE(tester->badge_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->badge_icon());
+  EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
+}
+
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
   // Verify that InstallableManager can handle data URL icons.
   base::RunLoop run_loop;

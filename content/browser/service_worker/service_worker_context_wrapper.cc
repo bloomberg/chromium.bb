@@ -430,13 +430,12 @@ void ServiceWorkerContextWrapper::PerformStorageCleanup(
 
 void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     const GURL& url,
-    const GURL& other_url,
     CheckHasServiceWorkerCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerContextWrapper::CheckHasServiceWorker,
-                       this, url, other_url, std::move(callback)));
+                       this, url, std::move(callback)));
     return;
   }
   if (!context_core_) {
@@ -447,7 +446,7 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     return;
   }
   context()->CheckHasServiceWorker(
-      net::SimplifyUrlForRequest(url), net::SimplifyUrlForRequest(other_url),
+      net::SimplifyUrlForRequest(url),
       base::BindOnce(&ServiceWorkerContextWrapper::DidCheckHasServiceWorker,
                      this, std::move(callback)));
 }

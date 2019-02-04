@@ -270,12 +270,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void ClearAllServiceWorkersForTest(base::OnceClosure callback);
 
-  // Determines if there is a ServiceWorker registration that matches |url|, and
-  // if |other_url| falls inside the scope of the same registration. See
-  // ServiceWorkerContext::CheckHasServiceWorker for more details.
+  // Determines if there is a ServiceWorker registration that matches
+  // |url|. See ServiceWorkerContext::CheckHasServiceWorker for more
+  // details.
   void CheckHasServiceWorker(
       const GURL& url,
-      const GURL& other_url,
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback);
 
   void UpdateVersionFailureCount(int64_t version_id,
@@ -336,7 +335,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
           registrations);
 
   void DidFindRegistrationForCheckHasServiceWorker(
-      const GURL& other_url,
       ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
