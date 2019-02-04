@@ -15,7 +15,7 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(InitParams init_params)
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {}
 
-SyncUserSettingsMock* ProfileSyncServiceMock::GetUserSettingsMock() {
+syncer::SyncUserSettingsMock* ProfileSyncServiceMock::GetUserSettingsMock() {
   return &user_settings_;
 }
 
