@@ -2159,7 +2159,9 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     DCHECK(Layer()->HasCompositedLayerMapping());
     ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator();
     bool handled_scroll =
-        Layer()->IsRootLayer() && scrolling_coordinator &&
+        (Layer()->IsRootLayer() ||
+         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) &&
+        scrolling_coordinator &&
         scrolling_coordinator->UpdateCompositedScrollOffset(this);
 
     if (!handled_scroll) {
