@@ -1716,7 +1716,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
         GetProcess()->GetID(), proxy_routing_id);
     // We have also created a RenderFrameProxy in CreateFrame above, so
     // remember that.
-    proxy->SetRenderFrameProxyCreated(true);
+    proxy->set_render_frame_proxy_created(true);
   }
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
@@ -2292,7 +2292,7 @@ void RenderFrameHostImpl::SwapOut(
                               replication_state));
     // Remember that a RenderFrameProxy was created as part of processing the
     // SwapOut message above.
-    proxy->SetRenderFrameProxyCreated(true);
+    proxy->set_render_frame_proxy_created(true);
 
     StartPendingDeletionOnSubtree();
   }

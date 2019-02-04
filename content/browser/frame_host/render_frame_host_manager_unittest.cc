@@ -106,19 +106,6 @@ void CheckInsecureRequestPolicyIPC(
   EXPECT_EQ(expected_param, std::get<0>(params));
 }
 
-// Helper function to find a message with the specified type and routing ID in
-// an IPC sink.
-bool FindMessageForRoutingId(const IPC::TestSink& sink,
-                             uint32_t type,
-                             int routing_id) {
-  for (size_t i = 0; i < sink.message_count(); i++) {
-    const IPC::Message* msg = sink.GetMessageAt(i);
-    if (msg->type() == type && msg->routing_id() == routing_id)
-      return true;
-  }
-  return false;
-}
-
 class RenderFrameHostManagerTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
@@ -3162,68 +3149,6 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_EQ(
       blink::kLeaveInsecureRequestsAlone,
       root->child_at(0)->current_replication_state().insecure_request_policy);
-}
-
-// Tests that new frame proxies receive an IPC to update their loading state,
-// if they are created for a frame that's currently loading.  See
-// https://crbug.com/916137.
-TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
-       NewProxyReceivesLoadingState) {
-  const GURL kUrl1("http://www.chromium.org");
-  const GURL kUrl2("http://www.google.com");
-  const GURL kUrl3("http://foo.com");
-
-  // Navigate main frame to |kUrl1| and commit, but don't simulate
-  // DidStopLoading.  The main frame should still be considered loading at this
-  // point.
-  contents()->NavigateAndCommit(kUrl1);
-  FrameTreeNode* root = contents()->GetFrameTree()->root();
-  EXPECT_TRUE(root->IsLoading());
-
-  // Create a child frame.
-  TestRenderFrameHost* child_host = main_test_rfh()->AppendChild("subframe");
-
-  // Navigate the child cross-site.  Main frame should still be loading after
-  // this point.
-  child_host = static_cast<TestRenderFrameHost*>(
-      NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, child_host));
-  EXPECT_TRUE(root->IsLoading());
-
-  // Verify that parent and child are in different processes, and that there's
-  // a proxy for the main frame in the child frame's process.
-  ASSERT_NE(child_host->GetProcess(), main_test_rfh()->GetProcess());
-  RenderFrameProxyHost* proxy_to_child =
-      root->render_manager()->GetRenderFrameProxyHost(
-          child_host->GetSiteInstance());
-  ASSERT_TRUE(proxy_to_child);
-  ASSERT_EQ(proxy_to_child->GetProcess(), child_host->GetProcess());
-
-  // Since the main frame was loading at the time the main frame proxy was
-  // created in child frame's process, verify that we sent a separate IPC to
-  // update the proxy's loading state.  Note that we'll create two proxies for
-  // the main frame and subframe, and we're interested in the message for
-  // the main frame proxy.
-  EXPECT_TRUE(FindMessageForRoutingId(child_host->GetProcess()->sink(),
-                                      FrameMsg_DidStartLoading::ID,
-                                      proxy_to_child->GetRoutingID()));
-
-  // Simulate load stop in the main frame.
-  main_test_rfh()->ResetLoadingState();
-
-  // Navigate the child to a third site.
-  child_host = static_cast<TestRenderFrameHost*>(
-      NavigationSimulator::NavigateAndCommitFromDocument(kUrl3, child_host));
-  proxy_to_child = root->render_manager()->GetRenderFrameProxyHost(
-      child_host->GetSiteInstance());
-  ASSERT_TRUE(proxy_to_child);
-  ASSERT_EQ(proxy_to_child->GetProcess(), child_host->GetProcess());
-
-  // Since this time the main frame wasn't loading at the time |proxy_to_child|
-  // was created in the process for |kUrl3|, verify that we didn't send any
-  // extra IPCs to update that proxy's loading state.
-  EXPECT_FALSE(FindMessageForRoutingId(child_host->GetProcess()->sink(),
-                                       FrameMsg_DidStartLoading::ID,
-                                       proxy_to_child->GetRoutingID()));
 }
 
 // Tests that a BeginNavigation IPC from a no longer active RFH is ignored.

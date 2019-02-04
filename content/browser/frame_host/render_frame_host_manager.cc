@@ -828,7 +828,7 @@ RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
       relation(relation_to_current) {}
 
 void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
-  GetRenderFrameProxyHost(instance)->SetRenderFrameProxyCreated(false);
+  GetRenderFrameProxyHost(instance)->set_render_frame_proxy_created(false);
 }
 
 void RenderFrameHostManager::CancelPendingIfNecessary(
@@ -1929,7 +1929,7 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
       false /* is_loading */,
       render_frame_host->frame_tree_node()->current_replication_state()));
-  proxy->SetRenderFrameProxyCreated(true);
+  proxy->set_render_frame_proxy_created(true);
 
   // There is no longer a RenderFrame associated with this RenderFrameHost.
   render_frame_host->SetRenderFrameCreated(false);
@@ -1963,7 +1963,7 @@ bool RenderFrameHostManager::InitRenderView(
       frame_tree_node_->current_replication_state());
 
   if (created && proxy)
-    proxy->SetRenderFrameProxyCreated(true);
+    proxy->set_render_frame_proxy_created(true);
 
   return created;
 }

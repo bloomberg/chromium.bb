@@ -213,7 +213,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
       frame_tree_node_->current_replication_state(),
       frame_tree_node_->devtools_frame_token());
 
-  SetRenderFrameProxyCreated(true);
+  set_render_frame_proxy_created(true);
 
   // For subframes, initialize the proxy's FrameOwnerProperties only if they
   // differ from default values.
@@ -255,17 +255,6 @@ void RenderFrameProxyHost::BubbleLogicalScroll(
     blink::WebScrollDirection direction,
     blink::WebScrollGranularity granularity) {
   Send(new FrameMsg_BubbleLogicalScroll(routing_id_, direction, granularity));
-}
-
-void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
-  bool was_created = render_frame_proxy_created_;
-  render_frame_proxy_created_ = created;
-
-  // If this proxy was created for a frame that hasn't yet finished loading,
-  // let the renderer know so it can also mark the proxy as loading. See
-  // https://crbug.com/916137.
-  if (!was_created && created && frame_tree_node_->IsLoading())
-    Send(new FrameMsg_DidStartLoading(routing_id_));
 }
 
 void RenderFrameProxyHost::SetDestructionCallback(
