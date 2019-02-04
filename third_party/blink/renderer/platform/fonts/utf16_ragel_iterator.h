@@ -39,7 +39,9 @@ class PLATFORM_EXPORT UTF16RagelIterator {
     return ret;
   }
 
-  unsigned cursor() { return cursor_; }
+  UTF16RagelIterator& SetCursor(unsigned new_cursor);
+
+  unsigned Cursor() { return cursor_; }
 
   UTF16RagelIterator& operator+=(int v) {
     if (v > 0) {

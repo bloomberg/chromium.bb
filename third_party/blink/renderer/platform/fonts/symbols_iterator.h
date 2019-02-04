@@ -7,9 +7,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
-#include "third_party/blink/renderer/platform/fonts/font_orientation.h"
-#include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
-#include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_ragel_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -25,17 +23,13 @@ class PLATFORM_EXPORT SymbolsIterator {
   bool Consume(unsigned* symbols_limit, FontFallbackPriority*);
 
  private:
-  FontFallbackPriority FontFallbackPriorityForCharacter(UChar32);
+  UTF16RagelIterator buffer_iterator_;
+  unsigned cursor_;
 
-  std::unique_ptr<UTF16TextIterator> utf16_iterator_;
-  unsigned buffer_size_;
-  UChar32 next_char_;
-  bool at_end_;
-
-  FontFallbackPriority current_font_fallback_priority_;
-  FontFallbackPriority previous_font_fallback_priority_;
+  unsigned next_token_end_;
+  bool next_token_emoji_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SYMBOLS_ITERATOR_H_

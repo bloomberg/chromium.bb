@@ -57,7 +57,17 @@ char EmojiSegmentationCategory(UChar32 codepoint) {
 
 }  // namespace
 
+UTF16RagelIterator& UTF16RagelIterator::SetCursor(unsigned new_cursor) {
+  CHECK_GE(new_cursor, 0u);
+  CHECK_LT(new_cursor, buffer_size_);
+  cursor_ = new_cursor;
+  UpdateCachedCategory();
+  return *this;
+}
+
 void UTF16RagelIterator::UpdateCachedCategory() {
+  if (cursor_ >= buffer_size_)
+    return;
   cached_category_ = EmojiSegmentationCategory(Codepoint());
 }
 
