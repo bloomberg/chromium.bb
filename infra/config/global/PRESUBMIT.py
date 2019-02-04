@@ -19,7 +19,8 @@ def _CommonChecks(input_api, output_api):
           name='lint-luci-milo',
           cmd=[input_api.python_executable, 'lint-luci-milo.py'],
           kwargs={},
-          message=output_api.PresubmitError),
+          message=output_api.PresubmitError))
+    commands.append(
       # Technically doesn't rely on lint-luci-milo.py, but is a lightweight
       # enough check it should be fine to trigger.
       input_api.Command(
