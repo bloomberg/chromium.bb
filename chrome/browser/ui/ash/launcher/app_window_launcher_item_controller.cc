@@ -123,14 +123,6 @@ void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
   ShowAndActivateOrMinimize(*it);
 }
 
-ui::BaseWindow* AppWindowLauncherItemController::GetLastActiveWindow() {
-  if (last_active_window_)
-    return last_active_window_;
-  if (windows_.empty())
-    return nullptr;
-  return windows_.front();
-}
-
 void AppWindowLauncherItemController::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
@@ -148,6 +140,14 @@ void AppWindowLauncherItemController::OnWindowPropertyChanged(
   } else if (key == aura::client::kAppIconKey) {
     UpdateShelfItemIcon();
   }
+}
+
+ui::BaseWindow* AppWindowLauncherItemController::GetLastActiveWindow() {
+  if (last_active_window_)
+    return last_active_window_;
+  if (windows_.empty())
+    return nullptr;
+  return windows_.front();
 }
 
 ash::ShelfAction AppWindowLauncherItemController::ShowAndActivateOrMinimize(
