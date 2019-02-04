@@ -216,7 +216,7 @@ void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
   // TODO(dglazkov): This code is clearly in the wrong place. Need
   // to investigate what it is doing and fix (http://crbug.com/606164).
   WebNode context_node = frame->ContextMenuNode();
-  if (!context_node.IsNull() && context_node.IsElementNode()) {
+  if (!context_node.IsNull()) {
     frame->ReloadImage(context_node);
   }
 }

@@ -567,9 +567,24 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverLoadImage) {
       web_contents()->GetMainFrame(), params);
   AppendImageItems(menu.get());
 
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_IMAGE));
 
   DestroyDataReductionProxySettings();
+}
+
+// Check that if image is broken "Load image" menu item is present.
+TEST_F(RenderViewContextMenuPrefsTest, LoadBrokenImage) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kLoadBrokenImagesFromContextMenu);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.unfiltered_link_url = params.link_url;
+  params.has_image_contents = false;
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      web_contents()->GetMainFrame(), params);
+  AppendImageItems(menu.get());
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_IMAGE));
 }
 
 // Verify that the suggested file name is propagated to web contents when save a

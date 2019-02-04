@@ -45765,7 +45765,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="63" label="IDC_WRITING_DIRECTION_DEFAULT"/>
   <int value="64" label="IDC_WRITING_DIRECTION_LTR"/>
   <int value="65" label="IDC_WRITING_DIRECTION_RTL"/>
-  <int value="66" label="IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE"/>
+  <int value="66" label="IDC_CONTENT_CONTEXT_LOAD_IMAGE"/>
   <int value="67" label="IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD"/>
   <int value="68" label="IDC_ROUTE_MEDIA"/>
   <int value="69" label="IDC_CONTENT_CONTEXT_COPYLINKTEXT"/>

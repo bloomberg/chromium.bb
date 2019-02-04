@@ -493,6 +493,10 @@ const base::Feature kNupPrinting{"NupPrinting",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Load image context menu item for broken images.
+const base::Feature kLoadBrokenImagesFromContextMenu{
+    "LoadBrokenImagesFromContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
