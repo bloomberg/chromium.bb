@@ -640,6 +640,9 @@ extern const char kEffectiveConnectionType4GDescription[];
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
 
+extern const char kFillOnAccountSelectHttpName[];
+extern const char kFillOnAccountSelectHttpDescription[];
+
 extern const char kForceTextDirectionName[];
 extern const char kForceTextDirectionDescription[];
 extern const char kForceDirectionLtr[];
