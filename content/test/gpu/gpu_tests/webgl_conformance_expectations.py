@@ -669,7 +669,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # These video tests appear to be flaky.
     self.Flaky('conformance/textures/video/' +
         'tex-2d-alpha-alpha-unsigned_byte.html',
-        ['android', 'mac', 'no_angle'], bug=733599)
+        ['android', 'no_angle'], bug=733599)
     self.Flaky('conformance/textures/video/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['android', 'no_angle'], bug=733599)
