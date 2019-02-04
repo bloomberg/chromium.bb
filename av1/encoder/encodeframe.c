@@ -3736,7 +3736,7 @@ static int simple_motion_search_get_best_ref(
 // After this function is called, we will store the following to features:
 // features[0:17] = var and sse from subblocks
 // features[18] = DC q_index
-#define NUM_FEATURES 19
+#define NUM_FEATURES 25
 static void simple_motion_search_prune_part_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, float *features) {
@@ -3752,15 +3752,15 @@ static void simple_motion_search_prune_part_features(
   // Setting up motion search
   const int ref_list[] = { LAST_FRAME, ALTREF_FRAME };
   const int num_refs = 2;
-  const int use_subpixel = 0;
+  const int use_subpixel = 1;
 
-  unsigned int none_sse = 0, none_var = 0;
   unsigned int int_features[NUM_FEATURES - 1];
 
   // Doing whole block first to update the mv
-  simple_motion_search_get_best_ref(cpi, x, pc_tree, mi_row, mi_col, bsize,
-                                    ref_list, num_refs, use_subpixel, 4,
-                                    &none_sse, &none_var);
+  simple_motion_search_get_best_ref(
+      cpi, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs, use_subpixel,
+      4, &int_features[f_idx], &int_features[f_idx + 1]);
+  f_idx += 2;
 
   // Split subblocks
   BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
@@ -3771,7 +3771,7 @@ static void simple_motion_search_prune_part_features(
 
     simple_motion_search_get_best_ref(
         cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
-        use_subpixel, r_idx, &int_features[f_idx + 1], &int_features[f_idx]);
+        use_subpixel, r_idx, &int_features[f_idx], &int_features[f_idx + 1]);
     f_idx += 2;
   }
 
@@ -3783,7 +3783,7 @@ static void simple_motion_search_prune_part_features(
 
     simple_motion_search_get_best_ref(
         cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
-        use_subpixel, -1, &int_features[f_idx + 1], &int_features[f_idx]);
+        use_subpixel, -1, &int_features[f_idx], &int_features[f_idx + 1]);
 
     f_idx += 2;
   }
@@ -3796,14 +3796,10 @@ static void simple_motion_search_prune_part_features(
 
     simple_motion_search_get_best_ref(
         cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
-        use_subpixel, -1, &int_features[f_idx + 1], &int_features[f_idx]);
+        use_subpixel, -1, &int_features[f_idx], &int_features[f_idx + 1]);
 
     f_idx += 2;
   }
-
-  // Whole block
-  int_features[f_idx++] = none_var;
-  int_features[f_idx++] = none_sse;
 
   aom_clear_system_state();
   for (int idx = 0; idx < f_idx; idx++) {
@@ -3816,6 +3812,18 @@ static void simple_motion_search_prune_part_features(
   // Q_INDEX
   const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
   features[f_idx++] = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
+
+  // Neighbor stuff
+  const int has_above = !!xd->above_mbmi;
+  const int has_left = !!xd->left_mbmi;
+  const BLOCK_SIZE above_bsize = has_above ? xd->above_mbmi->sb_type : bsize;
+  const BLOCK_SIZE left_bsize = has_left ? xd->left_mbmi->sb_type : bsize;
+  features[f_idx++] = (float)has_above;
+  features[f_idx++] = (float)mi_size_wide_log2[above_bsize];
+  features[f_idx++] = (float)mi_size_high_log2[above_bsize];
+  features[f_idx++] = (float)has_left;
+  features[f_idx++] = (float)mi_size_wide_log2[left_bsize];
+  features[f_idx++] = (float)mi_size_high_log2[left_bsize];
 
   assert(f_idx == NUM_FEATURES);
 }
@@ -3870,6 +3878,9 @@ static void simple_motion_search_prune_part(
   // If there is no valid threshold, return immediately.
   if (!nn_config || (prune_thresh[PARTITION_HORZ] == 0.0f &&
                      prune_thresh[PARTITION_VERT] == 0.0f)) {
+    return;
+  }
+  if (bsize < BLOCK_8X8) {
     return;
   }
 
@@ -4213,6 +4224,9 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
   const int try_prune_rect =
       cpi->sf.simple_motion_search_prune_rect && !frame_is_intra_only(cm) &&
+      do_rectangular_split &&
+      (do_square_split || partition_none_allowed ||
+       (prune_horz && prune_vert)) &&
       (partition_horz_allowed || partition_vert_allowed) && bsize >= BLOCK_8X8;
 
   if (try_prune_rect) {
