@@ -9,10 +9,8 @@
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/observer_list.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-class SigninManagerFactoryObserver;
 class SigninManager;
 class PrefRegistrySimple;
 
@@ -40,29 +38,15 @@ class SigninManagerFactory : public BrowserStateKeyedServiceFactory {
   // Registers the browser-global prefs used by SigninManager.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Methods to register or remove observers of SigninManager creation/shutdown.
-  void AddObserver(SigninManagerFactoryObserver* observer);
-  void RemoveObserver(SigninManagerFactoryObserver* observer);
-
-  // Notifies observers of |manager|'s creation. Should be called only by test
-  // SigninManager subclasses whose construction does not occur in
-  // |BuildServiceInstanceFor()|.
-  void NotifyObserversOfSigninManagerCreationForTesting(SigninManager* manager);
-
  private:
   friend class base::NoDestructor<SigninManagerFactory>;
 
   SigninManagerFactory();
   ~SigninManagerFactory() override;
 
-  // List of observers. Checks that list is empty on destruction.
-  mutable base::ObserverList<SigninManagerFactoryObserver, true>::Unchecked
-      observer_list_;
-
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
-  void BrowserStateShutdown(web::BrowserState* context) override;
 };
 }
 

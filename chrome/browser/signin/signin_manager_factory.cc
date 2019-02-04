@@ -91,20 +91,6 @@ void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
   SigninManagerBase::RegisterPrefs(registry);
 }
 
-void SigninManagerFactory::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void SigninManagerFactory::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-void SigninManagerFactory::NotifyObserversOfSigninManagerCreationForTesting(
-    SigninManagerBase* manager) {
-  for (Observer& observer : observer_list_)
-    observer.SigninManagerCreated(manager);
-}
-
 KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   SigninManagerBase* service = NULL;
@@ -124,18 +110,5 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
 #endif
   AccountFetcherServiceFactory::GetForProfile(profile);
   service->Initialize(g_browser_process->local_state());
-  for (Observer& observer : observer_list_)
-    observer.SigninManagerCreated(service);
   return service;
-}
-
-void SigninManagerFactory::BrowserContextShutdown(
-    content::BrowserContext* context) {
-  SigninManagerBase* manager = static_cast<SigninManagerBase*>(
-      GetServiceForBrowserContext(context, false));
-  if (manager) {
-    for (Observer& observer : observer_list_)
-      observer.SigninManagerShutdown(manager);
-  }
-  BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }

@@ -36,8 +36,6 @@ std::unique_ptr<KeyedService> BuildFakeSigninManager(
       ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
           chrome_browser_state)));
   manager->Initialize(nullptr);
-  ios::SigninManagerFactory::GetInstance()
-      ->NotifyObserversOfSigninManagerCreationForTesting(manager.get());
   return manager;
 }
 
