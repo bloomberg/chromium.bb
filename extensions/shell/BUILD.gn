@@ -196,7 +196,6 @@ source_set("app_shell_lib") {
       "browser/shell_native_app_window_aura.h",
     ]
     deps += [
-      "//ui/base/user_activity",
       "//ui/platform_window",
       "//ui/wm",
       "//ui/wm/public",

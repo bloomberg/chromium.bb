@@ -52,7 +52,6 @@ jumbo_component("idle") {
     deps += [
       "//chromeos",
       "//chromeos/dbus",
-      "//ui/base/user_activity",
     ]
     sources -= [ "idle_linux.cc" ]
   }
