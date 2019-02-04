@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -245,7 +246,8 @@ void OriginPolicyThrottle::OnTheGloriousPolicyHasArrived(
   //                  the policy content at this point.
 
   static_cast<NavigationHandleImpl*>(navigation_handle())
-      ->set_origin_policy(*policy_content);
+      ->navigation_request()
+      ->SetOriginPolicy(*policy_content);
   Resume();
 }
 

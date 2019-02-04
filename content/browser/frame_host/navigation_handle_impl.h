@@ -134,10 +134,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   const std::string& GetHrefTranslate() override;
   const base::Optional<url::Origin>& GetInitiatorOrigin() override;
 
-  const std::string& origin_policy() const { return origin_policy_; }
-  void set_origin_policy(const std::string& origin_policy) {
-    origin_policy_ = origin_policy;
-  }
+  // Returns the NavigationRequest which owns this NavigationHandle.
+  NavigationRequest* navigation_request() { return navigation_request_; }
+
+  const std::string& GetOriginPolicy() const;
 
   // Resume and CancelDeferredNavigation must only be called by the
   // NavigationThrottle that is currently deferring the navigation.
@@ -217,8 +217,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // Updates the state of the navigation handle after encountering a server
   // redirect.
   void UpdateStateFollowingRedirect(
-      const GURL& new_url,
-      const std::string& new_method,
       const GURL& new_referrer_url,
       bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
@@ -235,8 +233,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // null if there is no live process that can be used. In that case, a suitable
   // renderer process will be created at commit time.
   void WillRedirectRequest(
-      const GURL& new_url,
-      const std::string& new_method,
       const GURL& new_referrer_url,
       bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
@@ -267,7 +263,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       const net::HostPortPair& socket_address,
       const net::SSLInfo& ssl_info,
       const GlobalRequestID& request_id,
-      bool should_replace_current_entry,
       bool is_download,
       bool is_stream,
       bool is_signed_exchange_inner_response,
@@ -311,11 +306,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   }
 
   const GURL& base_url() { return base_url_; }
-
-  void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
-  void set_searchable_form_encoding(const std::string& encoding) {
-    searchable_form_encoding_ = encoding;
-  }
 
   NavigationType navigation_type() {
     DCHECK_GE(state_, DID_COMMIT);
@@ -382,27 +372,14 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // start with |url|. Otherwise |redirect_chain| is used as the starting point.
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
-  NavigationHandleImpl(
-      NavigationRequest* navigation_request,
-      const GURL& url,
-      const base::Optional<url::Origin>& initiator_origin,
-      const std::vector<GURL>& redirect_chain,
-      bool is_renderer_initiated,
-      bool is_same_document,
-      base::TimeTicks navigation_start,
-      int pending_nav_entry_id,
-      bool started_from_context_menu,
-      bool is_form_submission,
-      std::unique_ptr<NavigationUIData> navigation_ui_data,
-      const std::string& method,
-      net::HttpRequestHeaders request_headers,
-      scoped_refptr<network::ResourceRequestBody> resource_request_body,
-      const Referrer& sanitized_referrer,
-      bool has_user_gesture,
-      ui::PageTransition transition,
-      bool is_external_protocol,
-      const std::string& href_translate,
-      base::TimeTicks input_start);
+  NavigationHandleImpl(NavigationRequest* navigation_request,
+                       const std::vector<GURL>& redirect_chain,
+                       bool is_same_document,
+                       int pending_nav_entry_id,
+                       std::unique_ptr<NavigationUIData> navigation_ui_data,
+                       net::HttpRequestHeaders request_headers,
+                       const Referrer& sanitized_referrer,
+                       bool is_external_protocol);
 
   // NavigationThrottleRunner::Delegate:
   void OnNavigationEventProcessed(
@@ -454,16 +431,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   NavigationRequest* navigation_request_;
 
   // See NavigationHandle for a description of those member variables.
-  GURL url_;
   scoped_refptr<SiteInstanceImpl> starting_site_instance_;
-  base::Optional<url::Origin> initiator_origin_;
   Referrer sanitized_referrer_;
-  bool has_user_gesture_;
-  ui::PageTransition transition_;
   bool is_external_protocol_;
   net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
-  const bool is_renderer_initiated_;
   const bool is_same_document_;
   bool was_redirected_;
   bool did_replace_entry_;
@@ -472,17 +444,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   net::SSLInfo ssl_info_;
-  std::string href_translate_;
-
-  // The original url of the navigation. This may differ from |url_| if the
-  // navigation encounters redirects.
-  const GURL original_url_;
 
   // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
   GURL site_url_;
-
-  // The HTTP method used for the navigation.
-  std::string method_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
@@ -494,11 +458,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
 
-  // The POST body associated with this navigation.  This will be null for GET
-  // and/or other non-POST requests (or if a response to a POST request was a
-  // redirect that changed the method to GET - for example 302).
-  scoped_refptr<network::ResourceRequestBody> resource_request_body_;
-
   // The state the navigation is in.
   State state_;
 
@@ -507,14 +466,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   // The index of the next throttle to check.
   size_t next_index_;
-
-  // The time this navigation started.
-  const base::TimeTicks navigation_start_;
-
-  // The time the input event that lead to this navigation started.
-  // Currently available only if the navigation was initiated by
-  // the user clicking a link in the renderer.
-  const base::TimeTicks input_start_;
 
   // The time this naviagtion was ready to commit.
   base::TimeTicks ready_to_commit_time_;
@@ -570,27 +521,14 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // Stores the restore type, or NONE it it's not a restore.
   RestoreType restore_type_;
 
-  GURL searchable_form_url_;
-  std::string searchable_form_encoding_;
-
   GURL previous_url_;
   GURL base_url_;
-  GURL base_url_for_data_url_;
   net::HostPortPair socket_address_;
   NavigationType navigation_type_;
 
   // Used to inform a RenderProcessHost that we expect this navigation to commit
   // in it.
   int expected_render_process_host_id_;
-
-  // The origin policy that applies to this navigation. Empty if none applies.
-  std::string origin_policy_;
-
-  // Whether or not the navigation results from the submission of a form.
-  bool is_form_submission_;
-
-  // Whether the current NavigationEntry should be replaced upon commit.
-  bool should_replace_current_entry_;
 
   // Whether the navigation ended up being a download or a stream.
   bool is_download_;
@@ -604,9 +542,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
-
-  // False by default unless the navigation started within a context menu.
-  bool started_from_context_menu_;
 
   // Set in ReadyToCommitNavigation.
   bool is_same_process_;

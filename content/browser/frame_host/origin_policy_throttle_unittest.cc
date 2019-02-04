@@ -139,7 +139,8 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
 
   // At the end of the navigation, the navigation handle should have a copy
   // of the origin policy.
-  EXPECT_EQ(policy, nav_handle->origin_policy());
+  EXPECT_EQ(policy,
+            nav_handle->navigation_request()->common_params().origin_policy);
 }
 
 }  // namespace content

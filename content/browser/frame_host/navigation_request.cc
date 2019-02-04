@@ -494,6 +494,7 @@ NavigationRequest::NavigationRequest(
       weak_factory_(this) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   DCHECK(!IsRendererDebugURL(common_params_.url));
+  DCHECK(common_params_.method == "POST" || !common_params_.post_data);
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
                            "frame_tree_node",
                            frame_tree_node_->frame_tree_node_id(), "url",
@@ -772,19 +773,13 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       base::WrapUnique(new NavigationHandleImpl(
-          this, common_params_.url, common_params_.initiator_origin,
-          redirect_chain, !browser_initiated_,
+          this, redirect_chain,
           FrameMsg_Navigate_Type::IsSameDocument(
               common_params_.navigation_type),
-          common_params_.navigation_start, nav_entry_id_,
-          common_params_.started_from_context_menu,
-          begin_params_->is_form_submission, std::move(navigation_ui_data_),
-          common_params_.method, std::move(headers), common_params_.post_data,
+          nav_entry_id_, std::move(navigation_ui_data_), std::move(headers),
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer),
-          common_params_.has_user_gesture, common_params_.transition,
-          is_external_protocol, common_params_.href_translate,
-          common_params_.input_start));
+          is_external_protocol));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -793,13 +788,6 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   }
 
   navigation_handle_ = std::move(navigation_handle);
-
-  if (!begin_params_->searchable_form_url.is_empty()) {
-    navigation_handle_->set_searchable_form_url(
-        begin_params_->searchable_form_url);
-    navigation_handle_->set_searchable_form_encoding(
-        begin_params_->searchable_form_encoding);
-  }
 }
 
 std::unique_ptr<NavigationHandleImpl>
@@ -848,6 +836,10 @@ mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   return commit_navigation_client_.get();
 }
 
+void NavigationRequest::SetOriginPolicy(const std::string& policy) {
+  common_params_.origin_policy = policy;
+}
+
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response) {
@@ -877,11 +869,12 @@ void NavigationRequest::OnRequestRedirected(
     bool is_external_protocol =
         !GetContentClient()->browser()->IsHandledURL(common_params_.url);
     navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    common_params_.url = redirect_info.new_url;
+    common_params_.method = redirect_info.new_method;
     // Update the navigation handle to point to the new url to ensure
     // AwWebContents sees the new URL and thus passes that URL to onPageFinished
     // (rather than passing the old URL).
     navigation_handle_->UpdateStateFollowingRedirect(
-        redirect_info.new_url, redirect_info.new_method,
         GURL(redirect_info.new_referrer), is_external_protocol,
         response->head.headers, response->head.connection_info,
         base::Bind(&NavigationRequest::OnRedirectChecksComplete,
@@ -1013,8 +1006,7 @@ void NavigationRequest::OnRequestRedirected(
   bool is_external_protocol =
       !GetContentClient()->browser()->IsHandledURL(common_params_.url);
   navigation_handle_->WillRedirectRequest(
-      common_params_.url, common_params_.method, common_params_.referrer.url,
-      is_external_protocol, response->head.headers,
+      common_params_.referrer.url, is_external_protocol, response->head.headers,
       response->head.connection_info, expected_process,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
@@ -1244,8 +1236,8 @@ void NavigationRequest::OnResponseStarted(
   navigation_handle_->WillProcessResponse(
       render_frame_host, response->head.headers.get(),
       response->head.connection_info, response->head.socket_address, ssl_info_,
-      request_id, common_params_.should_replace_current_entry, is_download_,
-      is_stream, response->head.is_signed_exchange_inner_response,
+      request_id, is_download_, is_stream,
+      response->head.is_signed_exchange_inner_response,
       response->head.was_fetched_via_cache,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
@@ -1795,11 +1787,6 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(response_ || !IsURLHandledByNetworkStack(common_params_.url) ||
          navigation_handle_->IsSameDocument());
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
-
-  // Send the applicable origin policy (if any) along with the request.
-  // (The policy is fetched by a throttle and is thus available only now.)
-  DCHECK(common_params_.origin_policy.empty());
-  common_params_.origin_policy = navigation_handle_->origin_policy();
 
   // Retrieve the RenderFrameHost that needs to commit the navigation.
   RenderFrameHostImpl* render_frame_host =
