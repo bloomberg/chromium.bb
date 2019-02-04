@@ -117,6 +117,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Called during tablet mode test setup to enable the Ash virtual keyboard.
   void EnableVirtualKeyboard();
 
+  // Called during tests to determine if SMB file shares is enabled.
+  bool IsSmbEnabled() const;
+
   base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<DownloadsTestVolume> local_volume_;

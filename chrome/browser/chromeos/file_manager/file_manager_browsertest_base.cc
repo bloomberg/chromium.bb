@@ -1836,6 +1836,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "isSmbEnabled") {
+    *output = IsSmbEnabled() ? "true" : "false";
+    return;
+  }
+
   FAIL() << "Unknown test message: " << name;
 }
 
@@ -1887,6 +1892,10 @@ void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
       ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
   ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
   waiter.EnableVirtualKeyboard();
+}
+
+bool FileManagerBrowserTestBase::IsSmbEnabled() const {
+  return base::FeatureList::IsEnabled(features::kNativeSmb);
 }
 
 }  // namespace file_manager
