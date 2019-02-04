@@ -31,7 +31,6 @@ public class StatusView extends LinearLayout {
     private TextView mVerboseStatusTextView;
     private View mSeparatorView;
     private View mStatusExtraSpace;
-    private View mLocationBarButtonContainer;
 
     private boolean mAnimationsEnabled;
     private boolean mAnimatingStatusIconShow;
@@ -134,8 +133,13 @@ public class StatusView extends LinearLayout {
         // Action 3: Specify icon content. Use TransitionDrawable whenever object is visible.
         if (targetIcon != null) {
             if (!isIconHidden) {
-                TransitionDrawable newImage = new TransitionDrawable(
-                        new Drawable[] {mIconView.getDrawable(), targetIcon});
+                Drawable existingDrawable = mIconView.getDrawable();
+                if (existingDrawable instanceof TransitionDrawable
+                        && ((TransitionDrawable) existingDrawable).getNumberOfLayers() == 2) {
+                    existingDrawable = ((TransitionDrawable) existingDrawable).getDrawable(1);
+                }
+                TransitionDrawable newImage =
+                        new TransitionDrawable(new Drawable[] {existingDrawable, targetIcon});
 
                 mIconView.setImageDrawable(newImage);
 
