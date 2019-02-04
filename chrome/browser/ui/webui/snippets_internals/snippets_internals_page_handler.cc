@@ -186,8 +186,9 @@ void SnippetsInternalsPageHandler::GetGeneralProperties(
 
   std::set<variations::VariationID> ids = GetSnippetsExperiments();
   std::vector<std::string> string_ids;
-  std::transform(ids.begin(), ids.end(), std::back_inserter(string_ids),
-                 &base::IntToString);
+  std::transform(
+      ids.begin(), ids.end(), std::back_inserter(string_ids),
+      [](variations::VariationID id) { return base::NumberToString(id); });
 
   properties["experiment-ids"] = base::JoinString(string_ids, ", ");
   std::move(callback).Run(properties);

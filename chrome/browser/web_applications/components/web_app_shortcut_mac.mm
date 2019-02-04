@@ -267,8 +267,9 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
       continue;
 
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitchASCII(app_mode::kLaunchedByChromeProcessId,
-                                   base::IntToString(base::GetCurrentProcId()));
+    command_line.AppendSwitchASCII(
+        app_mode::kLaunchedByChromeProcessId,
+        base::NumberToString(base::GetCurrentProcId()));
     if (launched_after_rebuild)
       command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
 

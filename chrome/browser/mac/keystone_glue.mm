@@ -1007,18 +1007,16 @@ NSString* const kVersionKey = @"KSVersion";
     // It's possible to get an OS-provided error string for this return code
     // using base::mac::DescriptionFromOSStatus, but most of those strings are
     // not useful/actionable for users, so we stick with the error code instead.
-    NSString* errorMessage =
-        l10n_util::GetNSStringFWithFixup(IDS_PROMOTE_PREFLIGHT_LAUNCH_ERROR,
-                                         base::IntToString16(status));
+    NSString* errorMessage = l10n_util::GetNSStringFWithFixup(
+        IDS_PROMOTE_PREFLIGHT_LAUNCH_ERROR, base::NumberToString16(status));
     [self updateStatus:kAutoupdatePromoteFailed
                version:nil
                  error:errorMessage];
     return;
   }
   if (exit_status != 0) {
-    NSString* errorMessage =
-        l10n_util::GetNSStringFWithFixup(IDS_PROMOTE_PREFLIGHT_SCRIPT_ERROR,
-                                         base::IntToString16(status));
+    NSString* errorMessage = l10n_util::GetNSStringFWithFixup(
+        IDS_PROMOTE_PREFLIGHT_SCRIPT_ERROR, base::NumberToString16(status));
     [self updateStatus:kAutoupdatePromoteFailed
                version:nil
                  error:errorMessage];

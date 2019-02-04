@@ -12,9 +12,9 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
-#define IntToStringType base::IntToString16
+#define NumberToStringType base::NumberToString16
 #else
-#define IntToStringType base::IntToString
+#define NumberToStringType base::NumberToString
 #endif
 
 namespace webrtc_event_logging {
@@ -191,9 +191,9 @@ void WebRtcLocalEventLogManager::StartLogFile(const PeerConnectionKey& key) {
   } else if (unique_number != 0) {
     // The filename is taken, but a unique number was found.
     // TODO(crbug.com/785333): Fix the way the unique number is used.
-    file_path = file_path.InsertBeforeExtension(FILE_PATH_LITERAL(" (") +
-                                                IntToStringType(unique_number) +
-                                                FILE_PATH_LITERAL(")"));
+    file_path = file_path.InsertBeforeExtension(
+        FILE_PATH_LITERAL(" (") + NumberToStringType(unique_number) +
+        FILE_PATH_LITERAL(")"));
   }
 
   auto log_file =

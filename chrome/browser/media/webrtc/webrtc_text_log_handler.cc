@@ -52,7 +52,7 @@
 #include "chromeos/system/statistics_provider.h"
 #endif
 
-using base::IntToString;
+using base::NumberToString;
 using content::BrowserThread;
 
 namespace {
@@ -473,10 +473,10 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   // CPU
   base::CPU cpu;
   LogToCircularBuffer(
-      "Cpu: " + IntToString(cpu.family()) + "." + IntToString(cpu.model()) +
-      "." + IntToString(cpu.stepping()) + ", x" +
-      IntToString(base::SysInfo::NumberOfProcessors()) + ", " +
-      IntToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB");
+      "Cpu: " + NumberToString(cpu.family()) + "." +
+      NumberToString(cpu.model()) + "." + NumberToString(cpu.stepping()) +
+      ", x" + NumberToString(base::SysInfo::NumberOfProcessors()) + ", " +
+      NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB");
   LogToCircularBuffer("Cpu brand: " + cpu.cpu_brand());
 
   // Computer model
