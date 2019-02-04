@@ -479,9 +479,14 @@ class ExtensionWebRequestEventRouter {
 
   // Whether there is a listener matching the request that has
   // ExtraInfoSpec::EXTRA_HEADERS set.
-  bool HasExtraHeadersListener(void* browser_context,
-                               const extensions::InfoMap* extension_info_map,
-                               const WebRequestInfo* request);
+  bool HasExtraHeadersListenerForRequest(
+      void* browser_context,
+      const extensions::InfoMap* extension_info_map,
+      const WebRequestInfo* request);
+
+  // Whether there are any listeners for this context that have
+  // ExtraInfoSpec::EXTRA_HEADERS set.
+  bool HasAnyExtraHeadersListener(void* browser_context);
 
  private:
   friend class WebRequestAPI;
@@ -697,6 +702,9 @@ class ExtensionWebRequestEventRouter {
 
   // Returns true if |request| was already signaled to some event handlers.
   bool WasSignaled(const WebRequestInfo& request) const;
+
+  // Helper for |HasAnyExtraHeadersListener()|.
+  bool HasAnyExtraHeadersListenerImpl(void* browser_context);
 
   // Get the number of listeners - for testing only.
   size_t GetListenerCountForTesting(void* browser_context,

@@ -22,6 +22,22 @@
 
 namespace extensions {
 
+struct WebRequestProxyingURLLoaderFactory::InProgressRequest::
+    PendingBeforeSendHeadersData {
+  PendingBeforeSendHeadersData(const net::HttpRequestHeaders& headers_,
+                               OnBeforeSendHeadersCallback callback_)
+      : headers(headers_), callback(std::move(callback_)) {}
+  PendingBeforeSendHeadersData(PendingBeforeSendHeadersData&&) = default;
+
+  ~PendingBeforeSendHeadersData() {
+    if (callback)
+      std::move(callback).Run(net::ERR_ABORTED, base::nullopt);
+  }
+
+  net::HttpRequestHeaders headers;
+  OnBeforeSendHeadersCallback callback;
+};
+
 WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     WebRequestProxyingURLLoaderFactory* factory,
     uint64_t request_id,
@@ -42,6 +58,9 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       proxied_loader_binding_(this, std::move(loader_request)),
       target_client_(std::move(client)),
       proxied_client_binding_(this),
+      has_any_extra_headers_listeners_(
+          ExtensionWebRequestEventRouter::GetInstance()
+              ->HasAnyExtraHeadersListener(factory_->browser_context_)),
       weak_factory_(this) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
@@ -69,6 +88,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
   request_completed_ = false;
+  network_request_started_ = false;
   // Derive a new WebRequestInfo value any time |Restart()| is called, because
   // the details in |request_| may have changed e.g. if we've been redirected.
   info_.emplace(
@@ -78,17 +98,18 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
       routing_id_, factory_->resource_context_, request_,
       !(options_ & network::mojom::kURLLoadOptionSynchronous));
 
-  uses_header_client_ =
+  current_request_uses_header_client_ =
       factory_->header_client_binding_ && request_.url.SchemeIsHTTPOrHTTPS() &&
       network_service_request_id_ != 0 &&
-      ExtensionWebRequestEventRouter::GetInstance()->HasExtraHeadersListener(
-          factory_->browser_context_, factory_->info_map_, &info_.value());
+      ExtensionWebRequestEventRouter::GetInstance()
+          ->HasExtraHeadersListenerForRequest(
+              factory_->browser_context_, factory_->info_map_, &info_.value());
 
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
   // send these events before the request starts.
   base::RepeatingCallback<void(int)> continuation;
-  if (uses_header_client_) {
+  if (current_request_uses_header_client_) {
     continuation = base::BindRepeating(
         &InProgressRequest::ContinueToStartRequest, weak_factory_.GetWeakPtr());
   } else {
@@ -175,7 +196,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
   current_response_ = head;
   on_receive_response_received_ = true;
-  if (uses_header_client_) {
+  if (current_request_uses_header_client_) {
     ContinueToResponseStarted(net::OK);
   } else {
     HandleResponseOrRedirectHeaders(
@@ -195,7 +216,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
   }
 
   current_response_ = head;
-  if (uses_header_client_) {
+  if (current_request_uses_header_client_) {
     ContinueToBeforeRedirect(redirect_info, net::OK);
   } else {
     HandleResponseOrRedirectHeaders(
@@ -269,7 +290,19 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnBeforeSendHeaders(
     const net::HttpRequestHeaders& headers,
     OnBeforeSendHeadersCallback callback) {
-  DCHECK(uses_header_client_);
+  if (!current_request_uses_header_client_) {
+    std::move(callback).Run(net::OK, base::nullopt);
+    return;
+  }
+
+  if (!network_request_started_) {
+    DCHECK(!pending_before_send_headers_data_);
+    pending_before_send_headers_data_ =
+        std::make_unique<PendingBeforeSendHeadersData>(headers,
+                                                       std::move(callback));
+    return;
+  }
+
   request_.headers = headers;
   on_before_send_headers_callback_ = std::move(callback);
   ContinueToBeforeSendHeaders(net::OK);
@@ -278,7 +311,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnBeforeSendHeaders(
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
     const std::string& headers,
     OnHeadersReceivedCallback callback) {
-  DCHECK(uses_header_client_);
+  if (!current_request_uses_header_client_) {
+    std::move(callback).Run(net::OK, base::nullopt, GURL());
+    return;
+  }
+
   on_headers_received_callback_ = std::move(callback);
   current_response_.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(headers);
@@ -344,7 +381,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  if (!uses_header_client_ && !redirect_url_.is_empty()) {
+  if (!current_request_uses_header_client_ && !redirect_url_.is_empty()) {
     HandleBeforeRequestRedirect();
     return;
   }
@@ -389,12 +426,17 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     ContinueToStartRequest(int error_code) {
+  // Move to a local to make sure this gets destroyed at the end of this
+  // function if it isn't used.
+  std::unique_ptr<PendingBeforeSendHeadersData> before_send_headers_data =
+      std::move(pending_before_send_headers_data_);
+
   if (error_code != net::OK) {
     OnRequestError(network::URLLoaderCompletionStatus(error_code));
     return;
   }
 
-  if (uses_header_client_ && !redirect_url_.is_empty()) {
+  if (current_request_uses_header_client_ && !redirect_url_.is_empty()) {
     HandleBeforeRequestRedirect();
     return;
   }
@@ -402,18 +444,24 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   if (proxied_client_binding_.is_bound())
     proxied_client_binding_.ResumeIncomingMethodCallProcessing();
 
+  network_request_started_ = true;
   if (!target_loader_.is_bound() && factory_->target_factory_.is_bound()) {
     // No extensions have cancelled us up to this point, so it's now OK to
     // initiate the real network request.
     network::mojom::URLLoaderClientPtr proxied_client;
     proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
     uint32_t options = options_;
-    if (uses_header_client_)
+    // Even if this request does not use the header client, future redirects
+    // might, so we need to set the option on the loader.
+    if (has_any_extra_headers_listeners_)
       options |= network::mojom::kURLLoadOptionUseHeaderClient;
     factory_->target_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&target_loader_), info_->routing_id,
         network_service_request_id_, options, request_,
         std::move(proxied_client), traffic_annotation_);
+  } else if (before_send_headers_data) {
+    OnBeforeSendHeaders(before_send_headers_data->headers,
+                        std::move(before_send_headers_data->callback));
   }
 
   // From here the lifecycle of this request is driven by subsequent events on
@@ -428,7 +476,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  if (uses_header_client_) {
+  if (current_request_uses_header_client_) {
     DCHECK(on_before_send_headers_callback_);
     std::move(on_before_send_headers_callback_)
         .Run(error_code, request_.headers);
@@ -446,7 +494,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
         request_.headers);
   }
 
-  if (!uses_header_client_)
+  if (!current_request_uses_header_client_)
     ContinueToStartRequest(net::OK);
 }
 
@@ -541,7 +589,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  DCHECK(!uses_header_client_ || !override_headers_);
+  DCHECK(!current_request_uses_header_client_ || !override_headers_);
   if (override_headers_)
     current_response_.headers = override_headers_;
 
