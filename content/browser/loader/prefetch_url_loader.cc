@@ -102,25 +102,34 @@ void PrefetchURLLoader::FollowRedirect(
     }
   }
 
+  DCHECK(loader_);
   loader_->FollowRedirect(removed_headers, modified_request_headers_for_accept,
                           base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {
-  loader_->ProceedWithResponse();
+  if (loader_)
+    loader_->ProceedWithResponse();
 }
 
 void PrefetchURLLoader::SetPriority(net::RequestPriority priority,
                                     int intra_priority_value) {
-  loader_->SetPriority(priority, intra_priority_value);
+  if (loader_)
+    loader_->SetPriority(priority, intra_priority_value);
 }
 
 void PrefetchURLLoader::PauseReadingBodyFromNet() {
-  loader_->PauseReadingBodyFromNet();
+  // TODO(kinuko): Propagate or handle the case where |loader_| is
+  // detached (for SignedExchanges), see OnReceiveResponse.
+  if (loader_)
+    loader_->PauseReadingBodyFromNet();
 }
 
 void PrefetchURLLoader::ResumeReadingBodyFromNet() {
-  loader_->ResumeReadingBodyFromNet();
+  // TODO(kinuko): Propagate or handle the case where |loader_| is
+  // detached (for SignedExchanges), see OnReceiveResponse.
+  if (loader_)
+    loader_->ResumeReadingBodyFromNet();
 }
 
 void PrefetchURLLoader::OnReceiveResponse(
