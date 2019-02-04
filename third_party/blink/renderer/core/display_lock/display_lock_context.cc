@@ -170,9 +170,9 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
 }
 
 ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
-  // Reject if we're unlocked.
+  // Resolve if we're already unlocked.
   if (state_ == kUnlocked)
-    return GetRejectedPromise(script_state);
+    return GetResolvedPromise(script_state);
 
   // If we're already committing then return the promise.
   if (state_ == kCommitting)
@@ -197,9 +197,9 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
 }
 
 ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
-  // Reject if we're unlocked.
+  // Resolve if we're already unlocked.
   if (state_ == kUnlocked)
-    return GetRejectedPromise(script_state);
+    return GetResolvedPromise(script_state);
 
   // If we're in a state where a co-operative update doesn't make sense (e.g. we
   // haven't acquired the lock, or we're already sync committing), then do
@@ -400,11 +400,9 @@ void DisplayLockContext::StartCommit() {
     state_ = kUnlocked;
     update_budget_.reset();
     CancelTimeoutTask();
+    // Note that we reject the update, but resolve the commit.
     FinishUpdateResolver(kReject);
-    // TODO(vmpstr): Should we resolve here? What's the path to unlocking an
-    // element without connecting it (i.e. acquire the lock, then change your
-    // mind).
-    FinishCommitResolver(kReject);
+    FinishCommitResolver(kResolve);
     return;
   }
 
@@ -606,7 +604,8 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
     update_budget_.reset();
 
     if (commit_resolver_) {
-      FinishCommitResolver(kReject);
+      // We resolve the commit if we're not connected.
+      FinishCommitResolver(kResolve);
       CancelTimeoutTask();
       state_ = kUnlocked;
     } else {
