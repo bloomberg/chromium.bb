@@ -2146,6 +2146,8 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-s
 # See crbug.com/865839.
 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ WontFix ]
 
+# MathML is not implemented.
+crbug.com/6606 external/wpt/mathml [ WontFix ]
 
 # ====== Tests incompatible with the default Site Isolation from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
