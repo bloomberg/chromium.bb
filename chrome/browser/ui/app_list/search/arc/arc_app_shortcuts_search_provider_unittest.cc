@@ -12,13 +12,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {
 
-class ArcAppShortcutsSearchProviderTest : public AppListTestBase {
+namespace {
+constexpr char kFakeAppPackageName[] = "FakeAppPackageName";
+}  // namespace
+
+class ArcAppShortcutsSearchProviderTest
+    : public AppListTestBase,
+      public ::testing::WithParamInterface<bool> {
  protected:
   ArcAppShortcutsSearchProviderTest() = default;
   ~ArcAppShortcutsSearchProviderTest() override = default;
@@ -36,6 +44,32 @@ class ArcAppShortcutsSearchProviderTest : public AppListTestBase {
     AppListTestBase::TearDown();
   }
 
+  arc::mojom::AppInfo CreateAppInfo(const std::string& name,
+                                    const std::string& activity,
+                                    const std::string& package_name) {
+    arc::mojom::AppInfo appinfo;
+    appinfo.name = name;
+    appinfo.package_name = package_name;
+    appinfo.activity = activity;
+    return appinfo;
+  }
+
+  std::string AddArcAppAndShortcut(const arc::mojom::AppInfo& app_info,
+                                   bool launchable) {
+    ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+    // Adding app to the prefs, and check that the app is accessible by id.
+    prefs->AddAppAndShortcut(
+        app_info.name, app_info.package_name, app_info.activity,
+        std::string() /* intent_uri */, std::string() /* icon_resource_id */,
+        false /* sticky */, true /* notifications_enabled */,
+        true /* app_ready */, false /* suspended */, false /* shortcut */,
+        launchable);
+    const std::string app_id =
+        ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
+    EXPECT_TRUE(prefs->GetApp(app_id));
+    return app_id;
+  }
+
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
 
@@ -43,8 +77,14 @@ class ArcAppShortcutsSearchProviderTest : public AppListTestBase {
   DISALLOW_COPY_AND_ASSIGN(ArcAppShortcutsSearchProviderTest);
 };
 
-TEST_F(ArcAppShortcutsSearchProviderTest, Basic) {
-  constexpr size_t kMaxResults = 4;
+TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
+  const bool launchable = GetParam();
+
+  AddArcAppAndShortcut(
+      CreateAppInfo("FakeName", "FakeActivity", kFakeAppPackageName),
+      launchable);
+
+  const size_t kMaxResults = launchable ? 4 : 0;
   constexpr char kQuery[] = "shortlabel";
 
   auto provider = std::make_unique<ArcAppShortcutsSearchProvider>(
@@ -62,5 +102,7 @@ TEST_F(ArcAppShortcutsSearchProviderTest, Basic) {
     EXPECT_EQ(ash::SearchResultDisplayType::kTile, results[i]->display_type());
   }
 }
+
+INSTANTIATE_TEST_CASE_P(, ArcAppShortcutsSearchProviderTest, testing::Bool());
 
 }  // namespace app_list

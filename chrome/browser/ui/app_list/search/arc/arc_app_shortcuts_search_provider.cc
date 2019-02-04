@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcut_search_result.h"
 #include "components/arc/arc_bridge_service.h"
@@ -51,8 +52,18 @@ void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
 
 void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
     std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items) {
+  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+  DCHECK(arc_prefs);
+
   SearchProvider::Results search_results;
   for (auto& item : shortcut_items) {
+    const std::string app_id =
+        arc_prefs->GetAppIdByPackageName(item->package_name.value());
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        arc_prefs->GetApp(app_id);
+    // Ignore shortcuts for apps that are not present in the launcher.
+    if (!app_info || !app_info->show_in_launcher)
+      continue;
     search_results.emplace_back(std::make_unique<ArcAppShortcutSearchResult>(
         std::move(item), profile_, list_controller_));
   }
