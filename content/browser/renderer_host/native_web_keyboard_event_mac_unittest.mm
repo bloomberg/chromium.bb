@@ -7,33 +7,29 @@
 #import <AppKit/AppKit.h>
 #import <Carbon/Carbon.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 #import "testing/gtest_mac.h"
 #include "ui/events/blink/web_input_event.h"
 
 // Going from NSEvent to WebKeyboardEvent and back should round trip.
 TEST(NativeWebKeyboardEventMac, CtrlCmdSpaceKeyDownRoundTrip) {
-  base::scoped_nsobject<NSWindow> window([NSWindow alloc]);
-
   NSEvent* ns_event =
-      [[NSEvent keyEventWithType:NSEventTypeKeyDown
+      [NSEvent keyEventWithType:NSEventTypeKeyDown
                              location:NSZeroPoint
                         modifierFlags:NSEventModifierFlagControl |
                                       NSEventModifierFlagCommand
                             timestamp:0
-                         windowNumber:[window windowNumber]
+                         windowNumber:0
                               context:nil
                            characters:@"\0"  // The control modifier results in
                                              // ' ' being bitmasked with 0x1F
                                              // which == 0x00.
           charactersIgnoringModifiers:@" "
                             isARepeat:NO
-                              keyCode:kVK_Space] retain];
+                              keyCode:kVK_Space];
   blink::WebKeyboardEvent web_event =
       content::WebKeyboardEventBuilder::Build(ns_event);
-  content::NativeWebKeyboardEvent native_event(
-      web_event, gfx::NativeView([window contentView]));
+  content::NativeWebKeyboardEvent native_event(web_event, gfx::NativeView());
 
   NSEvent* round_trip_ns_event = native_event.os_event;
   EXPECT_EQ([round_trip_ns_event type], [ns_event type]);
