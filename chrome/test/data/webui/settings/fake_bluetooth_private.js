@@ -54,7 +54,7 @@ cr.define('settings', function() {
       device = Object.assign({}, device);
       device.paired = true;
       device.connecting = true;
-      this.bluetoothApi_.updateDeviceForTest(device);
+      this.bluetoothApi_.simulateDeviceUpdatedForTest(device);
       if (opt_callback) {
         opt_callback(chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS);
       }
