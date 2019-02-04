@@ -167,6 +167,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                          aura::Window* lost_active) override;
 
   // ShellObserver:
+  void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
 

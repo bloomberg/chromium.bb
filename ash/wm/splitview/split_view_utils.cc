@@ -8,6 +8,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -210,6 +211,10 @@ bool ShouldAllowSplitView() {
            ->IsTabletModeWindowManagerEnabled()) {
     return false;
   }
+
+  // Don't allow split view if we're in pinned mode.
+  if (Shell::Get()->screen_pinning_controller()->IsPinned())
+    return false;
 
   // TODO(crubg.com/853588): Disallow window dragging and split screen while
   // ChromeVox is on until they are in a usable state.

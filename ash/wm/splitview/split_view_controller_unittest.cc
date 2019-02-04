@@ -1764,6 +1764,30 @@ TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
   EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
+// Test that pinning a window ends split view mode.
+TEST_F(SplitViewControllerTest, PinningWindowEndsSplitView) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+
+  wm::PinWindow(window1.get(), true);
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
+// Test that split view mode is disallowed while we're in pinned mode (there is
+// a pinned window).
+TEST_F(SplitViewControllerTest, PinnedWindowDisallowsSplitView) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  EXPECT_TRUE(ShouldAllowSplitView());
+
+  wm::PinWindow(window1.get(), true);
+  EXPECT_FALSE(ShouldAllowSplitView());
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.
