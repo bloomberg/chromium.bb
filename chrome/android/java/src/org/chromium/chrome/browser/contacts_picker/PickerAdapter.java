@@ -215,7 +215,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     @Override
     public int getItemCount() {
         if (mSearchResults != null) return mSearchResults.size();
-        if (mContactDetails == null) return 0;
+        if (mContactDetails == null || mContactDetails.size() == 0) return 0;
         // Add one entry to account for the Select All checkbox, when not searching.
         return mContactDetails.size() + (mSearchMode ? 0 : 1);
     }
