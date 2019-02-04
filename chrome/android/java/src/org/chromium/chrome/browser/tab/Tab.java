@@ -2879,7 +2879,7 @@ public class Tab
         }
 
         mDownloadIPHBubble.setPreferredVerticalOrientation(
-                AnchoredPopupWindow.VERTICAL_ORIENTATION_BELOW);
+                AnchoredPopupWindow.VerticalOrientation.BELOW);
         mDownloadIPHBubble.show();
         createPulse(rect);
     }

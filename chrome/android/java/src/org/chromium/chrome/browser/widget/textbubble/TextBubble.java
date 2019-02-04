@@ -178,7 +178,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         mPopupWindow.setMargin(
                 context.getResources().getDimensionPixelSize(R.dimen.text_bubble_margin));
         mPopupWindow.setPreferredHorizontalOrientation(
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER);
+                AnchoredPopupWindow.HorizontalOrientation.CENTER);
         mPopupWindow.setLayoutObserver(this);
 
         mHandler = new Handler();

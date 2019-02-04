@@ -50,7 +50,7 @@ public final class AnchoredPopupWindowTest {
         assertFalse("positionToLeft incorrect.", positionToLeft);
 
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 0, false,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE, false);
+                AnchoredPopupWindow.HorizontalOrientation.MAX_AVAILABLE_SPACE, false);
         int y = AnchoredPopupWindow.getPopupY(anchorRect, mPopupHeight, false, true);
 
         assertEquals("Wrong x position.", 20, x);
@@ -73,7 +73,7 @@ public final class AnchoredPopupWindowTest {
         assertFalse("positionToLeft incorrect.", positionToLeft);
 
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 0, true,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE, false);
+                AnchoredPopupWindow.HorizontalOrientation.MAX_AVAILABLE_SPACE, false);
         int y = AnchoredPopupWindow.getPopupY(anchorRect, mPopupHeight, true, true);
 
         assertEquals("Wrong x position.", 10, x);
@@ -84,7 +84,7 @@ public final class AnchoredPopupWindowTest {
     public void testGetPopupPosition_BelowCenter() {
         Rect anchorRect = new Rect(295, 10, 305, 20);
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 0, false,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER, false);
+                AnchoredPopupWindow.HorizontalOrientation.CENTER, false);
         int y = AnchoredPopupWindow.getPopupY(anchorRect, mPopupHeight, false, true);
 
         assertEquals("Wrong x position.", 225, x);
@@ -107,7 +107,7 @@ public final class AnchoredPopupWindowTest {
         assertTrue("positionToLeft incorrect.", positionToLeft);
 
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 0, false,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE, positionToLeft);
+                AnchoredPopupWindow.HorizontalOrientation.MAX_AVAILABLE_SPACE, positionToLeft);
         int y = AnchoredPopupWindow.getPopupY(anchorRect, mPopupHeight, false, false);
 
         assertEquals("Wrong x position.", 250, x);
@@ -130,7 +130,7 @@ public final class AnchoredPopupWindowTest {
         assertTrue("positionToLeft incorrect.", positionToLeft);
 
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 0, true,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE, true);
+                AnchoredPopupWindow.HorizontalOrientation.MAX_AVAILABLE_SPACE, true);
         int y = AnchoredPopupWindow.getPopupY(anchorRect, mPopupHeight, true, false);
 
         assertEquals("Wrong x position.", 260, x);
@@ -141,7 +141,7 @@ public final class AnchoredPopupWindowTest {
     public void testGetPopupPosition_ClampedLeftEdge() {
         Rect anchorRect = new Rect(10, 10, 20, 20);
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 20, false,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE, true);
+                AnchoredPopupWindow.HorizontalOrientation.MAX_AVAILABLE_SPACE, true);
 
         assertEquals("Wrong x position.", 20, x);
     }
@@ -150,7 +150,7 @@ public final class AnchoredPopupWindowTest {
     public void testGetPopupPosition_ClampedRightEdge() {
         Rect anchorRect = new Rect(590, 800, 600, 820);
         int x = AnchoredPopupWindow.getPopupX(anchorRect, mWindowRect, mPopupWidth, 20, false,
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE, true);
+                AnchoredPopupWindow.HorizontalOrientation.MAX_AVAILABLE_SPACE, true);
 
         assertEquals("Wrong x position.", 430, x);
     }
