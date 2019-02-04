@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/record_paint_canvas.h"
@@ -96,7 +97,13 @@ TEST_F(SolidColorAnalyzerTest, ClearTranslucent) {
   Initialize();
   SkColor color = SkColorSetARGB(128, 11, 22, 33);
   canvas()->clear(color);
+#if defined(OS_MACOSX)
+  // TODO(andrescj): remove the special treatment of OS_MACOSX once
+  // https://crbug.com/922899 is fixed.
+  EXPECT_FALSE(IsSolidColor());
+#else
   EXPECT_EQ(color, GetColor());
+#endif  // OS_MACOSX
 }
 
 TEST_F(SolidColorAnalyzerTest, DrawColor) {
@@ -288,7 +295,13 @@ TEST_F(SolidColorAnalyzerTest, DrawRectTranslucent) {
   flags.setColor(color);
   SkRect rect = SkRect::MakeWH(100, 100);
   canvas()->drawRect(rect, flags);
+#if defined(OS_MACOSX)
+  // TODO(andrescj): remove the special treatment of OS_MACOSX once
+  // https://crbug.com/922899 is fixed.
+  EXPECT_FALSE(IsSolidColor());
+#else
   EXPECT_EQ(color, GetColor());
+#endif  // OS_MACOSX
 }
 
 TEST_F(SolidColorAnalyzerTest, DrawRectTranslucentOverNonSolid) {
@@ -330,8 +343,14 @@ TEST_F(SolidColorAnalyzerTest, DrawRectSolidWithSrcOverBlending) {
   flags.setColor(color);
   rect = SkRect::MakeWH(100, 100);
   canvas()->drawRect(rect, flags);
+#if defined(OS_MACOSX)
+  // TODO(andrescj): remove the special treatment of OS_MACOSX once
+  // https://crbug.com/922899 is fixed.
+  EXPECT_FALSE(IsSolidColor());
+#else
   EXPECT_EQ(SkColorSetARGB(159, 15, 25, 35),
             GetColor(2 /* max_ops_to_analyze */));
+#endif  // OS_MACOSX
 }
 
 TEST_F(SolidColorAnalyzerTest, SaveLayer) {

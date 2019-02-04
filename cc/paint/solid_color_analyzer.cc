@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
@@ -75,10 +76,19 @@ bool IsSolidColorPaint(const PaintFlags& flags) {
   // Paint is solid color if the following holds:
   // - Style is fill, and there are no special effects.
   // - Blend mode is either kSrc or kSrcOver.
-  return IsSolidColorBlendMode(blendmode) && !flags.HasShader() &&
-         !flags.getLooper() && !flags.getMaskFilter() &&
-         !flags.getColorFilter() && !flags.getImageFilter() &&
-         flags.getStyle() == PaintFlags::kFill_Style;
+  bool is_solid_color =
+      IsSolidColorBlendMode(blendmode) && !flags.HasShader() &&
+      !flags.getLooper() && !flags.getMaskFilter() && !flags.getColorFilter() &&
+      !flags.getImageFilter() && flags.getStyle() == PaintFlags::kFill_Style;
+
+#if defined(OS_MACOSX)
+  // Additionally, on Mac, we require that the color is opaque due to
+  // https://crbug.com/922899.
+  // TODO(andrescj): remove this condition once that bug is fixed.
+  is_solid_color = (is_solid_color && SkColorGetA(flags.getColor()) == 255);
+#endif  // OS_MACOSX
+
+  return is_solid_color;
 }
 
 // Returns true if the specified |drawn_shape| will cover the entire canvas
@@ -153,7 +163,17 @@ void CheckIfSolidColor(const SkCanvas& canvas,
   else if (alpha != 0 || blendmode != SkBlendMode::kSrc)
     *is_transparent = false;
 
-  if (does_cover_canvas && IsSolidColorBlendMode(blendmode)) {
+  bool solid_color_candidate =
+      does_cover_canvas && IsSolidColorBlendMode(blendmode);
+
+#if defined(OS_MACOSX)
+  // Additionally, on Mac, we require that the color is opaque due to
+  // https://crbug.com/922899.
+  // TODO(andrescj): remove this condition once that bug is fixed.
+  solid_color_candidate = (solid_color_candidate && alpha == 255);
+#endif  // OS_MACOSX
+
+  if (solid_color_candidate) {
     CalculateSolidColor(color /* src_color */, blendmode,
                         out_color /* dst_color */, is_solid_color);
   } else {
