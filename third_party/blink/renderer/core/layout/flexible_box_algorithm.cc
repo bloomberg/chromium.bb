@@ -476,7 +476,17 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // css-flexbox section 4.5
   const Length& min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
                                          : child.StyleRef().MinHeight();
-  return min.IsAuto() && !child.ShouldApplySizeContainment() &&
+  if (!min.IsAuto())
+    return false;
+
+  // TODO(crbug.com/927066): We calculate an incorrect intrinsic logical height
+  // when percentages are involved, so for now don't apply min-height: auto
+  // in such cases.
+  if (IsColumnFlow() && child.IsFlexibleBox() &&
+      ToLayoutBlock(child).HasPercentHeightDescendants())
+    return false;
+
+  return !child.ShouldApplySizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
 }
 
