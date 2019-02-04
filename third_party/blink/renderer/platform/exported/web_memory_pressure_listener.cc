@@ -13,10 +13,6 @@ void WebMemoryPressureListener::OnMemoryPressure(
   MemoryPressureListenerRegistry::Instance().OnMemoryPressure(pressure_level);
 }
 
-void WebMemoryPressureListener::OnMemoryStateChange(MemoryState state) {
-  MemoryPressureListenerRegistry::Instance().OnMemoryStateChange(state);
-}
-
 void WebMemoryPressureListener::OnPurgeMemory() {
   MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
 }

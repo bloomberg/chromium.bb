@@ -291,7 +291,6 @@ source_set("blink_headers") {
     "platform/web_media_stream_track.h",
     "platform/web_memory_pressure_level.h",
     "platform/web_memory_pressure_listener.h",
-    "platform/web_memory_state.h",
     "platform/web_menu_source_type.h",
     "platform/web_mixed_content.h",
     "platform/web_mixed_content_context_type.h",
