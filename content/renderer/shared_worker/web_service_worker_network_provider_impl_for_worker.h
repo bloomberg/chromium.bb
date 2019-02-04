@@ -20,6 +20,9 @@ struct NavigationResponseOverrideParameters;
 
 // The WebServiceWorkerNetworkProvider implementation used for shared
 // workers.
+//
+// This class is only used for the main script request from the shadow page.
+// Remove it when the shadow page is removed (https://crbug.com/538751).
 class WebServiceWorkerNetworkProviderImplForWorker final
     : public blink::WebServiceWorkerNetworkProvider {
  public:
@@ -49,8 +52,6 @@ class WebServiceWorkerNetworkProviderImplForWorker final
   ~WebServiceWorkerNetworkProviderImplForWorker() override;
 
   // Implements WebServiceWorkerNetworkProvider.
-  // Blink calls this method for each request starting with the main script,
-  // we tag them with the provider id.
   void WillSendRequest(blink::WebURLRequest& request) override;
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       override;
