@@ -85,7 +85,7 @@
     testFindString("Use an @import rule", "@", [], [[7, 8], []]);
     testFindString("If ((x + 5) * 2) = 14, then x = 2", "(x", [], [[4, 6], []]);
 
-    testFindString("hello<img src='../resources/abe.png'>world", "lowo", [], [[3, 2], []]);
+    testFindString("hello<img src='../resources/abe.png'>world", "lowo", [], [[]]);
 
     document.getElementById("console").style.removeProperty("visibility");
 </script>

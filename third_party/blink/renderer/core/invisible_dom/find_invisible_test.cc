@@ -138,11 +138,10 @@ TEST_P(FindInvisibleTest, FindingInvisibleTextHasCorrectCount) {
   test::RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(4, client.Count());
-  // Active match is not supported yet for invisible elements.
-  EXPECT_EQ(-1, client.ActiveIndex());
+  EXPECT_EQ(1, client.ActiveIndex());
 }
 
-TEST_P(FindInvisibleTest, FindingInvisibleTextHasIncorrectActiveMatch) {
+TEST_P(FindInvisibleTest, FindingInvisibleTextHasCorrectActiveMatch) {
   ResizeAndFocus();
   SetInnerHTML(
       "<div id='div'>1foo<div invisible>22foo</div>333foo</div>"
@@ -167,6 +166,7 @@ TEST_P(FindInvisibleTest, FindingInvisibleTextHasIncorrectActiveMatch) {
   // Finding next focuses on "1foo".
   WebRange range = LocalMainFrame()->SelectionRange();
   ASSERT_FALSE(range.IsNull());
+  EXPECT_EQ(1, client.ActiveIndex());
   EXPECT_EQ(1, range.StartOffset());
   EXPECT_EQ(4, range.EndOffset());
 
@@ -175,9 +175,22 @@ TEST_P(FindInvisibleTest, FindingInvisibleTextHasIncorrectActiveMatch) {
   test::RunPendingTasks();
   find_in_page->StopFinding(
       mojom::blink::StopFindAction::kStopFindActionKeepSelection);
-  // Finding next focuses on "333foo", skipping "22foo".
+  // Finding next focuses on "22foo".
   range = LocalMainFrame()->SelectionRange();
   ASSERT_FALSE(range.IsNull());
+  EXPECT_EQ(2, client.ActiveIndex());
+  EXPECT_EQ(2, range.StartOffset());
+  EXPECT_EQ(5, range.EndOffset());
+
+  find_options->find_next = true;
+  find_in_page->Find(current_id++, "foo", find_options->Clone());
+  test::RunPendingTasks();
+  find_in_page->StopFinding(
+      mojom::blink::StopFindAction::kStopFindActionKeepSelection);
+  // Finding next focuses on "333foo".
+  range = LocalMainFrame()->SelectionRange();
+  ASSERT_FALSE(range.IsNull());
+  EXPECT_EQ(3, client.ActiveIndex());
   EXPECT_EQ(3, range.StartOffset());
   EXPECT_EQ(6, range.EndOffset());
 
@@ -186,9 +199,22 @@ TEST_P(FindInvisibleTest, FindingInvisibleTextHasIncorrectActiveMatch) {
   test::RunPendingTasks();
   find_in_page->StopFinding(
       mojom::blink::StopFindAction::kStopFindActionKeepSelection);
-  // Finding next focuses on "55555foo", skipping "4444foo".
+  // Finding next focuses on "4444foo".
   range = LocalMainFrame()->SelectionRange();
   ASSERT_FALSE(range.IsNull());
+  EXPECT_EQ(4, client.ActiveIndex());
+  EXPECT_EQ(4, range.StartOffset());
+  EXPECT_EQ(7, range.EndOffset());
+
+  find_options->find_next = true;
+  find_in_page->Find(current_id++, "foo", find_options->Clone());
+  test::RunPendingTasks();
+  find_in_page->StopFinding(
+      mojom::blink::StopFindAction::kStopFindActionKeepSelection);
+  // Finding next focuses on "55555foo".
+  range = LocalMainFrame()->SelectionRange();
+  ASSERT_FALSE(range.IsNull());
+  EXPECT_EQ(5, client.ActiveIndex());
   EXPECT_EQ(5, range.StartOffset());
   EXPECT_EQ(8, range.EndOffset());
 }

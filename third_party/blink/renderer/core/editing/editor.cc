@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/editing/editing_tri_state.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
@@ -780,7 +781,7 @@ static Range* FindStringBetweenPositions(
 
   while (true) {
     EphemeralRangeInFlatTree result_range =
-        FindPlainText(search_range, target, options);
+        FindBuffer::FindMatchInRange(search_range, target, options);
     if (result_range.IsCollapsed())
       return nullptr;
 
