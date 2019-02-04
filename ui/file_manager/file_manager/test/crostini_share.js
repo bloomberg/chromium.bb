@@ -9,6 +9,10 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
   const menuShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"]:not([hidden]):not([disabled])';
+  const menuNoManageLinuxSharing = '#file-context-menu:not([hidden]) ' +
+      '[command="#manage-linux-sharing"][hidden][disabled="disabled"]';
+  const menuManageLinuxSharing = '#file-context-menu:not([hidden]) ' +
+      '[command="#manage-linux-sharing"]:not([hidden]):not([disabled])';
   const shareWithLinux = '#file-context-menu [command="#share-with-linux"]';
   const menuShareWithLinuxDirTree =
       '#directory-tree-context-menu:not([hidden]) ' +
@@ -45,6 +49,8 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         return test.waitForElement(menuShareWithLinux);
       })
       .then(() => {
+        // Check 'Manage Linux sharing' is not shown in menu.
+        assertTrue(!!document.querySelector(menuNoManageLinuxSharing));
         // Click on 'Share with Linux'.
         assertTrue(test.fakeMouseClick(shareWithLinux, 'Share with Linux'));
         // Check sharePathsWithCrostini is called.
@@ -61,13 +67,15 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         });
       })
       .then(() => {
-
         // Right-click 'photos' directory.
         // Check 'Share with Linux' is not shown in menu.
         assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
         return test.waitForElement(menuNoShareWithLinux);
       })
       .then(() => {
+        // Check 'Manage Linux sharing' is shown in menu.
+        assertTrue(!!document.querySelector(menuManageLinuxSharing));
+
         // Share should persist when right-click > Share with Linux.
         assertTrue(sharePathsPersist);
         // Validate UMAs.
