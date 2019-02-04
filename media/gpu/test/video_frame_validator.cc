@@ -138,14 +138,6 @@ size_t VideoFrameValidator::GetMismatchedFramesCount() const {
   return mismatched_frames_.size();
 }
 
-bool VideoFrameValidator::WaitUntilValidated() const {
-  base::AutoLock auto_lock(frame_validator_lock_);
-  while (num_frames_validating_ > 0) {
-    frame_validator_cv_.Wait();
-  }
-  return mismatched_frames_.size() == 0u;
-}
-
 void VideoFrameValidator::ProcessVideoFrame(
     scoped_refptr<const VideoFrame> video_frame,
     size_t frame_index) {
@@ -160,6 +152,19 @@ void VideoFrameValidator::ProcessVideoFrame(
       FROM_HERE,
       base::BindOnce(&VideoFrameValidator::ProcessVideoFrameTask,
                      base::Unretained(this), video_frame, frame_index));
+}
+
+bool VideoFrameValidator::WaitUntilDone() {
+  base::AutoLock auto_lock(frame_validator_lock_);
+  while (num_frames_validating_ > 0) {
+    frame_validator_cv_.Wait();
+  }
+
+  if (mismatched_frames_.size() > 0u) {
+    LOG(ERROR) << mismatched_frames_.size() << " frames failed to validate.";
+    return false;
+  }
+  return true;
 }
 
 void VideoFrameValidator::ProcessVideoFrameTask(

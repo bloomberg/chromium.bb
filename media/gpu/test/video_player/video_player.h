@@ -15,6 +15,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "media/gpu/test/video_frame_helpers.h"
 
 namespace media {
 namespace test {
@@ -23,7 +24,6 @@ class FrameRenderer;
 class Video;
 class VideoDecoderClient;
 struct VideoDecoderClientConfig;
-class VideoFrameProcessor;
 
 // Default timeout used when waiting for events.
 constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(30);
@@ -60,8 +60,12 @@ class VideoPlayer {
   static std::unique_ptr<VideoPlayer> Create(
       const Video* video,
       FrameRenderer* frame_renderer,
-      const std::vector<VideoFrameProcessor*>& frame_processors,
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
+
+  // Wait until all frame processors have finished processing. Returns whether
+  // processing was successful.
+  bool WaitForFrameProcessors();
 
   // Play the video asynchronously.
   void Play();
@@ -106,10 +110,11 @@ class VideoPlayer {
  private:
   VideoPlayer();
 
-  void Initialize(const Video* video,
-                  FrameRenderer* frame_renderer,
-                  const std::vector<VideoFrameProcessor*>& frame_processors,
-                  const VideoDecoderClientConfig& config);
+  void Initialize(
+      const Video* video,
+      FrameRenderer* frame_renderer,
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
+      const VideoDecoderClientConfig& config);
   void Destroy();
 
   // Notify the video player an event has occurred (e.g. frame decoded). Returns

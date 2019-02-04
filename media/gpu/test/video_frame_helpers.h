@@ -36,6 +36,10 @@ class VideoFrameProcessor {
   // VideoFrameProcessor.
   virtual void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                                  size_t frame_index) = 0;
+
+  // Wait until all currently scheduled frames have been processed. Returns
+  // whether processing was successful.
+  virtual bool WaitUntilDone() = 0;
 };
 
 // Convert and copy the |src_frame| to the specified |dst_frame|. Supported

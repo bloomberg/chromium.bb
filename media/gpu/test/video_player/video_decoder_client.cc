@@ -26,11 +26,11 @@ namespace test {
 VideoDecoderClient::VideoDecoderClient(
     const VideoPlayer::EventCallback& event_cb,
     FrameRenderer* renderer,
-    const std::vector<VideoFrameProcessor*>& frame_processors,
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config)
     : event_cb_(event_cb),
       frame_renderer_(renderer),
-      frame_processors_(frame_processors),
+      frame_processors_(std::move(frame_processors)),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
       decoder_client_config_(config),
@@ -41,17 +41,21 @@ VideoDecoderClient::VideoDecoderClient(
 
 VideoDecoderClient::~VideoDecoderClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
-  Destroy();
+
+  WaitForFrameProcessors();
+
+  DestroyDecoder();
+  decoder_client_thread_.Stop();
 }
 
 // static
 std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
     const VideoPlayer::EventCallback& event_cb,
     FrameRenderer* frame_renderer,
-    const std::vector<VideoFrameProcessor*>& frame_processors,
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config) {
   auto decoder_client = base::WrapUnique(new VideoDecoderClient(
-      event_cb, frame_renderer, frame_processors, config));
+      event_cb, frame_renderer, std::move(frame_processors), config));
   if (!decoder_client->Initialize()) {
     return nullptr;
   }
@@ -78,13 +82,6 @@ bool VideoDecoderClient::Initialize() {
   return true;
 }
 
-void VideoDecoderClient::Destroy() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
-
-  DestroyDecoder();
-  decoder_client_thread_.Stop();
-}
-
 void VideoDecoderClient::CreateDecoder(
     const VideoDecodeAccelerator::Config& config,
     const std::vector<uint8_t>& stream) {
@@ -105,6 +102,13 @@ void VideoDecoderClient::DestroyDecoder() {
       FROM_HERE, base::BindOnce(&VideoDecoderClient::DestroyDecoderTask,
                                 weak_this_, &done));
   done.Wait();
+}
+
+bool VideoDecoderClient::WaitForFrameProcessors() {
+  bool success = true;
+  for (auto& frame_processor : frame_processors_)
+    success &= frame_processor->WaitUntilDone();
+  return success;
 }
 
 void VideoDecoderClient::Play() {
@@ -191,7 +195,7 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
 
   frame_renderer_->RenderFrame(wrapped_video_frame);
 
-  for (VideoFrameProcessor* frame_processor : frame_processors_)
+  for (auto& frame_processor : frame_processors_)
     frame_processor->ProcessVideoFrame(wrapped_video_frame,
                                        current_frame_index_);
   current_frame_index_++;
