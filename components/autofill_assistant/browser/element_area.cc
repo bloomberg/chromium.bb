@@ -30,19 +30,11 @@ ElementArea::ElementArea(ScriptExecutorDelegate* delegate)
 ElementArea::~ElementArea() = default;
 
 void ElementArea::Clear() {
-  cover_viewport_ = false;
-  rectangles_.clear();
-  ReportUpdate();
-}
-
-void ElementArea::CoverViewport() {
-  cover_viewport_ = true;
   rectangles_.clear();
   ReportUpdate();
 }
 
 void ElementArea::SetFromProto(const ElementAreaProto& proto) {
-  cover_viewport_ = false;
   rectangles_.clear();
   for (const auto& rectangle_proto : proto.rectangles()) {
     rectangles_.emplace_back();
@@ -90,9 +82,6 @@ void ElementArea::UpdatePositions() {
 }
 
 bool ElementArea::IsEmpty() const {
-  if (cover_viewport_)
-    return false;
-
   for (const auto& rectangle : rectangles_) {
     for (const auto& position : rectangle.positions) {
       if (!position.rect.empty()) {
@@ -184,18 +173,6 @@ void ElementArea::OnGetElementPosition(const Selector& selector,
 void ElementArea::ReportUpdate() {
   if (!on_update_)
     return;
-
-  if (cover_viewport_) {
-    std::vector<RectF> areas;
-    areas.emplace_back();
-    RectF& rect = areas.back();
-    rect.left = 0.0;
-    rect.top = 0.0;
-    rect.right = 1.0;
-    rect.bottom = 1.0;
-    on_update_.Run(areas);
-    return;
-  }
 
   for (const auto& rectangle : rectangles_) {
     if (rectangle.IsPending()) {

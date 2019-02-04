@@ -114,6 +114,15 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
       SetProgressPulsingEnabled(false);
       return;
 
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+      SetOverlayState(OverlayState::HIDDEN);
+      AllowShowingSoftKeyboard(true);
+      SetProgressPulsingEnabled(true);
+
+      // user interaction is needed.
+      ExpandBottomSheet();
+      return;
+
     case AutofillAssistantState::PROMPT:
       SetOverlayState(OverlayState::PARTIAL);
       AllowShowingSoftKeyboard(true);
