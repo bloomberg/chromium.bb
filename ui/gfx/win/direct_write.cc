@@ -11,7 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "skia/ext/fontmgr_default_win.h"
+#include "skia/ext/fontmgr_default.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/platform_font_win.h"
@@ -59,7 +59,7 @@ void MaybeInitializeDirectWrite() {
       SkFontMgr_New_DirectWrite(factory.Get());
   if (!direct_write_font_mgr)
     return;
-  SetDefaultSkiaFactory(std::move(direct_write_font_mgr));
+  skia::OverrideDefaultSkFontMgr(std::move(direct_write_font_mgr));
   gfx::PlatformFontWin::SetDirectWriteFactory(factory.Get());
 }
 

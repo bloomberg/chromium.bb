@@ -275,12 +275,6 @@ component("skia") {
     "ext/convolver.h",
     "ext/event_tracer_impl.cc",
     "ext/event_tracer_impl.h",
-    "ext/fontmgr_default_android.cc",
-    "ext/fontmgr_default_android.h",
-    "ext/fontmgr_default_linux.cc",
-    "ext/fontmgr_default_linux.h",
-    "ext/fontmgr_default_win.cc",
-    "ext/fontmgr_default_win.h",
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/image_operations.h",
@@ -303,6 +297,16 @@ component("skia") {
     "ext/skia_utils_win.cc",
     "ext/skia_utils_win.h",
   ]
+
+  if (!is_mac && !is_ios) {
+    sources += [
+      "ext/fontmgr_default.cc",
+      "ext/fontmgr_default.h",
+      "ext/fontmgr_default_android.cc",
+      "ext/fontmgr_default_linux.cc",
+      "ext/fontmgr_default_win.cc",
+    ]
+  }
 
   if (!is_ios) {
     sources += [
@@ -487,7 +491,6 @@ component("skia") {
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
       "//third_party/skia/src/ports/SkFontMgr_fuchsia.cpp",
       "ext/fontmgr_default_fuchsia.cc",
-      "ext/fontmgr_default_fuchsia.h",
     ]
     deps += [
       "//third_party/fuchsia-sdk/sdk:fonts",
