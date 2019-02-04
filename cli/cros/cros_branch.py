@@ -147,6 +147,18 @@ def SyncVersion(version):
   ])
 
 
+def SyncFile(path):
+  """Sync to the given manifest file and return the synced manifest.
+
+  Args:
+    path: Path to the manifest file.
+
+  Returns:
+    The synced manifest as a repo_manifest.Manifest.
+  """
+  return Sync(['--manifest-file', path])
+
+
 class CheckoutManager(object):
   """Context manager for checking out a chromiumos project to a revision.
 
@@ -572,44 +584,55 @@ Delete Examples:
     subparser = parser.add_subparsers(dest='subcommand')
     create_parser = subparser.add_parser(
         'create', help='Create a branch from a specified maniefest version.')
-    create_parser.add_argument(
-        'version', help="Manifest version to branch off, e.g. '10509.0.0'.")
 
-    create_group = create_parser.add_argument_group(
+    sync_group = create_parser.add_argument_group(
+        'Manifest',
+        description='Which manifest should be branched?')
+    sync_ex_group = sync_group.add_mutually_exclusive_group(required=True)
+    sync_ex_group.add_argument(
+        '--version',
+        dest='version',
+        help="Manifest version to branch off, e.g. '10509.0.0'.")
+    sync_ex_group.add_argument(
+        '--file',
+        dest='file',
+        help='Path to manifest file to branch off.')
+
+    type_group = create_parser.add_argument_group(
         'Branch Type',
         description='You must specify the type of the new branch. '
         'This affects how manifest metadata is updated and how '
         'the branch is named (if not specified manually).')
-    create_ex_group = create_group.add_mutually_exclusive_group(required=True)
-    create_ex_group.add_argument(
+    type_ex_group = type_group.add_mutually_exclusive_group(required=True)
+    type_ex_group.add_argument(
         '--release',
         dest='cls',
         action='store_const',
         const=ReleaseBranch,
         help='The new branch is a release branch. '
         "Named as 'release-R<Milestone>-<Major Version>.B'.")
-    create_ex_group.add_argument(
+    type_ex_group.add_argument(
         '--factory',
         dest='cls',
         action='store_const',
         const=FactoryBranch,
         help='The new branch is a factory branch. '
         "Named as 'factory-<Major Version>.B'.")
-    create_ex_group.add_argument(
+    type_ex_group.add_argument(
         '--firmware',
         dest='cls',
         action='store_const',
         const=FirmwareBranch,
         help='The new branch is a firmware branch. '
         "Named as 'firmware-<Major Version>.B'.")
-    create_ex_group.add_argument(
+    type_ex_group.add_argument(
         '--stabilize',
         dest='cls',
         action='store_const',
         const=StabilizeBranch,
         help='The new branch is a minibranch. '
         "Named as 'stabilize-<Major Version>.B'.")
-    create_ex_group.add_argument(
+    type_ex_group.add_argument(
         '--custom',
         dest='name',
         help='Custom branch type with arbitrary name. Beware: custom '
@@ -631,7 +654,8 @@ Delete Examples:
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
-      manifest = SyncVersion(self.options.version)
+      manifest = (SyncFile(self.options.file) if self.options.file else
+                  SyncVersion(self.options.version))
       branch = (Branch(self.options.name, manifest) if self.options.name else
                 self.options.cls(manifest))
       branch.Create(push=self.options.push, force=self.options.force)

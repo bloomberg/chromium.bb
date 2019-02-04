@@ -658,32 +658,38 @@ class BranchCommandTest(ManifestMockTestCase):
                      return_value=VersionInfo(self.VERSION))
 
   def testCreateReleaseCommandParses(self):
-    self.RunCommandMock(['create', self.VERSION, '--release'])
+    self.RunCommandMock(['create', '--version', self.VERSION, '--release'])
     self.assertIs(self.cmd.inst.options.cls, ReleaseBranch)
     self.AssertNoDangerousOptions()
 
   def testCreateFactoryCommandParses(self):
-    self.RunCommandMock(['create', self.VERSION, '--factory'])
+    self.RunCommandMock(['create', '--version', self.VERSION, '--factory'])
     self.assertIs(self.cmd.inst.options.cls, FactoryBranch)
     self.AssertNoDangerousOptions()
 
   def testCreateFirmwareCommandParses(self):
-    self.RunCommandMock(['create', self.VERSION, '--firmware'])
+    self.RunCommandMock(['create', '--version', self.VERSION, '--firmware'])
     self.assertIs(self.cmd.inst.options.cls, FirmwareBranch)
     self.AssertNoDangerousOptions()
 
   def testCreateStabilizeCommandParses(self):
-    self.RunCommandMock(['create', self.VERSION, '--stabilize'])
+    self.RunCommandMock(['create', '--version', self.VERSION, '--stabilize'])
     self.assertIs(self.cmd.inst.options.cls, StabilizeBranch)
     self.AssertNoDangerousOptions()
 
   def testCreateCustomCommandParses(self):
-    self.RunCommandMock(['create', self.VERSION, '--custom', self.BRANCH_NAME])
+    self.RunCommandMock(['create',
+                         '--version', self.VERSION,
+                         '--custom', self.BRANCH_NAME])
     self.assertEqual(self.cmd.inst.options.name, self.BRANCH_NAME)
     self.AssertNoDangerousOptions()
 
+  def testCreateSyncsToFile(self):
+    self.RunCommandMock(['create', '--file', 'manifest.xml', '--stabilize'])
+    self.AssertSynced(['--manifest-file', 'manifest.xml'])
+
   def testCreateSyncsToVersion(self):
-    self.RunCommandMock(['create', self.VERSION, '--stabilize'])
+    self.RunCommandMock(['create', '--version', self.VERSION, '--stabilize'])
     self.AssertSynced(['--version', self.VERSION])
 
   def testRenameSyncsToBranch(self):
