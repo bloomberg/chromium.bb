@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/sync_user_settings_impl.h"
+#include "components/sync/driver/sync_user_settings_impl.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service_crypto.h"
 
-namespace browser_sync {
+namespace syncer {
 
 SyncUserSettingsImpl::SyncUserSettingsImpl(
-    syncer::SyncServiceCrypto* crypto,
-    syncer::SyncPrefs* prefs,
-    syncer::ModelTypeSet registered_types,
+    SyncServiceCrypto* crypto,
+    SyncPrefs* prefs,
+    ModelTypeSet registered_types,
     const base::RepeatingCallback<void(bool)>& sync_allowed_by_platform_changed)
     : crypto_(crypto),
       prefs_(prefs),
@@ -59,15 +59,15 @@ bool SyncUserSettingsImpl::IsSyncEverythingEnabled() const {
   return prefs_->HasKeepEverythingSynced();
 }
 
-syncer::ModelTypeSet SyncUserSettingsImpl::GetChosenDataTypes() const {
-  syncer::ModelTypeSet types = GetPreferredDataTypes();
-  types.RetainAll(syncer::UserSelectableTypes());
+ModelTypeSet SyncUserSettingsImpl::GetChosenDataTypes() const {
+  ModelTypeSet types = GetPreferredDataTypes();
+  types.RetainAll(UserSelectableTypes());
   return types;
 }
 
 void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
-                                              syncer::ModelTypeSet types) {
-  DCHECK(syncer::UserSelectableTypes().HasAll(types));
+                                              ModelTypeSet types) {
+  DCHECK(UserSelectableTypes().HasAll(types));
 
   prefs_->SetDataTypesConfiguration(sync_everything, registered_types_, types);
 }
@@ -90,7 +90,7 @@ void SyncUserSettingsImpl::EnableEncryptEverything() {
 
 bool SyncUserSettingsImpl::IsPassphraseRequired() const {
   return crypto_->passphrase_required_reason() !=
-         syncer::REASON_PASSPHRASE_NOT_REQUIRED;
+         REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequiredForDecryption() const {
@@ -108,7 +108,7 @@ base::Time SyncUserSettingsImpl::GetExplicitPassphraseTime() const {
   return crypto_->GetExplicitPassphraseTime();
 }
 
-syncer::PassphraseType SyncUserSettingsImpl::GetPassphraseType() const {
+PassphraseType SyncUserSettingsImpl::GetPassphraseType() const {
   return crypto_->GetPassphraseType();
 }
 
@@ -130,27 +130,27 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
   return result;
 }
 
-syncer::ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
-  syncer::ModelTypeSet types = Union(
-      prefs_->GetPreferredDataTypes(registered_types_), syncer::ControlTypes());
+ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
+  ModelTypeSet types =
+      Union(prefs_->GetPreferredDataTypes(registered_types_), ControlTypes());
   if (prefs_->IsLocalSyncEnabled()) {
-    types.Remove(syncer::APP_LIST);
-    types.Remove(syncer::USER_CONSENTS);
-    types.Remove(syncer::USER_EVENTS);
+    types.Remove(APP_LIST);
+    types.Remove(USER_CONSENTS);
+    types.Remove(USER_EVENTS);
   }
   return types;
 }
 
-syncer::ModelTypeSet SyncUserSettingsImpl::GetEncryptedDataTypes() const {
+ModelTypeSet SyncUserSettingsImpl::GetEncryptedDataTypes() const {
   return crypto_->GetEncryptedDataTypes();
 }
 
 bool SyncUserSettingsImpl::IsEncryptedDatatypeEnabled() const {
   if (IsEncryptionPending())
     return true;
-  const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
-  const syncer::ModelTypeSet encrypted_types = GetEncryptedDataTypes();
-  DCHECK(encrypted_types.Has(syncer::PASSWORDS));
+  const ModelTypeSet preferred_types = GetPreferredDataTypes();
+  const ModelTypeSet encrypted_types = GetEncryptedDataTypes();
+  DCHECK(encrypted_types.Has(PASSWORDS));
   return !Intersection(preferred_types, encrypted_types).Empty();
 }
 
@@ -158,4 +158,4 @@ bool SyncUserSettingsImpl::IsEncryptionPending() const {
   return crypto_->encryption_pending();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

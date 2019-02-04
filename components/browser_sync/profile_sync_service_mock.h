@@ -10,8 +10,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browser_sync/sync_user_settings_mock.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_user_settings_mock.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,7 +23,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   explicit ProfileSyncServiceMock(InitParams init_params);
   ~ProfileSyncServiceMock() override;
 
-  SyncUserSettingsMock* GetUserSettingsMock();
+  syncer::SyncUserSettingsMock* GetUserSettingsMock();
 
   // SyncService overrides.
   syncer::SyncUserSettings* GetUserSettings() override;
@@ -94,7 +94,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   GetSetupInProgressHandleConcrete();
 
  private:
-  testing::NiceMock<SyncUserSettingsMock> user_settings_;
+  testing::NiceMock<syncer::SyncUserSettingsMock> user_settings_;
 };
 
 }  // namespace browser_sync

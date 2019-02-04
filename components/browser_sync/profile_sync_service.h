@@ -20,7 +20,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "components/browser_sync/sync_user_settings_impl.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/model_type.h"
@@ -35,6 +34,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_crypto.h"
 #include "components/sync/driver/sync_stopped_reporter.h"
+#include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/engine/net/network_time_update_callback.h"
@@ -507,7 +507,7 @@ class ProfileSyncService : public syncer::SyncService,
   // email address and sign-out upon error.
   identity::IdentityManager* const identity_manager_;
 
-  std::unique_ptr<SyncUserSettingsImpl> user_settings_;
+  std::unique_ptr<syncer::SyncUserSettingsImpl> user_settings_;
 
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().

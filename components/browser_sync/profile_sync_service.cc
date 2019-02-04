@@ -260,7 +260,7 @@ void ProfileSyncService::Initialize() {
   data_type_controllers_ =
       BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
 
-  user_settings_ = std::make_unique<SyncUserSettingsImpl>(
+  user_settings_ = std::make_unique<syncer::SyncUserSettingsImpl>(
       &crypto_, &sync_prefs_, GetRegisteredDataTypes(),
       base::BindRepeating(&ProfileSyncService::SyncAllowedByPlatformChanged,
                           base::Unretained(this)));

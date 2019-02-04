@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_SYNC_USER_SETTINGS_MOCK_H_
-#define COMPONENTS_BROWSER_SYNC_SYNC_USER_SETTINGS_MOCK_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_MOCK_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_MOCK_H_
 
 #include <string>
 
 #include "components/sync/driver/sync_user_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace browser_sync {
+namespace syncer {
 
-class SyncUserSettingsMock : public syncer::SyncUserSettings {
+class SyncUserSettingsMock : public SyncUserSettings {
  public:
   SyncUserSettingsMock();
   ~SyncUserSettingsMock() override;
@@ -46,6 +46,6 @@ class SyncUserSettingsMock : public syncer::SyncUserSettings {
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string&));
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
-#endif  // COMPONENTS_BROWSER_SYNC_SYNC_USER_SETTINGS_MOCK_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_MOCK_H_

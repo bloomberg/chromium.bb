@@ -16,8 +16,6 @@ static_library("browser_sync") {
     "signin_confirmation_helper.h",
     "sync_auth_manager.cc",
     "sync_auth_manager.h",
-    "sync_user_settings_impl.cc",
-    "sync_user_settings_impl.h",
   ]
 
   public_deps = [
@@ -105,8 +103,6 @@ static_library("test_support") {
     "profile_sync_service_mock.h",
     "profile_sync_test_util.cc",
     "profile_sync_test_util.h",
-    "sync_user_settings_mock.cc",
-    "sync_user_settings_mock.h",
     "test_http_bridge_factory.cc",
     "test_http_bridge_factory.h",
     "test_profile_sync_service.cc",
