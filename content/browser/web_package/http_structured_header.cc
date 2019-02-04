@@ -50,6 +50,30 @@ class StructuredHeaderParser {
     return input_.empty();
   }
 
+  // Parses a List of Lists ([SH] 4.2.4).
+  base::Optional<ListOfLists> ReadListOfLists() {
+    ListOfLists result;
+    while (true) {
+      std::vector<std::string> inner_list;
+      while (true) {
+        base::Optional<std::string> item = ReadItem();
+        if (!item)
+          return base::nullopt;
+        inner_list.push_back(*item);
+        SkipWhitespaces();
+        if (!ConsumeChar(';'))
+          break;
+        SkipWhitespaces();
+      }
+      result.push_back(std::move(inner_list));
+      SkipWhitespaces();
+      if (!ConsumeChar(','))
+        break;
+      SkipWhitespaces();
+    }
+    return result;
+  }
+
   // Parses an Item ([SH] 4.2.7).
   // Currently only limited types (non-negative integers, strings, tokens and
   // byte sequences) are supported, and all types are returned as a string
@@ -284,6 +308,14 @@ base::Optional<ParameterisedList> ParseParameterisedList(
   base::Optional<ParameterisedList> param_list = parser.ReadParameterisedList();
   if (param_list && parser.FinishParsing())
     return param_list;
+  return base::nullopt;
+}
+
+base::Optional<ListOfLists> ParseListOfLists(const base::StringPiece& str) {
+  StructuredHeaderParser parser(str);
+  base::Optional<ListOfLists> list_of_lists = parser.ReadListOfLists();
+  if (list_of_lists && parser.FinishParsing())
+    return list_of_lists;
   return base::nullopt;
 }
 
