@@ -145,13 +145,33 @@ if (is_chromeos) {
       "video_player/video_player.cc",
       "video_player/video_player.h",
     ]
-    data = [
-      "//media/test/data/",
-    ]
     deps = [
       ":decode_helpers",
       "//media/gpu",
     ]
+  }
+
+  static_library("video_player_test_environment") {
+    testonly = true
+    sources = [
+      "video_player/video_player_test_environment.h",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+    deps = [
+      ":video_player",
+      "//base/test:test_config",
+      "//base/test:test_support",
+      "//media/gpu",
+      "//testing/gtest:gtest",
+    ]
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
+    if (use_vaapi) {
+      deps += [ "//media/gpu/vaapi" ]
+    }
   }
 }
 

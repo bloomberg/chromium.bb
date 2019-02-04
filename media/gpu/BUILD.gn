@@ -641,17 +641,11 @@ if (is_chromeos) {
       "test:frame_file_writer",
       "test:frame_validator",
       "test:video_player",
-      "//base/test:test_support",
+      "test:video_player_test_environment",
       "//media:test_support",
       "//mojo/core/embedder",
       "//testing/gtest",
     ]
-    if (use_vaapi) {
-      deps += [ "//media/gpu/vaapi" ]
-    }
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
   }
 }
 
