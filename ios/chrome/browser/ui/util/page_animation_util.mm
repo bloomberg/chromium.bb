@@ -44,11 +44,7 @@ void UpdateLayerAnchorWithTransform(CALayer* layer,
   layer.anchorPoint = newAnchor;
 }
 
-void AnimateOutWithCompletion(UIView* view,
-                              NSTimeInterval delay,
-                              BOOL clockwise,
-                              BOOL isPortrait,
-                              void (^completion)(void)) {
+void AnimateOutWithCompletion(UIView* view, void (^completion)(void)) {
   // The close animation spec calls for the anchor point to be the upper right.
   CGPoint newAnchorPoint = CGPointMake(kAnimateOutAnchorX, kAnimateOutAnchorY);
   CALayer* layer = [view layer];

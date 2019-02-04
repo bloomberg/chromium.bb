@@ -719,9 +719,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // --------------------------
 // Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab;
-// Returns the view to use when animating a page in or out, positioning it to
-// fill the content area but not actually adding it to the view hierarchy.
-- (UIImageView*)pageOpenCloseAnimationView;
 // Add all delegates to the provided |tab|.
 - (void)installDelegatesForTab:(Tab*)tab;
 // Remove delegates from the provided |tab|.
@@ -2672,20 +2669,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return web::GetWebClient()->IsAppSpecificURL(visibleItem->GetURL());
 }
 
-- (UIImageView*)pageOpenCloseAnimationView {
-  CGRect frame = self.contentArea.bounds;
-
-  frame.size.height = frame.size.height - self.headerHeight;
-  frame.origin.y = self.headerHeight;
-
-  UIImageView* pageView = [[UIImageView alloc] initWithFrame:frame];
-  CGPoint center = CGPointMake(CGRectGetMidX(frame), CGRectGetMidY(frame));
-  pageView.center = center;
-
-  pageView.backgroundColor = [UIColor whiteColor];
-  return pageView;
-}
-
 - (void)installDelegatesForTab:(Tab*)tab {
   // Unregistration happens when the Tab is removed from the TabModel.
   DCHECK_NE(tab.webState->GetDelegate(), _webStateDelegate.get());
@@ -4350,23 +4333,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (tabIndex == NSNotFound)
     return;
 
-  // TODO(crbug.com/688003): Evaluate if a screenshot of the tab is needed on
-  // iPad.
-  UIImageView* exitingPage = [self pageOpenCloseAnimationView];
-  // TODO(crbug.com/917929): Refactor to remove usage of UpdateSnapshot().
-  exitingPage.image =
-      SnapshotTabHelper::FromWebState(self.currentWebState)->UpdateSnapshot();
+  UIView* snapshotView = [self.contentArea snapshotViewAfterScreenUpdates:NO];
+  snapshotView.frame = self.contentArea.frame;
 
-  // Close the actual tab, and add its image as a subview.
   [self.tabModel closeTabAtIndex:tabIndex];
 
-  // Do not animate close in iPad.
   if (![self canShowTabStrip]) {
-    [self.contentArea addSubview:exitingPage];
-    page_animation_util::AnimateOutWithCompletion(
-        exitingPage, 0, YES, IsPortrait(), ^{
-          [exitingPage removeFromSuperview];
-        });
+    [self.contentArea addSubview:snapshotView];
+    page_animation_util::AnimateOutWithCompletion(snapshotView, ^{
+      [snapshotView removeFromSuperview];
+    });
   }
 }
 
