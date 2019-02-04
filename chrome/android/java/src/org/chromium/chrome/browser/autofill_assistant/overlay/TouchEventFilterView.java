@@ -64,20 +64,18 @@ public class TouchEventFilterView
 
     /** A mode that describes what's happening to the current gesture. */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({NO_GESTURE_MODE, TRACKING_GESTURE_MODE, FORWARDING_GESTURE_MODE})
-    private @interface GestureMode {}
-
-    /** There's no current gesture. */
-    private static final int NO_GESTURE_MODE = 0;
-
-    /**
-     * The current gesture is being tracked and buffered. The gesture might later on transition to
-     * forwarding mode or it might be abandoned.
-     */
-    private static final int TRACKING_GESTURE_MODE = 1;
-
-    /** The current gesture is being forwarded to the content view. */
-    private static final int FORWARDING_GESTURE_MODE = 2;
+    @IntDef({GestureMode.NONE, GestureMode.TRACKING, GestureMode.FORWARDING})
+    private @interface GestureMode {
+        /** There's no current gesture. */
+        int NONE = 0;
+        /**
+         * The current gesture is being tracked and buffered. The gesture might later on transition
+         * to forwarding mode or it might be abandoned.
+         */
+        int TRACKING = 1;
+        /** The current gesture is being forwarded to the content view. */
+        int FORWARDING = 2;
+    }
 
     private AssistantOverlayDelegate mDelegate;
     private ChromeFullscreenManager mFullscreenManager;
@@ -359,7 +357,7 @@ public class TouchEventFilterView
 
                 // Track the gesture in case this is a tap, which we should handle, or a
                 // scroll/fling/pinch, which we should forward.
-                mCurrentGestureMode = TRACKING_GESTURE_MODE;
+                mCurrentGestureMode = GestureMode.TRACKING;
                 mCurrentGestureBuffer.add(MotionEvent.obtain(event));
                 mScrollDetector.onTouchEvent(event);
                 mTapDetector.onTouchEvent(event);
@@ -367,7 +365,7 @@ public class TouchEventFilterView
 
             case MotionEvent.ACTION_MOVE: // Continues a gesture.
                 switch (mCurrentGestureMode) {
-                    case TRACKING_GESTURE_MODE:
+                    case GestureMode.TRACKING:
                         if (mScrollDetector.onTouchEvent(event)) {
                             // The current gesture is a scroll or a fling. Forward it.
                             startForwardingGesture(event);
@@ -379,7 +377,7 @@ public class TouchEventFilterView
                         mCurrentGestureBuffer.add(MotionEvent.obtain(event));
                         return true;
 
-                    case FORWARDING_GESTURE_MODE:
+                    case GestureMode.FORWARDING:
                         mCompositorView.dispatchTouchEvent(event);
                         return true;
 
@@ -390,12 +388,12 @@ public class TouchEventFilterView
             case MotionEvent.ACTION_POINTER_DOWN: // Continues a multi-touch gesture
             case MotionEvent.ACTION_POINTER_UP:
                 switch (mCurrentGestureMode) {
-                    case TRACKING_GESTURE_MODE:
+                    case GestureMode.TRACKING:
                         // The current gesture has just become a multi-touch gesture. Forward it.
                         startForwardingGesture(event);
                         return true;
 
-                    case FORWARDING_GESTURE_MODE:
+                    case GestureMode.FORWARDING:
                         mCompositorView.dispatchTouchEvent(event);
                         return true;
 
@@ -406,14 +404,14 @@ public class TouchEventFilterView
             case MotionEvent.ACTION_UP: // Ends a gesture
             case MotionEvent.ACTION_CANCEL:
                 switch (mCurrentGestureMode) {
-                    case TRACKING_GESTURE_MODE:
+                    case GestureMode.TRACKING:
                         if (mTapDetector.onTouchEvent(event)) {
                             onUnexpectedTap(event);
                         }
                         resetCurrentGesture();
                         return true;
 
-                    case FORWARDING_GESTURE_MODE:
+                    case GestureMode.FORWARDING:
                         mCompositorView.dispatchTouchEvent(event);
                         resetCurrentGesture();
                         return true;
@@ -429,7 +427,7 @@ public class TouchEventFilterView
 
     /** Clears all information about the current gesture. */
     private void resetCurrentGesture() {
-        mCurrentGestureMode = NO_GESTURE_MODE;
+        mCurrentGestureMode = GestureMode.NONE;
         cleanupCurrentGestureBuffer();
     }
 
@@ -443,7 +441,7 @@ public class TouchEventFilterView
 
     /** Enables forwarding of the current gesture, starting with {@link currentEvent}. */
     private void startForwardingGesture(MotionEvent currentEvent) {
-        mCurrentGestureMode = FORWARDING_GESTURE_MODE;
+        mCurrentGestureMode = GestureMode.FORWARDING;
         for (MotionEvent event : mCurrentGestureBuffer) {
             mCompositorView.dispatchTouchEvent(event);
         }
