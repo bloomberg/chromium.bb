@@ -33,11 +33,11 @@ function runTest() {
 
   container.displayLock.acquire({ timeout: Infinity }).then(() => {
     container.displayLock.commit().then(
-      () => { finishTest("FAIL"); },
       () => {
         document.body.appendChild(container);
         finishTest("PASS");
-      });
+      },
+      () => { finishTest("FAIL"); });
   });
 }
 
