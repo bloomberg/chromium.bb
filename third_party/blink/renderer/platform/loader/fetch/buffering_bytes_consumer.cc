@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/buffering_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
 
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
