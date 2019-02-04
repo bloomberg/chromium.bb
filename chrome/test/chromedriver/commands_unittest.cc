@@ -15,10 +15,11 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -148,7 +149,7 @@ TEST(CommandsTest, GetSessions) {
   Command cmd = base::Bind(&ExecuteStubGetSession, &count);
 
   base::DictionaryValue params;
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   ExecuteGetSessions(cmd, &map, params, std::string(),
                      base::Bind(&OnGetSessions));
@@ -191,7 +192,7 @@ TEST(CommandsTest, QuitAll) {
   int count = 0;
   Command cmd = base::Bind(&ExecuteStubQuit, &count);
   base::DictionaryValue params;
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   ExecuteQuitAll(cmd, &map, params, std::string(), base::Bind(&OnQuitAll));
   ASSERT_EQ(2, count);
 }
@@ -242,7 +243,7 @@ TEST(CommandsTest, ExecuteSessionCommand) {
   SessionCommand cmd = base::Bind(
       &ExecuteSimpleCommand, id, &params, &expected_value);
 
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
   ExecuteSessionCommand(
       &map,
@@ -327,7 +328,7 @@ TEST(CommandsTest, ExecuteSessionCommandOnJustDeletedSession) {
   std::string id("id");
   map[id] = std::move(thread);
 
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
   ExecuteSessionCommand(&map,
                         "cmd",
@@ -733,7 +734,7 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   // verify the listener was called. The session owns and will destroy |proxy|.
   SessionCommand cmd =
       base::Bind(&ExecuteAddListenerToSessionCommand, base::Passed(&proxy));
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop_addlistener;
 
   // |CommandListener|s are notified immediately before commands are run.
@@ -827,7 +828,7 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.
   SessionCommand cmd = base::Bind(&ShouldNotBeCalled);
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
 
   ExecuteSessionCommand(
