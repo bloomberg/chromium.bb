@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +68,8 @@ public class UsageStatsBridge {
 
     public void getAllSuspensions(Callback<List<String>> callback) {
         assert mNativeUsageStatsBridge != 0;
-        nativeGetAllSuspensions(mNativeUsageStatsBridge, callback);
+        nativeGetAllSuspensions(
+                mNativeUsageStatsBridge, arr -> { callback.onResult(Arrays.asList(arr)); });
     }
 
     public void setSuspensions(String[] domains, Callback<Boolean> callback) {
@@ -100,7 +102,7 @@ public class UsageStatsBridge {
     private native void nativeDeleteEventsWithMatchingDomains(
             long nativeUsageStatsBridge, String[] domains, Callback<Boolean> callback);
     private native void nativeGetAllSuspensions(
-            long nativeUsageStatsBridge, Callback<List<String>> callback);
+            long nativeUsageStatsBridge, Callback<String[]> callback);
     private native void nativeSetSuspensions(
             long nativeUsageStatsBridge, String[] domains, Callback<Boolean> callback);
     private native void nativeGetAllTokenMappings(
