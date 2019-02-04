@@ -82,6 +82,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -94,6 +95,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -183,9 +185,17 @@ std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
     content::BrowserContext* context,
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
-  auto config_helper =
-      std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
-          profile->GetRequestContext());
+  std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> config_helper;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    config_helper = std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
+        base::BindRepeating(&content::StoragePartition::GetNetworkContext,
+                            base::Unretained(storage_partition)));
+  } else {
+    config_helper = std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
+        profile->GetRequestContext());
+  }
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<invalidation::P2PInvalidationService>(
           std::move(config_helper), content::GetNetworkConnectionTracker(),

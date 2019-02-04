@@ -18,10 +18,19 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
+
 namespace jingle_glue {
 
 class NetworkServiceConfigTestUtil {
  public:
+  using NetworkContextGetter =
+      base::RepeatingCallback<network::mojom::NetworkContext*()>;
+
   // All public methods must be called on the thread this is created on,
   // but the callback returned by MakeSocketFactoryCallback() is expected to be
   // run on |url_request_context_getter->GetNetworkTaskRunner()|, which can be,
@@ -29,6 +38,8 @@ class NetworkServiceConfigTestUtil {
   // can block, but will not spin the event loop.
   explicit NetworkServiceConfigTestUtil(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  explicit NetworkServiceConfigTestUtil(
+      NetworkContextGetter network_context_getter);
   ~NetworkServiceConfigTestUtil();
 
   // Configures |config| to run the result of MakeSocketFactoryCallback()
@@ -54,6 +65,7 @@ class NetworkServiceConfigTestUtil {
   scoped_refptr<base::SingleThreadTaskRunner> net_runner_;
   scoped_refptr<base::SequencedTaskRunner> mojo_runner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  NetworkContextGetter network_context_getter_;
   std::unique_ptr<network::NetworkContext>
       network_context_;  // lives on |net_runner_|
   network::mojom::NetworkContextPtr
