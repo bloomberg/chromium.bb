@@ -17,8 +17,6 @@
         <structure name="IDR_GUEST_TAB_HTML" file="resources\ntp4\guest_tab.html" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="chromeos">
-        <structure name="IDR_LOGIN_HTML" file="resources\chromeos\login\login.html" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true"/>
-        <structure name="IDR_LOGIN_JS" file="resources\chromeos\login\login.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_MD_LOGIN_HTML" file="resources\chromeos\login\md_login.html" flattenhtml="true" type="chrome_html" variables="OOBE=md_login" expand_variables="true"/>
         <structure name="IDR_MD_LOGIN_JS" file="resources\chromeos\login\md_login.js" flattenhtml="true" type="chrome_html" />
       </if>
