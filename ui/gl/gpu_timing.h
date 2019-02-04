@@ -141,7 +141,7 @@ class GL_EXPORT GPUTimingClient
   bool CheckAndResetTimerErrors();
 
   int64_t GetCurrentCPUTime();
-  void SetCpuTimeForTesting(const base::Callback<int64_t(void)>& cpu_time);
+  void SetCpuTimeForTesting(base::RepeatingCallback<int64_t(void)> cpu_time);
 
   bool IsForceTimeElapsedQuery();
   void ForceTimeElapsedQuery();

@@ -159,7 +159,8 @@ void GLContextCGL::Destroy() {
       // Delay releasing the pixel format for 10 seconds to reduce the number of
       // unnecessary GPU switches.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&CGLReleasePixelFormat, discrete_pixelformat_),
+          FROM_HERE,
+          base::BindOnce(&CGLReleasePixelFormat, discrete_pixelformat_),
           base::TimeDelta::FromSeconds(10));
     } else {
       CGLReleasePixelFormat(discrete_pixelformat_);

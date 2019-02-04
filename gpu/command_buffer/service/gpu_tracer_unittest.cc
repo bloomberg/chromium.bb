@@ -53,7 +53,7 @@ class GPUTracerTester : public GPUTracer {
  public:
   explicit GPUTracerTester(GLES2Decoder* decoder)
       : GPUTracer(decoder), tracing_enabled_(0) {
-    gpu_timing_client_->SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
+    gpu_timing_client_->SetCpuTimeForTesting(base::BindRepeating(&FakeCpuTime));
 
     // Force tracing to be dependent on our mock variable here.
     gpu_trace_srv_category = &tracing_enabled_;
@@ -100,7 +100,7 @@ class BaseGpuTest : public GpuServiceTest {
       gl_fake_queries_.ExpectNoDisjointCalls(*gl_);
 
     gpu_timing_client_ = GetGLContext()->CreateGPUTimingClient();
-    gpu_timing_client_->SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
+    gpu_timing_client_->SetCpuTimeForTesting(base::BindRepeating(&FakeCpuTime));
     gl_fake_queries_.Reset();
   }
 
