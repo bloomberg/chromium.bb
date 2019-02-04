@@ -98,23 +98,14 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
 
   const auto background_worker_pool_params =
       GetWorkerPoolParams("Background", variation_params);
-  const auto background_blocking_worker_pool_params =
-      GetWorkerPoolParams("BackgroundBlocking", variation_params);
   const auto foreground_worker_pool_params =
       GetWorkerPoolParams("Foreground", variation_params);
-  const auto foreground_blocking_worker_pool_params =
-      GetWorkerPoolParams("ForegroundBlocking", variation_params);
 
-  if (!background_worker_pool_params ||
-      !background_blocking_worker_pool_params ||
-      !foreground_worker_pool_params ||
-      !foreground_blocking_worker_pool_params) {
+  if (!background_worker_pool_params || !foreground_worker_pool_params)
     return nullptr;
-  }
 
   return std::make_unique<base::TaskScheduler::InitParams>(
-      *background_worker_pool_params, *background_blocking_worker_pool_params,
-      *foreground_worker_pool_params, *foreground_blocking_worker_pool_params);
+      *background_worker_pool_params, *foreground_worker_pool_params);
 }
 
 std::unique_ptr<base::TaskScheduler::InitParams>

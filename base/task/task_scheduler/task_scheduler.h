@@ -64,19 +64,13 @@ class BASE_EXPORT TaskScheduler : public TaskExecutor {
 
     InitParams(
         const SchedulerWorkerPoolParams& background_worker_pool_params_in,
-        const SchedulerWorkerPoolParams&
-            background_blocking_worker_pool_params_in,
         const SchedulerWorkerPoolParams& foreground_worker_pool_params_in,
-        const SchedulerWorkerPoolParams&
-            foreground_blocking_worker_pool_params_in,
         SharedWorkerPoolEnvironment shared_worker_pool_environment_in =
             SharedWorkerPoolEnvironment::DEFAULT);
     ~InitParams();
 
     SchedulerWorkerPoolParams background_worker_pool_params;
-    SchedulerWorkerPoolParams background_blocking_worker_pool_params;
     SchedulerWorkerPoolParams foreground_worker_pool_params;
-    SchedulerWorkerPoolParams foreground_blocking_worker_pool_params;
     SharedWorkerPoolEnvironment shared_worker_pool_environment;
   };
 

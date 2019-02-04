@@ -25,16 +25,10 @@ TaskScheduler* g_task_scheduler = nullptr;
 
 TaskScheduler::InitParams::InitParams(
     const SchedulerWorkerPoolParams& background_worker_pool_params_in,
-    const SchedulerWorkerPoolParams& background_blocking_worker_pool_params_in,
     const SchedulerWorkerPoolParams& foreground_worker_pool_params_in,
-    const SchedulerWorkerPoolParams& foreground_blocking_worker_pool_params_in,
     SharedWorkerPoolEnvironment shared_worker_pool_environment_in)
     : background_worker_pool_params(background_worker_pool_params_in),
-      background_blocking_worker_pool_params(
-          background_blocking_worker_pool_params_in),
       foreground_worker_pool_params(foreground_worker_pool_params_in),
-      foreground_blocking_worker_pool_params(
-          foreground_blocking_worker_pool_params_in),
       shared_worker_pool_environment(shared_worker_pool_environment_in) {}
 
 TaskScheduler::InitParams::~InitParams() = default;
@@ -64,17 +58,15 @@ void TaskScheduler::StartWithDefaultParams() {
   // * The main thread is assumed to be busy, cap foreground workers at
   //   |num_cores - 1|.
   const int num_cores = SysInfo::NumberOfProcessors();
-  constexpr int kBackgroundMaxThreads = 1;
-  constexpr int kBackgroundBlockingMaxThreads = 2;
-  const int kForegroundMaxThreads = std::max(1, num_cores - 1);
-  const int kForegroundBlockingMaxThreads = std::max(2, num_cores - 1);
+
+  // TODO(etiennep): Change this to 2.
+  constexpr int kBackgroundMaxThreads = 3;
+  const int kForegroundMaxThreads = std::max(3, num_cores - 1);
 
   constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
 
   Start({{kBackgroundMaxThreads, kSuggestedReclaimTime},
-         {kBackgroundBlockingMaxThreads, kSuggestedReclaimTime},
-         {kForegroundMaxThreads, kSuggestedReclaimTime},
-         {kForegroundBlockingMaxThreads, kSuggestedReclaimTime}});
+         {kForegroundMaxThreads, kSuggestedReclaimTime}});
 }
 #endif  // !defined(OS_NACL)
 
