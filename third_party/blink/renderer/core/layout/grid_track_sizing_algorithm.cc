@@ -854,8 +854,12 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
 
   const GridTrackSize& track_size =
       RawGridTrackSize(direction, translated_index);
-  if (track_size.IsFitContent())
-    return track_size;
+  if (track_size.IsFitContent()) {
+    return IsRelativeGridLengthAsAuto(track_size.FitContentTrackBreadth(),
+                                      direction)
+               ? GridTrackSize(Length(kAuto), Length(kMaxContent))
+               : track_size;
+  }
 
   GridLength min_track_breadth = track_size.MinTrackBreadth();
   GridLength max_track_breadth = track_size.MaxTrackBreadth();
@@ -925,7 +929,6 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
   DCHECK(auto_sized_tracks_for_stretch_index_.IsEmpty());
   DCHECK(!has_percent_sized_rows_indefinite_height_);
   Vector<GridTrack>& track_list = Tracks(direction_);
-  bool has_definite_free_space = !!AvailableSpace();
   bool indefinite_height =
       direction_ == kForRows && !layout_grid_->CachedHasDefiniteLogicalHeight();
   size_t num_tracks = track_list.size();
@@ -937,11 +940,9 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
     track.SetInfinitelyGrowable(false);
 
     if (track_size.IsFitContent()) {
-      GridLength grid_length = track_size.FitContentTrackBreadth();
-      if (!grid_length.HasPercentage() || has_definite_free_space) {
-        track.SetGrowthLimitCap(ValueForLength(
-            grid_length.length(), AvailableSpace().value_or(LayoutUnit())));
-      }
+      track.SetGrowthLimitCap(
+          ValueForLength(track_size.FitContentTrackBreadth().length(),
+                         AvailableSpace().value_or(LayoutUnit())));
     }
 
     if (track_size.IsContentSized())
