@@ -122,10 +122,8 @@ void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
 }
 
 void CrostiniAppModelBuilder::MaybeCreateRootFolder() {
-  if (root_folder_created_)
-    return;
-
-  root_folder_created_ = true;
+  // If a sync item exists for the root folder, then it has been created
+  // already.
   const app_list::AppListSyncableService::SyncItem* sync_item =
       GetSyncItem(crostini::kCrostiniFolderId);
   if (sync_item)
