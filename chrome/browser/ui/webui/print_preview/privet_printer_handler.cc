@@ -76,20 +76,27 @@ void PrivetPrinterHandler::StartGetCapability(const std::string& destination_id,
 }
 
 void PrivetPrinterHandler::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    base::Value ticket,
-    const gfx::Size& page_size,
+    base::Value settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
+  std::string destination_id;
+  std::string capabilities;
+  gfx::Size page_size;
+  base::Value ticket;
+  if (!ParseSettings(settings, &destination_id, &capabilities, &page_size,
+                     &ticket)) {
+    std::move(callback).Run(base::Value(-1));
+    return;
+  }
+
   DCHECK(!print_callback_);
   print_callback_ = std::move(callback);
   CreateHTTP(
       destination_id,
       base::BindOnce(&PrivetPrinterHandler::PrintUpdateClient,
                      weak_ptr_factory_.GetWeakPtr(), job_title, print_data,
-                     std::move(ticket), capability, page_size));
+                     std::move(ticket), capabilities, page_size));
 }
 
 void PrivetPrinterHandler::LocalPrinterChanged(

@@ -232,23 +232,21 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
 }
 
 void LocalPrinterHandlerChromeos::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    base::Value ticket,
-    const gfx::Size& page_size,
+    base::Value settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   size_t size_in_kb = print_data->size() / 1024;
   UMA_HISTOGRAM_MEMORY_KB("Printing.CUPS.PrintDocumentSize", size_in_kb);
   if (profile_->GetPrefs()->GetBoolean(
           prefs::kPrintingSendUsernameAndFilenameEnabled)) {
-    ticket.SetKey(kSettingUsername, base::Value(chromeos::ProfileHelper::Get()
-                                                    ->GetUserByProfile(profile_)
-                                                    ->display_email()));
-    ticket.SetKey(kSettingSendUserInfo, base::Value(true));
+    settings.SetKey(kSettingUsername,
+                    base::Value(chromeos::ProfileHelper::Get()
+                                    ->GetUserByProfile(profile_)
+                                    ->display_email()));
+    settings.SetKey(kSettingSendUserInfo, base::Value(true));
   }
-  StartLocalPrint(std::move(ticket), std::move(print_data),
+  StartLocalPrint(std::move(settings), std::move(print_data),
                   preview_web_contents_, std::move(callback));
 }
 

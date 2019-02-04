@@ -19,10 +19,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Size;
-}
-
 class Profile;
 
 namespace printing {
@@ -111,18 +107,12 @@ class PrinterHandler {
                                        GetPrinterInfoCallback callback);
 
   // Starts a print request.
-  // |destination_id|: The printer to which print job should be sent.
-  // |capability|: Capability reported by the printer.
-  // |job_title|: The  title used for print job.
-  // |ticket|: The print job ticket.
-  // |page_size|: The document page size.
+  // |job_title|: The title used for print job.
+  // |settings|: The print job settings.
   // |print_data|: The document bytes to print.
   // |callback| should be called in the response to the request.
-  virtual void StartPrint(const std::string& destination_id,
-                          const std::string& capability,
-                          const base::string16& job_title,
-                          base::Value ticket,
-                          const gfx::Size& page_size,
+  virtual void StartPrint(const base::string16& job_title,
+                          base::Value settings,
                           scoped_refptr<base::RefCountedMemory> print_data,
                           PrintCallback callback) = 0;
 };

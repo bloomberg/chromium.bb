@@ -72,29 +72,6 @@ const char kPrinterDescriptionList[] =
     "  \"description\": \"Test printer 2\""
     "}]";
 
-// Printer capability for printer that supports all content types.
-const char kAllContentTypesSupportedPrinter[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"printer\": {"
-    "    \"supported_content_type\": ["
-    "      {\"content_type\": \"*/*\"}"
-    "    ]"
-    "  }"
-    "}";
-
-// Printer capability for a printer that supports PDF.
-const char kPdfSupportedPrinter[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"printer\": {"
-    "    \"supported_content_type\": ["
-    "      {\"content_type\": \"application/pdf\"},"
-    "      {\"content_type\": \"image/pwg-raster\"}"
-    "    ]"
-    "  }"
-    "}";
-
 // Printer capability for a printer that supportd only PWG raster.
 const char kPWGRasterOnlyPrinterSimpleDescription[] =
     "{"
@@ -103,30 +80,6 @@ const char kPWGRasterOnlyPrinterSimpleDescription[] =
     "    \"supported_content_type\": ["
     "      {\"content_type\": \"image/pwg-raster\"}"
     "    ]"
-    "  }"
-    "}";
-
-// Printer capability for a printer that supportd only PWG raster that has
-// options other that supported_content_type set.
-const char kPWGRasterOnlyPrinter[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"printer\": {"
-    "    \"supported_content_type\": ["
-    "      {\"content_type\": \"image/pwg-raster\"}"
-    "    ],"
-    "    \"pwg_raster_config\": {"
-    "      \"document_sheet_back\": \"FLIPPED\","
-    "      \"reverse_order_streaming\": true,"
-    "      \"rotate_all_pages\": true"
-    "    },"
-    "    \"dpi\": {"
-    "      \"option\": [{"
-    "        \"horizontal_dpi\": 100,"
-    "        \"vertical_dpi\": 200,"
-    "        \"is_default\": true"
-    "      }]"
-    "    }"
     "  }"
     "}";
 
@@ -185,6 +138,99 @@ const char kExtension2[] =
     "    ]"
     "  }"
     "}";
+
+const char kPdfSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"application/pdf\"},
+          {\"content_type\": \"image/pwg-raster\"}
+        ]
+      }
+    }",
+  "ticket": "{\"version\": \"1.0\"}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kAllTypesSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"*/*\"}
+        ]
+      }
+    }",
+  "ticket": "{\"version\": \"1.0\"}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kSimpleRasterSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"image/pwg-raster\"}
+        ]
+      }
+    }",
+  "ticket": "{\"version\": \"1.0\"}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kInvalidSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"image/pwg-raster\"}
+        ]
+      }
+    }",
+  "ticket": "{}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kDuplexSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"image/pwg-raster\"}
+        ],
+        \"pwg_raster_config\": {
+          \"document_sheet_back\": \"FLIPPED\",
+          \"reverse_order_streaming\": true,
+          \"rotate_all_pages\": true
+        },
+        \"dpi\": {
+          \"option\": [{
+            \"horizontal_dpi\": 100,
+            \"vertical_dpi\": 200,
+            \"is_default\": true
+          }]
+        }
+      }
+    }",
+  "ticket": "{
+      \"version\": \"1.0\",
+      \"print\": {
+        \"duplex\": {\"type\": \"LONG_EDGE\"}
+      }
+    }",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
 
 const char kContentTypePDF[] = "application/pdf";
 const char kContentTypePWG[] = "image/pwg-raster";
@@ -674,8 +720,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, title,
-      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
+      title, GetJsonAsValue(kPdfSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -711,8 +756,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, title,
-      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
+      title, GetJsonAsValue(kPdfSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -737,8 +781,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kAllContentTypesSupportedPrinter, title,
-      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
+      title, GetJsonAsValue(kAllTypesSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -775,8 +818,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 50), print_data,
+      title, GetJsonAsValue(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -829,8 +871,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinter, title,
-      GetJsonAsValue(kPrintTicketWithDuplex), gfx::Size(100, 50), print_data,
+      title, GetJsonAsValue(kDuplexSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -883,8 +924,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 50), print_data,
+      title, GetJsonAsValue(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -912,9 +952,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      base::Value(base::Value::Type::DICTIONARY) /* ticket */,
-      gfx::Size(100, 100), print_data,
+      title, GetJsonAsValue(kInvalidSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
@@ -935,8 +973,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
+      title, GetJsonAsValue(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
