@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -122,7 +124,7 @@ void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   const bool completed =
       prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
-      prefs->GetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted);
+      prefs->GetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted);
   std::move(callback_).Run(completed);
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }

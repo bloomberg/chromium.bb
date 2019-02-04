@@ -37,7 +37,6 @@ ARC_EXPORT extern const char kArcSignedIn[];
 ARC_EXPORT extern const char kArcSkippedReportingNotice[];
 ARC_EXPORT extern const char kArcSupervisionTransition[];
 ARC_EXPORT extern const char kArcCompatibleFilesystemChosen[];
-ARC_EXPORT extern const char kArcVoiceInteractionValuePropAccepted[];
 ARC_EXPORT extern const char kEcryptfsMigrationStrategy[];
 ARC_EXPORT extern const char kEngagementTimeBackground[];
 ARC_EXPORT extern const char kEngagementTimeDayId[];
