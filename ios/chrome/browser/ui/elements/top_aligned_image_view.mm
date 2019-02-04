@@ -37,12 +37,12 @@
       CGRectGetHeight(self.frame) / self.image.size.height;
   CGFloat imageViewWidth;
   CGFloat imageViewHeight;
-  if (widthScaleFactor > heightScaleFactor) {
-    imageViewWidth = self.image.size.width * widthScaleFactor;
-    imageViewHeight = self.image.size.height * widthScaleFactor;
-  } else {
+  if (self.image.size.width > self.image.size.height) {
     imageViewWidth = self.image.size.width * heightScaleFactor;
-    imageViewHeight = self.image.size.height * heightScaleFactor;
+    imageViewHeight = CGRectGetHeight(self.frame);
+  } else {
+    imageViewWidth = CGRectGetWidth(self.frame);
+    imageViewHeight = self.image.size.height * widthScaleFactor;
   }
   self.innerImageView.frame =
       CGRectMake((self.frame.size.width - imageViewWidth) / 2.0f, 0,
