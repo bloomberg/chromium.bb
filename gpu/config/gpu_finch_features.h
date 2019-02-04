@@ -29,6 +29,8 @@ GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
 GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
 
+GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;
+
 GPU_EXPORT extern const base::Feature kSharedImageManager;
 
 GPU_EXPORT extern const base::Feature kUseDCOverlaysForSoftwareProtectedVideo;

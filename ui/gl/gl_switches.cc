@@ -137,12 +137,6 @@ const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
 
 namespace features {
 
-// Allow putting a video swapchain underneath the main swapchain, so overlays
-// can be used even if there are controls on top of the video. This requires
-// the DirectCompositionOverlays feature to be enabled.
-const base::Feature kDirectCompositionUnderlays{
-    "DirectCompositionUnderlays", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Allow putting content with complex transforms (e.g. rotations) into an
 // overlay.
 const base::Feature kDirectCompositionComplexOverlays{
