@@ -100,7 +100,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
                        const Element&,
                        const Attribute&,
                        Namespaces*) override;
-  void AppendStartTag(Node&, Namespaces* = nullptr) override;
+  void AppendStartTag(Node&, Namespaces*) override;
   void AppendEndTag(const Element&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 

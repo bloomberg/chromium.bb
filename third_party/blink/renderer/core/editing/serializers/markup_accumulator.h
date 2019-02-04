@@ -49,7 +49,7 @@ class MarkupAccumulator {
   virtual ~MarkupAccumulator();
 
   void AppendString(const String&);
-  virtual void AppendStartTag(Node&, Namespaces* = nullptr);
+  virtual void AppendStartTag(Node&, Namespaces*);
   virtual void AppendEndTag(const Element&);
   void AppendStartMarkup(StringBuilder&, Node&, Namespaces*);
   void AppendEndMarkup(StringBuilder&, const Element&);

@@ -145,7 +145,7 @@ void StyledMarkupAccumulator::AppendElementWithInlineStyle(
     // We'll handle the style attribute separately, below.
     if (attribute.GetName() == kStyleAttr)
       continue;
-    formatter_.AppendAttribute(out, element, attribute, nullptr);
+    AppendAttribute(out, element, attribute);
   }
   if (style && !style->IsEmpty()) {
     out.Append(" style=\"");
@@ -165,8 +165,20 @@ void StyledMarkupAccumulator::AppendElement(StringBuilder& out,
   formatter_.AppendOpenTag(out, element);
   AttributeCollection attributes = element.Attributes();
   for (const auto& attribute : attributes)
-    formatter_.AppendAttribute(out, element, attribute, nullptr);
+    AppendAttribute(out, element, attribute);
   formatter_.AppendCloseTag(out, element);
+}
+
+void StyledMarkupAccumulator::AppendAttribute(StringBuilder& result,
+                                              const Element& element,
+                                              const Attribute& attribute) {
+  String value = formatter_.ResolveURLIfNeeded(element, attribute);
+  if (formatter_.SerializeAsHTMLDocument(element)) {
+    MarkupFormatter::AppendAttributeAsHTML(result, attribute, value);
+  } else {
+    MarkupFormatter::AppendAttributeAsXMLWithoutNamespace(result, attribute,
+                                                          value);
+  }
 }
 
 void StyledMarkupAccumulator::WrapWithStyleNode(CSSPropertyValueSet* style) {
