@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
@@ -3179,87 +3180,50 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     const GraphicsLayer* graphics_layer) const {
   IntRect graphics_layer_bounds(IntPoint(), IntSize(graphics_layer->Size()));
 
-  FloatSize offset_from_anchor_layout_object;
-  const LayoutBoxModelObject* anchor_layout_object;
-  bool should_apply_anchor_overflow_clip = false;
-  if (graphics_layer == squashing_layer_.get()) {
-    // All squashed layers have the same clip and transform space, so we can use
-    // the first squashed layer's layoutObject to map the squashing layer's
-    // bounds into viewport space, with offsetFromAnchorLayoutObject to
-    // translate squashing layer's bounds into the first squashed layer's space.
-    anchor_layout_object =
-        &owning_layer_.TransformAncestorOrRoot().GetLayoutObject();
-    offset_from_anchor_layout_object =
-        ToFloatSize(FloatPoint(SquashingOffsetFromTransformedAncestor()));
+  FloatClipRect mapping_rect((FloatRect(graphics_layer_bounds)));
 
-    // SquashingOffsetFromTransformedAncestor does not include scroll
-    // offset.
-    if (anchor_layout_object->UsesCompositedScrolling()) {
-      offset_from_anchor_layout_object -=
-          FloatSize(ToLayoutBox(anchor_layout_object)->ScrolledContentOffset());
-    }
-  } else {
-    DCHECK(graphics_layer == graphics_layer_.get() ||
-           graphics_layer == scrolling_contents_layer_.get());
-    anchor_layout_object = &owning_layer_.GetLayoutObject();
-    IntSize offset = graphics_layer->OffsetFromLayoutObject();
-    should_apply_anchor_overflow_clip =
-        AdjustForCompositedScrolling(graphics_layer, offset);
-    offset_from_anchor_layout_object = FloatSize(offset);
-  }
+  PropertyTreeState source_state = graphics_layer->GetPropertyTreeState();
 
-  LayoutView* root_view = anchor_layout_object->View();
+  LayoutView* root_view = owning_layer_.GetLayoutObject().View();
   while (root_view->GetFrame()->OwnerLayoutObject())
     root_view = root_view->GetFrame()->OwnerLayoutObject()->View();
 
-  // Start with the bounds of the graphics layer in the space of the anchor
-  // LayoutObject.
-  FloatRect graphics_layer_bounds_in_object_space(graphics_layer_bounds);
-  graphics_layer_bounds_in_object_space.Move(offset_from_anchor_layout_object);
-  if (should_apply_anchor_overflow_clip && anchor_layout_object != root_view) {
-    FloatRect clip_rect(
-        ToLayoutBox(anchor_layout_object)->OverflowClipRect(LayoutPoint()));
-    graphics_layer_bounds_in_object_space.Intersect(clip_rect);
-  }
+  PropertyTreeState root_view_contents_state =
+      root_view->FirstFragment().ContentsProperties();
+  PropertyTreeState root_view_border_box_state =
+      root_view->FirstFragment().LocalBorderBoxProperties();
 
-  // Now map the bounds to its visible content rect in root view space,
-  // including applying clips along the way.
-  LayoutRect graphics_layer_bounds_in_root_view_space(
-      graphics_layer_bounds_in_object_space);
+  // 1. Move into local transform space.
+  mapping_rect.MoveBy(FloatPoint(graphics_layer->GetOffsetFromTransformNode()));
+  // 2. Map into contents space of the root LayoutView.
+  GeometryMapper::LocalToAncestorVisualRect(
+      source_state, root_view_contents_state, mapping_rect);
 
-  anchor_layout_object->MapToVisualRectInAncestorSpace(
-      root_view, graphics_layer_bounds_in_root_view_space, kUseGeometryMapper);
+  FloatRect visible_content_rect = mapping_rect.Rect();
 
-  // MapToVisualRectInAncestorSpace doesn't account for the root scroll because
-  // it earlies out as soon as we reach this ancestor. That is, it only maps to
-  // the space of the root_view, not accounting for the fact that the root_view
-  // itself can be scrolled. If the root_view is our anchor_layout_object, then
-  // this extra offset is counted in offset_from_anchor_layout_object. In other
-  // cases, we need to account for it here. Otherwise, the paint clip below
-  // might clip the whole (visible) rect out.
-  if (root_view != anchor_layout_object) {
-    if (auto* scrollable_area = root_view->GetScrollableArea()) {
-      graphics_layer_bounds_in_root_view_space.MoveBy(
-          -scrollable_area->VisibleContentRect().Location());
-    }
-  }
+  // 3. Move into local border box transform space of the root LayoutView.
+  // Note that the overflow clip has *not* been applied.
+  GeometryMapper::SourceToDestinationRect(
+      root_view_contents_state.Transform(),
+      root_view_border_box_state.Transform(), visible_content_rect);
 
-  FloatRect visible_content_rect(graphics_layer_bounds_in_root_view_space);
+  // 4. Apply overflow clip, or adjusted version if necessary.
   root_view->GetFrameView()->ClipPaintRect(&visible_content_rect);
 
-  // Map the visible content rect from root view space to local graphics layer
-  // space.
   FloatRect local_interest_rect;
   // If the visible content rect is empty, then it makes no sense to map it back
   // since there is nothing to map.
   if (!visible_content_rect.IsEmpty()) {
-    local_interest_rect = FloatRect(
-        anchor_layout_object
-            ->AbsoluteToLocalQuad(visible_content_rect,
-                                  kUseTransforms | kTraverseDocumentBoundaries)
-            .EnclosingBoundingBox());
-    local_interest_rect.Move(-offset_from_anchor_layout_object);
-    // TODO(chrishtr): the code below is a heuristic, instead we should detect
+    local_interest_rect = visible_content_rect;
+    // 5. Map the visible content rect from root view space to local graphics
+    // layer space.
+    GeometryMapper::SourceToDestinationRect(
+        root_view_border_box_state.Transform(), source_state.Transform(),
+        local_interest_rect);
+    local_interest_rect.MoveBy(
+        -FloatPoint(graphics_layer->GetOffsetFromTransformNode()));
+
+    // TODO(chrishtr): the code below is a heuristic. Instead we should detect
     // and return whether the mapping failed.  In some cases,
     // absoluteToLocalQuad can fail to map back to the local space, due to
     // passing through non-invertible transforms or floating-point accuracy
