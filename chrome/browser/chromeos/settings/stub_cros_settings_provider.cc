@@ -84,7 +84,7 @@ void StubCrosSettingsProvider::DoSet(const std::string& path,
                                      const base::Value& value) {
   bool is_value_changed = false;
   if (current_user_is_owner_)
-    is_value_changed = values_.SetValue(path, value.CreateDeepCopy());
+    is_value_changed = values_.SetValue(path, value.Clone());
   else
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
 
@@ -97,12 +97,12 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefAllowNewUser, true);
   values_.SetBoolean(kAccountsPrefSupervisedUsersEnabled, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
-  values_.SetValue(kAccountsPrefUsers, base::WrapUnique(new base::ListValue));
+  values_.SetValue(kAccountsPrefUsers, base::Value(base::Value::Type::LIST));
   values_.SetBoolean(kAllowBluetooth, true);
   values_.SetBoolean(kAttestationForContentProtectionEnabled, true);
   values_.SetBoolean(kStatsReportingPref, true);
   values_.SetValue(kAccountsPrefDeviceLocalAccounts,
-                   base::WrapUnique(new base::ListValue));
+                   base::Value(base::Value::Type::LIST));
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
 
