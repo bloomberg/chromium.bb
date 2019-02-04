@@ -11,6 +11,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "build/build_config.h"
@@ -145,7 +146,10 @@ scoped_refptr<SingleThreadTaskRunner> TaskQueueImpl::CreateTaskRunner(
 
 void TaskQueueImpl::UnregisterTaskQueue() {
   // Detach task runners.
-  task_poster_->ShutdownAndWaitForZeroOperations();
+  {
+    ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+    task_poster_->ShutdownAndWaitForZeroOperations();
+  }
 
   TaskDeque immediate_incoming_queue;
 

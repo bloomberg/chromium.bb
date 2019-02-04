@@ -245,6 +245,12 @@ class DesktopConfigurationMonitor;
 
 namespace base {
 
+namespace sequence_manager {
+namespace internal {
+class TaskQueueImpl;
+}
+}  // namespace sequence_manager
+
 namespace android {
 class JavaHandlerThread;
 }
@@ -420,6 +426,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
       AwFormDatabaseService;  // http://crbug.com/904431
   friend class android_webview::CookieManager;
   friend class audio::OutputDevice;
+  friend class base::sequence_manager::internal::TaskQueueImpl;
   friend class base::FileDescriptorWatcher;
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
