@@ -134,6 +134,56 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, LockOverride) {
   EXPECT_FALSE(IsAuthEnabled());
 }
 
+// Tests an unlock override on a bedtime.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, UnlockBedtime) {
+  SetupTaskRunnerWithTime(utils::TimeFromString("5 Jan 2018 22:00:00 BRT"));
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+  ScreenLockerTester().Lock();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("BRT"));
+
+  // Set new policy.
+  base::Time last_updated = utils::TimeFromString("1 Jan 2018 0:00 BRT");
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kFriday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kSaturday,
+                            utils::CreateTime(21, 0), utils::CreateTime(7, 0),
+                            last_updated);
+  auto policy_one = std::make_unique<base::DictionaryValue>();
+  policy_one->SetKey("UsageTimeLimit",
+                     base::Value(utils::PolicyToString(policy_content.get())));
+  user_policy_helper()->UpdatePolicy(*policy_one, base::DictionaryValue(),
+                                     child_profile_);
+
+  // Check that auth is disabled, since the bedtime has already started.
+  EXPECT_FALSE(IsAuthEnabled());
+
+  // Create unlock override and update the policy.
+  utils::AddOverride(policy_content.get(), utils::kUnlock, task_runner_->Now());
+  auto policy_two = std::make_unique<base::DictionaryValue>();
+  policy_two->SetKey("UsageTimeLimit",
+                     base::Value(utils::PolicyToString(policy_content.get())));
+  user_policy_helper()->UpdatePolicy(*policy_two, base::DictionaryValue(),
+                                     child_profile_);
+
+  // Check that the unlock worked and auth is enabled.
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Forward to 6 AM and check that auth is still enabled.
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(8));
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Forward to 9 PM and check that auth is disabled because bedtime started.
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(15));
+  EXPECT_FALSE(IsAuthEnabled());
+}
+
 // Tests the default time window limit.
 IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultBedtime) {
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 GMT"));
@@ -347,6 +397,109 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, ActiveSessionDailyLimit) {
   MockChildScreenTime(base::TimeDelta::FromHours(0));
   task_runner_->FastForwardBy(base::TimeDelta::FromHours(19));
   EXPECT_TRUE(IsAuthEnabled());
+}
+
+// Tests bedtime during timezone changes.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, BedtimeOnTimezoneChange) {
+  SetupTaskRunnerWithTime(
+      utils::TimeFromString("3 Jan 2018 10:00:00 GMT-0600"));
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+  ScreenLockerTester().Lock();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT-0600"));
+
+  // Set new policy.
+  base::Time last_updated = utils::TimeFromString("3 Jan 2018 0:00 GMT-0600");
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kWednesday,
+                            utils::CreateTime(19, 0), utils::CreateTime(7, 0),
+                            last_updated);
+
+  auto policy = std::make_unique<base::DictionaryValue>();
+  policy->SetKey("UsageTimeLimit",
+                 base::Value(utils::PolicyToString(policy_content.get())));
+
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
+                                     child_profile_);
+
+  // Verify that auth is enabled at 10 AM.
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Verify that auth is enabled at 6 PM.
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(8));
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Verify that the auth is disabled at 7 PM (start of bedtime).
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
+  EXPECT_FALSE(IsAuthEnabled());
+
+  // Change timezone, so that local time goes back to 6 PM and check that auth
+  // is enabled since bedtime has not started yet.
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT-0700"));
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Verify that auth is disabled at 7 PM (start of bedtime).
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
+  EXPECT_FALSE(IsAuthEnabled());
+
+  // Change timezone, so that local time goes forward to 7 AM and check that
+  // auth is enabled since bedtime has ended in the new local time.
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT+0500"));
+  EXPECT_TRUE(IsAuthEnabled());
+}
+
+// Tests bedtime during timezone changes that make the clock go back in time.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest,
+                       BedtimeOnEastToWestTimezoneChanges) {
+  SetupTaskRunnerWithTime(utils::TimeFromString("3 Jan 2018 8:00:00 GMT+1300"));
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+  ScreenLockerTester().Lock();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT+1300"));
+
+  // Set new policy.
+  base::Time last_updated = utils::TimeFromString("3 Jan 2018 0:00 GMT+1300");
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeWindowLimit(policy_content.get(), utils::kTuesday,
+                            utils::CreateTime(20, 0), utils::CreateTime(7, 0),
+                            last_updated);
+
+  auto policy = std::make_unique<base::DictionaryValue>();
+  policy->SetKey("UsageTimeLimit",
+                 base::Value(utils::PolicyToString(policy_content.get())));
+
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
+                                     child_profile_);
+
+  // Verify that auth is disabled at 8 AM.
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Change timezone so that local time goes back to 6 AM and check that auth is
+  // disable, since the tuesday's bedtime is not over yet.
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT+1100"));
+  EXPECT_FALSE(IsAuthEnabled());
+
+  // Change timezone so that local time goes back to 7 PM on Tuesday and check
+  // that auth is enabled, because the bedtime has not started yet in the
+  // new local time.
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT"));
+  EXPECT_TRUE(IsAuthEnabled());
+
+  // Verify that auth is disabled at 8 PM (start of bedtime).
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
+  EXPECT_FALSE(IsAuthEnabled());
 }
 
 }  // namespace chromeos
