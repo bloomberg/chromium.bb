@@ -15,33 +15,33 @@ using namespace cmds;
 template <typename T>
 class GLES2DecoderPassthroughFixedCommandTest
     : public GLES2DecoderPassthroughTest {};
-TYPED_TEST_CASE_P(GLES2DecoderPassthroughFixedCommandTest);
+TYPED_TEST_SUITE_P(GLES2DecoderPassthroughFixedCommandTest);
 
 TYPED_TEST_P(GLES2DecoderPassthroughFixedCommandTest, InvalidCommand) {
   TypeParam cmd;
   cmd.SetHeader();
   EXPECT_EQ(error::kUnknownCommand, this->ExecuteCmd(cmd));
 }
-REGISTER_TYPED_TEST_CASE_P(GLES2DecoderPassthroughFixedCommandTest,
-                           InvalidCommand);
+REGISTER_TYPED_TEST_SUITE_P(GLES2DecoderPassthroughFixedCommandTest,
+                            InvalidCommand);
 
 template <typename T>
 class GLES2DecoderPassthroughImmediateNoArgCommandTest
     : public GLES2DecoderPassthroughTest {};
-TYPED_TEST_CASE_P(GLES2DecoderPassthroughImmediateNoArgCommandTest);
+TYPED_TEST_SUITE_P(GLES2DecoderPassthroughImmediateNoArgCommandTest);
 
 TYPED_TEST_P(GLES2DecoderPassthroughImmediateNoArgCommandTest, InvalidCommand) {
   TypeParam& cmd = *(this->template GetImmediateAs<TypeParam>());
   cmd.SetHeader();
   EXPECT_EQ(error::kUnknownCommand, this->ExecuteImmediateCmd(cmd, 64));
 }
-REGISTER_TYPED_TEST_CASE_P(GLES2DecoderPassthroughImmediateNoArgCommandTest,
-                           InvalidCommand);
+REGISTER_TYPED_TEST_SUITE_P(GLES2DecoderPassthroughImmediateNoArgCommandTest,
+                            InvalidCommand);
 
 template <typename T>
 class GLES2DecoderPassthroughImmediateSizeArgCommandTest
     : public GLES2DecoderPassthroughTest {};
-TYPED_TEST_CASE_P(GLES2DecoderPassthroughImmediateSizeArgCommandTest);
+TYPED_TEST_SUITE_P(GLES2DecoderPassthroughImmediateSizeArgCommandTest);
 
 TYPED_TEST_P(GLES2DecoderPassthroughImmediateSizeArgCommandTest,
              InvalidCommand) {
@@ -49,8 +49,8 @@ TYPED_TEST_P(GLES2DecoderPassthroughImmediateSizeArgCommandTest,
   cmd.SetHeader(0);
   EXPECT_EQ(error::kUnknownCommand, this->ExecuteImmediateCmd(cmd, 0));
 }
-REGISTER_TYPED_TEST_CASE_P(GLES2DecoderPassthroughImmediateSizeArgCommandTest,
-                           InvalidCommand);
+REGISTER_TYPED_TEST_SUITE_P(GLES2DecoderPassthroughImmediateSizeArgCommandTest,
+                            InvalidCommand);
 
 using ES3FixedCommandTypes0 =
     ::testing::Types<BindBufferBase,
@@ -143,16 +143,16 @@ using ES3ImmediateSizeArgCommandTypes0 =
                      UniformMatrix4x2fvImmediate,
                      UniformMatrix4x3fvImmediate>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(0,
-                              GLES2DecoderPassthroughFixedCommandTest,
-                              ES3FixedCommandTypes0);
-INSTANTIATE_TYPED_TEST_CASE_P(1,
-                              GLES2DecoderPassthroughFixedCommandTest,
-                              ES3FixedCommandTypes1);
-INSTANTIATE_TYPED_TEST_CASE_P(0,
-                              GLES2DecoderPassthroughImmediateNoArgCommandTest,
-                              ES3ImmediateNoArgCommandTypes0);
-INSTANTIATE_TYPED_TEST_CASE_P(
+INSTANTIATE_TYPED_TEST_SUITE_P(0,
+                               GLES2DecoderPassthroughFixedCommandTest,
+                               ES3FixedCommandTypes0);
+INSTANTIATE_TYPED_TEST_SUITE_P(1,
+                               GLES2DecoderPassthroughFixedCommandTest,
+                               ES3FixedCommandTypes1);
+INSTANTIATE_TYPED_TEST_SUITE_P(0,
+                               GLES2DecoderPassthroughImmediateNoArgCommandTest,
+                               ES3ImmediateNoArgCommandTypes0);
+INSTANTIATE_TYPED_TEST_SUITE_P(
     0,
     GLES2DecoderPassthroughImmediateSizeArgCommandTest,
     ES3ImmediateSizeArgCommandTypes0);

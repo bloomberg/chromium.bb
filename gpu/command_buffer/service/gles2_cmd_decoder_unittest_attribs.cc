@@ -407,9 +407,9 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderVertexArraysOESTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderVertexArraysOESTest,
+                         ::testing::Bool());
 
 class GLES2DecoderEmulatedVertexArraysOESTest
     : public GLES2DecoderVertexArraysOESTest {
@@ -430,9 +430,9 @@ class GLES2DecoderEmulatedVertexArraysOESTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderEmulatedVertexArraysOESTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderEmulatedVertexArraysOESTest,
+                         ::testing::Bool());
 
 // Test vertex array objects with native support
 TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESImmediateValidArgs) {

@@ -49,8 +49,8 @@ class GLES3DecoderTest3 : public GLES2DecoderTest3 {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest3, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest3, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest3, ::testing::Bool());
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4ivImmediate, 0>(

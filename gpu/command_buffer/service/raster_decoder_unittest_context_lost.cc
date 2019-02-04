@@ -97,7 +97,7 @@ TEST_P(RasterDecoderOOMTest, ContextLostReasonWhenStatusIsUnknown) {
   EXPECT_EQ(error::kUnknown, GetContextLostReason());
 }
 
-INSTANTIATE_TEST_CASE_P(Service, RasterDecoderOOMTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, RasterDecoderOOMTest, ::testing::Bool());
 
 class RasterDecoderLostContextTest : public RasterDecoderManualInitTest {
  protected:
@@ -279,9 +279,9 @@ TEST_P(RasterDecoderLostContextTest, LoseGroupFromRobustness) {
   ClearCurrentDecoderError();
 }
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        RasterDecoderLostContextTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         RasterDecoderLostContextTest,
+                         ::testing::Bool());
 
 }  // namespace raster
 }  // namespace gpu

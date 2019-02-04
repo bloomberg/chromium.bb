@@ -30,9 +30,9 @@ class GLES2DecoderTestDisabledExtensions : public GLES2DecoderTest {
  public:
   GLES2DecoderTestDisabledExtensions() = default;
 };
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestDisabledExtensions,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestDisabledExtensions,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderTestDisabledExtensions, CHROMIUMPathRenderingDisabled) {
   const GLuint kClientPathId = 0;
@@ -477,9 +477,9 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
   static const GLuint kServicePathId = 311;
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithCHROMIUMPathRendering,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithCHROMIUMPathRendering,
+                         ::testing::Bool());
 
 class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
  public:
@@ -497,9 +497,9 @@ class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithBlendEquationAdvanced,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithBlendEquationAdvanced,
+                         ::testing::Bool());
 
 class GLES2DecoderTestWithEXTMultisampleCompatibility
     : public GLES2DecoderTest {
@@ -518,9 +518,9 @@ class GLES2DecoderTestWithEXTMultisampleCompatibility
     InitDecoder(init);
   }
 };
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithEXTMultisampleCompatibility,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithEXTMultisampleCompatibility,
+                         ::testing::Bool());
 
 class GLES2DecoderTestWithBlendFuncExtended : public GLES2DecoderTest {
  public:
@@ -537,9 +537,9 @@ class GLES2DecoderTestWithBlendFuncExtended : public GLES2DecoderTest {
     InitDecoder(init);
   }
 };
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithBlendFuncExtended,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithBlendFuncExtended,
+                         ::testing::Bool());
 
 class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
     : public GLES2DecoderTest {
@@ -558,9 +558,9 @@ class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, GenDeletePaths) {
   static GLuint kFirstClientID = client_path_id_ + 88;
@@ -1742,9 +1742,9 @@ class GLES2DecoderTestWithCHROMIUMRasterTransport : public GLES2DecoderTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithCHROMIUMRasterTransport,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithCHROMIUMRasterTransport,
+                         ::testing::Bool());
 
 class GLES3DecoderTestWithEXTWindowRectangles : public GLES3DecoderTest {
  public:
@@ -1763,9 +1763,9 @@ class GLES3DecoderTestWithEXTWindowRectangles : public GLES3DecoderTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES3DecoderTestWithEXTWindowRectangles,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderTestWithEXTWindowRectangles,
+                         ::testing::Bool());
 
 TEST_P(GLES3DecoderTestWithEXTWindowRectangles,
        WindowRectanglesEXTImmediateValidArgs) {

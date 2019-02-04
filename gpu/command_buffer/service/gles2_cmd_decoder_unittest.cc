@@ -1853,31 +1853,41 @@ void GLES3DecoderRGBBackbufferTest::SetUp() {
   SetupDefaultProgram();
 }
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest, ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderWithShaderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderWithShaderTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderManualInitTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderManualInitTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderRGBBackbufferTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderRGBBackbufferTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDoCommandsTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderDoCommandsTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderDescheduleUntilFinishedTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderDescheduleUntilFinishedTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest, ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderWithShaderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderWithShaderTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderManualInitTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderManualInitTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES3DecoderRGBBackbufferTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderRGBBackbufferTest,
+                         ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

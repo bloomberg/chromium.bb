@@ -618,13 +618,13 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(CopyType,
-                        GLCopyTextureCHROMIUMTest,
-                        ::testing::ValuesIn(kCopyTypes));
+INSTANTIATE_TEST_SUITE_P(CopyType,
+                         GLCopyTextureCHROMIUMTest,
+                         ::testing::ValuesIn(kCopyTypes));
 
-INSTANTIATE_TEST_CASE_P(CopyType,
-                        GLCopyTextureCHROMIUMES3Test,
-                        ::testing::ValuesIn(kCopyTypes));
+INSTANTIATE_TEST_SUITE_P(CopyType,
+                         GLCopyTextureCHROMIUMES3Test,
+                         ::testing::ValuesIn(kCopyTypes));
 
 // Test to ensure that the basic functionality of the extension works.
 TEST_P(GLCopyTextureCHROMIUMTest, Basic) {

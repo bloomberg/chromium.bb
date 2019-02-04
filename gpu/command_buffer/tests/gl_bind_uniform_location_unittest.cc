@@ -402,9 +402,9 @@ TEST_P(BindUniformLocationTest, UseSamplerWhenUnusedUniforms) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
-INSTANTIATE_TEST_CASE_P(WithAndWithoutShaderNameMapping,
-                        BindUniformLocationTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WithAndWithoutShaderNameMapping,
+                         BindUniformLocationTest,
+                         ::testing::Bool());
 
 }  // namespace gpu
 

@@ -33,7 +33,7 @@ class RasterDecoderTest1 : public RasterDecoderTestBase {
   RasterDecoderTest1() = default;
 };
 
-INSTANTIATE_TEST_CASE_P(Service, RasterDecoderTest1, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, RasterDecoderTest1, ::testing::Bool());
 
 #include "gpu/command_buffer/service/raster_decoder_unittest_1_autogen.h"
 

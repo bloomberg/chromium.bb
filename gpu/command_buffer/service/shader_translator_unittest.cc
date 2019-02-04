@@ -550,7 +550,7 @@ testing::tuple<const char*, const char*> make_gl_glsl_tuple(
 // certain version of GLSL to be guaranteed to be supported. Test
 // that ShaderTranslator produces a GLSL shader with the exact
 // specified GLSL version for each known OpenGL version.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     KnownOpenGLContexts,
     ShaderTranslatorOutputVersionTest,
     testing::Values(make_gl_glsl_tuple("4.5", "#version 450\n"),
@@ -570,16 +570,16 @@ INSTANTIATE_TEST_CASE_P(
 // similar shader. We do not expect that future 3.3+ specs contain
 // the "all eariler GLSL versions" clause, since 3.3 did not contain
 // it either.
-INSTANTIATE_TEST_CASE_P(OldOrUnknownOpenGLContexts,
-                        ShaderTranslatorOutputVersionTest,
-                        testing::Values(make_gl_glsl_tuple("3.4", ""),
-                                        make_gl_glsl_tuple("2.0", "")));
+INSTANTIATE_TEST_SUITE_P(OldOrUnknownOpenGLContexts,
+                         ShaderTranslatorOutputVersionTest,
+                         testing::Values(make_gl_glsl_tuple("3.4", ""),
+                                         make_gl_glsl_tuple("2.0", "")));
 
 // Test data for the above test. Cases for the future OpenGL versions. The
 // code assumes that the future OpenGL specs specify the clause that all
 // earlier GLSL versions are supported. We select the highest GLSL
 // version known at the time of writing.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BackwardsCompatibleFutureOpenGLContexts,
     ShaderTranslatorOutputVersionTest,
     testing::Values(make_gl_glsl_tuple("5.0", "#version 450\n"),
@@ -589,13 +589,13 @@ INSTANTIATE_TEST_CASE_P(
 // contexts, the shader is such that GLSL 1.0 is used. The translator
 // selects GLSL 1.0 by not output any version at the moment, though we
 // do not know if that would be correct for the future OpenGL ES specs.
-INSTANTIATE_TEST_CASE_P(OpenGLESContexts,
-                        ShaderTranslatorOutputVersionTest,
-                        testing::Values(make_gl_glsl_tuple("opengl es 2.0", ""),
-                                        make_gl_glsl_tuple("opengl es 3.0", ""),
-                                        make_gl_glsl_tuple("opengl es 3.1", ""),
-                                        make_gl_glsl_tuple("opengl es 3.2",
-                                                           "")));
+INSTANTIATE_TEST_SUITE_P(
+    OpenGLESContexts,
+    ShaderTranslatorOutputVersionTest,
+    testing::Values(make_gl_glsl_tuple("opengl es 2.0", ""),
+                    make_gl_glsl_tuple("opengl es 3.0", ""),
+                    make_gl_glsl_tuple("opengl es 3.1", ""),
+                    make_gl_glsl_tuple("opengl es 3.2", "")));
 
 }  // namespace gles2
 }  // namespace gpu

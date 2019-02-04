@@ -46,8 +46,8 @@ class GLES3DecoderTest1 : public GLES2DecoderTest1 {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest1, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest1, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest1, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest1, ::testing::Bool());
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GenerateMipmap, 0>(

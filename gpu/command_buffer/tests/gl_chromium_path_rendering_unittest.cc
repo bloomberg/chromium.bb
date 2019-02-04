@@ -1779,8 +1779,8 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest, UnusedFragmentInputUpdate) {
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 }
 
-INSTANTIATE_TEST_CASE_P(WithAndWithoutShaderNameMapping,
-                        CHROMIUMPathRenderingWithTexturingTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WithAndWithoutShaderNameMapping,
+                         CHROMIUMPathRenderingWithTexturingTest,
+                         ::testing::Bool());
 
 }  // namespace gpu

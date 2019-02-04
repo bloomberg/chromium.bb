@@ -666,12 +666,12 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   EXPECT_EQ(format, shm_image->format());
 }
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        SharedImageBackingFactoryGLTextureTest,
-                        ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(Service,
-                        SharedImageBackingFactoryGLTextureWithGMBTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         SharedImageBackingFactoryGLTextureTest,
+                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         SharedImageBackingFactoryGLTextureWithGMBTest,
+                         ::testing::Bool());
 
 }  // anonymous namespace
 }  // namespace gpu

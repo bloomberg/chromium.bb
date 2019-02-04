@@ -2134,9 +2134,9 @@ TEST_P(ProduceConsumeTextureTest, ProduceConsumeTextureWithImage) {
 static const GLenum kTextureTargets[] = {GL_TEXTURE_2D, GL_TEXTURE_EXTERNAL_OES,
                                          GL_TEXTURE_RECTANGLE_ARB, };
 
-INSTANTIATE_TEST_CASE_P(Target,
-                        ProduceConsumeTextureTest,
-                        ::testing::ValuesIn(kTextureTargets));
+INSTANTIATE_TEST_SUITE_P(Target,
+                         ProduceConsumeTextureTest,
+                         ::testing::ValuesIn(kTextureTargets));
 
 TEST_F(ProduceConsumeTextureTest, ProduceConsumeCube) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_CUBE_MAP);
