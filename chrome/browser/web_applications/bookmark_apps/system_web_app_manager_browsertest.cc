@@ -50,6 +50,15 @@ constexpr char kSystemAppManifestText[] =
       "theme_color": "#00FF00"
     })";
 
+constexpr char kPwaHtml[] =
+    R"(
+<html>
+<head>
+  <link rel="manifest" href="manifest.json">
+</head>
+</html>
+)";
+
 // WebUIController that serves a System PWA.
 class TestWebUIController : public content::WebUIController {
  public:
@@ -58,16 +67,17 @@ class TestWebUIController : public content::WebUIController {
     content::WebUIDataSource* data_source =
         content::WebUIDataSource::Create("test-system-app");
     data_source->AddResourcePath("icon-256.png", IDR_PRODUCT_LOGO_256);
-    data_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
     data_source->SetRequestFilter(base::BindRepeating(
         [](const std::string& id,
            const content::WebUIDataSource::GotDataCallback& callback) {
           scoped_refptr<base::RefCountedString> ref_contents(
               new base::RefCountedString);
-          if (id != "manifest.json")
+          if (id == "manifest.json")
+            ref_contents->data() = kSystemAppManifestText;
+          else if (id == "pwa.html")
+            ref_contents->data() = kPwaHtml;
+          else
             return false;
-
-          ref_contents->data() = kSystemAppManifestText;
 
           callback.Run(ref_contents);
           return true;
