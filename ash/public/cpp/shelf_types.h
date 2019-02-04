@@ -71,6 +71,9 @@ enum ShelfBackgroundType {
   // The background when login/lock/user-add is active and the wallpaper is not
   // blurred.
   SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER,
+
+  // The background when overview is active.
+  SHELF_BACKGROUND_OVERVIEW,
 };
 
 // Source of the launch or activation request, for tracking.

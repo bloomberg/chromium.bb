@@ -487,6 +487,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (Shell::Get()->IsSplitViewModeActive())
     return SHELF_BACKGROUND_SPLIT_VIEW;
 
+  if (Shell::Get()->overview_controller() &&
+      Shell::Get()->overview_controller()->IsSelecting()) {
+    return SHELF_BACKGROUND_OVERVIEW;
+  }
+
   return SHELF_BACKGROUND_DEFAULT;
 }
 
@@ -544,8 +549,6 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-
-
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   UpdateVisibilityState();
@@ -602,6 +605,7 @@ void ShelfLayoutManager::OnHomeLauncherAnimationComplete(bool shown,
     return;
 
   is_home_launcher_shown_ = shown;
+  is_home_launcher_target_position_shown_ = false;
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
