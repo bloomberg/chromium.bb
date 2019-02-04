@@ -230,9 +230,14 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   if (layout_object_->IsSVGRoot())
     return ax::mojom::Role::kSvgRoot;
 
-  // Table sections should be ignored.
-  if (layout_object_->IsTableSection())
+  // Table sections should be ignored if there is no reason not to, e.g.
+  // ARIA 1.2 (and Core-AAM 1.1) state that elements which are focusable
+  // and not hidden must be included in the accessibility tree.
+  if (layout_object_->IsTableSection()) {
+    if (CanSetFocusAttribute())
+      return ax::mojom::Role::kGroup;
     return ax::mojom::Role::kIgnored;
+  }
 
   if (layout_object_->IsHR())
     return ax::mojom::Role::kSplitter;
@@ -3193,6 +3198,9 @@ ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
   if (!parent)
     return ax::mojom::Role::kGenericContainer;
 
+  if (parent->GetLayoutObject()->IsTableSection())
+    parent = parent->ParentObjectUnignored();
+
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
     return ax::mojom::Role::kLayoutTableRow;
 
@@ -3210,6 +3218,9 @@ ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
     return ax::mojom::Role::kGenericContainer;
 
   AXObject* grandparent = parent->ParentObjectUnignored();
+  if (grandparent && grandparent->GetLayoutObject()->IsTableSection())
+    grandparent = grandparent->ParentObjectUnignored();
+
   if (!grandparent || !grandparent->IsTableLikeRole())
     return ax::mojom::Role::kGenericContainer;
 

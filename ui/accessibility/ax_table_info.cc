@@ -38,16 +38,17 @@ void FindCellsInRow(AXNode* node, std::vector<AXNode*>* cell_nodes) {
 // for each row find its cells and add them to |cell_nodes_per_row| as a
 // 2-dimensional array.
 //
-// We recursively check generic containers like <div> and any
-// nodes that are ignored, but we don't search any other roles
-// in-between a table and its rows.
+// We only recursively check for the following roles in between a table and
+// its rows: generic containers like <div>, any nodes that are ignored, and
+// table sections (which have Role::kGroup).
 void FindRowsAndThenCells(
     AXNode* node,
     std::vector<AXNode*>* row_nodes,
     std::vector<std::vector<AXNode*>>* cell_nodes_per_row) {
   for (AXNode* child : node->children()) {
     if (child->data().HasState(ax::mojom::State::kIgnored) ||
-        child->data().role == ax::mojom::Role::kGenericContainer) {
+        child->data().role == ax::mojom::Role::kGenericContainer ||
+        child->data().role == ax::mojom::Role::kGroup) {
       FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row);
     } else if (child->data().role == ax::mojom::Role::kRow) {
       row_nodes->push_back(child);
