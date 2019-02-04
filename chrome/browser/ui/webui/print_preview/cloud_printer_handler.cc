@@ -32,11 +32,8 @@ void CloudPrinterHandler::StartGetCapability(const std::string& destination_id,
 }
 
 void CloudPrinterHandler::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    base::Value ticket_json,
-    const gfx::Size& page_size,
+    base::Value settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   // TODO(https://crbug.com/829414): Print to cloud print

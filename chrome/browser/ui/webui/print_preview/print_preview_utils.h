@@ -46,6 +46,14 @@ void StartLocalPrint(base::Value job_settings,
                      content::WebContents* preview_web_contents,
                      PrinterHandler::PrintCallback callback);
 
+// Parses print job settings. Returns |true| on success.
+// This is used by extension and privet printers.
+bool ParseSettings(const base::Value& settings,
+                   std::string* out_destination_id,
+                   std::string* out_capabilities,
+                   gfx::Size* out_page_size,
+                   base::Value* out_ticket);
+
 }  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_UTILS_H_

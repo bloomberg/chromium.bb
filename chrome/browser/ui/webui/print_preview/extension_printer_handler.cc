@@ -162,20 +162,22 @@ void ExtensionPrinterHandler::StartGetCapability(
 }
 
 void ExtensionPrinterHandler::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    base::Value ticket_value,
-    const gfx::Size& page_size,
+    base::Value settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   auto print_job = std::make_unique<extensions::PrinterProviderPrintJob>();
-  print_job->printer_id = destination_id;
   print_job->job_title = job_title;
-  print_job->ticket = std::move(ticket_value);
+  std::string capabilities;
+  gfx::Size page_size;
+  if (!ParseSettings(settings, &print_job->printer_id, &capabilities,
+                     &page_size, &print_job->ticket)) {
+    std::move(callback).Run(base::Value("Invalid settings"));
+    return;
+  }
 
   cloud_devices::CloudDeviceDescription printer_description;
-  printer_description.InitFromString(capability);
+  printer_description.InitFromString(capabilities);
 
   cloud_devices::printer::ContentTypesCapability content_types;
   content_types.LoadFrom(printer_description);

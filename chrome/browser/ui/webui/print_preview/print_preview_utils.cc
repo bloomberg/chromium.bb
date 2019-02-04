@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
@@ -206,6 +207,34 @@ void StartLocalPrint(base::Value job_settings,
   print_view_manager->PrintForPrintPreview(
       std::move(job_settings), std::move(print_data),
       preview_web_contents->GetMainFrame(), std::move(callback));
+}
+
+bool ParseSettings(const base::Value& settings,
+                   std::string* out_destination_id,
+                   std::string* out_capabilities,
+                   gfx::Size* out_page_size,
+                   base::Value* out_ticket) {
+  const std::string* destination_id_opt =
+      settings.FindStringKey(kSettingDeviceName);
+  const std::string* ticket_opt = settings.FindStringKey(kSettingTicket);
+  const std::string* capabilities_opt =
+      settings.FindStringKey(kSettingCapabilities);
+  out_page_size->SetSize(settings.FindIntKey(kSettingPageWidth).value_or(0),
+                         settings.FindIntKey(kSettingPageHeight).value_or(0));
+  if (!destination_id_opt || !ticket_opt || !capabilities_opt ||
+      out_page_size->IsEmpty()) {
+    NOTREACHED();
+    return false;
+  }
+  std::unique_ptr<base::Value> ticket_value =
+      base::JSONReader::Read(*ticket_opt);
+  if (!ticket_value)
+    return false;
+
+  *out_destination_id = *destination_id_opt;
+  *out_capabilities = *capabilities_opt;
+  *out_ticket = base::Value::FromUniquePtrValue(std::move(ticket_value));
+  return true;
 }
 
 }  // namespace printing

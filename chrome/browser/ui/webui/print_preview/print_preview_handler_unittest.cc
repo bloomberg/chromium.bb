@@ -143,11 +143,8 @@ class TestPrinterHandler : public PrinterHandler {
   void StartGrantPrinterAccess(const std::string& printer_id,
                                GetPrinterInfoCallback callback) override {}
 
-  void StartPrint(const std::string& destination_id,
-                  const std::string& capability,
-                  const base::string16& job_title,
-                  base::Value ticket,
-                  const gfx::Size& page_size,
+  void StartPrint(const base::string16& job_title,
+                  base::Value settings,
                   scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override {
     std::move(callback).Run(base::Value());

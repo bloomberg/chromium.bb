@@ -809,25 +809,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   DCHECK(data->size());
   DCHECK(data->front());
 
-  std::string destination_id;
-  std::string print_ticket;
-  std::string capabilities;
-  int width = 0;
-  int height = 0;
-  if (user_action == PRINT_WITH_PRIVET || user_action == PRINT_WITH_EXTENSION) {
-    if (!settings->GetString(kSettingDeviceName, &destination_id) ||
-        !settings->GetString(kSettingTicket, &print_ticket) ||
-        !settings->GetString(kSettingCapabilities, &capabilities) ||
-        !settings->GetInteger(kSettingPageWidth, &width) ||
-        !settings->GetInteger(kSettingPageHeight, &height) || width <= 0 ||
-        height <= 0) {
-      NOTREACHED();
-      RejectJavascriptCallback(base::Value(callback_id),
-                               GetErrorValue(user_action, "FAILED"));
-      return;
-    }
-  }
-
   // After validating |settings|, record metrics.
   bool is_pdf = !print_preview_ui()->source_is_modifiable();
   if (last_preview_settings_)
@@ -852,28 +833,11 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 
-  PrinterType type = GetPrinterTypeForUserAction(user_action);
-  base::Value job_settings;
-  switch (type) {
-    case PrinterType::kPdfPrinter:
-      // Do nothing.
-      break;
-    case PrinterType::kLocalPrinter:
-      job_settings = base::Value::FromUniquePtrValue(std::move(settings));
-      break;
-    default:
-      std::unique_ptr<base::Value> ticket_value =
-          base::JSONReader::Read(print_ticket);
-      if (!ticket_value) {
-        OnPrintResult(callback_id, base::Value("Invalid settings"));
-        return;
-      }
-      job_settings = base::Value::FromUniquePtrValue(std::move(ticket_value));
-  }
-  PrinterHandler* handler = GetPrinterHandler(type);
-  handler->StartPrint(destination_id, capabilities,
-                      print_preview_ui()->initiator_title(),
-                      std::move(job_settings), gfx::Size(width, height), data,
+  PrinterHandler* handler =
+      GetPrinterHandler(GetPrinterTypeForUserAction(user_action));
+  handler->StartPrint(print_preview_ui()->initiator_title(),
+                      base::Value::FromUniquePtrValue(std::move(settings)),
+                      data,
                       base::BindOnce(&PrintPreviewHandler::OnPrintResult,
                                      weak_factory_.GetWeakPtr(), callback_id));
 }
