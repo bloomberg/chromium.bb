@@ -32,6 +32,7 @@ class ContextMenuNotificationObserver {
 class ContextMenuWaiter {
  public:
   ContextMenuWaiter();
+  explicit ContextMenuWaiter(int command_to_execute);
   ~ContextMenuWaiter();
 
   content::ContextMenuParams& params();
@@ -46,6 +47,7 @@ class ContextMenuWaiter {
 
   content::ContextMenuParams params_;
   base::RunLoop run_loop_;
+  base::Optional<int> maybe_command_to_execute_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuWaiter);
 };

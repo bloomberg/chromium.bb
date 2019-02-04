@@ -465,7 +465,7 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB" desc="The name of the Open Original Image in New Tab command in the content area context menu">
             Open original &amp;image in new tab
           </message>
-          <message name="IDS_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE" desc="The name of the Load Image command in the content area context menu">
+          <message name="IDS_CONTENT_CONTEXT_LOAD_IMAGE" desc="The name of the Load Image command in the content area context menu">
             Load image
           </message>
 
@@ -686,7 +686,7 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB" desc="In Title Case: The name of the Open Original Image in New Tab command in the content area context menu">
             Open Original &amp;Image in New Tab
           </message>
-          <message name="IDS_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE" desc="In Title Case: The name of the Load Image command in the content area context menu">
+          <message name="IDS_CONTENT_CONTEXT_LOAD_IMAGE" desc="In Title Case: The name of the Load Image command in the content area context menu">
             Load Image
           </message>
 

@@ -211,7 +211,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecCopyLinkText();
   void ExecCopyImageAt();
   void ExecSearchWebForImage();
-  void ExecLoadOriginalImage();
+  void ExecLoadImage();
   void ExecPlayPause();
   void ExecMute();
   void ExecLoop();

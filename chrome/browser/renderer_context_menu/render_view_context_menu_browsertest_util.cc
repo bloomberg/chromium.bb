@@ -42,6 +42,11 @@ ContextMenuWaiter::ContextMenuWaiter() {
       base::BindOnce(&ContextMenuWaiter::MenuShown, base::Unretained(this)));
 }
 
+ContextMenuWaiter::ContextMenuWaiter(int command_to_execute)
+    : ContextMenuWaiter() {
+  maybe_command_to_execute_ = command_to_execute;
+}
+
 ContextMenuWaiter::~ContextMenuWaiter() {
 }
 
@@ -61,6 +66,8 @@ content::ContextMenuParams& ContextMenuWaiter::params() {
 
 void ContextMenuWaiter::Cancel(RenderViewContextMenu* context_menu) {
   params_ = context_menu->params();
+  if (maybe_command_to_execute_)
+    context_menu->ExecuteCommand(*maybe_command_to_execute_, 0);
   context_menu->Cancel();
   run_loop_.Quit();
 }

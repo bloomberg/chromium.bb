@@ -320,7 +320,7 @@ const struct UmaEnumCommandIdPair {
     {63, -1, IDC_WRITING_DIRECTION_DEFAULT},
     {64, -1, IDC_WRITING_DIRECTION_LTR},
     {65, -1, IDC_WRITING_DIRECTION_RTL},
-    {66, -1, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
+    {66, -1, IDC_CONTENT_CONTEXT_LOAD_IMAGE},
     {68, -1, IDC_ROUTE_MEDIA},
     {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
     {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
@@ -1237,11 +1237,13 @@ void RenderViewContextMenu::AppendImageItems() {
   std::map<std::string, std::string>::const_iterator it =
       params_.properties.find(
           data_reduction_proxy::chrome_proxy_content_transform_header());
-  if (it != params_.properties.end() && it->second ==
-      data_reduction_proxy::empty_image_directive()) {
-    menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE,
-        IDS_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE);
+  if ((it != params_.properties.end() &&
+       it->second == data_reduction_proxy::empty_image_directive()) ||
+      (!params_.has_image_contents &&
+       base::FeatureList::IsEnabled(
+           features::kLoadBrokenImagesFromContextMenu))) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LOAD_IMAGE,
+                                    IDS_CONTENT_CONTEXT_LOAD_IMAGE);
   }
   DataReductionProxyChromeSettings* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
@@ -1730,7 +1732,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // The images shown in the most visited thumbnails can't be opened or
     // searched for conventionally.
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
-    case IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE:
+    case IDC_CONTENT_CONTEXT_LOAD_IMAGE:
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       return params_.src_url.is_valid() &&
@@ -1983,8 +1985,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           data_reduction_proxy::chrome_proxy_pass_through_header(), false);
       break;
 
-    case IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE:
-      ExecLoadOriginalImage();
+    case IDC_CONTENT_CONTEXT_LOAD_IMAGE:
+      ExecLoadImage();
       break;
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
@@ -2585,7 +2587,7 @@ void RenderViewContextMenu::ExecSearchWebForImage() {
   core_tab_helper->SearchByImageInNewTab(render_frame_host, params().src_url);
 }
 
-void RenderViewContextMenu::ExecLoadOriginalImage() {
+void RenderViewContextMenu::ExecLoadImage() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;

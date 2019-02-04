@@ -914,7 +914,11 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
 }
 
 void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
-  const Node* node = web_node.ConstUnwrap<Node>();
+  Node* node = web_node;  // Use implicit WebNode->Node* cast.
+  HitTestResult hit_test_result;
+  hit_test_result.SetInnerNode(node);
+  hit_test_result.SetToShadowHostIfInRestrictedShadowRoot();
+  node = hit_test_result.InnerNodeOrImageMapImage();
   if (auto* image_element = ToHTMLImageElementOrNull(*node))
     image_element->ForceReload();
 }
