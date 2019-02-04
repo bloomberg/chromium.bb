@@ -274,18 +274,11 @@ enum PaiFlowState {
 };
 
 // Next method ID: 18
+// Deprecated method IDs: 1
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
   [MinVersion=1] OnAppAddedDeprecated@2(AppInfo app);
-
-  // Receives an icon of required |scale_factor| for specific ARC app. The app
-  // is defined by |package_name| and |activity|. The icon content cannot be
-  // empty and must match to |scale_factor| assuming 48x48 for
-  // SCALE_FACTOR_100P.  |scale_factor| is an enum defined at ui/base/layout.h.
-  // |icon_png_data| is a png-encoded image.
-  OnAppIconDeprecated@1(string package_name, string activity,
-                        ScaleFactor scale_factor, array<uint8> icon_png_data);
 
   // Receives a list of available ARC apps to Chrome. Members of AppInfo must
   // contain non-empty string.
@@ -356,6 +349,7 @@ interface AppHost {
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 // Next method ID: 33
+// Deprecated method IDs: 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -410,23 +404,11 @@ interface AppInstance {
                                     int32 pixel_size) =>
                                         (array<uint8> icon_png_data);
 
-  // Sends a request to ARC for the ARC app icon of a required scale factor.
-  // Scale factor is an enum defined at ui/base/layout.h. App is defined by
-  // |package_name| and |activity|, which cannot be empty.
-  RequestAppIconDeprecated@3(string package_name, string activity,
-                             ScaleFactor scale_factor);
-
   // Sends a request for the ARC shortcut icon of a given resource id and
   // |pixel_size|.
   [MinVersion=36] RequestShortcutIcon@28(string icon_resource_id,
                                          int32 pixel_size) =>
                                              (array<uint8> icon_png_data);
-
-  // Sends a request for the ARC shortcut icon of a given resource id and scale
-  // factor.
-  [MinVersion=9] RequestShortcutIconDeprecated@13(
-      string icon_resource_id, ScaleFactor scale_factor) =>
-          (array<uint8> icon_png_data);
 
   // Sends a request for the ARC icon for a given |package_name| and
   // |pixel_size|. If |normalize| is true, the icon will be normalized per

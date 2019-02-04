@@ -102,9 +102,6 @@ class FakeAppInstance : public mojom::AppInstance {
                       const std::string& activity,
                       int dimension,
                       RequestAppIconCallback callback) override;
-  void RequestAppIconDeprecated(const std::string& package_name,
-                                const std::string& activity,
-                                mojom::ScaleFactor scale_factor) override {}
   void LaunchIntentDeprecated(
       const std::string& intent_uri,
       const base::Optional<gfx::Rect>& dimension_on_screen) override;
@@ -112,10 +109,6 @@ class FakeAppInstance : public mojom::AppInstance {
   void RequestShortcutIcon(const std::string& icon_resource_id,
                            int dimension,
                            RequestShortcutIconCallback callback) override;
-  void RequestShortcutIconDeprecated(
-      const std::string& icon_resource_id,
-      mojom::ScaleFactor scale_factor,
-      RequestShortcutIconDeprecatedCallback callback) override {}
   void RequestPackageIcon(const std::string& package_name,
                           int dimension,
                           bool normalize,

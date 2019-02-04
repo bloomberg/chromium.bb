@@ -485,15 +485,6 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  if (app_connection_holder_->instance_version() <
-      arc::mojom::AppInstance::kRequestAppIconMinVersion) {
-    LOG(WARNING) << "Using depreciated interface ("
-                 << app_connection_holder_->instance_version()
-                 << ") to request icons.";
-    SendIconRequestDeprecated(app_id, *app_info, descriptor);
-    return;
-  }
-
   SendIconRequest(app_id, *app_info, descriptor);
 }
 
@@ -520,31 +511,6 @@ void ArcAppListPrefs::SendIconRequest(const std::string& app_id,
     app_instance->RequestShortcutIcon(app_info.icon_resource_id,
                                       descriptor.GetSizeInPixels(),
                                       std::move(callback));
-  }
-}
-
-void ArcAppListPrefs::SendIconRequestDeprecated(
-    const std::string& app_id,
-    const AppInfo& app_info,
-    const ArcAppIconDescriptor& descriptor) {
-  if (app_info.icon_resource_id.empty()) {
-    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_,
-                                                     RequestAppIconDeprecated);
-    if (!app_instance)
-      return;  // Error is logged in macro.
-    app_instance->RequestAppIconDeprecated(
-        app_info.package_name, app_info.activity,
-        static_cast<arc::mojom::ScaleFactor>(descriptor.scale_factor));
-  } else {
-    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
-        app_connection_holder_, RequestShortcutIconDeprecated);
-    if (!app_instance)
-      return;  // Error is logged in macro.
-    app_instance->RequestShortcutIconDeprecated(
-        app_info.icon_resource_id,
-        static_cast<arc::mojom::ScaleFactor>(descriptor.scale_factor),
-        base::BindOnce(&ArcAppListPrefs::OnIconDeprecated,
-                       weak_ptr_factory_.GetWeakPtr(), app_id, descriptor));
   }
 }
 
@@ -1507,18 +1473,6 @@ void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
     observer.OnPackageRemoved(package_name, true);
 }
 
-void ArcAppListPrefs::OnAppIconDeprecated(
-    const std::string& package_name,
-    const std::string& activity,
-    arc::mojom::ScaleFactor scale_factor,
-    const std::vector<uint8_t>& icon_png_data) {
-  const std::string app_id = GetAppId(package_name, activity);
-  // There is no info about original request dimension. Use active requests to
-  // notify all.
-  for (const auto& descriptor : active_icons_[app_id])
-    OnIconDeprecated(app_id, descriptor, icon_png_data);
-}
-
 void ArcAppListPrefs::OnIcon(const std::string& app_id,
                              const ArcAppIconDescriptor& descriptor,
                              const std::vector<uint8_t>& icon_png_data) {
@@ -1535,32 +1489,6 @@ void ArcAppListPrefs::OnIcon(const std::string& app_id,
   }
 
   InstallIcon(app_id, descriptor, icon_png_data);
-}
-
-void ArcAppListPrefs::OnIconDeprecated(
-    const std::string& app_id,
-    const ArcAppIconDescriptor& descriptor,
-    const std::vector<uint8_t>& icon_png_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (icon_png_data.empty()) {
-    LOG(WARNING) << "Cannot fetch icon for " << app_id;
-    return;
-  }
-
-  constexpr int kLegacyIconDimension = 48;
-
-  // Icon may not have required dimension. We only can safely use legacy app
-  // dimension.
-  if (descriptor.dip_size == kLegacyIconDimension) {
-    OnIcon(app_id, descriptor, icon_png_data);
-    return;
-  }
-
-  resize_requests_.emplace_back(std::make_unique<ResizeRequest>(
-      weak_ptr_factory_.GetWeakPtr(), app_id, descriptor));
-  // Result will be delivered to |OnIconResized|
-  ImageDecoder::Start(resize_requests_.back().get(), icon_png_data);
 }
 
 void ArcAppListPrefs::OnIconResized(const std::string& app_id,
