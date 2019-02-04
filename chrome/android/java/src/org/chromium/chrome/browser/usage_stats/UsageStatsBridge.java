@@ -35,23 +35,17 @@ public class UsageStatsBridge {
         mNativeUsageStatsBridge = 0;
     }
 
-    /* NOTE: The parameter types below are a best guess at what will correspond well with the native
-     * types, but they're likely to change once the native side of the bridge and type conversion is
-     * actually implemented.
-     */
-
-    public void getAllEvents(Callback<List<String>> callback) {
+    public void getAllEvents(Callback<List<WebsiteEvent>> callback) {
         assert mNativeUsageStatsBridge != 0;
         nativeGetAllEvents(mNativeUsageStatsBridge, callback);
     }
 
-    public void queryEventsInRange(long start, long end, Callback<List<String>> callback) {
+    public void queryEventsInRange(long start, long end, Callback<List<WebsiteEvent>> callback) {
         assert mNativeUsageStatsBridge != 0;
         nativeQueryEventsInRange(mNativeUsageStatsBridge, start, end, callback);
     }
 
-    // Each event is a serialized WebsiteEvent protocol buffer message.
-    public void addEvents(byte[][] events, Callback<Boolean> callback) {
+    public void addEvents(List<WebsiteEvent> events, Callback<Boolean> callback) {
         assert mNativeUsageStatsBridge != 0;
         nativeAddEvents(mNativeUsageStatsBridge, events, callback);
     }
@@ -81,7 +75,7 @@ public class UsageStatsBridge {
         nativeSetSuspensions(mNativeUsageStatsBridge, domains, callback);
     }
 
-    public void getAllTokenMappings(Callback<List<String>> callback) {
+    public void getAllTokenMappings(Callback<Map<String, String>> callback) {
         assert mNativeUsageStatsBridge != 0;
         nativeGetAllTokenMappings(mNativeUsageStatsBridge, callback);
     }
@@ -94,11 +88,11 @@ public class UsageStatsBridge {
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeUsageStatsBridge);
     private native void nativeGetAllEvents(
-            long nativeUsageStatsBridge, Callback<List<String>> callback);
-    private native void nativeQueryEventsInRange(
-            long nativeUsageStatsBridge, long start, long end, Callback<List<String>> callback);
+            long nativeUsageStatsBridge, Callback<List<WebsiteEvent>> callback);
+    private native void nativeQueryEventsInRange(long nativeUsageStatsBridge, long start, long end,
+            Callback<List<WebsiteEvent>> callback);
     private native void nativeAddEvents(
-            long nativeUsageStatsBridge, byte[][] events, Callback<Boolean> callback);
+            long nativeUsageStatsBridge, List<WebsiteEvent> events, Callback<Boolean> callback);
     private native void nativeDeleteAllEvents(
             long nativeUsageStatsBridge, Callback<Boolean> callback);
     private native void nativeDeleteEventsInRange(
@@ -110,7 +104,7 @@ public class UsageStatsBridge {
     private native void nativeSetSuspensions(
             long nativeUsageStatsBridge, String[] domains, Callback<Boolean> callback);
     private native void nativeGetAllTokenMappings(
-            long nativeUsageStatsBridge, Callback<List<String>> callback);
+            long nativeUsageStatsBridge, Callback<Map<String, String>> callback);
     private native void nativeSetTokenMappings(
             long nativeUsageStatsBridge, Map<String, String> mappings, Callback<Boolean> callback);
 }
