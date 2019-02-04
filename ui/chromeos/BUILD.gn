@@ -43,7 +43,6 @@ component("chromeos") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
-    "//ui/base/user_activity",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/display",
