@@ -103,26 +103,6 @@ class PLATFORM_EXPORT PageScheduler {
   // FrameSchedulers.
   virtual void SetVirtualTimePolicy(VirtualTimePolicy) = 0;
 
-  class PLATFORM_EXPORT VirtualTimeObserver {
-   public:
-    virtual ~VirtualTimeObserver() = default;
-
-    // Called when virtual time advances. |virtual_time_offset| is the offset
-    // between the current virtual time and the initial virtual time when
-    // EnableVirtualTime() was called.
-    virtual void OnVirtualTimeAdvanced(base::TimeDelta virtual_time_offset) = 0;
-
-    // Called when virtual time pauses for any reason. |virtual_time_offset| is
-    // the offset between the current virtual time and the initial virtual time
-    // when EnableVirtualTime() was called.
-    virtual void OnVirtualTimePaused(base::TimeDelta virtual_time_offset) = 0;
-  };
-
-  // Adds a VirtualTimeObserver instance to be notified when virtual time has
-  // been paused.
-  virtual void AddVirtualTimeObserver(VirtualTimeObserver*) = 0;
-  virtual void RemoveVirtualTimeObserver(VirtualTimeObserver*) = 0;
-
   // Set the remaining virtual time budget to |budget|. Once the budget runs
   // out, |budget_exhausted_callback| is called. Note that the virtual time
   // policy is not affected when the budget expires.

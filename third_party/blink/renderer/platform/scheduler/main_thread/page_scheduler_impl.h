@@ -76,8 +76,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool IsExemptFromBudgetBasedThrottling() const override;
   bool HasActiveConnectionForTest() const override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
-  void AddVirtualTimeObserver(VirtualTimeObserver*) override;
-  void RemoveVirtualTimeObserver(VirtualTimeObserver*) override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);

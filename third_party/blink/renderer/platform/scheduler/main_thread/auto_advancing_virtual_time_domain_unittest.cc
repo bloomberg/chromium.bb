@@ -67,54 +67,7 @@ void NopTask(bool* task_run) {
   *task_run = true;
 }
 
-class MockObserver : public AutoAdvancingVirtualTimeDomain::Observer {
- public:
-  MOCK_METHOD0(OnVirtualTimeAdvanced, void());
-};
-
 }  // namespace
-
-TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeAdvances) {
-  MockObserver mock_observer;
-  auto_advancing_time_domain_->SetObserver(&mock_observer);
-
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
-  bool task_run = false;
-  task_queue_->task_runner()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(NopTask, &task_run), delay);
-
-  EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(initial_time_ticks_, test_task_runner_->NowTicks());
-  EXPECT_EQ(initial_time_ticks_ + delay,
-            auto_advancing_time_domain_->CreateLazyNow().Now());
-  EXPECT_TRUE(task_run);
-
-  auto_advancing_time_domain_->SetObserver(nullptr);
-}
-
-TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
-  MockObserver mock_observer;
-  auto_advancing_time_domain_->SetObserver(&mock_observer);
-
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
-  bool task_run = false;
-  task_queue_->task_runner()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(NopTask, &task_run), delay);
-
-  auto_advancing_time_domain_->SetCanAdvanceVirtualTime(false);
-
-  EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced()).Times(0);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(initial_time_ticks_, test_task_runner_->NowTicks());
-  EXPECT_EQ(initial_time_ticks_,
-            auto_advancing_time_domain_->CreateLazyNow().Now());
-  EXPECT_FALSE(task_run);
-
-  auto_advancing_time_domain_->SetObserver(nullptr);
-}
 
 namespace {
 void RepostingTask(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
