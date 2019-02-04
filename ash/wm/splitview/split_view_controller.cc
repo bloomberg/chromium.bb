@@ -676,6 +676,12 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   SnapWindow(gained_active, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
 }
 
+void SplitViewController::OnPinnedStateChanged(aura::Window* pinned_window) {
+  // Disable split view for pinned windows.
+  if (wm::GetWindowState(pinned_window)->IsPinned() && IsSplitViewModeActive())
+    EndSplitView(EndReason::kUnsnappableWindowActivated);
+}
+
 void SplitViewController::OnOverviewModeStarting() {
   DCHECK(IsSplitViewModeActive());
 
