@@ -367,6 +367,19 @@ class RasterDecoderImpl final : public RasterDecoder,
     return feature_info_->workarounds();
   }
 
+  void FlushToWorkAroundMacCrashes() {
+#if defined(OS_MACOSX)
+    // This function does aggressive flushes to work around crashes in the
+    // macOS OpenGL driver.
+    // https://crbug.com/906453
+    if (!flush_workaround_disabled_for_test_) {
+      if (gr_context())
+        gr_context()->flush();
+      api()->glFlushFn();
+    }
+#endif
+  }
+
   bool IsRobustnessSupported() {
     return has_robustness_extension_ &&
            shared_context_state_->context()
@@ -1116,18 +1129,6 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
   int process_pos = 0;
   CommandId command = static_cast<CommandId>(0);
 
-#if defined(OS_MACOSX)
-  if (!flush_workaround_disabled_for_test_) {
-    // Flush before and after decoding commands.
-    // TODO(ccameron): This is to determine if this high frequency flushing
-    // affects crash rates.
-    // https://crbug.com/906453
-    if (gr_context())
-      gr_context()->flush();
-    api()->glFlushFn();
-  }
-#endif
-
   while (process_pos < num_entries && result == error::kNoError &&
          commands_to_process_--) {
     const unsigned int size = cmd_data->value_header.size;
@@ -1209,13 +1210,10 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
       cmd_data += size;
     }
 
-#if defined(OS_MACOSX)
-    if (!flush_workaround_disabled_for_test_) {
-      if (gr_context())
-        gr_context()->flush();
-      api()->glFlushFn();
-    }
-#endif
+    // Workaround for https://crbug.com/906453: Flush after every command that
+    // is not between a BeginRaster and EndRaster.
+    if (!sk_surface_)
+      FlushToWorkAroundMacCrashes();
   }
 
   *entries_processed = process_pos;
@@ -1227,14 +1225,6 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
 
   if (supports_oop_raster_)
     client_->ScheduleGrContextCleanup();
-
-#if defined(OS_MACOSX)
-  if (!flush_workaround_disabled_for_test_) {
-    if (gr_context())
-      gr_context()->flush();
-    api()->glFlushFn();
-  }
-#endif
 
   return result;
 }
@@ -2024,6 +2014,10 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     GLboolean can_use_lcd_text,
     GLuint color_space_transfer_cache_id,
     const volatile GLbyte* key) {
+  // Workaround for https://crbug.com/906453: Flush before BeginRaster (the
+  // commands between BeginRaster and EndRaster will not flush).
+  FlushToWorkAroundMacCrashes();
+
   if (!gr_context()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "chromium_raster_transport not enabled via attribs");
