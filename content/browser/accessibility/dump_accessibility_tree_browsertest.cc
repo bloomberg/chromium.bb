@@ -893,6 +893,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaSetsize) {
   RunAriaTest(FILE_PATH_LITERAL("aria-setsize.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaSetCountsWithHiddenItems) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-set-counts-with-hidden-items.html"));
+}
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaSlider) {
   RunAriaTest(FILE_PATH_LITERAL("aria-slider.html"));
 }

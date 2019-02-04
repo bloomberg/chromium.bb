@@ -89,6 +89,10 @@ void CallIfAttributeValuesChanged(const std::vector<std::pair<K, V>>& pairs1,
   }
 }
 
+bool IsCollapsed(const AXNode* node) {
+  return node && node->data().HasState(ax::mojom::State::kCollapsed);
+}
+
 }  // namespace
 
 // Intermediate state to keep track of during a tree update.
@@ -937,6 +941,17 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
 
   for (int i = 0; i < local_parent->child_count(); ++i) {
     const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
+
+    // Invisible children should not be counted.
+    // However, in the collapsed container case (e.g. a combobox), items can
+    // still be chosen/navigated. However, the options in these collapsed
+    // containers are historically marked invisible. Therefore, in that case,
+    // count the invisible items. Only check 2 levels up, as combobox containers
+    // are never higher.
+    if (child->data().HasState(ax::mojom::State::kInvisible) &&
+        !IsCollapsed(local_parent) && !IsCollapsed(local_parent->parent())) {
+      continue;
+    }
 
     // If role of node is kRadioButton, only add other kRadioButtons.
     if (node_is_radio_button &&
