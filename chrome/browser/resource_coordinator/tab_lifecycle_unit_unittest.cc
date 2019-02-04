@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -90,6 +91,8 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
   class ScopedEnterpriseOptOut;
 
   TabLifecycleUnitTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    // Advance the clock so that it doesn't yield null time ticks.
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     observers_.AddObserver(&observer_);
   }
 
