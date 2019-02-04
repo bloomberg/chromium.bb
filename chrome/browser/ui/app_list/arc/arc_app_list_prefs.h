@@ -47,6 +47,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
+namespace app_list {
+class ArcAppShortcutsSearchProviderTest;
+}  // namespace app_list
+
 // Declares shareable ARC app specific preferences, that keep information
 // about app attributes (name, package_name, activity) and its state. This
 // information is used to pre-create non-ready app items while ARC bridge
@@ -318,6 +322,7 @@ class ArcAppListPrefs : public KeyedService,
  private:
   friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;
+  friend class app_list::ArcAppShortcutsSearchProviderTest;
   // To support deprecated mojom icon requests.
   class ResizeRequest;
 
