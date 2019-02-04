@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
+import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
+import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
+import android.view.Window;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -18,7 +20,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** The presenter that shows a {@link ModalDialogView} in an Android dialog. */
 public class AppModalPresenter extends ModalDialogManager.Presenter {
-    private final Context mContext;
+    private final Activity mActivity;
     private Dialog mDialog;
     private PropertyModelChangeProcessor<PropertyModel, ModalDialogView, PropertyKey>
             mModelChangeProcessor;
@@ -35,13 +37,25 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         }
     }
 
-    public AppModalPresenter(Context context) {
-        mContext = context;
+    /**
+     * @param activity The {@link Activity} on which dialog views will be created and shown.
+     */
+    public AppModalPresenter(Activity activity) {
+        mActivity = activity;
     }
 
     @Override
     protected void addDialogView(PropertyModel model) {
-        mDialog = new Dialog(mContext, R.style.ModalDialogTheme);
+        // If the activity's decor view is not attached to window, we don't show the dialog because
+        // the window manager might have revoked the window token for this activity. See
+        // https://crbug.com/926688.
+        Window window = mActivity.getWindow();
+        if (window == null || !ViewCompat.isAttachedToWindow(window.getDecorView())) {
+            dismissCurrentDialog(DialogDismissalCause.NOT_ATTACHED_TO_WINDOW);
+            return;
+        }
+
+        mDialog = new Dialog(mActivity, R.style.ModalDialogTheme);
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
