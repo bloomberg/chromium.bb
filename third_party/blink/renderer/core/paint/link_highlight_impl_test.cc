@@ -115,7 +115,7 @@ class LinkHighlightImplTest : public testing::Test,
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(LinkHighlightImplTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(LinkHighlightImplTest);
 
 TEST_P(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();

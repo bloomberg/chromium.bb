@@ -183,7 +183,7 @@ class NGInlineNodeTest : public NGLayoutTest {
 class NodeParameterTest : public NGInlineNodeTest,
                           public testing::WithParamInterface<const char*> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NGInlineNodeTest,
     NodeParameterTest,
     testing::Values("text",

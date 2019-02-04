@@ -105,8 +105,7 @@ class MainThreadScrollingReasonsTest
   frame_test_helpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, MainThreadScrollingReasonsTest, testing::Bool());
-
+INSTANTIATE_TEST_SUITE_P(All, MainThreadScrollingReasonsTest, testing::Bool());
 
 TEST_P(MainThreadScrollingReasonsTest,
        CustomScrollbarShouldTriggerMainThreadScroll) {
@@ -412,9 +411,9 @@ class NonCompositedMainThreadScrollingReasonsTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        NonCompositedMainThreadScrollingReasonsTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         NonCompositedMainThreadScrollingReasonsTest,
+                         testing::Bool());
 
 TEST_P(NonCompositedMainThreadScrollingReasonsTest, TransparentTest) {
   TestNonCompositedReasons("transparent",

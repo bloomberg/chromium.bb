@@ -33,9 +33,9 @@ class AnimatedLayersTest : public testing::Test,
   ViewportLayersSetup layers_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AnimatedLayersTest,
-                        testing::Values(0, kBlinkGenPropertyTrees));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AnimatedLayersTest,
+                         testing::Values(0, kBlinkGenPropertyTrees));
 
 class AnimationForTesting : public CompositorAnimationClient {
  public:

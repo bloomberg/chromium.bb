@@ -96,7 +96,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
   FragmentData fragment_data_;
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(BoxPaintInvalidatorTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(BoxPaintInvalidatorTest);
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   SetUpHTML();

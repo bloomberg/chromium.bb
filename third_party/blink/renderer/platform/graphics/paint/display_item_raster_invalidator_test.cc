@@ -43,7 +43,7 @@ class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
   RasterInvalidator invalidator_;
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(DisplayItemRasterInvalidatorTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(DisplayItemRasterInvalidatorTest);
 
 TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 300, 300));

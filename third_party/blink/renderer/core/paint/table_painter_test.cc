@@ -16,7 +16,7 @@ using testing::ElementsAre;
 namespace blink {
 
 using TablePainterTest = PaintControllerPaintTest;
-INSTANTIATE_PAINT_TEST_CASE_P(TablePainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(TablePainterTest);
 
 TEST_P(TablePainterTest, Background) {
   SetBodyInnerHTML(R"HTML(

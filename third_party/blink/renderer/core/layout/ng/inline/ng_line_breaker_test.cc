@@ -411,9 +411,9 @@ class NGWhitespaceStateTest
     : public NGLineBreakerTest,
       public testing::WithParamInterface<WhitespaceStateTestData> {};
 
-INSTANTIATE_TEST_CASE_P(NGLineBreakerTest,
-                        NGWhitespaceStateTest,
-                        testing::ValuesIn(whitespace_state_test_data));
+INSTANTIATE_TEST_SUITE_P(NGLineBreakerTest,
+                         NGWhitespaceStateTest,
+                         testing::ValuesIn(whitespace_state_test_data));
 
 TEST_P(NGWhitespaceStateTest, WhitespaceState) {
   const auto& data = GetParam();
@@ -471,9 +471,9 @@ class NGTrailingSpaceWidthTest
     : public NGLineBreakerTest,
       public testing::WithParamInterface<TrailingSpaceWidthTestData> {};
 
-INSTANTIATE_TEST_CASE_P(NGLineBreakerTest,
-                        NGTrailingSpaceWidthTest,
-                        testing::ValuesIn(trailing_space_width_test_data));
+INSTANTIATE_TEST_SUITE_P(NGLineBreakerTest,
+                         NGTrailingSpaceWidthTest,
+                         testing::ValuesIn(trailing_space_width_test_data));
 
 TEST_P(NGTrailingSpaceWidthTest, TrailingSpaceWidth) {
   const auto& data = GetParam();

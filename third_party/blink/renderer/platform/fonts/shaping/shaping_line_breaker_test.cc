@@ -333,7 +333,7 @@ class BreakOpportunityTest
     : public ShapingLineBreakerTest,
       public testing::WithParamInterface<BreakOpportunityTestData> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ShapingLineBreakerTest,
     BreakOpportunityTest,
     testing::Values(BreakOpportunityTestData{u"x y z", {1, 3, 5}},

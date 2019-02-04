@@ -72,7 +72,7 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(CaretDisplayItemClientTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(CaretDisplayItemClientTest);
 
 TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
@@ -380,9 +380,9 @@ class ParameterizedComputeCaretRectTest
   ParameterizedComputeCaretRectTest() : ScopedLayoutNGForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedComputeCaretRectTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedComputeCaretRectTest,
+                         testing::Bool());
 
 TEST_P(ParameterizedComputeCaretRectTest, CaretRectAfterEllipsisNoCrash) {
   SetBodyInnerHTML(

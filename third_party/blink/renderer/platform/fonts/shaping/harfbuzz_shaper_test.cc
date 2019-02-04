@@ -171,10 +171,10 @@ class ShapeParameterTest : public HarfBuzzShaperTest,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        ShapeParameterTest,
-                        testing::Values(TextDirection::kLtr,
-                                        TextDirection::kRtl));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         ShapeParameterTest,
+                         testing::Values(TextDirection::kLtr,
+                                         TextDirection::kRtl));
 
 TEST_F(HarfBuzzShaperTest, MutableUnique) {
   scoped_refptr<ShapeResult> result =
@@ -532,14 +532,14 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
 class ShapeStringTest : public HarfBuzzShaperTest,
                         public testing::WithParamInterface<const char16_t*> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        ShapeStringTest,
-                        testing::Values(
-                            // U+FFF0 is not assigned as of Unicode 10.0.
-                            u"\uFFF0",
-                            u"\uFFF0Hello",
-                            // U+00AD SOFT HYPHEN often does not have glyphs.
-                            u"\u00AD"));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         ShapeStringTest,
+                         testing::Values(
+                             // U+FFF0 is not assigned as of Unicode 10.0.
+                             u"\uFFF0",
+                             u"\uFFF0Hello",
+                             // U+00AD SOFT HYPHEN often does not have glyphs.
+                             u"\u00AD"));
 
 TEST_P(ShapeStringTest, MissingGlyph) {
   String string(GetParam());
@@ -741,9 +741,9 @@ class GlyphDataRangeTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<GlyphDataRangeTestData> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        GlyphDataRangeTest,
-                        testing::ValuesIn(glyph_data_range_test_data));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         GlyphDataRangeTest,
+                         testing::ValuesIn(glyph_data_range_test_data));
 
 TEST_P(GlyphDataRangeTest, Data) {
   auto data = GetParam();
@@ -803,7 +803,7 @@ class OffsetForPositionTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<OffsetForPositionTestData> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HarfBuzzShaperTest,
     OffsetForPositionTest,
     testing::ValuesIn(offset_for_position_fixed_pitch_test_data));
@@ -880,7 +880,7 @@ class IncludePartialGlyphsTest
     : public HarfBuzzShaperTest,
       public ::testing::WithParamInterface<IncludePartialGlyphsOption> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HarfBuzzShaperTest,
     IncludePartialGlyphsTest,
     ::testing::Values(IncludePartialGlyphsOption::OnlyFullGlyphs,
@@ -1091,9 +1091,9 @@ class ShapeResultCopyRangeTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<ShapeResultCopyRangeTestData> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        ShapeResultCopyRangeTest,
-                        testing::ValuesIn(shape_result_copy_range_test_data));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         ShapeResultCopyRangeTest,
+                         testing::ValuesIn(shape_result_copy_range_test_data));
 
 // Split a ShapeResult and combine them should match to the original result.
 TEST_P(ShapeResultCopyRangeTest, Split) {

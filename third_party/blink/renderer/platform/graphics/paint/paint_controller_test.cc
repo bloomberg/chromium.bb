@@ -30,7 +30,7 @@ class PaintControllerTest : public PaintTestConfigurations,
               ElementsAre(IsPaintChunk(0, size, DefaultRootChunkId(), \
                                        DefaultPaintChunkProperties())))
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     PaintControllerTest,
     testing::Values(0,

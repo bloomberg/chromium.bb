@@ -71,9 +71,9 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
   ViewportLayersSetup layers_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        GraphicsLayerTest,
-                        testing::Values(0, kBlinkGenPropertyTrees));
+INSTANTIATE_TEST_SUITE_P(All,
+                         GraphicsLayerTest,
+                         testing::Values(0, kBlinkGenPropertyTrees));
 
 TEST_P(GraphicsLayerTest, Paint) {
   IntRect interest_rect(1, 2, 3, 4);

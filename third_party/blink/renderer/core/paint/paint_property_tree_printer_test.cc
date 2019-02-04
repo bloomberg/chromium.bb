@@ -26,7 +26,7 @@ class PaintPropertyTreePrinterTest : public PaintControllerPaintTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintPropertyTreePrinterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintPropertyTreePrinterTest);
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTree) {
   SetBodyInnerHTML("hello world");

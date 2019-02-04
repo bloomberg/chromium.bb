@@ -28,7 +28,7 @@ class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
 
 TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
   LoadAhem();

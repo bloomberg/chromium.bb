@@ -80,7 +80,7 @@ class ParameterizedLayoutTextTest : public testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutTextTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutTextTest, testing::Bool());
 
 }  // namespace
 
@@ -212,9 +212,9 @@ class MapDOMOffsetToTextContentOffset
   MapDOMOffsetToTextContentOffset() : ScopedLayoutNGForTest(true) {}
 };
 
-INSTANTIATE_TEST_CASE_P(LayoutTextTest,
-                        MapDOMOffsetToTextContentOffset,
-                        testing::ValuesIn(offset_mapping_test_data));
+INSTANTIATE_TEST_SUITE_P(LayoutTextTest,
+                         MapDOMOffsetToTextContentOffset,
+                         testing::ValuesIn(offset_mapping_test_data));
 
 TEST_P(MapDOMOffsetToTextContentOffset, Basic) {
   const auto data = GetParam();

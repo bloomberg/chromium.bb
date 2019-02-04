@@ -15,7 +15,7 @@ namespace blink {
 // Tests covering incremental updates of paint property trees.
 class PaintPropertyTreeUpdateTest : public PaintPropertyTreeBuilderTest {};
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintPropertyTreeUpdateTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintPropertyTreeUpdateTest);
 
 TEST_P(PaintPropertyTreeUpdateTest,
        ThreadedScrollingDisabledMainThreadScrollReason) {

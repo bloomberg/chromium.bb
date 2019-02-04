@@ -41,7 +41,7 @@ class NGPhysicalOffsetRectUniteTest
     : public testing::Test,
       public testing::WithParamInterface<PhysicalOffsetRectUniteTestData> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NGGeometryUnitsTest,
     NGPhysicalOffsetRectUniteTest,
     testing::ValuesIn(physical_offset_rect_unite_test_data));

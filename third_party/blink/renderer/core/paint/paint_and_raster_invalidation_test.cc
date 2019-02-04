@@ -57,7 +57,7 @@ void SetUpHTML(PaintAndRasterInvalidationTest& test) {
   )HTML");
 }
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintAndRasterInvalidationTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintAndRasterInvalidationTest);
 
 TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
   SetBodyInnerHTML(R"HTML(

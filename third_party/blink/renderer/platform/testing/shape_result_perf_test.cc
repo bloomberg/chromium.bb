@@ -145,9 +145,9 @@ TEST_P(OffsetForPositionPerfTest, RTLOffsetForPositionIncludePartialDontBreak) {
                          timer.LapsPerSecond(), "runs/s", true);
 }
 
-INSTANTIATE_TEST_CASE_P(OffsetForPosition,
-                        OffsetForPositionPerfTest,
-                        testing::Values(0, 10, 60, 100, 200, 350));
+INSTANTIATE_TEST_SUITE_P(OffsetForPosition,
+                         OffsetForPositionPerfTest,
+                         testing::Values(0, 10, 60, 100, 200, 350));
 
 TEST_P(CharacterRangePerfTest, LTRCharacterForPosition) {
   TextRun run = SetupFont(ahem, "FURACOLO", true);
@@ -163,8 +163,8 @@ TEST_P(CharacterRangePerfTest, RTLCharacterForPosition) {
                          timer.LapsPerSecond(), "runs/s", true);
 }
 
-INSTANTIATE_TEST_CASE_P(CharacterRange,
-                        CharacterRangePerfTest,
-                        testing::Values(0, 1, 2, 4, 8));
+INSTANTIATE_TEST_SUITE_P(CharacterRange,
+                         CharacterRangePerfTest,
+                         testing::Values(0, 1, 2, 4, 8));
 
 }  // namespace blink

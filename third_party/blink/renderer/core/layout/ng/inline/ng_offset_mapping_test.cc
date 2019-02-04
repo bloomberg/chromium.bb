@@ -1162,9 +1162,9 @@ class NGOffsetMappingGetterTest : public RenderingTest,
   NGOffsetMappingGetterTest() : ScopedLayoutNGForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_CASE_P(NGOffsetMappingTest,
-                        NGOffsetMappingGetterTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(NGOffsetMappingTest,
+                         NGOffsetMappingGetterTest,
+                         testing::Bool());
 
 TEST_P(NGOffsetMappingGetterTest, Get) {
   SetBodyInnerHTML(R"HTML(

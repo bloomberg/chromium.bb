@@ -76,7 +76,7 @@ class HTMLCanvasPainterTestForCAP : public PaintControllerPaintTest {
   FakeGLES2Interface gl_;
 };
 
-INSTANTIATE_CAP_TEST_CASE_P(HTMLCanvasPainterTestForCAP);
+INSTANTIATE_CAP_TEST_SUITE_P(HTMLCanvasPainterTestForCAP);
 
 TEST_P(HTMLCanvasPainterTestForCAP, Canvas2DLayerAppearsInLayerTree) {
   // Insert a <canvas> and force it into accelerated mode.

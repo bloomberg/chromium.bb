@@ -59,9 +59,9 @@ class ParameterizedVisibleUnitsLineTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedVisibleUnitsLineTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedVisibleUnitsLineTest,
+                         ::testing::Bool());
 
 TEST_F(VisibleUnitsLineTest, endOfLine) {
   const char* body_content =

@@ -25,7 +25,7 @@ class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintLayerTest);
 
 TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
   SetBodyInnerHTML(

@@ -20,7 +20,7 @@ namespace blink {
 
 using BlockPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_PAINT_TEST_CASE_P(BlockPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(BlockPainterTest);
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())

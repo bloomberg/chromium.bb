@@ -831,7 +831,7 @@ const DecodedImageTypeHistogramTest::ParamType
         {"wrong-frame-dimensions.ico", BitmapImageMetrics::kImageICO},
         {"lenna.bmp", BitmapImageMetrics::kImageBMP}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageTypeHistogramTest,
     DecodedImageTypeHistogramTest,
     testing::ValuesIn(kDecodedImageTypeHistogramTestparams));
@@ -854,7 +854,7 @@ const DecodedImageOrientationHistogramTest::ParamType
         {"exif-orientation-7-rl.jpg", kOriginRightBottom},
         {"exif-orientation-8-llo.jpg", kOriginLeftBottom}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageOrientationHistogramTest,
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
@@ -877,7 +877,7 @@ const DecodedImageDensityHistogramTest100px::ParamType
         // 632x475 too big for the 100-399px range.
         {"cat.jpg", DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageDensityHistogramTest100px,
     DecodedImageDensityHistogramTest100px,
     testing::ValuesIn(kDecodedImageDensityHistogramTest100pxParams));
@@ -899,7 +899,7 @@ const DecodedImageDensityHistogramTest400px::ParamType
         // 632x475, 68826 bytes --> 1.83
         {"cat.jpg", 183}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageDensityHistogramTest400px,
     DecodedImageDensityHistogramTest400px,
     testing::ValuesIn(kDecodedImageDensityHistogramTest400pxParams));

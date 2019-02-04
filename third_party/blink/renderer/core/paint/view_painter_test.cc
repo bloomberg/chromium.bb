@@ -19,7 +19,7 @@ class ViewPainterTest : public PaintControllerPaintTest {
   void RunFixedBackgroundTest(bool prefer_compositing_to_lcd_text);
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterTest);
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {
@@ -173,7 +173,7 @@ class ViewPainterTestWithPaintTouchAction
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTestWithPaintTouchAction);
+INSTANTIATE_PAINT_TEST_SUITE_P(ViewPainterTestWithPaintTouchAction);
 
 TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
   SetBodyInnerHTML(R"HTML(

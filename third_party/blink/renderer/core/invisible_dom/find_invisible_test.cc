@@ -109,7 +109,7 @@ class FindInvisibleTest : public ::testing::WithParamInterface<bool>,
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, FindInvisibleTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, FindInvisibleTest, ::testing::Bool());
 
 TEST_P(FindInvisibleTest, FindingInvisibleTextHasCorrectCount) {
   ResizeAndFocus();

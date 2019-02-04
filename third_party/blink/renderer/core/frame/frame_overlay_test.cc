@@ -81,7 +81,7 @@ class MockFrameOverlayCanvas : public SkCanvas {
   MOCK_METHOD2(onDrawRect, void(const SkRect&, const SkPaint&));
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(FrameOverlayTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(FrameOverlayTest);
 
 TEST_P(FrameOverlayTest, AcceleratedCompositing) {
   std::unique_ptr<FrameOverlay> frame_overlay = CreateSolidYellowOverlay();

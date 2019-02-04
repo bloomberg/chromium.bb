@@ -204,9 +204,9 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadTest,
-                        LinkLoaderPreloadTest,
-                        testing::ValuesIn(kPreloadTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderPreloadTest,
+                         LinkLoaderPreloadTest,
+                         testing::ValuesIn(kPreloadTestParams));
 
 struct PreloadMimeTypeTestParams {
   const char* href;
@@ -284,9 +284,9 @@ TEST_P(LinkLoaderPreloadMimeTypeTest, Preload) {
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadMimeTypeTest,
-                        LinkLoaderPreloadMimeTypeTest,
-                        testing::ValuesIn(kPreloadMimeTypeTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderPreloadMimeTypeTest,
+                         LinkLoaderPreloadMimeTypeTest,
+                         testing::ValuesIn(kPreloadMimeTypeTestParams));
 
 struct PreloadMediaTestParams {
   const char* media;
@@ -319,9 +319,9 @@ TEST_P(LinkLoaderPreloadMediaTest, Preload) {
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadMediaTest,
-                        LinkLoaderPreloadMediaTest,
-                        testing::ValuesIn(kPreloadMediaTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderPreloadMediaTest,
+                         LinkLoaderPreloadMediaTest,
+                         testing::ValuesIn(kPreloadMediaTestParams));
 
 constexpr network::mojom::ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
     network::mojom::ReferrerPolicy::kOrigin,
@@ -348,9 +348,9 @@ TEST_P(LinkLoaderPreloadReferrerPolicyTest, Preload) {
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadReferrerPolicyTest,
-                        LinkLoaderPreloadReferrerPolicyTest,
-                        testing::ValuesIn(kPreloadReferrerPolicyTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderPreloadReferrerPolicyTest,
+                         LinkLoaderPreloadReferrerPolicyTest,
+                         testing::ValuesIn(kPreloadReferrerPolicyTestParams));
 
 struct PreloadNonceTestParams {
   const char* nonce;
@@ -388,9 +388,9 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadNonceTest,
-                        LinkLoaderPreloadNonceTest,
-                        testing::ValuesIn(kPreloadNonceTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderPreloadNonceTest,
+                         LinkLoaderPreloadNonceTest,
+                         testing::ValuesIn(kPreloadNonceTestParams));
 
 struct PreloadImageSrcsetTestParams {
   const char* href;
@@ -440,9 +440,9 @@ TEST_P(LinkLoaderPreloadImageSrcsetTest, Preload) {
   TestPreload(params, expectations);
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadImageSrcsetTest,
-                        LinkLoaderPreloadImageSrcsetTest,
-                        testing::ValuesIn(kPreloadImageSrcsetTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderPreloadImageSrcsetTest,
+                         LinkLoaderPreloadImageSrcsetTest,
+                         testing::ValuesIn(kPreloadImageSrcsetTestParams));
 
 struct ModulePreloadTestParams {
   const char* href;
@@ -528,9 +528,9 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
   ASSERT_EQ(test_case.expecting_load, modulator->fetched());
 }
 
-INSTANTIATE_TEST_CASE_P(LinkLoaderModulePreloadTest,
-                        LinkLoaderModulePreloadTest,
-                        testing::ValuesIn(kModulePreloadTestParams));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderModulePreloadTest,
+                         LinkLoaderModulePreloadTest,
+                         testing::ValuesIn(kModulePreloadTestParams));
 
 TEST(LinkLoaderTest, Prefetch) {
   struct TestCase {
