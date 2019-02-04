@@ -91,16 +91,16 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
  protected:
   void AppendCustomAttributes(StringBuilder&,
                               const Element&,
-                              Namespaces*) override;
+                              Namespaces&) override;
   void AppendText(StringBuilder& out, Text&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) const override;
   bool ShouldIgnoreElement(const Element&) const override;
-  void AppendElement(StringBuilder& out, const Element&, Namespaces*) override;
+  void AppendElement(StringBuilder& out, const Element&, Namespaces&) override;
   void AppendAttribute(StringBuilder& out,
                        const Element&,
                        const Attribute&,
-                       Namespaces*) override;
-  void AppendStartTag(Node&, Namespaces*) override;
+                       Namespaces&) override;
+  void AppendStartTag(Node&, Namespaces&) override;
   void AppendEndTag(const Element&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
@@ -138,7 +138,7 @@ SerializerMarkupAccumulator::~SerializerMarkupAccumulator() = default;
 void SerializerMarkupAccumulator::AppendCustomAttributes(
     StringBuilder& result,
     const Element& element,
-    Namespaces* namespaces) {
+    Namespaces& namespaces) {
   Vector<Attribute> attributes = delegate_.GetCustomAttributes(element);
   for (const auto& attribute : attributes)
     AppendAttribute(result, element, attribute, namespaces);
@@ -170,7 +170,7 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
 
 void SerializerMarkupAccumulator::AppendElement(StringBuilder& result,
                                                 const Element& element,
-                                                Namespaces* namespaces) {
+                                                Namespaces& namespaces) {
   MarkupAccumulator::AppendElement(result, element, namespaces);
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
@@ -193,7 +193,7 @@ void SerializerMarkupAccumulator::AppendElement(StringBuilder& result,
 void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
                                                   const Element& element,
                                                   const Attribute& attribute,
-                                                  Namespaces* namespaces) {
+                                                  Namespaces& namespaces) {
   // Check if link rewriting can affect the attribute.
   bool is_link_attribute = element.HasLegalLinkAttribute(attribute.GetName());
   bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
@@ -224,7 +224,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
 }
 
 void SerializerMarkupAccumulator::AppendStartTag(Node& node,
-                                                 Namespaces* namespaces) {
+                                                 Namespaces& namespaces) {
   MarkupAccumulator::AppendStartTag(node, namespaces);
   nodes_.push_back(&node);
 }
