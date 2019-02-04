@@ -10,6 +10,8 @@
 
 namespace blink {
 bool InvisibleDOM::IsInsideInvisibleSubtree(const Node& node) {
+  if (!node.CanParticipateInFlatTree())
+    return false;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     if (ancestor.IsElementNode() &&
         ToElement(ancestor).HasInvisibleAttribute()) {
@@ -28,6 +30,27 @@ Element* InvisibleDOM::InvisibleRoot(const Node& node) {
     }
   }
   return root;
+}
+
+bool InvisibleDOM::ActivateRangeIfNeeded(
+    const EphemeralRangeInFlatTree& range) {
+  if (range.IsNull() || range.IsCollapsed())
+    return false;
+  HeapVector<Member<Element>> elements_to_activate;
+  for (Node& node : range.Nodes()) {
+    if (!InvisibleDOM::IsInsideInvisibleSubtree(node))
+      continue;
+    for (Node& node : FlatTreeTraversal::AncestorsOf(node)) {
+      if (node.IsElementNode()) {
+        elements_to_activate.push_back(ToElement(node));
+        break;
+      }
+    }
+  }
+  for (Element* element : elements_to_activate) {
+    element->DispatchActivateInvisibleEventIfNeeded();
+  }
+  return !elements_to_activate.IsEmpty();
 }
 
 }  // namespace blink

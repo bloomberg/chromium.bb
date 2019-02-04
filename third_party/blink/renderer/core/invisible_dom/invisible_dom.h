@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INVISIBLE_DOM_INVISIBLE_DOM_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -21,6 +22,10 @@ class CORE_EXPORT InvisibleDOM {
 
   // Highest inclusive ancestor that has the invisible attribute.
   static Element* InvisibleRoot(const Node&);
+
+  // Activates all the nodes within |range|. Returns true if at least one
+  // node gets activated.
+  static bool ActivateRangeIfNeeded(const EphemeralRangeInFlatTree& range);
 };
 
 }  // namespace blink

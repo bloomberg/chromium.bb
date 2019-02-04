@@ -264,6 +264,82 @@ TEST_F(FindBufferTest, FindBetweenPositionsSkippedNodes) {
   EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
 }
 
+TEST_F(FindBufferTest, FindMatchInRange) {
+  SetBodyContent(
+      "<div id='div' invisible>foo<a id='a'>foof</a><b id='b'>oo</b></div>");
+  Element* div = GetElementById("div");
+  Element* a = GetElementById("a");
+  Element* b = GetElementById("b");
+  EphemeralRangeInFlatTree foo1 = EphemeralRangeInFlatTree(
+      PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
+      PositionInFlatTree::LastPositionInNode(*div->firstChild()));
+  EphemeralRangeInFlatTree foo2 = EphemeralRangeInFlatTree(
+      PositionInFlatTree::FirstPositionInNode(*a->firstChild()),
+      PositionInFlatTree(*a->firstChild(), 3));
+  EphemeralRangeInFlatTree foo3 = EphemeralRangeInFlatTree(
+      PositionInFlatTree(*a->firstChild(), 3),
+      PositionInFlatTree::LastPositionInNode(*b->firstChild()));
+
+  // <div>^foo<a>foof</a><b>oo|</b></div>, forwards
+  EphemeralRangeInFlatTree match = FindBuffer::FindMatchInRange(
+      WholeDocumentRange(), "foo", kCaseInsensitive);
+  EXPECT_EQ(foo1, match);
+  // <div>f^oo<a>foof</a><b>oo|</b></div>, forwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(PositionInFlatTree(*div->firstChild(), 1),
+                               LastPositionInDocument()),
+      "foo", kCaseInsensitive);
+  EXPECT_EQ(foo2, match);
+  // <div>foo<a>^foo|f</a><b>oo</b></div>, forwards
+  match = FindBuffer::FindMatchInRange(foo2, "foo", kCaseInsensitive);
+  EXPECT_EQ(foo2, match);
+  // <div>foo<a>f^oof|</a><b>oo</b></div>, forwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(
+          PositionInFlatTree(*a->firstChild(), 1),
+          PositionInFlatTree::LastPositionInNode(*a->firstChild())),
+      "foo", kCaseInsensitive);
+  EXPECT_TRUE(match.IsNull());
+  // <div>foo<a>f^oof</a><b>oo|</b></div>, forwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(PositionInFlatTree(*a->firstChild(), 1),
+                               LastPositionInDocument()),
+      "foo", kCaseInsensitive);
+  EXPECT_EQ(foo3, match);
+
+  // <div>^foo<a>foof</a><b>oo|</b></div>, backwards
+  match = FindBuffer::FindMatchInRange(WholeDocumentRange(), "foo",
+                                       kCaseInsensitive | kBackwards);
+  EXPECT_EQ(foo3, match);
+  // <div>^foo<a>foof</a><b>o|o</b></div>, backwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(
+          PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
+          PositionInFlatTree(*b->firstChild(), 1)),
+      "foo", kCaseInsensitive | kBackwards);
+  EXPECT_EQ(foo2, match);
+  // <div>foo<a>^foof</a><b>o|o</b></div>, backwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(
+          PositionInFlatTree::FirstPositionInNode(*a->firstChild()),
+          PositionInFlatTree(*b->firstChild(), 1)),
+      "foo", kCaseInsensitive | kBackwards);
+  EXPECT_EQ(foo2, match);
+  // <div>foo<a>foo^f</a><b>o|o</b></div>, backwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(PositionInFlatTree(*a->firstChild(), 3),
+                               PositionInFlatTree(*b->firstChild(), 1)),
+      "foo", kCaseInsensitive | kBackwards);
+  EXPECT_TRUE(match.IsNull());
+  // <div>^foo<a>fo|of</a><b>oo</b></div>, backwards
+  match = FindBuffer::FindMatchInRange(
+      EphemeralRangeInFlatTree(
+          PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
+          PositionInFlatTree(*a->firstChild(), 2)),
+      "foo", kCaseInsensitive | kBackwards);
+  EXPECT_EQ(foo1, match);
+}
+
 class FindBufferBlockTest : public FindBufferTest,
                             public testing::WithParamInterface<std::string> {};
 

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_BUFFER_H_
 
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -24,6 +23,11 @@ class CORE_EXPORT FindBuffer {
 
  public:
   FindBuffer(const EphemeralRangeInFlatTree& range);
+
+  static EphemeralRangeInFlatTree FindMatchInRange(
+      const EphemeralRangeInFlatTree& range,
+      String search_text,
+      const FindOptions);
 
   // A match result, containing the starting position of the match and
   // the length of the match.
@@ -69,6 +73,12 @@ class CORE_EXPORT FindBuffer {
     Iterator begin();
 
     Iterator end() const;
+
+    bool IsEmpty();
+
+    BufferMatchResult front();
+
+    BufferMatchResult back();
 
     unsigned CountForTesting();
 

@@ -71,6 +71,22 @@ FindBuffer::Results::Iterator FindBuffer::Results::end() const {
   return Iterator();
 }
 
+bool FindBuffer::Results::IsEmpty() {
+  return begin() == end();
+}
+
+FindBuffer::BufferMatchResult FindBuffer::Results::front() {
+  return *begin();
+}
+
+FindBuffer::BufferMatchResult FindBuffer::Results::back() {
+  Iterator last_result;
+  for (Iterator it = begin(); it != end(); ++it) {
+    last_result = it;
+  }
+  return *last_result;
+}
+
 unsigned FindBuffer::Results::CountForTesting() {
   unsigned result = 0;
   for (Iterator it = begin(); it != end(); ++it) {
@@ -125,10 +141,11 @@ bool ShouldIgnoreContents(const Node& node) {
           !element.GetDisplayLockContext()->IsSearchable());
 }
 
-Node* GetDisplayNoneAncestor(const Node& node) {
+Node* GetNonSearchableAncestor(const Node& node) {
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     const ComputedStyle* style = ancestor.EnsureComputedStyle();
-    if (style && style->Display() == EDisplay::kNone)
+    if ((style && style->Display() == EDisplay::kNone) ||
+        ShouldIgnoreContents(node))
       return &ancestor;
     if (ancestor.IsDocumentNode())
       return nullptr;
@@ -145,7 +162,7 @@ bool IsBlock(EDisplay display) {
 Node* GetVisibleTextNode(Node& start_node) {
   Node* node = &start_node;
   // Move to outside display none subtree if we're inside one.
-  while (Node* ancestor = GetDisplayNoneAncestor(*node)) {
+  while (Node* ancestor = GetNonSearchableAncestor(*node)) {
     if (ancestor->IsDocumentNode())
       return nullptr;
     node = FlatTreeTraversal::NextSkippingChildren(*ancestor);
@@ -183,6 +200,53 @@ Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
       return ancestor;
   }
   return *start_node.GetDocument().documentElement();
+}
+
+EphemeralRangeInFlatTree FindBuffer::FindMatchInRange(
+    const EphemeralRangeInFlatTree& range,
+    String search_text,
+    FindOptions options) {
+  if (!range.StartPosition().IsConnected())
+    return EphemeralRangeInFlatTree();
+
+  EphemeralRangeInFlatTree last_match_range;
+  Node* first_node = range.StartPosition().NodeAsRangeFirstNode();
+  Node* past_last_node = range.EndPosition().NodeAsRangePastLastNode();
+  Node* node = first_node;
+  while (node && node != past_last_node) {
+    if (GetNonSearchableAncestor(*node)) {
+      node = FlatTreeTraversal::NextSkippingChildren(*node);
+      continue;
+    }
+    if (!node->IsTextNode()) {
+      node = FlatTreeTraversal::Next(*node);
+      continue;
+    }
+    // If we're in the same node as the start position, start from the start
+    // position instead of the start of this node.
+    PositionInFlatTree start_position =
+        node == first_node ? range.StartPosition()
+                           : PositionInFlatTree::FirstPositionInNode(*node);
+    if (start_position >= range.EndPosition())
+      break;
+
+    FindBuffer buffer(
+        EphemeralRangeInFlatTree(start_position, range.EndPosition()));
+    std::unique_ptr<Results> match_results =
+        buffer.FindMatches(search_text, options);
+    if (!match_results->IsEmpty()) {
+      if (!(options & kBackwards)) {
+        BufferMatchResult match = match_results->front();
+        return buffer.RangeFromBufferIndex(match.start,
+                                           match.start + match.length);
+      }
+      BufferMatchResult match = match_results->back();
+      last_match_range =
+          buffer.RangeFromBufferIndex(match.start, match.start + match.length);
+    }
+    node = buffer.PositionAfterBlock().ComputeContainerNode();
+  }
+  return last_match_range;
 }
 
 std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
@@ -230,7 +294,8 @@ void FindBuffer::CollectTextUntilBlockBoundary(
     if (ShouldIgnoreContents(*node)) {
       if (end_node && (end_node == node ||
                        FlatTreeTraversal::IsDescendantOf(*end_node, *node))) {
-        node = nullptr;
+        // For setting |node_after_block| later.
+        node = FlatTreeTraversal::NextSkippingChildren(*node);
         break;
       }
       // Move the node so we wouldn't encounter this node or its descendants
@@ -259,7 +324,8 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       // we guarantee |block_ancestor| is visible.
       if (end_node && (end_node == node ||
                        FlatTreeTraversal::IsDescendantOf(*end_node, *node))) {
-        node = nullptr;
+        // For setting |node_after_block| later.
+        node = FlatTreeTraversal::NextSkippingChildren(*node);
         break;
       }
       node = FlatTreeTraversal::NextSkippingChildren(*node);
@@ -290,7 +356,7 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       AddTextToBuffer(text_node, block_flow, range);
     }
     if (node == end_node) {
-      node = nullptr;
+      node = FlatTreeTraversal::Next(*node);
       break;
     }
     node = FlatTreeTraversal::Next(*node);
