@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 
 #include <algorithm>
 #include <string>
@@ -24,6 +24,7 @@
 #include "third_party/blink/public/common/download/download_stats.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace {
@@ -49,18 +50,6 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
                    handle->GetFrameTreeNodeId());
 }
 
-bool IsSubframeSameOriginToMainFrame(content::RenderFrameHost* sub_host,
-                                     bool use_parent_origin) {
-  DCHECK(sub_host);
-  content::RenderFrameHost* main_host =
-      content::WebContents::FromRenderFrameHost(sub_host)->GetMainFrame();
-  if (use_parent_origin)
-    sub_host = sub_host->GetParent();
-  url::Origin subframe_origin = sub_host->GetLastCommittedOrigin();
-  url::Origin mainframe_origin = main_host->GetLastCommittedOrigin();
-  return subframe_origin.IsSameOriginWith(mainframe_origin);
-}
-
 void RecordSingleFeatureUsage(content::RenderFrameHost* rfh,
                               blink::mojom::WebFeature web_feature) {
   page_load_metrics::mojom::PageLoadFeatures page_load_features(
@@ -73,25 +62,26 @@ using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 
 }  // namespace
 
-AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
-    FrameTreeNodeId frame_tree_node_id,
-    AdOriginStatus origin_status,
-    bool frame_navigated)
-    : frame_bytes(0u),
-      frame_network_bytes(0u),
-      frame_tree_node_id(frame_tree_node_id),
-      origin_status(origin_status),
-      frame_navigated(frame_navigated),
-      user_activation_status(UserActivationStatus::kNoActivation),
-      is_display_none(false),
-      frame_size(gfx::Size()) {}
-
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
 AdsPageLoadMetricsObserver::CreateIfNeeded() {
   if (!base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
     return nullptr;
   return std::make_unique<AdsPageLoadMetricsObserver>();
+}
+
+// static
+bool AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
+    content::RenderFrameHost* sub_host,
+    bool use_parent_origin) {
+  DCHECK(sub_host);
+  content::RenderFrameHost* main_host =
+      content::WebContents::FromRenderFrameHost(sub_host)->GetMainFrame();
+  if (use_parent_origin)
+    sub_host = sub_host->GetParent();
+  url::Origin subframe_origin = sub_host->GetLastCommittedOrigin();
+  url::Origin mainframe_origin = main_host->GetLastCommittedOrigin();
+  return subframe_origin.IsSameOriginWith(mainframe_origin);
 }
 
 AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver()
@@ -128,7 +118,7 @@ AdsPageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-// Given an ad being triggered for a frame or navigation, get its AdFrameData
+// Given an ad being triggered for a frame or navigation, get its FrameData
 // and record it into the appropriate data structures.
 void AdsPageLoadMetricsObserver::RecordAdFrameData(
     FrameTreeNodeId ad_id,
@@ -138,10 +128,10 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   // If an existing subframe is navigating and it was an ad previously that
   // hasn't navigated yet, then we need to update it.
   const auto& id_and_data = ad_frames_data_.find(ad_id);
-  AdFrameData* previous_data = nullptr;
+  FrameData* previous_data = nullptr;
   if (id_and_data != ad_frames_data_.end() && id_and_data->second) {
     DCHECK(frame_navigated);
-    if (id_and_data->second->frame_navigated) {
+    if (id_and_data->second->frame_navigated()) {
       ProcessOngoingNavigationResource(ad_id);
       return;
     }
@@ -161,31 +151,20 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
     return;
 
   // This frame is not nested within an ad frame but is itself an ad.
-  AdFrameData* ad_data = parent_id_and_data->second;
-  if (!ad_data && is_adframe) {
-    AdOriginStatus origin_status = AdOriginStatus::kUnknown;
-    if (ad_host) {
-      // For ads triggered on render, their origin is their parent's origin.
-      origin_status = IsSubframeSameOriginToMainFrame(ad_host, !frame_navigated)
-                          ? AdOriginStatus::kSame
-                          : AdOriginStatus::kCross;
-    }
+  FrameData* ad_data = parent_id_and_data->second;
 
-    // If data existed already, update it and exit, otherwise, add it.
+  // If data existed already, update it and exit, otherwise, add it.
+  if (!ad_data && is_adframe) {
     if (previous_data) {
-      previous_data->origin_status = origin_status;
-      previous_data->frame_navigated = frame_navigated;
+      previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
     }
-    ad_frames_data_storage_.emplace_back(ad_id, origin_status, frame_navigated);
+    // If there is not existing data for this frame then create it.
+    ad_frames_data_storage_.emplace_back(ad_id);
     ad_data = &ad_frames_data_storage_.back();
-
-    if (ad_host) {
-      ad_data->is_display_none = ad_host->IsFrameDisplayNone();
-      if (ad_host->GetFrameSize())
-        ad_data->frame_size = *(ad_host->GetFrameSize());
-    }
+    ad_data->UpdateForNavigation(ad_host, frame_navigated);
   }
+
   // If there was previous data, then we don't want to overwrite this frame.
   if (!previous_data)
     ad_frames_data_[ad_id] = ad_data;
@@ -264,11 +243,9 @@ void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
       ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
   if (id_and_data == ad_frames_data_.end())
     return;
-  AdFrameData* ancestor_data = id_and_data->second;
-  if (ancestor_data) {
-    ancestor_data->user_activation_status =
-        UserActivationStatus::kReceivedActivation;
-  }
+  FrameData* ancestor_data = id_and_data->second;
+  if (ancestor_data)
+    ancestor_data->set_received_user_activation();
 }
 
 void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
@@ -361,10 +338,13 @@ void AdsPageLoadMetricsObserver::FrameDisplayStateChanged(
       ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
   if (id_and_data == ad_frames_data_.end())
     return;
-  AdFrameData* ancestor_data = id_and_data->second;
+  FrameData* ancestor_data = id_and_data->second;
+  // If the frame whose display state has changed is the root of the ad ancestry
+  // chain, then update it. The display property is propagated to all child
+  // frames.
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
-                           ancestor_data->frame_tree_node_id) {
-    ancestor_data->is_display_none = is_display_none;
+                           ancestor_data->frame_tree_node_id()) {
+    ancestor_data->SetDisplayState(is_display_none);
   }
 }
 
@@ -375,10 +355,12 @@ void AdsPageLoadMetricsObserver::FrameSizeChanged(
       ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
   if (id_and_data == ad_frames_data_.end())
     return;
-  AdFrameData* ancestor_data = id_and_data->second;
+  FrameData* ancestor_data = id_and_data->second;
+  // If the frame whose size has changed is the root of the ad ancestry chain,
+  // then update it
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
-                           ancestor_data->frame_tree_node_id) {
-    ancestor_data->frame_size = frame_size;
+                           ancestor_data->frame_tree_node_id()) {
+    ancestor_data->set_frame_size(frame_size);
   }
 }
 
@@ -438,16 +420,9 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
 
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
-  AdFrameData* ancestor_data = id_and_data->second;
-  if (!ancestor_data)
-    return;
-
-  ancestor_data->frame_bytes += resource->delta_bytes;
-  ancestor_data->frame_network_bytes += resource->delta_bytes;
-
-  // Report cached resource body bytes to overall frame bytes.
-  if (resource->is_complete && resource->was_fetched_via_cache)
-    ancestor_data->frame_bytes += resource->encoded_body_length;
+  FrameData* ancestor_data = id_and_data->second;
+  if (ancestor_data)
+    ancestor_data->ProcessResourceLoadInFrame(resource);
 }
 
 AdsPageLoadMetricsObserver::ResourceMimeType
@@ -635,44 +610,43 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
   size_t total_ad_frame_bytes = 0;
   size_t ad_frame_network_bytes = 0;
 
-  for (const AdFrameData& ad_frame_data : ad_frames_data_storage_) {
-    if (ad_frame_data.frame_bytes == 0)
+  for (const FrameData& ad_frame_data : ad_frames_data_storage_) {
+    if (ad_frame_data.frame_bytes() == 0)
       continue;
-    AdFrameVisibility visibility = ad_frame_data.is_display_none
-                                       ? AdFrameVisibility::kDisplayNone
-                                       : AdFrameVisibility::kVisible;
+
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.Visibility",
-                  UMA_HISTOGRAM_ENUMERATION, visibility);
+                  UMA_HISTOGRAM_ENUMERATION, ad_frame_data.visibility());
 
     // Record pixel metrics only for adframes that are displayed.
-    if (!ad_frame_data.is_display_none) {
+    if (ad_frame_data.visibility() !=
+        FrameData::FrameVisibility::kDisplayNone) {
       ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SqrtNumberOfPixels",
                     UMA_HISTOGRAM_COUNTS_10000,
-                    std::sqrt(ad_frame_data.frame_size.width() *
-                              ad_frame_data.frame_size.height()));
+                    std::sqrt(ad_frame_data.frame_size().GetArea()));
       ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SmallestDimension",
                     UMA_HISTOGRAM_COUNTS_10000,
-                    std::min(ad_frame_data.frame_size.width(),
-                             ad_frame_data.frame_size.height()));
+                    std::min(ad_frame_data.frame_size().width(),
+                             ad_frame_data.frame_size().height()));
     }
 
     non_zero_ad_frames += 1;
-    total_ad_frame_bytes += ad_frame_data.frame_bytes;
-    ad_frame_network_bytes += ad_frame_data.frame_network_bytes;
+    total_ad_frame_bytes += ad_frame_data.frame_bytes();
+    ad_frame_network_bytes += ad_frame_data.frame_network_bytes();
 
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
-                  ad_frame_data.frame_bytes);
+                  ad_frame_data.frame_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
-                  ad_frame_data.frame_network_bytes);
-    ADS_HISTOGRAM(
-        "Bytes.AdFrames.PerFrame.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
-        ad_frame_data.frame_network_bytes * 100 / ad_frame_data.frame_bytes);
+                  ad_frame_data.frame_network_bytes());
+    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.PercentNetwork",
+                  UMA_HISTOGRAM_PERCENTAGE,
+                  ad_frame_data.frame_network_bytes() * 100 /
+                      ad_frame_data.frame_bytes());
     ADS_HISTOGRAM(
         "SubresourceFilter.FrameCounts.AdFrames.PerFrame.OriginStatus",
-        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status);
+        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status());
     ADS_HISTOGRAM(
         "SubresourceFilter.FrameCounts.AdFrames.PerFrame.UserActivation",
-        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.user_activation_status);
+        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.user_activation_status());
   }
 
   // TODO(ericrobinson): Consider renaming this to match

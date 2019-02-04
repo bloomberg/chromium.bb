@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_AD_METRICS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_AD_METRICS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include <bitset>
 #include <list>
@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
@@ -26,25 +27,6 @@ class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-  // The origin of the ad relative to the main frame's origin.
-  // Note: Logged to UMA, keep in sync with CrossOriginAdStatus in enums.xml.
-  //   Add new entries to the end, and do not renumber.
-  enum class AdOriginStatus {
-    kUnknown = 0,
-    kSame = 1,
-    kCross = 2,
-    kMaxValue = kCross,
-  };
-
-  // Whether or not the ad frame has a display: none styling. These values are
-  // persisted to logs. Entries should not be renumbered and numeric values
-  // should never be reused.
-  enum class AdFrameVisibility {
-    kDisplayNone = 0,
-    kVisible = 1,
-    kMaxValue = kVisible,
-  };
-
   // High level categories of mime types for resources loaded by the page.
   enum class ResourceMimeType {
     kJavascript = 0,
@@ -56,18 +38,17 @@ class AdsPageLoadMetricsObserver
     kMaxValue = kOther,
   };
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused. For any additions, also update the
-  // corresponding PageEndReason enum in enums.xml.
-  enum class UserActivationStatus {
-    kNoActivation = 0,
-    kReceivedActivation = 1,
-    kMaxValue = kReceivedActivation
-  };
-
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded();
+
+  // For a given subframe, returns whether or not the subframe's url would be
+  // considering same origin to the main frame's url. |use_parent_origin|
+  // indicates that the subframe's parent frames's origin should be used when
+  // performing the comparison.
+  static bool IsSubframeSameOriginToMainFrame(
+      content::RenderFrameHost* sub_host,
+      bool use_parent_origin);
 
   AdsPageLoadMetricsObserver();
   ~AdsPageLoadMetricsObserver() override;
@@ -107,23 +88,6 @@ class AdsPageLoadMetricsObserver
                         const gfx::Size& frame_size) override;
 
  private:
-  struct AdFrameData {
-    AdFrameData(FrameTreeNodeId frame_tree_node_id,
-                AdOriginStatus origin_status,
-                bool frame_navigated);
-    // Total bytes used to load resources on the page, including headers.
-    size_t frame_bytes;
-    size_t frame_network_bytes;
-
-    const FrameTreeNodeId frame_tree_node_id;
-    AdOriginStatus origin_status;
-    bool frame_navigated;
-
-    UserActivationStatus user_activation_status;
-    bool is_display_none;
-    gfx::Size frame_size;
-  };
-
   // subresource_filter::SubresourceFilterObserver:
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
@@ -177,14 +141,14 @@ class AdsPageLoadMetricsObserver
 
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
   // data structure that won't move the data around.
-  std::list<AdFrameData> ad_frames_data_storage_;
+  std::list<FrameData> ad_frames_data_storage_;
 
-  // Maps a frame (by id) to the AdFrameData responsible for the frame.
-  // Multiple frame ids can point to the same AdFrameData. The responsible
+  // Maps a frame (by id) to the FrameData responsible for the frame.
+  // Multiple frame ids can point to the same FrameData. The responsible
   // frame is the top-most frame labeled as an ad in the frame's ancestry,
   // which may be itself. If no responsible frame is found, the data is
   // nullptr.
-  std::map<FrameTreeNodeId, AdFrameData*> ad_frames_data_;
+  std::map<FrameTreeNodeId, FrameData*> ad_frames_data_;
 
   // The set of frames that have yet to finish but that the SubresourceFilter
   // has reported are ads. Once DetectSubresourceFilterAd is called the id is
@@ -235,4 +199,4 @@ class AdsPageLoadMetricsObserver
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_AD_METRICS_ADS_PAGE_LOAD_METRICS_OBSERVER_H_
