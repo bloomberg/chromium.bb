@@ -156,10 +156,9 @@ MessageType GetStatusInfo(Profile* profile,
                           ActionType* action_type) {
   DCHECK_EQ(status_label == nullptr, link_label == nullptr);
 
-  MessageType result_type(SYNCED);
-
-  if (!identity_manager->HasPrimaryAccount())
+  if (!identity_manager->HasPrimaryAccount()) {
     return PRE_SYNCED;
+  }
 
   // Needed to check the state of the authentication process below.
   auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
@@ -211,8 +210,9 @@ MessageType GetStatusInfo(Profile* profile,
       if (status_label && link_label) {
         GetStatusForActionableError(status.sync_protocol_error, status_label,
                                     link_label, action_type);
-        if (!status_label->empty())
+        if (!status_label->empty()) {
           return SYNC_ERROR;
+        }
       }
 
       // Check for a passphrase error.
@@ -247,55 +247,55 @@ MessageType GetStatusInfo(Profile* profile,
       status_label->assign(GetSyncedStateStatusLabel(service, sync_everything));
     }
     return SYNCED;
-  } else {
-    // Either show auth error information with a link to re-login, auth in prog,
-    // or provide a link to continue with setup.
-    if (service->IsFirstSetupInProgress()) {
-      result_type = PRE_SYNCED;
-      syncer::SyncStatus status;
-      service->QueryDetailedSyncStatus(&status);
-      GoogleServiceAuthError auth_error =
-          SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
+  }
+
+  MessageType result_type = SYNCED;
+  // Either show auth error information with a link to re-login, auth in prog,
+  // or provide a link to continue with setup.
+  if (service->IsFirstSetupInProgress()) {
+    result_type = PRE_SYNCED;
+    if (status_label) {
+      status_label->assign(
+          l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
+    }
+
+    GoogleServiceAuthError auth_error =
+        SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
+    if (primary_account_mutator &&
+        primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress()) {
       if (status_label) {
         status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
+            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       }
-      if (primary_account_mutator &&
-          primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress()) {
-        if (status_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
-        }
-      } else if (auth_error.state() != GoogleServiceAuthError::NONE &&
-                 auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
-        if (status_label && link_label) {
-          GetStatusForAuthError(profile, status_label, link_label, action_type);
-        }
-        result_type = SYNC_ERROR;
-      }
-    } else if (service->HasUnrecoverableError()) {
-      result_type = SYNC_ERROR;
+    } else if (auth_error.state() != GoogleServiceAuthError::NONE &&
+               auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
       if (status_label && link_label) {
-        GetStatusForUnrecoverableError(profile, service, status_label,
-                                       link_label, action_type);
+        GetStatusForAuthError(profile, status_label, link_label, action_type);
       }
-    } else if (identity_manager->HasPrimaryAccount()) {
-      if (ShouldRequestSyncConfirmation(service)) {
-        if (status_label && link_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED));
-          link_label->assign(l10n_util::GetStringUTF16(
-              IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON));
-        }
-        *action_type = CONFIRM_SYNC_SETTINGS;
-        result_type = SYNC_ERROR;
-      } else {
-        // The user is signed in, but sync has been stopped.
-        result_type = PRE_SYNCED;
-        if (status_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED));
-        }
+      result_type = SYNC_ERROR;
+    }
+  } else if (service->HasUnrecoverableError()) {
+    result_type = SYNC_ERROR;
+    if (status_label && link_label) {
+      GetStatusForUnrecoverableError(profile, service, status_label, link_label,
+                                     action_type);
+    }
+  } else if (identity_manager->HasPrimaryAccount()) {
+    if (ShouldRequestSyncConfirmation(service)) {
+      if (status_label && link_label) {
+        status_label->assign(
+            l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED));
+        link_label->assign(l10n_util::GetStringUTF16(
+            IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON));
+      }
+      *action_type = CONFIRM_SYNC_SETTINGS;
+      result_type = SYNC_ERROR;
+    } else {
+      // The user is signed in, but sync has been stopped.
+      result_type = PRE_SYNCED;
+      if (status_label) {
+        status_label->assign(
+            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED));
       }
     }
   }
