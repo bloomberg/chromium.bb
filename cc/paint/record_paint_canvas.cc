@@ -12,7 +12,6 @@
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
-#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace cc {
@@ -24,12 +23,6 @@ RecordPaintCanvas::RecordPaintCanvas(DisplayItemList* list,
 }
 
 RecordPaintCanvas::~RecordPaintCanvas() = default;
-
-SkMetaData& RecordPaintCanvas::getMetaData() {
-  // This could just be SkMetaData owned by RecordPaintCanvas, but since
-  // SkCanvas already has one, we might as well use it directly.
-  return GetCanvas()->getMetaData();
-}
 
 SkImageInfo RecordPaintCanvas::imageInfo() const {
   return GetCanvas()->imageInfo();

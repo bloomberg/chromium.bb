@@ -10,7 +10,6 @@
 #include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
-#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
@@ -56,10 +55,6 @@ void SkiaPaintCanvas::WrapCanvasInColorSpaceXformCanvas(
         SkCreateColorSpaceXformCanvas(canvas_, target_color_space);
     canvas_ = color_space_xform_canvas_.get();
   }
-}
-
-SkMetaData& SkiaPaintCanvas::getMetaData() {
-  return canvas_->getMetaData();
 }
 
 SkImageInfo SkiaPaintCanvas::imageInfo() const {

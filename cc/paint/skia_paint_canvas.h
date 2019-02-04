@@ -48,7 +48,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
 
   void reset_image_provider() { image_provider_ = nullptr; }
 
-  SkMetaData& getMetaData() override;
   SkImageInfo imageInfo() const override;
 
   void flush() override;

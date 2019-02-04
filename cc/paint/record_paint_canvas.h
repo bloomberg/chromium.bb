@@ -27,7 +27,6 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   RecordPaintCanvas(DisplayItemList* list, const SkRect& bounds);
   ~RecordPaintCanvas() override;
 
-  SkMetaData& getMetaData() override;
   SkImageInfo imageInfo() const override;
 
   void flush() override;

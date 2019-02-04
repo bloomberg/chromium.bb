@@ -12,6 +12,7 @@
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
@@ -41,7 +42,7 @@ class CC_PAINT_EXPORT PaintCanvas {
   PaintCanvas() {}
   virtual ~PaintCanvas() {}
 
-  virtual SkMetaData& getMetaData() = 0;
+  SkMetaData& getMetaData() { return metadata_; }
 
   // TODO(enne): this only appears to mostly be used to determine if this is
   // recording or not, so could be simplified or removed.
@@ -185,6 +186,8 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void recordCustomData(uint32_t id) {}
 
  private:
+  SkMetaData metadata_;
+
   DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
 };
 
