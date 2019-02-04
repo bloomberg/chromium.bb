@@ -51,9 +51,9 @@ class MarkupAccumulator {
   virtual ~MarkupAccumulator();
 
   void AppendString(const String&);
-  virtual void AppendStartTag(Node&, Namespaces*);
+  virtual void AppendStartTag(Node&, Namespaces&);
   virtual void AppendEndTag(const Element&);
-  void AppendStartMarkup(StringBuilder&, Node&, Namespaces*);
+  void AppendStartMarkup(StringBuilder&, Node&, Namespaces&);
   void AppendEndMarkup(StringBuilder&, const Element&);
 
   bool SerializeAsHTMLDocument(const Node&) const;
@@ -61,18 +61,18 @@ class MarkupAccumulator {
 
   virtual void AppendCustomAttributes(StringBuilder&,
                                       const Element&,
-                                      Namespaces*);
+                                      Namespaces&);
 
   virtual void AppendText(StringBuilder&, Text&);
   virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
   virtual bool ShouldIgnoreElement(const Element&) const;
-  virtual void AppendElement(StringBuilder&, const Element&, Namespaces*);
-  void AppendOpenTag(StringBuilder&, const Element&, Namespaces*);
+  virtual void AppendElement(StringBuilder&, const Element&, Namespaces&);
+  void AppendOpenTag(StringBuilder&, const Element&, Namespaces&);
   void AppendCloseTag(StringBuilder&, const Element&);
   virtual void AppendAttribute(StringBuilder&,
                                const Element&,
                                const Attribute&,
-                               Namespaces*);
+                               Namespaces&);
 
   EntityMask EntityMaskForText(const Text&) const;
 
