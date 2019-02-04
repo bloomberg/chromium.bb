@@ -23,6 +23,9 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
+// TODO(https://crbug.com/93417): To be replaced with
+// obfuscated_file_util_delegate.h
+#include "storage/browser/fileapi/obfuscated_file_util_disk_delegate.h"
 #include "storage/browser/fileapi/sandbox_directory_database.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -188,7 +191,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // This method and all methods of its returned class must be called only on
   // the FILE thread.  The caller is responsible for deleting the returned
   // object.
-  AbstractOriginEnumerator* CreateOriginEnumerator();
+  std::unique_ptr<AbstractOriginEnumerator> CreateOriginEnumerator();
 
   // Deletes a directory database from the database list in the ObfuscatedFSFU
   // and destroys the database on the disk.
@@ -338,6 +341,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
 
   // Not owned.
   SandboxFileSystemBackendDelegate* sandbox_delegate_;
+
+  // TODO(https://crbug.com/93417): To be replaced with
+  // ObfuscatedFileUtilDelegate.
+  std::unique_ptr<ObfuscatedFileUtilDiskDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };

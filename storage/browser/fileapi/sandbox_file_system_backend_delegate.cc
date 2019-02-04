@@ -96,7 +96,7 @@ class SandboxObfuscatedOriginEnumerator
     : public SandboxFileSystemBackendDelegate::OriginEnumerator {
  public:
   explicit SandboxObfuscatedOriginEnumerator(ObfuscatedFileUtil* file_util) {
-    enum_.reset(file_util->CreateOriginEnumerator());
+    enum_ = file_util->CreateOriginEnumerator();
   }
   ~SandboxObfuscatedOriginEnumerator() override = default;
 
