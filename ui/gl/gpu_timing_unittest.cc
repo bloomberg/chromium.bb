@@ -71,7 +71,8 @@ class GPUTimingTest : public testing::Test {
 
     scoped_refptr<GPUTimingClient> client = context_->CreateGPUTimingClient();
     if (!cpu_time_bounded_) {
-      client->SetCpuTimeForTesting(base::Bind(&GPUTimingFake::GetFakeCPUTime));
+      client->SetCpuTimeForTesting(
+          base::BindRepeating(&GPUTimingFake::GetFakeCPUTime));
       cpu_time_bounded_ = true;
     }
     return client;
@@ -93,7 +94,7 @@ TEST_F(GPUTimingTest, FakeTimerTest) {
   gpu_timing_fake_queries_.SetCurrentCPUTime(123);
   EXPECT_EQ(123, gpu_timing_client->GetCurrentCPUTime());
 
-  base::Callback<int64_t(void)> empty;
+  base::RepeatingCallback<int64_t(void)> empty;
   gpu_timing_client->SetCpuTimeForTesting(empty);
   EXPECT_NE(123, gpu_timing_client->GetCurrentCPUTime());
 }

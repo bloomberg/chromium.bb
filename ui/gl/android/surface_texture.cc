@@ -5,6 +5,7 @@
 #include "ui/gl/android/surface_texture.h"
 
 #include <android/native_window_jni.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/logging.h"
@@ -31,19 +32,22 @@ SurfaceTexture::~SurfaceTexture() {
   Java_SurfaceTexturePlatformWrapper_destroy(env, j_surface_texture_);
 }
 
-void SurfaceTexture::SetFrameAvailableCallback(const base::Closure& callback) {
+void SurfaceTexture::SetFrameAvailableCallback(
+    base::RepeatingClosure callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SurfaceTexturePlatformWrapper_setFrameAvailableCallback(
       env, j_surface_texture_,
-      reinterpret_cast<intptr_t>(new SurfaceTextureListener(callback, false)));
+      reinterpret_cast<intptr_t>(
+          new SurfaceTextureListener(std::move(callback), false)));
 }
 
 void SurfaceTexture::SetFrameAvailableCallbackOnAnyThread(
-    const base::Closure& callback) {
+    base::RepeatingClosure callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SurfaceTexturePlatformWrapper_setFrameAvailableCallback(
       env, j_surface_texture_,
-      reinterpret_cast<intptr_t>(new SurfaceTextureListener(callback, true)));
+      reinterpret_cast<intptr_t>(
+          new SurfaceTextureListener(std::move(callback), true)));
 }
 
 void SurfaceTexture::UpdateTexImage() {

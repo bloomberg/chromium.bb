@@ -263,8 +263,8 @@ int ShaderDiskCacheEntry::WriteCallback(int rv) {
   op_type_ = WRITE_DATA;
   auto io_buf = base::MakeRefCounted<net::StringIOBuffer>(shader_);
   return entry_->WriteData(1, 0, io_buf.get(), shader_.length(),
-                           base::Bind(&ShaderDiskCacheEntry::OnOpComplete,
-                                      weak_ptr_factory_.GetWeakPtr()),
+                           base::BindOnce(&ShaderDiskCacheEntry::OnOpComplete,
+                                          weak_ptr_factory_.GetWeakPtr()),
                            false);
 }
 
@@ -357,8 +357,8 @@ int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
   op_type_ = READ_COMPLETE;
   buf_ = base::MakeRefCounted<net::IOBufferWithSize>(entry_->GetDataSize(1));
   return entry_->ReadData(1, 0, buf_.get(), buf_->size(),
-                          base::Bind(&ShaderDiskReadHelper::OnOpComplete,
-                                     weak_ptr_factory_.GetWeakPtr()));
+                          base::BindOnce(&ShaderDiskReadHelper::OnOpComplete,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 int ShaderDiskReadHelper::ReadComplete(int rv) {
@@ -416,14 +416,15 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
     switch (op_type_) {
       case VERIFY_CACHE_SETUP:
         rv = cache_->SetAvailableCallback(
-            base::Bind(&ShaderClearHelper::DoClearShaderCache,
-                       weak_ptr_factory_.GetWeakPtr()));
+            base::BindRepeating(&ShaderClearHelper::DoClearShaderCache,
+                                weak_ptr_factory_.GetWeakPtr()));
         op_type_ = DELETE_CACHE;
         break;
       case DELETE_CACHE:
-        rv = cache_->Clear(delete_begin_, delete_end_,
-                           base::Bind(&ShaderClearHelper::DoClearShaderCache,
-                                      weak_ptr_factory_.GetWeakPtr()));
+        rv = cache_->Clear(
+            delete_begin_, delete_end_,
+            base::BindRepeating(&ShaderClearHelper::DoClearShaderCache,
+                                weak_ptr_factory_.GetWeakPtr()));
         op_type_ = TERMINATE;
         break;
       case TERMINATE:
@@ -575,7 +576,7 @@ void ShaderDiskCache::Init() {
   int rv = disk_cache::CreateCacheBackend(
       net::SHADER_CACHE, net::CACHE_BACKEND_DEFAULT,
       cache_path_.Append(kGpuCachePath), CacheSizeBytes(), true, nullptr,
-      &backend_, base::Bind(&ShaderDiskCache::CacheCreatedCallback, this));
+      &backend_, base::BindOnce(&ShaderDiskCache::CacheCreatedCallback, this));
 
   if (rv == net::OK)
     cache_available_ = true;
