@@ -13,13 +13,11 @@
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -91,10 +89,6 @@ namespace {
 
 constexpr char kServiceWorkerContextClientScope[] =
     "ServiceWorkerContextClient";
-
-// For now client must be a per-thread instance.
-base::LazyInstance<base::ThreadLocalPointer<ServiceWorkerContextClient>>::
-    Leaky g_worker_client_tls = LAZY_INSTANCE_INITIALIZER;
 
 class StreamHandleListener
     : public blink::WebServiceWorkerStreamHandle::Listener {
@@ -210,7 +204,7 @@ base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map,
 
 }  // namespace
 
-// Holding data that needs to be bound to the worker context on the
+// Holds data that needs to be bound to the worker context on the
 // worker thread.
 struct ServiceWorkerContextClient::WorkerContextData {
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
@@ -218,9 +212,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
         weak_factory(owner),
         proxy_weak_factory(owner->proxy_) {}
 
-  ~WorkerContextData() {
-    DCHECK(thread_checker.CalledOnValidThread());
-  }
+  ~WorkerContextData() { CHECK(thread_checker.CalledOnValidThread()); }
 
   mojo::Binding<blink::mojom::ServiceWorker> service_worker_binding;
 
@@ -285,11 +277,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
   base::WeakPtrFactory<blink::WebServiceWorkerContextProxy> proxy_weak_factory;
 };
-
-ServiceWorkerContextClient*
-ServiceWorkerContextClient::ThreadSpecificInstance() {
-  return g_worker_client_tls.Pointer()->Get();
-}
 
 ServiceWorkerContextClient::ServiceWorkerContextClient(
     int64_t service_worker_version_id,
@@ -436,17 +423,13 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   DCHECK_NE(0, WorkerThread::GetCurrentId());
   RecordDebugLog("WorkerContextStarted");
   worker_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  // g_worker_client_tls.Pointer()->Get() could return nullptr if this context
-  // gets deleted before workerContextStarted() is called.
-  DCHECK(g_worker_client_tls.Pointer()->Get() == nullptr);
   DCHECK(!proxy_);
-  g_worker_client_tls.Pointer()->Set(this);
   proxy_ = proxy;
 
   // Initialize pending callback maps. This needs to be freed on the
   // same thread before the worker context goes away in
   // willDestroyWorkerContext.
-  context_.reset(new WorkerContextData(this));
+  context_ = std::make_unique<WorkerContextData>(this);
 
   DCHECK(pending_service_worker_request_.is_pending());
   DCHECK(pending_controller_request_.is_pending());
@@ -456,8 +439,12 @@ void ServiceWorkerContextClient::WorkerContextStarted(
       std::move(pending_service_worker_request_));
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    auto weak_ptr = GetWeakPtr();
+    // Intentionally dereferences the weak ptr in order to
+    // ensure the WeakPtrFactory is bound to this thread (the worker thread).
+    weak_ptr = weak_ptr->GetWeakPtr();
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
-        std::move(pending_controller_request_), GetWeakPtr());
+        std::move(pending_controller_request_), std::move(weak_ptr));
   }
 }
 
@@ -531,17 +518,12 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
   // same thread.
   context_.reset();
 
-  // This also lets the message filter stop dispatching messages to
-  // this client.
-  g_worker_client_tls.Pointer()->Set(nullptr);
-
   GetContentClient()->renderer()->WillDestroyServiceWorkerContextOnWorkerThread(
       context, service_worker_version_id_, service_worker_scope_, script_url_);
 }
 
 void ServiceWorkerContextClient::WorkerContextDestroyed() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(g_worker_client_tls.Pointer()->Get() == nullptr);
   RecordDebugLog("WorkerContextDestroyed");
 
   (*instance_host_)->OnStopped();
@@ -1613,7 +1595,7 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
     blink::mojom::FetchEventPreloadHandlePtr preload_handle) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
-      fetch_event_id, url, std::move(preload_handle));
+      GetWeakPtr(), fetch_event_id, url, std::move(preload_handle));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }
@@ -1659,14 +1641,9 @@ void ServiceWorkerContextClient::StopWorker() {
 
 base::WeakPtr<ServiceWorkerContextClient>
 ServiceWorkerContextClient::GetWeakPtr() {
-  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(context_);
+  CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  CHECK(context_);
   return context_->weak_factory.GetWeakPtr();
-}
-
-// static
-void ServiceWorkerContextClient::ResetThreadSpecificInstanceForTesting() {
-  g_worker_client_tls.Pointer()->Set(nullptr);
 }
 
 void ServiceWorkerContextClient::SetTimeoutTimerForTesting(

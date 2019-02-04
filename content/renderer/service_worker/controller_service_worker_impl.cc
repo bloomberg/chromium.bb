@@ -28,7 +28,7 @@ void ControllerServiceWorkerImpl::DispatchFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
-  DCHECK(context_client_);
+  CHECK(context_client_);
   context_client_->DispatchOrQueueFetchEvent(
       std::move(params), std::move(response_callback), std::move(callback));
 }
