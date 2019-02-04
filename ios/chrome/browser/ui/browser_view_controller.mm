@@ -2898,14 +2898,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return UIEdgeInsetsZero;
   }
   if (isNTPActive || (outOfWeb && !usesContentInset)) {
-    return UIEdgeInsetsMake(self.headerHeight, 0.0, 0.0, 0.0);
+    return UIEdgeInsetsMake(self.headerHeight, 0.0, self.bottomToolbarHeight,
+                            0.0);
   }
 
   // For all other scenarios, the content area is inset from the snapshot base
   // view by the web view proxy's contentInset.
-  UIEdgeInsets insets = webState->GetWebViewProxy().contentInset;
-  insets.bottom = 0.0;
-  return insets;
+  return webState->GetWebViewProxy().contentInset;
 }
 
 - (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator

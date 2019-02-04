@@ -8,8 +8,10 @@
 #import <UIKit/UIKit.h>
 
 // The standard UIImageView zooms to the center of the image when it aspect
-// fills. TopAlignedImageView aligns to the top of the image instead of the
-// center.
+// fills. TopAlignedImageView aligns to the top of the image in all cases.
+// When the image is portrait, the image matches the width of the view in all
+// cases. When the image is landscape, the image matches the height of the view
+// in all cases.
 @interface TopAlignedImageView : UIView
 // The image displayed in the image view.
 @property(nonatomic) UIImage* image;
