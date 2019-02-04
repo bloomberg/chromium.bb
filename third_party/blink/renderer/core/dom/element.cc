@@ -223,11 +223,6 @@ Element::Element(const QualifiedName& tag_name,
                  ConstructionType type)
     : ContainerNode(document, type), tag_name_(tag_name) {}
 
-Element::~Element() {
-  if (auto* context = GetDisplayLockContext())
-    context->ElementWasDestroyed(GetDocument());
-}
-
 inline ElementRareData* Element::GetElementRareData() const {
   DCHECK(HasRareData());
   return static_cast<ElementRareData*>(RareData());

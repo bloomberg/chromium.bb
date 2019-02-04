@@ -80,6 +80,10 @@ void DisplayLockContext::Dispose() {
   FinishCommitResolver(kDetach);
   FinishAcquireResolver(kDetach);
   CancelTimeoutTask();
+  // TODO(vmpstr): At this point we might not have |element_| anymore, so the
+  // counts might leak. We need to keep track of the document object directly on
+  // the display lock and use that instead of relying on |element_| to clean up
+  // locked counts.
   state_ = kUnlocked;
 
   if (element_ && element_->GetDocument().View())
@@ -635,15 +639,6 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
         ->PostTask(FROM_HERE, WTF::Bind(&DisplayLockContext::StartCommit,
                                         WrapWeakPersistent(this)));
   }
-}
-
-void DisplayLockContext::ElementWasDestroyed(Document& document) {
-  // Since the element is destroyed, this is the last chance we get to adjust
-  // our lock counts.
-  if (!IsSearchable())
-    document.RemoveActivationBlockingDisplayLock();
-  if (IsLocked())
-    document.RemoveLockedDisplayLock();
 }
 
 void DisplayLockContext::ScheduleAnimation() {
