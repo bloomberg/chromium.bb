@@ -295,14 +295,14 @@ void MarkupFormatter::AppendProcessingInstruction(StringBuilder& result,
   result.Append("?>");
 }
 
-void MarkupFormatter::AppendOpenTag(StringBuilder& result,
-                                    const Element& element) {
+void MarkupFormatter::AppendStartTagOpen(StringBuilder& result,
+                                         const Element& element) {
   result.Append('<');
   result.Append(element.TagQName().ToString());
 }
 
-void MarkupFormatter::AppendCloseTag(StringBuilder& result,
-                                     const Element& element) {
+void MarkupFormatter::AppendStartTagClose(StringBuilder& result,
+                                          const Element& element) {
   if (ShouldSelfClose(element)) {
     if (element.IsHTMLElement())
       result.Append(' ');  // XHTML 1.0 <-> HTML compatibility.
