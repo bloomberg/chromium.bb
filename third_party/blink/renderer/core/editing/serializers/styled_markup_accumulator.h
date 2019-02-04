@@ -70,6 +70,7 @@ class StyledMarkupAccumulator final {
   void AppendElementWithInlineStyle(StringBuilder&,
                                     const Element&,
                                     EditingStyle*);
+  // Serialize a Node, without its children and its end tag.
   void AppendStartMarkup(Node&);
 
   bool ShouldAnnotate() const;

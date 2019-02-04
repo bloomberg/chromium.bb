@@ -104,8 +104,10 @@ class MarkupFormatter final {
   bool SerializeAsHTMLDocument(const Node&) const;
 
   void AppendText(StringBuilder&, Text&);
-  void AppendOpenTag(StringBuilder&, const Element&);
-  void AppendCloseTag(StringBuilder&, const Element&);
+  // Serialize '<' and the element name.
+  void AppendStartTagOpen(StringBuilder&, const Element&);
+  // Serialize '>' or '/>'
+  void AppendStartTagClose(StringBuilder&, const Element&);
 
   EntityMask EntityMaskForText(const Text&) const;
   bool ShouldSelfClose(const Element&) const;

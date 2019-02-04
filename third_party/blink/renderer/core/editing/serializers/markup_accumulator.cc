@@ -56,31 +56,25 @@ void MarkupAccumulator::AppendString(const String& string) {
   markup_.Append(string);
 }
 
-void MarkupAccumulator::AppendStartTag(Node& node, Namespaces& namespaces) {
-  AppendStartMarkup(markup_, node, namespaces);
-}
-
 void MarkupAccumulator::AppendEndTag(const Element& element) {
   AppendEndMarkup(markup_, element);
 }
 
-void MarkupAccumulator::AppendStartMarkup(StringBuilder& result,
-                                          Node& node,
-                                          Namespaces& namespaces) {
+void MarkupAccumulator::AppendStartMarkup(Node& node, Namespaces& namespaces) {
   switch (node.getNodeType()) {
     case Node::kTextNode:
-      AppendText(result, ToText(node));
+      AppendText(markup_, ToText(node));
       break;
     case Node::kElementNode:
-      AppendElement(result, ToElement(node), namespaces);
+      AppendElement(markup_, ToElement(node), namespaces);
       break;
     case Node::kAttributeNode:
       // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
       // false.
-      formatter_.AppendAttributeValue(result, ToAttr(node).value(), false);
+      formatter_.AppendAttributeValue(markup_, ToAttr(node).value(), false);
       break;
     default:
-      formatter_.AppendStartMarkup(result, node);
+      formatter_.AppendStartMarkup(markup_, node);
       break;
   }
 }
@@ -112,7 +106,7 @@ void MarkupAccumulator::AppendElement(StringBuilder& result,
                                       const Element& element,
                                       Namespaces& namespaces) {
   // https://html.spec.whatwg.org/multipage/parsing.html#html-fragment-serialisation-algorithm
-  AppendOpenTag(result, element, namespaces);
+  AppendStartTagOpen(result, element, namespaces);
 
   AttributeCollection attributes = element.Attributes();
   if (SerializeAsHTMLDocument(element)) {
@@ -132,13 +126,13 @@ void MarkupAccumulator::AppendElement(StringBuilder& result,
   // Give an opportunity to subclasses to add their own attributes.
   AppendCustomAttributes(result, element, namespaces);
 
-  AppendCloseTag(result, element);
+  AppendStartTagClose(result, element);
 }
 
-void MarkupAccumulator::AppendOpenTag(StringBuilder& result,
-                                      const Element& element,
-                                      Namespaces& namespaces) {
-  formatter_.AppendOpenTag(result, element);
+void MarkupAccumulator::AppendStartTagOpen(StringBuilder& result,
+                                           const Element& element,
+                                           Namespaces& namespaces) {
+  formatter_.AppendStartTagOpen(result, element);
   if (!SerializeAsHTMLDocument(element) &&
       ShouldAddNamespaceElement(element, namespaces)) {
     AppendNamespace(result, element.prefix(), element.namespaceURI(),
@@ -146,9 +140,9 @@ void MarkupAccumulator::AppendOpenTag(StringBuilder& result,
   }
 }
 
-void MarkupAccumulator::AppendCloseTag(StringBuilder& result,
-                                       const Element& element) {
-  formatter_.AppendCloseTag(result, element);
+void MarkupAccumulator::AppendStartTagClose(StringBuilder& result,
+                                            const Element& element) {
+  formatter_.AppendStartTagClose(result, element);
 }
 
 void MarkupAccumulator::AppendAttribute(StringBuilder& result,
@@ -314,7 +308,7 @@ static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
   Namespaces namespace_hash = namespaces;
 
   if (!children_only)
-    accumulator.AppendStartTag(target_node, namespace_hash);
+    accumulator.AppendStartMarkup(target_node, namespace_hash);
 
   if (!(accumulator.SerializeAsHTMLDocument(target_node) &&
         ElementCannotHaveEndTag(target_node))) {
@@ -335,7 +329,7 @@ static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
       Element* enclosing_element = auxiliary_pair.second;
       if (auxiliary_tree) {
         if (auxiliary_pair.second)
-          accumulator.AppendStartTag(*enclosing_element, namespace_hash);
+          accumulator.AppendStartMarkup(*enclosing_element, namespace_hash);
         current = Strategy::FirstChild(*auxiliary_tree);
         for (; current; current = Strategy::NextSibling(*current)) {
           SerializeNodesWithNamespaces<Strategy>(accumulator, *current,

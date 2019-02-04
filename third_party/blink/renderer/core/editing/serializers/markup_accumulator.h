@@ -51,9 +51,9 @@ class MarkupAccumulator {
   virtual ~MarkupAccumulator();
 
   void AppendString(const String&);
-  virtual void AppendStartTag(Node&, Namespaces&);
+  // Serialize a Node, without its children and its end tag.
+  virtual void AppendStartMarkup(Node&, Namespaces&);
   virtual void AppendEndTag(const Element&);
-  void AppendStartMarkup(StringBuilder&, Node&, Namespaces&);
   void AppendEndMarkup(StringBuilder&, const Element&);
 
   bool SerializeAsHTMLDocument(const Node&) const;
@@ -67,8 +67,8 @@ class MarkupAccumulator {
   virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
   virtual bool ShouldIgnoreElement(const Element&) const;
   virtual void AppendElement(StringBuilder&, const Element&, Namespaces&);
-  void AppendOpenTag(StringBuilder&, const Element&, Namespaces&);
-  void AppendCloseTag(StringBuilder&, const Element&);
+  void AppendStartTagOpen(StringBuilder&, const Element&, Namespaces&);
+  void AppendStartTagClose(StringBuilder&, const Element&);
   virtual void AppendAttribute(StringBuilder&,
                                const Element&,
                                const Attribute&,
