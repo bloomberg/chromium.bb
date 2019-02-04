@@ -66,7 +66,7 @@ class TCPServerSocketFactory
     if (last_tethering_port_ == kMaxTetheringPort)
       last_tethering_port_ = kMinTetheringPort;
     uint16_t port = ++last_tethering_port_;
-    *name = base::UintToString(port);
+    *name = base::NumberToString(port);
     return CreateLocalHostServerSocket(port);
   }
 

@@ -266,8 +266,8 @@ AutomationInternalEnableTabFunction::Run() {
             NULL, /* browser out param*/
             NULL, /* tab_strip out param */
             &contents, NULL /* tab_index out param */)) {
-      return RespondNow(
-          Error(tabs_constants::kTabNotFoundError, base::IntToString(tab_id)));
+      return RespondNow(Error(tabs_constants::kTabNotFoundError,
+                              base::NumberToString(tab_id)));
     }
   } else {
     contents = ChromeExtensionFunctionDetails(this)

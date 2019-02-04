@@ -184,7 +184,7 @@ std::string IDString(TabStripModel* model) {
             contents->GetUserData(
                 &kTabDragControllerInteractiveUITestUserDataKey));
     if (user_data)
-      result += base::IntToString(user_data->id());
+      result += base::NumberToString(user_data->id());
     else
       result += "?";
   }

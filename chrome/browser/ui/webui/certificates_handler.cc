@@ -1015,7 +1015,7 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
       // Move the CertInfo into |cert_info_id_map_|.
       CertificateManagerModel::CertInfo* cert_info = org_cert.get();
       std::string id =
-          base::IntToString(cert_info_id_map_.Add(std::move(org_cert)));
+          base::NumberToString(cert_info_id_map_.Add(std::move(org_cert)));
 
       base::DictionaryValue cert_dict;
       cert_dict.SetKey(kCertificatesHandlerKeyField, base::Value(id));

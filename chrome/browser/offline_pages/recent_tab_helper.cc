@@ -175,7 +175,7 @@ bool RecentTabHelper::EnsureInitialized() {
   tab_id_.clear();
 
   if (delegate_->GetTabId(web_contents(), &tab_id_number))
-    tab_id_ = base::IntToString(tab_id_number);
+    tab_id_ = base::NumberToString(tab_id_number);
 
   // TODO(dimich): When we have BackgroundOffliner, avoid capturing prerenderer
   // WebContents with its origin as well.

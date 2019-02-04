@@ -60,7 +60,7 @@ bool GetBrowserFromWindowID(UIThreadExtensionFunction* function,
     if (!(*browser)) {
       *error = extensions::ErrorUtils::FormatErrorMessage(
           extensions::tabs_constants::kWindowNotFoundError,
-          base::IntToString(window_id));
+          base::NumberToString(window_id));
       return false;
     }
   }

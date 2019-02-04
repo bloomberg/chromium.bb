@@ -958,7 +958,7 @@ class ReporterRunner {
         chrome_cleaner::kChromeVersionSwitch, version_info::GetVersionNumber());
     invocation->mutable_command_line().AppendSwitchNative(
         chrome_cleaner::kChromeChannelSwitch,
-        base::IntToString16(ChannelAsInt()));
+        base::NumberToString16(ChannelAsInt()));
   }
 
   void SendResultAndDeleteSelf(SwReporterInvocationResult result) {

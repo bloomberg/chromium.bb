@@ -41,8 +41,8 @@ UserAgent::~UserAgent() {}
 
 base::string16 UserAgent::AsString() {
   return product_name_ + L"/" + product_version_ + L" (Windows NT " +
-         base::IntToString16(os_major_version_) + L"." +
-         base::IntToString16(os_minor_version_) +
+         base::NumberToString16(os_major_version_) + L"." +
+         base::NumberToString16(os_minor_version_) +
          ArchitectureToString(architecture_) + L") WinHTTP/" + winhttp_version_;
 }
 

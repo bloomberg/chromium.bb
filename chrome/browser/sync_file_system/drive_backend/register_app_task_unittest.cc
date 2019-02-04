@@ -112,8 +112,7 @@ class RegisterAppTaskTest : public testing::Test {
     *sync_root_tracker.mutable_synced_details() = sync_root_details;
     sync_root_tracker.set_active(true);
 
-    db->Put(kDatabaseVersionKey,
-            base::Int64ToString(kCurrentDatabaseVersion));
+    db->Put(kDatabaseVersionKey, base::NumberToString(kCurrentDatabaseVersion));
     PutServiceMetadataToDB(service_metadata, db);
     PutFileMetadataToDB(sync_root_metadata, db);
     PutFileTrackerToDB(sync_root_tracker, db);

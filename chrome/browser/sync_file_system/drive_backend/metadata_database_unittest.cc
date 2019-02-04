@@ -205,7 +205,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
  protected:
   std::string GenerateFileID() {
-    return "file_id_" + base::Int64ToString(next_file_id_number_++);
+    return "file_id_" + base::NumberToString(next_file_id_number_++);
   }
 
   int64_t GetTrackerIDByFileID(const std::string& file_id) {
@@ -287,7 +287,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
     std::unique_ptr<LevelDBWrapper> wrapper(new LevelDBWrapper(std::move(db)));
 
-    wrapper->Put(kDatabaseVersionKey, base::Int64ToString(3));
+    wrapper->Put(kDatabaseVersionKey, base::NumberToString(3));
     SetUpServiceMetadata(wrapper.get());
 
     return wrapper;
@@ -320,8 +320,8 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     details->add_parent_folder_ids(parent.file_id());
     details->set_title(title);
     details->set_file_kind(FILE_KIND_FILE);
-    details->set_md5(
-        "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
+    details->set_md5("md5_value_" +
+                     base::NumberToString(next_md5_sequence_number_++));
     details->set_change_id(current_change_id_);
     return file;
   }
@@ -458,8 +458,8 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
   void ApplyContentChangeToMetadata(FileMetadata* file) {
     FileDetails* details = file->mutable_details();
-    details->set_md5(
-        "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
+    details->set_md5("md5_value_" +
+                     base::NumberToString(next_md5_sequence_number_++));
     details->set_change_id(++current_change_id_);
   }
 
@@ -570,7 +570,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
         tracker.tracker_id(), &tracker_in_metadata_database));
 
     SCOPED_TRACE("Expect equivalent tracker[" +
-                 base::Int64ToString(tracker.tracker_id()) + "]");
+                 base::NumberToString(tracker.tracker_id()) + "]");
     ExpectEquivalent(&tracker, &tracker_in_metadata_database);
   }
 

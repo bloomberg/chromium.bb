@@ -84,7 +84,7 @@ base::Value GetPdfCapabilities(const std::string& locale) {
   ColorCapability color;
   {
     Color standard_color(STANDARD_COLOR);
-    standard_color.vendor_id = base::IntToString(COLOR);
+    standard_color.vendor_id = base::NumberToString(COLOR);
     color.AddDefaultOption(standard_color, true);
   }
   color.SaveTo(&description);

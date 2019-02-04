@@ -103,7 +103,7 @@ void SiteEngagementMetrics::RecordEngagementScores(
 
   for (const auto& b : score_buckets) {
     std::string histogram_name =
-        kEngagementBucketHistogramBase + base::IntToString(b.first);
+        kEngagementBucketHistogramBase + base::NumberToString(b.first);
 
     base::LinearHistogram::FactoryGet(
         histogram_name, 1, 100, 10,
@@ -153,7 +153,7 @@ SiteEngagementMetrics::GetEngagementBucketHistogramNames() {
   for (size_t i = 0; i < base::size(kEngagementBucketHistogramBuckets); ++i) {
     histogram_names.push_back(
         kEngagementBucketHistogramBase +
-        base::IntToString(kEngagementBucketHistogramBuckets[i]));
+        base::NumberToString(kEngagementBucketHistogramBuckets[i]));
   }
 
   return histogram_names;

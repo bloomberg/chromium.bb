@@ -43,7 +43,7 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
     return FALSE;
 
   unit.id =
-      base::Int64ToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
+      base::NumberToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   unit.name = base::WideToUTF8(device.DeviceString);
   all_displays->push_back(std::move(unit));
 

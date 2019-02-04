@@ -50,7 +50,7 @@ web_app::PendingAppManager::AppInfo CreateAppInfo(const GURL& url) {
 }
 
 GURL GetUrlForSuffix(const std::string& prefix, int suffix) {
-  return GURL(prefix + base::IntToString(suffix) + ".com/");
+  return GURL(prefix + base::NumberToString(suffix) + ".com/");
 }
 
 // Must be zero-based as this will be stored in a bitset.

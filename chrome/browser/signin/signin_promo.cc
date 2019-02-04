@@ -150,7 +150,7 @@ GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
 
   url = net::AppendQueryParameter(
       url, kSignInPromoQueryKeyAccessPoint,
-      base::IntToString(static_cast<int>(access_point)));
+      base::NumberToString(static_cast<int>(access_point)));
 
   // TODO(gogerald): right now, gaia server needs to distinguish the source from
   // signin_metrics::SOURCE_START_PAGE, signin_metrics::SOURCE_SETTINGS and
@@ -164,7 +164,7 @@ GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
     source = signin_metrics::SOURCE_SETTINGS;
   }
   url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeySource,
-                                  base::IntToString(static_cast<int>(source)));
+                                  base::NumberToString(source));
   return GURL(url);
 }
 
@@ -191,9 +191,10 @@ GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
   GURL url(chrome::kChromeUIChromeSigninURL);
   url = net::AppendQueryParameter(
       url, signin::kSignInPromoQueryKeyAccessPoint,
-      base::IntToString(static_cast<int>(access_point)));
-  url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyReason,
-                                  base::IntToString(static_cast<int>(reason)));
+      base::NumberToString(static_cast<int>(access_point)));
+  url =
+      net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyReason,
+                                base::NumberToString(static_cast<int>(reason)));
   if (auto_close) {
     url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyAutoClose,
                                     "1");

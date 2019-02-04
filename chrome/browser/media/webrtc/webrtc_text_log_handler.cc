@@ -495,8 +495,8 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   LogToCircularBuffer(
       "Gpu: machine-model-name=" + gpu_info.machine_model_name +
       ", machine-model-version=" + gpu_info.machine_model_version +
-      ", vendor-id=" + base::UintToString(active_gpu.vendor_id) +
-      ", device-id=" + base::UintToString(active_gpu.device_id) +
+      ", vendor-id=" + base::NumberToString(active_gpu.vendor_id) +
+      ", device-id=" + base::NumberToString(active_gpu.device_id) +
       ", driver-vendor=" + active_gpu.driver_vendor +
       ", driver-version=" + active_gpu.driver_version);
   LogToCircularBuffer("OpenGL: gl-vendor=" + gpu_info.gl_vendor +

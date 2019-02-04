@@ -176,7 +176,7 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
       auto user_dict = std::make_unique<base::DictionaryValue>();
       user_dict->SetString("account_type", "google");
       user_dict->SetString("email", user_id);
-      user_dict->SetString("gaia_id", base::IntToString(gaia_id++));
+      user_dict->SetString("gaia_id", base::NumberToString(gaia_id++));
       known_users_list->Append(std::move(user_dict));
     }
     local_state.SetList("KnownUsers", std::move(known_users_list));

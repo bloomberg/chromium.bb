@@ -449,7 +449,7 @@ std::string BackForwardMenuModel::BuildActionName(
   metric_string += action;
   if (index != -1) {
     // +1 is for historical reasons (indices used to start at 1).
-    metric_string += base::IntToString(index + 1);
+    metric_string += base::NumberToString(index + 1);
   }
   return metric_string;
 }

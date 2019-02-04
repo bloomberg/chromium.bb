@@ -406,7 +406,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
   std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
       crypto::SHA256HashString(
           original_url.scheme() + "://" + original_url.host() + ":" +
-          base::IntToString(original_url.EffectiveIntPort())),
+          base::NumberToString(original_url.EffectiveIntPort())),
       base32::Base32EncodePolicy::OMIT_PADDING));
   GURL previews_host = previews::params::GetLitePagePreviewsDomainURL();
   GURL previews_url = GURL(

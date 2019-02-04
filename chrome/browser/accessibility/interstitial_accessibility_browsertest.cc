@@ -72,7 +72,7 @@ class InterstitialAccessibilityBrowserTest : public InProcessBrowserTest {
     SSLBlockingPage* ssl_interstitial = static_cast<SSLBlockingPage*>(
         interstitial_page->GetDelegateForTesting());
     ssl_interstitial->CommandReceived(
-        base::IntToString(security_interstitials::CMD_PROCEED));
+        base::NumberToString(security_interstitials::CMD_PROCEED));
   }
 };
 

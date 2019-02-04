@@ -28,7 +28,7 @@
 //
 // NOTE
 // - Entries are sorted by keys.
-// - int64_t value is serialized as a string by base::Int64ToString().
+// - int64_t value is serialized as a string by base::NumberToString().
 // - ServiceMetadata, FileMetadata, and FileTracker values are serialized
 //   as a string by SerializeToString() of protocol buffers.
 //

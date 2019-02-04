@@ -254,7 +254,7 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     // Instruct the app to write |num_bytes| of data.
-    launched_listener.Reply(base::IntToString(num_bytes));
+    launched_listener.Reply(base::NumberToString(num_bytes));
     ASSERT_TRUE(write_complete_listener.WaitUntilSatisfied());
   }
 

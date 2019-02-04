@@ -206,7 +206,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, RemoveUnreachableItemsTest) {
   EXPECT_TRUE(db->Commit().ok());
 
   const std::string key =
-      kFileTrackerKeyPrefix + base::Int64ToString(kOrphanedFileTrackerID);
+      kFileTrackerKeyPrefix + base::NumberToString(kOrphanedFileTrackerID);
   std::string value;
   EXPECT_TRUE(db->Get(key, &value).ok());
 

@@ -213,7 +213,7 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
     // it uses sscanf.
     // TODO(jshin): fix IsDefaultProfileName to handle native digits.
     name = l10n_util::GetStringFUTF16(IDS_NEW_NUMBERED_PROFILE_NAME,
-                                      base::IntToString16(name_index));
+                                      base::NumberToString16(name_index));
 #else
     if (icon_index < profiles::GetGenericAvatarIconCount()) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,

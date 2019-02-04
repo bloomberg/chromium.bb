@@ -82,7 +82,7 @@ void DiscoverModulePinSetupHandler::DeclareLocalizedValues(
 
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {
-    builder->Add("pinKeyboard" + base::IntToString(j),
+    builder->Add("pinKeyboard" + base::NumberToString(j),
                  base::FormatNumber(int64_t{j}));
   }
   builder->Add("pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN);

@@ -786,7 +786,7 @@ void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id) {
   const base::Time time = base::Time::Now();
   arc::ArcAppScopedPrefUpdate update(prefs_, app_id, arc::prefs::kArcApps);
   base::DictionaryValue* app_dict = update.Get();
-  const std::string string_value = base::Int64ToString(time.ToInternalValue());
+  const std::string string_value = base::NumberToString(time.ToInternalValue());
   app_dict->SetString(kLastLaunchTime, string_value);
 
   for (auto& observer : observer_list_)
@@ -1102,7 +1102,7 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
   // actual install time in Android side.
   if (GetInstallTime(app_id).is_null()) {
     std::string install_time_str =
-        base::Int64ToString(base::Time::Now().ToInternalValue());
+        base::NumberToString(base::Time::Now().ToInternalValue());
     app_dict->SetString(kInstallTime, install_time_str);
   }
 
@@ -1213,8 +1213,8 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
                                      arc::prefs::kArcPackages);
   base::DictionaryValue* package_dict = update.Get();
   const std::string id_str =
-      base::Int64ToString(package.last_backup_android_id);
-  const std::string time_str = base::Int64ToString(package.last_backup_time);
+      base::NumberToString(package.last_backup_android_id);
+  const std::string time_str = base::NumberToString(package.last_backup_time);
 
   int old_package_version = -1;
   package_dict->GetInteger(kPackageVersion, &old_package_version);

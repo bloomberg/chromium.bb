@@ -37,7 +37,7 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                &availability_enum_value)) {
       errors->AddError(key::kIncognitoModeAvailability,
                        IDS_POLICY_OUT_OF_RANGE_ERROR,
-                       base::IntToString(int_value));
+                       base::NumberToString(int_value));
       return false;
     }
     return true;

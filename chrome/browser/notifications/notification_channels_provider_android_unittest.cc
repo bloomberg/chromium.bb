@@ -70,7 +70,7 @@ class FakeNotificationChannelsBridge
                                     const base::Time& timestamp,
                                     bool enabled) override {
     std::string channel_id =
-        origin + base::Int64ToString(timestamp.ToInternalValue());
+        origin + base::NumberToString(timestamp.ToInternalValue());
     // Note if a channel with this channel ID was already created, this is a
     // no-op. This is intentional, to match the Android Channels API.
     NotificationChannel channel =

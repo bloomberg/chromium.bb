@@ -146,9 +146,9 @@ class DestructiveScriptTest : public ExecuteScriptApiTest,
   bool RunSubtest(const std::string& test_host) {
     return RunExtensionSubtest(
         "executescript/destructive",
-        "test.html?" + test_host +
-        "#bucketcount=" + base::IntToString(kDestructiveScriptTestBucketCount) +
-        "&bucketindex=" + base::IntToString(GetParam()));
+        "test.html?" + test_host + "#bucketcount=" +
+            base::NumberToString(kDestructiveScriptTestBucketCount) +
+            "&bucketindex=" + base::NumberToString(GetParam()));
   }
 };
 

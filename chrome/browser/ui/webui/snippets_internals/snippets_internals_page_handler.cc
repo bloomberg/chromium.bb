@@ -102,7 +102,7 @@ snippets_internals::mojom::SuggestionItemPtr PrepareContentSuggestionItem(
   auto item = snippets_internals::mojom::SuggestionItem::New();
   item->suggestionTitle = base::UTF16ToUTF8(suggestion.title());
   item->suggestionIdWithinCategory = suggestion.id().id_within_category();
-  item->suggestionId = "content-suggestion-" + base::IntToString(index);
+  item->suggestionId = "content-suggestion-" + base::NumberToString(index);
   item->url = suggestion.url().spec();
   item->faviconUrl = suggestion.url_with_favicon().spec();
   item->snippet = base::UTF16ToUTF8(suggestion.snippet_text());

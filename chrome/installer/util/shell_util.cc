@@ -1760,7 +1760,7 @@ base::string16 ShellUtil::FormatIconLocation(const base::FilePath& icon_path,
                                              int icon_index) {
   base::string16 icon_string(icon_path.value());
   icon_string.append(L",");
-  icon_string.append(base::IntToString16(icon_index));
+  icon_string.append(base::NumberToString16(icon_index));
   return icon_string;
 }
 

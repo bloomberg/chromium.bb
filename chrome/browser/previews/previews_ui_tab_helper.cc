@@ -210,13 +210,13 @@ base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
     DCHECK_GE(staleness_in_minutes, 2);
     return l10n_util::GetStringFUTF16(
         IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-        base::IntToString16(staleness_in_minutes));
+        base::NumberToString16(staleness_in_minutes));
   } else if (staleness_in_minutes < 120) {
     return l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_ONE_HOUR);
   } else {
     return l10n_util::GetStringFUTF16(
         IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
-        base::IntToString16(staleness_in_minutes / 60));
+        base::NumberToString16(staleness_in_minutes / 60));
   }
 }
 

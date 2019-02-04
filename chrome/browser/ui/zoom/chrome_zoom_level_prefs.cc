@@ -144,8 +144,9 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
   } else {
     base::DictionaryValue dict;
     dict.SetDouble(kZoomLevelPath, level);
-    dict.SetString(kLastModifiedPath,
-                   base::Int64ToString(change.last_modified.ToInternalValue()));
+    dict.SetString(
+        kLastModifiedPath,
+        base::NumberToString(change.last_modified.ToInternalValue()));
     host_zoom_dictionary_weak->SetKey(change.host, std::move(dict));
   }
 }

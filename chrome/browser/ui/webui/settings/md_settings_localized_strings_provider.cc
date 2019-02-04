@@ -1808,7 +1808,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {
-    html_source->AddString("pinKeyboard" + base::IntToString(j),
+    html_source->AddString("pinKeyboard" + base::NumberToString(j),
                            base::FormatNumber(int64_t{j}));
   }
 

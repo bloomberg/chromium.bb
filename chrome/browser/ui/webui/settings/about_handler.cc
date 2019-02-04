@@ -679,7 +679,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
   event->SetBoolean("rollback", rollback);
   event->SetString("version", version);
   // DictionaryValue does not support int64_t, so convert to string.
-  event->SetString("size", base::Int64ToString(size));
+  event->SetString("size", base::NumberToString(size));
 #if defined(OS_CHROMEOS)
   if (status == VersionUpdater::FAILED_OFFLINE ||
       status == VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED) {

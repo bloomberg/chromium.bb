@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
   const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id(), false);
   GURL url = extension->GetResourceURL(
-      "a.html?" + base::IntToString(embedded_test_server()->port()));
+      "a.html?" + base::NumberToString(embedded_test_server()->port()));
 
   // Register an observer for the navigation in the subframe, so the test
   // can wait until it is fully complete. Otherwise the context menu

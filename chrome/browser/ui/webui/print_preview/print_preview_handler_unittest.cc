@@ -456,7 +456,7 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
     args.GetList().emplace_back(type);
     std::unique_ptr<base::ListValue> list_args =
@@ -502,7 +502,7 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
     args.GetList().emplace_back(kDummyPrinterName);
     args.GetList().emplace_back(type);
@@ -531,7 +531,8 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + base::size(kAllTypes) + 1);
+        "test-callback-id-" +
+        base::NumberToString(i + base::size(kAllTypes) + 1);
     args.GetList().emplace_back(callback_id_in);
     args.GetList().emplace_back("EmptyPrinter");
     args.GetList().emplace_back(type);
@@ -562,7 +563,7 @@ TEST_F(PrintPreviewHandlerTest, Print) {
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
     base::Value print_ticket = GetPrintTicket(type, cloud);
     std::string json;
@@ -737,7 +738,7 @@ TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
     args.GetList().emplace_back(kDummyPrinterName);
     args.GetList().emplace_back(type);

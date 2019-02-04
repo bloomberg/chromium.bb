@@ -111,7 +111,7 @@ void TCPDeviceProvider::QueryDeviceInfo(const std::string& serial,
     if (serial != target.host())
       continue;
     AndroidDeviceManager::BrowserInfo browser_info;
-    browser_info.socket_name = base::UintToString(target.port());
+    browser_info.socket_name = base::NumberToString(target.port());
     browser_info.display_name = kBrowserName;
     browser_info.type = AndroidDeviceManager::BrowserInfo::kTypeChrome;
 

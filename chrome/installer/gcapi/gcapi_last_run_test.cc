@@ -51,7 +51,7 @@ class GCAPILastRunTest : public ::testing::Test {
   }
 
   bool SetLastRunTime(int64_t last_run_time) {
-    return SetLastRunTimeString(base::Int64ToString16(last_run_time));
+    return SetLastRunTimeString(base::NumberToString16(last_run_time));
   }
 
   bool SetLastRunTimeString(const base::string16& last_run_time_string) {

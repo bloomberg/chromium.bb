@@ -95,7 +95,8 @@ PolicyCheckResult CheckDeveloperToolsAvailability(
   if (!IsValidDeveloperToolsAvailabilityValue(value)) {
     if (errors) {
       errors->AddError(key::kDeveloperToolsAvailability,
-                       IDS_POLICY_OUT_OF_RANGE_ERROR, base::IntToString(value));
+                       IDS_POLICY_OUT_OF_RANGE_ERROR,
+                       base::NumberToString(value));
     }
     return PolicyCheckResult::kInvalid;
   }

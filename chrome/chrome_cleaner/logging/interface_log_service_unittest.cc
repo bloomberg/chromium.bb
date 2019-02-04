@@ -95,7 +95,7 @@ class TestClass1 {
   void function1(std::string parameter1, int32_t parameter2) {
     std::map<std::string, std::string> params;
     params["parameter1"] = parameter1;
-    std::string s_parameter2 = base::IntToString(parameter2);
+    std::string s_parameter2 = base::NumberToString(parameter2);
     params["parameter2"] = s_parameter2;
     log_service_->AddCall(CURRENT_FILE_AND_METHOD, params);
   }
@@ -239,7 +239,7 @@ TEST_F(InterfaceLogServiceTest, LogAndRecoverTest) {
   EXPECT_EQ(call_record[0].file_name(), kFileName);
   EXPECT_EQ(2U, call_record[0].parameters().size());
   EXPECT_EQ(kString1, call_record[0].parameters().at("parameter1"));
-  EXPECT_EQ(base::IntToString(kInt1),
+  EXPECT_EQ(base::NumberToString(kInt1),
             call_record[0].parameters().at("parameter2"));
 
   EXPECT_EQ(call_record[1].function_name(), "function3");
@@ -248,7 +248,7 @@ TEST_F(InterfaceLogServiceTest, LogAndRecoverTest) {
   EXPECT_EQ(call_record[2].function_name(), "function1");
   EXPECT_EQ(call_record[2].file_name(), kFileName);
   EXPECT_EQ(kString2, call_record[2].parameters().at("parameter1"));
-  EXPECT_EQ(base::IntToString(kInt2),
+  EXPECT_EQ(base::NumberToString(kInt2),
             call_record[2].parameters().at("parameter2"));
 
   EXPECT_EQ(call_record[3].function_name(), "function2");
@@ -274,13 +274,13 @@ TEST_F(InterfaceLogServiceTest, LogAndRecoverTest) {
   parameters1.insert(call_record[0].parameters().begin(),
                      call_record[0].parameters().end());
   EXPECT_EQ(parameters1["parameter1"], kString1);
-  EXPECT_EQ(parameters1["parameter2"], base::IntToString(kInt1));
+  EXPECT_EQ(parameters1["parameter2"], base::NumberToString(kInt1));
 
   std::map<std::string, std::string> parameters2;
   parameters2.insert(call_record[2].parameters().begin(),
                      call_record[2].parameters().end());
   EXPECT_EQ(parameters2["parameter1"], kString2);
-  EXPECT_EQ(parameters2["parameter2"], base::IntToString(kInt2));
+  EXPECT_EQ(parameters2["parameter2"], base::NumberToString(kInt2));
 }
 
 TEST_F(InterfaceLogServiceTest, EmptyLogFileTest) {

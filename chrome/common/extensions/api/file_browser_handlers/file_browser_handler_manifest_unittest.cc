@@ -73,7 +73,7 @@ TEST_F(FileBrowserHandlerManifestTest, InvalidFileBrowserHandlers) {
   Testcase testcases[] = {
       Testcase("filebrowser_invalid_access_permission.json",
                extensions::ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidFileAccessValue, base::IntToString(1))),
+                   errors::kInvalidFileAccessValue, base::NumberToString(1))),
       Testcase("filebrowser_invalid_access_permission_list.json",
                errors::kInvalidFileAccessList),
       Testcase("filebrowser_invalid_empty_access_permission_list.json",
@@ -92,7 +92,7 @@ TEST_F(FileBrowserHandlerManifestTest, InvalidFileBrowserHandlers) {
                errors::kInvalidFileFiltersList),
       Testcase("filebrowser_invalid_file_filters_2.json",
                extensions::ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidFileFilterValue, base::IntToString(0))),
+                   errors::kInvalidFileFilterValue, base::NumberToString(0))),
       Testcase("filebrowser_invalid_file_filters_url.json",
                extensions::ErrorUtils::FormatErrorMessage(
                    errors::kInvalidURLPatternError, "http:*.html"))};

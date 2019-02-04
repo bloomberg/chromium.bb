@@ -20,9 +20,8 @@ namespace {
 std::string GetSubkey(const std::string& policy, const std::string& hash) {
   DCHECK(!policy.empty());
   DCHECK(!hash.empty());
-  return base::IntToString(policy.size()) + ":" +
-         base::IntToString(hash.size()) + ":" +
-         policy + hash;
+  return base::NumberToString(policy.size()) + ":" +
+         base::NumberToString(hash.size()) + ":" + policy + hash;
 }
 
 }  // namespace

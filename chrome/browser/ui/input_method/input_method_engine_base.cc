@@ -420,7 +420,7 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
 std::string InputMethodEngineBase::AddRequest(
     const std::string& component_id,
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
-  std::string request_id = base::IntToString(next_request_id_);
+  std::string request_id = base::NumberToString(next_request_id_);
   ++next_request_id_;
 
   request_map_[request_id] = std::make_pair(component_id, std::move(key_data));

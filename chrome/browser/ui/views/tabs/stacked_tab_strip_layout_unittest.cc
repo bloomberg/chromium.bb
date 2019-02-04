@@ -103,7 +103,7 @@ class StackedTabStripLayoutTest : public testing::Test {
     for (int i = 0; i < view_model_.view_size(); ++i) {
       if (!result.empty())
         result += " ";
-      result += base::IntToString(view_model_.ideal_bounds(i).x());
+      result += base::NumberToString(view_model_.ideal_bounds(i).x());
     }
     return result;
   }
@@ -115,7 +115,7 @@ class StackedTabStripLayoutTest : public testing::Test {
         result += " ";
       if (i == active_index)
         result += "[";
-      result += base::IntToString(view_model_.ideal_bounds(i).x());
+      result += base::NumberToString(view_model_.ideal_bounds(i).x());
       if (i == active_index)
         result += "]";
     }

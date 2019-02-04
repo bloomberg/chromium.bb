@@ -531,7 +531,7 @@ void LaunchChrome(const InstallerState& installer_state,
   base::CommandLine command_line(chrome_exe);
 #if defined(OS_WIN)
   command_line.AppendSwitchNative(::switches::kTryChromeAgain,
-                                  base::IntToString16(experiment.group()));
+                                  base::NumberToString16(experiment.group()));
 #endif  // defined(OS_WIN)
 
   STARTUPINFOW startup_info = {sizeof(startup_info)};

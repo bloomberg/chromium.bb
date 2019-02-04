@@ -111,7 +111,7 @@ bool MediaEngagementPreloadedList::CheckOriginIsPresent(
   if (origin.port() != url::DefaultPortForScheme(origin.scheme().data(),
                                                  origin.scheme().length())) {
     location.push_back(':');
-    std::string port(base::UintToString(origin.port()));
+    std::string port(base::NumberToString(origin.port()));
     location.append(std::move(port));
   }
 

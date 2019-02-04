@@ -851,7 +851,7 @@ void CrostiniRegistryService::SetCurrentTime(base::Value* dictionary,
                                              const char* key) const {
   DCHECK(dictionary);
   int64_t time = clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
-  dictionary->SetKey(key, base::Value(base::Int64ToString(time)));
+  dictionary->SetKey(key, base::Value(base::NumberToString(time)));
 }
 
 void CrostiniRegistryService::SetAppScaled(const std::string& app_id,

@@ -131,7 +131,7 @@ void FakeCWS::SetUpdateCrx(const std::string& app_id,
   base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$FP",
                                      sha256_hex);
   base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$Size",
-                                     base::UintToString(crx_content.size()));
+                                     base::NumberToString(crx_content.size()));
   base::ReplaceSubstringsAfterOffset(&update_check_content, 0, "$Version",
                                      version);
   id_to_update_check_content_map_[app_id] = update_check_content;

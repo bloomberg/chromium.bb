@@ -143,7 +143,8 @@ std::string UsageReportsBufferBackend::Dump() {
     return dump;
   }
   dump.append("num pending entries=");
-  dump.append(base::IntToString(usage_report_util::DatabaseEntries(db_.get())));
+  dump.append(
+      base::NumberToString(usage_report_util::DatabaseEntries(db_.get())));
   dump.append("]");
   return dump;
 }

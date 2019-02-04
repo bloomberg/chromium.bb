@@ -179,7 +179,7 @@ TEST_F(ExtensionBookmarksTest, GetMetaInfo) {
   // Verify top level node.
   const base::Value* value = NULL;
   EXPECT_TRUE(id_to_meta_info_map.Get(
-      base::Int64ToString(model_->other_node()->id()), &value));
+      base::NumberToString(model_->other_node()->id()), &value));
   ASSERT_TRUE(NULL != value);
   const base::DictionaryValue* dictionary_value = NULL;
   EXPECT_TRUE(value->GetAsDictionary(&dictionary_value));
@@ -188,8 +188,8 @@ TEST_F(ExtensionBookmarksTest, GetMetaInfo) {
 
   // Verify bookmark with two meta info key/value pairs.
   value = NULL;
-  EXPECT_TRUE(id_to_meta_info_map.Get(
-      base::Int64ToString(node_->id()), &value));
+  EXPECT_TRUE(
+      id_to_meta_info_map.Get(base::NumberToString(node_->id()), &value));
   ASSERT_TRUE(NULL != value);
   dictionary_value = NULL;
   EXPECT_TRUE(value->GetAsDictionary(&dictionary_value));
@@ -203,8 +203,8 @@ TEST_F(ExtensionBookmarksTest, GetMetaInfo) {
 
   // Verify folder with one meta info key/value pair.
   value = NULL;
-  EXPECT_TRUE(id_to_meta_info_map.Get(
-      base::Int64ToString(folder_->id()), &value));
+  EXPECT_TRUE(
+      id_to_meta_info_map.Get(base::NumberToString(folder_->id()), &value));
   ASSERT_TRUE(NULL != value);
   dictionary_value = NULL;
   EXPECT_TRUE(value->GetAsDictionary(&dictionary_value));
@@ -215,8 +215,8 @@ TEST_F(ExtensionBookmarksTest, GetMetaInfo) {
 
   // Verify bookmark in a subfolder with one meta info key/value pairs.
   value = NULL;
-  EXPECT_TRUE(id_to_meta_info_map.Get(
-      base::Int64ToString(node2_->id()), &value));
+  EXPECT_TRUE(
+      id_to_meta_info_map.Get(base::NumberToString(node2_->id()), &value));
   ASSERT_TRUE(NULL != value);
   dictionary_value = NULL;
   EXPECT_TRUE(value->GetAsDictionary(&dictionary_value));

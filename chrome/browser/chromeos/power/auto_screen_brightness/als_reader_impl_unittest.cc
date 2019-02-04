@@ -68,7 +68,7 @@ class AlsReaderImplTest : public testing::Test {
 
  protected:
   void WriteLux(int lux) {
-    const std::string lux_string = base::IntToString(lux);
+    const std::string lux_string = base::NumberToString(lux);
     const int bytes_written = base::WriteFile(
         ambient_light_path_, lux_string.data(), lux_string.size());
     ASSERT_EQ(bytes_written, static_cast<int>(lux_string.size()))

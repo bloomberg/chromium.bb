@@ -64,10 +64,11 @@ TEST_F(ProcfsUtilTest, GetSingleProcStatSuccess) {
                              .utime = 466410,
                              .stime = 80831,
                              .rss = 130441};
-  WriteContentsToFileUnderSubdir(stat_contents, base::IntToString(pid), "stat");
+  WriteContentsToFileUnderSubdir(stat_contents, base::NumberToString(pid),
+                                 "stat");
   EXPECT_EQ(expected,
             GetSingleProcStat(
-                slash_proc_.Append(base::IntToString(pid)).Append("stat"))
+                slash_proc_.Append(base::NumberToString(pid)).Append("stat"))
                 .value());
 }
 

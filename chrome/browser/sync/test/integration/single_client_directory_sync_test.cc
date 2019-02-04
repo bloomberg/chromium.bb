@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
       0, bookmarks_helper::GetOtherNode(0), 0, "top");
   for (int i = 0; i < 100; ++i) {
     ASSERT_TRUE(
-        bookmarks_helper::AddURL(0, top, 0, base::Int64ToString(i), url));
+        bookmarks_helper::AddURL(0, top, 0, base::NumberToString(i), url));
   }
   sync_service->FlushDirectory();
 

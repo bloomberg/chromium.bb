@@ -371,7 +371,7 @@ class ExternallyConnectableMessagingTest : public MessagingApiTest {
   }
 
   GURL GetURLForPath(const std::string& host, const std::string& path) {
-    std::string port = base::UintToString(embedded_test_server()->port());
+    std::string port = base::NumberToString(embedded_test_server()->port());
     GURL::Replacements replacements;
     replacements.SetHostStr(host);
     replacements.SetPortStr(port);
@@ -669,13 +669,13 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
   ui_test_utils::NavigateToURL(browser(), google_com_url());
   // The extension requests the TLS channel ID, but it doesn't get it for a
   // site that can't connect to it, regardless of whether the page asks for it.
-  EXPECT_EQ(base::IntToString(NAMESPACE_NOT_DEFINED),
+  EXPECT_EQ(base::NumberToString(NAMESPACE_NOT_DEFINED),
             GetTlsChannelIdFromPortConnect(chromium_connectable.get(), false));
-  EXPECT_EQ(base::IntToString(NAMESPACE_NOT_DEFINED),
+  EXPECT_EQ(base::NumberToString(NAMESPACE_NOT_DEFINED),
             GetTlsChannelIdFromSendMessage(chromium_connectable.get(), true));
-  EXPECT_EQ(base::IntToString(NAMESPACE_NOT_DEFINED),
+  EXPECT_EQ(base::NumberToString(NAMESPACE_NOT_DEFINED),
             GetTlsChannelIdFromPortConnect(chromium_connectable.get(), false));
-  EXPECT_EQ(base::IntToString(NAMESPACE_NOT_DEFINED),
+  EXPECT_EQ(base::NumberToString(NAMESPACE_NOT_DEFINED),
             GetTlsChannelIdFromSendMessage(chromium_connectable.get(), true));
 }
 

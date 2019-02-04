@@ -27,18 +27,18 @@ class ContentScriptsManifestTest : public ChromeManifestTest {
 TEST_F(ContentScriptsManifestTest, MatchPattern) {
   Testcase testcases[] = {
       // chrome:// urls are not allowed.
-      Testcase(
-          "content_script_chrome_url_invalid.json",
-          ErrorUtils::FormatErrorMessage(
-              errors::kInvalidMatch, base::IntToString(0), base::IntToString(0),
-              URLPattern::GetParseResultString(
-                  URLPattern::ParseResult::kInvalidScheme))),
+      Testcase("content_script_chrome_url_invalid.json",
+               ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidMatch, base::NumberToString(0),
+                   base::NumberToString(0),
+                   URLPattern::GetParseResultString(
+                       URLPattern::ParseResult::kInvalidScheme))),
 
       // Match paterns must be strings.
       Testcase("content_script_match_pattern_not_string.json",
                ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidMatch, base::IntToString(0),
-                   base::IntToString(0), errors::kExpectString))};
+                   errors::kInvalidMatch, base::NumberToString(0),
+                   base::NumberToString(0), errors::kExpectString))};
   RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 
   LoadAndExpectSuccess("ports_in_content_scripts.json");

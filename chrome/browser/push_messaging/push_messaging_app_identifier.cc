@@ -33,7 +33,7 @@ const size_t kGuidLength = 36;  // "%08X-%04X-%04X-%04X-%012llX"
 std::string MakePrefValue(const GURL& origin,
                           int64_t service_worker_registration_id) {
   return origin.spec() + kSeparator +
-         base::Int64ToString(service_worker_registration_id);
+         base::NumberToString(service_worker_registration_id);
 }
 
 bool GetOriginAndSWRFromPrefValue(const std::string& pref_value,

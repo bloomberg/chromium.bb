@@ -183,7 +183,7 @@ TEST_F(ChromeOmniboxNavigationObserverTest, DeleteBrokenCustomSearchEngines) {
 
   base::string16 query = base::ASCIIToUTF16(" text");
   for (size_t i = 0; i < cases.size(); ++i) {
-    SCOPED_TRACE("case #" + base::IntToString(i));
+    SCOPED_TRACE("case #" + base::NumberToString(i));
     // The keyword should always exist at the beginning.
     EXPECT_TRUE(model()->GetTemplateURLForKeyword(cases[i].keyword) != nullptr);
 
@@ -284,7 +284,7 @@ TEST_F(ChromeOmniboxNavigationObserverTest, AlternateNavInfoBar) {
        true},
   };
   for (size_t i = 0; i < base::size(cases); ++i) {
-    SCOPED_TRACE("case #" + base::IntToString(i));
+    SCOPED_TRACE("case #" + base::NumberToString(i));
     const Case& test_case = cases[i];
     const Response& response = test_case.response;
 

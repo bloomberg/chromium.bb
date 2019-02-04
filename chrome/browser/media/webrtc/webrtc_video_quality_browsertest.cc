@@ -233,9 +233,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     compare_command.AppendArg("--frame_analyzer");
     compare_command.AppendArgPath(path_to_analyzer);
     compare_command.AppendArg("--yuv_frame_width");
-    compare_command.AppendArg(base::IntToString(width));
+    compare_command.AppendArg(base::NumberToString(width));
     compare_command.AppendArg("--yuv_frame_height");
-    compare_command.AppendArg(base::IntToString(height));
+    compare_command.AppendArg(base::NumberToString(height));
     compare_command.AppendArg("--zxing_path");
     compare_command.AppendArgPath(path_to_zxing);
     compare_command.AppendArg("--ffmpeg_path");

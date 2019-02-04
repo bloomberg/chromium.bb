@@ -43,9 +43,8 @@ bool SessionId::IsForeign() const {
 }
 
 std::string SessionId::ToString() const {
-  return IsForeign() ?
-      (session_tag_ + kIdSeparator + base::IntToString(id_))
-      : base::IntToString(id_);
+  return IsForeign() ? (session_tag_ + kIdSeparator + base::NumberToString(id_))
+                     : base::NumberToString(id_);
 }
 
 }  // namespace extensions

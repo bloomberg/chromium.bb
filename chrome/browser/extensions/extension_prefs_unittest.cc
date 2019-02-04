@@ -384,7 +384,7 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
 
     // Install some extensions.
     for (int i = 0; i < 5; i++) {
-      std::string name = "test" + base::IntToString(i);
+      std::string name = "test" + base::NumberToString(i);
       extensions_.push_back(prefs_.AddExtension(name));
     }
     EXPECT_EQ(NULL,
@@ -447,10 +447,11 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
   void SetIdleInfo(const std::string& id, int num) {
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kName, "test");
-    manifest.SetString(manifest_keys::kVersion, "1." + base::IntToString(num));
+    manifest.SetString(manifest_keys::kVersion,
+                       "1." + base::NumberToString(num));
     manifest.SetInteger(manifest_keys::kManifestVersion, 2);
     base::FilePath path =
-        prefs_.extensions_dir().AppendASCII(base::IntToString(num));
+        prefs_.extensions_dir().AppendASCII(base::NumberToString(num));
     std::string errors;
     scoped_refptr<Extension> extension = Extension::Create(
         path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
@@ -471,8 +472,8 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     ASSERT_TRUE(info);
     std::string version;
     ASSERT_TRUE(info->extension_manifest->GetString("version", &version));
-    ASSERT_EQ("1." + base::IntToString(num), version);
-    ASSERT_EQ(base::IntToString(num),
+    ASSERT_EQ("1." + base::NumberToString(num), version);
+    ASSERT_EQ(base::NumberToString(num),
               info->extension_path.BaseName().MaybeAsASCII());
   }
 

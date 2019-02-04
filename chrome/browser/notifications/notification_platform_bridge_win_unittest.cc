@@ -128,7 +128,7 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
   ASSERT_HRESULT_SUCCEEDED(toast2->get_Tag(&hstring_tag));
   base::win::ScopedHString tag(hstring_tag);
   std::string tag_data = std::string(kNotificationId) + "|" + kProfileId + "|0";
-  ASSERT_STREQ(base::UintToString16(base::Hash(tag_data)).c_str(),
+  ASSERT_STREQ(base::NumberToString16(base::Hash(tag_data)).c_str(),
                tag.Get().as_string().c_str());
 }
 
@@ -240,7 +240,7 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
 
   // Register a single notification with a specific tag.
   std::string tag_data = std::string(kNotificationId) + "|" + kProfileId + "|0";
-  base::string16 tag = base::UintToString16(base::Hash(tag_data));
+  base::string16 tag = base::NumberToString16(base::Hash(tag_data));
   // Microsoft::WRL::Make() requires FakeIToastNotification to derive from
   // RuntimeClass.
   notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(

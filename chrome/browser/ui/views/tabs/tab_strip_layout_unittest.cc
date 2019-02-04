@@ -20,8 +20,8 @@ std::string TabsBoundsToString(const std::vector<gfx::Rect>& tabs_bounds) {
   for (const auto& bounds : tabs_bounds) {
     if (!result.empty())
       result += ", ";
-    result +=
-        base::IntToString(bounds.x()) + " " + base::IntToString(bounds.width());
+    result += base::NumberToString(bounds.x()) + " " +
+              base::NumberToString(bounds.width());
   }
   return result;
 }

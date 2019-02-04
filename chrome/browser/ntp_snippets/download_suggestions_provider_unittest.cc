@@ -160,7 +160,7 @@ std::vector<OfflinePageItem> CreateDummyOfflinePages(
 std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
   std::unique_ptr<FakeDownloadItem> item = std::make_unique<FakeDownloadItem>();
   item->SetId(id);
-  std::string id_string = base::IntToString(id);
+  std::string id_string = base::NumberToString(id);
   item->SetGuid("XYZ-100032-EFZBDF-13323-PXZ" + id_string);
   item->SetTargetFilePath(
       base::FilePath::FromUTF8Unsafe("folder/file" + id_string + ".mhtml"));
@@ -344,7 +344,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
   ContentSuggestion::ID GetDummySuggestionId(int id, bool is_offline_page) {
     return ContentSuggestion::ID(
         downloads_category(),
-        (is_offline_page ? "O" : "D") + base::IntToString(id));
+        (is_offline_page ? "O" : "D") + base::NumberToString(id));
   }
 
   std::vector<ContentSuggestion> GetDismissedSuggestions() {

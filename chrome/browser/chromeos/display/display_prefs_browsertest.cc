@@ -28,7 +28,7 @@ class DisplayPrefsBrowserTest : public InProcessBrowserTest {
     const base::DictionaryValue* display_properties =
         local_state_->GetDictionary(ash::prefs::kDisplayProperties);
     return display_properties ? display_properties->FindKeyOfType(
-                                    base::Int64ToString(display_id),
+                                    base::NumberToString(display_id),
                                     base::Value::Type::DICTIONARY)
                               : nullptr;
   }

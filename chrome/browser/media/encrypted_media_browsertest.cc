@@ -356,7 +356,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     // Override enabled CDM interface version for testing.
     command_line->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
-        base::IntToString(GetCdmInterfaceVersion()));
+        base::NumberToString(GetCdmInterfaceVersion()));
   }
 };
 
@@ -423,7 +423,7 @@ class EncryptedMediaTest
     query_params.emplace_back("keySystem", CurrentKeySystem());
     query_params.emplace_back(
         "configChangeType",
-        base::IntToString(static_cast<int>(config_change_type)));
+        base::NumberToString(static_cast<int>(config_change_type)));
     RunEncryptedMediaTestPage("mse_config_change.html", CurrentKeySystem(),
                               query_params, media::kEnded);
   }

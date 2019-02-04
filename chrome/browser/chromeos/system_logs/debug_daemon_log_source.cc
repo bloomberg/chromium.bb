@@ -54,7 +54,7 @@ constexpr struct UserLogs {
 void ReadUserLogFiles(const std::vector<base::FilePath>& profile_dirs,
                       SystemLogsResponse* response) {
   for (size_t i = 0; i < profile_dirs.size(); ++i) {
-    std::string profile_prefix = "Profile[" + base::UintToString(i) + "] ";
+    std::string profile_prefix = "Profile[" + base::NumberToString(i) + "] ";
     for (const auto& log : kUserLogs) {
       std::string value;
       const bool read_success = base::ReadFileToString(

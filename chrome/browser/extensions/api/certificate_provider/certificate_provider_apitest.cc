@@ -102,7 +102,7 @@ bool RsaSign(const std::vector<uint8_t>& digest,
 std::string JsUint8Array(const std::vector<uint8_t>& bytes) {
   std::string res = "new Uint8Array([";
   for (const uint8_t byte : bytes) {
-    res += base::UintToString(byte);
+    res += base::NumberToString(byte);
     res += ", ";
   }
   res += "])";

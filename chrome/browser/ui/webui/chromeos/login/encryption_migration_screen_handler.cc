@@ -479,7 +479,7 @@ void EncryptionMigrationScreenHandler::HandleOpenFeedbackDialog() {
   const std::string description = base::StringPrintf(
       "Auto generated feedback for http://crbug.com/719266.\n"
       "(uniquifier:%s)",
-      base::Int64ToString(base::Time::Now().ToInternalValue()).c_str());
+      base::NumberToString(base::Time::Now().ToInternalValue()).c_str());
   login_feedback_.reset(new LoginFeedback(Profile::FromWebUI(web_ui())));
   login_feedback_->Request(description, base::Closure());
 }

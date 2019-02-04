@@ -48,7 +48,7 @@ TEST_F(SettingsTest, ValidEngines) {
   for (int index = Engine::Name_MIN; index < Engine::Name_MAX; ++index) {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
-                                   base::IntToString(index));
+                                   base::NumberToString(index));
     Settings* settings = ReinitializeSettings(command_line);
     if (index != Engine::UNKNOWN)
       EXPECT_EQ(static_cast<Engine::Name>(index), settings->engine());
@@ -60,7 +60,7 @@ TEST_F(SettingsTest, ValidEngines) {
 TEST_F(SettingsTest, EngineInvalidNumericValue) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
-                                 base::IntToString(kInvalidEngineValue));
+                                 base::NumberToString(kInvalidEngineValue));
   Settings* settings = ReinitializeSettings(command_line);
   EXPECT_EQ(Engine::URZA, settings->engine());
 }
@@ -113,16 +113,16 @@ TEST_F(SettingsTest, ExecutionMode) {
       // Switch not present.
       {"", ExecutionMode::kNone},
       // Valid values for execution mode.
-      {base::IntToString(static_cast<int>(ExecutionMode::kScanning)),
+      {base::NumberToString(static_cast<int>(ExecutionMode::kScanning)),
        ExecutionMode::kScanning},
-      {base::IntToString(static_cast<int>(ExecutionMode::kCleanup)),
+      {base::NumberToString(static_cast<int>(ExecutionMode::kCleanup)),
        ExecutionMode::kCleanup},
       // Unknown values for execution mode.
-      {base::IntToString(static_cast<int>(ExecutionMode::kNumValues)),
+      {base::NumberToString(static_cast<int>(ExecutionMode::kNumValues)),
        ExecutionMode::kNone},
-      {base::IntToString(static_cast<int>(ExecutionMode::kNumValues) + 1),
+      {base::NumberToString(static_cast<int>(ExecutionMode::kNumValues) + 1),
        ExecutionMode::kNone},
-      {base::IntToString(static_cast<int>(ExecutionMode::kNone) - 1),
+      {base::NumberToString(static_cast<int>(ExecutionMode::kNone) - 1),
        ExecutionMode::kNone},
       {"invalid-value", ExecutionMode::kNone},
   };

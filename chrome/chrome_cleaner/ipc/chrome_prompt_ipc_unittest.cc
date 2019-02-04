@@ -152,10 +152,10 @@ class ChromePromptIPCParentProcess : public ParentProcess {
     if (test_config.with_registry_keys)
       AppendSwitch(kIncludeRegistryKeysSwitch);
     AppendSwitch(kExpectedPromptResultSwitch,
-                 base::IntToString(
+                 base::NumberToString(
                      static_cast<int>(test_config.expected_prompt_acceptance)));
     AppendSwitch(kExpectedParentDisconnectedSwitch,
-                 base::IntToString(static_cast<int>(
+                 base::NumberToString(static_cast<int>(
                      test_config.expected_parent_disconnected)));
   }
 

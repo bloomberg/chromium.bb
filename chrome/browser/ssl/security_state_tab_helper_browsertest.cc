@@ -418,7 +418,7 @@ void ProceedThroughInterstitial(content::WebContents* tab) {
             tab);
     helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
         ->CommandReceived(
-            base::IntToString(security_interstitials::CMD_PROCEED));
+            base::NumberToString(security_interstitials::CMD_PROCEED));
     nav_observer.Wait();
   } else {
     content::InterstitialPage* interstitial_page = tab->GetInterstitialPage();

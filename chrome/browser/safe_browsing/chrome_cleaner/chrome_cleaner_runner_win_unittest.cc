@@ -189,7 +189,7 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
 
   EXPECT_EQ(
       command_line_.GetSwitchValueASCII(chrome_cleaner::kExecutionModeSwitch),
-      base::IntToString(
+      base::NumberToString(
           static_cast<int>(chrome_cleaner::ExecutionMode::kScanning)));
 
   // Ensure that the engine flag is always set and that it correctly reflects
@@ -215,7 +215,7 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
       command_line_.HasSwitch(chrome_cleaner::kWithScanningModeLogsSwitch));
   EXPECT_EQ(
       command_line_.GetSwitchValueASCII(chrome_cleaner::kChromePromptSwitch),
-      base::IntToString(static_cast<int>(chrome_prompt_)));
+      base::NumberToString(static_cast<int>(chrome_prompt_)));
 
   const std::string reboot_prompt_method = command_line_.GetSwitchValueASCII(
       chrome_cleaner::kRebootPromptMethodSwitch);

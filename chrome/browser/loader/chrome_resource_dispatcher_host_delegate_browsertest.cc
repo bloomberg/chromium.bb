@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   // Note we need to replace the port of the redirect's URL.
   base::StringPairs replacement_text;
   replacement_text.push_back(std::make_pair(
-      "{{PORT}}", base::UintToString(embedded_test_server()->port())));
+      "{{PORT}}", base::NumberToString(embedded_test_server()->port())));
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       "/mirror_request_header/http.www.google.com.html", replacement_text);
   all_tests.push_back(
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   // First one should have the header, but not transfered to second one.
   replacement_text.clear();
   replacement_text.push_back(
-      std::make_pair("{{PORT}}", base::UintToString(https_server.port())));
+      std::make_pair("{{PORT}}", base::NumberToString(https_server.port())));
   replacement_path = net::test_server::GetFilePathWithReplacements(
       "/mirror_request_header/https.www.google.com.html", replacement_text);
   all_tests.push_back({https_server.GetURL("www.google.com", replacement_path),

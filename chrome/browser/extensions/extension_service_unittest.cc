@@ -696,7 +696,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     msg += " ";
     msg += pref_path;
     msg += " = ";
-    msg += base::IntToString(value);
+    msg += base::NumberToString(value);
 
     SetPref(extension_id, pref_path, std::make_unique<base::Value>(value), msg);
   }

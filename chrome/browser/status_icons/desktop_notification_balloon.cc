@@ -44,7 +44,7 @@ void DesktopNotificationBalloon::DisplayBalloon(
   }
 
   const std::string notification_id =
-      kDesktopNotificationPrefix + base::IntToString(id_count_++);
+      kDesktopNotificationPrefix + base::NumberToString(id_count_++);
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
       contents, gfx::Image(icon), base::string16(), GURL(), notifier_id, {},

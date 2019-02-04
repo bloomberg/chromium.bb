@@ -194,9 +194,9 @@ void NaClDomHandler::AddOperatingSystemInfo(base::ListValue* list) {
     case base::win::VERSION_WIN8: os_label += " 8 or Server 2012"; break;
     default:  os_label += " UNKNOWN"; break;
   }
-  os_label += " SP" + base::IntToString(os->service_pack().major);
+  os_label += " SP" + base::NumberToString(os->service_pack().major);
   if (os->service_pack().minor > 0)
-    os_label += "." + base::IntToString(os->service_pack().minor);
+    os_label += "." + base::NumberToString(os->service_pack().minor);
   if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
     os_label += " 64 bit";
 #endif

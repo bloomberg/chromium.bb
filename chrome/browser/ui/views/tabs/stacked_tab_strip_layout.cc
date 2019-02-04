@@ -265,7 +265,7 @@ std::string StackedTabStripLayout::BoundsString() const {
       result += " ";
     if (i == active_index())
       result += "[";
-    result += base::IntToString(view_model_->ideal_bounds(i).x());
+    result += base::NumberToString(view_model_->ideal_bounds(i).x());
     if (i == active_index())
       result += "]";
   }

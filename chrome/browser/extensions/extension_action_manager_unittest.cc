@@ -75,7 +75,7 @@ scoped_refptr<const Extension> ExtensionActionManagerTest::BuildExtension(
     std::unique_ptr<base::DictionaryValue> extension_icons,
     std::unique_ptr<base::DictionaryValue> action,
     const char* action_type) {
-  std::string id = base::IntToString(curr_id_++);
+  std::string id = base::NumberToString(curr_id_++);
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(

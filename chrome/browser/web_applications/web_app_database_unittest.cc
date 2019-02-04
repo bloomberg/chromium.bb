@@ -78,11 +78,13 @@ class WebAppDatabaseTest : public testing::Test {
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
                                               int suffix) {
-    const auto launch_url = base_url + base::IntToString(suffix);
+    const auto launch_url = base_url + base::NumberToString(suffix);
     const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
-    const std::string name = "Name" + base::IntToString(suffix);
-    const std::string description = "Description" + base::IntToString(suffix);
-    const std::string scope = base_url + "/scope" + base::IntToString(suffix);
+    const std::string name = "Name" + base::NumberToString(suffix);
+    const std::string description =
+        "Description" + base::NumberToString(suffix);
+    const std::string scope =
+        base_url + "/scope" + base::NumberToString(suffix);
     const base::Optional<SkColor> theme_color = suffix;
 
     auto app = std::make_unique<WebApp>(app_id);
@@ -93,7 +95,8 @@ class WebAppDatabaseTest : public testing::Test {
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
 
-    const std::string icon_url = base_url + "/icon" + base::IntToString(suffix);
+    const std::string icon_url =
+        base_url + "/icon" + base::NumberToString(suffix);
     const int icon_size_in_px = 256;
 
     WebApp::Icons icons;
@@ -247,7 +250,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   WebApp::Icons icons;
   for (int i = 1; i <= num_icons; ++i) {
     const std::string icon_url =
-        base_url + "/icon" + base::IntToString(num_icons);
+        base_url + "/icon" + base::NumberToString(num_icons);
     // Let size equals the icon's number squared.
     const int icon_size_in_px = i * i;
     icons.push_back({GURL(icon_url), icon_size_in_px});

@@ -169,7 +169,7 @@ WebrtcAudioPrivateFunction::GetRenderProcessHostFromRequest(
                                     nullptr, &contents, nullptr)) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
-        base::IntToString(tab_id));
+        base::NumberToString(tab_id));
     return nullptr;
   }
   GURL expected_origin = contents->GetLastCommittedURL().GetOrigin();

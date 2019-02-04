@@ -138,7 +138,7 @@ void WritePerUserStat(const wchar_t* value_name, uint32_t value) {
     WriteGoogleUpdateAggregateNumKeyInternal(value_name, value, L"sum()");
   } else {
     // Write |value| as a string in value |value_name|.
-    WriteUserGoogleUpdateStrKey(value_name, base::UintToString16(value));
+    WriteUserGoogleUpdateStrKey(value_name, base::NumberToString16(value));
   }
 }
 
@@ -359,10 +359,10 @@ void GoogleUpdateSettings::StoreMetricsClientInfo(
                               base::UTF8ToUTF16(client_info.client_id));
   WriteUserGoogleUpdateStrKey(
       google_update::kRegMetricsIdInstallDate,
-      base::Int64ToString16(client_info.installation_date));
+      base::NumberToString16(client_info.installation_date));
   WriteUserGoogleUpdateStrKey(
       google_update::kRegMetricsIdEnabledDate,
-      base::Int64ToString16(client_info.reporting_enabled_date));
+      base::NumberToString16(client_info.reporting_enabled_date));
 }
 
 // EULA consent is only relevant for system-level installs.
@@ -396,7 +396,7 @@ int GoogleUpdateSettings::GetLastRunTime() {
 bool GoogleUpdateSettings::SetLastRunTime() {
   int64_t time = base::Time::NowFromSystemTime().ToInternalValue();
   return WriteUserGoogleUpdateStrKey(google_update::kRegLastRunTimeField,
-                                     base::Int64ToString16(time));
+                                     base::NumberToString16(time));
 }
 
 bool GoogleUpdateSettings::RemoveLastRunTime() {

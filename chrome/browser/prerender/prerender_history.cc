@@ -48,7 +48,7 @@ std::unique_ptr<base::Value> PrerenderHistory::CopyEntriesAsValue() const {
     // integers.
     entry_dict->SetString(
         "end_time",
-        base::Int64ToString((entry.end_time - epoch_start).InMilliseconds()));
+        base::NumberToString((entry.end_time - epoch_start).InMilliseconds()));
     return_list->Append(std::move(entry_dict));
   }
   return std::move(return_list);

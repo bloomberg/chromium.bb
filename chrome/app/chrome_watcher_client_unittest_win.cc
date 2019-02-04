@@ -154,7 +154,7 @@ class ChromeWatcherClientThread : public base::SimpleThread {
   ChromeWatcherClient& client() { return client_; }
 
   base::string16 NamedEventSuffix() {
-    return base::UintToString16(base::GetCurrentProcId());
+    return base::NumberToString16(base::GetCurrentProcId());
   }
 
   // base::SimpleThread implementation.
@@ -175,10 +175,10 @@ class ChromeWatcherClientThread : public base::SimpleThread {
                           "ChromeWatcherClientTestProcess");
     ret.AppendSwitchASCII(
         kEventHandle,
-        base::UintToString(base::win::HandleToUint32(on_initialized_event)));
+        base::NumberToString(base::win::HandleToUint32(on_initialized_event)));
     ret.AppendSwitchASCII(
         kParentHandle,
-        base::UintToString(base::win::HandleToUint32(parent_handle)));
+        base::NumberToString(base::win::HandleToUint32(parent_handle)));
 
     // Our child does not actually need the main thread ID, but we verify here
     // that the correct ID is being passed from the client.

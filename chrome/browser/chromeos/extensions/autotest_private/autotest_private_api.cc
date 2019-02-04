@@ -264,7 +264,7 @@ void AutotestPrivateLoginStatusFunction::OnIsReadyForPassword(bool is_ready) {
           break;
 
         default:
-          user_image = base::IntToString(user->image_index());
+          user_image = base::NumberToString(user->image_index());
           break;
       }
       result->SetString("userImage", user_image);
@@ -784,7 +784,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
                         base::Value(package_info->package_version));
   package_value->SetKey(
       "lastBackupAndroidId",
-      base::Value(base::Int64ToString(package_info->last_backup_android_id)));
+      base::Value(base::NumberToString(package_info->last_backup_android_id)));
   package_value->SetKey("lastBackupTime",
                         base::Value(base::Time::FromDeltaSinceWindowsEpoch(
                                         base::TimeDelta::FromMicroseconds(
