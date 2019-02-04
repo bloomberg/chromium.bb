@@ -64,14 +64,13 @@ public class ChromeApplication extends Application {
     public void onCreate() {
         super.onCreate();
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
-        if (isBrowserProcess()) initDefaultNightMode();
     }
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        boolean isBrowserProcess = isBrowserProcess();
+        boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
@@ -129,10 +128,6 @@ public class ChromeApplication extends Application {
             }
         }
         AsyncTask.takeOverAndroidThreadPool();
-    }
-
-    private static boolean isBrowserProcess() {
-        return !ContextUtils.getProcessName().contains(":");
     }
 
     private static Boolean shouldUseDebugFlags() {
@@ -229,7 +224,8 @@ public class ChromeApplication extends Application {
         });
     }
 
-    private void initDefaultNightMode() {
+    // TODO(huayinz): move this to somewhere else.
+    public void initDefaultNightMode() {
         if (FeatureUtilities.isNightModeAvailable()) {
             // TODO(huayinz): Initialize default night mode based on settings.
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
