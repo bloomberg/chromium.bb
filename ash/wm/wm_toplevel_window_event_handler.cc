@@ -484,6 +484,11 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
 
   end_closure_ = std::move(end_closure);
   in_gesture_drag_ = (source == ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  // |gesture_target_| needs to be updated if the drag originated from a
+  // client (i.e. |this| never handled ET_GESTURE_EVENT_BEGIN).
+  if (in_gesture_drag_ && !gesture_target_)
+    UpdateGestureTarget(window);
+
   return true;
 }
 

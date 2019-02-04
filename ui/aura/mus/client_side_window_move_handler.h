@@ -43,10 +43,19 @@ class ClientSideWindowMoveHandler : public ui::EventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  void OnWindowMoveDone(bool success);
+
   Env* env_;
   WindowTreeClient* client_;
   WindowTracker last_shadow_target_;
+
+  // |last_target_| tracks the toplevel Window that will be the subject of a
+  // potential window move.
   WindowTracker last_target_;
+
+  // |dragging_window_| is the window that's currently being moved, if any.
+  Window* dragging_window_ = nullptr;
+
   gfx::Point last_location_;
   int last_component_ = HTNOWHERE;
 
