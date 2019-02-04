@@ -14,7 +14,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -26,7 +26,7 @@ namespace blink {
 namespace {
 
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
-                              public MemoryCoordinatorClient {
+                              public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
 
   void OnPurgeMemory() override {
@@ -335,7 +335,7 @@ ParkableStringManager::ParkableStringManager()
       parked_strings_() {
   // No need to ever unregister, as the only ParkableStringManager instance
   // lives forever.
-  MemoryCoordinator::Instance().RegisterClient(
+  MemoryPressureListenerRegistry::Instance().RegisterClient(
       MakeGarbageCollected<OnPurgeMemoryListener>());
 }
 

@@ -142,7 +142,7 @@ Resource::Resource(const ResourceRequest& request,
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
 
   if (IsMainThread())
-    MemoryCoordinator::Instance().RegisterClient(this);
+    MemoryPressureListenerRegistry::Instance().RegisterClient(this);
 }
 
 Resource::~Resource() {
@@ -156,7 +156,7 @@ void Resource::Trace(blink::Visitor* visitor) {
   visitor->Trace(clients_awaiting_callback_);
   visitor->Trace(finished_clients_);
   visitor->Trace(finish_observers_);
-  MemoryCoordinatorClient::Trace(visitor);
+  MemoryPressureListener::Trace(visitor);
 }
 
 void Resource::SetLoader(ResourceLoader* loader) {

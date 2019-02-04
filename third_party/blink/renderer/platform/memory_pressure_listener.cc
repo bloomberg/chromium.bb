@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
@@ -28,15 +28,15 @@ void DecommitFreeableMemory() {
 }
 
 // static
-bool MemoryCoordinator::is_low_end_device_ = false;
+bool MemoryPressureListenerRegistry::is_low_end_device_ = false;
 
 // static
-bool MemoryCoordinator::IsLowEndDevice() {
+bool MemoryPressureListenerRegistry::IsLowEndDevice() {
   return is_low_end_device_;
 }
 
 // static
-bool MemoryCoordinator::IsCurrentlyLowMemory() {
+bool MemoryPressureListenerRegistry::IsCurrentlyLowMemory() {
 #if defined(OS_ANDROID)
   return base::android::SysUtils::IsCurrentlyLowMemory();
 #else
@@ -45,50 +45,54 @@ bool MemoryCoordinator::IsCurrentlyLowMemory() {
 }
 
 // static
-void MemoryCoordinator::Initialize() {
+void MemoryPressureListenerRegistry::Initialize() {
   is_low_end_device_ = ::base::SysInfo::IsLowEndDevice();
   ApproximatedDeviceMemory::Initialize();
 }
 
 // static
-void MemoryCoordinator::SetIsLowEndDeviceForTesting(bool is_low_end_device) {
+void MemoryPressureListenerRegistry::SetIsLowEndDeviceForTesting(
+    bool is_low_end_device) {
   is_low_end_device_ = is_low_end_device;
 }
 
 // static
-MemoryCoordinator& MemoryCoordinator::Instance() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistent<MemoryCoordinator>,
-                                  external,
-                                  (MakeGarbageCollected<MemoryCoordinator>()));
+MemoryPressureListenerRegistry& MemoryPressureListenerRegistry::Instance() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CrossThreadPersistent<MemoryPressureListenerRegistry>, external,
+      (MakeGarbageCollected<MemoryPressureListenerRegistry>()));
   return *external.Get();
 }
 
-void MemoryCoordinator::RegisterThread(Thread* thread) {
+void MemoryPressureListenerRegistry::RegisterThread(Thread* thread) {
   MutexLocker lock(threads_mutex_);
   threads_.insert(thread);
 }
 
-void MemoryCoordinator::UnregisterThread(Thread* thread) {
+void MemoryPressureListenerRegistry::UnregisterThread(Thread* thread) {
   MutexLocker lock(threads_mutex_);
   threads_.erase(thread);
 }
 
-MemoryCoordinator::MemoryCoordinator() = default;
+MemoryPressureListenerRegistry::MemoryPressureListenerRegistry() = default;
 
-void MemoryCoordinator::RegisterClient(MemoryCoordinatorClient* client) {
+void MemoryPressureListenerRegistry::RegisterClient(
+    MemoryPressureListener* client) {
   DCHECK(IsMainThread());
   DCHECK(client);
   DCHECK(!clients_.Contains(client));
   clients_.insert(client);
 }
 
-void MemoryCoordinator::UnregisterClient(MemoryCoordinatorClient* client) {
+void MemoryPressureListenerRegistry::UnregisterClient(
+    MemoryPressureListener* client) {
   DCHECK(IsMainThread());
   clients_.erase(client);
 }
 
-void MemoryCoordinator::OnMemoryPressure(WebMemoryPressureLevel level) {
-  TRACE_EVENT0("blink", "MemoryCoordinator::onMemoryPressure");
+void MemoryPressureListenerRegistry::OnMemoryPressure(
+    WebMemoryPressureLevel level) {
+  TRACE_EVENT0("blink", "MemoryPressureListenerRegistry::onMemoryPressure");
   for (auto& client : clients_)
     client->OnMemoryPressure(level);
   if (level == kWebMemoryPressureLevelCritical)
@@ -96,12 +100,12 @@ void MemoryCoordinator::OnMemoryPressure(WebMemoryPressureLevel level) {
   WTF::Partitions::DecommitFreeableMemory();
 }
 
-void MemoryCoordinator::OnMemoryStateChange(MemoryState state) {
+void MemoryPressureListenerRegistry::OnMemoryStateChange(MemoryState state) {
   for (auto& client : clients_)
     client->OnMemoryStateChange(state);
 }
 
-void MemoryCoordinator::OnPurgeMemory() {
+void MemoryPressureListenerRegistry::OnPurgeMemory() {
   for (auto& client : clients_)
     client->OnPurgeMemory();
   // Don't call clearMemory() because font cache invalidation always causes full
@@ -119,21 +123,22 @@ void MemoryCoordinator::OnPurgeMemory() {
 
     PostCrossThreadTask(
         *thread->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(MemoryCoordinator::ClearThreadSpecificMemory));
+        CrossThreadBind(
+            MemoryPressureListenerRegistry::ClearThreadSpecificMemory));
   }
 }
 
-void MemoryCoordinator::ClearMemory() {
-  // TODO(tasak|bashi): Make FontCache a MemoryCoordinatorClient rather than
+void MemoryPressureListenerRegistry::ClearMemory() {
+  // TODO(tasak|bashi): Make FontCache a MemoryPressureListener rather than
   // clearing caches here.
   FontGlobalContext::ClearMemory();
 }
 
-void MemoryCoordinator::ClearThreadSpecificMemory() {
+void MemoryPressureListenerRegistry::ClearThreadSpecificMemory() {
   FontGlobalContext::ClearMemory();
 }
 
-void MemoryCoordinator::Trace(blink::Visitor* visitor) {
+void MemoryPressureListenerRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(clients_);
 }
 

@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
@@ -1353,7 +1353,7 @@ bool NormalPage::Sweep() {
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
       // Discarding pages increases page faults and may regress performance.
       // So we enable this only on low-RAM devices.
-      if (MemoryCoordinator::IsLowEndDevice())
+      if (MemoryPressureListenerRegistry::IsLowEndDevice())
         DiscardPages(start_of_gap + sizeof(FreeListEntry), header_address);
 #endif
     }
@@ -1369,7 +1369,7 @@ bool NormalPage::Sweep() {
   if (start_of_gap != Payload() && start_of_gap != PayloadEnd()) {
     page_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-    if (MemoryCoordinator::IsLowEndDevice())
+    if (MemoryPressureListenerRegistry::IsLowEndDevice())
       DiscardPages(start_of_gap + sizeof(FreeListEntry), PayloadEnd());
 #endif
   }

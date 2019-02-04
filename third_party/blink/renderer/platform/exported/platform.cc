@@ -61,7 +61,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -186,7 +186,7 @@ void Platform::InitializeCommon(Platform* platform,
   Thread::SetMainThread(std::move(main_thread));
 
   ProcessHeap::Init();
-  MemoryCoordinator::Initialize();
+  MemoryPressureListenerRegistry::Initialize();
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpProvider::Options options;
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
