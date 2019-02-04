@@ -113,14 +113,14 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
                              const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to import a top-level classic script on the worker thread.
-  // Called on the main thread after start().
+  // Called on the main thread after Start().
   void ImportClassicScript(
       const KURL& script_url,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to import a top-level module script on the worker thread.
-  // Called on the main thread after start().
+  // Called on the main thread after Start().
   void ImportModuleScript(
       const KURL& script_url,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
