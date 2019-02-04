@@ -133,6 +133,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "components/crash/content/app/breakpad_linux.h"
+#include "v8/include/v8-wasm-trap-handler-posix.h"
 #include "v8/include/v8.h"
 #endif
 
@@ -592,7 +593,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   v8_crashpad_support::SetUp();
 #endif
 #if defined(OS_LINUX)
-  breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);
+  breakpad::SetFirstChanceExceptionHandler(v8::TryHandleWebAssemblyTrapPosix);
 #endif
 
 #if defined(OS_POSIX)

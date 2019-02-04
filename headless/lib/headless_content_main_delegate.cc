@@ -21,7 +21,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -46,6 +45,10 @@
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "components/crash/content/app/crashpad.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "components/crash/content/app/breakpad_linux.h"
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
