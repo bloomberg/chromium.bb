@@ -1604,32 +1604,6 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
   }
 }
 
-monochrome_public_apk_or_module_tmpl("monochrome_public_base_bundle_module") {
-  module_name = "MonochromePublicBase"
-  target_type = "android_app_bundle_module"
-  is_base_module = true
-}
-
-if (android_64bit_target_cpu && enable_64_bit_browser) {
-  monochrome_public_apk_or_module_tmpl(
-      "monochrome_64_public_base_bundle_module") {
-    module_name = "Monochrome64PublicBase"
-    target_type = "android_app_bundle_module"
-    is_base_module = true
-    is_64_bit_browser = true
-    include_32_bit_webview = false
-  }
-
-  monochrome_public_apk_or_module_tmpl(
-      "monochrome_64_32_public_base_bundle_module") {
-    module_name = "Monochrome6432PublicBase"
-    target_type = "android_app_bundle_module"
-    is_base_module = true
-    is_64_bit_browser = true
-    include_32_bit_webview = true
-  }
-}
-
 if (public_android_sdk) {
   trichrome_library_apk_tmpl("trichrome_library_apk") {
     apk_name = "TrichromeLibrary"
@@ -1850,16 +1824,8 @@ if (defined(expected_static_initializer_count)) {
 }
 
 # Feature modules that go into Chrome Android application bundles.
-if (modularize_ar) {
-  ar_module_tmpl("ar_public_bundle_module") {
-    manifest_package = manifest_package
-    module_name = "ArPublic"
-    base_module_target = ":monochrome_public_base_bundle_module"
-    version_code = monochrome_version_code
-    version_name = chrome_version_name
-  }
-}
-
+# Note that Monochrome feature modules are instantiated in the Monochrome
+# bundle target template.
 if (modularize_vr) {
   vr_module_tmpl("vr_public_bundle_module") {
     manifest_package = manifest_package
@@ -1868,15 +1834,6 @@ if (modularize_vr) {
     version_code = chrome_modern_version_code
     version_name = chrome_version_name
     uncompress_shared_libraries = chromium_linker_supported
-  }
-
-  vr_module_tmpl("vr_monochrome_public_bundle_module") {
-    manifest_package = manifest_package
-    module_name = "VrMonochromePublic"
-    base_module_target = ":monochrome_public_base_bundle_module"
-    version_code = monochrome_version_code
-    version_name = chrome_version_name
-    uncompress_shared_libraries = true
   }
 }
 
@@ -1914,13 +1871,45 @@ android_app_bundle("chrome_modern_public_bundle") {
 }
 
 template("monochrome_public_bundle_tmpl") {
-  android_app_bundle(target_name) {
+  _bundle_name = "MonochromePublic${invoker.bundle_suffix}"
+  _base_module_target_name = "${invoker.target_name}__base_bundle_module"
+
+  monochrome_public_apk_or_module_tmpl(_base_module_target_name) {
     forward_variables_from(invoker,
                            [
-                             "bundle_name",
-                             "base_module_target",
+                             "is_64_bit_browser",
+                             "include_32_bit_webview",
                            ])
+    module_name = "${_bundle_name}Base"
+    target_type = "android_app_bundle_module"
+    is_base_module = true
+  }
 
+  if (modularize_ar) {
+    ar_module_tmpl("${target_name}__ar_bundle_module") {
+      manifest_package = manifest_package
+      module_name = "Ar" + _bundle_name
+      base_module_target = ":$_base_module_target_name"
+      version_code = monochrome_version_code
+      version_name = chrome_version_name
+      forward_variables_from(invoker, [ "is_64_bit_browser" ])
+    }
+  }
+
+  if (modularize_vr) {
+    vr_module_tmpl("${target_name}__vr_bundle_module") {
+      manifest_package = manifest_package
+      module_name = "Vr" + _bundle_name
+      base_module_target = ":$_base_module_target_name"
+      version_code = monochrome_version_code
+      version_name = chrome_version_name
+      uncompress_shared_libraries = true
+    }
+  }
+
+  android_app_bundle(target_name) {
+    bundle_name = _bundle_name
+    base_module_target = ":$_base_module_target_name"
     command_line_flags_file = "chrome-command-line"
     if (!is_java_debug) {
       proguard_enabled = true
@@ -1928,13 +1917,12 @@ template("monochrome_public_bundle_tmpl") {
     }
     enable_language_splits = enable_chrome_language_splits
 
-    # TODO(cjgrant): We need to create base-module-specific module targets.
     extra_modules = []
     if (modularize_ar) {
       extra_modules = [
         {
           name = "ar"
-          module_target = ":ar_public_bundle_module"
+          module_target = ":${target_name}__ar_bundle_module"
         },
       ]
     }
@@ -1942,7 +1930,7 @@ template("monochrome_public_bundle_tmpl") {
       extra_modules += [
         {
           name = "vr"
-          module_target = ":vr_monochrome_public_bundle_module"
+          module_target = ":${target_name}__vr_bundle_module"
         },
       ]
     }
@@ -1950,18 +1938,19 @@ template("monochrome_public_bundle_tmpl") {
 }
 
 monochrome_public_bundle_tmpl("monochrome_public_bundle") {
-  bundle_name = "MonochromePublic"
-  base_module_target = ":monochrome_public_base_bundle_module"
+  bundle_suffix = ""
 }
 
 if (android_64bit_target_cpu && enable_64_bit_browser) {
   monochrome_public_bundle_tmpl("monochrome_64_public_bundle") {
-    bundle_name = "MonochromePublic64"
-    base_module_target = ":monochrome_64_public_base_bundle_module"
+    bundle_suffix = "64"
+    is_64_bit_browser = true
+    include_32_bit_webview = false
   }
 
   monochrome_public_bundle_tmpl("monochrome_64_32_public_bundle") {
-    bundle_name = "MonochromePublic6432"
-    base_module_target = ":monochrome_64_32_public_base_bundle_module"
+    bundle_suffix = "6432"
+    is_64_bit_browser = true
+    include_32_bit_webview = true
   }
 }
