@@ -2295,8 +2295,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
       nested_iframe_node->render_manager()->GetProxyToParent();
   CrossProcessFrameConnector* connector =
       proxy_to_parent->cross_process_frame_connector();
-  ASSERT_EQ(blink::mojom::FrameVisibility::kRenderedOutOfViewport,
-            connector->visibility());
+
+  while (blink::mojom::FrameVisibility::kRenderedOutOfViewport !=
+         connector->visibility()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
 }
 
 // This test verifies that smooth scrolling works correctly inside nested OOPIFs
