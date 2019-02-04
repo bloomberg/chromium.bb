@@ -217,6 +217,15 @@ struct SignificantFields {
   }
 };
 
+// Returns true if |field| is in |significant_fields|.
+bool IsFieldInSignificantFields(const SignificantFields& significant_fields,
+                                const FormFieldData* field) {
+  return significant_fields.username == field ||
+         significant_fields.password == field ||
+         significant_fields.new_password == field ||
+         significant_fields.confirmation_password == field;
+}
+
 // Returns the first element of |fields| which has the specified
 // |unique_renderer_id|, or null if there is no such element.
 ProcessedField* FindFieldWithUniqueRendererId(
@@ -372,6 +381,10 @@ void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
   const FormFieldData* field_marked_as_username = nullptr;
   int username_fields_found = 0;
   for (const ProcessedField& processed_field : processed_fields) {
+    if (IsFieldInSignificantFields(*result, processed_field.field)) {
+      // Skip this field because it was already chosen in previous steps.
+      continue;
+    }
     switch (processed_field.autocomplete_flag) {
       case AutocompleteFlag::kUsername:
         if (processed_field.is_password || result->username)

@@ -1953,6 +1953,20 @@ TEST(FormParserTest, TypedValues) {
                   }}});
 }
 
+TEST(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
+  CheckTestData({{"Server data and autocomplete contradics each other",
+                  // On saving, server predictions for passwords are ignored.
+                  // So autocomplete attributes define the role. On filling,
+                  // both server predictions and autocomplete are considered and
+                  // server predictions have higher priority and therefore
+                  // define the role. An autofill attributes cannot override it.
+                  {{.role_filling = ElementRole::CURRENT_PASSWORD,
+                    .role_saving = ElementRole::NEW_PASSWORD,
+                    .form_control_type = "password",
+                    .prediction = {.type = autofill::PASSWORD},
+                    .autocomplete_attribute = "new-password"}}}});
+}
+
 }  // namespace
 
 }  // namespace password_manager
