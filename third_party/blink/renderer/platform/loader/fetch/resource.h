@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -92,7 +92,7 @@ enum class ResourceType : uint8_t {
 // requested data has arrived. This class also does the actual communication
 // with the loader to obtain the resource from the network.
 class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
-                                 public MemoryCoordinatorClient {
+                                 public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(Resource);
   WTF_MAKE_NONCOPYABLE(Resource);
 
@@ -513,7 +513,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   String ReasonNotDeletable() const;
 
-  // MemoryCoordinatorClient overrides:
+  // MemoryPressureListener overrides:
   void OnPurgeMemory() override;
 
   void CheckResourceIntegrity();

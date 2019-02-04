@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
@@ -31,7 +31,7 @@ WebThreadSupportingGC::WebThreadSupportingGC(
       thread_ = Thread::CreateThread(params);
     }
   }
-  MemoryCoordinator::Instance().RegisterThread(thread_.get());
+  MemoryPressureListenerRegistry::Instance().RegisterThread(thread_.get());
 }
 
 WebThreadSupportingGC::~WebThreadSupportingGC() {
@@ -39,7 +39,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC() {
   Thread* thread_pointer = thread_.get();
   // blink::Thread's destructor blocks until all the tasks are processed.
   thread_.reset();
-  MemoryCoordinator::Instance().UnregisterThread(thread_pointer);
+  MemoryPressureListenerRegistry::Instance().UnregisterThread(thread_pointer);
 }
 
 void WebThreadSupportingGC::InitializeOnThread() {

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
 namespace blink {
 
@@ -25,7 +25,7 @@ namespace blink {
 // guarantee that the data buffer will not be purged.
 class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                                                public ResourceClient,
-                                               public MemoryCoordinatorClient {
+                                               public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(ClassicPendingScript);
 
  public:
@@ -105,7 +105,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
       bool can_use_streamer,
       ScriptStreamer::NotStreamingReason reason);
 
-  // MemoryCoordinatorClient
+  // MemoryPressureListener
   void OnPurgeMemory() override;
 
   const ScriptFetchOptions options_;

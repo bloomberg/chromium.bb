@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
@@ -67,7 +67,7 @@ KURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {
 }
 
 bool IsBackgroundAvailabilityMonitoringDisabled() {
-  return MemoryCoordinator::IsLowEndDevice();
+  return MemoryPressureListenerRegistry::IsLowEndDevice();
 }
 
 }  // anonymous namespace

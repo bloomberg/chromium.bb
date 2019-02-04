@@ -3508,11 +3508,12 @@ String Internals::evaluateInInspectorOverlay(const String& script) {
 }
 
 void Internals::setIsLowEndDevice(bool is_low_end_device) {
-  MemoryCoordinator::SetIsLowEndDeviceForTesting(is_low_end_device);
+  MemoryPressureListenerRegistry::SetIsLowEndDeviceForTesting(
+      is_low_end_device);
 }
 
 bool Internals::isLowEndDevice() const {
-  return MemoryCoordinator::IsLowEndDevice();
+  return MemoryPressureListenerRegistry::IsLowEndDevice();
 }
 
 Vector<String> Internals::supportedTextEncodingLabels() const {

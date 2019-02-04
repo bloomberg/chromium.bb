@@ -43,7 +43,7 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   static FontUniqueNameLookup* GetFontUniqueNameLookup();
 
-  // Called by MemoryCoordinator to clear memory.
+  // Called by MemoryPressureListenerRegistry to clear memory.
   static void ClearMemory();
 
  private:

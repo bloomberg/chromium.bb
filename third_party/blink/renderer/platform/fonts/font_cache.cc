@@ -345,7 +345,7 @@ void FontCache::InvalidateShapeCache() {
 void FontCache::Purge(PurgeSeverity purge_severity) {
   // Ideally we should never be forcing the purge while the
   // FontCachePurgePreventer is in scope, but we call purge() at any timing
-  // via MemoryCoordinator.
+  // via MemoryPressureListenerRegistry.
   if (purge_prevent_count_)
     return;
 

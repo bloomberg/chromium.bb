@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -71,7 +71,7 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
 class PLATFORM_EXPORT MemoryCache final
     : public GarbageCollectedFinalized<MemoryCache>,
       public MemoryCacheDumpClient,
-      public MemoryCoordinatorClient {
+      public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(MemoryCache);
   WTF_MAKE_NONCOPYABLE(MemoryCache);
 

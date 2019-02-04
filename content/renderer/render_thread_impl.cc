@@ -149,7 +149,7 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
-#include "third_party/blink/public/platform/web_memory_coordinator.h"
+#include "third_party/blink/public/platform/web_memory_pressure_listener.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -2249,7 +2249,7 @@ void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   TRACE_EVENT0("memory", "RenderThreadImpl::OnMemoryPressure");
   if (blink_platform_impl_) {
-    blink::WebMemoryCoordinator::OnMemoryPressure(
+    blink::WebMemoryPressureListener::OnMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
   }
   if (memory_pressure_level ==
@@ -2428,7 +2428,7 @@ void RenderThreadImpl::ReleaseFreeMemory() {
   if (blink_platform_impl_) {
     // Purge Skia font cache, resource cache, and image filter.
     SkGraphics::PurgeAllCaches();
-    blink::WebMemoryCoordinator::OnPurgeMemory();
+    blink::WebMemoryPressureListener::OnPurgeMemory();
   }
 }
 

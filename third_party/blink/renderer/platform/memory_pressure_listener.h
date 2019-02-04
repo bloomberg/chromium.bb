@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_COORDINATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_COORDINATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_PRESSURE_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_PRESSURE_LISTENER_H_
 
 #include "third_party/blink/public/platform/web_memory_pressure_level.h"
 #include "third_party/blink/public/platform/web_memory_state.h"
@@ -15,12 +15,10 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT MemoryCoordinatorClient : public GarbageCollectedMixin {
+class PLATFORM_EXPORT MemoryPressureListener : public GarbageCollectedMixin {
  public:
-  virtual ~MemoryCoordinatorClient() = default;
+  virtual ~MemoryPressureListener() = default;
 
-  // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
-  // gone.
   virtual void OnMemoryPressure(WebMemoryPressureLevel) {}
 
   virtual void OnMemoryStateChange(MemoryState) {}
@@ -28,14 +26,14 @@ class PLATFORM_EXPORT MemoryCoordinatorClient : public GarbageCollectedMixin {
   virtual void OnPurgeMemory() {}
 };
 
-// MemoryCoordinator listens to some events which could be opportunities
-// for reducing memory consumption and notifies its clients.
-class PLATFORM_EXPORT MemoryCoordinator final
-    : public GarbageCollectedFinalized<MemoryCoordinator> {
-  WTF_MAKE_NONCOPYABLE(MemoryCoordinator);
+// MemoryPressureListenerRegistry listens to some events which could be
+// opportunities for reducing memory consumption and notifies its clients.
+class PLATFORM_EXPORT MemoryPressureListenerRegistry final
+    : public GarbageCollectedFinalized<MemoryPressureListenerRegistry> {
+  WTF_MAKE_NONCOPYABLE(MemoryPressureListenerRegistry);
 
  public:
-  static MemoryCoordinator& Instance();
+  static MemoryPressureListenerRegistry& Instance();
 
   // Whether the device Blink runs on is a low-end device.
   // Can be overridden in web tests via internals.
@@ -43,7 +41,6 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
   // Returns true when available memory is low.
   // This is not cheap and should not be called repeatedly.
-  // TODO(keishi): Remove when MemoryState is ready.
   static bool IsCurrentlyLowMemory();
 
   // Caches whether this device is a low-end device and the device physical
@@ -52,16 +49,14 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // the heap size.
   static void Initialize();
 
-  MemoryCoordinator();
+  MemoryPressureListenerRegistry();
 
   void RegisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
   void UnregisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
 
-  void RegisterClient(MemoryCoordinatorClient*);
-  void UnregisterClient(MemoryCoordinatorClient*);
+  void RegisterClient(MemoryPressureListener*);
+  void UnregisterClient(MemoryPressureListener*);
 
-  // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
-  // gone.
   void OnMemoryPressure(WebMemoryPressureLevel);
 
   void OnMemoryStateChange(MemoryState);
@@ -80,11 +75,11 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
   static bool is_low_end_device_;
 
-  HeapHashSet<WeakMember<MemoryCoordinatorClient>> clients_;
+  HeapHashSet<WeakMember<MemoryPressureListener>> clients_;
   HashSet<Thread*> threads_;
   Mutex threads_mutex_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_COORDINATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_PRESSURE_LISTENER_H_

@@ -18,7 +18,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
 namespace blink {
 
@@ -593,7 +593,7 @@ TEST_F(ParkableStringTest, OnPurgeMemoryInBackground) {
   EXPECT_FALSE(parkable.Impl()->is_parked());
   EXPECT_TRUE(parkable.Impl()->has_compressed_data());
 
-  MemoryCoordinator::Instance().OnPurgeMemory();
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
   parkable.ToString();
@@ -619,7 +619,7 @@ TEST_F(ParkableStringTest, OnPurgeMemoryInForeground) {
   String retained = parkable2.ToString();
   EXPECT_TRUE(parkable2.Impl()->has_compressed_data());
 
-  MemoryCoordinator::Instance().OnPurgeMemory();
+  MemoryPressureListenerRegistry::Instance().OnPurgeMemory();
   EXPECT_TRUE(parkable1.Impl()->is_parked());  // Parked synchronously.
   EXPECT_FALSE(parkable2.Impl()->is_parked());
   EXPECT_FALSE(parkable2.Impl()->has_compressed_data());  // Purged.

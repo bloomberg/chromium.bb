@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
 namespace {
 
@@ -43,13 +43,14 @@ CanvasFontCache::~CanvasFontCache() {
 }
 
 unsigned CanvasFontCache::MaxFonts() {
-  return MemoryCoordinator::IsLowEndDevice() ? CanvasFontCacheMaxFontsLowEnd
-                                             : CanvasFontCacheMaxFonts;
+  return MemoryPressureListenerRegistry::IsLowEndDevice()
+             ? CanvasFontCacheMaxFontsLowEnd
+             : CanvasFontCacheMaxFonts;
 }
 
 unsigned CanvasFontCache::HardMaxFonts() {
   return document_->hidden() ? CanvasFontCacheHiddenMaxFonts
-                             : (MemoryCoordinator::IsLowEndDevice()
+                             : (MemoryPressureListenerRegistry::IsLowEndDevice()
                                     ? CanvasFontCacheHardMaxFontsLowEnd
                                     : CanvasFontCacheHardMaxFonts);
 }

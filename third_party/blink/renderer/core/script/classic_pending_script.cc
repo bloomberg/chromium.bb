@@ -98,7 +98,7 @@ ClassicPendingScript::ClassicPendingScript(
       ready_state_(is_external ? kWaitingForResource : kReady),
       integrity_failure_(false) {
   CHECK(GetElement());
-  MemoryCoordinator::Instance().RegisterClient(this);
+  MemoryPressureListenerRegistry::Instance().RegisterClient(this);
 }
 
 ClassicPendingScript::~ClassicPendingScript() {}
@@ -191,7 +191,7 @@ void ClassicPendingScript::RecordStreamingHistogram(
 }
 
 void ClassicPendingScript::DisposeInternal() {
-  MemoryCoordinator::Instance().UnregisterClient(this);
+  MemoryPressureListenerRegistry::Instance().UnregisterClient(this);
   ClearResource();
   integrity_failure_ = false;
 }
@@ -269,7 +269,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
 
 void ClassicPendingScript::Trace(blink::Visitor* visitor) {
   ResourceClient::Trace(visitor);
-  MemoryCoordinatorClient::Trace(visitor);
+  MemoryPressureListener::Trace(visitor);
   PendingScript::Trace(visitor);
 }
 
