@@ -13,6 +13,7 @@ from chromite.cbuildbot.manifest_version import VersionInfo
 from chromite.cli import command_unittest
 from chromite.cli.cros.cros_branch import Branch
 from chromite.cli.cros.cros_branch import BranchCommand
+from chromite.cli.cros.cros_branch import BranchError
 from chromite.cli.cros.cros_branch import CanBranchProject
 from chromite.cli.cros.cros_branch import CanPinProject
 from chromite.cli.cros.cros_branch import CheckoutManager
@@ -325,8 +326,12 @@ class ManifestMockTestCase(ManifestTestCase, cros_test_lib.MockTestCase):
         repo_util.Repository, 'Manifest', return_value=self.full_manifest)
 
 
-class UtilitiesTest(ManifestTestCase):
+class UtilitiesTest(ManifestMockTestCase):
   """Tests for all top-level utility functions."""
+
+  def SetVersion(self, version):
+    self.PatchObject(VersionInfo, 'from_repo',
+                     return_value=VersionInfo(version))
 
   def testCanBranchProject(self):
     projects = filter(CanBranchProject, self.full_manifest.Projects())
@@ -344,9 +349,18 @@ class UtilitiesTest(ManifestTestCase):
     self.assertItemsEqual([p.Path() for p in projects],
                           map(self.PathFor, self.TOT_PROJECTS))
 
-  def testWhichVersionShouldBump(self):
-    self.assertEqual(WhichVersionShouldBump('1.0.0'), 'branch')
-    self.assertEqual(WhichVersionShouldBump('1.2.0'), 'patch')
+  def testWhichVersionShouldBumpZeroBranchNumber(self):
+    self.SetVersion('1.0.0')
+    self.assertEqual(WhichVersionShouldBump(), 'branch')
+
+  def testWhichVersionShouldBumpNonzeroBranchNumber(self):
+    self.SetVersion('1.2.0')
+    self.assertEqual(WhichVersionShouldBump(), 'patch')
+
+  def testWhichVersionShouldBumpNonzeroPatchNumber(self):
+    self.SetVersion('1.2.3')
+    with self.assertRaises(BranchError):
+      WhichVersionShouldBump()
 
 
 class CheckoutManagerTest(ManifestMockTestCase):
@@ -479,17 +493,8 @@ class ManifestRepositoryTest(ManifestMockTestCase):
 class BranchTest(ManifestMockTestCase):
   """Tests core functionality of Branch class."""
 
-  MILESTONE = '12'
-  VERSION = '3.4.0'
+  VERSION = '1.2.0'
   BRANCH_NAME = 'branch'
-  ORIGINAL_BRANCH_NAME = 'original'
-
-  def CreateInstance(self):
-    return Branch('kind', self.BRANCH_NAME)
-
-  def AssertSynced(self, args):
-    self.rc_mock.assertCommandContains(
-        [partial_mock.ListRegex('.*/repo_sync_manifest')] + args)
 
   def AssertProjectBranched(self, project, branch):
     self.rc_mock.assertCommandContains(
@@ -541,45 +546,33 @@ class BranchTest(ManifestMockTestCase):
 
     # ManifestRepository and VersionInfo tested separately, so mock them.
     self.PatchObject(ManifestRepository, 'RepairManifestsOnDisk')
+    self.PatchObject(VersionInfo, 'IncrementVersion')
+    self.PatchObject(VersionInfo, 'UpdateVersionFile')
     self.PatchObject(
         VersionInfo,
         'from_repo',
-        return_value=VersionInfo(self.VERSION, self.MILESTONE))
-    self.PatchObject(VersionInfo, 'IncrementVersion')
-    self.PatchObject(VersionInfo, 'UpdateVersionFile')
+        return_value=VersionInfo(self.VERSION))
 
     # Instance must be created last for patches to be applied.
-    self.inst = self.CreateInstance()
-
-  def testCreateSyncsLocalCheckout(self):
-    self.inst.Create(self.VERSION)
-    self.AssertSynced(['--version', self.VERSION])
+    self.inst = Branch(self.BRANCH_NAME, self.full_manifest)
 
   def testCreateBranchesCorrectProjects(self):
-    self.inst.Create(self.VERSION)
+    self.inst.Create()
     self.ForEachBranchableProject(self.AssertProjectBranched)
     self.ForEachNonBranchableProject(self.AssertProjectNotBranched)
 
   def testCreateRepairsManifests(self):
-    self.inst.Create(self.VERSION)
+    self.inst.Create()
     self.AssertManifestRepairsCommitted()
 
-  def testRenameSyncsToBranch(self):
-    self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
-    self.AssertSynced(['--branch', self.ORIGINAL_BRANCH_NAME])
-
   def testRenameModifiesCorrectProjects(self):
-    self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
+    self.inst.Rename()
     self.ForEachBranchableProject(self.AssertBranchRenamed)
     self.ForEachNonBranchableProject(self.AssertBranchNotModified)
 
   def testRenameRepairsManifests(self):
-    self.inst.Rename(self.ORIGINAL_BRANCH_NAME)
+    self.inst.Rename()
     self.AssertManifestRepairsCommitted()
-
-  def testDeleteSyncsToBranch(self):
-    self.inst.Delete()
-    self.AssertSynced(['--branch', self.BRANCH_NAME])
 
   def testDeleteModifiesCorrectProjects(self):
     self.inst.Delete()
@@ -587,36 +580,42 @@ class BranchTest(ManifestMockTestCase):
     self.ForEachNonBranchableProject(self.AssertBranchNotModified)
 
 
-class ReleaseBranchTest(BranchTest):
-  """Tests and config specifically for ReleaseBranch."""
-  BRANCH_NAME = 'release-R12-3.B'
+class StandardBranchTest(ManifestMockTestCase):
+  """Tests branch logic specific to the standard branches."""
 
-  def CreateInstance(self):
-    return ReleaseBranch()
+  def SetVersion(self, milestone, version):
+    """Mock VersionInfo to always return the given versions.
 
+    Args:
+      milestone: The Chrome branch number, e.g. '47'
+      version: The manifest version string, e.g. '1.2.0'
+    """
+    self.PatchObject(
+        VersionInfo,
+        'from_repo',
+        return_value=VersionInfo(version, milestone))
 
-class FactoryBranchTest(BranchTest):
-  """Tests and config specifically for FactoryBranch."""
-  BRANCH_NAME = 'factory-3.B'
+  def testGenerateNameWithoutBranchVersion(self):
+    self.SetVersion('12', '3.0.0')
+    branch_names = {
+        'release-R12-3.B': ReleaseBranch,
+        'factory-3.B': FactoryBranch,
+        'firmware-3.B': FirmwareBranch,
+        'stabilize-3.B': StabilizeBranch,
+    }
+    for branch_name, branch_type in branch_names.iteritems():
+      self.assertEqual(branch_type(self.full_manifest).name, branch_name)
 
-  def CreateInstance(self):
-    return FactoryBranch()
-
-
-class FirmwareBranchTest(BranchTest):
-  """Tests and config specifically for FirmwareBranch."""
-  BRANCH_NAME = 'firmware-3.B'
-
-  def CreateInstance(self):
-    return FirmwareBranch()
-
-
-class StabilizeBranchTest(BranchTest):
-  """Tests and config specifically for StabilizeBranch."""
-  BRANCH_NAME = 'stabilize-3.B'
-
-  def CreateInstance(self):
-    return StabilizeBranch()
+  def testGenerateNameWithBranchVersion(self):
+    self.SetVersion('12', '3.4.0')
+    branch_names = {
+        'release-R12-3.4.B': ReleaseBranch,
+        'factory-3.4.B': FactoryBranch,
+        'firmware-3.4.B': FirmwareBranch,
+        'stabilize-3.4.B': StabilizeBranch,
+    }
+    for branch_name, cls in branch_names.iteritems():
+      self.assertEqual(cls(self.full_manifest).name, branch_name)
 
 
 class MockBranchCommand(command_unittest.MockCommand):
@@ -632,38 +631,68 @@ class MockBranchCommand(command_unittest.MockCommand):
     return command_unittest.MockCommand.Run(self, inst)
 
 
-class BranchCommandTest(cros_test_lib.MockTestCase):
+class BranchCommandTest(ManifestMockTestCase):
   """Tests for BranchCommand functions."""
-  VERSION = '3.4.5'
+  VERSION = '3.4.0'
   BRANCH_NAME = 'branch'
 
-  def SetUpCommandMock(self, args):
-    cmd = MockBranchCommand(args)
-    self.StartPatcher(cmd)
-    return cmd
+  def RunCommandMock(self, args):
+    self.cmd = MockBranchCommand(args)
+    self.StartPatcher(self.cmd)
+    self.cmd.inst.Run()
 
-  def TestCreateCommandParsesFor(self, cls, kind_flag):
-    cmd = self.SetUpCommandMock(['create', self.VERSION, kind_flag])
+  def AssertSynced(self, args):
+    self.cmd.rc_mock.assertCommandContains(
+        [partial_mock.ListRegex('.*/repo_sync_manifest')] + args)
 
-    self.assertIs(cmd.inst.options.cls, cls)
+  def AssertNoDangerousOptions(self):
+    self.assertFalse(self.cmd.inst.options.force)
+    self.assertFalse(self.cmd.inst.options.push)
 
-    # It's important that `cros branch` does not perform dangerous
-    # operations by default.
-    self.assertIsNone(cmd.inst.options.name)
-    self.assertFalse(cmd.inst.options.force)
-    self.assertFalse(cmd.inst.options.push)
+  def setUp(self):
+    self.cmd = None
+    self.PatchObject(Branch, 'Create')
+    self.PatchObject(Branch, 'Rename')
+    self.PatchObject(Branch, 'Delete')
+    self.PatchObject(VersionInfo, 'from_repo',
+                     return_value=VersionInfo(self.VERSION))
 
   def testCreateReleaseCommandParses(self):
-    self.TestCreateCommandParsesFor(ReleaseBranch, '--release')
+    self.RunCommandMock(['create', self.VERSION, '--release'])
+    self.assertIs(self.cmd.inst.options.cls, ReleaseBranch)
+    self.AssertNoDangerousOptions()
 
   def testCreateFactoryCommandParses(self):
-    self.TestCreateCommandParsesFor(FactoryBranch, '--factory')
+    self.RunCommandMock(['create', self.VERSION, '--factory'])
+    self.assertIs(self.cmd.inst.options.cls, FactoryBranch)
+    self.AssertNoDangerousOptions()
 
   def testCreateFirmwareCommandParses(self):
-    self.TestCreateCommandParsesFor(FirmwareBranch, '--firmware')
+    self.RunCommandMock(['create', self.VERSION, '--firmware'])
+    self.assertIs(self.cmd.inst.options.cls, FirmwareBranch)
+    self.AssertNoDangerousOptions()
 
   def testCreateStabilizeCommandParses(self):
-    self.TestCreateCommandParsesFor(StabilizeBranch, '--stabilize')
+    self.RunCommandMock(['create', self.VERSION, '--stabilize'])
+    self.assertIs(self.cmd.inst.options.cls, StabilizeBranch)
+    self.AssertNoDangerousOptions()
+
+  def testCreateCustomCommandParses(self):
+    self.RunCommandMock(['create', self.VERSION, '--custom', self.BRANCH_NAME])
+    self.assertEqual(self.cmd.inst.options.name, self.BRANCH_NAME)
+    self.AssertNoDangerousOptions()
+
+  def testCreateSyncsToVersion(self):
+    self.RunCommandMock(['create', self.VERSION, '--stabilize'])
+    self.AssertSynced(['--version', self.VERSION])
+
+  def testRenameSyncsToBranch(self):
+    self.RunCommandMock(['rename', self.BRANCH_NAME, 'new-branch'])
+    self.AssertSynced(['--branch', self.BRANCH_NAME])
+
+  def testDeleteSyncsToBranch(self):
+    self.RunCommandMock(['delete', self.BRANCH_NAME])
+    self.AssertSynced(['--branch', self.BRANCH_NAME])
 
 
 class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):

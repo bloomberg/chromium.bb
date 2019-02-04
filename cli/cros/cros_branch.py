@@ -91,9 +91,60 @@ def CanPinProject(project):
   return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_PIN
 
 
-def WhichVersionShouldBump(branched_version):
+def WhichVersionShouldBump():
   """Returns which version is incremented by builds on a new branch."""
-  return 'branch' if branched_version.endswith('0.0') else 'patch'
+  vinfo = ReadVersionInfo()
+  if int(vinfo.patch_number):
+    raise BranchError('Cannot bump version with nonzero patch number.')
+  return 'patch' if int(vinfo.branch_build_number) else 'branch'
+
+
+# TODO(evanhernandez): Consider a chromite/lib library for repo_sync_manifest.
+def Sync(manifest_args):
+  """Run repo_sync_manifest command and return the full synced manifest.
+
+  Args:
+    manifest_args: List of args for manifest group of repo_sync_manifest.
+
+  Returns:
+    The full synced manifest as a repo_manifest.Manifest.
+  """
+  cros_build_lib.RunCommand([
+      os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
+      '--repo-root', constants.SOURCE_ROOT
+  ] + manifest_args, quiet=True)
+  return repo_util.Repository(constants.SOURCE_ROOT).Manifest()
+
+
+def SyncBranch(branch):
+  """Sync to the given branch and return the synced manifest.
+
+  Args:
+    branch: Name of branch to sync to.
+
+  Returns:
+    The synced manifest as a repo_manifest.Manifest.
+  """
+  return Sync(['--branch', branch])
+
+
+def SyncVersion(version):
+  """Sync to the given version and return the synced manifest.
+
+  Args:
+    version: Version string to sync to.
+
+  Returns:
+    The synced manifest as a repo_manifest.Manifest.
+  """
+  site_params = config_lib.GetSiteParams()
+  return Sync([
+      '--manifest-versions-int',
+      AbsoluteProjectPath(site_params.INTERNAL_MANIFEST_VERSIONS_PATH),
+      '--manifest-versions-ext',
+      AbsoluteProjectPath(site_params.EXTERNAL_MANIFEST_VERSIONS_PATH),
+      '--version', version
+  ])
 
 
 class CheckoutManager(object):
@@ -236,57 +287,21 @@ class ManifestRepository(object):
 
 
 class Branch(object):
-  """Represents a branch of chromiumos, which may or may not exist yet."""
+  """Represents a branch of chromiumos, which may or may not exist yet.
 
-  def __init__(self, kind, name=None):
+  Note that all local branch operations assume the current checkout is
+  synced to the correct version.
+  """
+
+  def __init__(self, name, manifest):
     """Cache various configuration used by all branch operations.
 
     Args:
-      kind: A tag that describes the branch (e.g. 'release').
-      name: The name of the branch. If not provided, it will be generated.
+      name: The name of the branch.
+      manifest: The currently synced manifest.
     """
-    self._kind = kind
-    self._name = name or self.GenerateName()
-    self._repo = repo_util.Repository(constants.SOURCE_ROOT)
-    self._manifest = self._repo.Manifest()
-
-  def _RunSync(self, extra_args):
-    """Runs repo_sync_manifest with a minimal set of arguments.
-
-    Also reads and caches the new full manifest.
-
-    Args:
-      extra_args: List of extra arguments to pass to repo_sync_manifest.
-    """
-    cros_build_lib.RunCommand(
-        [
-            os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
-            '--repo-root', constants.SOURCE_ROOT
-        ] + extra_args,
-        quiet=True)
-    self._manifest = self._repo.Manifest()
-
-  def _SyncToVersion(self, version):
-    """Sync current checkout to the given version.
-
-    Args:
-      version: Version string to sync to, e.g. '1234.0.0'.
-    """
-    logging.info('Syncing to manifest version %s', version)
-    self._RunSync([
-        '--manifest-versions-int',
-        AbsoluteProjectPath(
-            config_lib.GetSiteParams().INTERNAL_MANIFEST_VERSIONS_PATH),
-        '--version', version])
-
-  def _SyncToBranch(self, branch):
-    """Sync current checkout to the given branch.
-
-    Args:
-      branch: Name of branch to sync to, e.g. 'factory-11521.B'.
-    """
-    logging.info('Syncing to branch %s', branch)
-    self._RunSync(['--branch', branch])
+    self.name = name
+    self.manifest = manifest
 
   def _ProjectBranchName(self, project):
     """Determine's the git branch name for the project.
@@ -298,13 +313,13 @@ class Branch(object):
       The branch name for the project.
     """
     # If project has only one checkout, the base branch name is fine.
-    checkouts = [p.name for p in self._manifest.Projects()].count(project.name)
+    checkouts = [p.name for p in self.manifest.Projects()].count(project.name)
     if checkouts == 1:
-      return self._name
+      return self.name
     # Otherwise, the project branch name needs a suffix. We append its
     # upstream or revision to distinguish it from other checkouts.
     suffix = git.StripRefs(project.upstream or project.Revision())
-    return '%s-%s' % (self._name, suffix)
+    return '%s-%s' % (self.name, suffix)
 
   def _CreateProjectBranch(self, project):
     """Create this branch for the given project.
@@ -364,7 +379,7 @@ class Branch(object):
       Dict mapping (unique) project path to transformation result.
     """
     return {project.Path(): transform(project) for project in
-            filter(CanBranchProject, self._manifest.Projects())}
+            filter(CanBranchProject, self.manifest.Projects())}
 
   def _RepairManifestRepositories(self, branches):
     """Repair all manifests in all manifest repositories.
@@ -378,7 +393,7 @@ class Branch(object):
       git.RunGit(
           manifest_repo_path,
           ['commit', '-a', '-m',
-           'Manifests point to branch %s.' % self._name])
+           'Manifests point to branch %s.' % self.name])
 
   def _BumpVersion(self, which):
     """Increment version in chromeos_version.sh and commit it.
@@ -387,21 +402,17 @@ class Branch(object):
       which: Which version should be incremented. One of
           'chrome_branch', 'build', 'branch, 'patch'.
     """
-    message = 'Bump %s number after creating branch %s.' % (which, self._name)
+    message = 'Bump %s number after creating branch %s.' % (which, self.name)
     logging.info(message)
     new_version = ReadVersionInfo(incr_type=which)
     new_version.IncrementVersion()
     new_version.UpdateVersionFile(message, dry_run=True)
 
-  def GenerateName(self):
-    """Returns a generated branch name. Overridden by subclasses."""
-    return '%s-%s.B' % (self._kind, ReadVersionInfo().build_number)
-
   def ReportCreateSuccess(self):
     """Report branch creation successful. Behavior depends on branch type."""
     pass
 
-  def Create(self, version, push=False, force=False):
+  def Create(self, push=False, force=False):
     """Creates a new branch from the given version.
 
     Args:
@@ -412,23 +423,20 @@ class Branch(object):
     """
     if push or force:
       raise NotImplementedError('--push and --force unavailable.')
-    self._SyncToVersion(version)
     branches = self._MapBranchableProjects(self._CreateProjectBranch)
     self._RepairManifestRepositories(branches)
-    self._BumpVersion(WhichVersionShouldBump(version))
+    self._BumpVersion(WhichVersionShouldBump())
     self.ReportCreateSuccess()
 
-  def Rename(self, original, push=False, force=False):
+  def Rename(self, push=False, force=False):
     """Rename this branch.
 
     Args:
-      original: Original name for the branch.
       push: Whether to push the new branch to remote.
       force: Whether or not to overwrite an existing branch.
     """
     if push or force:
       raise NotImplementedError('--push and --force unavailable.')
-    self._SyncToBranch(original)
     branches = self._MapBranchableProjects(self._RenameProjectBranch)
     self._RepairManifestRepositories(branches)
 
@@ -441,48 +449,71 @@ class Branch(object):
     """
     if push or force:
       raise NotImplementedError('--push and --force unavailable.')
-    self._SyncToBranch(self._name)
     self._MapBranchableProjects(self._DeleteProjectBranch)
 
 
-class ReleaseBranch(Branch):
+class StandardBranch(Branch):
+  """Branch with a standard name and reporting for branch operations."""
+
+  def __init__(self, prefix, manifest):
+    """Determine the name for this branch.
+
+    By convention, standard branch names must end with the version from which
+    they were created followed by '.B'.
+
+    For example:
+      - A branch created from 1.0.0 must end with -1.B
+      - A branch created from 1.2.0 must end with -1-2.B
+
+    Args:
+      prefix: Any tag that describes the branch type (e.g. 'firmware').
+      manifest: The currently synced manifest.
+    """
+    vinfo = ReadVersionInfo()
+    name = '%s-%s' % (prefix, vinfo.build_number)
+    if int(vinfo.branch_build_number):
+      name += '.%s' % vinfo.branch_build_number
+    name += '.B'
+    super(StandardBranch, self).__init__(name, manifest)
+
+
+class ReleaseBranch(StandardBranch):
   """Represents a release branch."""
 
-  def __init__(self, name=None):
-    super(ReleaseBranch, self).__init__('release', name)
-
-  def GenerateName(self):
-    vinfo = ReadVersionInfo()
-    return '%s-R%s-%s.B' % (self._kind, vinfo.chrome_branch, vinfo.build_number)
+  def __init__(self, manifest):
+    super(ReleaseBranch, self).__init__(
+        'release-R%s' % ReadVersionInfo().chrome_branch, manifest)
 
   def ReportCreateSuccess(self):
     # When a release branch has been successfully created, we report it by
     # bumping the milestone on the source branch (usually master).
-    chromiumos_overlay_source = self._manifest.GetUniqueProject(
+    chromiumos_overlay_source = self.manifest.GetUniqueProject(
         'chromiumos/overlays/chromiumos-overlay')
     with CheckoutManager(chromiumos_overlay_source):
       self._BumpVersion('chrome_branch')
 
 
-class FactoryBranch(Branch):
+class FactoryBranch(StandardBranch):
   """Represents a factory branch."""
 
-  def __init__(self, name=None):
-    super(FactoryBranch, self).__init__('factory', name)
+  def __init__(self, manifest):
+    # TODO(evanhernandez): Allow adding device to branch name.
+    super(FactoryBranch, self).__init__('factory', manifest)
 
 
-class FirmwareBranch(Branch):
+class FirmwareBranch(StandardBranch):
   """Represents a firmware branch."""
 
-  def __init__(self, name=None):
-    super(FirmwareBranch, self).__init__('firmware', name)
+  def __init__(self, manifest):
+    # TODO(evanhernandez): Allow adding device to branch name.
+    super(FirmwareBranch, self).__init__('firmware', manifest)
 
 
-class StabilizeBranch(Branch):
+class StabilizeBranch(StandardBranch):
   """Represents a factory branch."""
 
-  def __init__(self, name=None):
-    super(StabilizeBranch, self).__init__('stabilize', name)
+  def __init__(self, manifest):
+    super(StabilizeBranch, self).__init__('stabilize', manifest)
 
 
 @command.CommandDecorator('branch')
@@ -506,7 +537,7 @@ class BranchCommand(command.CliCommand):
 Create Examples:
   cros branch create 11030.0.0 --factory
   cros branch --force --push create 11030.0.0 --firmware
-  cros branch create 11030.0.0 --name my-custom-branch --stabilize
+  cros branch create 11030.0.0 --custom my-custom-branch
 
 Rename Examples:
   cros branch rename release-10509.0.B release-10508.0.B
@@ -543,10 +574,6 @@ Delete Examples:
         'create', help='Create a branch from a specified maniefest version.')
     create_parser.add_argument(
         'version', help="Manifest version to branch off, e.g. '10509.0.0'.")
-    create_parser.add_argument(
-        '--name',
-        dest='name',
-        help='Name for the new branch. If unspecified, name is generated.')
 
     create_group = create_parser.add_argument_group(
         'Branch Type',
@@ -582,6 +609,14 @@ Delete Examples:
         const=StabilizeBranch,
         help='The new branch is a minibranch. '
         "Named as 'stabilize-<Major Version>.B'.")
+    create_ex_group.add_argument(
+        '--custom',
+        dest='name',
+        help='Custom branch type with arbitrary name. Beware: custom '
+             'branches are dangerous. This tool depends on branch naming '
+             'to know when a version has already been branched. Therefore, '
+             'it can provide NO validation with custom branches. This has '
+             'broken release builds in the past.')
 
     # Rename subcommand and flags.
     rename_parser = subparser.add_parser('rename', help='Rename a branch.')
@@ -596,17 +631,18 @@ Delete Examples:
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
-      self.options.cls(self.options.name).Create(
-          version=self.options.version,
-          push=self.options.push,
-          force=self.options.force)
+      manifest = SyncVersion(self.options.version)
+      branch = (Branch(self.options.name, manifest) if self.options.name else
+                self.options.cls(manifest))
+      branch.Create(push=self.options.push, force=self.options.force)
     elif self.options.subcommand == 'rename':
-      self.options.cls(self.options.new).Rename(
-          original=self.options.old,
+      manifest = SyncBranch(self.options.old)
+      Branch(self.options.new, manifest).Rename(
           push=self.options.push,
           force=self.options.force)
     elif self.options.subcommand == 'delete':
-      self.options.cls(self.options.branch).Delete(
+      manifest = SyncBranch(self.options.branch)
+      Branch(self.options.branch, manifest).Delete(
           push=self.options.push,
           force=self.options.force)
     else:
