@@ -914,6 +914,10 @@ extern const char kEnterpriseHardwarePlatformAPIEnabled[];
 extern const char kUsageStatsEnabled[];
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const char kCertificateManagementAllowed[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

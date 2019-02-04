@@ -14480,7 +14480,47 @@
       When this policy is set Parent Access Code can be verified on child user's device.
       When this policy is unset it is not possible to verify Parent Access Code on child user's device.'''
     },
+    {
+      'name': 'CertificateManagementAllowed',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'All',
+          'value': 0,
+          'caption': '''Allow users to manage all certificates''',
+        },
+        {
+          'name': 'UserOnly',
+          'value': 1,
+          'caption': '''Allow users to manage user certificates''',
+        },
+        {
+          'name': 'None',
+          'value': 2,
+          'caption': '''Disallow users from managing certificates''',
+        },
+      ],
+      'supported_on': ['chrome_os:74-'],
+      'tags' : [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': 1,
+      'id': 518,
+      'caption': '''Allow users to manage installed certificates.''',
+      'desc': '''This policy controls whether user are able to import and remove certificates via Certificate Manager.
 
+      If this policy is set to ''Allow users to manage all certificates'' or left not set, users will be able to manage certificates.
+
+      If this policy is set to ''Allow users to manage user certificates'', users will be able to manage user certificates, but not device-wide certificates.
+
+      If this policy is set to ''Disallow users to manage certificates'', users will not be able to manage certificates, they can only view certificates.''',
+    },
   ],
 
   'messages': {
@@ -14646,5 +14686,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  517
+  'highest_id_currently_used':  518
 }

@@ -2574,4 +2574,14 @@ const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
 const char kEnterpriseHardwarePlatformAPIEnabled[] =
     "enterprise_hardware_platform_api.enabled";
 
+#if defined(OS_CHROMEOS)
+// Enum that specifies certificate management permissions for user. It can have
+// one of the following values.
+// 0: Users can manage all certificates.
+// 1: Users can manage user certificates, but not device certificates.
+// 2: Disallow users from managing certificates
+// Controlled by CertificateManagementAllowed policy.
+const char kCertificateManagementAllowed[] = "certificate_management_allowed";
+#endif
+
 }  // namespace prefs

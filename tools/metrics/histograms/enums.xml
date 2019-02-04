@@ -15370,6 +15370,7 @@ Called by update_net_error_codes.py.-->
   <int value="515" label="PluginVmLicenseKey"/>
   <int value="516" label="ExtensionAllowInsecureUpdates"/>
   <int value="517" label="BrowserSwitcherEnabled"/>
+  <int value="518" label="CertificateManagementAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
