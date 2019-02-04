@@ -145,8 +145,6 @@ void GetStatusForAuthError(Profile* profile,
   }
 }
 
-// TODO(akalin): Write unit tests for these three functions below.
-
 // status_label and link_label must either be both null or both non-null.
 MessageType GetStatusInfo(Profile* profile,
                           const syncer::SyncService* service,
@@ -154,6 +152,7 @@ MessageType GetStatusInfo(Profile* profile,
                           base::string16* status_label,
                           base::string16* link_label,
                           ActionType* action_type) {
+  DCHECK(service);
   DCHECK_EQ(status_label == nullptr, link_label == nullptr);
 
   if (!identity_manager->HasPrimaryAccount()) {
@@ -163,7 +162,7 @@ MessageType GetStatusInfo(Profile* profile,
   // Needed to check the state of the authentication process below.
   auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
 
-  if (!service || service->GetUserSettings()->IsFirstSetupComplete() ||
+  if (service->GetUserSettings()->IsFirstSetupComplete() ||
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
       service->HasDisableReason(
@@ -171,7 +170,7 @@ MessageType GetStatusInfo(Profile* profile,
     // The order or priority is going to be: 1. Unrecoverable errors.
     // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
 
-    if (service && service->HasUnrecoverableError()) {
+    if (service->HasUnrecoverableError()) {
       if (status_label && link_label) {
         GetStatusForUnrecoverableError(profile, service, status_label,
                                        link_label, action_type);
@@ -189,57 +188,53 @@ MessageType GetStatusInfo(Profile* profile,
       return PRE_SYNCED;
     }
 
+    // Since there is no auth in progress, check for an auth error first.
+    GoogleServiceAuthError auth_error =
+        SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
+    if (auth_error.state() != GoogleServiceAuthError::NONE) {
+      if (status_label && link_label) {
+        GetStatusForAuthError(profile, status_label, link_label, action_type);
+      }
+      return SYNC_ERROR;
+    }
+
+    // We don't have an auth error. Check for an actionable error.
+    syncer::SyncStatus status;
+    service->QueryDetailedSyncStatus(&status);
+    if (status_label && link_label) {
+      GetStatusForActionableError(status.sync_protocol_error, status_label,
+                                  link_label, action_type);
+      if (!status_label->empty()) {
+        return SYNC_ERROR;
+      }
+    }
+
+    // Check for a passphrase error.
+    if (service->GetUserSettings()->IsPassphraseRequired() &&
+        service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
+      if (status_label && link_label) {
+        status_label->assign(
+            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
+        link_label->assign(l10n_util::GetStringUTF16(
+            IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL));
+        *action_type = ENTER_PASSPHRASE;
+      }
+      return SYNC_ERROR;
+    }
+
     bool sync_everything =
         service->GetUserSettings()->IsSyncEverythingEnabled();
 
-    // Check for sync errors if the sync service is enabled.
-    if (service) {
-      // Since there is no auth in progress, check for an auth error first.
-      GoogleServiceAuthError auth_error =
-          SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
-      if (auth_error.state() != GoogleServiceAuthError::NONE) {
-        if (status_label && link_label) {
-          GetStatusForAuthError(profile, status_label, link_label, action_type);
-        }
-        return SYNC_ERROR;
+    // Check to see if sync has been disabled via the dasboard and needs to be
+    // set up once again.
+    if (service->HasDisableReason(
+            syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
+        status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
+      if (status_label) {
+        status_label->assign(
+            GetSyncedStateStatusLabel(service, sync_everything));
       }
-
-      // We don't have an auth error. Check for an actionable error.
-      syncer::SyncStatus status;
-      service->QueryDetailedSyncStatus(&status);
-      if (status_label && link_label) {
-        GetStatusForActionableError(status.sync_protocol_error, status_label,
-                                    link_label, action_type);
-        if (!status_label->empty()) {
-          return SYNC_ERROR;
-        }
-      }
-
-      // Check for a passphrase error.
-      if (service->GetUserSettings()->IsPassphraseRequired() &&
-          service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
-        if (status_label && link_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
-          link_label->assign(
-              l10n_util::GetStringUTF16(
-                  IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL));
-          *action_type = ENTER_PASSPHRASE;
-        }
-        return SYNC_ERROR;
-      }
-
-      // Check to see if sync has been disabled via the dasboard and needs to be
-      // set up once again.
-      if (service->HasDisableReason(
-              syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
-          status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
-        if (status_label) {
-          status_label->assign(
-              GetSyncedStateStatusLabel(service, sync_everything));
-        }
-        return PRE_SYNCED;
-      }
+      return PRE_SYNCED;
     }
 
     // There is no error. Display "Last synced..." message.
@@ -310,6 +305,7 @@ MessageType GetStatusLabels(Profile* profile,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type) {
+  DCHECK(service);
   DCHECK(status_label);
   DCHECK(link_label);
   return GetStatusInfo(profile, service, identity_manager, status_label,
@@ -403,6 +399,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 MessageType GetStatus(Profile* profile,
                       const syncer::SyncService* service,
                       identity::IdentityManager* identity_manager) {
+  DCHECK(service);
   ActionType action_type = NO_ACTION;
   return GetStatusInfo(profile, service, identity_manager, nullptr, nullptr,
                        &action_type);
