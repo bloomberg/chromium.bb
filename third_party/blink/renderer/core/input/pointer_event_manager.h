@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_POINTER_EVENT_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_POINTER_EVENT_MANAGER_H_
 
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
@@ -108,11 +110,10 @@ class CORE_EXPORT PointerEventManager
   WebInputEventResult FlushEvents();
 
  private:
-  typedef HeapHashMap<PointerId,
-                      Member<Element>,
-                      WTF::IntHash<PointerId>,
-                      WTF::UnsignedWithZeroKeyHashTraits<PointerId>>
-      PointerCapturingMap;
+  // We are using unordered_map instead of WTF::HashMap to accommodate
+  // for all the possible keys in the given rage as WTF::HashTraits have at
+  // least one unsupported key like 0 or max value in their range.
+  typedef std::unordered_map<PointerId, Member<Element>> PointerCapturingMap;
   class EventTargetAttributes {
     DISALLOW_NEW();
 
@@ -244,10 +245,7 @@ class CORE_EXPORT PointerEventManager
   // keeps track of any compatibility mouse event positions but this map for
   // the pointer with id=1 is only taking care of true mouse related events.
   using ElementUnderPointerMap =
-      HeapHashMap<PointerId,
-                  EventTargetAttributes,
-                  WTF::IntHash<PointerId>,
-                  WTF::UnsignedWithZeroKeyHashTraits<PointerId>>;
+      std::unordered_map<PointerId, EventTargetAttributes>;
   ElementUnderPointerMap element_under_pointer_;
 
   PointerCapturingMap pointer_capture_target_;
