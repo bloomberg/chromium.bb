@@ -1853,11 +1853,6 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
 
 base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
                                                   int index) const {
-  // ChromeVox provides an invalid index on browser start up before
-  // any tabs are created.
-  if (index == -1)
-    return base::string16();
-
   base::string16 title =
       browser_->GetWindowTitleForTab(include_app_name, index);
 
