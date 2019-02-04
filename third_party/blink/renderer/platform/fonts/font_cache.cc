@@ -35,6 +35,7 @@
 #include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
@@ -134,7 +135,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
 
   {
     // addResult's scope must end before we recurse for alternate family names
-    // below, to avoid trigering its dtor hash-changed asserts.
+    // below, to avoid triggering its dtor hash-changed asserts.
     SizedFontPlatformDataSet* sized_fonts =
         &font_platform_data_cache_.insert(key, SizedFontPlatformDataSet())
              .stored_value->value;
@@ -190,6 +191,8 @@ std::unique_ptr<FontPlatformData> FontCache::ScaleFontPlatformData(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     float font_size) {
+  TRACE_EVENT0("ui", "FontCache::ScaleFontPlatformData");
+
 #if defined(OS_MACOSX)
   return CreateFontPlatformData(font_description, creation_params, font_size);
 #else
@@ -308,6 +311,7 @@ void FontCache::ReleaseFontData(const SimpleFontData* font_data) {
 }
 
 void FontCache::PurgePlatformFontDataCache() {
+  TRACE_EVENT0("ui", "FontCache::PurgePlatformFontDataCache");
   Vector<FontCacheKey> keys_to_remove;
   keys_to_remove.ReserveInitialCapacity(font_platform_data_cache_.size());
   for (auto& sized_fonts : font_platform_data_cache_) {
@@ -326,6 +330,7 @@ void FontCache::PurgePlatformFontDataCache() {
 }
 
 void FontCache::PurgeFallbackListShaperCache() {
+  TRACE_EVENT0("ui", "FontCache::PurgeFallbackListShaperCache");
   unsigned items = 0;
   FallbackListShaperCache::iterator iter;
   for (iter = fallback_list_shaper_cache_.begin();
@@ -372,6 +377,7 @@ unsigned short FontCache::Generation() {
 }
 
 void FontCache::Invalidate() {
+  TRACE_EVENT0("ui", "FontCache::Invalidate");
   font_platform_data_cache_.clear();
   generation_++;
 

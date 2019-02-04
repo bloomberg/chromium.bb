@@ -36,6 +36,7 @@
 
 #include "base/debug/alias.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
@@ -170,6 +171,8 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     UChar32 character,
     const SimpleFontData* original_font_data,
     FontFallbackPriority fallback_priority) {
+  TRACE_EVENT0("ui", "FontCache::PlatformFallbackFontForCharacter");
+
   // First try the specified font with standard style & weight.
   if (fallback_priority != FontFallbackPriority::kEmojiEmoji &&
       (font_description.Style() == ItalicSlopeValue() ||
@@ -395,6 +398,8 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     const FontFaceCreationParams& creation_params,
     float font_size,
     AlternateFontName alternate_font_name) {
+  TRACE_EVENT0("ui", "FontCache::CreateFontPlatformData");
+
   DCHECK_EQ(creation_params.CreationType(), kCreateFontByFamily);
   sk_sp<SkTypeface> typeface;
 
