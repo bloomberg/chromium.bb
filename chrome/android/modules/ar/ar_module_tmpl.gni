@@ -41,21 +41,30 @@ template("ar_module_tmpl") {
       "//third_party/android_deps:com_google_ar_core_java",
     ]
 
-    # We only want to add the 32 bit arcore shim even for 64 bit monochrome
-    # builds. AR is never used in 64 bit mode. We store the arcore shim as a
-    # separate .so in the bundle module and only load as needed.
-    if (android_64bit_target_cpu && build_apk_secondary_abi) {
-      secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+    # We store the arcore shim as a separate .so in the bundle module and only
+    # load as needed.
+    if (android_64bit_target_cpu) {
+      if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+        loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/arm64-v8a/libarcore_sdk_c.so" ]
 
-      # Disguise 32 bit library as 64 bit. This works around a Play Core bug where only 64 bit
-      # libraries are extracted on 64 bit devices.
-      # TODO(crbug.com/902859): Remove once bug is fixed.
-      loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-    } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
-      loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+        # TODO(cjgrant): Make this a dummy lib, if SplitCompat properly opens the 64-bit library.
+        secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/arm64-v8a/libarcore_sdk_c.so" ]
+      } else {
+        if (build_apk_secondary_abi) {
+          secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+
+          # Disguise 32 bit library as 64 bit. This works around a Play Core bug where only 64 bit
+          # libraries are extracted on 64 bit devices.
+          # TODO(crbug.com/902859): Remove once bug is fixed.
+          loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+        } else {
+          loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+        }
+      }
     } else {
       loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
     }
+
     uncompress_shared_libraries = true
 
     # Don't embed more localized strings than required (http://crbug.com/932017)
