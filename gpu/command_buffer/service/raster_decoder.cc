@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
@@ -416,10 +417,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                                 GLsizei width,
                                 GLsizei height,
                                 const volatile GLbyte* mailboxes);
-  // If the texture has an image but that image is not bound or copied to the
-  // texture, this will first attempt to bind it, and if that fails
-  // CopyTexImage on it.
-  void DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture, GLenum textarget);
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
@@ -1676,32 +1673,48 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
   DLOG_IF(ERROR, !dest_mailbox.Verify())
       << "CopySubTexture was passed an invalid mailbox";
 
+  if (source_mailbox == dest_mailbox) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
+                       "source and destination mailboxes are the same");
+    return;
+  }
+
   if (use_passthrough()) {
-    // TODO(piman): use shared image representations instead.
-    gles2::TexturePassthrough* source_texture =
-        gles2::TexturePassthrough::CheckedCast(
-            group_->mailbox_manager()->ConsumeTexture(source_mailbox));
-    gles2::TexturePassthrough* dest_texture =
-        gles2::TexturePassthrough::CheckedCast(
-            group_->mailbox_manager()->ConsumeTexture(dest_mailbox));
-    if (!source_texture || !dest_texture) {
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+        source_shared_image = group_->shared_image_representation_factory()
+                                  ->ProduceGLTexturePassthrough(source_mailbox);
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+        dest_shared_image = group_->shared_image_representation_factory()
+                                ->ProduceGLTexturePassthrough(dest_mailbox);
+    if (!source_shared_image || !dest_shared_image) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                          "unknown mailbox");
       return;
     }
-    if (source_texture->is_bind_pending()) {
-      gl::GLImage* image =
-          source_texture->GetLevelImage(source_texture->target(), 0);
-      if (image) {
-        api()->glBindTextureFn(source_texture->target(),
-                               source_texture->service_id());
-        if (image->ShouldBindOrCopy() == gl::GLImage::BIND)
-          image->BindTexImage(source_texture->target());
-        else
-          image->CopyTexImage(source_texture->target());
-        source_texture->set_is_bind_pending(false);
-      }
+
+    SharedImageRepresentationGLTexturePassthrough::ScopedAccess source_access(
+        source_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    if (!source_access.success()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "unable to access source for read");
+      return;
     }
+
+    SharedImageRepresentationGLTexturePassthrough::ScopedAccess dest_access(
+        dest_shared_image.get(),
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+    if (!dest_access.success()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "unable to access destination for write");
+      return;
+    }
+
+    gles2::TexturePassthrough* source_texture =
+        source_shared_image->GetTexturePassthrough().get();
+    gles2::TexturePassthrough* dest_texture =
+        dest_shared_image->GetTexturePassthrough().get();
+    DCHECK(!source_texture->is_bind_pending());
+    DCHECK_NE(source_texture->service_id(), dest_texture->service_id());
 
     api()->glCopySubTextureCHROMIUMFn(
         source_texture->service_id(), /*source_level=*/0,
@@ -1712,116 +1725,72 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     return;
   }
 
-  // TODO(piman): use shared image representations instead.
-  gles2::Texture* source_texture = gles2::Texture::CheckedCast(
-      group_->mailbox_manager()->ConsumeTexture(source_mailbox));
-  gles2::Texture* dest_texture = gles2::Texture::CheckedCast(
-      group_->mailbox_manager()->ConsumeTexture(dest_mailbox));
-  if (!source_texture || !dest_texture) {
+  std::unique_ptr<SharedImageRepresentationGLTexture> source_shared_image =
+      group_->shared_image_representation_factory()->ProduceGLTexture(
+          source_mailbox);
+  std::unique_ptr<SharedImageRepresentationGLTexture> dest_shared_image =
+      group_->shared_image_representation_factory()->ProduceGLTexture(
+          dest_mailbox);
+  if (!source_shared_image || !dest_shared_image) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown mailbox");
     return;
   }
-  if (source_texture == dest_texture) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
-                       "source and destination textures are the same");
+
+  SharedImageRepresentationGLTexture::ScopedAccess source_access(
+      source_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  if (!source_access.success()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "unable to access source for read");
     return;
   }
+
+  gles2::Texture* source_texture = source_shared_image->GetTexture();
   GLenum source_target = source_texture->target();
-  GLenum dest_target = dest_texture->target();
-  if (!source_target || !dest_target) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
-                       "textures not initialized");
+  DCHECK(source_target);
+  GLint source_level = 0;
+  gfx::Size source_size = source_shared_image->size();
+  gfx::Rect source_rect(x, y, width, height);
+  if (!gfx::Rect(source_size).Contains(source_rect)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "source texture bad dimensions.");
     return;
   }
 
-  GLint source_level = 0;
-  GLint dest_level = 0;
-
-  ScopedTextureBinder binder(state(), dest_target, dest_texture->service_id(),
-                             gr_context());
-  base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
-
-  int source_width = 0;
-  int source_height = 0;
-  gl::GLImage* image =
-      source_texture->GetLevelImage(source_target, 0 /* level */);
-  if (image) {
-    gfx::Size size = image->GetSize();
-    source_width = size.width();
-    source_height = size.height();
-    if (source_width <= 0 || source_height <= 0) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "invalid image size");
-      return;
-    }
-
-    // Ideally we should not need to check that the sub-texture copy rectangle
-    // is valid in two different ways, here and below. However currently there
-    // is no guarantee that a texture backed by a GLImage will have sensible
-    // level info. If this synchronization were to be enforced then this and
-    // other functions in this file could be cleaned up.
-    // See: https://crbug.com/586476
-    int32_t max_x;
-    int32_t max_y;
-    if (!base::CheckAdd(x, width).AssignIfValid(&max_x) ||
-        !base::CheckAdd(y, height).AssignIfValid(&max_y) || x < 0 || y < 0 ||
-        max_x > source_width || max_y > source_height) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "source texture bad dimensions");
-      return;
-    }
-
-    if (image->GetType() == gl::GLImage::Type::MEMORY &&
-        shared_context_state_->need_context_state_reset()) {
-      // If the image is in shared memory, we may need upload the pixel data
-      // with SubTexImage2D, so we need reset pixel unpack state if gl context
-      // state has been touched by skia.
-      pixel_unpack_state.emplace(state(), gr_context(), group_->feature_info());
-    }
-  } else {
-    if (!source_texture->GetLevelSize(source_target, 0 /* level */,
-                                      &source_width, &source_height, nullptr)) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "source texture has no data for level");
-      return;
-    }
-
-    // Check that this type of texture is allowed.
-    if (!texture_manager()->ValidForTarget(source_target, 0 /* level */,
-                                           source_width, source_height, 1)) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "source texture bad dimensions");
-      return;
-    }
-
-    if (!source_texture->ValidForTexture(source_target, 0 /* level */, x, y, 0,
-                                         width, height, 1)) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "source texture bad dimensions.");
-      return;
-    }
+  SharedImageRepresentationGLTexture::ScopedAccess dest_access(
+      dest_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  if (!dest_access.success()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "unable to access destination for write");
+    return;
   }
+
+  gles2::Texture* dest_texture = dest_shared_image->GetTexture();
+  GLenum dest_target = dest_texture->target();
+  DCHECK(dest_target);
+  GLint dest_level = 0;
+  gfx::Size dest_size = dest_shared_image->size();
+  gfx::Rect dest_rect(xoffset, yoffset, width, height);
+  if (!gfx::Rect(dest_size).Contains(dest_rect)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "destination texture bad dimensions.");
+    return;
+  }
+
+  DCHECK_NE(source_texture->service_id(), dest_texture->service_id());
 
   GLenum source_type = 0;
   GLenum source_internal_format = 0;
-  source_texture->GetLevelType(source_target, 0 /* level */, &source_type,
+  source_texture->GetLevelType(source_target, source_level, &source_type,
                                &source_internal_format);
 
   GLenum dest_type = 0;
   GLenum dest_internal_format = 0;
   bool dest_level_defined = dest_texture->GetLevelType(
-      dest_target, 0 /* level */, &dest_type, &dest_internal_format);
-  if (!dest_level_defined) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
-                       "destination texture is not defined");
-    return;
-  }
-  if (!dest_texture->ValidForTexture(dest_target, 0 /* level */, xoffset,
-                                     yoffset, 0, width, height, 1)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                       "destination texture bad dimensions.");
-    return;
-  }
+      dest_target, dest_level, &dest_type, &dest_internal_format);
+  DCHECK(dest_level_defined);
+
+  // TODO(piman): Do we need this check? It might always be true by
+  // construction.
   std::string output_error_msg;
   if (!ValidateCopyTextureCHROMIUMInternalFormats(
           GetFeatureInfo(), source_internal_format, dest_internal_format,
@@ -1829,15 +1798,6 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
                        output_error_msg.c_str());
     return;
-  }
-
-  if (feature_info_->feature_flags().desktop_srgb_support) {
-    bool enable_framebuffer_srgb =
-        gles2::GLES2Util::GetColorEncodingFromInternalFormat(
-            source_internal_format) == GL_SRGB ||
-        gles2::GLES2Util::GetColorEncodingFromInternalFormat(
-            dest_internal_format) == GL_SRGB;
-    state()->EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
   }
 
   // Clear the source texture if necessary.
@@ -1848,48 +1808,71 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     return;
   }
 
-  int dest_width = 0;
-  int dest_height = 0;
-  bool ok = dest_texture->GetLevelSize(dest_target, dest_level, &dest_width,
-                                       &dest_height, nullptr);
-  DCHECK(ok);
-  if (xoffset != 0 || yoffset != 0 || width != dest_width ||
-      height != dest_height) {
-    gfx::Rect cleared_rect;
-    if (gles2::TextureManager::CombineAdjacentRects(
-            dest_texture->GetLevelClearedRect(dest_target, dest_level),
-            gfx::Rect(xoffset, yoffset, width, height), &cleared_rect)) {
-      DCHECK_GE(cleared_rect.size().GetArea(),
-                dest_texture->GetLevelClearedRect(dest_target, dest_level)
-                    .size()
-                    .GetArea());
-      dest_texture->SetLevelClearedRect(dest_target, dest_level, cleared_rect);
-    } else {
-      // Otherwise clear part of texture level that is not already cleared.
-      if (!texture_manager()->ClearTextureLevel(this, dest_texture, dest_target,
-                                                dest_level)) {
-        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
-                           "destination texture dimensions too big");
+  gfx::Rect new_cleared_rect;
+  gfx::Rect old_cleared_rect =
+      dest_texture->GetLevelClearedRect(dest_target, dest_level);
+  if (gles2::TextureManager::CombineAdjacentRects(
+          dest_texture->GetLevelClearedRect(dest_target, dest_level), dest_rect,
+          &new_cleared_rect)) {
+    DCHECK(old_cleared_rect.IsEmpty() ||
+           new_cleared_rect.Contains(old_cleared_rect));
+  } else {
+    // Otherwise clear part of texture level that is not already cleared.
+    if (!texture_manager()->ClearTextureLevel(this, dest_texture, dest_target,
+                                              dest_level)) {
+      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
+                         "destination texture dimensions too big");
+      return;
+    }
+    new_cleared_rect = gfx::Rect(dest_size);
+  }
+
+  ScopedTextureBinder binder(state(), dest_target, dest_texture->service_id(),
+                             gr_context());
+
+  gles2::Texture::ImageState image_state;
+  gl::GLImage* image =
+      source_texture->GetLevelImage(source_target, 0, &image_state);
+  if (image) {
+    base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
+    if (image->GetType() == gl::GLImage::Type::MEMORY &&
+        shared_context_state_->need_context_state_reset()) {
+      // If the image is in shared memory, we may need upload the pixel data
+      // with SubTexImage2D, so we need reset pixel unpack state if gl context
+      // state has been touched by skia.
+      pixel_unpack_state.emplace(state(), gr_context(), group_->feature_info());
+    }
+
+    // Try to copy by uploading to the destination texture.
+    if (dest_internal_format == source_internal_format) {
+      if (image->CopyTexSubImage(dest_target, gfx::Point(xoffset, yoffset),
+                                 gfx::Rect(x, y, width, height))) {
+        dest_texture->SetLevelClearedRect(dest_target, dest_level,
+                                          new_cleared_rect);
         return;
       }
     }
-  } else {
-    dest_texture->SetLevelCleared(dest_target, dest_level, true);
-  }
 
-  // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexSubImage.
-  if (image && dest_internal_format == source_internal_format &&
-      dest_level == 0) {
-    if (image->CopyTexSubImage(dest_target, gfx::Point(xoffset, yoffset),
-                               gfx::Rect(x, y, width, height))) {
-      return;
+    // Otherwise, update the source if needed.
+    if (image_state == gles2::Texture::UNBOUND) {
+      ScopedGLErrorSuppressor suppressor(
+          "RasterDecoderImpl::DoCopySubTextureINTERNAL", error_state_.get());
+      api()->glBindTextureFn(source_target, source_texture->service_id());
+      if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
+        bool rv = image->BindTexImage(source_target);
+        DCHECK(rv) << "BindTexImage() failed";
+        image_state = gles2::Texture::BOUND;
+      } else {
+        bool rv = image->CopyTexImage(source_target);
+        DCHECK(rv) << "CopyTexImage() failed";
+        image_state = gles2::Texture::COPIED;
+      }
+      source_texture->SetLevelImageState(source_target, 0, image_state);
     }
   }
 
   if (!InitializeCopyTextureCHROMIUM())
     return;
-
-  DoBindOrCopyTexImageIfNeeded(source_texture, source_target);
 
   // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
   // before presenting.
@@ -1904,10 +1887,13 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
           this, source_target, source_texture->service_id(), source_level,
           source_internal_format, dest_target, dest_texture->service_id(),
           dest_level, dest_internal_format, xoffset, yoffset, x, y, width,
-          height, dest_width, dest_height, source_width, source_height,
-          false /* unpack_flip_y */, false /* unpack_premultiply_alpha */,
+          height, dest_size.width(), dest_size.height(), source_size.width(),
+          source_size.height(), false /* unpack_flip_y */,
+          false /* unpack_premultiply_alpha */,
           false /* unpack_unmultiply_alpha */, false /* dither */,
           transform_matrix, copy_tex_image_blit_.get());
+      dest_texture->SetLevelClearedRect(dest_target, dest_level,
+                                        new_cleared_rect);
       return;
     }
   }
@@ -1935,10 +1921,11 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
       dest_level, dest_internal_format, xoffset, yoffset, x, y, width, height,
-      dest_width, dest_height, source_width, source_height,
-      false /* unpack_flip_y */, false /* unpack_premultiply_alpha */,
-      false /* unpack_unmultiply_alpha */, false /* dither */, method,
-      copy_tex_image_blit_.get());
+      dest_size.width(), dest_size.height(), source_size.width(),
+      source_size.height(), false /* unpack_flip_y */,
+      false /* unpack_premultiply_alpha */, false /* unpack_unmultiply_alpha */,
+      false /* dither */, method, copy_tex_image_blit_.get());
+  dest_texture->SetLevelClearedRect(dest_target, dest_level, new_cleared_rect);
   in_copy_sub_texture_ = false;
   if (reset_texture_state_) {
     reset_texture_state_ = false;
@@ -1953,33 +1940,6 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
                                texture->mag_filter());
     }
     shared_context_state_->PessimisticallyResetGrContext();
-  }
-}
-
-void RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture,
-                                                     GLenum textarget) {
-  // Image is already in use if texture is attached to a framebuffer.
-  if (texture && !texture->IsAttachedToFramebuffer()) {
-    gles2::Texture::ImageState image_state;
-    gl::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
-    if (image && image_state == gles2::Texture::UNBOUND) {
-      ScopedGLErrorSuppressor suppressor(
-          "RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded",
-          error_state_.get());
-      api()->glBindTextureFn(textarget, texture->service_id());
-      if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-        bool rv = image->BindTexImage(textarget);
-        DCHECK(rv) << "BindTexImage() failed";
-      } else {
-        // Note: We update the state to COPIED prior to calling CopyTexImage()
-        // as that allows the GLImage implemenatation to set it back to
-        // UNBOUND and ensure that CopyTexImage() is called each time the
-        // texture is used.
-        texture->SetLevelImageState(textarget, 0, gles2::Texture::COPIED);
-        bool rv = image->CopyTexImage(textarget);
-        DCHECK(rv) << "CopyTexImage() failed";
-      }
-    }
   }
 }
 
