@@ -466,6 +466,9 @@ class OrderfileGenerator(object):
       assert not options.profile_save_dir, (
           '--profile-save-dir cannot be used with --skip-profile')
 
+    # Outlined function handling enabled by default for all architectures.
+    self._order_outlined_functions = not options.noorder_outlined_functions
+
     self._output_data = {}
     self._step_recorder = StepRecorder(options.buildbot)
     self._compiler = None
@@ -584,7 +587,7 @@ class OrderfileGenerator(object):
     self._step_recorder.BeginStep('Patch Orderfile')
     patch_orderfile.GeneratePatchedOrderfile(
         self._GetUnpatchedOrderfileFilename(), self._compiler.lib_chrome_so,
-        self._GetPathToOrderfile())
+        self._GetPathToOrderfile(), self._order_outlined_functions)
 
   def _VerifySymbolOrder(self):
     self._step_recorder.BeginStep('Verify Symbol Order')
@@ -835,6 +838,8 @@ def CreateArgumentParser():
   parser.add_argument('--manual-objdir', default=None, type=str,
                       help=('Root of object file directory corresponding to '
                             '--manual-symbol-offsets.'))
+  parser.add_argument('--noorder-outlined-functions', action='store_true',
+                      help='Disable outlined functions in the orderfile.')
   parser.add_argument('--pregenerated-profiles', default=None, type=str,
                       help=('Pregenerated profiles to use instead of running '
                             'profile step. Cannot be used with '

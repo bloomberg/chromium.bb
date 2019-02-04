@@ -168,8 +168,11 @@ def _SymbolInfosFromStream(objdump_lines):
         name_to_offsets[symbol_info.name].append(symbol_info.offset)
       symbol_infos.append(symbol_info)
 
+  # Outlined functions are known to be repeated often, so ignore them in the
+  # repeated symbol count.
   repeated_symbols = filter(lambda s: len(name_to_offsets[s]) > 1,
-                            name_to_offsets.iterkeys())
+                            (k for k in name_to_offsets.keys()
+                             if not k.startswith('OUTLINED_FUNCTION_')))
   if repeated_symbols:
     # Log the first 5 repeated offsets of the first 10 repeated symbols.
     logging.warning('%d symbols repeated with multiple offsets:\n %s',
