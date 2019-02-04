@@ -16,14 +16,7 @@ DiscardsTest.prototype = {
   browsePreload: 'chrome://discards'
 };
 
-// Disabling on Mac and Windows due to flakiness.
-// https://crbug.com/928209
-GEN('#if defined(OS_MACOSX) || defined(OS_WINDOWS)');
-GEN('#define MAYBE_CompareTabDiscardsInfo DISABLED_CompareTabDiscardsInfo');
-GEN('#else');
-GEN('#define MAYBE_CompareTabDiscardsInfo CompareTabDiscardsInfo');
-GEN('#endif');
-TEST_F('DiscardsTest', 'MAYBE_CompareTabDiscardsInfo', function() {
+TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
   let dummy1 = {
     title: 'title 1',
     tabUrl: 'http://urlone.com',
@@ -65,14 +58,7 @@ TEST_F('DiscardsTest', 'MAYBE_CompareTabDiscardsInfo', function() {
       });
 });
 
-// Disabling on Mac and Windows due to flakiness.
-// https://crbug.com/928209
-GEN('#if defined(OS_MACOSX) || defined(OS_WINDOWS)');
-GEN('#define MAYBE_DurationToString DISABLED_DurationToString');
-GEN('#else');
-GEN('#define MAYBE_DurationToString DurationToString');
-GEN('#endif');
-TEST_F('DiscardsTest', 'MAYBE_DurationToString', function() {
+TEST_F('DiscardsTest', 'DurationToString', function() {
   // Test cases have the form [ 'expected output', input_in_seconds ].
   [['just now', 0], ['just now', 10], ['just now', 59], ['1 minute ago', 60],
    ['10 minutes ago', 10 * 60 + 30], ['59 minutes ago', 59 * 60 + 59],
@@ -92,14 +78,7 @@ TEST_F('DiscardsTest', 'MAYBE_DurationToString', function() {
       });
 });
 
-// Disabling on Mac and Windows due to flakiness.
-// https://crbug.com/928209
-GEN('#if defined(OS_MACOSX) || defined(OS_WINDOWS)');
-GEN('#define MAYBE_MaybeMakePlural DISABLED_MaybeMakePlural');
-GEN('#else');
-GEN('#define MAYBE_MaybeMakePlural MaybeMakePlural');
-GEN('#endif');
-TEST_F('DiscardsTest', 'MAYBE_MaybeMakePlural', function() {
+TEST_F('DiscardsTest', 'MaybeMakePlural', function() {
   assertEquals('hours', discards.maybeMakePlural('hour', 0));
   assertEquals('hour', discards.maybeMakePlural('hour', 1));
   assertEquals('hours', discards.maybeMakePlural('hour', 2));
