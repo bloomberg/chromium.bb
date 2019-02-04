@@ -100,11 +100,6 @@ void MemoryPressureListenerRegistry::OnMemoryPressure(
   WTF::Partitions::DecommitFreeableMemory();
 }
 
-void MemoryPressureListenerRegistry::OnMemoryStateChange(MemoryState state) {
-  for (auto& client : clients_)
-    client->OnMemoryStateChange(state);
-}
-
 void MemoryPressureListenerRegistry::OnPurgeMemory() {
   for (auto& client : clients_)
     client->OnPurgeMemory();

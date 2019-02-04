@@ -7,7 +7,6 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_memory_pressure_level.h"
-#include "third_party/blink/public/platform/web_memory_state.h"
 
 namespace blink {
 
@@ -15,8 +14,6 @@ class WebMemoryPressureListener {
  public:
   // Called when a memory pressure notification is received.
   BLINK_PLATFORM_EXPORT static void OnMemoryPressure(WebMemoryPressureLevel);
-
-  BLINK_PLATFORM_EXPORT static void OnMemoryStateChange(MemoryState);
 
   BLINK_PLATFORM_EXPORT static void OnPurgeMemory();
 };
