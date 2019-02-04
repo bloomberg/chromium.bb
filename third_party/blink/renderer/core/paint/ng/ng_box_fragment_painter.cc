@@ -1155,10 +1155,14 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
     const LayoutPoint& physical_offset,
     HitTestAction action) {
   const NGPhysicalFragment& fragment = paint_fragment.PhysicalFragment();
+
+  // Note: Floats should only be hit tested in the |kHitTestFloat| phase, so we
+  // shouldn't enter a float when |action| doesn't match. However, as floats may
+  // scatter around in the entire inline formatting context, we should always
+  // enter non-floating inline child boxes to search for floats in the
+  // |kHitTestFloat| phase, unless the child box forms another context.
+
   if (fragment.IsFloating() && action != kHitTestFloat)
-    return false;
-  // Lines and inlines are hit tested only in the foreground phase.
-  if (fragment.IsInline() && action != kHitTestForeground)
     return false;
 
   if (!FragmentRequiresLegacyFallback(fragment)) {
@@ -1169,6 +1173,9 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
     return NGBoxFragmentPainter(paint_fragment)
         .NodeAtPoint(result, location_in_container, physical_offset, action);
   }
+
+  if (fragment.IsInline() && action != kHitTestForeground)
+    return false;
 
   LayoutBox* const layout_box = ToLayoutBox(fragment.GetLayoutObject());
 
