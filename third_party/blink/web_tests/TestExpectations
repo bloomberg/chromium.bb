@@ -5322,10 +5322,7 @@ crbug.com/850964 [ Linux ] virtual/video-surface-layer/external/wpt/feature-poli
 crbug.com/850964 [ Win ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Failure ]
 
 # Sheriff 2018-07-05
-crbug.com/831796 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Failure Pass ]
-
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
-
 crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.html [ Failure Pass ]
 
 # Other timeouts
@@ -6035,4 +6032,12 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.worker.html 
 crbug.com/927296 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Failure ]
 
 # Sheriff 2019-02-01
+# These are crashy on Win10. The first is also flaky on other platforms, but apparently
+# this file doesn't support having two lines referring to the same test with nested specificity.
+crbug.com/927862 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
 crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/mousemove-to-scrollbar-changes-cursor.html [ Skip ]
+crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/offsetX-offsetY-svg.html [ Skip ]
+crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/mutation-during-replace-child-2.html [ Skip ]
+crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/overflow-scroll-fake-mouse-move.html [ Skip ]
+crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/event-view-toString.html [ Skip ]
+crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/no-blur-on-page-leave.html [ Skip ]
