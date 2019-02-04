@@ -34,12 +34,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
-#if defined(OS_WIN)
-#define IntToStringType base::IntToString16
-#else
-#define IntToStringType base::IntToString
-#endif
-
 using base::ProcessId;
 using std::string;
 

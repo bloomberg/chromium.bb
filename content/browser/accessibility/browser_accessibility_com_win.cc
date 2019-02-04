@@ -1902,9 +1902,9 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     unsigned int blue = SkColorGetB(color);
     // Don't expose default value of pure white.
     if (alpha && (red != 255 || green != 255 || blue != 255)) {
-      base::string16 color_value = L"rgb(" + base::UintToString16(red) + L',' +
-                                   base::UintToString16(green) + L',' +
-                                   base::UintToString16(blue) + L')';
+      base::string16 color_value = L"rgb(" + base::NumberToString16(red) +
+                                   L',' + base::NumberToString16(green) + L',' +
+                                   base::NumberToString16(blue) + L')';
       SanitizeStringAttributeForIA2(color_value, &color_value);
       attributes.push_back(L"background-color:" + color_value);
     }
@@ -1916,9 +1916,9 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     unsigned int blue = SkColorGetB(color);
     // Don't expose default value of black.
     if (red || green || blue) {
-      base::string16 color_value = L"rgb(" + base::UintToString16(red) + L',' +
-                                   base::UintToString16(green) + L',' +
-                                   base::UintToString16(blue) + L')';
+      base::string16 color_value = L"rgb(" + base::NumberToString16(red) +
+                                   L',' + base::NumberToString16(green) + L',' +
+                                   base::NumberToString16(blue) + L')';
       SanitizeStringAttributeForIA2(color_value, &color_value);
       attributes.push_back(L"color:" + color_value);
     }

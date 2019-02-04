@@ -230,7 +230,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
       item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
       item->key = leveldb::StdStringToUint8Vector(kVersionKey);
       item->value = leveldb::StdStringToUint8Vector(
-          base::Int64ToString(kCurrentLocalStorageSchemaVersion));
+          base::NumberToString(kCurrentLocalStorageSchemaVersion));
       operations.push_back(std::move(item));
       context_->database_initialized_ = true;
     }

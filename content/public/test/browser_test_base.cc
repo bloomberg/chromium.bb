@@ -193,7 +193,7 @@ void BrowserTestBase::SetUp() {
   // when sharded.
   command_line->AppendSwitchASCII(
       switches::kIPCConnectionTimeout,
-      base::Int64ToString(TestTimeouts::action_max_timeout().InSeconds()));
+      base::NumberToString(TestTimeouts::action_max_timeout().InSeconds()));
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
   if (AllowFileAccessFromFiles())

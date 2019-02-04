@@ -184,7 +184,7 @@ void StreamURLRequestJob::NotifyMethodNotSupported() {
   error_code_ = net::ERR_METHOD_NOT_SUPPORTED;
 
   std::string status("HTTP/1.1 ");
-  status.append(base::IntToString(status_code));
+  status.append(base::NumberToString(status_code));
   status.append(" ");
   status.append(net::GetHttpReasonPhrase(status_code));
   status.append("\0\0", 2);

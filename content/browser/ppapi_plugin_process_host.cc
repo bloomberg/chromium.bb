@@ -408,10 +408,10 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   const gfx::FontRenderParams font_params =
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
   cmd_line->AppendSwitchASCII(switches::kPpapiAntialiasedTextEnabled,
-                              base::IntToString(font_params.antialiasing));
+                              base::NumberToString(font_params.antialiasing));
   cmd_line->AppendSwitchASCII(
       switches::kPpapiSubpixelRenderingSetting,
-      base::IntToString(font_params.subpixel_rendering));
+      base::NumberToString(font_params.subpixel_rendering));
 #endif
 
   if (!plugin_launcher.empty())

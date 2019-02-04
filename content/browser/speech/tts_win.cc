@@ -109,8 +109,7 @@ bool TtsPlatformImplWin::Speak(int utterance_id,
     // The TTS api allows a range of -10 to 10 for speech pitch.
     // TODO(dtseng): cleanup if we ever use any other properties that
     // require xml.
-    std::wstring pitch_value =
-        base::IntToString16(static_cast<int>(params.pitch * 10 - 10));
+    std::wstring pitch_value = base::NumberToString16(params.pitch * 10 - 10);
     prefix = L"<pitch absmiddle=\"" + pitch_value + L"\">";
     suffix = L"</pitch>";
   }

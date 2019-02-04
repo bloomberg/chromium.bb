@@ -32,18 +32,20 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
 
   if (controls.audio.requested) {
     blink::MediaStreamDevice audio_device;
-    audio_device.id = controls.audio.device_id + base::IntToString(session_id_);
+    audio_device.id =
+        controls.audio.device_id + base::NumberToString(session_id_);
     audio_device.name = "microphone";
     audio_device.type = controls.audio.stream_type;
     audio_device.session_id = session_id_;
     audio_device.matched_output_device_id =
-        "associated_output_device_id" + base::IntToString(request_id_);
+        "associated_output_device_id" + base::NumberToString(request_id_);
     audio_devices_.push_back(audio_device);
   }
 
   if (controls.video.requested) {
     blink::MediaStreamDevice video_device;
-    video_device.id = controls.video.device_id + base::IntToString(session_id_);
+    video_device.id =
+        controls.video.device_id + base::NumberToString(session_id_);
     video_device.name = "usb video camera";
     video_device.type = controls.video.stream_type;
     video_device.video_facing = media::MEDIA_VIDEO_FACING_USER;
@@ -55,7 +57,7 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     generate_stream_cb_ = std::move(callback);
   } else {
     std::move(callback).Run(blink::MEDIA_DEVICE_OK,
-                            "dummy" + base::IntToString(request_id_),
+                            "dummy" + base::NumberToString(request_id_),
                             audio_devices_, video_devices_);
   }
 }
@@ -92,7 +94,7 @@ void MockMojoMediaStreamDispatcherHost::OpenDevice(
   device.type = type;
   device.session_id = session_id_;
   std::move(callback).Run(true /* success */,
-                          "dummy" + base::IntToString(request_id), device);
+                          "dummy" + base::NumberToString(request_id), device);
 }
 
 }  // namespace content

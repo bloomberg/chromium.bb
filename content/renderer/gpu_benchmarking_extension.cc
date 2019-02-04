@@ -107,7 +107,8 @@ class SkPictureSerializer {
       // with
       // --no-sandbox command-line flag. Get rid of this limitation.
       // CRBUG: 139640.
-      std::string filename = "layer_" + base::IntToString(layer_id_++) + ".skp";
+      std::string filename =
+          "layer_" + base::NumberToString(layer_id_++) + ".skp";
       std::string filepath = dirpath_.AppendASCII(filename).MaybeAsASCII();
       DCHECK(!filepath.empty());
       SkFILEWStream file(filepath.c_str());

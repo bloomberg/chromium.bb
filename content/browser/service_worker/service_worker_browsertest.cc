@@ -2571,7 +2571,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   EXPECT_EQ("OK", GetString(*dict, "statusText"));
   EXPECT_TRUE(CheckHeader(*dict, "content-type", "text/html"));
   EXPECT_TRUE(CheckHeader(*dict, "content-length",
-                          base::IntToString(sizeof(kPage) - 1)));
+                          base::NumberToString(sizeof(kPage) - 1)));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NotEnabled) {

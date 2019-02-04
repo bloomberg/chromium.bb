@@ -119,7 +119,7 @@ class AppCacheDiskCache::ActiveCall
     scoped_refptr<ActiveCall> active_call(
         new ActiveCall(owner, entry, std::move(callback)));
     net::Error return_value = owner->disk_cache()->CreateEntry(
-        base::Int64ToString(key), net::HIGHEST, &active_call->entry_ptr_,
+        base::NumberToString(key), net::HIGHEST, &active_call->entry_ptr_,
         base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
     return active_call->HandleImmediateReturnValue(return_value);
   }
@@ -131,7 +131,7 @@ class AppCacheDiskCache::ActiveCall
     scoped_refptr<ActiveCall> active_call(
         new ActiveCall(owner, entry, std::move(callback)));
     net::Error return_value = owner->disk_cache()->OpenEntry(
-        base::Int64ToString(key), net::HIGHEST, &active_call->entry_ptr_,
+        base::NumberToString(key), net::HIGHEST, &active_call->entry_ptr_,
         base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
     return active_call->HandleImmediateReturnValue(return_value);
   }
@@ -142,7 +142,7 @@ class AppCacheDiskCache::ActiveCall
     scoped_refptr<ActiveCall> active_call(
         new ActiveCall(owner, nullptr, std::move(callback)));
     net::Error return_value = owner->disk_cache()->DoomEntry(
-        base::Int64ToString(key), net::HIGHEST,
+        base::NumberToString(key), net::HIGHEST,
         base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
     return active_call->HandleImmediateReturnValue(return_value);
   }

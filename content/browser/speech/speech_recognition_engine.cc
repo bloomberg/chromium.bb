@@ -582,7 +582,7 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
     uint32_t max_alternatives =
         std::min(kMaxMaxAlternatives, config_.max_hypotheses);
     upstream_args.push_back("maxAlternatives=" +
-                            base::UintToString(max_alternatives));
+                            base::NumberToString(max_alternatives));
   }
   upstream_args.push_back("app=chromium");
   for (const blink::mojom::SpeechRecognitionGrammar& grammar :

@@ -21,7 +21,7 @@ DevToolsIOContext::Stream::Stream(
 
 std::string DevToolsIOContext::Stream::Register(DevToolsIOContext* context) {
   static unsigned s_last_stream_handle = 0;
-  const std::string handle = base::UintToString(++s_last_stream_handle);
+  const std::string handle = base::NumberToString(++s_last_stream_handle);
   Register(context, handle);
   return handle;
 }

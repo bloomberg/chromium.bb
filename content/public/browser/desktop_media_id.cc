@@ -195,11 +195,11 @@ std::string DesktopMediaID::ToString() const {
 
   // Screen and Window types.
   prefix.append(":");
-  prefix.append(base::Int64ToString(id));
+  prefix.append(base::NumberToString(id));
 
 #if defined(USE_AURA)
   prefix.append(":");
-  prefix.append(base::Int64ToString(aura_id));
+  prefix.append(base::NumberToString(aura_id));
 #endif  // defined(USE_AURA)
 
   return prefix;

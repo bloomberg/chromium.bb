@@ -3799,9 +3799,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
     NavigateFrameToURL(child, urls[i]);
 
-    EXPECT_EQ(base::IntToString(current_margin_width),
+    EXPECT_EQ(base::NumberToString(current_margin_width),
               EvalJs(child, "document.body.getAttribute('marginwidth');"));
-    EXPECT_EQ(base::IntToString(current_margin_height),
+    EXPECT_EQ(base::NumberToString(current_margin_height),
               EvalJs(child, "document.body.getAttribute('marginheight');"));
 
     current_margin_width += 5;

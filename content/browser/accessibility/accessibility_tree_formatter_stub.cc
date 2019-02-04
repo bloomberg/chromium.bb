@@ -50,7 +50,7 @@ base::string16 AccessibilityTreeFormatterStub::ProcessTreeForOutput(
     base::DictionaryValue* filtered_dict_result) {
   int id_value;
   node.GetInteger("id", &id_value);
-  return base::IntToString16(id_value);
+  return base::NumberToString16(id_value);
 }
 
 const base::FilePath::StringType

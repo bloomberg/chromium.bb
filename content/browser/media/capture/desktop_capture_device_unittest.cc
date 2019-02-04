@@ -669,7 +669,7 @@ TEST_F(DesktopCaptureDeviceThrottledTest, Throttled80) {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--webrtc-max-cpu-consumption-percentage",
-      base::IntToString(max_cpu_consumption_percentage));
+      base::NumberToString(max_cpu_consumption_percentage));
 
   const double actual_framerate = CaptureFrames();
 

@@ -455,7 +455,7 @@ void BrowserPlugin::UpdateInternalInstanceId() {
   // by firing an event from there.
   UpdateDOMAttribute(
       "internalinstanceid",
-      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
+      base::UTF8ToUTF16(base::NumberToString(browser_plugin_instance_id_)));
 }
 
 void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {

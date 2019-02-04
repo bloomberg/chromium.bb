@@ -276,9 +276,9 @@
 #endif
 
 #if defined(OS_WIN)
-#define IntToStringType base::IntToString16
+#define NumberToStringType base::NumberToString16
 #else
-#define IntToStringType base::IntToString
+#define NumberToStringType base::NumberToString
 #endif
 
 namespace content {
@@ -2913,12 +2913,12 @@ StoragePartition* RenderProcessHostImpl::GetStoragePartition() {
 static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       switches::kNumRasterThreads,
-      base::IntToString(NumberOfRendererRasterThreads()));
+      base::NumberToString(NumberOfRendererRasterThreads()));
 
   int msaa_sample_count = GpuRasterizationMSAASampleCount();
   if (msaa_sample_count >= 0) {
     command_line->AppendSwitchASCII(switches::kGpuRasterizationMSAASampleCount,
-                                    base::IntToString(msaa_sample_count));
+                                    base::NumberToString(msaa_sample_count));
   }
 
   if (IsZeroCopyUploadEnabled())
@@ -4682,7 +4682,8 @@ void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskAndReplyWithResult(
       &GetAecDumpFileTaskRunner(), FROM_HERE,
-      base::Bind(&CreateFileForProcess, file.AddExtension(IntToStringType(id))),
+      base::Bind(&CreateFileForProcess,
+                 file.AddExtension(NumberToStringType(id))),
       base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
                  weak_factory_.GetWeakPtr(), id));
 }
@@ -4701,7 +4702,7 @@ void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
 
 base::FilePath RenderProcessHostImpl::GetAecDumpFilePathWithExtensions(
     const base::FilePath& file) {
-  return file.AddExtension(IntToStringType(GetProcess().Pid()))
+  return file.AddExtension(NumberToStringType(GetProcess().Pid()))
       .AddExtension(kAecDumpFileNameAddition);
 }
 

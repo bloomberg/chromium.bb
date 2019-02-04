@@ -364,7 +364,7 @@ void ServiceWorkerHandler::OnWorkerRegistrationUpdated(
   for (const auto& registration : registrations) {
     result->addItem(Registration::Create()
                         .SetRegistrationId(
-                            base::Int64ToString(registration.registration_id))
+                            base::NumberToString(registration.registration_id))
                         .SetScopeURL(registration.scope.spec())
                         .SetIsDeleted(registration.delete_flag ==
                                       ServiceWorkerRegistrationInfo::IS_DELETED)
@@ -404,20 +404,18 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
     for (auto& c : client_set)
       clients->addItem(c);
 
-    std::unique_ptr<Version> version_value = Version::Create()
-        .SetVersionId(base::Int64ToString(version.version_id))
-        .SetRegistrationId(
-            base::Int64ToString(version.registration_id))
-        .SetScriptURL(version.script_url.spec())
-        .SetRunningStatus(
-            GetVersionRunningStatusString(version.running_status))
-        .SetStatus(GetVersionStatusString(version.status))
-        .SetScriptLastModified(
-            version.script_last_modified.ToDoubleT())
-        .SetScriptResponseTime(
-            version.script_response_time.ToDoubleT())
-        .SetControlledClients(std::move(clients))
-        .Build();
+    std::unique_ptr<Version> version_value =
+        Version::Create()
+            .SetVersionId(base::NumberToString(version.version_id))
+            .SetRegistrationId(base::NumberToString(version.registration_id))
+            .SetScriptURL(version.script_url.spec())
+            .SetRunningStatus(
+                GetVersionRunningStatusString(version.running_status))
+            .SetStatus(GetVersionStatusString(version.status))
+            .SetScriptLastModified(version.script_last_modified.ToDoubleT())
+            .SetScriptResponseTime(version.script_response_time.ToDoubleT())
+            .SetControlledClients(std::move(clients))
+            .Build();
     scoped_refptr<DevToolsAgentHostImpl> host(
         ServiceWorkerDevToolsManager::GetInstance()
             ->GetDevToolsAgentHostForWorker(
@@ -437,8 +435,8 @@ void ServiceWorkerHandler::OnErrorReported(
   frontend_->WorkerErrorReported(
       ServiceWorker::ServiceWorkerErrorMessage::Create()
           .SetErrorMessage(base::UTF16ToUTF8(info.error_message))
-          .SetRegistrationId(base::Int64ToString(registration_id))
-          .SetVersionId(base::Int64ToString(version_id))
+          .SetRegistrationId(base::NumberToString(registration_id))
+          .SetVersionId(base::NumberToString(version_id))
           .SetSourceURL(info.source_url.spec())
           .SetLineNumber(info.line_number)
           .SetColumnNumber(info.column_number)

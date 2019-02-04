@@ -973,7 +973,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
   for (int i = 0; i < 2; i++) {
     // First Service Worker.
     BackgroundFetchRegistrationId registration_id1(
-        swid1, origin(), kExampleDeveloperId + base::IntToString(i),
+        swid1, origin(), kExampleDeveloperId + base::NumberToString(i),
         base::GenerateGUID());
     CreateRegistration(
         registration_id1, std::vector<blink::mojom::FetchAPIRequestPtr>(),
@@ -982,7 +982,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
 
     // Second service Worker.
     BackgroundFetchRegistrationId registration_id2(
-        swid2, origin(), kExampleDeveloperId + base::IntToString(i),
+        swid2, origin(), kExampleDeveloperId + base::NumberToString(i),
         base::GenerateGUID());
     CreateRegistration(
         registration_id2, std::vector<blink::mojom::FetchAPIRequestPtr>(),

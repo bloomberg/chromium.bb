@@ -1134,7 +1134,7 @@ TEST_P(StorageAreaImplParamTest, PrefixForkAfterLoad) {
 
 namespace {
 std::string GetNewPrefix(int* i) {
-  std::string prefix = "prefix-" + base::Int64ToString(*i) + "-";
+  std::string prefix = "prefix-" + base::NumberToString(*i) + "-";
   (*i)++;
   return prefix;
 }

@@ -135,9 +135,9 @@ class MediaTest : public testing::WithParamInterface<bool>,
 
   void RunVideoSizeTest(const char* media_file, int width, int height) {
     std::string expected;
-    expected += base::IntToString(width);
+    expected += base::NumberToString(width);
     expected += " ";
-    expected += base::IntToString(height);
+    expected += base::NumberToString(height);
     base::StringPairs query_params;
     query_params.emplace_back("video", media_file);
     RunMediaTestPage("player.html", query_params, expected, false);

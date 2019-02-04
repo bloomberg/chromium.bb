@@ -306,7 +306,7 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   if (show_ids()) {
     int id_value;
     dict.GetInteger("id", &id_value);
-    WriteAttribute(true, base::IntToString16(id_value), &line);
+    WriteAttribute(true, base::NumberToString16(id_value), &line);
   }
 
   base::string16 role_value;
@@ -434,7 +434,7 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
       } else {
         int int_value;
         value->GetInteger(i, &int_value);
-        attr_string += base::IntToString(int_value);
+        attr_string += base::NumberToString(int_value);
       }
     }
     WriteAttribute(false, attr_string, &line);

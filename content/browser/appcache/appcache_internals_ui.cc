@@ -67,9 +67,9 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForResponseEnquiry(
       new base::DictionaryValue());
   dict_value->SetString("manifestURL", response_enquiry.manifest_url);
   dict_value->SetString("groupId",
-                        base::Int64ToString(response_enquiry.group_id));
+                        base::NumberToString(response_enquiry.group_id));
   dict_value->SetString("responseId",
-                        base::Int64ToString(response_enquiry.response_id));
+                        base::NumberToString(response_enquiry.response_id));
   return dict_value;
 }
 
@@ -86,7 +86,8 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
   dict_value->SetString(
       "size",
       base::UTF16ToUTF8(base::FormatBytesUnlocalized(appcache_info.size)));
-  dict_value->SetString("groupId", base::Int64ToString(appcache_info.group_id));
+  dict_value->SetString("groupId",
+                        base::NumberToString(appcache_info.group_id));
 
   return dict_value;
 }
@@ -120,7 +121,8 @@ GetDictionaryValueForAppCacheResourceInfo(
   dict->SetString(
       "size",
       base::UTF16ToUTF8(base::FormatBytesUnlocalized(resource_info.size)));
-  dict->SetString("responseId", base::Int64ToString(resource_info.response_id));
+  dict->SetString("responseId",
+                  base::NumberToString(resource_info.response_id));
   dict->SetBoolean("isExplicit", resource_info.is_explicit);
   dict->SetBoolean("isManifest", resource_info.is_manifest);
   dict->SetBoolean("isMaster", resource_info.is_master);

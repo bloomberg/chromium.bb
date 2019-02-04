@@ -79,7 +79,7 @@ std::string EffectsToString(int effects) {
   if (effects) {
     if (!ret.empty())
       ret += " | ";
-    ret += base::IntToString(effects);
+    ret += base::NumberToString(effects);
   }
 
   return ret;

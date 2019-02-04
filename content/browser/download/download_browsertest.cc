@@ -966,7 +966,7 @@ class ParallelDownloadTest : public DownloadContentTest {
     std::map<std::string, std::string> params = {
         {download::kMinSliceSizeFinchKey, "1"},
         {download::kParallelRequestCountFinchKey,
-         base::IntToString(kTestRequestCount)},
+         base::NumberToString(kTestRequestCount)},
         {download::kParallelRequestDelayFinchKey, "0"},
         {download::kParallelRequestRemainingTimeFinchKey, "0"}};
     scoped_feature_list_.InitAndEnableFeatureWithParameters(

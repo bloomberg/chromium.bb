@@ -70,9 +70,9 @@ base::File CreateFileForDrop(base::FilePath* file_path) {
     } else {
 #if defined(OS_WIN)
       base::string16 suffix =
-          base::ASCIIToUTF16("-") + base::IntToString16(seq);
+          base::ASCIIToUTF16("-") + base::NumberToString16(seq);
 #else
-      std::string suffix = std::string("-") + base::IntToString(seq);
+      std::string suffix = std::string("-") + base::NumberToString(seq);
 #endif
       new_file_path = file_path->InsertBeforeExtension(suffix);
     }

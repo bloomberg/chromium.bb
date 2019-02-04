@@ -52,7 +52,7 @@ class VibrationTest : public ContentBrowserTest,
     bool result;
     RenderFrameHost* frame = shell()->web_contents()->GetMainFrame();
     std::string script = "domAutomationController.send(navigator.vibrate(" +
-                         base::IntToString(duration) + "))";
+                         base::NumberToString(duration) + "))";
     EXPECT_TRUE(ExecuteScriptAndExtractBool(frame, script, &result));
     return result;
   }

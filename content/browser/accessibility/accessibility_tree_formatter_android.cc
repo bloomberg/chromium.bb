@@ -172,7 +172,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
   if (show_ids()) {
     int id_value;
     dict.GetInteger("id", &id_value);
-    WriteAttribute(true, base::IntToString16(id_value), &line);
+    WriteAttribute(true, base::NumberToString16(id_value), &line);
   }
 
   base::string16 class_value;

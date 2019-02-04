@@ -68,7 +68,7 @@ void DidUnregisterServiceWorker(base::Closure quit_closure,
 }
 
 GURL GetScopeForId(const std::string& origin, int64_t id) {
-  return GURL(origin + base::IntToString(id));
+  return GURL(origin + base::NumberToString(id));
 }
 
 }  // namespace

@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   for (int row = 0; row < 5; ++row) {
     html_url += "<tr>";
     for (int col = 0; col < 7; ++col) {
-      html_url += "<td>" + base::IntToString(cell) + "</td>";
+      html_url += "<td>" + base::NumberToString(cell) + "</td>";
       ++cell;
     }
     html_url += "</tr>";
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
       shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover);
   for (int row = 0; row < 5; ++row) {
     for (int col = 0; col < 7; ++col) {
-      std::string expected_cell_text = base::IntToString(row * 7 + col);
+      std::string expected_cell_text = base::NumberToString(row * 7 + col);
       VLOG(1) << "Sending event in row " << row << " col " << col
               << " with text " << expected_cell_text;
       SendTouchExplorationEvent(50 * col + 25, 50 * row + 25);

@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityRandomized) {
   for (size_t i = 0; i < 10; ++i) {
     // The noise added is a function of the hostname. Varying the hostname
     // should vary the noise.
-    std::string fake_hostname = "example" + base::IntToString(i) + ".com";
+    std::string fake_hostname = "example" + base::NumberToString(i) + ".com";
     EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
                                            fake_hostname, "/net_info.html")));
     VerifyRtt(http_rtt, RunScriptExtractInt("getRtt()"));

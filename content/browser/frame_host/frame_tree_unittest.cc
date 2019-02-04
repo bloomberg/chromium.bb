@@ -33,7 +33,7 @@ namespace {
 // Appends a description of the structure of the frame tree to |result|.
 void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
   result->append(
-      base::Int64ToString(node->current_frame_host()->GetRoutingID()));
+      base::NumberToString(node->current_frame_host()->GetRoutingID()));
   if (!node->current_frame_host()->IsRenderFrameLive())
     result->append("*");  // Asterisk next to dead frames.
 
@@ -139,7 +139,8 @@ class FrameTreeTest : public RenderViewHostImplTestHarness {
          frame_tree->NodesExceptSubtree(subtree_to_skip)) {
       if (!result.empty())
         result += " ";
-      result += base::Int64ToString(node->current_frame_host()->GetRoutingID());
+      result +=
+          base::NumberToString(node->current_frame_host()->GetRoutingID());
     }
     return result;
   }
