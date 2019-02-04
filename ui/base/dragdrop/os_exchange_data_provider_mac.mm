@@ -22,20 +22,64 @@
 
 namespace ui {
 
-OSExchangeDataProviderMac::OSExchangeDataProviderMac()
-    : pasteboard_(new ui::UniquePasteboard) {}
+namespace {
 
+class OwningProvider : public OSExchangeDataProviderMac {
+ public:
+  OwningProvider()
+      : OSExchangeDataProviderMac(),
+        owned_pasteboard_(new ui::UniquePasteboard) {}
+  OwningProvider(const OwningProvider& provider) = default;
+
+  std::unique_ptr<OSExchangeData::Provider> Clone() const override {
+    return std::make_unique<OwningProvider>(*this);
+  }
+
+  NSPasteboard* GetPasteboard() const override {
+    return owned_pasteboard_->get();
+  }
+
+ private:
+  scoped_refptr<ui::UniquePasteboard> owned_pasteboard_;
+};
+
+class WrappingProvider : public OSExchangeDataProviderMac {
+ public:
+  WrappingProvider(NSPasteboard* pasteboard)
+      : OSExchangeDataProviderMac(), wrapped_pasteboard_([pasteboard retain]) {}
+  WrappingProvider(const WrappingProvider& provider) = default;
+
+  std::unique_ptr<OSExchangeData::Provider> Clone() const override {
+    return std::make_unique<WrappingProvider>(*this);
+  }
+
+  NSPasteboard* GetPasteboard() const override { return wrapped_pasteboard_; }
+
+ private:
+  base::scoped_nsobject<NSPasteboard> wrapped_pasteboard_;
+};
+
+}  // namespace
+
+OSExchangeDataProviderMac::OSExchangeDataProviderMac() = default;
 OSExchangeDataProviderMac::OSExchangeDataProviderMac(
-    scoped_refptr<ui::UniquePasteboard> pb)
-    : pasteboard_(pb) {}
+    const OSExchangeDataProviderMac&) = default;
+OSExchangeDataProviderMac& OSExchangeDataProviderMac::operator=(
+    const OSExchangeDataProviderMac&) = default;
 
-OSExchangeDataProviderMac::~OSExchangeDataProviderMac() {
+OSExchangeDataProviderMac::~OSExchangeDataProviderMac() = default;
+
+// static
+std::unique_ptr<OSExchangeDataProviderMac>
+OSExchangeDataProviderMac::CreateProvider() {
+  return std::make_unique<OwningProvider>();
 }
 
-std::unique_ptr<OSExchangeData::Provider>
-OSExchangeDataProviderMac::Clone() const {
-  return std::unique_ptr<OSExchangeData::Provider>(
-      new OSExchangeDataProviderMac(pasteboard_));
+// static
+std::unique_ptr<OSExchangeDataProviderMac>
+OSExchangeDataProviderMac::CreateProviderWrappingPasteboard(
+    NSPasteboard* pasteboard) {
+  return std::make_unique<WrappingProvider>(pasteboard);
 }
 
 void OSExchangeDataProviderMac::MarkOriginatedFromRenderer() {
@@ -48,8 +92,8 @@ bool OSExchangeDataProviderMac::DidOriginateFromRenderer() const {
 }
 
 void OSExchangeDataProviderMac::SetString(const base::string16& string) {
-  [pasteboard_->get() setString:base::SysUTF16ToNSString(string)
-                        forType:NSPasteboardTypeString];
+  [GetPasteboard() setString:base::SysUTF16ToNSString(string)
+                     forType:NSPasteboardTypeString];
 }
 
 void OSExchangeDataProviderMac::SetURL(const GURL& url,
@@ -57,12 +101,12 @@ void OSExchangeDataProviderMac::SetURL(const GURL& url,
   base::scoped_nsobject<NSPasteboardItem> item =
       ClipboardUtil::PasteboardItemFromUrl(base::SysUTF8ToNSString(url.spec()),
                                            base::SysUTF16ToNSString(title));
-  ui::ClipboardUtil::AddDataToPasteboard(pasteboard_->get(), item);
+  ui::ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
 }
 
 void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
-  [pasteboard_->get() setPropertyList:@[ base::SysUTF8ToNSString(path.value()) ]
-                              forType:NSFilenamesPboardType];
+  [GetPasteboard() setPropertyList:@[ base::SysUTF8ToNSString(path.value()) ]
+                           forType:NSFilenamesPboardType];
 }
 
 void OSExchangeDataProviderMac::SetFilenames(
@@ -76,19 +120,19 @@ void OSExchangeDataProviderMac::SetFilenames(
     NSString* path = base::SysUTF8ToNSString(filename.path.value());
     [paths addObject:path];
   }
-  [pasteboard_->get() setPropertyList:paths forType:NSFilenamesPboardType];
+  [GetPasteboard() setPropertyList:paths forType:NSFilenamesPboardType];
 }
 
 void OSExchangeDataProviderMac::SetPickledData(
     const ClipboardFormatType& format,
     const base::Pickle& data) {
   NSData* ns_data = [NSData dataWithBytes:data.data() length:data.size()];
-  [pasteboard_->get() setData:ns_data forType:format.ToNSString()];
+  [GetPasteboard() setData:ns_data forType:format.ToNSString()];
 }
 
 bool OSExchangeDataProviderMac::GetString(base::string16* data) const {
   DCHECK(data);
-  NSString* item = [pasteboard_->get() stringForType:NSPasteboardTypeString];
+  NSString* item = [GetPasteboard() stringForType:NSPasteboardTypeString];
   if (item) {
     *data = base::SysNSStringToUTF16(item);
     return true;
@@ -112,7 +156,7 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(
   DCHECK(url);
   DCHECK(title);
 
-  if (ui::PopulateURLAndTitleFromPasteboard(url, title, pasteboard_->get(),
+  if (ui::PopulateURLAndTitleFromPasteboard(url, title, GetPasteboard(),
                                             false)) {
     return true;
   }
@@ -138,8 +182,7 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(
 }
 
 bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
-  NSArray* paths =
-      [pasteboard_->get() propertyListForType:NSFilenamesPboardType];
+  NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
   if ([paths count] == 0)
     return false;
 
@@ -149,8 +192,7 @@ bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
 
 bool OSExchangeDataProviderMac::GetFilenames(
     std::vector<FileInfo>* filenames) const {
-  NSArray* paths =
-      [pasteboard_->get() propertyListForType:NSFilenamesPboardType];
+  NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
   if ([paths count] == 0)
     return false;
 
@@ -165,7 +207,7 @@ bool OSExchangeDataProviderMac::GetPickledData(
     const ClipboardFormatType& format,
     base::Pickle* data) const {
   DCHECK(data);
-  NSData* ns_data = [pasteboard_->get() dataForType:format.ToNSString()];
+  NSData* ns_data = [GetPasteboard() dataForType:format.ToNSString()];
   if (!ns_data)
     return false;
 
@@ -187,12 +229,12 @@ bool OSExchangeDataProviderMac::HasURL(
 }
 
 bool OSExchangeDataProviderMac::HasFile() const {
-  return [[pasteboard_->get() types] containsObject:NSFilenamesPboardType];
+  return [[GetPasteboard() types] containsObject:NSFilenamesPboardType];
 }
 
 bool OSExchangeDataProviderMac::HasCustomFormat(
     const ClipboardFormatType& format) const {
-  return [[pasteboard_->get() types] containsObject:format.ToNSString()];
+  return [[GetPasteboard() types] containsObject:format.ToNSString()];
 }
 
 void OSExchangeDataProviderMac::SetDragImage(
@@ -211,31 +253,15 @@ gfx::Vector2d OSExchangeDataProviderMac::GetDragImageOffset() const {
 }
 
 NSData* OSExchangeDataProviderMac::GetNSDataForType(NSString* type) const {
-  return [pasteboard_->get() dataForType:type];
-}
-
-NSPasteboard* OSExchangeDataProviderMac::GetPasteboard() const {
-  return pasteboard_->get();
+  return [GetPasteboard() dataForType:type];
 }
 
 NSArray* OSExchangeDataProviderMac::GetAvailableTypes() const {
   NSSet* supportedTypes = [NSSet setWithArray:SupportedPasteboardTypes()];
   NSMutableSet* availableTypes =
-      [NSMutableSet setWithArray:[pasteboard_->get() types]];
+      [NSMutableSet setWithArray:[GetPasteboard() types]];
   [availableTypes unionSet:supportedTypes];
   return [availableTypes allObjects];
-}
-
-// static
-std::unique_ptr<OSExchangeData>
-OSExchangeDataProviderMac::CreateDataFromPasteboard(NSPasteboard* pasteboard) {
-  OSExchangeDataProviderMac* provider = new OSExchangeDataProviderMac();
-
-  for (NSPasteboardItem* item in [pasteboard pasteboardItems])
-    ClipboardUtil::AddDataToPasteboard(provider->pasteboard_->get(), item);
-
-  return std::make_unique<OSExchangeData>(
-      base::WrapUnique<OSExchangeData::Provider>(provider));
 }
 
 // static
