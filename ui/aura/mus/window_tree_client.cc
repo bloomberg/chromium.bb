@@ -636,6 +636,8 @@ void WindowTreeClient::SetWindowBoundsFromServer(
                          gfx::ScaleToCeiledSize(revert_bounds.size(), dsf));
     GetWindowTreeHostMus(window)->SetBoundsFromServerInPixels(
         rect, local_surface_id ? *local_surface_id : viz::LocalSurfaceId());
+    if (local_surface_id)
+      window->DidSetWindowTreeHostBoundsFromServer();
     return;
   }
 
@@ -877,6 +879,10 @@ void WindowTreeClient::OnWindowMusPropertyChanged(
           window, transport_name, std::move(data_mus->transport_value)));
   tree_->SetWindowProperty(change_id, window->server_id(), transport_name,
                            transport_value_mojo);
+}
+
+void WindowTreeClient::RequestNewLocalSurfaceId(WindowMus* window) {
+  tree_->AllocateLocalSurfaceId(window->server_id());
 }
 
 std::set<Window*> WindowTreeClient::GetRoots() {

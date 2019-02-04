@@ -5699,6 +5699,9 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url) {
 }
 
 void LayerTreeHostImpl::AllocateLocalSurfaceId() {
+  if (!settings_.automatically_allocate_surface_ids)
+    return;
+
   child_local_surface_id_allocator_.GenerateId();
   client_->DidGenerateLocalSurfaceIdAllocationOnImplThread(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());

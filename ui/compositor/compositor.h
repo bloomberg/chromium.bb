@@ -205,6 +205,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // |trace_environment_name| is passed to trace events so that tracing
   // can identify the environment the trace events are from. Examples are,
   // "ash", and "browser". If no value is supplied, "browser" is used.
+  // See |LayerTreeSettings::automatically_allocate_surface_ids| for details on
+  // |automatically_allocate_surface_ids|.
   Compositor(const viz::FrameSinkId& frame_sink_id,
              ui::ContextFactory* context_factory,
              ui::ContextFactoryPrivate* context_factory_private,
@@ -212,7 +214,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
              bool enable_pixel_canvas,
              ExternalBeginFrameClient* external_begin_frame_client = nullptr,
              bool force_software_compositor = false,
-             const char* trace_environment_name = nullptr);
+             const char* trace_environment_name = nullptr,
+             bool automatically_allocate_surface_ids = true);
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }

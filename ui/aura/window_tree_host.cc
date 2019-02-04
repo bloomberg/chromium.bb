@@ -392,7 +392,8 @@ void WindowTreeHost::CreateCompositor(
     bool force_software_compositor,
     ui::ExternalBeginFrameClient* external_begin_frame_client,
     bool are_events_in_pixels,
-    const char* trace_environment_name) {
+    const char* trace_environment_name,
+    bool automatically_allocate_surface_ids) {
   DCHECK(window()->env());
   Env* env = window()->env();
   ui::ContextFactory* context_factory = env->context_factory();
@@ -406,7 +407,7 @@ void WindowTreeHost::CreateCompositor(
       context_factory, context_factory_private,
       base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
       external_begin_frame_client, force_software_compositor,
-      trace_environment_name);
+      trace_environment_name, automatically_allocate_surface_ids);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
 #endif

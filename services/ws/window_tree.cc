@@ -1547,6 +1547,20 @@ void WindowTree::SetWindowBounds(
                                      local_surface_id));
 }
 
+void WindowTree::AllocateLocalSurfaceId(Id transport_window_id) {
+  const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
+  aura::Window* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "AllocateLocalSurfaceId client window_id="
+           << window_id.ToString();
+  if (!window || !IsTopLevel(window)) {
+    DVLOG(1) << "AllocateLocalSurfaceId failed (invalid window id)";
+    return;
+  }
+  ClientRoot* client_root = GetClientRootForWindow(window);
+  DCHECK(client_root);
+  client_root->AllocateLocalSurfaceIdAndNotifyClient();
+}
+
 void WindowTree::SetWindowTransform(uint32_t change_id,
                                     Id window_id,
                                     const gfx::Transform& transform) {

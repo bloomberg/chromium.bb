@@ -396,6 +396,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       Id window_id,
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void AllocateLocalSurfaceId(Id transport_window_id) override;
   void SetWindowTransform(uint32_t change_id,
                           Id window_id,
                           const gfx::Transform& transform) override;

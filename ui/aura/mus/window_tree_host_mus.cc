@@ -127,7 +127,9 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   const bool are_events_in_pixels = false;
   CreateCompositor(window_mus->GenerateFrameSinkIdFromServerId(),
                    force_software_compositor, external_begin_frame_client,
-                   are_events_in_pixels);
+                   are_events_in_pixels,
+                   /* trace_environment_name */ nullptr,
+                   /* automatically_allocate_surface_ids */ false);
   gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each window and
 // fit in the smallest sizeof(AcceleratedWidget) uint32_t has this property.
