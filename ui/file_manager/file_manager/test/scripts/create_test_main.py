@@ -93,10 +93,40 @@ def includes2scripts(include_filename):
       if tag not in scripts:
         scripts.append(tag)
 
+# Get strings from grdp files.  Remove any ph/ex elements before getting text.
+# Parse private_api_strings.cc to match the string name to the grdp message.
+strings = {
+    'fontFamily': 'Roboto, sans-serif',
+    'fontSize': '75%',
+    'language': 'en',
+    'textdirection': 'ltr',
+    }
+grdp_files = [
+    '../../../chrome/app/chromeos_strings.grdp',
+    '../../../chrome/app/file_manager_strings.grdp',
+    ]
+resource_bundle = {}
+for grdp in grdp_files:
+  for msg in ET.fromstring(read(grdp)):
+    for ph in msg.findall('ph'):
+      for ex in ph.findall('ex'):
+        ph.remove(ex)
+    resource_bundle[msg.attrib['name']] = ''.join(msg.itertext()).strip()
+private_api_strings = read('../../../chrome/browser/chromeos/'
+                           'file_manager/file_manager_string_util.cc')
+for m in re.finditer(r'SET_STRING\(\"(.*?)\",\s+(\w+)\);', private_api_strings):
+  strings[m.group(1)] = resource_bundle.get(m.group(2), m.group(2))
+
+
+def i18n(template):
+  repl = lambda x: strings.get(x.group(1), x.group())
+  return re.sub(r'\$i18n\{(.*?)\}', repl, template)
+
+# Substitute $i18n{}.
 # Update relative paths.
 # Fix link to action_link.css and text_defaults.css.
 # Fix stylesheet from extension.
-main_html = (read('main.html')
+main_html = (i18n(read('main.html'))
              .replace('chrome://resources/css/action_link.css',
                       '../../webui/resources/css/action_link.css')
              .replace('<link rel="import" '
@@ -109,15 +139,11 @@ main_html = (read('main.html')
              .split('\n'))
 
 # Fix text_defaults.css.  Copy and replace placeholders.
-text_defaults = (read('../../webui/resources/css/text_defaults.css')
-                 .replace('$i18n{textDirection}', 'ltr')
-                 .replace('$i18nRaw{fontFamily}', 'Roboto, sans-serif')
-                 .replace('$i18nRaw{fontSize}', '75%'))
+text_defaults = i18n(read('../../webui/resources/css/text_defaults.css'))
 write('test/gen/css/text_defaults.css', text_defaults)
 
 # Add scripts required for testing, and the test files (test/*.js).
-scripts.append('<!-- required for testing -->')
-scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
+src = [
     'test/js/chrome_api_test_impl.js',
     '../../webui/resources/js/assert.js',
     '../../webui/resources/js/cr.js',
@@ -137,8 +163,11 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
     'foreground/js/constants.js',
     'test/js/chrome_file_manager_private_test_impl.js',
     'test/js/test_util.js',
-] + ['test/' + s for s in os.listdir(os.path.join(ROOT_SRC, 'test'))
-     if s.endswith('.js')]]
+]
+src += ['test/' + s for s in os.listdir(os.path.join(ROOT_SRC, 'test'))
+        if s.endswith('.js')]
+scripts.append('<!-- required for testing -->')
+scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in src]
 
 # Convert all includes from:
 #  * foreground/js/main_scripts.js
@@ -160,25 +189,6 @@ scripts += ['<script src="%s%s"></script>' %
 main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
     "<script>var FILE_MANAGER_ROOT = '%s';</script>" % ROOT,
     ] + scripts)
-
-# Get strings from grdp files.  Remove any ph/ex elements before getting text.
-# Parse private_api_strings.cc to match the string name to the grdp message.
-strings = {}
-grdp_files = [
-    '../../../chrome/app/chromeos_strings.grdp',
-    '../../../chrome/app/file_manager_strings.grdp',
-    ]
-resource_bundle = {}
-for grdp in grdp_files:
-  for msg in ET.fromstring(read(grdp)):
-    for ph in msg.findall('ph'):
-      for ex in ph.findall('ex'):
-        ph.remove(ex)
-    resource_bundle[msg.attrib['name']] = ''.join(msg.itertext()).strip()
-private_api_strings = read('../../../chrome/browser/chromeos/'
-                           'file_manager/file_manager_string_util.cc')
-for m in re.finditer(r'SET_STRING\(\"(.*?)\",\s+(\w+)\);', private_api_strings):
-  strings[m.group(1)] = resource_bundle.get(m.group(2), m.group(2))
 
 
 def elements_path(elements_filename):
@@ -232,5 +242,5 @@ for filename, substitutions in (
   main_html = replaceline(main_html, filename,
                           ['<script src="test/gen/%s"></script>' % filename])
 
-test_html = GENERATED_HTML + '\n'.join(main_html)
+test_html = GENERATED_HTML + '\n'.join(main_html).encode('utf-8')
 write('test.html', test_html)

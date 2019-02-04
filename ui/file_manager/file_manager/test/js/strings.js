@@ -13,6 +13,8 @@ Object.setPrototypeOf(loadTimeData.data_, {
   'DRIVE_FS_ENABLED': false,
   'GOOGLE_DRIVE_REDEEM_URL': 'http://www.google.com/intl/en/chrome/devices' +
       '/goodies.html?utm_source=filesapp&utm_medium=banner&utm_campaign=gsg',
+  'GOOGLE_DRIVE_OVERVIEW_URL':
+      'https://support.google.com/chromebook/?p=filemanager_drive',
   'HIDE_SPACE_INFO': false,
   'UI_LOCALE': 'en_US',
   'language': 'en-US',
