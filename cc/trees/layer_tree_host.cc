@@ -761,11 +761,12 @@ bool LayerTreeHost::DoUpdateLayers() {
         outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
         elastic_overscroll_, page_scale_factor_, device_scale_factor_,
         gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
-    TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                         "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
                          property_trees_.AsTracedValue());
   } else {
-    TRACE_EVENT_INSTANT1("cc",
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                          "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
                          property_trees_.AsTracedValue());
