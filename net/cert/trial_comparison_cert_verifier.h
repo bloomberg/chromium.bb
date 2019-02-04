@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_TRIAL_COMPARISON_CERT_VERIFIER_H_
-#define CHROME_BROWSER_NET_TRIAL_COMPARISON_CERT_VERIFIER_H_
+#ifndef NET_CERT_TRIAL_COMPARISON_CERT_VERIFIER_H_
+#define NET_CERT_TRIAL_COMPARISON_CERT_VERIFIER_H_
 
 #include <stdint.h>
+
+#include <memory>
+#include <set>
+#include <string>
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -17,9 +21,8 @@
 
 namespace net {
 class CertVerifyProc;
-}
 
-class TrialComparisonCertVerifier : public net::CertVerifier {
+class NET_EXPORT TrialComparisonCertVerifier : public CertVerifier {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -38,34 +41,41 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     kMaxValue = kIgnoredConfigurationChanged
   };
 
-  TrialComparisonCertVerifier(
-      void* profile_id,
-      scoped_refptr<net::CertVerifyProc> primary_verify_proc,
-      scoped_refptr<net::CertVerifyProc> trial_verify_proc);
+  using ReportCallback = base::RepeatingCallback<void(
+      const std::string& hostname,
+      const scoped_refptr<X509Certificate>& unverified_cert,
+      bool enable_rev_checking,
+      bool require_rev_checking_local_anchors,
+      bool enable_sha1_local_anchors,
+      bool disable_symantec_enforcement,
+      const net::CertVerifyResult& primary_result,
+      const net::CertVerifyResult& trial_result)>;
+
+  TrialComparisonCertVerifier(bool initial_allowed,
+                              scoped_refptr<CertVerifyProc> primary_verify_proc,
+                              scoped_refptr<CertVerifyProc> trial_verify_proc,
+                              ReportCallback report_callback);
 
   ~TrialComparisonCertVerifier() override;
 
-  // This method can be called by tests to fake an official build (reports are
-  // only sent from official builds).
-  static void SetFakeOfficialBuildForTesting();
+  void set_trial_allowed(bool allowed) { allowed_ = allowed; }
+  bool trial_allowed() const { return allowed_; }
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
-             net::CertVerifyResult* verify_result,
-             net::CompletionOnceCallback callback,
+             CertVerifyResult* verify_result,
+             CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
-             const net::NetLogWithSource& net_log) override;
+             const NetLogWithSource& net_log) override;
   void SetConfig(const Config& config) override;
 
   // Returns a CertVerifier using the primary CertVerifyProc, which will not
   // cause OnPrimaryVerifierComplete to be called. This can be used to
   // attempt to re-verify a cert with different chain or flags without
   // messing up the stats or potentially causing an infinite loop.
-  net::CertVerifier* primary_reverifier() const {
-    return primary_reverifier_.get();
-  }
-  net::CertVerifier* trial_verifier() const { return trial_verifier_.get(); }
-  net::CertVerifier* revocation_trial_verifier() const {
+  CertVerifier* primary_reverifier() const { return primary_reverifier_.get(); }
+  CertVerifier* trial_verifier() const { return trial_verifier_.get(); }
+  CertVerifier* revocation_trial_verifier() const {
     return revocation_trial_verifier_.get();
   }
 
@@ -73,53 +83,42 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
   class TrialVerificationJob;
 
   void OnPrimaryVerifierComplete(const RequestParams& params,
-                                 const net::NetLogWithSource& net_log,
+                                 const NetLogWithSource& net_log,
                                  int primary_error,
-                                 const net::CertVerifyResult& primary_result,
+                                 const CertVerifyResult& primary_result,
                                  base::TimeDelta primary_latency,
                                  bool is_first_job);
   void OnTrialVerifierComplete(const RequestParams& params,
-                               const net::NetLogWithSource& net_log,
+                               const NetLogWithSource& net_log,
                                int trial_error,
-                               const net::CertVerifyResult& trial_result,
+                               const CertVerifyResult& trial_result,
                                base::TimeDelta latency,
                                bool is_first_job);
-  void MaybeDoTrialVerification(const RequestParams& params,
-                                const net::NetLogWithSource& net_log,
-                                int primary_error,
-                                const net::CertVerifyResult& primary_result,
-                                base::TimeDelta primary_latency,
-                                bool is_first_job,
-                                uint32_t config_id,
-                                void* profile_id,
-                                bool trial_allowed);
 
   void RemoveJob(TrialVerificationJob* job_ptr);
 
-  // The profile this verifier is associated with. Stored as a void* to avoid
-  // accidentally using it on IO thread.
-  void* profile_id_;
+  // Whether the trial is allowed.
+  bool allowed_;
+  // Callback that reports are sent to.
+  ReportCallback report_callback_;
 
-  // Unique identifier for the current configuration, to determine if a
-  // configuration has changed in between primary and trial verifications.
-  uint32_t config_id_;
-  net::CertVerifier::Config config_;
+  CertVerifier::Config config_;
 
-  std::unique_ptr<net::CertVerifier> primary_verifier_;
-  std::unique_ptr<net::CertVerifier> primary_reverifier_;
-  std::unique_ptr<net::CertVerifier> trial_verifier_;
+  std::unique_ptr<CertVerifier> primary_verifier_;
+  std::unique_ptr<CertVerifier> primary_reverifier_;
+  std::unique_ptr<CertVerifier> trial_verifier_;
   // Similar to |trial_verifier_|, except configured to always check
   // revocation information.
-  std::unique_ptr<net::CertVerifier> revocation_trial_verifier_;
+  std::unique_ptr<CertVerifier> revocation_trial_verifier_;
 
   std::set<std::unique_ptr<TrialVerificationJob>, base::UniquePtrComparator>
       jobs_;
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<TrialComparisonCertVerifier> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(TrialComparisonCertVerifier);
 };
 
-#endif  // CHROME_BROWSER_NET_TRIAL_COMPARISON_CERT_VERIFIER_H_
+}  // namespace net
+
+#endif  // NET_CERT_TRIAL_COMPARISON_CERT_VERIFIER_H_

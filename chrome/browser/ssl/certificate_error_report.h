@@ -65,7 +65,10 @@ class CertificateErrorReport {
   // TODO(mattm): remove this when the trial is done. (https://crbug.com/649026)
   CertificateErrorReport(const std::string& hostname,
                          const net::X509Certificate& unverified_cert,
-                         const net::CertVerifier::Config& config,
+                         bool enable_rev_checking,
+                         bool require_rev_checking_local_anchors,
+                         bool enable_sha1_local_anchors,
+                         bool disable_symantec_enforcement,
                          const net::CertVerifyResult& primary_result,
                          const net::CertVerifyResult& trial_result);
 

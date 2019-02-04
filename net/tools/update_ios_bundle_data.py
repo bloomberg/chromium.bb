@@ -51,6 +51,7 @@ net_unittest_bundle_data_globs = [
     "data/parse_certificate_unittest/*.pem",
     "data/parse_certificate_unittest/*.pk8",
     "data/test.html",
+    "data/trial_comparison_cert_verifier_unittest/**/*.pem",
     "data/url_request_unittest/*",
     "data/verify_certificate_chain_unittest/**/*.pem",
     "data/verify_certificate_chain_unittest/**/*.test",

@@ -72,6 +72,7 @@ buildflag_header("buildflags") {
     "ENABLE_WEBSOCKETS=$enable_websockets",
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
     "USE_KERBEROS=$use_kerberos",
+    "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
   ]
 }
 
@@ -2021,6 +2022,13 @@ component("net") {
         "cert/test_root_certs_fuchsia.cc",
       ]
     }
+
+    if (trial_comparison_cert_verifier_supported) {
+      sources += [
+        "cert/trial_comparison_cert_verifier.cc",
+        "cert/trial_comparison_cert_verifier.h",
+      ]
+    }
   }
 
   if (enable_unix_sockets) {
@@ -2511,10 +2519,12 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/googlenew.chain.pem",
     "data/ssl/certificates/intermediate_ca_cert.pem",
     "data/ssl/certificates/invalid_key_usage_cert.der",
+    "data/ssl/certificates/key_usage_p256.key",
     "data/ssl/certificates/key_usage_p256_both.pem",
     "data/ssl/certificates/key_usage_p256_digitalsignature.pem",
     "data/ssl/certificates/key_usage_p256_keyagreement.pem",
     "data/ssl/certificates/key_usage_p256_no_extension.pem",
+    "data/ssl/certificates/key_usage_rsa.key",
     "data/ssl/certificates/key_usage_rsa_both.pem",
     "data/ssl/certificates/key_usage_rsa_digitalsignature.pem",
     "data/ssl/certificates/key_usage_rsa_keyencipherment.pem",
@@ -2522,6 +2532,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/large_key.pem",
     "data/ssl/certificates/localhost_cert.pem",
     "data/ssl/certificates/login.trustwave.com.pem",
+    "data/ssl/certificates/may_2018.pem",
     "data/ssl/certificates/mit.davidben.der",
     "data/ssl/certificates/multi-root-A-by-B.pem",
     "data/ssl/certificates/multi-root-B-by-C.pem",
@@ -3747,6 +3758,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/parse_certificate_unittest/v1_explicit_version.pem",
     "data/parse_certificate_unittest/v3_certificate_template.pk8",
     "data/test.html",
+    "data/trial_comparison_cert_verifier_unittest/target-multiple-policies/chain.pem",
     "data/url_request_unittest/308-without-location-header",
     "data/url_request_unittest/308-without-location-header.mock-http-headers",
     "data/url_request_unittest/BullRunSpeech.txt",
@@ -5761,6 +5773,10 @@ test("net_unittests") {
       "ssl/client_cert_store_nss_unittest.cc",
       "ssl/ssl_platform_key_nss_unittest.cc",
     ]
+  }
+
+  if (trial_comparison_cert_verifier_supported) {
+    sources += [ "cert/trial_comparison_cert_verifier_unittest.cc" ]
   }
 
   # Include transport_security_state_generator tests.

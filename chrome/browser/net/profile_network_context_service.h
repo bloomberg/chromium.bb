@@ -5,19 +5,23 @@
 #ifndef CHROME_BROWSER_NET_PROFILE_NETWORK_CONTEXT_SERVICE_H_
 #define CHROME_BROWSER_NET_PROFILE_NETWORK_CONTEXT_SERVICE_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "net/net_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 class Profile;
+class TrialComparisonCertVerifierController;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -151,6 +155,13 @@ class ProfileNetworkContextService : public KeyedService,
 
   // Used to post schedule CT policy updates
   base::OneShotTimer ct_policy_update_timer_;
+
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+  // Controls the cert verification trial. May be null if the trial is disabled
+  // or not allowed for this profile.
+  std::unique_ptr<TrialComparisonCertVerifierController>
+      trial_comparison_cert_verifier_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);
 };

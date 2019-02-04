@@ -75,21 +75,24 @@ void AddCertStatusToReportStatus(
 }
 
 void AddVerifyFlagsToReport(
-    const net::CertVerifier::Config& config,
+    bool enable_rev_checking,
+    bool require_rev_checking_local_anchors,
+    bool enable_sha1_local_anchors,
+    bool disable_symantec_enforcement,
     ::google::protobuf::RepeatedField<int>* report_flags) {
-  if (config.enable_rev_checking) {
+  if (enable_rev_checking) {
     report_flags->Add(
         chrome_browser_ssl::TrialVerificationInfo::VERIFY_REV_CHECKING_ENABLED);
   }
-  if (config.require_rev_checking_local_anchors) {
+  if (require_rev_checking_local_anchors) {
     report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::
                           VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS);
   }
-  if (config.enable_sha1_local_anchors) {
+  if (enable_sha1_local_anchors) {
     report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::
                           VERIFY_ENABLE_SHA1_LOCAL_ANCHORS);
   }
-  if (config.disable_symantec_enforcement) {
+  if (disable_symantec_enforcement) {
     report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::
                           VERIFY_DISABLE_SYMANTEC_ENFORCEMENT);
   }
@@ -123,7 +126,10 @@ CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
 CertificateErrorReport::CertificateErrorReport(
     const std::string& hostname,
     const net::X509Certificate& unverified_cert,
-    const net::CertVerifier::Config& verifier_config,
+    bool enable_rev_checking,
+    bool require_rev_checking_local_anchors,
+    bool enable_sha1_local_anchors,
+    bool disable_symantec_enforcement,
     const net::CertVerifyResult& primary_result,
     const net::CertVerifyResult& trial_result)
     : CertificateErrorReport(hostname,
@@ -145,7 +151,10 @@ CertificateErrorReport::CertificateErrorReport(
                               trial_report->mutable_cert_error());
   AddCertStatusToReportStatus(trial_result.cert_status,
                               trial_report->mutable_cert_status());
-  AddVerifyFlagsToReport(verifier_config, trial_report->mutable_verify_flags());
+  AddVerifyFlagsToReport(
+      enable_rev_checking, require_rev_checking_local_anchors,
+      enable_sha1_local_anchors, disable_symantec_enforcement,
+      trial_report->mutable_verify_flags());
 }
 
 CertificateErrorReport::~CertificateErrorReport() {}

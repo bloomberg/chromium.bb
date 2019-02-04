@@ -161,9 +161,9 @@
 #include "net/ssl/client_cert_store_mac.h"
 #endif  // defined(OS_MACOSX)
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-#include "chrome/browser/net/trial_comparison_cert_verifier.h"
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 #include "net/cert/cert_verify_proc_builtin.h"
+#include "services/network/trial_comparison_cert_verifier_mojo.h"
 #endif
 
 using content::BrowserContext;
@@ -982,16 +982,24 @@ void ProfileIOData::Init(
             std::make_unique<net::MultiThreadedCertVerifier>(
                 verify_proc.get()));
       }
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<TrialComparisonCertVerifier>(
-              profile_params_->profile, net::CertVerifyProc::CreateDefault(),
-              net::CreateCertVerifyProcBuiltin()));
-#else
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              net::CertVerifyProc::CreateDefault()));
+#elif BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+      auto& trial_params = profile_params_->main_network_context_params
+                               ->trial_comparison_cert_verifier_params;
+      if (trial_params) {
+        cert_verifier = std::make_unique<net::CachingCertVerifier>(
+            std::make_unique<network::TrialComparisonCertVerifierMojo>(
+                trial_params->initial_allowed,
+                std::move(trial_params->config_client_request),
+                std::move(trial_params->report_client),
+                net::CertVerifyProc::CreateDefault(),
+                net::CreateCertVerifyProcBuiltin()));
+      }
 #endif
+      if (!cert_verifier) {
+        cert_verifier = std::make_unique<net::CachingCertVerifier>(
+            std::make_unique<net::MultiThreadedCertVerifier>(
+                net::CertVerifyProc::CreateDefault()));
+      }
       const base::CommandLine& command_line =
           *base::CommandLine::ForCurrentProcess();
       cert_verifier = network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
