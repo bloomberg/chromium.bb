@@ -63,7 +63,7 @@ void MarkupAccumulator::AppendEndTag(const Element& element) {
 void MarkupAccumulator::AppendStartMarkup(Node& node, Namespaces& namespaces) {
   switch (node.getNodeType()) {
     case Node::kTextNode:
-      AppendText(markup_, ToText(node));
+      formatter_.AppendText(markup_, ToText(node));
       break;
     case Node::kElementNode:
       AppendElement(markup_, ToElement(node), namespaces);
@@ -87,10 +87,6 @@ void MarkupAccumulator::AppendEndMarkup(StringBuilder& result,
 void MarkupAccumulator::AppendCustomAttributes(StringBuilder&,
                                                const Element&,
                                                Namespaces&) {}
-
-void MarkupAccumulator::AppendText(StringBuilder& result, Text& text) {
-  formatter_.AppendText(result, text);
-}
 
 bool MarkupAccumulator::ShouldIgnoreAttribute(
     const Element& element,
