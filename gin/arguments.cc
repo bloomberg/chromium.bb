@@ -10,42 +10,49 @@
 namespace gin {
 
 Arguments::Arguments()
-    : isolate_(NULL),
-      info_(NULL),
-      next_(0),
-      insufficient_arguments_(false) {
-}
+    : isolate_(nullptr), info_for_function_(nullptr), is_for_property_(false) {}
 
 Arguments::Arguments(const v8::FunctionCallbackInfo<v8::Value>& info)
     : isolate_(info.GetIsolate()),
-      info_(&info),
-      next_(0),
-      insufficient_arguments_(false) {
-}
+      info_for_function_(&info),
+      is_for_property_(false) {}
+
+Arguments::Arguments(const v8::PropertyCallbackInfo<v8::Value>& info)
+    : isolate_(info.GetIsolate()),
+      info_for_property_(&info),
+      is_for_property_(true) {}
 
 Arguments::~Arguments() = default;
 
 v8::Local<v8::Value> Arguments::PeekNext() const {
-  if (next_ >= info_->Length())
+  if (is_for_property_)
     return v8::Local<v8::Value>();
-  return (*info_)[next_];
+  if (next_ >= info_for_function_->Length())
+    return v8::Local<v8::Value>();
+  return (*info_for_function_)[next_];
 }
 
 std::vector<v8::Local<v8::Value>> Arguments::GetAll() const {
   std::vector<v8::Local<v8::Value>> result;
-  int length = info_->Length();
+  if (is_for_property_)
+    return result;
+
+  int length = info_for_function_->Length();
   if (length == 0)
     return result;
 
   result.reserve(length);
   for (int i = 0; i < length; ++i)
-    result.push_back((*info_)[i]);
+    result.push_back((*info_for_function_)[i]);
 
   return result;
 }
 
 v8::Local<v8::Context> Arguments::GetHolderCreationContext() const {
-  return info_->Holder()->CreationContext();
+  v8::Local<v8::Object> holder = is_for_property_
+                                     ? info_for_property_->Holder()
+                                     : info_for_function_->Holder();
+  return holder->CreationContext();
 }
 
 std::string V8TypeAsString(v8::Isolate* isolate, v8::Local<v8::Value> value) {
@@ -62,12 +69,16 @@ std::string V8TypeAsString(v8::Isolate* isolate, v8::Local<v8::Value> value) {
 }
 
 void Arguments::ThrowError() const {
+  if (is_for_property_)
+    return ThrowTypeError("Error processing property accessor arguments.");
+
   if (insufficient_arguments_)
     return ThrowTypeError("Insufficient number of arguments.");
 
+  v8::Local<v8::Value> value = (*info_for_function_)[next_ - 1];
   return ThrowTypeError(base::StringPrintf(
       "Error processing argument at index %d, conversion failure from %s",
-      next_ - 1, V8TypeAsString(isolate_, (*info_)[next_ - 1]).c_str()));
+      next_ - 1, V8TypeAsString(isolate_, value).c_str()));
 }
 
 void Arguments::ThrowTypeError(const std::string& message) const {
@@ -76,7 +87,7 @@ void Arguments::ThrowTypeError(const std::string& message) const {
 }
 
 bool Arguments::IsConstructCall() const {
-  return info_->IsConstructCall();
+  return !is_for_property_ && info_for_function_->IsConstructCall();
 }
 
 }  // namespace gin

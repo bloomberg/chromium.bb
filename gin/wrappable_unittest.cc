@@ -291,4 +291,99 @@ TEST_F(WrappableTest, MethodInvocationErrorsOnNamedObject) {
   EXPECT_EQ(std::string(), get_error(non_member_method, v8::Null(isolate)));
 }
 
+class MyObjectWithLazyProperties
+    : public Wrappable<MyObjectWithLazyProperties> {
+ public:
+  static WrapperInfo kWrapperInfo;
+
+  static gin::Handle<MyObjectWithLazyProperties> Create(v8::Isolate* isolate) {
+    return CreateHandle(isolate, new MyObjectWithLazyProperties());
+  }
+
+  int access_count() const { return access_count_; }
+
+ private:
+  MyObjectWithLazyProperties() = default;
+
+  ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate) final {
+    return Wrappable::GetObjectTemplateBuilder(isolate)
+        .SetLazyDataProperty("fortyTwo", &MyObjectWithLazyProperties::FortyTwo)
+        .SetLazyDataProperty("self",
+                             base::BindRepeating([](gin::Arguments* arguments) {
+                               v8::Local<v8::Value> holder;
+                               CHECK(arguments->GetHolder(&holder));
+                               return holder;
+                             }));
+  }
+
+  int FortyTwo() {
+    access_count_++;
+    return 42;
+  }
+
+  int access_count_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(MyObjectWithLazyProperties);
+};
+
+WrapperInfo MyObjectWithLazyProperties::kWrapperInfo = {kEmbedderNativeGin};
+
+TEST_F(WrappableTest, LazyPropertyGetterIsCalledOnce) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = context_.Get(isolate);
+
+  auto handle = MyObjectWithLazyProperties::Create(isolate);
+  v8::Local<v8::Object> v8_object = handle.ToV8().As<v8::Object>();
+  v8::Local<v8::String> key = StringToSymbol(isolate, "fortyTwo");
+  v8::Local<v8::Value> value;
+
+  bool has_own_property = false;
+  ASSERT_TRUE(v8_object->HasOwnProperty(context, key).To(&has_own_property));
+  EXPECT_TRUE(has_own_property);
+
+  EXPECT_EQ(0, handle->access_count());
+
+  ASSERT_TRUE(v8_object->Get(context, key).ToLocal(&value));
+  EXPECT_TRUE(value->StrictEquals(v8::Int32::New(isolate, 42)));
+  EXPECT_EQ(1, handle->access_count());
+
+  ASSERT_TRUE(v8_object->Get(context, key).ToLocal(&value));
+  EXPECT_TRUE(value->StrictEquals(v8::Int32::New(isolate, 42)));
+  EXPECT_EQ(1, handle->access_count());
+}
+
+TEST_F(WrappableTest, LazyPropertyGetterCanBeSetFirst) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = context_.Get(isolate);
+
+  auto handle = MyObjectWithLazyProperties::Create(isolate);
+  v8::Local<v8::Object> v8_object = handle.ToV8().As<v8::Object>();
+  v8::Local<v8::String> key = StringToSymbol(isolate, "fortyTwo");
+  v8::Local<v8::Value> value;
+
+  EXPECT_EQ(0, handle->access_count());
+
+  bool set_ok = false;
+  ASSERT_TRUE(
+      v8_object->Set(context, key, v8::Int32::New(isolate, 1701)).To(&set_ok));
+  ASSERT_TRUE(set_ok);
+  ASSERT_TRUE(v8_object->Get(context, key).ToLocal(&value));
+  EXPECT_TRUE(value->StrictEquals(v8::Int32::New(isolate, 1701)));
+  EXPECT_EQ(0, handle->access_count());
+}
+
+TEST_F(WrappableTest, LazyPropertyGetterCanBindSpecialArguments) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = context_.Get(isolate);
+
+  auto handle = MyObjectWithLazyProperties::Create(isolate);
+  v8::Local<v8::Object> v8_object = handle.ToV8().As<v8::Object>();
+  v8::Local<v8::Value> value;
+  ASSERT_TRUE(
+      v8_object->Get(context, StringToSymbol(isolate, "self")).ToLocal(&value));
+  EXPECT_TRUE(v8_object == value);
+}
+
 }  // namespace gin
