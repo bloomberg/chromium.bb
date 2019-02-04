@@ -526,7 +526,13 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
 
 void SingleThreadProxy::DidGenerateLocalSurfaceIdAllocationOnImplThread(
     const viz::LocalSurfaceIdAllocation& allocation) {
+  DebugScopedSetMainThread main(task_runner_provider_);
   layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
+}
+
+uint32_t SingleThreadProxy::GenerateChildSurfaceSequenceNumberSync() {
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  return host_impl_->GenerateChildSurfaceSequenceNumberSync();
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {

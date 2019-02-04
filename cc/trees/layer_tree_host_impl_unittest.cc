@@ -76,6 +76,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -194,11 +195,14 @@ class LayerTreeHostImplTest : public testing::Test,
     requested_animation_delay_ = delay;
   }
   void DidActivateSyncTree() override {
-    // Make sure the active tree always has a valid LocalSurfaceId.
-    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
-        viz::LocalSurfaceIdAllocation(
-            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
-            base::TimeTicks::Now()));
+    if (set_local_surface_id_on_activate_) {
+      // Make sure the active tree always has a valid LocalSurfaceId.
+      host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+          viz::LocalSurfaceIdAllocation(
+              viz::LocalSurfaceId(1,
+                                  base::UnguessableToken::Deserialize(2u, 3u)),
+              base::TimeTicks::Now()));
+    }
   }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
@@ -226,7 +230,10 @@ class LayerTreeHostImplTest : public testing::Test,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) override {}
   void DidGenerateLocalSurfaceIdAllocationOnImplThread(
-      const viz::LocalSurfaceIdAllocation& allocation) override {}
+      const viz::LocalSurfaceIdAllocation& allocation) override {
+    last_generated_local_surface_id_ = allocation;
+    did_generate_local_surface_id_ = true;
+  }
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
@@ -793,6 +800,9 @@ class LayerTreeHostImplTest : public testing::Test,
   viz::RenderPassList last_on_draw_render_passes_;
   scoped_refptr<AnimationTimeline> timeline_;
   std::unique_ptr<base::Thread> image_worker_;
+  viz::LocalSurfaceIdAllocation last_generated_local_surface_id_;
+  bool did_generate_local_surface_id_ = false;
+  bool set_local_surface_id_on_activate_ = true;
 };
 
 class CommitToPendingTreeLayerTreeHostImplTest : public LayerTreeHostImplTest {
@@ -895,6 +905,52 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
   on_can_draw_state_changed_called_ = false;
 
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  EXPECT_TRUE(host_impl_->CanDraw());
+  EXPECT_TRUE(on_can_draw_state_changed_called_);
+  on_can_draw_state_changed_called_ = false;
+
+  viz::ParentLocalSurfaceIdAllocator parent_allocator;
+  parent_allocator.GenerateId();
+  const uint32_t child_sequence_number1 =
+      host_impl_->GenerateChildSurfaceSequenceNumberSync();
+  EXPECT_NE(child_sequence_number1, viz::kInitialChildSequenceNumber);
+  EXPECT_FALSE(host_impl_->CanDraw());
+  EXPECT_TRUE(on_can_draw_state_changed_called_);
+  on_can_draw_state_changed_called_ = false;
+
+  host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+      parent_allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_TRUE(host_impl_->CanDraw());
+  EXPECT_TRUE(on_can_draw_state_changed_called_);
+  on_can_draw_state_changed_called_ = false;
+
+  // Without this SetLocalSurfaceIdAllocationFromParent() is called from
+  // DidActivateSyncTree().
+  set_local_surface_id_on_activate_ = false;
+  // Necessary to set LocalSurfaceIdAllocation in
+  // |LayerTreeHostImpl::child_local_surface_id_allocator_|.
+  host_impl_->ActivateSyncTree();
+
+  const uint32_t child_sequence_number2 =
+      host_impl_->GenerateChildSurfaceSequenceNumberSync();
+  EXPECT_NE(child_sequence_number2, child_sequence_number1);
+  EXPECT_FALSE(host_impl_->CanDraw());
+  EXPECT_TRUE(on_can_draw_state_changed_called_);
+  on_can_draw_state_changed_called_ = false;
+
+  host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+      parent_allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_FALSE(host_impl_->CanDraw());
+  EXPECT_FALSE(on_can_draw_state_changed_called_);
+
+  auto id_from_parent =
+      parent_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+      viz::LocalSurfaceIdAllocation(
+          viz::LocalSurfaceId(id_from_parent.parent_sequence_number(),
+                              child_sequence_number2,
+                              id_from_parent.embed_token()),
+          base::TimeTicks::Now()));
   EXPECT_TRUE(host_impl_->CanDraw());
   EXPECT_TRUE(on_can_draw_state_changed_called_);
   on_can_draw_state_changed_called_ = false;
@@ -5092,20 +5148,21 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
 };
 
 struct PrepareToDrawSuccessTestCase {
+  explicit PrepareToDrawSuccessTestCase(DrawResult result)
+      : expected_result(result) {}
+
   struct State {
     bool has_missing_tile = false;
     bool has_incomplete_tile = false;
     bool is_animating = false;
     bool has_copy_request = false;
   };
+
   bool high_res_required = false;
   State layer_before;
   State layer_between;
   State layer_after;
   DrawResult expected_result;
-
-  explicit PrepareToDrawSuccessTestCase(DrawResult result)
-      : expected_result(result) {}
 };
 
 static void CreateLayerFromState(

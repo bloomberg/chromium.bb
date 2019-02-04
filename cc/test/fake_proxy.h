@@ -50,6 +50,7 @@ class FakeProxy : public Proxy {
   void ClearHistory() override {}
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override {}
+  uint32_t GenerateChildSurfaceSequenceNumberSync() override;
 
  private:
   LayerTreeHost* layer_tree_host_;

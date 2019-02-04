@@ -97,6 +97,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter) override;
+  uint32_t GenerateChildSurfaceSequenceNumberSync() override;
   bool MainFrameWillHappenForTesting() override;
   void ReleaseLayerTreeFrameSink() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,

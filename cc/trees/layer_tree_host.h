@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/benchmarks/micro_benchmark.h"
@@ -449,6 +450,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return local_surface_id_allocation_from_parent_;
   }
 
+  // Generates a new child surface sequence number (from a LocalSurfaceId). This
+  // results in disabling drawing until the LocalSurfaceIdAllocation is received
+  // via the active tree. This only works in single threaded mode.
+  uint32_t GenerateChildSurfaceSequenceNumberSync();
+
   // Requests the allocation of a new LocalSurfaceId on the compositor thread.
   void RequestNewLocalSurfaceId();
 
@@ -799,6 +805,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool has_pushed_local_surface_id_from_parent_ = false;
   bool new_local_surface_id_request_ = false;
   uint32_t defer_main_frame_update_count_ = 0;
+
+  // Last value returned from GenerateChildSurfaceSequenceNumberSync(). This is
+  // reset once a LocalSurfaceId is submitted with a higher id.
+  base::Optional<uint32_t> generated_child_surface_sequence_number_;
 
   SkColor background_color_ = SK_ColorWHITE;
 

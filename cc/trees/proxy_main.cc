@@ -564,6 +564,12 @@ bool ProxyMain::SupportsImplScrolling() const {
   return true;
 }
 
+uint32_t ProxyMain::GenerateChildSurfaceSequenceNumberSync() {
+  // This function only makes sense for single-threaded mode.
+  NOTREACHED();
+  return 0u;
+}
+
 bool ProxyMain::MainFrameWillHappenForTesting() {
   DCHECK(IsMainThread());
   bool main_frame_will_happen = false;
