@@ -219,6 +219,12 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
     v8::V8::SetFlagsFromString(no_optimize, sizeof(no_optimize) - 1);
   }
 
+  if (!base::FeatureList::IsEnabled(features::kV8FlushBytecode)) {
+    static const char no_flush_bytecode[] = "--no-flush-bytecode";
+    v8::V8::SetFlagsFromString(no_flush_bytecode,
+                               sizeof(no_flush_bytecode) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);
