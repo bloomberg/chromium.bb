@@ -5980,7 +5980,6 @@ crbug.com/927866 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
 # contradiction.
-crbug.com/926170 external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Pass Timeout ]
 crbug.com/926170 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Pass Timeout ]
 
 # Sheriff 2019-01-18
