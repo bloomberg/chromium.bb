@@ -41,7 +41,6 @@ class SigninClient;
 
 class AccountReconcilor : public KeyedService,
                           public content_settings::Observer,
-                          public GaiaCookieManagerService::Observer,
                           public identity::IdentityManager::Observer {
  public:
   // When an instance of this class exists, the account reconcilor is suspended.
@@ -273,17 +272,6 @@ class AccountReconcilor : public KeyedService,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
-  // Overridden from GaiaGookieManagerService::Observer.
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
-  void OnSetAccountsInCookieCompleted(
-      const GoogleServiceAuthError& error) override;
-  void OnGaiaAccountsInCookieUpdated(
-        const std::vector<gaia::ListedAccount>& accounts,
-        const std::vector<gaia::ListedAccount>& signed_out_accounts,
-        const GoogleServiceAuthError& error) override;
-  void OnGaiaCookieDeletedByUserAction() override;
 
   // Overridden from identity::IdentityManager::Observer.
   void OnEndBatchOfRefreshTokenStateChanges() override;
@@ -291,6 +279,15 @@ class AccountReconcilor : public KeyedService,
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override;
+  void OnSetAccountsInCookieCompleted(
+      const GoogleServiceAuthError& error) override;
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
+  void OnAccountsCookieDeletedByUserAction() override;
 
   void FinishReconcileWithMultiloginEndpoint(
       const std::string& primary_account,
@@ -321,7 +318,6 @@ class AccountReconcilor : public KeyedService,
   GaiaCookieManagerService* cookie_manager_service_;
 
   bool registered_with_identity_manager_;
-  bool registered_with_cookie_manager_service_;
   bool registered_with_content_settings_;
 
   // True while the reconcilor is busy checking or managing the accounts in

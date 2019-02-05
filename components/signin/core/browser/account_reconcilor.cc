@@ -27,6 +27,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 
 using signin::AccountReconcilorDelegate;
@@ -194,7 +195,6 @@ AccountReconcilor::AccountReconcilor(
       client_(client),
       cookie_manager_service_(cookie_manager_service),
       registered_with_identity_manager_(false),
-      registered_with_cookie_manager_service_(false),
       registered_with_content_settings_(false),
       is_reconcile_started_(false),
       first_execution_(true),
@@ -216,7 +216,6 @@ AccountReconcilor::~AccountReconcilor() {
   VLOG(1) << "AccountReconcilor::~AccountReconcilor";
   // Make sure shutdown was called first.
   DCHECK(!registered_with_identity_manager_);
-  DCHECK(!registered_with_cookie_manager_service_);
 }
 
 void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
@@ -238,14 +237,12 @@ void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
 
 void AccountReconcilor::EnableReconcile() {
   DCHECK(delegate_->IsReconcileEnabled());
-  RegisterWithCookieManagerService();
   RegisterWithContentSettings();
   RegisterWithIdentityManager();
 }
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {
   AbortReconcile();
-  UnregisterWithCookieManagerService();
   UnregisterWithIdentityManager();
   UnregisterWithContentSettings();
 
@@ -299,27 +296,6 @@ void AccountReconcilor::UnregisterWithIdentityManager() {
 
   identity_manager_->RemoveObserver(this);
   registered_with_identity_manager_ = false;
-}
-
-void AccountReconcilor::RegisterWithCookieManagerService() {
-  VLOG(1) << "AccountReconcilor::RegisterWithCookieManagerService";
-  // During re-auth, the reconcilor will get a callback about successful signin
-  // even when the profile is already connected.  Avoid re-registering
-  // with the helper since this will DCHECK.
-  if (registered_with_cookie_manager_service_)
-    return;
-
-  cookie_manager_service_->AddObserver(this);
-  registered_with_cookie_manager_service_ = true;
-}
-
-void AccountReconcilor::UnregisterWithCookieManagerService() {
-  VLOG(1) << "AccountReconcilor::UnregisterWithCookieManagerService";
-  if (!registered_with_cookie_manager_service_)
-    return;
-
-  cookie_manager_service_->RemoveObserver(this);
-  registered_with_cookie_manager_service_ = false;
 }
 
 signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
@@ -472,11 +448,13 @@ void AccountReconcilor::StartReconcile() {
     return;
   }
 
-  // Rely on the GCMS to manage calls to and responses from ListAccounts.
-  std::vector<gaia::ListedAccount> gaia_accounts;
-  if (cookie_manager_service_->ListAccounts(&gaia_accounts, nullptr)) {
-    OnGaiaAccountsInCookieUpdated(
-        gaia_accounts, std::vector<gaia::ListedAccount>(),
+  // Rely on the IdentityManager to manage calls to and responses from
+  // ListAccounts.
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+      identity_manager_->GetAccountsInCookieJar();
+  if (accounts_in_cookie_jar.accounts_are_fresh) {
+    OnAccountsInCookieUpdated(
+        accounts_in_cookie_jar,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
 }
@@ -529,11 +507,12 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
   first_execution_ = false;
 }
 
-void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
-        const std::vector<gaia::ListedAccount>& accounts,
-        const std::vector<gaia::ListedAccount>& signed_out_accounts,
-        const GoogleServiceAuthError& error) {
-  VLOG(1) << "AccountReconcilor::OnGaiaAccountsInCookieUpdated: "
+void AccountReconcilor::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
+  const std::vector<gaia::ListedAccount>& accounts(
+      accounts_in_cookie_jar_info.signed_in_accounts);
+  VLOG(1) << "AccountReconcilor::OnAccountsInCookieUpdated: "
           << "CookieJar " << accounts.size() << " accounts, "
           << "Reconcilor's state is " << is_reconcile_started_ << ", "
           << "Error was " << error.ToString();
@@ -605,7 +584,7 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
   }
 }
 
-void AccountReconcilor::OnGaiaCookieDeletedByUserAction() {
+void AccountReconcilor::OnAccountsCookieDeletedByUserAction() {
   if (!delegate_->ShouldRevokeTokensOnCookieDeleted())
     return;
 
