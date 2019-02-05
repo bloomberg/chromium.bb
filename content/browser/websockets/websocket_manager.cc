@@ -83,8 +83,10 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
   }
 
   bool CanReadRawCookies(const GURL& url) override {
-    return ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRawCookies(
-        manager_->process_id_);
+    ChildProcessSecurityPolicyImpl* impl =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    return impl->CanReadRawCookies(manager_->process_id_) &&
+           impl->CanAccessDataForOrigin(manager_->process_id_, url);
   }
 
   void OnCreateURLRequest(int child_id,
