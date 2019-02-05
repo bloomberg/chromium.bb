@@ -68,8 +68,7 @@ void RegisterRemoteDefaults(PrefRegistry* pref_registry,
                             std::vector<mojom::PrefRegistrationPtr> defaults) {
   for (auto& registration : defaults) {
     pref_registry->SetDefaultForeignPrefValue(
-        registration->key,
-        base::Value::ToUniquePtrValue(std::move(registration->default_value)),
+        registration->key, std::move(registration->default_value),
         registration->flags);
   }
 }
