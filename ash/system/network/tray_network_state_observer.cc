@@ -30,8 +30,7 @@ bool IsWifiEnabled() {
 namespace ash {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
-    : delegate_(delegate),
-      update_frequency_(kUpdateFrequencyMs) {
+    : delegate_(delegate), update_frequency_(kUpdateFrequencyMs) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION) {
     update_frequency_ = 0;  // Send updates immediately for tests.
@@ -64,18 +63,8 @@ void TrayNetworkStateObserver::DeviceListChanged() {
   SignalUpdate(false /* notify_a11y */);
 }
 
-// Any change to the Default (primary connected) network, including Strength
-// changes, should trigger a NetworkStateChanged update.
-void TrayNetworkStateObserver::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
-  SignalUpdate(true /* notify_a11y */);
-}
-
-// Any change to the Connection State should trigger a NetworkStateChanged
-// update. This is important when both a VPN and a physical network are
-// connected.
-void TrayNetworkStateObserver::NetworkConnectionStateChanged(
-    const chromeos::NetworkState* network) {
+void TrayNetworkStateObserver::ActiveNetworksChanged(
+    const std::vector<const chromeos::NetworkState*>& active_networks) {
   SignalUpdate(true /* notify_a11y */);
 }
 
