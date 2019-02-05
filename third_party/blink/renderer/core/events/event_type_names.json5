@@ -280,6 +280,8 @@
     "touchstart",
     "track",
     "transitionend",
+    "transitionrun",
+    "transitionstart",
     "typechange",
     "unhandledrejection",
     "unload",

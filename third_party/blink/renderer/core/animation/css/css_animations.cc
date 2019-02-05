@@ -210,6 +210,12 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
   return ToTransitionInterpolation(*sample.at(0)).GetInterpolatedValue();
 }
 
+// Returns the start time of an animation given the start delay. A negative
+// start delay results in the animation starting with non-zero progress.
+double StartTimeFromDelay(double start_delay) {
+  return start_delay < 0 ? -start_delay : 0;
+}
+
 }  // namespace
 
 CSSAnimations::CSSAnimations() = default;
@@ -1179,25 +1185,71 @@ EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
   const AnimationEffect::Phase current_phase = animation_node.GetPhase();
-  if (current_phase == AnimationEffect::kPhaseAfter &&
-      current_phase != previous_phase_ &&
-      GetDocument().HasListenerType(Document::kTransitionEndListener)) {
-    String property_name =
-        property_.IsCSSCustomProperty()
-            ? property_.CustomPropertyName()
-            : property_.GetCSSProperty().GetPropertyNameString();
-    const Timing& timing = animation_node.SpecifiedTiming();
-    double elapsed_time = timing.iteration_duration->InSecondsF();
-    const AtomicString& event_type = event_type_names::kTransitionend;
-    String pseudo_element =
-        PseudoElement::PseudoElementNameForEvents(GetPseudoId());
-    TransitionEvent* event = TransitionEvent::Create(
-        event_type, property_name, elapsed_time, pseudo_element);
-    event->SetTarget(GetEventTarget());
-    GetDocument().EnqueueAnimationFrameEvent(event);
+  if (current_phase == previous_phase_)
+    return;
+
+  if (GetDocument().HasListenerType(Document::kTransitionRunListener)) {
+    if (previous_phase_ == AnimationEffect::kPhaseNone) {
+      EnqueueEvent(
+          event_type_names::kTransitionrun,
+          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+    }
+  }
+
+  if (GetDocument().HasListenerType(Document::kTransitionStartListener)) {
+    if ((current_phase == AnimationEffect::kPhaseActive ||
+         current_phase == AnimationEffect::kPhaseAfter) &&
+        (previous_phase_ == AnimationEffect::kPhaseNone ||
+         previous_phase_ == AnimationEffect::kPhaseBefore)) {
+      EnqueueEvent(
+          event_type_names::kTransitionstart,
+          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+    } else if ((current_phase == AnimationEffect::kPhaseActive ||
+                current_phase == AnimationEffect::kPhaseBefore) &&
+               previous_phase_ == AnimationEffect::kPhaseAfter) {
+      // If the transition is progressing backwards it is considered to have
+      // started at the end position.
+      EnqueueEvent(
+          event_type_names::kTransitionstart,
+          animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
+    }
+  }
+
+  if (GetDocument().HasListenerType(Document::kTransitionEndListener)) {
+    if (current_phase == AnimationEffect::kPhaseAfter &&
+        (previous_phase_ == AnimationEffect::kPhaseActive ||
+         previous_phase_ == AnimationEffect::kPhaseBefore ||
+         previous_phase_ == AnimationEffect::kPhaseNone)) {
+      EnqueueEvent(
+          event_type_names::kTransitionend,
+          animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
+    } else if (current_phase == AnimationEffect::kPhaseBefore &&
+               (previous_phase_ == AnimationEffect::kPhaseActive ||
+                previous_phase_ == AnimationEffect::kPhaseAfter)) {
+      // If the transition is progressing backwards it is considered to have
+      // ended at the start position.
+      EnqueueEvent(
+          event_type_names::kTransitionend,
+          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+    }
   }
 
   previous_phase_ = current_phase;
+}
+
+void CSSAnimations::TransitionEventDelegate::EnqueueEvent(
+    const WTF::AtomicString& type,
+    double elapsed_time) {
+  String property_name =
+      property_.IsCSSCustomProperty()
+          ? property_.CustomPropertyName()
+          : property_.GetCSSProperty().GetPropertyNameString();
+  String pseudo_element =
+      PseudoElement::PseudoElementNameForEvents(GetPseudoId());
+  TransitionEvent* event = TransitionEvent::Create(
+      type, property_name, elapsed_time, pseudo_element);
+  event->SetTarget(GetEventTarget());
+  GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
 void CSSAnimations::TransitionEventDelegate::Trace(blink::Visitor* visitor) {
