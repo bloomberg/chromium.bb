@@ -374,6 +374,18 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * Overrides tab switcher launching behavior.
+     * @param newClickListener The new {@link OnClickListener} for tab switcher button clicks.
+     *
+     */
+    public void setTabSwitcherClickListener(OnClickListener newClickListener) {
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setOnTabSwitcherClickHandler(newClickListener);
+        }
+        mToolbarLayout.setOnTabSwitcherClickHandler(newClickListener);
+    }
+
+    /**
      * Gives inheriting classes the chance to show or hide the TabSwitcher mode of this toolbar.
      * @param inTabSwitcherMode Whether or not TabSwitcher mode should be shown or hidden.
      * @param showToolbar    Whether or not to show the normal toolbar while animating.

@@ -1040,6 +1040,22 @@ public class ToolbarManager
     }
 
     /**
+     * Overrides tab switcher launching behavior.
+     * @param newClickListener The new {@link OnClickListener} for tab switcher button clicks.
+     * @param overviewModeBehavior The OverviewModeBehavior to be used for tab switcher states.
+     */
+    public void overrideTabSwitcherBehavior(
+            OnClickListener newClickListener, OverviewModeBehavior overviewModeBehavior) {
+        assert mInitializedWithNative;
+
+        mToolbar.setTabSwitcherClickListener(newClickListener);
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.overrideTabSwitcherBehavior(
+                    newClickListener, overviewModeBehavior);
+        }
+    }
+
+    /**
      * @return The experimental toolbar button if it exists.
      */
     public @Nullable View getExperimentalButtonView() {

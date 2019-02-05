@@ -52,6 +52,9 @@
     <dimen name="tab_title_favicon_start_padding">10dp</dimen>
     <dimen name="tab_title_favicon_end_padding">7dp</dimen>
 
+    <!-- Card dimensions -->
+    <dimen name="default_card_corner_radius">8dp</dimen>
+
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">258dp</dimen>
     <dimen name="menu_negative_software_vertical_offset">0dp</dimen>
@@ -347,7 +350,6 @@
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
     <dimen name="snippets_thumbnail_size">124dp</dimen>
     <dimen name="snippets_thumbnail_size_small">72dp</dimen>
-    <dimen name="snippets_thumbnail_small_corner_radius">8dp</dimen>
     <!-- The default padding for the peeking card and the amount the card peeks by in the current
          peeking card animation (the calculations assume this is the same). -->
     <dimen name="snippets_padding">16dp</dimen>
@@ -357,7 +359,6 @@
     <dimen name="snippets_offline_icon_size">18sp</dimen>
     <dimen name="ntp_suggestions_footer_vertical_padding">24dp</dimen>
     <dimen name="content_suggestions_card_modern_margin">12dp</dimen>
-    <dimen name="content_suggestions_card_modern_corner_radius">8dp</dimen>
     <!-- Used to offset content_suggestions_card_modern_margin applied to the bottom of the
          last card. -->
     <dimen name="content_suggestions_action_modern_margin_top">-16dp</dimen>
@@ -579,4 +580,6 @@
 
     <!-- Autofill Assistant dimensions -->
     <dimen name="autofill_assistant_details_image_size">48dp</dimen>
+
+    <dimen name="tab_grid_favicon_size">32dp</dimen>
 </resources>
