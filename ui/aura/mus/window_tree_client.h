@@ -132,7 +132,6 @@ class AURA_EXPORT WindowTreeClient
 
   WindowMus* GetWindowByServerId(ws::Id id);
 
-  void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(WindowMus* window, bool can_accept_drops);
   void SetEventTargetingPolicy(WindowMus* window,
                                ws::mojom::EventTargetingPolicy policy);

@@ -11,6 +11,7 @@
 
 #include "services/ws/event_test_utils.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "services/ws/window_properties.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree_test_helper.h"
@@ -78,13 +79,13 @@ TEST(FocusHandlerTest, FocusChild) {
   top_level->AddChild(window);
   // SetFocus() should still fail as |window| isn't visible.
   EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(window));
-  setup.window_tree_test_helper()->SetCanFocus(window, false);
+  window->SetProperty(kCanFocus, false);
   window->Show();
 
-  // SetFocus() should fail as SetCanFocus(false) was called.
+  // SetFocus() should fail as kCanFocus is false.
   EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(window));
 
-  setup.window_tree_test_helper()->SetCanFocus(window, true);
+  window->ClearProperty(kCanFocus);
   EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(window));
 }
 

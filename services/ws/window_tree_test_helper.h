@@ -98,7 +98,6 @@ class WindowTreeTestHelper {
   void SetEventTargetingPolicy(aura::Window* window,
                                mojom::EventTargetingPolicy policy);
   bool SetFocus(aura::Window* window);
-  void SetCanFocus(aura::Window* window, bool can_focus);
   void SetCursor(aura::Window* window, ui::Cursor cursor);
   void OnWindowInputEventAck(uint32_t event_id, mojom::EventResult result);
   bool StackAbove(aura::Window* above_window, aura::Window* below_window);

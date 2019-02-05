@@ -27,9 +27,6 @@ class FocusHandler : public aura::client::FocusChangeObserver {
   // Sets focus to |window| (which may be null). Returns true on success.
   bool SetFocus(aura::Window* window);
 
-  // Sets whether |window| can be focused.
-  void SetCanFocus(aura::Window* window, bool can_focus);
-
  private:
   // Returns true if |window| can be focused.
   bool IsFocusableWindow(aura::Window* window) const;

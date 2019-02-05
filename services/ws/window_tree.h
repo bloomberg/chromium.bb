@@ -455,7 +455,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                        uint32_t embed_flags,
                        EmbedUsingTokenCallback callback) override;
   void SetFocus(uint32_t change_id, Id transport_window_id) override;
-  void SetCanFocus(Id transport_window_id, bool can_focus) override;
   void SetCursor(uint32_t change_id,
                  Id transport_window_id,
                  ui::Cursor cursor) override;

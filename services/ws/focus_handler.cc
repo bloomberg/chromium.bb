@@ -93,15 +93,6 @@ bool FocusHandler::SetFocus(aura::Window* window) {
   return true;
 }
 
-void FocusHandler::SetCanFocus(aura::Window* window, bool can_focus) {
-  if (window && (window_tree_->IsClientCreatedWindow(window) ||
-                 window_tree_->IsClientRootWindow(window))) {
-    window->SetProperty(kCanFocus, can_focus);
-  } else {
-    DVLOG(1) << "SetCanFocus failed (invalid or unknown window)";
-  }
-}
-
 bool FocusHandler::IsFocusableWindow(aura::Window* window) const {
   if (!window)
     return true;  // Used to clear focus.

@@ -246,7 +246,6 @@ class TestWindowTree : public ws::mojom::WindowTree {
                          const viz::FrameSinkId& frame_sink_id) override;
   void UnattachFrameSinkId(uint64_t window_id) override;
   void SetFocus(uint32_t change_id, ws::Id window_id) override;
-  void SetCanFocus(ws::Id window_id, bool can_focus) override;
   void SetEventTargetingPolicy(ws::Id window_id,
                                ws::mojom::EventTargetingPolicy policy) override;
   void SetCursor(uint32_t change_id,
