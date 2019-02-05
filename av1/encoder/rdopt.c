@@ -4564,7 +4564,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate, this_rate_tokenonly, s;
     int64_t this_distortion, this_rd, this_model_rd;
     mbmi->mode = intra_rd_search_mode_order[mode_idx];
-    if (!cpi->oxcf.enable_smooth_intra &&
+    if ((!cpi->oxcf.enable_smooth_intra || cpi->sf.disable_smooth_intra) &&
         (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
          mbmi->mode == SMOOTH_V_PRED))
       continue;
@@ -8980,7 +8980,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
     if (cpi->sf.reuse_inter_intra_mode == 0 ||
         best_interintra_mode == INTERINTRA_MODES) {
       for (j = 0; j < INTERINTRA_MODES; ++j) {
-        if (!cpi->oxcf.enable_smooth_intra &&
+        if ((!cpi->oxcf.enable_smooth_intra || cpi->sf.disable_smooth_intra) &&
             (INTERINTRA_MODE)j == II_SMOOTH_PRED)
           continue;
         mbmi->interintra_mode = (INTERINTRA_MODE)j;
@@ -12468,7 +12468,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (ref_frame == INTRA_FRAME) {
-      if (!cpi->oxcf.enable_smooth_intra &&
+      if ((!cpi->oxcf.enable_smooth_intra || sf->disable_smooth_intra) &&
           (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
            mbmi->mode == SMOOTH_V_PRED))
         continue;

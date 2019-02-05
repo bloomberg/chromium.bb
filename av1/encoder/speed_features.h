@@ -663,6 +663,9 @@ typedef struct SPEED_FEATURES {
 
   // This flag controls the use of non-RD mode decision.
   int use_nonrd_pick_mode;
+
+  // Enable/disable smooth intra modes.
+  int disable_smooth_intra;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
