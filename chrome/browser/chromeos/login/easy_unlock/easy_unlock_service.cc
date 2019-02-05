@@ -213,9 +213,7 @@ EasyUnlockService::~EasyUnlockService() {}
 // static
 void EasyUnlockService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing,
-                                   std::make_unique<base::DictionaryValue>());
-
+  registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing);
   proximity_auth::ProximityAuthProfilePrefManager::RegisterPrefs(registry);
 }
 
