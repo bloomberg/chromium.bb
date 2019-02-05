@@ -410,10 +410,8 @@ public class CardUnmaskPrompt
                         mStoreLocallyTooltipIcon.getLayoutParams()));
         text.setTextColor(Color.WHITE);
         Resources resources = mContext.getResources();
-        int hPadding = resources.getDimensionPixelSize(
-                R.dimen.autofill_card_unmask_tooltip_horizontal_padding);
-        int vPadding = resources.getDimensionPixelSize(
-                R.dimen.autofill_card_unmask_tooltip_vertical_padding);
+        int hPadding = resources.getDimensionPixelSize(R.dimen.autofill_tooltip_horizontal_padding);
+        int vPadding = resources.getDimensionPixelSize(R.dimen.autofill_tooltip_vertical_padding);
         text.setPadding(hPadding, vPadding, hPadding, vPadding);
 
         mStoreLocallyTooltipPopup.setContentView(text);
