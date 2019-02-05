@@ -8,6 +8,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "services/tracing/public/mojom/traced_process.mojom.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {

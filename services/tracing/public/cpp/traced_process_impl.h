@@ -12,6 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/tracing/public/mojom/traced_process.mojom.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {

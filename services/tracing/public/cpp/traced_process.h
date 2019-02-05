@@ -5,7 +5,7 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_TRACED_PROCESS_H_
 #define SERVICES_TRACING_PUBLIC_CPP_TRACED_PROCESS_H_
 
-#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/public/mojom/traced_process.mojom.h"
 
 namespace tracing {
 
