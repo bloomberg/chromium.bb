@@ -163,6 +163,10 @@ class MockHostResolverBase
   // Returns the priority of the request with the given id.
   RequestPriority request_priority(size_t id);
 
+  // Like ResolveNow, but doesn't take an ID. DCHECKs if there's more than one
+  // pending request.
+  void ResolveOnlyRequestNow();
+
   // The number of times that Resolve() has been called.
   size_t num_resolve() const {
     return num_resolve_;

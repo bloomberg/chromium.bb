@@ -16,7 +16,6 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_auth_controller.h"
@@ -32,7 +31,6 @@ namespace net {
 
 class ClientSocketHandle;
 class GrowableIOBuffer;
-class HttpStream;
 class HttpStreamParser;
 class IOBuffer;
 class ProxyDelegate;
@@ -59,7 +57,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
 
   // ProxyClientSocket implementation.
   const HttpResponseInfo* GetConnectResponseInfo() const override;
-  std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
   int RestartWithAuth(CompletionOnceCallback callback) override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   bool IsUsingSpdy() const override;
@@ -166,10 +163,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
 
   std::string request_line_;
   HttpRequestHeaders request_headers_;
-
-  // Used only for redirects.
-  bool redirect_has_load_timing_info_;
-  LoadTimingInfo redirect_load_timing_info_;
 
   const ProxyServer proxy_server_;
 

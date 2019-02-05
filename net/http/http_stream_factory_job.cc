@@ -34,6 +34,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
+#include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -641,15 +642,19 @@ void HttpStreamFactory::Job::RunLoop(int result) {
       DCHECK(connection_->socket());
       DCHECK(establishing_tunnel_);
 
+      LoadTimingInfo load_timing_info;
+      bool have_load_timing_info = connection_->GetLoadTimingInfo(
+          connection_->is_reused(), &load_timing_info);
       ProxyClientSocket* proxy_socket =
           static_cast<ProxyClientSocket*>(connection_->socket());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &Job::OnHttpsProxyTunnelResponseCallback,
               ptr_factory_.GetWeakPtr(),
               *proxy_socket->GetConnectResponseInfo(),
-              base::Passed(proxy_socket->CreateConnectResponseStream())));
+              std::make_unique<ProxyConnectRedirectHttpStream>(
+                  have_load_timing_info ? &load_timing_info : nullptr)));
       return;
     }
 

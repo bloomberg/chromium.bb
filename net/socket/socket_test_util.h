@@ -823,7 +823,6 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
   ~MockProxyClientSocket() override;
   // ProxyClientSocket implementation.
   const HttpResponseInfo* GetConnectResponseInfo() const override;
-  std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   int RestartWithAuth(CompletionOnceCallback callback) override;
   bool IsUsingSpdy() const override;

@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/quic/quic_http_utils.h"
@@ -37,7 +36,6 @@ QuicProxyClientSocket::QuicProxyClientSocket(
       endpoint_(endpoint),
       auth_(auth_controller),
       user_agent_(user_agent),
-      redirect_has_load_timing_info_(false),
       net_log_(net_log),
       weak_factory_(this) {
   DCHECK(stream_->IsOpen());
@@ -58,12 +56,6 @@ QuicProxyClientSocket::~QuicProxyClientSocket() {
 
 const HttpResponseInfo* QuicProxyClientSocket::GetConnectResponseInfo() const {
   return response_.headers.get() ? &response_ : nullptr;
-}
-
-std::unique_ptr<HttpStream>
-QuicProxyClientSocket::CreateConnectResponseStream() {
-  return std::make_unique<ProxyConnectRedirectHttpStream>(
-      redirect_has_load_timing_info_ ? &redirect_load_timing_info_ : nullptr);
 }
 
 const scoped_refptr<HttpAuthController>&
@@ -412,8 +404,6 @@ int QuicProxyClientSocket::DoReadReplyComplete(int result) {
       // If we can't, fail the tunnel connection.
       if (!SanitizeProxyRedirect(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
-      redirect_has_load_timing_info_ =
-          GetLoadTimingInfo(&redirect_load_timing_info_);
       next_state_ = STATE_DISCONNECTED;
       return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
 

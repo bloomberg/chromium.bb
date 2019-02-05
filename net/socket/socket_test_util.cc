@@ -1296,11 +1296,6 @@ const HttpResponseInfo* MockProxyClientSocket::GetConnectResponseInfo() const {
   return nullptr;
 }
 
-std::unique_ptr<HttpStream>
-MockProxyClientSocket::CreateConnectResponseStream() {
-  return nullptr;
-}
-
 const scoped_refptr<HttpAuthController>&
 MockProxyClientSocket::GetAuthController() const {
   return auth_controller_;

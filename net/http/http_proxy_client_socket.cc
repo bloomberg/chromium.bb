@@ -20,7 +20,6 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_stream_parser.h"
-#include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_handle.h"
@@ -52,7 +51,6 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       using_spdy_(using_spdy),
       negotiated_protocol_(negotiated_protocol),
       is_https_proxy_(is_https_proxy),
-      redirect_has_load_timing_info_(false),
       proxy_server_(proxy_server),
       proxy_delegate_(proxy_delegate),
       traffic_annotation_(traffic_annotation),
@@ -101,12 +99,6 @@ NextProto HttpProxyClientSocket::GetProxyNegotiatedProtocol() const {
 
 const HttpResponseInfo* HttpProxyClientSocket::GetConnectResponseInfo() const {
   return response_.headers.get() ? &response_ : NULL;
-}
-
-std::unique_ptr<HttpStream>
-HttpProxyClientSocket::CreateConnectResponseStream() {
-  return std::make_unique<ProxyConnectRedirectHttpStream>(
-      redirect_has_load_timing_info_ ? &redirect_load_timing_info_ : nullptr);
 }
 
 int HttpProxyClientSocket::Connect(CompletionOnceCallback callback) {
@@ -479,9 +471,6 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       if (!is_https_proxy_ || !SanitizeProxyRedirect(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
 
-      redirect_has_load_timing_info_ = transport_->GetLoadTimingInfo(
-          http_stream_parser_->IsConnectionReused(),
-          &redirect_load_timing_info_);
       transport_.reset();
       http_stream_parser_.reset();
       return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;

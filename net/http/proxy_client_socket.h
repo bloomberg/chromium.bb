@@ -19,7 +19,6 @@ namespace net {
 
 class HostPortPair;
 class HttpAuthController;
-class HttpStream;
 class HttpResponseInfo;
 class HttpRequestHeaders;
 class HttpAuthController;
@@ -33,10 +32,6 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
   // Returns the HttpResponseInfo (including HTTP Headers) from
   // the response to the CONNECT request.
   virtual const HttpResponseInfo* GetConnectResponseInfo() const = 0;
-
-  // Transfers ownership of a newly created HttpStream to the caller
-  // which can be used to read the response body.
-  virtual std::unique_ptr<HttpStream> CreateConnectResponseStream() = 0;
 
   // Returns the HttpAuthController which can be used
   // to interact with an HTTP Proxy Authorization Required (407) request.
