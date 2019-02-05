@@ -84,11 +84,6 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
     return quic::WriteResult(quic::WRITE_STATUS_OK, bytes_written);
   }
 
-  bool IsWriteBlockedDataBuffered() const override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return false;
-  }
-
   bool IsWriteBlocked() const override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return !writable_;

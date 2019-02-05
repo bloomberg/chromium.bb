@@ -363,10 +363,6 @@ class TestPacketWriter : public QuicPacketWriter {
     return WriteResult(WRITE_STATUS_OK, last_packet_size_);
   }
 
-  bool IsWriteBlockedDataBuffered() const override {
-    return is_write_blocked_data_buffered_;
-  }
-
   bool ShouldWriteFail() { return write_should_fail_; }
 
   bool IsWriteBlocked() const override { return write_blocked_; }

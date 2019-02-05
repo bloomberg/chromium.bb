@@ -869,7 +869,6 @@ class MockPacketWriter : public QuicPacketWriter {
                            const QuicIpAddress& self_address,
                            const QuicSocketAddress& peer_address,
                            PerPacketOptions* options));
-  MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
   MOCK_CONST_METHOD0(IsWriteBlocked, bool());
   MOCK_METHOD0(SetWritable, void());
   MOCK_CONST_METHOD1(GetMaxPacketSize,

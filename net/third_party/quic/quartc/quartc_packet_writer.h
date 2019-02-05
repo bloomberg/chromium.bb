@@ -67,9 +67,6 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
                           const QuicSocketAddress& peer_address,
                           PerPacketOptions* options) override;
 
-  // This is always set to false so that QuicConnection buffers unsent packets.
-  bool IsWriteBlockedDataBuffered() const override;
-
   // Whether the underneath |transport_| is blocked. If this returns true,
   // outgoing QUIC packets are queued by QuicConnection until SetWritable() is
   // called.
