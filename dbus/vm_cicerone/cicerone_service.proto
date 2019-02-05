@@ -789,10 +789,13 @@ message ExportLxdContainerRequest {
   // The owner of the VM and container.
   string owner_id = 3;
 
-  // Path to write the exported container.  This is a directory which
+  // Path to write the exported container.  This path, or a parent
   // must have already been shared using seneschal.  It is the path relative
   // to the VM root mount point (/mnt/shared) as returned in seneschal
-  // SharePathResponse.path.  E.g.: "MyFiles/export".
+  // SharePathResponse.path.  E.g.: "MyFiles/export".  If path is a directory,
+  // it must already exist, and the export will be named <fingerprint>.tar.gz
+  // otherwise this path must already exist as a file, or its parent directory
+  // must exist.
   string export_path = 4;
 }
 
