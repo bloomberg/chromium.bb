@@ -30,7 +30,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
@@ -186,7 +185,7 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
-  if (PerformanceManager::GetInstance()) {
+  if (PageSignalReceiver::IsEnabled()) {
     resource_coordinator_signal_observer_.reset(
         new ResourceCoordinatorSignalObserver(page_signal_receiver));
   }

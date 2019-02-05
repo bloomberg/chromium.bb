@@ -5,10 +5,10 @@
 #include "chrome/browser/resource_coordinator/browser_child_process_watcher.h"
 
 #include "base/process/process.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/process_resource_coordinator.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 
 namespace resource_coordinator {
 
@@ -25,7 +25,7 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     gpu_process_resource_coordinator_ =
         std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            PerformanceManager::GetInstance());
+            content::ServiceManagerConnection::GetForProcess()->GetConnector());
     gpu_process_resource_coordinator_->OnProcessLaunched(data.GetProcess());
   }
 }

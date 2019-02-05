@@ -172,6 +172,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("proxy_resolver", "factory")
             .RequireCapability("removable_storage_writer",
                                "removable_storage_writer")
+            .RequireCapability("resource_coordinator", "webui_graph_dump")
             .RequireCapability("secure_channel", "secure_channel")
             .RequireCapability("ui", "ime_registrar")
             .RequireCapability("ui", "input_device_controller")

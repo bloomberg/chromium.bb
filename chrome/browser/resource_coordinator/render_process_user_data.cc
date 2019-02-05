@@ -9,11 +9,11 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace resource_coordinator {
@@ -49,11 +49,17 @@ class RenderProcessLifetimeWatcher : public content::RenderProcessHostObserver {
   }
 };
 
+service_manager::Connector* MaybeGetConnectionForProcess() {
+  if (!content::ServiceManagerConnection::GetForProcess())
+    return nullptr;
+  return content::ServiceManagerConnection::GetForProcess()->GetConnector();
+}
+
 }  // namespace
 
 RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
-    : process_resource_coordinator_(PerformanceManager::GetInstance()) {
+    : process_resource_coordinator_(MaybeGetConnectionForProcess()) {
   // The process itself shouldn't have been created at this point.
   DCHECK(!render_process_host->GetProcess().IsValid() ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(

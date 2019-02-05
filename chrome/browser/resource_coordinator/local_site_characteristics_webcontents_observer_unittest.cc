@@ -95,6 +95,8 @@ class LocalSiteCharacteristicsWebContentsObserverTest
         browser_context(), base::BindRepeating(&BuildMockDataStoreForContext));
 
     TabLoadTracker::Get()->StartTracking(web_contents());
+    LocalSiteCharacteristicsWebContentsObserver::
+        SkipObserverRegistrationForTesting();
     observer_ = std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
         web_contents());
     observer()->SetPageSignalReceiverForTesting(&receiver_);
@@ -188,7 +190,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->DidUpdateFaviconURL({});
   observer()->TitleWasSet(nullptr);
 
-  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
   EXPECT_CALL(*mock_writer,
@@ -360,7 +361,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest, LoadEvent) {
 TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
        LateNotificationUsageSignalIsIgnored) {
   MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
-  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
 
@@ -394,7 +394,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
        OnLoadTimePerformanceMeasurement) {
   MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
-  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
 

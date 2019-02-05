@@ -5,7 +5,6 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -25,16 +24,25 @@ TabVisibility ContentVisibilityToRCVisibility(content::Visibility visibility) {
   return TabVisibility::kBackground;
 }
 
+bool g_skip_observer_registration_for_testing = false;
+
 }  // namespace
+
+// static
+void LocalSiteCharacteristicsWebContentsObserver::
+    SkipObserverRegistrationForTesting() {
+  g_skip_observer_registration_for_testing = true;
+}
 
 LocalSiteCharacteristicsWebContentsObserver::
     LocalSiteCharacteristicsWebContentsObserver(
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
-  // May not be present in some tests.
-  if (PerformanceManager::GetInstance()) {
+  if (!g_skip_observer_registration_for_testing) {
     // The PageSignalReceiver has to be enabled in order to properly track the
     // non-persistent notification events.
+    DCHECK(PageSignalReceiver::IsEnabled());
+
     TabLoadTracker::Get()->AddObserver(this);
     page_signal_receiver_ = GetPageSignalReceiver();
     DCHECK(page_signal_receiver_);
@@ -60,7 +68,7 @@ void LocalSiteCharacteristicsWebContentsObserver::OnVisibilityChanged(
 
 void LocalSiteCharacteristicsWebContentsObserver::WebContentsDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (page_signal_receiver_) {
+  if (!g_skip_observer_registration_for_testing) {
     TabLoadTracker::Get()->RemoveObserver(this);
     page_signal_receiver_->RemoveObserver(this);
   }

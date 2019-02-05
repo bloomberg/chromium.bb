@@ -6,12 +6,19 @@
 
 #include "base/no_destructor.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace resource_coordinator {
+
+// static
+bool PageSignalReceiver::IsEnabled() {
+  // Check that service_manager is active and Resource Coordinator is enabled.
+  return content::ServiceManagerConnection::GetForProcess() != nullptr;
+}
 
 PageSignalReceiver::PageSignalReceiver() : binding_(this) {}
 
@@ -66,11 +73,15 @@ void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
   // When PageSignalReceiver starts to have observer, construct the mojo
   // channel.
   if (!binding_.is_bound()) {
-    PerformanceManager* performance_manager = PerformanceManager::GetInstance();
-    if (performance_manager) {
+    content::ServiceManagerConnection* service_manager_connection =
+        content::ServiceManagerConnection::GetForProcess();
+    // Ensure service_manager is active before trying to connect to it.
+    if (service_manager_connection) {
+      service_manager::Connector* connector =
+          service_manager_connection->GetConnector();
       mojom::PageSignalGeneratorPtr page_signal_generator_ptr;
-      performance_manager->BindInterface(
-          mojo::MakeRequest(&page_signal_generator_ptr));
+      connector->BindInterface(mojom::kServiceName,
+                               mojo::MakeRequest(&page_signal_generator_ptr));
       mojom::PageSignalReceiverPtr page_signal_receiver_ptr;
       binding_.Bind(mojo::MakeRequest(&page_signal_receiver_ptr));
       page_signal_generator_ptr->AddReceiver(
