@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/serial_delegate.h"
@@ -125,7 +126,13 @@ class SerialTest : public ContentBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SerialTest, GetPorts) {
+// https://crbug.com/928712 tracks failure on Android tablets.
+#if defined(OS_ANDROID)
+#define MAYBE_GetPorts DISABLED_GetPorts
+#else
+#define MAYBE_GetPorts GetPorts
+#endif
+IN_PROC_BROWSER_TEST_F(SerialTest, MAYBE_GetPorts) {
   NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
 
   // Three ports are added but only two will have permission granted.
@@ -151,7 +158,13 @@ IN_PROC_BROWSER_TEST_F(SerialTest, GetPorts) {
   EXPECT_EQ(2, result);
 }
 
-IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
+// https://crbug.com/928712 tracks failure on Android tablets.
+#if defined(OS_ANDROID)
+#define MAYBE_RequestPort DISABLED_RequestPort
+#else
+#define MAYBE_RequestPort RequestPort
+#endif
+IN_PROC_BROWSER_TEST_F(SerialTest, MAYBE_RequestPort) {
   NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
 
   auto port = device::mojom::SerialPortInfo::New();
