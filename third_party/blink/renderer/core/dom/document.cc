@@ -7635,7 +7635,9 @@ DOMFeaturePolicy* Document::featurePolicy() {
 }
 
 const AtomicString& Document::RequiredCSP() {
-  return Loader() ? Loader()->RequiredCSP() : g_null_atom;
+  if (!Loader())
+    return g_null_atom;
+  return frame_->Loader().RequiredCSP();
 }
 
 StylePropertyMapReadOnly* Document::ComputedStyleMap(Element* element) {

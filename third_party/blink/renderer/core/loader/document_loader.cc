@@ -223,6 +223,8 @@ DocumentLoader::DocumentLoader(
 
   if (!params_->origin_to_commit.IsNull())
     origin_to_commit_ = params_->origin_to_commit.Get()->IsolatedCopy();
+
+  probe::lifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -360,12 +362,12 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   KURL old_url = url_;
   original_url_ = new_url;
   url_ = new_url;
-  SetReplacesCurrentHistoryItem(type != WebFrameLoadType::kStandard);
+  replaces_current_history_item_ = type != WebFrameLoadType::kStandard;
   if (same_document_navigation_source == kSameDocumentNavigationHistoryApi) {
     http_method_ = http_names::kGET;
     http_body_ = nullptr;
   }
-  ClearRedirectChain();
+  redirect_chain_.clear();
   if (is_client_redirect_)
     AppendRedirect(old_url);
   AppendRedirect(new_url);
@@ -552,10 +554,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   DCHECK_EQ(kSentDidFinishLoad, state_);
 }
 
-const AtomicString& DocumentLoader::RequiredCSP() {
-  return GetFrameLoader().RequiredCSP();
-}
-
 void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
@@ -670,7 +668,7 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
 
 void DocumentLoader::CancelLoadAfterCSPDenied(
     const ResourceResponse& response) {
-  SetWasBlockedAfterCSP();
+  was_blocked_after_csp_ = true;
 
   // Pretend that this was an empty HTTP 200 response.  Don't reuse the original
   // URL for the empty page (https://crbug.com/622385).
@@ -916,10 +914,6 @@ void DocumentLoader::ProcessDataBuffer() {
     CommitData(span.data(), span.size());
   // All data has been consumed, so flush the buffer.
   data_buffer_->Clear();
-}
-
-void DocumentLoader::ClearRedirectChain() {
-  redirect_chain_.clear();
 }
 
 void DocumentLoader::AppendRedirect(const KURL& url) {
@@ -1354,22 +1348,6 @@ void DocumentLoader::DidCommitNavigation(
   }
 }
 
-// static
-bool DocumentLoader::ShouldClearWindowName(
-    const LocalFrame& frame,
-    const SecurityOrigin* previous_security_origin,
-    const Document& new_document) {
-  if (!previous_security_origin)
-    return false;
-  if (!frame.IsMainFrame())
-    return false;
-  if (frame.Loader().Opener())
-    return false;
-
-  return !new_document.GetSecurityOrigin()->IsSameSchemeHostPort(
-      previous_security_origin);
-}
-
 // Helper function: Merge the feature policy strings from HTTP headers and the
 // origin policy (if any).
 // Headers go first, which means that the per-page headers override the
@@ -1457,7 +1435,12 @@ void DocumentLoader::InstallNewDocument(
         had_sticky_activation_);
   }
 
-  if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {
+  bool should_clear_window_name =
+      previous_security_origin && frame_->IsMainFrame() &&
+      !frame_->Loader().Opener() &&
+      !document->GetSecurityOrigin()->IsSameSchemeHostPort(
+          previous_security_origin);
+  if (should_clear_window_name) {
     // TODO(andypaicu): experimentalSetNullName will just record the fact
     // that the name would be nulled and if the name is accessed after we will
     // fire a UseCounter. If we decide to move forward with this change, we'd

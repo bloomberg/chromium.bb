@@ -61,6 +61,7 @@ class FindInPage;
 class HTMLPortalElement;
 class IntSize;
 class LocalFrameClientImpl;
+class ResourceError;
 class ScrollableArea;
 class TextFinder;
 class WebAssociatedURLLoader;
