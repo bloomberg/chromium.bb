@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -263,6 +264,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
   scoped_refptr<PasswordProtectionRequest> request_;
   base::HistogramTester histograms_;
   content::TestBrowserContext browser_context_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 };
 
 TEST_P(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
