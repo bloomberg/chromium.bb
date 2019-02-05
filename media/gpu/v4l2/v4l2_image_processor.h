@@ -149,6 +149,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
   void ServiceDeviceTask();
 
+  // Allocate/Destroy the input/output V4L2 buffers.
+  void AllocateBuffersTask(bool* result, base::WaitableEvent* done);
+  void DestroyBuffersTask();
+
   // Attempt to start/stop device_poll_thread_.
   void StartDevicePoll();
   void StopDevicePoll();
