@@ -119,6 +119,8 @@ class TaskManagerValuesStringifier {
   ~TaskManagerValuesStringifier() {}
 
   base::string16 GetCpuUsageText(double cpu_usage) {
+    if (std::isnan(cpu_usage))
+      return n_a_string_;
     return base::UTF8ToUTF16(base::StringPrintf(kCpuTextFormatString,
                                                 cpu_usage));
   }
