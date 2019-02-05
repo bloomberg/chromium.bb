@@ -114,6 +114,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       std::unique_ptr<net::SourceStream> payload_stream);
 
   void FinishReadingBody(int result);
+  void NotifyClientOnCompleteIfReady();
 
   const network::ResourceRequest outer_request_;
 
@@ -158,6 +159,11 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
 
   base::Optional<GURL> fallback_url_;
   base::Optional<GURL> inner_request_url_;
+
+  // Set when URLLoaderClient::OnComplete() is called.
+  base::Optional<int64_t> encoded_data_length_;
+  // Set when |body_data_pipe_adapter_| finishes loading the decoded body.
+  base::Optional<int> decoded_body_read_result_;
 
   base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
 
