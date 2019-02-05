@@ -26,8 +26,6 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   // WebApplicationCacheHostImpl:
   void OnLogMessage(blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override;
-  void OnContentBlocked(const GURL& manifest_url) override;
-  void OnCacheSelected(const blink::mojom::AppCacheInfo& info) override;
 
   void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override;

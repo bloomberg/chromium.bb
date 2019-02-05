@@ -80,11 +80,6 @@ void AppCacheFrontendProxy::LogMessage(
   GetAppCacheFrontend()->LogMessage(host_id, log_level, message);
 }
 
-void AppCacheFrontendProxy::ContentBlocked(int32_t host_id,
-                                           const GURL& manifest_url) {
-  GetAppCacheFrontend()->ContentBlocked(host_id, manifest_url);
-}
-
 void AppCacheFrontendProxy::SetSubresourceFactory(
     int32_t host_id,
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {

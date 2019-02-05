@@ -99,13 +99,6 @@ void AppCacheFrontendImpl::LogMessage(
     host->OnLogMessage(log_level, message);
 }
 
-void AppCacheFrontendImpl::ContentBlocked(int32_t host_id,
-                                          const GURL& manifest_url) {
-  WebApplicationCacheHostImpl* host = GetHost(host_id);
-  if (host)
-    host->OnContentBlocked(manifest_url);
-}
-
 void AppCacheFrontendImpl::SetSubresourceFactory(
     int32_t host_id,
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {

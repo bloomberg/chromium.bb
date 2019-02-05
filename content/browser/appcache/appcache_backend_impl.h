@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "content/browser/appcache/appcache_frontend_proxy.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -25,7 +26,7 @@ class CONTENT_EXPORT AppCacheBackendImpl
   int process_id() const { return process_id_; }
 
   // blink::mojom::AppCacheBackend
-  void RegisterHost(int32_t host_id) override;
+  void RegisterHost(int32_t host_id, int32_t render_frame_id) override;
   void UnregisterHost(int32_t host_id) override;
   void SetSpawningHostId(int32_t host_id, int spawning_host_id) override;
   void SelectCache(int32_t host_id,
@@ -55,9 +56,10 @@ class CONTENT_EXPORT AppCacheBackendImpl
   // The AppCacheHost is precreated by the AppCacheNavigationHandleCore class
   // when a navigation is initiated. We register the host with the backend in
   // this function and ignore registrations for this host id from the renderer.
-  void RegisterPrecreatedHost(std::unique_ptr<AppCacheHost> host);
+  void RegisterPrecreatedHost(std::unique_ptr<AppCacheHost> host,
+                              int render_frame_id);
 
-  void RegisterHostForTesting(int32_t host_id);
+  void RegisterHostForTesting(int32_t host_id, int32_t render_frame_id);
 
   void set_frontend_for_testing(blink::mojom::AppCacheFrontend* frontend) {
     frontend_ = frontend;

@@ -1022,6 +1022,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void set_portal(Portal* portal) { portal_ = portal; }
   Portal* portal() const { return portal_; }
 
+  // Notifies observers that AppCache was accessed. Public so AppCache code can
+  // call this directly.
+  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1252,9 +1256,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #endif
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);
-  void OnAppCacheAccessed(RenderViewHostImpl* source,
-                          const GURL& manifest_url,
-                          bool blocked_by_policy);
   void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,
                                      const PageImportanceSignals& signals);
 #if BUILDFLAG(ENABLE_PLUGINS)

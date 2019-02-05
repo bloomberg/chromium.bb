@@ -317,8 +317,6 @@ class MockFrontend : public blink::mojom::AppCacheFrontend {
                   blink::mojom::ConsoleMessageLevel log_level,
                   const std::string& message) override {}
 
-  void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
-
   void SetSubresourceFactory(
       int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
@@ -765,8 +763,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     MockFrontend mock_frontend;
-    AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
-                      service_.get());
+    AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                      &mock_frontend, service_.get());
 
     update->StartUpdate(&host, GURL());
 
@@ -807,19 +805,19 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       MockFrontend mock_frontend2;
       MockFrontend mock_frontend3;
 
-      AppCacheHost host1(/* host_id = */ 1, /* process_id = */ 1,
+      AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
                          &mock_frontend1, service_.get());
       host1.AssociateCompleteCache(cache1);
 
-      AppCacheHost host2(/* host_id = */ 2, /* process_id = */ 2,
+      AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
                          &mock_frontend2, service_.get());
       host2.AssociateCompleteCache(cache2);
 
-      AppCacheHost host3(/* host_id = */ 3, /* process_id = */ 3,
+      AppCacheHost host3(/*host_id=*/3, /*process_id=*/3, /*render_frame_id=*/3,
                          &mock_frontend1, service_.get());
       host3.AssociateCompleteCache(cache1);
 
-      AppCacheHost host4(/* host_id = */ 4, /* process_id = */ 4,
+      AppCacheHost host4(/*host_id=*/4, /*process_id=*/4, /*render_frame_id=*/4,
                          &mock_frontend3, service_.get());
 
       AppCacheUpdateJob* update =
@@ -3148,8 +3146,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // synchronously.
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
     MockFrontend mock_frontend;
-    AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
-                      service_.get());
+    AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                      &mock_frontend, service_.get());
     update->StartUpdate(&host, GURL());
 
     // We need to wait for the URL load requests to make it to the
@@ -3592,7 +3590,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   AppCacheHost* MakeHost(int host_id,
                          blink::mojom::AppCacheFrontend* frontend) {
     constexpr int kProcessIdForTests = 123;
+    constexpr int kRenderFrameIdForTests = 456;
     hosts_.push_back(std::make_unique<AppCacheHost>(host_id, kProcessIdForTests,
+                                                    kRenderFrameIdForTests,
                                                     frontend, service_.get()));
     return hosts_.back().get();
   }
@@ -3975,8 +3975,8 @@ TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 
   MockFrontend mock_frontend;
-  AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
-                    &service);
+  AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                    &mock_frontend, &service);
   update.StartUpdate(&host, GURL());
 
   MockFrontend::RaisedEvents events = mock_frontend.raised_events_;
@@ -4005,8 +4005,8 @@ TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 
   MockFrontend mock_frontend;
-  AppCacheHost host(/* host_id = */ 1, /* process_id = */ 1, &mock_frontend,
-                    &service);
+  AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                    &mock_frontend, &service);
   update.StartUpdate(&host, GURL());
 
   MockFrontend::RaisedEvents events = mock_frontend.raised_events_;

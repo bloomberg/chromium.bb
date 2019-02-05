@@ -26,7 +26,8 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
                               blink::mojom::AppCacheBackend* backend,
-                              int appcache_host_id);
+                              int appcache_host_id,
+                              int render_frame_id);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }
@@ -40,7 +41,6 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   void OnErrorEventRaised(const blink::mojom::AppCacheErrorDetails& details);
   virtual void OnLogMessage(blink::mojom::ConsoleMessageLevel log_level,
                             const std::string& message) {}
-  virtual void OnContentBlocked(const GURL& manifest_url) {}
 
   // blink::WebApplicationCacheHost:
   void WillStartMainResourceRequest(

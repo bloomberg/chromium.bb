@@ -17,6 +17,7 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
@@ -59,6 +60,7 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
 
 AppCacheHost::AppCacheHost(int host_id,
                            int process_id,
+                           int render_frame_id,
                            blink::mojom::AppCacheFrontend* frontend,
                            AppCacheServiceImpl* service)
     : host_id_(host_id),
@@ -72,6 +74,7 @@ AppCacheHost::AppCacheHost(int host_id,
       was_select_cache_called_(false),
       is_cache_selection_enabled_(true),
       frontend_(frontend),
+      render_frame_id_(render_frame_id),
       service_(service),
       storage_(service->storage()),
       main_resource_was_namespace_entry_(false),
@@ -137,7 +140,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     service()->quota_manager_proxy()->NotifyOriginInUse(origin_in_use_);
 
   if (main_resource_blocked_)
-    frontend_->ContentBlocked(host_id_, blocked_manifest_url_);
+    OnContentBlocked(blocked_manifest_url_);
 
   // 6.9.6 The application cache selection algorithm.
   // The algorithm is started here and continues in FinishCacheSelection,
@@ -176,7 +179,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
               "Cache creation was blocked by the content policy",
               blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(),
               0, false /*is_cross_origin*/));
-      frontend_->ContentBlocked(host_id_, manifest_url);
+      OnContentBlocked(manifest_url);
       return;
     }
     // Note: The client detects if the document was not loaded using HTTP GET
@@ -518,6 +521,7 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
     // instance to the renderer which it can use to request subresources.
     // This ensures that they can be served out of the AppCache.
     MaybePassSubresourceFactory();
+    OnAppCacheAccessed(info->manifest_url, false);
     frontend_->CacheSelected(host_id_, std::move(info));
   }
 }
@@ -625,7 +629,37 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
   if (cache && cache->is_complete())
     MaybePassSubresourceFactory();
 
+  OnAppCacheAccessed(info->manifest_url, false);
   frontend_->CacheSelected(host_id_, std::move(info));
+}
+
+void AppCacheHost::OnContentBlocked(const GURL& manifest_url) {
+  OnAppCacheAccessed(manifest_url, /*blocked=*/true);
+}
+
+void AppCacheHost::OnAppCacheAccessed(const GURL& manifest_url, bool blocked) {
+  if (!blocked && manifest_url.is_empty())
+    return;
+
+  // Unit tests might not have a UI thread, if that's the case just don't bother
+  // informing WebContents about this access.
+  if (render_frame_id_ != MSG_ROUTING_NONE &&
+      BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            [](int process_id, int render_frame_id, const GURL& manifest_url,
+               bool blocked) {
+              WebContents* web_contents =
+                  WebContentsImpl::FromRenderFrameHostID(process_id,
+                                                         render_frame_id);
+              if (web_contents) {
+                static_cast<WebContentsImpl*>(web_contents)
+                    ->OnAppCacheAccessed(manifest_url, blocked);
+              }
+            },
+            process_id_, render_frame_id_, manifest_url, blocked));
+  }
 }
 
 }  // namespace content

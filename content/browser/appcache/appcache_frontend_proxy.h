@@ -36,7 +36,6 @@ class AppCacheFrontendProxy : public blink::mojom::AppCacheFrontend {
   void LogMessage(int32_t host_id,
                   blink::mojom::ConsoleMessageLevel log_level,
                   const std::string& message) override;
-  void ContentBlocked(int32_t host_id, const GURL& manifest_url) override;
   void SetSubresourceFactory(
       int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override;

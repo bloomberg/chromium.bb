@@ -860,7 +860,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
                         OnPageScaleFactorChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
@@ -4790,8 +4789,7 @@ void WebContentsImpl::OnDomOperationResponse(RenderFrameHostImpl* source,
                                          Details<std::string>(&json));
 }
 
-void WebContentsImpl::OnAppCacheAccessed(RenderViewHostImpl* source,
-                                         const GURL& manifest_url,
+void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
                                          bool blocked_by_policy) {
   // TODO(nick): Should we consider |source| here? Should we call FilterURL on
   // |manifest_url|?
