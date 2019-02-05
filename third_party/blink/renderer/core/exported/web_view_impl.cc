@@ -1270,24 +1270,38 @@ Frame* WebViewImpl::FocusedCoreFrame() const {
 // WebWidget ------------------------------------------------------------------
 
 void WebViewImpl::Close() {
-  if (layer_tree_view_)
-    GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
-
-  SetRootLayer(nullptr);
-  animation_host_ = nullptr;
-
-  mutator_dispatcher_ = nullptr;
-  layer_tree_view_ = nullptr;
-
+  // Closership is a single relationship, so only 1 call to Close() should
+  // occur.
+  CHECK(AsView().page);
   DCHECK(AllInstances().Contains(this));
   AllInstances().erase(this);
 
-  // We don't want Close() to happen twice do we??
-  CHECK(AsView().page);
-
   // Initiate shutdown for the entire frameset.  This will cause a lot of
-  // notifications to be sent.
+  // notifications to be sent. This will detach all frames in this WebView's
+  // frame tree.
   AsView().page->WillBeDestroyed();
+
+  // The WebWidget should be closed in response to the main frame being detached
+  // which happens in Page::WillBeDestroyed(). But since the RenderWidget lives
+  // forever (https://crbug.com/419087), the WebWidget is not closed elsewhere.
+  // So we close it here but try to simulate the same ordering by closing it
+  // after the main frame is detached but before the Page is destroyed. This
+  // means the main frame's WebWidget remains valid while the main frame is
+  // being detached (and in particular while its unload handlers run).
+  {
+    // TODO(danakj): We should close the widget client too not just the view
+    // client.
+    // AsWidget().client = nullptr;
+
+    if (does_composite_)
+      GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+
+    SetRootLayer(nullptr);
+    animation_host_ = nullptr;
+    mutator_dispatcher_ = nullptr;
+    layer_tree_view_ = nullptr;
+  }
+
   AsView().page.Clear();
 
   // Reset the delegate to prevent notifications being sent as we're being
