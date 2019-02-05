@@ -105,12 +105,15 @@ gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
   return quad_rect;
 }
 
-// Find a rectangle containing all the quads in a list that occlude the area
-// in target_quad.
+// GetOcclusionBounds() - Find a rectangle containing all the quads in a list
+// that occlude the area in target_quad.
+// |has_occluding_surface_damage| - used for underlay power optimization.
 gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
                               QuadList::ConstIterator quad_list_begin,
-                              QuadList::ConstIterator quad_list_end) {
+                              QuadList::ConstIterator quad_list_end,
+                              bool* has_occluding_surface_damage) {
   gfx::RectF occlusion_bounding_box;
+  *has_occluding_surface_damage = false;
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
     float opacity = overlap_iter->shared_quad_state->opacity;
@@ -128,6 +131,8 @@ gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
     overlap_rect.Intersect(target_quad);
     if (!overlap_rect.IsEmpty()) {
       occlusion_bounding_box.Union(overlap_rect);
+      *has_occluding_surface_damage |=
+          overlap_iter->shared_quad_state->has_surface_damage;
     }
   }
   return occlusion_bounding_box;
@@ -341,8 +346,11 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
 
     // These rects are in quad target space.
     gfx::Rect quad_rectangle = gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
+    bool has_occluding_surface_damage = false;
     gfx::RectF occlusion_bounding_box =
-        GetOcclusionBounds(gfx::RectF(quad_rectangle), quad_list->begin(), it);
+        GetOcclusionBounds(gfx::RectF(quad_rectangle), quad_list->begin(), it,
+                           &has_occluding_surface_damage);
+
     bool processed_overlay = false;
 
     // Underlays are less efficient, so attempt regular overlays first. Only
@@ -363,7 +371,8 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
       processed_overlay = true;
     } else if (ProcessForUnderlay(display_rect, render_pass, quad_rectangle,
                                   occlusion_bounding_box, it, is_root,
-                                  damage_rect, &this_frame_underlay_rect,
+                                  has_occluding_surface_damage, damage_rect,
+                                  &this_frame_underlay_rect,
                                   &this_frame_underlay_occlusion, &dc_layer)) {
       processed_overlay = true;
     }
@@ -419,6 +428,7 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     const gfx::RectF& occlusion_bounding_box,
     const QuadList::Iterator& it,
     bool is_root,
+    bool has_occluding_surface_damage,
     gfx::Rect* damage_rect,
     gfx::Rect* this_frame_underlay_rect,
     gfx::Rect* this_frame_underlay_occlusion,
@@ -504,13 +514,21 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     gfx::Rect occluding_damage_rect = *damage_rect;
     damage_rect->Subtract(quad_rectangle);
 
-    gfx::Rect occlusion = gfx::ToEnclosingRect(occlusion_bounding_box);
-    occlusion.Union(previous_frame_underlay_occlusion_);
+    // If none of the quads on top give any damage, we can skip compositing
+    // these quads when the incoming damage rect is smaller or equal to the
+    // video quad. After subtraction, the resulting output damage rect for GL
+    // compositor will be empty. If the incoming damage rect is bigger than the
+    // video quad, we don't have an oppertunity for power optimization even if
+    // no damage on top. The output damage rect will not be empty in this case.
+    if (has_occluding_surface_damage) {
+      gfx::Rect occlusion = gfx::ToEnclosingRect(occlusion_bounding_box);
+      occlusion.Union(previous_frame_underlay_occlusion_);
 
-    occluding_damage_rect.Intersect(quad_rectangle);
-    occluding_damage_rect.Intersect(occlusion);
+      occluding_damage_rect.Intersect(quad_rectangle);
+      occluding_damage_rect.Intersect(occlusion);
 
-    damage_rect->Union(occluding_damage_rect);
+      damage_rect->Union(occluding_damage_rect);
+    }
   } else {
     // Entire replacement quad must be redrawn.
     // TODO(sunnyps): We should avoid this extra damage if we knew that the

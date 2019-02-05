@@ -60,6 +60,13 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   float opacity;
   SkBlendMode blend_mode;
   int sorting_context_id;
+  // An internal flag used only in the SurfaceAggregator and the
+  // OverlayProcessor. If set to true surface's compositor frame was updated in
+  // current aggregation, and if set to false the surface has not changed since
+  // the previous frame. It can be used for underlay optimization when the quads
+  // on top are not damaged. SetAll() doesn't update this flag. It has to be set
+  // sepaerately.
+  bool has_surface_damage = false;
 };
 
 }  // namespace viz
