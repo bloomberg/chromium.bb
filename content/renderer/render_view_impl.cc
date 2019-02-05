@@ -1191,11 +1191,6 @@ void RenderViewImpl::OnSetInitialFocus(bool reverse) {
   webview()->SetInitialFocus(reverse);
 }
 
-void RenderViewImpl::OnUpdateWindowScreenRect(gfx::Rect window_screen_rect) {
-  // Defers to the RenderWidget message handler.
-  GetWidget()->SetWindowScreenRect(window_screen_rect);
-}
-
 void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
   webview()->AudioStateChanged(is_audio_playing);
 }
@@ -1267,8 +1262,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
     // Page messages.
-    IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
-                        OnUpdateWindowScreenRect)
     IPC_MESSAGE_HANDLER(PageMsg_WasHidden, OnPageWasHidden)
     IPC_MESSAGE_HANDLER(PageMsg_WasShown, OnPageWasShown)
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,

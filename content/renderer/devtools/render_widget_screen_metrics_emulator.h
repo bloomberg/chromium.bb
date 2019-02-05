@@ -53,7 +53,6 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   // The following methods alter handlers' behavior for messages related to
   // widget size and position.
   void OnSynchronizeVisualProperties(const VisualProperties& params);
-  void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnShowContextMenu(ContextMenuParams* params);

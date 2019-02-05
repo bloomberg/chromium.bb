@@ -103,6 +103,9 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   bool ShouldOverrideUserAgentInNewTabs() override;
   bool ShowingInterstitialPage() override;
 
+  // RenderViewHostDelegate implementation:
+  FrameTree* GetFrameTree() override;
+
  protected:
   // NotificationObserver method:
   void Observe(int type,
@@ -166,8 +169,6 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
 
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
-
-  FrameTree* GetFrameTree() override;
 
   // RenderWidgetHostDelegate implementation:
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;

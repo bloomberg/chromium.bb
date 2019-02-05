@@ -466,7 +466,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnSetBackgroundOpaque(bool opaque);
 
   // Page message handlers -----------------------------------------------------
-  void OnUpdateWindowScreenRect(gfx::Rect window_screen_rect);
   void OnPageWasHidden();
   void OnPageWasShown();
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);

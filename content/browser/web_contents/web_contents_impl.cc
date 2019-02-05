@@ -3220,11 +3220,13 @@ void WebContentsImpl::SendScreenRects() {
       node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
   }
 
-  RenderWidgetHostViewBase* rwhv =
-      static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
-  if (rwhv) {
-    SendPageMessage(new PageMsg_UpdateWindowScreenRect(
-        MSG_ROUTING_NONE, rwhv->GetBoundsInRootWindow()));
+  // Interstitials have their own |frame_tree_|.
+  if (interstitial_page_) {
+    FrameTree* interstitial_frame_tree = interstitial_page_->GetFrameTree();
+    for (FrameTreeNode* node : interstitial_frame_tree->Nodes()) {
+      if (node->current_frame_host()->is_local_root())
+        node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
+    }
   }
 
   if (browser_plugin_embedder_ && !is_being_destroyed_)

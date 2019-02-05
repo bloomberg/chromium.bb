@@ -141,14 +141,6 @@ void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
   Apply();
 }
 
-void RenderWidgetScreenMetricsEmulator::OnUpdateWindowScreenRect(
-    const gfx::Rect& window_screen_rect) {
-  original_window_screen_rect_ = window_screen_rect;
-  if (emulation_params_.screen_position ==
-      blink::WebDeviceEmulationParams::kDesktop)
-    Apply();
-}
-
 void RenderWidgetScreenMetricsEmulator::OnUpdateScreenRects(
     const gfx::Rect& view_screen_rect,
     const gfx::Rect& window_screen_rect) {

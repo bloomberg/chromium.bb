@@ -3313,13 +3313,6 @@ void RenderWidget::SetMouseCapture(bool capture) {
   }
 }
 
-void RenderWidget::SetWindowScreenRect(const gfx::Rect& window_screen_rect) {
-  if (screen_metrics_emulator_)
-    screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
-  else
-    window_screen_rect_ = window_screen_rect;
-}
-
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_view_ &&
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
