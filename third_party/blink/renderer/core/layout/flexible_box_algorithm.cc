@@ -470,11 +470,14 @@ FlexLayoutAlgorithm::ContentAlignmentNormalBehavior() {
 
 bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
     const LayoutBox& child) const {
+  // TODO(cbiesinger): For now, we do not handle min-height: auto for nested
+  // column flexboxes. See crbug.com/596743
   // css-flexbox section 4.5
   Length min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
                                   : child.StyleRef().MinHeight();
   return min.IsAuto() && !child.ShouldApplySizeContainment() &&
-         MainAxisOverflowForChild(child) == EOverflow::kVisible;
+         MainAxisOverflowForChild(child) == EOverflow::kVisible &&
+         !(IsColumnFlow() && child.IsFlexibleBox());
 }
 
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
