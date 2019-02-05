@@ -39,8 +39,9 @@ class DistillerNativeJavaScript {
 };
 
 // static
-v8::Local<v8::Object> GetOrCreateDistillerObject(v8::Isolate* isolate,
-                                                 v8::Local<v8::Object> global);
+v8::Local<v8::Object> GetOrCreateDistillerObject(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context);
 
 }  // namespace dom_distiller
 
