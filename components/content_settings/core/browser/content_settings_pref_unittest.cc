@@ -109,8 +109,7 @@ TEST(ContentSettingsPref, CanonicalizationWhileReadingFromPrefs) {
   }
 
   TestingPrefServiceSimple prefs;
-  prefs.registry()->RegisterDictionaryPref(
-      kTestContentSettingPrefName, std::make_unique<base::DictionaryValue>());
+  prefs.registry()->RegisterDictionaryPref(kTestContentSettingPrefName);
   prefs.SetUserPref(kTestContentSettingPrefName,
                     std::move(original_pref_value));
 
