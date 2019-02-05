@@ -70,6 +70,12 @@ class FuzzedSocketFactoryWithMockSSLData : public FuzzedSocketFactory {
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override;
 
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> nested_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override;
+
  private:
   SocketDataProviderArray<SSLSocketDataProvider> mock_ssl_data_;
 };
@@ -90,6 +96,17 @@ FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
   return std::make_unique<MockSSLClientSocket>(std::move(transport_socket),
+                                               host_and_port, ssl_config,
+                                               mock_ssl_data_.GetNext());
+}
+
+std::unique_ptr<SSLClientSocket>
+FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
+    std::unique_ptr<StreamSocket> nested_socket,
+    const HostPortPair& host_and_port,
+    const SSLConfig& ssl_config,
+    const SSLClientSocketContext& context) {
+  return std::make_unique<MockSSLClientSocket>(std::move(nested_socket),
                                                host_and_port, ssl_config,
                                                mock_ssl_data_.GetNext());
 }
