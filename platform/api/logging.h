@@ -112,7 +112,7 @@ class Voidify {
 #define OSP_CHECK_GT(a, b) OSP_CHECK((a) > (b)) << a << " vs. " << b << ": "
 #define OSP_CHECK_GE(a, b) OSP_CHECK((a) >= (b)) << a << " vs. " << b << ": "
 
-#if defined(_DEBUG) || defined(OSP_DCHECK_ALWAYS_ON)
+#if defined(_DEBUG) || defined(DCHECK_ALWAYS_ON)
 #define OSP_DCHECK_IS_ON() 1
 #define OSP_DCHECK(condition) OSP_CHECK(condition)
 #define OSP_DCHECK_EQ(a, b) OSP_CHECK_EQ(a, b)
@@ -123,13 +123,16 @@ class Voidify {
 #define OSP_DCHECK_GE(a, b) OSP_CHECK_GE(a, b)
 #else
 #define OSP_DCHECK_IS_ON() 0
-#define OSP_DCHECK(condition) OSP_EAT_STREAM
-#define OSP_DCHECK_EQ(a, b) OSP_EAT_STREAM
-#define OSP_DCHECK_NE(a, b) OSP_EAT_STREAM
-#define OSP_DCHECK_LT(a, b) OSP_EAT_STREAM
-#define OSP_DCHECK_LE(a, b) OSP_EAT_STREAM
-#define OSP_DCHECK_GT(a, b) OSP_EAT_STREAM
-#define OSP_DCHECK_GE(a, b) OSP_EAT_STREAM
+// When DCHECKs are off, nothing will be logged. Use that fact to make
+// references to the |condition| expression (or |a| and |b|) so the compiler
+// won't emit unused variable warnings/errors when DCHECKs are turned off.
+#define OSP_DCHECK(condition) OSP_EAT_STREAM << !(condition)
+#define OSP_DCHECK_EQ(a, b) OSP_EAT_STREAM << !((a) == (b))
+#define OSP_DCHECK_NE(a, b) OSP_EAT_STREAM << !((a) != (b))
+#define OSP_DCHECK_LT(a, b) OSP_EAT_STREAM << !((a) < (b))
+#define OSP_DCHECK_LE(a, b) OSP_EAT_STREAM << !((a) <= (b))
+#define OSP_DCHECK_GT(a, b) OSP_EAT_STREAM << !((a) > (b))
+#define OSP_DCHECK_GE(a, b) OSP_EAT_STREAM << !((a) >= (b))
 #endif
 
 #define OSP_DLOG_INFO OSP_LOG_IF(INFO, OSP_DCHECK_IS_ON())

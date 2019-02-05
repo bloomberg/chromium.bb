@@ -42,7 +42,6 @@ uint16_t GetNetworkOrderPort(const mDNSOpaque16& port) {
   return port.b[0] << 8 | port.b[1];
 }
 
-#if OSP_DCHECK_IS_ON()
 bool IsValidServiceName(const std::string& service_name) {
   // Service name requirements come from RFC 6335:
   //  - No more than 16 characters.
@@ -73,7 +72,6 @@ bool IsValidServiceProtocol(const std::string& protocol) {
   // RFC 6763 requires _tcp be used for TCP services and _udp for all others.
   return protocol == "_tcp" || protocol == "_udp";
 }
-#endif  // if OSP_DCHECK_IS_ON()
 
 void MakeLocalServiceNameParts(const std::string& service_instance,
                                const std::string& service_name,

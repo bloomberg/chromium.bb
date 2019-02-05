@@ -9,7 +9,6 @@
 namespace openscreen {
 namespace {
 
-#if OSP_DCHECK_IS_ON()
 bool IsTransitionValid(ServiceListener::State from, ServiceListener::State to) {
   switch (from) {
     case ServiceListener::State::kStopped:
@@ -40,7 +39,6 @@ bool IsTransitionValid(ServiceListener::State from, ServiceListener::State to) {
   }
   return false;
 }
-#endif
 
 }  // namespace
 

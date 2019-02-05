@@ -9,7 +9,6 @@
 namespace openscreen {
 namespace {
 
-#if OSP_DCHECK_IS_ON()
 bool IsTransitionValid(ServicePublisher::State from,
                        ServicePublisher::State to) {
   using State = ServicePublisher::State;
@@ -31,7 +30,6 @@ bool IsTransitionValid(ServicePublisher::State from,
   }
   return false;
 }
-#endif
 
 }  // namespace
 
