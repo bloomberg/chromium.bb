@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_BENCHMARKING_EXTENSION_H_
 #define CHROME_RENDERER_BENCHMARKING_EXTENSION_H_
 
+#include <memory>
+
 namespace v8 {
 class Extension;
 }
@@ -16,7 +18,7 @@ namespace extensions_v8 {
 // name is to distinguish it from the built-in V8 Profiler.
 class BenchmarkingExtension {
  public:
-  static v8::Extension* Get();
+  static std::unique_ptr<v8::Extension> Get();
 };
 
 }  // namespace extensions_v8

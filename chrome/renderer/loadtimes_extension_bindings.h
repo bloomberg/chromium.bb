@@ -8,6 +8,8 @@
 #ifndef CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_
 #define CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_
 
+#include <memory>
+
 namespace v8 {
 class Extension;
 }
@@ -16,7 +18,7 @@ namespace extensions_v8 {
 
 class LoadTimesExtension {
  public:
-  static v8::Extension* Get();
+  static std::unique_ptr<v8::Extension> Get();
 };
 
 }  // namespace extensions_v8

@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CONTROLLER_H_
 
+#include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -144,9 +146,8 @@ class CORE_EXPORT ScriptController final
   void ClearForClose();
 
   // Registers a v8 extension to be available on webpages. Will only
-  // affect v8 contexts initialized after this call. Takes ownership of
-  // the v8::Extension object passed.
-  static void RegisterExtensionIfNeeded(v8::Extension*);
+  // affect v8 contexts initialized after this call.
+  static void RegisterExtensionIfNeeded(std::unique_ptr<v8::Extension>);
   static v8::ExtensionConfiguration ExtensionsFor(const ExecutionContext*);
 
  private:

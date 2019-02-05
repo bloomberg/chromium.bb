@@ -223,7 +223,9 @@ class ExtensionImpl : public v8::Extension {
 }  // namespace
 
 // static
-v8::Extension* SafeBuiltins::CreateV8Extension() { return new ExtensionImpl(); }
+std::unique_ptr<v8::Extension> SafeBuiltins::CreateV8Extension() {
+  return std::make_unique<ExtensionImpl>();
+}
 
 SafeBuiltins::SafeBuiltins(ScriptContext* context) : context_(context) {}
 

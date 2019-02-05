@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/memory/shared_memory.h"
@@ -81,7 +82,7 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
       size_t buffer_size) = 0;
 
   // Registers the given V8 extension with WebKit.
-  virtual void RegisterExtension(v8::Extension* extension) = 0;
+  virtual void RegisterExtension(std::unique_ptr<v8::Extension> extension) = 0;
 
   // Post task to all worker threads. Returns number of workers.
   virtual int PostTaskToAllWebWorkers(const base::Closure& closure) = 0;

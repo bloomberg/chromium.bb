@@ -1276,8 +1276,9 @@ RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
   return ChildThreadImpl::AllocateSharedMemory(size);
 }
 
-void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
-  WebScriptController::RegisterExtension(extension);
+void RenderThreadImpl::RegisterExtension(
+    std::unique_ptr<v8::Extension> extension) {
+  WebScriptController::RegisterExtension(std::move(extension));
 }
 
 int RenderThreadImpl::PostTaskToAllWebWorkers(const base::Closure& closure) {
