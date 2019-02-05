@@ -42,7 +42,7 @@ class BuildStore(object):
   """BuildStore class to handle all DB calls."""
 
   def __init__(self, _read_from_bb=False, _write_to_bb=True,
-               _write_to_cidb=True, cidb_creds=None):
+               _write_to_cidb=True, cidb_creds=None, for_service=None):
     """Get an instance of the BuildStore.
 
     Args:
@@ -50,11 +50,13 @@ class BuildStore(object):
       _write_to_bb: Determines whether information is written to Buildbucket.
       _write_to_cidb: Determines whether information is written to CIDB.
       cidb_creds: CIDB credentials for scripts running outside of cbuildbot.
+      for_service: Argument for CIDBConnection.__init__().
     """
     self._read_from_bb = _read_from_bb
     self._write_to_bb = _write_to_bb
     self._write_to_cidb = _write_to_cidb
     self.cidb_creds = cidb_creds
+    self.for_service = for_service
     self.cidb_conn = None
     self.bb_client = None
     self.process_id = os.getpid()
@@ -105,7 +107,9 @@ class BuildStore(object):
     if self._IsCIDBClientMissing() or pid_mismatch:
       self.process_id = os.getpid()
       if self.cidb_creds:
-        self.cidb_conn = cidb.CIDBConnection(self.cidb_creds)
+        for_service = self.for_service if self.for_service else False
+        self.cidb_conn = cidb.CIDBConnection(self.cidb_creds,
+                                             for_service=for_service)
       elif not cidb.CIDBConnectionFactory.IsCIDBSetup():
         self.cidb_conn = None
       else:
