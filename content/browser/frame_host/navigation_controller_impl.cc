@@ -2774,14 +2774,25 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
   }
 
   std::unique_ptr<NavigationEntryImpl> entry;
+  // extra_headers in params are \n separated; navigation entries want \r\n.
+  std::string extra_headers_crlf;
+  base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
 
   // For subframes, create a pending entry with a corresponding frame entry.
   if (!node->IsMainFrame()) {
-    DCHECK(GetLastCommittedEntry());
-
-    // Create an identical NavigationEntry with a new FrameNavigationEntry for
-    // the target subframe.
-    entry = GetLastCommittedEntry()->Clone();
+    if (GetLastCommittedEntry()) {
+      // Create an identical NavigationEntry with a new FrameNavigationEntry for
+      // the target subframe.
+      entry = GetLastCommittedEntry()->Clone();
+    } else {
+      // If there's no last committed entry, create an entry for about:blank
+      // with a subframe entry for our destination.
+      // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
+      entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+          GURL(url::kAboutBlankURL), params.referrer, params.transition_type,
+          params.is_renderer_initiated, extra_headers_crlf, browser_context_,
+          blob_url_loader_factory));
+    }
 
     entry->AddOrUpdateFrameEntry(
         node, -1, -1, nullptr,
@@ -2790,10 +2801,6 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
         PageState(), "GET", -1, blob_url_loader_factory);
   } else {
     // Otherwise, create a pending entry for the main frame.
-
-    // extra_headers in params are \n separated; navigation entries want \r\n.
-    std::string extra_headers_crlf;
-    base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         params.url, params.referrer, params.transition_type,
         params.is_renderer_initiated, extra_headers_crlf, browser_context_,
