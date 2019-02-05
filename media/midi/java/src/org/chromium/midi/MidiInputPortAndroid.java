@@ -69,7 +69,12 @@ class MidiInputPortAndroid {
         mPort.connect(new MidiReceiver() {
             @Override
             public void onSend(byte[] bs, int offset, int count, long timestamp) {
-                nativeOnData(mNativeReceiverPointer, bs, offset, count, timestamp);
+                synchronized (MidiInputPortAndroid.this) {
+                    if (mPort == null) {
+                        return;
+                    }
+                    nativeOnData(mNativeReceiverPointer, bs, offset, count, timestamp);
+                }
             }
         });
         return true;
@@ -79,7 +84,7 @@ class MidiInputPortAndroid {
      * Closes the port.
      */
     @CalledByNative
-    void close() {
+    synchronized void close() {
         if (mPort == null) {
             return;
         }
