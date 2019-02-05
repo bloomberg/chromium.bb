@@ -30,7 +30,7 @@ String XMLSerializer::serializeToString(Node* root) {
   DCHECK(root);
   MarkupAccumulator accumulator(kDoNotResolveURLs,
                                 SerializationType::kForcedXML);
-  return SerializeNodes<EditingStrategy>(accumulator, *root, kIncludeNode);
+  return accumulator.SerializeNodes<EditingStrategy>(*root, kIncludeNode);
 }
 
 }  // namespace blink

@@ -280,74 +280,73 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
 }
 
 template <typename Strategy>
-static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
-                                         Node& target_node,
-                                         EChildrenOnly children_only,
-                                         const Namespaces& namespaces) {
+void MarkupAccumulator::SerializeNodesWithNamespaces(
+    Node& target_node,
+    EChildrenOnly children_only,
+    const Namespaces& namespaces) {
   if (target_node.IsElementNode() &&
-      accumulator.ShouldIgnoreElement(ToElement(target_node))) {
+      ShouldIgnoreElement(ToElement(target_node))) {
     return;
   }
 
   Namespaces namespace_hash = namespaces;
 
   if (!children_only)
-    accumulator.AppendStartMarkup(target_node, namespace_hash);
+    AppendStartMarkup(target_node, namespace_hash);
 
-  if (!(accumulator.SerializeAsHTMLDocument(target_node) &&
+  if (!(SerializeAsHTMLDocument(target_node) &&
         ElementCannotHaveEndTag(target_node))) {
     Node* current = IsHTMLTemplateElement(target_node)
                         ? Strategy::FirstChild(
                               *ToHTMLTemplateElement(target_node).content())
                         : Strategy::FirstChild(target_node);
     for (; current; current = Strategy::NextSibling(*current)) {
-      SerializeNodesWithNamespaces<Strategy>(accumulator, *current,
-                                             kIncludeNode, namespace_hash);
+      SerializeNodesWithNamespaces<Strategy>(*current, kIncludeNode,
+                                             namespace_hash);
     }
 
     // Traverses other DOM tree, i.e., shadow tree.
     if (target_node.IsElementNode()) {
       std::pair<Node*, Element*> auxiliary_pair =
-          accumulator.GetAuxiliaryDOMTree(ToElement(target_node));
+          GetAuxiliaryDOMTree(ToElement(target_node));
       Node* auxiliary_tree = auxiliary_pair.first;
       Element* enclosing_element = auxiliary_pair.second;
       if (auxiliary_tree) {
         if (auxiliary_pair.second)
-          accumulator.AppendStartMarkup(*enclosing_element, namespace_hash);
+          AppendStartMarkup(*enclosing_element, namespace_hash);
         current = Strategy::FirstChild(*auxiliary_tree);
         for (; current; current = Strategy::NextSibling(*current)) {
-          SerializeNodesWithNamespaces<Strategy>(accumulator, *current,
-                                                 kIncludeNode, namespace_hash);
+          SerializeNodesWithNamespaces<Strategy>(*current, kIncludeNode,
+                                                 namespace_hash);
         }
         if (enclosing_element)
-          accumulator.AppendEndTag(*enclosing_element);
+          AppendEndTag(*enclosing_element);
       }
     }
   }
 
   if ((!children_only && target_node.IsElementNode()) &&
-      !(accumulator.SerializeAsHTMLDocument(target_node) &&
+      !(SerializeAsHTMLDocument(target_node) &&
         ElementCannotHaveEndTag(target_node)))
-    accumulator.AppendEndTag(ToElement(target_node));
+    AppendEndTag(ToElement(target_node));
 }
 
 template <typename Strategy>
-String SerializeNodes(MarkupAccumulator& accumulator,
-                      Node& target_node,
-                      EChildrenOnly children_only) {
+String MarkupAccumulator::SerializeNodes(Node& target_node,
+                                         EChildrenOnly children_only) {
   Namespaces namespace_hash;
-  if (!accumulator.SerializeAsHTMLDocument(target_node)) {
+  if (!SerializeAsHTMLDocument(target_node)) {
     // Add pre-bound namespaces for XML fragments.
     namespace_hash.Set(g_xml_atom, xml_names::kNamespaceURI);
   }
 
-  SerializeNodesWithNamespaces<Strategy>(accumulator, target_node,
-                                         children_only, namespace_hash);
-  return accumulator.ToString();
+  SerializeNodesWithNamespaces<Strategy>(target_node, children_only,
+                                         namespace_hash);
+  return ToString();
 }
 
-template String SerializeNodes<EditingStrategy>(MarkupAccumulator&,
-                                                Node&,
-                                                EChildrenOnly);
+template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
+    Node&,
+    EChildrenOnly);
 
 }  // namespace blink

@@ -50,25 +50,12 @@ class MarkupAccumulator {
                     SerializationType = SerializationType::kAsOwnerDocument);
   virtual ~MarkupAccumulator();
 
-  // Serialize a Node, without its children and its end tag.
-  virtual void AppendStartMarkup(Node&, Namespaces&);
-  void AppendEndTag(const Element&);
-
-  bool SerializeAsHTMLDocument(const Node&) const;
-  String ToString() { return markup_.ToString(); }
-
-  virtual bool ShouldIgnoreElement(const Element&) const;
-
-  // Returns an auxiliary DOM tree, i.e. shadow tree, that needs also to be
-  // serialized. The root of auxiliary DOM tree is returned as an 1st element
-  // in the pair. It can be null if no auxiliary DOM tree exists. An additional
-  // element used to enclose the serialized content of auxiliary DOM tree
-  // can be returned as 2nd element in the pair. It can be null if this is not
-  // needed. For shadow tree, a <template> element is needed to wrap the shadow
-  // tree content.
-  virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
+  template <typename Strategy>
+  String SerializeNodes(Node&, EChildrenOnly);
 
  protected:
+  // Serialize a Node, without its children and its end tag.
+  virtual void AppendStartMarkup(Node&, Namespaces&);
   virtual void AppendElement(const Element&, Namespaces&);
   virtual void AppendAttribute(const Element&, const Attribute&, Namespaces&);
 
@@ -76,6 +63,9 @@ class MarkupAccumulator {
   StringBuilder markup_;
 
  private:
+  bool SerializeAsHTMLDocument(const Node&) const;
+  String ToString() { return markup_.ToString(); }
+
   void AppendString(const String&);
   void AppendStartTagOpen(const Element&, Namespaces&);
   void AppendStartTagClose(const Element&);
@@ -90,22 +80,35 @@ class MarkupAccumulator {
   static bool ShouldAddNamespaceAttribute(const Attribute& attribute,
                                           const Element& element);
 
+  void AppendEndTag(const Element&);
   void AppendEndMarkup(const Element&);
 
   EntityMask EntityMaskForText(const Text&) const;
 
   virtual void AppendCustomAttributes(const Element&, Namespaces&);
   virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
+  virtual bool ShouldIgnoreElement(const Element&) const;
+
+  // Returns an auxiliary DOM tree, i.e. shadow tree, that needs also to be
+  // serialized. The root of auxiliary DOM tree is returned as an 1st element
+  // in the pair. It can be null if no auxiliary DOM tree exists. An additional
+  // element used to enclose the serialized content of auxiliary DOM tree
+  // can be returned as 2nd element in the pair. It can be null if this is not
+  // needed. For shadow tree, a <template> element is needed to wrap the shadow
+  // tree content.
+  virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
+
+  template <typename Strategy>
+  void SerializeNodesWithNamespaces(Node& target_node,
+                                    EChildrenOnly children_only,
+                                    const Namespaces& namespaces);
 
   DISALLOW_COPY_AND_ASSIGN(MarkupAccumulator);
 };
 
-template <typename Strategy>
-String SerializeNodes(MarkupAccumulator&, Node&, EChildrenOnly);
-
-extern template String SerializeNodes<EditingStrategy>(MarkupAccumulator&,
-                                                       Node&,
-                                                       EChildrenOnly);
+extern template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
+    Node&,
+    EChildrenOnly);
 
 }  // namespace blink
 
