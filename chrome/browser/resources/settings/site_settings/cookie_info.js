@@ -38,7 +38,7 @@ const cookieInfo = {
     ['created', 'cookieCreated'], ['accessed', 'cookieLastAccessed']
   ],
   'database': [
-    ['name', 'cookieName'], ['desc', 'webdbDesc'], ['size', 'localStorageSize'],
+    ['origin', 'databaseOrigin'], ['size', 'localStorageSize'],
     ['modified', 'localStorageLastModified']
   ],
   'local_storage': [
@@ -57,9 +57,8 @@ const cookieInfo = {
     ['serverId', 'channelIdServerId'], ['certType', 'channelIdType'],
     ['created', 'channelIdCreated']
   ],
-  'service_worker': [
-    ['origin', 'serviceWorkerOrigin'], ['size', 'serviceWorkerSize']
-  ],
+  'service_worker':
+      [['origin', 'serviceWorkerOrigin'], ['size', 'serviceWorkerSize']],
   'shared_worker':
       [['worker', 'sharedWorkerWorker'], ['name', 'sharedWorkerName']],
   'cache_storage': [

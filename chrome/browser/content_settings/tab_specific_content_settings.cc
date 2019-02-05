@@ -173,14 +173,12 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
     int render_process_id,
     int render_frame_id,
     const GURL& url,
-    const base::string16& name,
-    const base::string16& display_name,
     bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForFrame(
       render_process_id, render_frame_id);
   if (settings)
-    settings->OnWebDatabaseAccessed(url, name, display_name, blocked_by_policy);
+    settings->OnWebDatabaseAccessed(url, blocked_by_policy);
 }
 
 // static
@@ -490,16 +488,12 @@ void TabSpecificContentSettings::OnSharedWorkerAccessed(
 
 void TabSpecificContentSettings::OnWebDatabaseAccessed(
     const GURL& url,
-    const base::string16& name,
-    const base::string16& display_name,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.databases()->AddDatabase(
-        url, base::UTF16ToUTF8(name), base::UTF16ToUTF8(display_name));
+    blocked_local_shared_objects_.databases()->AddDatabase(url);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.databases()->AddDatabase(
-        url, base::UTF16ToUTF8(name), base::UTF16ToUTF8(display_name));
+    allowed_local_shared_objects_.databases()->AddDatabase(url);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

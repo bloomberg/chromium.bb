@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
@@ -153,7 +155,7 @@ void SiteDataSizeCollector::OnDatabaseModelInfoLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
   for (const auto& database_info : database_info_list)
-    total_size += database_info.size;
+    total_size += database_info.total_size_bytes;
   OnStorageSizeFetched(total_size);
 }
 

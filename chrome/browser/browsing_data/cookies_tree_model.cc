@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -203,10 +204,10 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitCookie(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitDatabase(
-    const BrowsingDataDatabaseHelper::DatabaseInfo* database_info) {
+    const content::StorageUsageInfo* usage_info) {
   Init(TYPE_DATABASE);
-  this->database_info = database_info;
-  origin = url::Origin::Create(database_info->identifier.ToOrigin());
+  this->usage_info = usage_info;
+  origin = usage_info->origin;
   return *this;
 }
 
@@ -414,16 +415,12 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
  public:
   friend class CookieTreeDatabasesNode;
 
-  // |database_info| should remain valid at least as long as the
+  // |usage_info| should remain valid at least as long as the
   // CookieTreeDatabaseNode is valid.
   explicit CookieTreeDatabaseNode(
-      std::list<BrowsingDataDatabaseHelper::DatabaseInfo>::iterator
-          database_info)
-      : CookieTreeNode(database_info->database_name.empty()
-                           ? l10n_util::GetStringUTF16(
-                                 IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME)
-                           : base::UTF8ToUTF16(database_info->database_name)),
-        database_info_(database_info) {}
+      std::list<content::StorageUsageInfo>::iterator usage_info)
+      : CookieTreeNode(base::UTF8ToUTF16(usage_info->origin.Serialize())),
+        usage_info_(usage_info) {}
 
   ~CookieTreeDatabaseNode() override {}
 
@@ -431,22 +428,23 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
-      container->database_helper_->DeleteDatabase(
-          database_info_->identifier.ToString(), database_info_->database_name);
-      container->database_info_list_.erase(database_info_);
+      container->database_helper_->DeleteDatabase(usage_info_->origin);
+      container->database_info_list_.erase(usage_info_);
     }
   }
 
   DetailedInfo GetDetailedInfo() const override {
-    return DetailedInfo().InitDatabase(&*database_info_);
+    return DetailedInfo().InitDatabase(&*usage_info_);
   }
 
-  int64_t InclusiveSize() const override { return database_info_->size; }
+  int64_t InclusiveSize() const override {
+    return usage_info_->total_size_bytes;
+  }
 
  private:
   // |database_info_| is expected to remain valid as long as the
   // CookieTreeDatabaseNode is valid.
-  std::list<BrowsingDataDatabaseHelper::DatabaseInfo>::iterator database_info_;
+  std::list<content::StorageUsageInfo>::iterator usage_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeDatabaseNode);
 };
@@ -1648,11 +1646,11 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
   notifier->StartBatchUpdate();
   for (auto database_info = container->database_info_list_.begin();
        database_info != container->database_info_list_.end(); ++database_info) {
-    GURL origin(database_info->identifier.ToOrigin());
-
-    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
-                               .find(filter) != base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
+    if (filter.empty() ||
+        (CookieTreeHostNode::TitleForUrl(database_info->origin.GetURL())
+             .find(filter) != base::string16::npos)) {
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(database_info->origin.GetURL());
       CookieTreeDatabasesNode* databases_node =
           host_node->GetOrCreateDatabasesNode();
       databases_node->AddDatabaseNode(

@@ -6353,12 +6353,6 @@ the Bookmarks menu.">
       <message name="IDS_COOKIES_COOKIE_NONESELECTED" desc="Field value when no cookie is selected">
         no cookie selected
       </message>
-      <message name="IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
-        Description:
-      </message>
-      <message name="IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME" desc="The the name displayed for a Database with an empty name attribute.">
-        &lt;unnamed&gt;
-      </message>
       <if expr="is_macosx">
         <message name="IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL" desc="The label of the Local Storage key being set">
           Key:
@@ -6396,19 +6390,11 @@ the Bookmarks menu.">
       <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of an HTML standard) are displayed">
         Web databases
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of an HTML standard) are displayed">
-          Database name:
-        </message>
-      </if>
       <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of an HTML standard)">
         Local storage
       </message>
       <message name="IDS_COOKIES_SESSION_STORAGE" desc="Label for session storage (name of an HTML standard)">
         Session storage
-      </message>
-      <message name="IDS_COOKIES_INDEXED_DB" desc="The text shown when there is an Indexed Database (name of an HTML standard) in the Cookies table">
-        Indexed database
       </message>
       <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of an HTML standard)">
         Indexed databases

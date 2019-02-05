@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -190,8 +191,8 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
 
   base::PostTaskAndReplyWithResult(
       db_tracker_->task_runner(), FROM_HERE,
-      base::BindOnce(&DatabaseTracker::DeleteDataForOrigin, db_tracker_,
-                     storage::GetIdentifierFromOrigin(origin), delete_callback),
+      base::BindOnce(&DatabaseTracker::DeleteDataForOrigin, db_tracker_, origin,
+                     delete_callback),
       net::CompletionOnceCallback(delete_callback));
 }
 

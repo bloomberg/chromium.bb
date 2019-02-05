@@ -10,7 +10,9 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/files/file.h"
@@ -24,6 +26,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "storage/common/database/database_connections.h"
+#include "url/origin.h"
 
 namespace content {
 class DatabaseTracker_TestHelper_Test;
@@ -58,17 +61,25 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) OriginInfo {
 
   const std::string& GetOriginIdentifier() const { return origin_identifier_; }
   int64_t TotalSize() const { return total_size_; }
+  base::Time LastModified() const { return last_modified_; }
   void GetAllDatabaseNames(std::vector<base::string16>* databases) const;
   int64_t GetDatabaseSize(const base::string16& database_name) const;
   base::string16 GetDatabaseDescription(
       const base::string16& database_name) const;
+  base::Time GetDatabaseLastModified(const base::string16& database_name) const;
 
  protected:
+  struct DBInfo {
+    base::string16 description;
+    int64_t size;
+    base::Time last_modified;
+  };
   OriginInfo(const std::string& origin_identifier, int64_t total_size);
 
   std::string origin_identifier_;
   int64_t total_size_;
-  std::map<base::string16, std::pair<int64_t, base::string16>> database_info_;
+  base::Time last_modified_;
+  std::map<base::string16, DBInfo> database_info_;
 };
 
 // This class manages the main database and keeps track of open databases.
@@ -157,7 +168,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   // success, net::FAILED if not all databases could be deleted, and
   // net::ERR_IO_PENDING and |callback| is invoked upon completion, if non-null.
   // virtual for unit testing only
-  virtual int DeleteDataForOrigin(const std::string& origin_identifier,
+  virtual int DeleteDataForOrigin(const url::Origin& origin,
                                   net::CompletionOnceCallback callback);
 
   bool IsIncognitoProfile() const { return is_incognito_; }
@@ -185,7 +196,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
  private:
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
   friend class content::DatabaseTracker_TestHelper_Test;
-  friend class content::MockDatabaseTracker; // for testing
+  friend class content::MockDatabaseTracker;  // for testing
 
   using DatabaseSet = std::map<std::string, std::set<base::string16>>;
 
@@ -199,14 +210,20 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
                          int64_t new_size) {
       int64_t old_size = 0;
       if (database_info_.find(database_name) != database_info_.end())
-        old_size = database_info_[database_name].first;
-      database_info_[database_name].first = new_size;
+        old_size = database_info_[database_name].size;
+      database_info_[database_name].size = new_size;
       if (new_size != old_size)
         total_size_ += new_size - old_size;
     }
     void SetDatabaseDescription(const base::string16& database_name,
                                 const base::string16& description) {
-      database_info_[database_name].second = description;
+      database_info_[database_name].description = description;
+    }
+    void SetDatabaseLastModified(const base::string16& database_name,
+                                 const base::Time& last_modified) {
+      database_info_[database_name].last_modified = last_modified;
+      if (last_modified > last_modified_)
+        last_modified_ = last_modified;
     }
   };
 

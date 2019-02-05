@@ -71,14 +71,10 @@ DatabaseTracker::DatabaseTracker() {
 }
 
 bool DatabaseTracker::CanEstablishDatabase(DatabaseContext* database_context,
-                                           const String& name,
-                                           const String& display_name,
-                                           unsigned estimated_size,
                                            DatabaseError& error) {
   ExecutionContext* execution_context = database_context->GetExecutionContext();
-  bool success = DatabaseClient::From(execution_context)
-                     ->AllowDatabase(execution_context, name, display_name,
-                                     estimated_size);
+  bool success =
+      DatabaseClient::From(execution_context)->AllowDatabase(execution_context);
   if (!success)
     error = DatabaseError::kGenericSecurityError;
   return success;

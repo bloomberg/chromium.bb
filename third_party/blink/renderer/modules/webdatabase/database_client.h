@@ -56,10 +56,7 @@ class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
 
   void Trace(blink::Visitor*) override;
 
-  bool AllowDatabase(ExecutionContext*,
-                     const String& name,
-                     const String& display_name,
-                     unsigned estimated_size);
+  bool AllowDatabase(ExecutionContext*);
 
   void DidOpenDatabase(Database*,
                        const String& domain,

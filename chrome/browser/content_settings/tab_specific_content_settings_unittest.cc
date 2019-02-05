@@ -269,7 +269,5 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
                                            true,
                                            blocked_by_policy);
   content_settings->OnWebDatabaseAccessed(GURL("http://google.com"),
-                                          base::UTF8ToUTF16("name"),
-                                          base::UTF8ToUTF16("display_name"),
                                           blocked_by_policy);
 }

@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_SITE_DATA_SIZE_COLLECTOR_H_
 #define CHROME_BROWSER_BROWSING_DATA_SITE_DATA_SIZE_COLLECTOR_H_
 
+#include <list>
+#include <string>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
@@ -21,7 +25,7 @@
 namespace {
 
 typedef std::list<net::CanonicalCookie> CookieList;
-typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
+typedef std::list<content::StorageUsageInfo> DatabaseInfoList;
 typedef std::list<content::StorageUsageInfo> LocalStorageInfoList;
 typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
