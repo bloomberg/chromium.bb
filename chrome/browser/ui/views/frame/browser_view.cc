@@ -198,7 +198,6 @@
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
-#include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
@@ -480,7 +479,11 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
 // static
 const char BrowserView::kViewClassName[] = "BrowserView";
 
-BrowserView::BrowserView() : views::ClientView(nullptr, nullptr) {}
+BrowserView::BrowserView(std::unique_ptr<Browser> browser)
+    : views::ClientView(nullptr, nullptr), browser_(std::move(browser)) {
+  browser_->tab_strip_model()->AddObserver(this);
+  immersive_mode_controller_.reset(chrome::CreateImmersiveModeController());
+}
 
 BrowserView::~BrowserView() {
   // Destroy the top controls slide controller first as it depends on the
@@ -528,12 +531,6 @@ BrowserView::~BrowserView() {
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
   toolbar_ = nullptr;
-}
-
-void BrowserView::Init(std::unique_ptr<Browser> browser) {
-  browser_ = std::move(browser);
-  browser_->tab_strip_model()->AddObserver(this);
-  immersive_mode_controller_.reset(chrome::CreateImmersiveModeController());
 }
 
 // static
@@ -961,6 +958,12 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
     infobar_container_->ChangeInfoBarManager(nullptr);
     UpdateDevToolsForContents(nullptr, true);
   }
+}
+
+void BrowserView::OnTabRestoredFromMenu(int command_id) {
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  reopen_tab_promo_controller_.OnTabReopened(command_id);
+#endif
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -3025,13 +3028,8 @@ void BrowserView::ShowEmojiPanel() {
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {
-  if (iph_feature == InProductHelpFeature::kReopenTab) {
-    if (!reopen_tab_promo_controller_) {
-      reopen_tab_promo_controller_ =
-          std::make_unique<ReopenTabPromoController>(this);
-    }
-    reopen_tab_promo_controller_->ShowPromo();
-  }
+  if (iph_feature == InProductHelpFeature::kReopenTab)
+    reopen_tab_promo_controller_.ShowPromo();
 }
 #endif
 

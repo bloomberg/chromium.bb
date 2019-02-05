@@ -54,6 +54,10 @@
 #include "chrome/browser/ui/views/quit_instruction_bubble_controller.h"
 #endif
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
@@ -66,7 +70,6 @@ class ExclusiveAccessBubbleViews;
 class FullscreenControlHost;
 class InfoBarContainerView;
 class LocationBarView;
-class ReopenTabPromoController;
 class StatusBubbleViews;
 class TabStrip;
 class ToolbarButtonProvider;
@@ -112,10 +115,8 @@ class BrowserView : public BrowserWindow,
   // The browser view's class name.
   static const char kViewClassName[];
 
-  BrowserView();
+  explicit BrowserView(std::unique_ptr<Browser> browser);
   ~BrowserView() override;
-
-  void Init(std::unique_ptr<Browser> browser);
 
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
@@ -317,6 +318,7 @@ class BrowserView : public BrowserWindow,
                           int index,
                           int reason) override;
   void OnTabDetached(content::WebContents* contents, bool was_active) override;
+  void OnTabRestoredFromMenu(int command_id) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
@@ -830,7 +832,7 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  std::unique_ptr<ReopenTabPromoController> reopen_tab_promo_controller_;
+  ReopenTabPromoController reopen_tab_promo_controller_{this};
 #endif
 
   struct ResizeSession {

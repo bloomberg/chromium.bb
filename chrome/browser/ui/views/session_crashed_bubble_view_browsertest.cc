@@ -26,8 +26,8 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
     views::View* anchor_view = nullptr;
     if (anchor_rect == gfx::Rect()) {
       anchor_view = BrowserView::GetBrowserViewForBrowser(browser())
-                        ->toolbar()
-                        ->app_menu_button();
+                        ->toolbar_button_provider()
+                        ->GetAppMenuButton();
     }
     SessionCrashedBubbleView* crash_bubble =
         new SessionCrashedBubbleView(anchor_view, anchor_rect, browser(),
