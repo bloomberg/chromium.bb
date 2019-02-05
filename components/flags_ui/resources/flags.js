@@ -39,6 +39,9 @@ function renderTemplate(experimentalFeaturesData) {
         $('tab-content-unavailable'));
   }
 
+  // Update the restart container.
+  jstProcess(new JsEvalContext(experimentalFeaturesData), $('needs-restart'));
+
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
   for (var i = 0; i < elements.length; ++i) {
