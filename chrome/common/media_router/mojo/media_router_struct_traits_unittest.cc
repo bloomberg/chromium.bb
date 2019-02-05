@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/mojo/media_router_traits_test_service.mojom.h"
@@ -35,7 +35,7 @@ class MediaRouterStructTraitsTest
     std::move(callback).Run(sink);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<MediaRouterTraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterStructTraitsTest);
