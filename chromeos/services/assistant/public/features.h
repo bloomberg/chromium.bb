@@ -24,6 +24,10 @@ extern const base::Feature kAssistantWarmerWelcomeFeature;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantAppSupport;
 
+// Enables Assistant routines.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kAssistantRoutines;
+
 // Enables in-Assistant notifications.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kInAssistantNotifications;
@@ -48,10 +52,14 @@ extern const base::Feature kTimerNotification;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerTicks;
 
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
+
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsInAssistantNotificationsEnabled();
 
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsRoutinesEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsStereoAudioInputEnabled();
 

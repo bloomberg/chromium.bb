@@ -103,8 +103,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     : media_session_(std::make_unique<AssistantMediaSession>(connector)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
-          base::FeatureList::IsEnabled(
-              assistant::features::kAssistantAppSupport))),
+          assistant::features::IsAppSupportEnabled(),
+          assistant::features::IsRoutinesEnabled())),
       chromium_api_delegate_(service->io_task_runner()),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       assistant_settings_manager_(
@@ -872,6 +872,9 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
   SetAssistantOptions(internal_options, user_agent,
                       service_->assistant_state()->locale().value(),
                       spoken_feedback_enabled_);
+
+  internal_options->SetClientControlEnabled(
+      assistant::features::IsRoutinesEnabled());
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
       assistant_settings_manager_->speaker_id_enrollment_done()) {

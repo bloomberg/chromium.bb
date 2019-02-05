@@ -19,6 +19,9 @@ const base::Feature kAssistantWarmerWelcomeFeature{
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantRoutines{"AssistantRoutines",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kInAssistantNotifications{
     "InAssistantNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -38,12 +41,21 @@ const base::Feature kEnableTextQueriesWithClientDiscourseContext{
 const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsInAssistantNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kInAssistantNotifications);
+bool IsAppSupportEnabled() {
+  return base::FeatureList::IsEnabled(
+      assistant::features::kAssistantAppSupport);
 }
 
 bool IsDspHotwordEnabled() {
   return base::FeatureList::IsEnabled(kEnableDspHotword);
+}
+
+bool IsInAssistantNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kInAssistantNotifications);
+}
+
+bool IsRoutinesEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantRoutines);
 }
 
 bool IsStereoAudioInputEnabled() {
