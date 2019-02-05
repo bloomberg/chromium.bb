@@ -436,6 +436,12 @@ std::string GetValueFromDictionaryErrorMessage(
       " instead";
 }
 
+NSURL* FilePathToNSURL(const FilePath& path) {
+  if (NSString* path_string = FilePathToNSString(path))
+    return [NSURL fileURLWithPath:path_string];
+  return nil;
+}
+
 NSString* FilePathToNSString(const FilePath& path) {
   if (path.empty())
     return nil;
