@@ -169,10 +169,6 @@ ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
 
 bool ChildProcessLauncherPriority::operator==(
     const ChildProcessLauncherPriority& other) const {
-  // |should_boost_for_pending_views| is temporary and constant for all
-  // ChildProcessLauncherPriority throughout a session (experiment driven).
-  DCHECK_EQ(should_boost_for_pending_views,
-            other.should_boost_for_pending_views);
   return visible == other.visible &&
          has_media_stream == other.has_media_stream &&
          frame_depth == other.frame_depth &&
