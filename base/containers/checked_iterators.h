@@ -57,6 +57,11 @@ class CheckedRandomAccessIterator {
     return current_ < other.current_;
   }
 
+  bool operator<=(const CheckedRandomAccessIterator& other) const {
+    CheckComparable(other);
+    return current_ <= other.current_;
+  }
+
   CheckedRandomAccessIterator& operator++() {
     CHECK(current_ != end_);
     ++current_;
@@ -203,6 +208,11 @@ class CheckedRandomAccessConstIterator {
   bool operator<(const CheckedRandomAccessConstIterator& other) const {
     CheckComparable(other);
     return current_ < other.current_;
+  }
+
+  bool operator<=(const CheckedRandomAccessConstIterator& other) const {
+    CheckComparable(other);
+    return current_ <= other.current_;
   }
 
   CheckedRandomAccessConstIterator& operator++() {
