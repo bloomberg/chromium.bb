@@ -21,16 +21,14 @@ class ResourceContext;
 class WorkerScriptLoader;
 
 // S13nServiceWorker:
-// Created per one running web worker for loading its script.
+// WorkerScriptLoaderFactory creates a WorkerScriptLoader to load the main
+// script for a web worker (dedicated worker or shared worker), which follows
+// redirects and sets the controller service worker on the web worker if needed.
+// It's an error to call CreateLoaderAndStart() more than a total of one time
+// across this object or any of its clones.
 //
-// Shared worker script loads require special logic because they are similiar to
-// navigations from the point of view of web platform features like service
-// worker.
-//
-// This creates a WorkerScriptLoader to load the script, which follows redirects
-// and sets the controller service worker on the web worker if needed. It's an
-// error to call CreateLoaderAndStart() more than a total of one time across
-// this object or any of its clones.
+// This is created per one web worker. All functions of this class must be
+// called on the IO thread.
 class WorkerScriptLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   // |loader_factory| is used to load the script if the load is not intercepted
