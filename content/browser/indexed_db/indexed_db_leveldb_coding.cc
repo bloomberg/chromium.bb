@@ -8,10 +8,12 @@
 #include <limits>
 #include <utility>
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 
 // See leveldb_coding_scheme.md for detailed documentation of the coding
 // scheme implemented here.
@@ -22,6 +24,14 @@ using blink::IndexedDBKeyPath;
 
 namespace content {
 namespace {
+
+inline uint64_t ByteSwapToBE64(uint64_t x) {
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+  return base::ByteSwap(x);
+#else
+  return x;
+#endif
+}
 
 // As most of the IndexedDBKeys and encoded values are short, we
 // initialize some std::vectors with a default inline buffer size to reduce
@@ -1005,22 +1015,25 @@ int CompareIndexKeys(const StringPiece& a, const StringPiece& b) {
 }
 
 ScopeLockRange GetDatabaseLockRange(int64_t database_id) {
-  uint64_t first[1] = {
-      base::ByteSwapToLE64(static_cast<uint64_t>(database_id))};
-  uint64_t next[1] = {
-      base::ByteSwapToLE64(static_cast<uint64_t>(database_id + 1))};
+  // The numbers are transformed into big-endian to make them
+  // bytewise-comparable. Eventually, these lock ranges should just match the
+  // leveldb keys when they are bytewise-comparable.
+  uint64_t first[1] = {ByteSwapToBE64(static_cast<uint64_t>(database_id))};
+  uint64_t next[1] = {ByteSwapToBE64(static_cast<uint64_t>(database_id + 1))};
   return {std::string(reinterpret_cast<char*>(&first), sizeof(first)),
           std::string(reinterpret_cast<char*>(&next), sizeof(next))};
 }
 
 ScopeLockRange GetObjectStoreLockRange(int64_t database_id,
                                        int64_t object_store_id) {
-  uint64_t first[2] = {
-      base::ByteSwapToLE64(static_cast<uint64_t>(database_id)),
-      base::ByteSwapToLE64(static_cast<uint64_t>(object_store_id))};
+  // The numbers are transformed into big-endian to make them
+  // bytewise-comparable. Eventually, these lock ranges should just match the
+  // leveldb keys when they are bytewise-comparable.
+  uint64_t first[2] = {ByteSwapToBE64(static_cast<uint64_t>(database_id)),
+                       ByteSwapToBE64(static_cast<uint64_t>(object_store_id))};
   uint64_t next[2] = {
-      base::ByteSwapToLE64(static_cast<uint64_t>(database_id)),
-      base::ByteSwapToLE64(static_cast<uint64_t>(object_store_id + 1))};
+      ByteSwapToBE64(static_cast<uint64_t>(database_id)),
+      ByteSwapToBE64(static_cast<uint64_t>(object_store_id + 1))};
   return {std::string(reinterpret_cast<char*>(&first), sizeof(first)),
           std::string(reinterpret_cast<char*>(&next), sizeof(next))};
 }
