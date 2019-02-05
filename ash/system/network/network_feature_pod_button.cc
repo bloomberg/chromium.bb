@@ -10,7 +10,6 @@
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -34,8 +33,6 @@ bool IsActive() {
 const NetworkState* GetCurrentNetwork() {
   NetworkStateHandler* state_handler =
       NetworkHandler::Get()->network_state_handler();
-  NetworkConnectionHandler* connect_handler =
-      NetworkHandler::Get()->network_connection_handler();
   const NetworkState* connected_network =
       state_handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
   const NetworkState* connecting_network =
@@ -45,7 +42,7 @@ const NetworkState* GetCurrentNetwork() {
   // reconnection, use the connecting network.
   if (connecting_network &&
       (!connected_network || connecting_network->IsReconnecting() ||
-       connect_handler->HasConnectingNetwork(connecting_network->path()))) {
+       connecting_network->connect_requested())) {
     return connecting_network;
   }
 

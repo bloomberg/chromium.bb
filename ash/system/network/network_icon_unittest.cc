@@ -90,7 +90,7 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
     auto network = std::make_unique<chromeos::NetworkState>(id);
     network->set_type(type);
     network->set_visible(true);
-    network->set_connection_state(connection_state);
+    network->set_connection_state_for_testing(connection_state);
     network->set_signal_strength(signal_strength);
     return network;
   }

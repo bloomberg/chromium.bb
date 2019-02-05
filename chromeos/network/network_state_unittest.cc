@@ -246,43 +246,67 @@ TEST_F(NetworkStateTest, Visible) {
 TEST_F(NetworkStateTest, ConnectionState) {
   network_state_.set_visible(true);
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
   EXPECT_TRUE(network_state_.IsConnectingState());
+  EXPECT_TRUE(network_state_.IsConnectingOrConnected());
   EXPECT_FALSE(network_state_.IsReconnecting());
 
-  network_state_.set_connection_state(shill::kStateOnline);
+  network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateOnline);
   EXPECT_TRUE(network_state_.IsConnectedState());
+  EXPECT_TRUE(network_state_.IsConnectingOrConnected());
   EXPECT_FALSE(network_state_.IsReconnecting());
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
   EXPECT_TRUE(network_state_.IsConnectingState());
   EXPECT_TRUE(network_state_.IsReconnecting());
+
+  network_state_.SetConnectionState(shill::kStateIdle);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsConnectingOrConnected());
+}
+
+TEST_F(NetworkStateTest, ConnectRequested) {
+  network_state_.set_visible(true);
+
+  network_state_.SetConnectionState(shill::kStateIdle);
+
+  network_state_.set_connect_requested_for_testing(true);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_TRUE(network_state_.IsConnectingState());
+  EXPECT_TRUE(network_state_.IsConnectingOrConnected());
+
+  network_state_.SetConnectionState(shill::kStateOnline);
+  EXPECT_TRUE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsConnectingState());
 }
 
 TEST_F(NetworkStateTest, ConnectionStateNotVisible) {
   network_state_.set_visible(false);
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectingState());
   EXPECT_FALSE(network_state_.IsReconnecting());
 
-  network_state_.set_connection_state(shill::kStateOnline);
+  network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectedState());
   EXPECT_FALSE(network_state_.IsReconnecting());
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectingState());
   EXPECT_FALSE(network_state_.IsReconnecting());
 }
 
 TEST_F(NetworkStateTest, TetherProperties) {
-  network_state_.set_type(kTypeTether);
+  network_state_.set_type_for_testing(kTypeTether);
   network_state_.set_carrier("Project Fi");
   network_state_.set_battery_percentage(85);
   network_state_.set_tether_has_connected_to_host(true);

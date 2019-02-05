@@ -35,8 +35,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
       const std::string& service_path,
       const base::Closure& success_callback,
       const network_handler::ErrorCallback& error_callback) override;
-  bool HasConnectingNetwork(const std::string& service_path) override;
-  bool HasPendingConnectRequest() override;
 
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
@@ -78,6 +76,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
     base::Closure success_callback;
     network_handler::ErrorCallback error_callback;
   };
+
+  bool HasConnectingNetwork(const std::string& service_path);
 
   ConnectRequest* GetPendingRequest(const std::string& service_path);
 
@@ -122,6 +122,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   void CheckPendingRequest(const std::string service_path);
 
   void CheckAllPendingRequests();
+  void ClearPendingRequest(const std::string& service_path);
 
   // Look up the ConnectRequest for |service_path| and call
   // InvokeConnectErrorCallback.

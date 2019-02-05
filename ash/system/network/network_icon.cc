@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -699,9 +698,7 @@ const NetworkState* GetDefaultNetworkForIcon() {
   // reconnection, use the connecting network.
   if (connecting_network &&
       (!connected_network || connecting_network->IsReconnecting() ||
-       NetworkHandler::Get()
-           ->network_connection_handler()
-           ->HasConnectingNetwork(connecting_network->path()))) {
+       connecting_network->connect_requested())) {
     return connecting_network;
   }
 
