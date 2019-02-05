@@ -59,8 +59,6 @@ const char kWebRestrictionsAuthority[] = "web_restrictions_authority";
 
 namespace {
 
-const base::FilePath::CharType kChannelIDFilename[] = "Origin Bound Certs";
-
 const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 
 AwBrowserContext* g_browser_context = NULL;
@@ -144,9 +142,9 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   // TODO(ntfschr): set this to nullptr when the NetworkService is disabled,
   // once we remove a dependency on url_request_context_getter_
   // (http://crbug.com/887538).
-  url_request_context_getter_ = new AwURLRequestContextGetter(
-      cache_path, context_storage_path_.Append(kChannelIDFilename),
-      CreateProxyConfigService(), user_pref_service_.get(), net_log);
+  url_request_context_getter_ =
+      new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
+                                    user_pref_service_.get(), net_log);
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(

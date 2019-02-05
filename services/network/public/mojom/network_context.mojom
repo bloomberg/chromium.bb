@@ -163,10 +163,6 @@ struct NetworkContextParams {
   // cookies. Otherwise it should be false.
   bool persist_session_cookies = false;
 
-  // Points to the channel ID file. If a cookie file is specified, this must be
-  // specified as well. Otherwise an in-memory store is used.
-  mojo_base.mojom.FilePath? channel_id_path;
-
   // True if an HTTP cache should be used.
   bool http_cache_enabled = true;
   // Maximum size of the HTTP cache. 0 means to use the default size.

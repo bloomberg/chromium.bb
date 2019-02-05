@@ -23,8 +23,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -404,8 +402,6 @@ HeadlessRequestContextManager::CreateNetworkContextParams() {
     context_params->enable_encrypted_cookies = cookie_encryption_enabled_;
     context_params->cookie_path =
         user_data_path_.Append(FILE_PATH_LITERAL("Cookies"));
-    context_params->channel_id_path =
-        user_data_path_.Append(FILE_PATH_LITERAL("Origin Bound Certs"));
   }
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDiskCacheDir)) {

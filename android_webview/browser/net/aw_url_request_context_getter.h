@@ -39,7 +39,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   AwURLRequestContextGetter(
       const base::FilePath& cache_path,
-      const base::FilePath& channel_id_path,
       std::unique_ptr<net::ProxyConfigServiceAndroid> config_service,
       PrefService* pref_service,
       net::NetLog* net_log);
@@ -87,7 +86,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   void UpdateAndroidAuthNegotiateAccountType();
 
   const base::FilePath cache_path_;
-  const base::FilePath channel_id_path_;
 
   net::NetLog* net_log_;
   std::unique_ptr<net::ProxyConfigServiceAndroid> proxy_config_service_;

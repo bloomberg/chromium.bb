@@ -183,12 +183,10 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path,
-    const base::FilePath& channel_id_path,
     std::unique_ptr<net::ProxyConfigServiceAndroid> config_service,
     PrefService* user_pref_service,
     net::NetLog* net_log)
     : cache_path_(cache_path),
-      channel_id_path_(channel_id_path),
       net_log_(net_log),
       proxy_config_service_(std::move(config_service)),
       proxy_config_service_android_(proxy_config_service_.get()),

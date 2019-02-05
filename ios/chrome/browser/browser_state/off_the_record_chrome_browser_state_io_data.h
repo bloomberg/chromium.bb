@@ -110,7 +110,6 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
 
   // Server bound certificates and cookies are persisted to the disk on iOS.
   base::FilePath cookie_path_;
-  base::FilePath channel_id_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordChromeBrowserStateIOData);
 };
