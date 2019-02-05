@@ -24,13 +24,12 @@ class FrameData {
     kMaxValue = kCross,
   };
 
-  // Whether or not the frame has a display: none styling. These values are
-  // persisted to logs. Entries should not be renumbered and numeric values
-  // should never be reused.
-  enum class FrameVisibility {
-    kDisplayNone = 0,
+  // Whether or not the ad frame has a display: none styling.
+  enum FrameVisibility {
+    kNonVisible = 0,
     kVisible = 1,
-    kMaxValue = kVisible,
+    kAnyVisibility = 2,
+    kMaxValue = kAnyVisibility,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -56,6 +55,9 @@ class FrameData {
   void ProcessResourceLoadInFrame(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
+  // Sets the size of the frame and updates its visibility state.
+  void SetFrameSize(gfx::Size frame_size_);
+
   // Sets the display state of the frame and updates its visibility state.
   void SetDisplayState(bool is_display_none);
 
@@ -63,7 +65,7 @@ class FrameData {
   // cannot be unset.
   void set_received_user_activation() {
     user_activation_status_ = UserActivationStatus::kReceivedActivation;
-  };
+  }
 
   FrameTreeNodeId frame_tree_node_id() const { return frame_tree_node_id_; }
 
@@ -81,11 +83,12 @@ class FrameData {
 
   FrameVisibility visibility() const { return visibility_; }
 
-  void set_frame_size(gfx::Size frame_size) { frame_size_ = frame_size; }
-
   gfx::Size frame_size() const { return frame_size_; }
 
  private:
+  // Updates whether or not this frame meets the criteria for visibility.
+  void UpdateFrameVisibility();
+
   // Total bytes used to load resources on the page, including headers.
   size_t frame_bytes_;
   size_t frame_network_bytes_;
@@ -93,6 +96,7 @@ class FrameData {
   OriginStatus origin_status_;
   bool frame_navigated_;
   UserActivationStatus user_activation_status_;
+  bool is_display_none_;
   FrameVisibility visibility_;
   gfx::Size frame_size_;
 

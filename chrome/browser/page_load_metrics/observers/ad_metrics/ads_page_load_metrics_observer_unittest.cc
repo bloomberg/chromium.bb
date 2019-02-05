@@ -155,9 +155,8 @@ void TestHistograms(const base::HistogramTester& histograms,
 
   // Test the histograms.
   histograms.ExpectUniqueSample(
-      SuffixedHistogram(
-          "SubresourceFilter.FrameCounts.AnyParentFrame.AdFrames"),
-      ad_frame_count, 1);
+      SuffixedHistogram("FrameCounts.AnyParentFrame.AdFrames"), ad_frame_count,
+      1);
 
   if (ad_frame_count == 0)
     return;
@@ -362,7 +361,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
 // origin as the main page, and a true when when the ad has a separate origin.
 TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
   const char kCrossOriginHistogramId[] =
-      "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AdFrames.PerFrame."
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
       "OriginStatus";
 
   // Test that when the main frame origin is different from a direct ad
@@ -594,12 +593,25 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   // We only log histograms if we observed bytes for the page. Verify that the
   // main frame resource was properly tracked and attributed.
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.SubresourceFilter.FrameCounts.AnyParentFrame."
+      "PageLoad.Clients.Ads.FrameCounts.AnyParentFrame."
       "AdFrames",
       0, 1);
-  // There shouldn't be any other histograms for a page with no ad
-  // resources.
-  EXPECT_EQ(1u, histogram_tester()
+
+  // Verify that this histogram is also recorded for the Visible and NonVisible
+  // suffixes.
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.Visible.FrameCounts.AnyParentFrame."
+      "AdFrames",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.NonVisible.FrameCounts.AnyParentFrame."
+      "AdFrames",
+      1);
+
+  // There are three FrameCounts.AnyParentFrame.AdFrames histograms
+  // recorded for each page load, one for each visibility type. There shouldn't
+  // be any other histograms for a page with no ad resources.
+  EXPECT_EQ(3u, histogram_tester()
                     .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
                     .size());
 }
