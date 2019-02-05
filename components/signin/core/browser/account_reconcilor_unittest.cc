@@ -280,7 +280,7 @@ class AccountReconcilorTest : public ::testing::Test {
                               const std::string& username);
 
   void SimulateAddAccountToCookieCompleted(
-      GaiaCookieManagerService::Observer* observer,
+      identity::IdentityManager::Observer* observer,
       const std::string& account_id,
       const GoogleServiceAuthError& error);
 
@@ -289,7 +289,7 @@ class AccountReconcilorTest : public ::testing::Test {
       const ContentSettingsPattern& primary_pattern);
 
   void SimulateSetAccountsInCookieCompleted(
-      GaiaCookieManagerService::Observer* observer,
+      identity::IdentityManager::Observer* observer,
       const GoogleServiceAuthError& error);
 
   void SetAccountConsistency(signin::AccountConsistencyMethod method);
@@ -452,14 +452,14 @@ std::string AccountReconcilorTest::SeedAccountInfo(
 }
 
 void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
-    GaiaCookieManagerService::Observer* observer,
+    identity::IdentityManager::Observer* observer,
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   observer->OnAddAccountToCookieCompleted(account_id, error);
 }
 
 void AccountReconcilorTest::SimulateSetAccountsInCookieCompleted(
-    GaiaCookieManagerService::Observer* observer,
+    identity::IdentityManager::Observer* observer,
     const GoogleServiceAuthError& error) {
   observer->OnSetAccountsInCookieCompleted(error);
 }
@@ -1652,7 +1652,7 @@ TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
   {
     std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
         reconcilor->GetScopedSyncDataDeletion();
-    reconcilor->OnGaiaCookieDeletedByUserAction();
+    reconcilor->OnAccountsCookieDeletedByUserAction();
     EXPECT_TRUE(
         identity_manager->HasAccountWithRefreshToken(primary_account_id));
     EXPECT_FALSE(
@@ -1663,7 +1663,7 @@ TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
   }
 
   identity_test_env()->SetRefreshTokenForAccount(secondary_account_id);
-  reconcilor->OnGaiaCookieDeletedByUserAction();
+  reconcilor->OnAccountsCookieDeletedByUserAction();
 
   // Without scoped deletion, the primary token is also invalidated.
   EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(primary_account_id));
@@ -1691,7 +1691,7 @@ TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
   {
     std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
         reconcilor->GetScopedSyncDataDeletion();
-    reconcilor->OnGaiaCookieDeletedByUserAction();
+    reconcilor->OnAccountsCookieDeletedByUserAction();
     EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                   CREDENTIALS_REJECTED_BY_CLIENT,
               identity_manager
@@ -1983,8 +1983,10 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   // Add extra cookie change notification. Reconcilor should ignore it.
   gaia::ListedAccount listed_account =
       ListedAccountFromCookieParams(cookie_params, account_id);
-  reconcilor->OnGaiaAccountsInCookieUpdated(
-      {listed_account}, {}, GoogleServiceAuthError::AuthErrorNone());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
+      /*accounts_are_fresh=*/true, {listed_account}, {}};
+  reconcilor->OnAccountsInCookieUpdated(
+      accounts_in_cookie_jar_info, GoogleServiceAuthError::AuthErrorNone());
 
   base::RunLoop().RunUntilIdle();
 
