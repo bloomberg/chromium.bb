@@ -1609,7 +1609,7 @@ are declared in tools/grit/grit_rule.gni.
                desc="In the download view, 'Pause' link text">
         Pause
       </message>
-      <message name="IDS_MD_DOWNLOAD_SEARCH"
+      <message name="IDS_DOWNLOAD_SEARCH"
                desc="Placeholder text/label for the search input in the download page">
         Search downloads
       </message>
@@ -1617,7 +1617,7 @@ are declared in tools/grit/grit_rule.gni.
                desc="Tooltip text for the button that clears the search term on the downloads page.">
         Clear search
       </message>
-      <message name="IDS_MD_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
+      <message name="IDS_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
         Files you download appear here
       </message>
       <message name="IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT" desc="Text for the dropdown button that opens the download item options menu">
@@ -1639,7 +1639,7 @@ are declared in tools/grit/grit_rule.gni.
                desc="In the download view, 'Cancel' link text">
         Cancel
       </message>
-      <message name="IDS_MD_DOWNLOAD_LINK_RETRY"
+      <message name="IDS_DOWNLOAD_LINK_RETRY"
                desc="In the download view, 'Retry' button text to retry downloading a file.">
         Retry
       </message>

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads_list_tracker.h"
 
 #include <iterator>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -82,7 +83,7 @@ std::string TimeFormatLongDate(const base::Time& time) {
 }  // namespace
 
 DownloadsListTracker::DownloadsListTracker(DownloadManager* download_manager,
-                                           md_downloads::mojom::PagePtr page)
+                                           downloads::mojom::PagePtr page)
     : main_notifier_(download_manager, this),
       page_(std::move(page)),
       should_show_(base::BindRepeating(&DownloadsListTracker::ShouldShow,
@@ -122,7 +123,7 @@ void DownloadsListTracker::StartAndSendChunk() {
   auto it = sorted_items_.begin();
   std::advance(it, sent_to_page_);
 
-  std::vector<md_downloads::mojom::DataPtr> list;
+  std::vector<downloads::mojom::DataPtr> list;
   while (it != sorted_items_.end() && list.size() < chunk_size_) {
     list.push_back(CreateDownloadData(*it));
     ++it;
@@ -176,7 +177,7 @@ void DownloadsListTracker::OnDownloadRemoved(DownloadManager* manager,
 
 DownloadsListTracker::DownloadsListTracker(
     DownloadManager* download_manager,
-    md_downloads::mojom::PagePtr page,
+    downloads::mojom::PagePtr page,
     base::Callback<bool(const DownloadItem&)> should_show)
     : main_notifier_(download_manager, this),
       page_(std::move(page)),
@@ -185,14 +186,14 @@ DownloadsListTracker::DownloadsListTracker(
   Init();
 }
 
-md_downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
+downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     download::DownloadItem* download_item) const {
   // TODO(asanka): Move towards using download_model here for getting status and
   // progress. The difference currently only matters to Drive downloads and
   // those don't show up on the downloads page, but should.
   DownloadItemModel download_model(download_item);
 
-  auto file_value = md_downloads::mojom::Data::New();
+  auto file_value = downloads::mojom::Data::New();
 
   file_value->started =
       static_cast<int>(download_item->GetStartTime().ToTimeT());
@@ -382,7 +383,7 @@ void DownloadsListTracker::InsertItem(const SortedSet::iterator& insert) {
   if (index >= chunk_size_ && index >= sent_to_page_)
     return;
 
-  std::vector<md_downloads::mojom::DataPtr> list;
+  std::vector<downloads::mojom::DataPtr> list;
   list.push_back(CreateDownloadData(*insert));
 
   page_->InsertItems(static_cast<int>(index), std::move(list));

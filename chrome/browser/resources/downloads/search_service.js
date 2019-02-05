@@ -8,7 +8,7 @@ cr.define('downloads', function() {
       /** @private {!Array<string>} */
       this.searchTerms_ = [];
 
-      /** @private {mdDownloads.mojom.PageHandlerInterface} */
+      /** @private {downloads.mojom.PageHandlerInterface} */
       this.mojoHandler_ = downloads.BrowserProxy.getInstance().handler;
     }
 

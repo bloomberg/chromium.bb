@@ -20,7 +20,7 @@ cr.define('downloads', function() {
       },
     },
 
-    /** @private {?mdDownloads.mojom.PageHandlerInterface} */
+    /** @private {?downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
 
     /** @override */

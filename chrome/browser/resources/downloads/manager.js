@@ -60,10 +60,10 @@ cr.define('downloads', function() {
       'itemsChanged_(items_.*)',
     ],
 
-    /** @private {mdDownloads.mojom.PageCallbackRouter} */
+    /** @private {downloads.mojom.PageCallbackRouter} */
     mojoEventTarget_: null,
 
-    /** @private {mdDownloads.mojom.PageHandlerInterface} */
+    /** @private {downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
 
     /** @private {?downloads.SearchService} */

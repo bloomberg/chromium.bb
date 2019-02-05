@@ -4,22 +4,22 @@
 
 class TestDownloadsProxy {
   constructor() {
-    /** @type {mdDownloads.mojom.PageCallbackRouter} */
-    this.callbackRouter = new mdDownloads.mojom.PageCallbackRouter();
+    /** @type {downloads.mojom.PageCallbackRouter} */
+    this.callbackRouter = new downloads.mojom.PageCallbackRouter();
 
-    /** @type {!mdDownloads.mojom.PageInterface} */
+    /** @type {!downloads.mojom.PageInterface} */
     this.pageRouterProxy = this.callbackRouter.createProxy();
 
-    /** @type {mdDownloads.mojom.PageHandlerInterface} */
+    /** @type {downloads.mojom.PageHandlerInterface} */
     this.handler = new TestDownloadsMojoHandler(this.pageRouterProxy);
   }
 }
 
-/** @implements {mdDownloads.mojom.PageHandlerInterface} */
+/** @implements {downloads.mojom.PageHandlerInterface} */
 class TestDownloadsMojoHandler {
-  /** @param {mdDownloads.mojom.PageInterface} */
+  /** @param {downloads.mojom.PageInterface} */
   constructor(pageRouterProxy) {
-    /** @private {mdDownloads.mojom.PageInterface} */
+    /** @private {downloads.mojom.PageInterface} */
     this.pageRouterProxy_ = pageRouterProxy;
 
     /** @private {TestBrowserProxy} */
