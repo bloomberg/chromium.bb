@@ -1566,6 +1566,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     unsigned char *cx_data = ctx->cx_data;
     size_t cx_data_sz = ctx->cx_data_sz;
 
+    assert(!(cx_data == NULL && cx_data_sz != 0));
+
     /* Any pending invisible frames? */
     if (ctx->pending_cx_data) {
       memmove(cx_data, ctx->pending_cx_data, ctx->pending_cx_data_sz);

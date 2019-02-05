@@ -9437,7 +9437,7 @@ static int64_t motion_mode_rd(
     }
 
     if (!do_tx_search) {
-      int64_t curr_sse;
+      int64_t curr_sse = -1;
       int est_residue_cost = 0;
       int64_t est_dist = 0;
       int64_t est_rd = 0;
@@ -9464,10 +9464,12 @@ static int64_t motion_mode_rd(
       *best_est_rd = AOMMIN(*best_est_rd, rd_stats->rdcost);
       if (cm->current_frame.reference_mode == SINGLE_REFERENCE) {
         if (!is_comp_pred) {
+          assert(curr_sse >= 0);
           inter_modes_info_push(inter_modes_info, mode_rate, curr_sse,
                                 rd_stats->rdcost, mbmi);
         }
       } else {
+        assert(curr_sse >= 0);
         inter_modes_info_push(inter_modes_info, mode_rate, curr_sse,
                               rd_stats->rdcost, mbmi);
       }
