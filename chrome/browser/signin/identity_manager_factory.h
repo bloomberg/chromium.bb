@@ -22,7 +22,7 @@ class Profile;
 // Profiles.
 class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Called when a IdentityManager instance is created.
     virtual void IdentityManagerCreated(
@@ -34,7 +34,7 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
         identity::IdentityManager* identity_manager) {}
 
    protected:
-    virtual ~Observer() {}
+    ~Observer() override {}
   };
 
   static identity::IdentityManager* GetForProfile(Profile* profile);
@@ -70,7 +70,8 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   void BrowserContextShutdown(content::BrowserContext* profile) override;
 
   // List of observers. Checks that list is empty on destruction.
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
+  base::ObserverList<Observer, /*check_empty=*/true, /*allow_reentrancy=*/false>
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerFactory);
 };
