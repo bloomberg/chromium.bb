@@ -6040,3 +6040,6 @@ crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/mutation-durin
 crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/overflow-scroll-fake-mouse-move.html [ Skip ]
 crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/event-view-toString.html [ Skip ]
 crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/no-blur-on-page-leave.html [ Skip ]
+
+# Recently became flaky on multiple platforms (Linux and Windows primarily)
+crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
