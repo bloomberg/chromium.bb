@@ -34,6 +34,7 @@ class CONTENT_EXPORT MouseWheelEventQueueClient {
                                     InputEventAckSource ack_source,
                                     InputEventAckState ack_result) = 0;
   virtual bool IsWheelScrollInProgress() = 0;
+  virtual bool IsAutoscrollInProgress() = 0;
 };
 
 // A queue for throttling and coalescing mouse wheel events.

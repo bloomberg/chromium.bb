@@ -151,6 +151,10 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.IsWheelScrollInProgress();
   }
 
+  bool IsAutoscrollInProgress() override {
+    return input_router_client_.IsAutoscrollInProgress();
+  }
+
   void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {
     input_router_client_.OnSetWhiteListedTouchAction(touch_action);
   }

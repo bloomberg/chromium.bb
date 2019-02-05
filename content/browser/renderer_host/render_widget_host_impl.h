@@ -674,6 +674,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const std::vector<gfx::Rect>& character_bounds) override;
   void OnImeCancelComposition() override;
   bool IsWheelScrollInProgress() override;
+  bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override;
 
   // FrameTokenMessageQueue::Client:
@@ -1199,6 +1200,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool sent_autoscroll_scroll_begin_ = false;
   gfx::PointF autoscroll_start_position_;
+
+  // True when the cursor has entered the autoscroll mode. A GSB is not
+  // necessarily sent yet.
+  bool autoscroll_in_progress_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

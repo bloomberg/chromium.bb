@@ -5,6 +5,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/widget_messages.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -110,7 +111,21 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
     main_thread_sync.Wait();
   }
 
+  // Force redraw and wait for a compositor commit for the given number of
+  // times.
+  void WaitForCommitFrames(int num_repeat) {
+    RenderFrameSubmissionObserver observer(
+        GetWidgetHost()->render_frame_metadata_provider());
+    for (int i = 0; i < num_repeat; i++) {
+      GetWidgetHost()->Send(
+          new WidgetMsg_ForceRedraw(GetWidgetHost()->GetRoutingID(), i));
+      observer.WaitForAnyFrameSubmission();
+    }
+  }
+
   void SimulateMiddleClick(int x, int y, int modifiers) {
+    bool is_autoscroll_in_progress = GetWidgetHost()->IsAutoscrollInProgress();
+
     // Simulate and send middle click mouse down.
     blink::WebMouseEvent down_event = SyntheticWebMouseEventBuilder::Build(
         blink::WebInputEvent::kMouseDown, x, y, modifiers);
@@ -126,6 +141,12 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
     up_event.SetTimeStamp(ui::EventTimeForNow());
     up_event.SetPositionInScreen(x, y);
     GetWidgetHost()->ForwardMouseEvent(up_event);
+
+    // Wait till the IPC messages arrive and IsAutoscrollInProgress() toggles.
+    while (GetWidgetHost()->IsAutoscrollInProgress() ==
+           is_autoscroll_in_progress) {
+      WaitForCommitFrames(1);
+    }
   }
 
   void WaitForScroll(RenderFrameSubmissionObserver& observer) {
@@ -208,6 +229,32 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
   WaitForScroll(observer);
 }
 
+// Checks that wheel scrolling does not work once the cursor has entered the
+// autoscroll mode.
+IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
+                       WheelScrollingDoesNotWorkInAutoscrollMode) {
+  LoadURL(kAutoscrollDataURL);
+
+  // Start autoscroll with middle click.
+  SimulateMiddleClick(10, 10, blink::WebInputEvent::kNoModifiers);
+
+  // Without moving the mouse, start wheel scrolling.
+  RenderFrameSubmissionObserver observer(
+      GetWidgetHost()->render_frame_metadata_provider());
+  blink::WebMouseWheelEvent wheel_event =
+      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, -53, 0, true);
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  GetWidgetHost()->ForwardWheelEvent(wheel_event);
+
+  // Wait for 4 commits, then verify that the page has not scrolled.
+  WaitForCommitFrames(4);
+  gfx::Vector2dF default_scroll_offset;
+  DCHECK_EQ(observer.LastRenderFrameMetadata()
+                .root_scroll_offset.value_or(default_scroll_offset)
+                .y(),
+            0);
+}
+
 // Checks that autoscrolling still works after changing the scroll direction
 // when the element is fully scrolled.
 IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
@@ -232,12 +279,8 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
             scroll_update_watcher->WaitForAck());
 
-  // Wait for 300ms before changing the scroll direction.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMillisecondsD(300));
-  run_loop.Run();
+  // Wait for 10 commits before changing the scroll direction.
+  WaitForCommitFrames(10);
 
   // Now move the mouse down and wait for the page to scroll. The test will
   // timeout if autoscrolling does not work after direction change.

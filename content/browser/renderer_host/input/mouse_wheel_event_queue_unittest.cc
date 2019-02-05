@@ -189,6 +189,8 @@ class MouseWheelEventQueueTest : public testing::Test,
     return is_wheel_scroll_in_progress_;
   }
 
+  bool IsAutoscrollInProgress() override { return false; }
+
  protected:
   size_t queued_event_count() const { return queue_->queued_size(); }
 

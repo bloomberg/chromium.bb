@@ -480,6 +480,10 @@ bool InputRouterImpl::IsWheelScrollInProgress() {
   return client_->IsWheelScrollInProgress();
 }
 
+bool InputRouterImpl::IsAutoscrollInProgress() {
+  return client_->IsAutoscrollInProgress();
+}
+
 void InputRouterImpl::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
