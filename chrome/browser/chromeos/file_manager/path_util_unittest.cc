@@ -41,6 +41,7 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::FilePath;
 using storage::FileSystemURL;
 
 namespace file_manager {
@@ -314,29 +315,59 @@ TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
                                                               base::Time());
 
-  // This looks like "/home/chronos/u-hash/MyFiles" in the production
-  // environment.
-  const base::FilePath kDownloads = GetMyFilesFolderForProfile(profile_.get());
-  const base::FilePath kOldDownloads =
-      DownloadPrefs::GetDefaultDownloadDirectory();
+  // /home/chronos/u-${HASH}/MyFiles/Downloads
+  const FilePath kDownloadsFolder =
+      GetDownloadsFolderForProfile(profile_.get());
+  // /home/chronos/u-${HASH}/MyFiles/
+  const FilePath kMyFilesFolder = GetMyFilesFolderForProfile(profile_.get());
+  // In the device: /home/chronos/user
+  // In browser tests: /tmp/.org.chromium.Chromium.F0Ejp5
+  const FilePath old_base = DownloadPrefs::GetDefaultDownloadDirectory();
 
-  base::FilePath path;
+  FilePath path;
 
-  EXPECT_TRUE(MigratePathFromOldFormat(profile_.get(), kOldDownloads, &path));
-  EXPECT_EQ(kDownloads, path);
+  // Special case to convert the base pkth directly to MyFiles/Downloads,
+  // because DownloadPrefs is initially initialized to /home/chronos/user before
+  // we have the Profile fully set up and we want to set it to MyFiles/Downloads
+  // which is the default download folder for new users.
+  EXPECT_TRUE(MigratePathFromOldFormat(profile_.get(),
+                                       FilePath("/home/chronos/user"),
+                                       FilePath("/home/chronos/user"), &path));
+  EXPECT_EQ(kDownloadsFolder, path);
 
-  EXPECT_TRUE(MigratePathFromOldFormat(
-      profile_.get(), kOldDownloads.AppendASCII("a/b"), &path));
-  EXPECT_EQ(kDownloads.AppendASCII("a/b"), path);
+  EXPECT_TRUE(
+      MigratePathFromOldFormat(profile_.get(), FilePath("/home/chronos/user"),
+                               FilePath("/home/chronos/user/a/b"), &path));
+  EXPECT_EQ(kMyFilesFolder.AppendASCII("a/b"), path);
+  EXPECT_TRUE(
+      MigratePathFromOldFormat(profile_.get(), FilePath("/home/chronos/u-1234"),
+                               FilePath("/home/chronos/u-1234/a/b"), &path));
+  EXPECT_EQ(kMyFilesFolder.AppendASCII("a/b"), path);
 
-  // Path already in the new format is not converted.
-  EXPECT_FALSE(MigratePathFromOldFormat(profile_.get(),
-                                        kDownloads.AppendASCII("a/b"), &path));
-
-  // Only the "Downloads" path is converted.
+  // Path already in the new format is not converted, it's already inside
+  // MyFiles or MyFiles/Downloads.
   EXPECT_FALSE(MigratePathFromOldFormat(
-      profile_.get(), base::FilePath::FromUTF8Unsafe("/home/chronos/user/dl"),
-      &path));
+      profile_.get(), DownloadPrefs::GetDefaultDownloadDirectory(),
+      kMyFilesFolder.AppendASCII("a/b"), &path));
+  EXPECT_FALSE(MigratePathFromOldFormat(profile_.get(), kMyFilesFolder,
+                                        kMyFilesFolder.AppendASCII("a/b"),
+                                        &path));
+  EXPECT_FALSE(MigratePathFromOldFormat(
+      profile_.get(), DownloadPrefs::GetDefaultDownloadDirectory(),
+      kDownloadsFolder.AppendASCII("a/b"), &path));
+  EXPECT_FALSE(MigratePathFromOldFormat(profile_.get(), kMyFilesFolder,
+                                        kDownloadsFolder.AppendASCII("a/b"),
+                                        &path));
+
+  // Only /home/chronos/user is migrated when old_base == old_path.
+  EXPECT_FALSE(
+      MigratePathFromOldFormat(profile_.get(), FilePath("/home/chronos/u-1234"),
+                               FilePath("/home/chronos/u-1234"), &path));
+  // Won't migrate because old_path isn't inside the default downloads
+  // directory.
+  EXPECT_FALSE(MigratePathFromOldFormat(
+      profile_.get(), DownloadPrefs::GetDefaultDownloadDirectory(),
+      FilePath::FromUTF8Unsafe("/home/chronos/user/dl"), &path));
 }
 
 TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
