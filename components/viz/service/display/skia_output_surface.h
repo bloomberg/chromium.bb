@@ -59,13 +59,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
       SkYUVColorSpace yuv_color_space,
       bool has_alpha) = 0;
 
-  // Release SkImage created by MakePromiseSkImage on the thread on which
+  // Release SkImages created by MakePromiseSkImage on the thread on which
   // it was fulfilled. SyncToken represents point after which SkImage is
   // released.
-  virtual gpu::SyncToken QueueReleasePromiseSkImage(sk_sp<SkImage>&& image) = 0;
-
-  // Flush all the queued releases. No-op if none were queued.
-  virtual void FlushQueuedReleases() = 0;
+  virtual gpu::SyncToken ReleasePromiseSkImages(
+      std::vector<sk_sp<SkImage>> images) = 0;
 
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
