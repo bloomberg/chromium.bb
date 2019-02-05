@@ -9,6 +9,14 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
+namespace {
+
+// A frame with area less than kMinimumVisibleFrameArea is not considered
+// visible.
+const int kMinimumVisibleFrameArea = 25;
+
+}  // namespace
+
 FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
     : frame_bytes_(0u),
       frame_network_bytes_(0u),
@@ -16,6 +24,7 @@ FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
       origin_status_(OriginStatus::kUnknown),
       frame_navigated_(false),
       user_activation_status_(UserActivationStatus::kNoActivation),
+      is_display_none_(false),
       visibility_(FrameVisibility::kVisible),
       frame_size_(gfx::Size()) {}
 
@@ -29,7 +38,7 @@ void FrameData::UpdateForNavigation(content::RenderFrameHost* render_frame_host,
 
   SetDisplayState(render_frame_host->IsFrameDisplayNone());
   if (render_frame_host->GetFrameSize())
-    set_frame_size(*(render_frame_host->GetFrameSize()));
+    SetFrameSize(*(render_frame_host->GetFrameSize()));
 
   // For frames triggered on render, their origin is their parent's origin.
   origin_status_ =
@@ -49,9 +58,19 @@ void FrameData::ProcessResourceLoadInFrame(
     frame_bytes_ += resource->encoded_body_length;
 }
 
+void FrameData::SetFrameSize(gfx::Size frame_size) {
+  frame_size_ = frame_size;
+  UpdateFrameVisibility();
+}
+
 void FrameData::SetDisplayState(bool is_display_none) {
-  if (is_display_none)
-    visibility_ = FrameVisibility::kDisplayNone;
-  else
-    visibility_ = FrameVisibility::kVisible;
+  is_display_none_ = is_display_none;
+  UpdateFrameVisibility();
+}
+
+void FrameData::UpdateFrameVisibility() {
+  visibility_ =
+      !is_display_none_ && frame_size_.GetArea() >= kMinimumVisibleFrameArea
+          ? FrameVisibility::kVisible
+          : FrameVisibility::kNonVisible;
 }

@@ -29,8 +29,18 @@
 
 namespace {
 
-#define ADS_HISTOGRAM(suffix, hist_macro, value) \
-  hist_macro("PageLoad.Clients.Ads." suffix, value);
+#define ADS_HISTOGRAM(suffix, hist_macro, visibility, value)        \
+  switch (visibility) {                                             \
+    case FrameData::kNonVisible:                                    \
+      hist_macro("PageLoad.Clients.Ads.NonVisible." suffix, value); \
+      break;                                                        \
+    case FrameData::kVisible:                                       \
+      hist_macro("PageLoad.Clients.Ads.Visible." suffix, value);    \
+      break;                                                        \
+    case FrameData::kAnyVisibility:                                 \
+      hist_macro("PageLoad.Clients.Ads." suffix, value);            \
+      break;                                                        \
+  }
 
 #define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
   if (was_cached) {                                                        \
@@ -159,6 +169,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
       previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
     }
+
     // If there is not existing data for this frame then create it.
     ad_frames_data_storage_.emplace_back(ad_id);
     ad_data = &ad_frames_data_storage_.back();
@@ -360,7 +371,7 @@ void AdsPageLoadMetricsObserver::FrameSizeChanged(
   // then update it
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
                            ancestor_data->frame_tree_node_id()) {
-    ancestor_data->set_frame_size(frame_size);
+    ancestor_data->SetFrameSize(frame_size);
   }
 }
 
@@ -596,13 +607,16 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 }
 
 void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
-  RecordHistogramsForAdTagging();
+  RecordHistogramsForAdTagging(FrameData::FrameVisibility::kNonVisible);
+  RecordHistogramsForAdTagging(FrameData::FrameVisibility::kVisible);
+  RecordHistogramsForAdTagging(FrameData::FrameVisibility::kAnyVisibility);
   RecordPageResourceTotalHistograms(source_id);
   for (auto const& kv : page_resources_)
     RecordResourceHistograms(kv.second);
 }
 
-void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
+void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
+    FrameData::FrameVisibility visibility) {
   if (page_bytes_ == 0)
     return;
 
@@ -614,74 +628,73 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
     if (ad_frame_data.frame_bytes() == 0)
       continue;
 
-    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.Visibility",
-                  UMA_HISTOGRAM_ENUMERATION, ad_frame_data.visibility());
+    if (visibility != FrameData::FrameVisibility::kAnyVisibility &&
+        ad_frame_data.visibility() != visibility)
+      continue;
 
-    // Record pixel metrics only for adframes that are displayed.
-    if (ad_frame_data.visibility() !=
-        FrameData::FrameVisibility::kDisplayNone) {
-      ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SqrtNumberOfPixels",
-                    UMA_HISTOGRAM_COUNTS_10000,
-                    std::sqrt(ad_frame_data.frame_size().GetArea()));
-      ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SmallestDimension",
-                    UMA_HISTOGRAM_COUNTS_10000,
-                    std::min(ad_frame_data.frame_size().width(),
-                             ad_frame_data.frame_size().height()));
-    }
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SqrtNumberOfPixels",
+                  UMA_HISTOGRAM_COUNTS_10000, visibility,
+                  std::sqrt(ad_frame_data.frame_size().GetArea()));
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SmallestDimension",
+                  UMA_HISTOGRAM_COUNTS_10000, visibility,
+                  std::min(ad_frame_data.frame_size().width(),
+                           ad_frame_data.frame_size().height()));
 
     non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.frame_bytes();
     ad_frame_network_bytes += ad_frame_data.frame_network_bytes();
 
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
-                  ad_frame_data.frame_bytes());
+                  visibility, ad_frame_data.frame_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
-                  ad_frame_data.frame_network_bytes());
+                  visibility, ad_frame_data.frame_network_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.PercentNetwork",
-                  UMA_HISTOGRAM_PERCENTAGE,
+                  UMA_HISTOGRAM_PERCENTAGE, visibility,
                   ad_frame_data.frame_network_bytes() * 100 /
                       ad_frame_data.frame_bytes());
-    ADS_HISTOGRAM(
-        "SubresourceFilter.FrameCounts.AdFrames.PerFrame.OriginStatus",
-        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status());
-    ADS_HISTOGRAM(
-        "SubresourceFilter.FrameCounts.AdFrames.PerFrame.UserActivation",
-        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.user_activation_status());
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
+                  UMA_HISTOGRAM_ENUMERATION, visibility,
+                  ad_frame_data.origin_status());
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
+                  UMA_HISTOGRAM_ENUMERATION, visibility,
+                  ad_frame_data.user_activation_status());
   }
 
   // TODO(ericrobinson): Consider renaming this to match
   //   'FrameCounts.AdFrames.PerFrame.OriginStatus'.
-  ADS_HISTOGRAM("SubresourceFilter.FrameCounts.AnyParentFrame.AdFrames",
-                UMA_HISTOGRAM_COUNTS_1000, non_zero_ad_frames);
+  ADS_HISTOGRAM("FrameCounts.AnyParentFrame.AdFrames",
+                UMA_HISTOGRAM_COUNTS_1000, visibility, non_zero_ad_frames);
 
   // Don't post UMA for pages that don't have ads.
   if (non_zero_ad_frames == 0)
     return;
 
   ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
-                page_bytes_ - total_ad_frame_bytes);
+                visibility, page_bytes_ - total_ad_frame_bytes);
 
-  ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, page_bytes_);
-  ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM,
+  ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, visibility,
+                page_bytes_);
+  ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, visibility,
                 page_network_bytes_);
 
   if (page_bytes_) {
     ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-                  total_ad_frame_bytes * 100 / page_bytes_);
+                  visibility, total_ad_frame_bytes * 100 / page_bytes_);
   }
   if (page_network_bytes_) {
     ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
                   ad_frame_network_bytes * 100 / page_network_bytes_);
   }
 
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
-                total_ad_frame_bytes);
+                visibility, total_ad_frame_bytes);
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Network", PAGE_BYTES_HISTOGRAM,
-                ad_frame_network_bytes);
+                visibility, ad_frame_network_bytes);
 
   if (total_ad_frame_bytes) {
     ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.PercentNetwork",
-                  UMA_HISTOGRAM_PERCENTAGE,
+                  UMA_HISTOGRAM_PERCENTAGE, visibility,
                   ad_frame_network_bytes * 100 / total_ad_frame_bytes);
   }
 }

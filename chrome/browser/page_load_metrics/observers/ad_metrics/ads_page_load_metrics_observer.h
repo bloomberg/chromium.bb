@@ -132,7 +132,7 @@ class AdsPageLoadMetricsObserver
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
-  void RecordHistogramsForAdTagging();
+  void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);
 
   // Checks to see if a resource is waiting for a navigation with the given
   // |frame_tree_node_id| to commit before it can be processed. If so, call
