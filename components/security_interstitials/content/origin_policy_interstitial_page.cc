@@ -23,10 +23,12 @@ namespace security_interstitials {
 OriginPolicyInterstitialPage::OriginPolicyInterstitialPage(
     content::WebContents* web_contents,
     const GURL& request_url,
-    std::unique_ptr<SecurityInterstitialControllerClient> controller)
+    std::unique_ptr<SecurityInterstitialControllerClient> controller,
+    content::OriginPolicyErrorReason error_reason)
     : SecurityInterstitialPage(web_contents,
                                request_url,
-                               std::move(controller)) {}
+                               std::move(controller)),
+      error_reason_(error_reason) {}
 
 OriginPolicyInterstitialPage::~OriginPolicyInterstitialPage() {}
 
@@ -43,6 +45,21 @@ void OriginPolicyInterstitialPage::PopulateInterstitialStrings(
   // User may choose to ignore the warning & proceed to the site.
   load_time_data->SetBoolean("overridable", true);
 
+  // Custom messages depending on the OriginPolicyErrorReason:
+  int explanation_paragraph_id = IDS_ORIGIN_POLICY_EXPLANATION_OTHER;
+  switch (error_reason_) {
+    case content::OriginPolicyErrorReason::kCannotLoadPolicy:
+      explanation_paragraph_id = IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD;
+      break;
+    case content::OriginPolicyErrorReason::kPolicyShouldNotRedirect:
+      explanation_paragraph_id =
+          IDS_ORIGIN_POLICY_EXPLANATION_SHOULD_NOT_REDIRECT;
+      break;
+    case content::OriginPolicyErrorReason::kOther:
+      explanation_paragraph_id = IDS_ORIGIN_POLICY_EXPLANATION_OTHER;
+      break;
+  }
+
   // Variables in IDR_SECURITY_INTERSTITIAL_HTML / interstitial_large.html,
   // resources defined in security_interstitials_strings.grdp.
   const struct {
@@ -50,7 +67,7 @@ void OriginPolicyInterstitialPage::PopulateInterstitialStrings(
     int id;
   } messages[] = {
       {"closeDetails", IDS_ORIGIN_POLICY_CLOSE},
-      {"explanationParagraph", IDS_ORIGIN_POLICY_EXPLANATION},
+      {"explanationParagraph", explanation_paragraph_id},
       {"finalParagraph", IDS_ORIGIN_POLICY_FINAL_PARAGRAPH},
       {"heading", IDS_ORIGIN_POLICY_HEADING},
       {"openDetails", IDS_ORIGIN_POLICY_DETAILS},
