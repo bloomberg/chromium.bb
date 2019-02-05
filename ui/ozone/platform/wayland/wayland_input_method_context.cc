@@ -70,10 +70,19 @@ void WaylandInputMethodContext::Init(bool initialize_for_testing) {
 
 bool WaylandInputMethodContext::DispatchKeyEvent(
     const ui::KeyEvent& key_event) {
-  return false;
+  if (key_event.type() != ET_KEY_PRESSED ||
+      !character_composer_.FilterKeyPress(key_event))
+    return false;
+
+  // TODO(nickdiego): Handle preedit string
+  auto composed = character_composer_.composed_character();
+  if (!composed.empty())
+    delegate_->OnCommit(composed);
+  return true;
 }
 
 void WaylandInputMethodContext::Reset() {
+  character_composer_.Reset();
   if (text_input_)
     text_input_->Reset();
 }
