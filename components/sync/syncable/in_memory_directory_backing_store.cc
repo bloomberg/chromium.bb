@@ -21,7 +21,8 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
       return FAILED_OPEN_DATABASE;
   }
 
-  if (!InitializeTables())
+  bool did_start_new = false;
+  if (!InitializeTables(&did_start_new))
     return FAILED_OPEN_DATABASE;
 
   if (!LoadEntries(handles_map, metahandles_to_purge))
@@ -33,7 +34,7 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
   if (!VerifyReferenceIntegrity(handles_map))
     return FAILED_DATABASE_CORRUPT;
 
-  return OPENED;
+  return did_start_new ? OPENED_NEW : OPENED_EXISTING;
 }
 
 }  // namespace syncable

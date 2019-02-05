@@ -71,6 +71,73 @@ sync_pb::SyncEnums::GetUpdatesOrigin GetOriginFromReason(
   return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
 }
 
+// Relevant for UMA, do not change.
+enum class StringConsistency {
+  kBothEqual = 0,
+  kOnlyLhsEmpty = 1,
+  kOnlyRhsEmpty = 2,
+  kBothNonEmptyAndDifferent = 3,
+  kMaxValue = kBothNonEmptyAndDifferent
+};
+
+StringConsistency CompareStringsForConsistency(const std::string& lhs,
+                                               const std::string& rhs) {
+  if (lhs == rhs) {
+    return StringConsistency::kBothEqual;
+  }
+  if (lhs.empty()) {
+    return StringConsistency::kOnlyLhsEmpty;
+  }
+  if (rhs.empty()) {
+    return StringConsistency::kOnlyRhsEmpty;
+  }
+  return StringConsistency::kBothNonEmptyAndDifferent;
+}
+
+constexpr int GetStringConsistencyUmaBucket(
+    StringConsistency cache_guid_consistency,
+    StringConsistency birthday_consistency) {
+  return static_cast<int>(cache_guid_consistency) *
+             (static_cast<int>(StringConsistency::kMaxValue) + 1) +
+         static_cast<int>(birthday_consistency);
+}
+
+// Logs information to UMA to understand whether prefs are populated with
+// information identical to the Directory's value, for the fields that are
+// stored in both. We mostly care about cache GUID and store birthday.
+void RecordConsistencyBetweenDirectoryAndPrefs(
+    syncable::DirOpenResult open_result,
+    const syncable::Directory* directory,
+    const SyncManager::InitArgs* args) {
+  DCHECK(directory);
+
+  std::string directory_cache_guid;
+  std::string directory_birthday;
+
+  // We mimic the directory being empty if it was just opened (OPENED_NEW),
+  // because that means a random cache GUID was just generated and it's not
+  // possible to match empty prefs.
+  DCHECK(open_result == syncable::OPENED_EXISTING ||
+         open_result == syncable::OPENED_NEW);
+  if (open_result == syncable::OPENED_EXISTING) {
+    directory_cache_guid = directory->cache_guid();
+    directory_birthday = directory->store_birthday();
+  }
+
+  const StringConsistency cache_guid_consistency =
+      CompareStringsForConsistency(args->cache_guid, directory_cache_guid);
+  const StringConsistency birthday_consistency =
+      CompareStringsForConsistency(args->birthday, directory_birthday);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sync.DirectoryVsPrefsConsistency",
+      GetStringConsistencyUmaBucket(cache_guid_consistency,
+                                    birthday_consistency),
+      GetStringConsistencyUmaBucket(StringConsistency::kMaxValue,
+                                    StringConsistency::kMaxValue) +
+          1);
+}
+
 }  // namespace
 
 SyncManagerImpl::SyncManagerImpl(
@@ -249,7 +316,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   DVLOG(1) << "Username: " << args->credentials.email;
   DVLOG(1) << "AccountId: " << args->credentials.account_id;
-  if (!OpenDirectory(args->credentials.account_id)) {
+  if (!OpenDirectory(args)) {
     NotifyInitializationFailure();
     LOG(ERROR) << "Sync manager initialization failed!";
     return;
@@ -408,8 +475,10 @@ bool SyncManagerImpl::GetHasInvalidAuthTokenForTest() const {
   return connection_manager_->HasInvalidAuthToken();
 }
 
-bool SyncManagerImpl::OpenDirectory(const std::string& username) {
+bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
   DCHECK(!initialized_) << "Should only happen once";
+
+  const std::string& account_id = args->credentials.account_id;
 
   // Set before Open().
   change_observer_ = MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
@@ -417,11 +486,14 @@ bool SyncManagerImpl::OpenDirectory(const std::string& username) {
       MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
-  open_result = directory()->Open(username, this, transaction_observer);
-  if (open_result != syncable::OPENED) {
-    LOG(ERROR) << "Could not open share for:" << username;
+  open_result = directory()->Open(account_id, this, transaction_observer);
+  if (open_result != syncable::OPENED_NEW &&
+      open_result != syncable::OPENED_EXISTING) {
+    LOG(ERROR) << "Could not open share for:" << account_id;
     return false;
   }
+
+  RecordConsistencyBetweenDirectoryAndPrefs(open_result, directory(), args);
 
   // Unapplied datatypes (those that do not have initial sync ended set) get
   // re-downloaded during any configuration. But, it's possible for a datatype

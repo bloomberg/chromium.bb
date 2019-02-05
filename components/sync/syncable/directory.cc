@@ -136,7 +136,7 @@ DirOpenResult Directory::Open(
 
   const DirOpenResult result = OpenImpl(name, delegate, transaction_observer);
 
-  if (OPENED != result)
+  if (OPENED_NEW != result && OPENED_EXISTING != result)
     Close();
   return result;
 }
@@ -191,7 +191,7 @@ DirOpenResult Directory::OpenImpl(
 
   DirOpenResult result = store_->Load(&tmp_handles_map, delete_journals.get(),
                                       &metahandles_to_purge, &info);
-  if (OPENED != result)
+  if (OPENED_NEW != result && OPENED_EXISTING != result)
     return result;
 
   DCHECK(!kernel_);
@@ -211,7 +211,7 @@ DirOpenResult Directory::OpenImpl(
   store_->SetCatastrophicErrorHandler(base::Bind(
       &Directory::OnCatastrophicError, weak_ptr_factory_.GetWeakPtr()));
 
-  return OPENED;
+  return result;
 }
 
 DeleteJournal* Directory::delete_journal() {
