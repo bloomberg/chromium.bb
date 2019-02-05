@@ -24,6 +24,18 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace translate {
+namespace {
+// The number of times user should consecutively translate for "Always
+// Translate" to automatically trigger.
+const int kAutoAlwaysThreshold = 5;
+// The number of times user should consecutively dismiss the translate infobar
+// for "Never Translate" to automatically trigger.
+const int kAutoNeverThreshold = 10;
+// The maximum number of times "Always Translate" is automatically triggered.
+const int kMaxNumberOfAutoAlways = 2;
+// The maximum number of times "Never Translate" is automatically triggered.
+const int kMaxNumberOfAutoNever = 2;
+}  // namespace
 
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -308,7 +320,52 @@ void TranslateInfoBarDelegate::ResetTranslationDeniedCount() {
   prefs_->ResetTranslationDeniedCount(original_language_code());
 }
 
-#if defined(OS_ANDROID)
+bool TranslateInfoBarDelegate::ShouldAutoAlwaysTranslate() {
+  // Don't trigger if it's off the record or already set to always translate.
+  if (is_off_the_record() || ShouldAlwaysTranslate()) {
+    return false;
+  }
+
+  bool always_translate =
+      (GetTranslationAcceptedCount() >= kAutoAlwaysThreshold &&
+       GetTranslationAutoAlwaysCount() < kMaxNumberOfAutoAlways);
+
+  if (always_translate) {
+    // Auto-always will be triggered. Need to increment the auto-always counter.
+    IncrementTranslationAutoAlwaysCount();
+    // Reset translateAcceptedCount so that auto-always could be triggered
+    // again.
+    ResetTranslationAcceptedCount();
+  }
+  return always_translate;
+}
+
+bool TranslateInfoBarDelegate::ShouldAutoNeverTranslate() {
+  // Don't trigger if it's off the record or language already blocked.
+  if (is_off_the_record() || !IsTranslatableLanguageByPrefs()) {
+    return false;
+  }
+
+  int auto_never_count = GetTranslationAutoNeverCount();
+
+  // At the beginning (auto_never_count == 0), deniedCount starts at 0 and is
+  // off-by-one (because this checking is done before increment). However, after
+  // auto-never is triggered once (auto_never_count > 0), deniedCount starts at
+  // 1.  So there is no off-by-one by then.
+  int off_by_one = auto_never_count == 0 ? 1 : 0;
+
+  bool never_translate =
+      (GetTranslationDeniedCount() + off_by_one >= kAutoNeverThreshold &&
+       auto_never_count < kMaxNumberOfAutoNever);
+  if (never_translate) {
+    // Auto-never will be triggered. Need to increment the auto-never counter.
+    IncrementTranslationAutoNeverCount();
+    // Reset translateDeniedCount so that auto-never could be triggered again.
+    ResetTranslationDeniedCount();
+  }
+  return never_translate;
+}
+
 int TranslateInfoBarDelegate::GetTranslationAutoAlwaysCount() {
   return prefs_->GetTranslationAutoAlwaysCount(original_language_code());
 }
@@ -324,7 +381,6 @@ void TranslateInfoBarDelegate::IncrementTranslationAutoAlwaysCount() {
 void TranslateInfoBarDelegate::IncrementTranslationAutoNeverCount() {
   prefs_->IncrementTranslationAutoNeverCount(original_language_code());
 }
-#endif
 
 // static
 void TranslateInfoBarDelegate::GetAfterTranslateStrings(

@@ -150,13 +150,18 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   void ResetTranslationAcceptedCount();
   void ResetTranslationDeniedCount();
 
-#if defined(OS_ANDROID)
+  // Returns whether "Always Translate Language" should automatically trigger.
+  // If true, this method has the side effect of mutating some prefs.
+  bool ShouldAutoAlwaysTranslate();
+  // Returns whether "Never Translate Language" should automatically trigger.
+  // If true, this method has the side effect of mutating some prefs.
+  bool ShouldAutoNeverTranslate();
+
   int GetTranslationAutoAlwaysCount();
   int GetTranslationAutoNeverCount();
 
   void IncrementTranslationAutoAlwaysCount();
   void IncrementTranslationAutoNeverCount();
-#endif
 
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.

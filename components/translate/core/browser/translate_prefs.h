@@ -138,9 +138,11 @@ class TranslatePrefs {
   static const char kPrefTranslateLastDeniedTimeForLanguage[];
   static const char kPrefTranslateTooOftenDeniedForLanguage[];
   static const char kPrefTranslateRecentTarget[];
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   static const char kPrefTranslateAutoAlwaysCount[];
   static const char kPrefTranslateAutoNeverCount[];
+#endif
+#if defined(OS_ANDROID)
   static const char kPrefExplicitLanguageAskShown[];
 #endif
 
@@ -259,7 +261,7 @@ class TranslatePrefs {
   void IncrementTranslationAcceptedCount(const std::string& language);
   void ResetTranslationAcceptedCount(const std::string& language);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // These methods are used to track how many times the auto-always translation
   // has been triggered for a specific language.
   int GetTranslationAutoAlwaysCount(const std::string& language) const;
@@ -271,7 +273,9 @@ class TranslatePrefs {
   int GetTranslationAutoNeverCount(const std::string& language) const;
   void IncrementTranslationAutoNeverCount(const std::string& language);
   void ResetTranslationAutoNeverCount(const std::string& language);
+#endif
 
+#if defined(OS_ANDROID)
   // These methods are used to determine whether the explicit language ask
   // prompt was displayed to the user already.
   bool GetExplicitLanguageAskPromptShown() const;

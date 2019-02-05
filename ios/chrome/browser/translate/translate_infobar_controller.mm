@@ -164,7 +164,16 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 
   self.userAction |= UserActionTranslate;
 
-  self.infoBarDelegate->Translate();
+  if (self.infoBarDelegate->ShouldAutoAlwaysTranslate()) {
+    // Page will be translated once the snackbar finishes showing.
+    [self.translateNotificationHandler
+        showAlwaysTranslateLanguageNotificationWithDelegate:self
+                                             sourceLanguage:self.sourceLanguage
+                                             targetLanguage:
+                                                 self.targetLanguage];
+  } else {
+    self.infoBarDelegate->Translate();
+  }
 }
 
 - (void)translateInfobarViewDidTapOptions:(TranslateInfobarView*)sender {
@@ -181,7 +190,15 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
     return;
 
   self.infoBarDelegate->InfoBarDismissed();
-  self.delegate->RemoveInfoBar();
+
+  if (self.infoBarDelegate->ShouldAutoNeverTranslate()) {
+    // Infobar will dismiss once the snackbar finishes showing.
+    [self.translateNotificationHandler
+        showNeverTranslateLanguageNotificationWithDelegate:self
+                                            sourceLanguage:self.sourceLanguage];
+  } else {
+    self.delegate->RemoveInfoBar();
+  }
 }
 
 #pragma mark - LanguageSelectionDelegate
@@ -234,6 +251,7 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   if (self.infoBarDelegate->ShouldAlwaysTranslate()) {
     self.infoBarDelegate->ToggleAlwaysTranslate();
   } else {
+    // Page will be translated once the snackbar finishes showing.
     [self.translateNotificationHandler
         showAlwaysTranslateLanguageNotificationWithDelegate:self
                                              sourceLanguage:self.sourceLanguage
@@ -252,6 +270,7 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
   if (self.infoBarDelegate->IsTranslatableLanguageByPrefs()) {
+    // Infobar will dismiss once the snackbar finishes showing.
     [self.translateNotificationHandler
         showNeverTranslateLanguageNotificationWithDelegate:self
                                             sourceLanguage:self.sourceLanguage];
@@ -268,6 +287,7 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   [_infobarView updateUIForPopUpMenuDisplayed:NO];
 
   if (!self.infoBarDelegate->IsSiteBlacklisted()) {
+    // Infobar will dismiss once the snackbar finishes showing.
     [self.translateNotificationHandler
         showNeverTranslateSiteNotificationWithDelegate:self];
   }
