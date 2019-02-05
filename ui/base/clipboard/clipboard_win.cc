@@ -422,6 +422,9 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
   if (!bitmap)
     return SkBitmap();
   int color_table_length = 0;
+
+  // For more information on BITMAPINFOHEADER and biBitCount definition,
+  // see https://docs.microsoft.com/en-us/previous-versions//dd183376(v=vs.85)
   switch (bitmap->bmiHeader.biBitCount) {
     case 1:
     case 4:
