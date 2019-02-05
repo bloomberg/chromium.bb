@@ -4023,6 +4023,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
     }
 
     partition_cost = tmp_partition_cost;
+    do_square_split &= partition_cost[PARTITION_SPLIT] != INT_MAX;
   }
 
 #ifndef NDEBUG
