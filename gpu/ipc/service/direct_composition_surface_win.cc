@@ -518,6 +518,11 @@ class DCLayerTree::SwapChainPresenter {
                                 const gfx::Size& swap_chain_size,
                                 bool* needs_commit);
 
+  // Records presentation statistics in UMA and traces (for pixel tests) for the
+  // current swap chain which could either be a regular flip swap chain or a
+  // decode swap chain.
+  void RecordPresentationStatistics();
+
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_;
 
@@ -1070,6 +1075,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
     frames_since_color_space_change_ = 0;
     is_yuv_swapchain_ = true;
   }
+  RecordPresentationStatistics();
   return true;
 }
 
@@ -1237,16 +1243,27 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
     return false;
   }
+  frames_since_color_space_change_++;
+  RecordPresentationStatistics();
+  return true;
+}
 
+void DCLayerTree::SwapChainPresenter::RecordPresentationStatistics() {
   OverlayFormat swap_chain_format =
       is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA;
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.SwapChainFormat2",
                             swap_chain_format);
 
-  frames_since_color_space_change_++;
-
+  HRESULT hr = 0;
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
-  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain_media.GetAddressOf()))) {
+  if (decode_swap_chain_) {
+    hr = decode_swap_chain_.As(&swap_chain_media);
+  } else {
+    DCHECK(swap_chain_);
+    hr = swap_chain_.As(&swap_chain_media);
+  }
+
+  if (SUCCEEDED(hr)) {
     DCHECK(swap_chain_media);
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
     // GetFrameStatisticsMedia fails with DXGI_ERROR_FRAME_STATISTICS_DISJOINT
@@ -1270,7 +1287,6 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
           TRACE_EVENT_SCOPE_THREAD, "ErrorCode", static_cast<uint32_t>(hr));
     }
   }
-  return true;
 }
 
 bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
