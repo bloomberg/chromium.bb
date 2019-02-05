@@ -255,6 +255,7 @@ std::unique_ptr<RenderPass> CreateRenderPass() {
 
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->opacity = 1.f;
+  shared_state->has_surface_damage = true;
   return pass;
 }
 
@@ -2670,6 +2671,56 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
     EXPECT_EQ(1, dc_layer_list.back().z_order);
     // Quad isn't opaque, so underlying damage must remain the same.
     EXPECT_EQ(gfx::Rect(1, 1, 10, 10), damage_rect_);
+  }
+}
+
+TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
+
+  for (int i = 0; i < 3; i++) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    // Add a solid color quad on top
+    SharedQuadState* shared_state_on_top = pass->shared_quad_state_list.back();
+    CreateSolidColorQuadAt(shared_state_on_top, SK_ColorRED, pass.get(),
+                           kOverlayBottomRightRect);
+
+    SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+    shared_state->opacity = 1.f;
+    CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), shared_state, pass.get());
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+    gfx::Rect damage_rect_ = kOverlayRect;
+
+    // The quad on top does not give damage on the third frame
+    if (i == 2)
+      shared_state_on_top->has_surface_damage = false;
+    else
+      shared_state_on_top->has_surface_damage = true;
+
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
+        nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(-1, dc_layer_list.back().z_order);
+    // Damage rect should be unchanged on initial frame, but should be reduced
+    // to the size of quad on top, and empty on the third frame.
+    if (i == 0)
+      EXPECT_EQ(kOverlayRect, damage_rect_);
+    else if (i == 1)
+      EXPECT_EQ(kOverlayBottomRightRect, damage_rect_);
+    else if (i == 2)
+      EXPECT_EQ(gfx::Rect(), damage_rect_);
   }
 }
 

@@ -9,6 +9,7 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -4673,6 +4674,96 @@ TEST_F(SurfaceAggregatorPartialSwapTest, NotIgnoreOutsideForCachedRenderPass) {
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
     EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
+}
+
+TEST_F(SurfaceAggregatorValidSurfaceTest, NoDamageIfNoFrameChange) {
+  // child surface
+  std::vector<Quad> child_surface_quads = {
+      Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(SurfaceSize()))};
+  std::vector<Pass> child_surface_passes = {
+      Pass(child_surface_quads, 1, SurfaceSize())};
+
+  CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+            &child_surface_frame.metadata.referenced_surfaces);
+
+  allocator_.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_support_->frame_sink_id(),
+                             child_local_surface_id);
+  child_support_->SubmitCompositorFrame(child_local_surface_id,
+                                        std::move(child_surface_frame));
+
+  // root surface
+  std::vector<Quad> root_surface_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                        SK_ColorWHITE, gfx::Rect(SurfaceSize()),
+                        /*stretch_content_to_fill_bounds=*/false,
+                        /*ignores_input_event=*/false),
+      Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(SurfaceSize()))};
+
+  std::vector<Pass> root_passes = {Pass(root_surface_quads, 1, SurfaceSize())};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
+  support_->SubmitCompositorFrame(root_local_surface_id_,
+                                  std::move(root_frame));
+  // The first frame - both root and child surfaces cause damages
+  CompositorFrame aggregated_frame =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+
+  auto* root_render_pass = aggregated_frame.render_pass_list[0].get();
+  auto* root_surface_quad_sqs = root_render_pass->shared_quad_state_list.back();
+  auto* child_surface_quad_sqs =
+      root_render_pass->shared_quad_state_list.front();
+
+  ASSERT_EQ(1u, aggregated_frame.render_pass_list.size());
+  ASSERT_EQ(2u, root_render_pass->shared_quad_state_list.size());
+  EXPECT_EQ(true, root_surface_quad_sqs->has_surface_damage);
+  EXPECT_EQ(true, child_surface_quad_sqs->has_surface_damage);
+
+  // The second frame - only root surface changed
+  CompositorFrame root_frame2 = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame2.render_pass_list, root_passes,
+            &root_frame2.metadata.referenced_surfaces);
+
+  support_->SubmitCompositorFrame(root_local_surface_id_,
+                                  std::move(root_frame2));
+
+  CompositorFrame aggregated_frame2 =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+
+  auto* root_render_pass2 = aggregated_frame2.render_pass_list[0].get();
+  auto* root_surface_quad_sqs2 =
+      root_render_pass2->shared_quad_state_list.back();
+  auto* child_surface_quad_sqs2 =
+      root_render_pass2->shared_quad_state_list.front();
+
+  EXPECT_EQ(true, root_surface_quad_sqs2->has_surface_damage);
+  EXPECT_EQ(false, child_surface_quad_sqs2->has_surface_damage);
+
+  // The third frame - only child surface changed
+  CompositorFrame child_surface_frame3 = MakeEmptyCompositorFrame();
+  AddPasses(&child_surface_frame3.render_pass_list, child_surface_passes,
+            &child_surface_frame3.metadata.referenced_surfaces);
+  child_support_->SubmitCompositorFrame(child_local_surface_id,
+                                        std::move(child_surface_frame3));
+
+  CompositorFrame aggregated_frame3 =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+
+  auto* root_render_pass3 = aggregated_frame3.render_pass_list[0].get();
+  auto* root_surface_quad_sqs3 =
+      root_render_pass3->shared_quad_state_list.back();
+  auto* child_surface_quad_sqs3 =
+      root_render_pass3->shared_quad_state_list.front();
+
+  EXPECT_EQ(false, root_surface_quad_sqs3->has_surface_damage);
+  EXPECT_EQ(true, child_surface_quad_sqs3->has_surface_damage);
 }
 
 }  // namespace

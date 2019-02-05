@@ -130,7 +130,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   SharedQuadState* CopySharedQuadState(const SharedQuadState* source_sqs,
                                        const gfx::Transform& target_transform,
                                        const ClipData& clip_rect,
-                                       RenderPass* dest_render_pass);
+                                       RenderPass* dest_render_pass,
+                                       bool has_surface_damage);
 
   SharedQuadState* CopyAndScaleSharedQuadState(
       const SharedQuadState* source_sqs,
@@ -139,7 +140,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& quad_layer_rect,
       const gfx::Rect& visible_quad_layer_rect,
       const ClipData& clip_rect,
-      RenderPass* dest_render_pass);
+      RenderPass* dest_render_pass,
+      bool has_surface_damage);
 
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
@@ -149,7 +151,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       RenderPass* dest_pass,
-      const SurfaceId& surface_id);
+      const SurfaceId& surface_id,
+      bool has_surface_damage);
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
                         int parent_pass,
@@ -168,6 +171,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void PropagateCopyRequestPasses();
 
   int ChildIdForSurface(Surface* surface);
+  bool IsSurfaceFrameIndexSameAsPrevious(const Surface* surface) const;
   gfx::Rect DamageRectForSurface(const Surface* surface,
                                  const RenderPass& source,
                                  const gfx::Rect& full_rect) const;
