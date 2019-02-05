@@ -351,8 +351,6 @@ ApplyUpdateResult V4Store::ProcessUpdate(
     // Calculate the checksum asynchronously later and if it doesn't match,
     // reset the store.
     expected_checksum_ = expected_checksum;
-
-    apply_update_result = APPLY_UPDATE_SUCCESS;
   } else {
     apply_update_result = MergeUpdate(hash_prefix_map_old, hash_prefix_map,
                                       raw_removals, expected_checksum);
@@ -746,14 +744,14 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
   *(lur->mutable_checksum()) = checksum;
   lur->set_new_client_state(state_);
   lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
-  for (auto map_iter : hash_prefix_map_) {
+  for (const auto& entry : hash_prefix_map_) {
     ThreatEntrySet* additions = lur->add_additions();
     // TODO(vakh): Write RICE encoded hash prefixes on disk. Not doing so
     // currently since it takes a long time to decode them on startup, which
     // blocks resource load. See: http://crbug.com/654819
     additions->set_compression_type(RAW);
-    additions->mutable_raw_hashes()->set_prefix_size(map_iter.first);
-    additions->mutable_raw_hashes()->set_raw_hashes(map_iter.second);
+    additions->mutable_raw_hashes()->set_prefix_size(entry.first);
+    additions->mutable_raw_hashes()->set_raw_hashes(entry.second);
   }
 
   // Attempt writing to a temporary file first and at the end, swap the files.

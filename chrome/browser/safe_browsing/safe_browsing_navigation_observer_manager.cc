@@ -453,7 +453,7 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
     content::WebContents* source_web_contents,
     int source_render_process_id,
     int source_render_frame_id,
-    GURL target_url,
+    const GURL& target_url,
     ui::PageTransition page_transition,
     content::WebContents* target_web_contents,
     bool renderer_initiated) {
@@ -603,7 +603,7 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
   referrer_chain_entry->set_type(type);
   auto ip_it = host_to_ip_map_.find(destination_url.host());
   if (ip_it != host_to_ip_map_.end()) {
-    for (ResolvedIPAddress entry : ip_it->second) {
+    for (const ResolvedIPAddress& entry : ip_it->second) {
       referrer_chain_entry->add_ip_addresses(entry.ip);
     }
   }
