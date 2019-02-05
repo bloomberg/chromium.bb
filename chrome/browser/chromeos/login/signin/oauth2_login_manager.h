@@ -14,11 +14,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_verifier.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class GoogleServiceAuthError;
 class Profile;
-class ProfileOAuth2TokenService;
 
 namespace chromeos {
 
@@ -26,7 +25,7 @@ namespace chromeos {
 // OAuth2 refresh tokens or pre-authenticated cookie jar.
 class OAuth2LoginManager : public KeyedService,
                            public OAuth2LoginVerifier::Delegate,
-                           public OAuth2TokenService::Observer {
+                           public identity::IdentityManager::Observer {
  public:
   // Session restore states.
   enum SessionRestoreState {
@@ -153,15 +152,16 @@ class OAuth2LoginManager : public KeyedService,
       const std::vector<gaia::ListedAccount>& accounts) override;
   void OnListAccountsFailure(bool connection_error) override;
 
-  // OAuth2TokenService::Observer implementation:
-  void OnRefreshTokenAvailable(const std::string& user_email) override;
+  // identity::IdentityManager::Observer implementation:
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
 
   // Signals delegate that authentication is completed, kicks off token fetching
   // process.
   void CompleteAuthentication();
 
-  // Retrieves ProfileOAuth2TokenService for |user_profile_|.
-  ProfileOAuth2TokenService* GetTokenService();
+  // Retrieves IdentityManager for |user_profile_|.
+  identity::IdentityManager* GetIdentityManager();
 
   // Retrieves the primary account for |user_profile_|.
   std::string GetPrimaryAccountId();
@@ -171,9 +171,6 @@ class OAuth2LoginManager : public KeyedService,
   // account id is not present, GetAccountInfoOfRefreshToken will be called to
   // retrieve the associated account info.
   void StoreOAuth2Token();
-
-  // Update the token service and inform listeners of a new refresh token.
-  void UpdateCredentials(const std::string& account_id);
 
   // Checks if primary account sessions cookies are stale and restores them
   // if needed.
