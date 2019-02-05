@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 494 tests; 335 PASS, 159 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 494 tests; 341 PASS, 153 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: ReferenceError: RTCSctpTransport is not defined Reached unreachable code
@@ -492,15 +492,15 @@ FAIL RTCStatsEvent interface: existence and properties of interface prototype ob
 FAIL RTCStatsEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCStatsEvent" expected property "RTCStatsEvent" missing
 FAIL RTCStatsEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "RTCStatsEvent" expected property "RTCStatsEvent" missing
 FAIL RTCStatsEvent interface: attribute report assert_own_property: self does not have own property "RTCStatsEvent" expected property "RTCStatsEvent" missing
-FAIL RTCErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent interface object length assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent interface object name assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent interface: attribute error assert_own_property: self does not have own property "RTCErrorEvent" expected property "RTCErrorEvent" missing
-FAIL RTCErrorEvent must be primary interface of new RTCErrorEvent('error') assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCErrorEvent is not defined"
-FAIL Stringification of new RTCErrorEvent('error') assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCErrorEvent is not defined"
-FAIL RTCErrorEvent interface: new RTCErrorEvent('error') must inherit property "error" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: RTCErrorEvent is not defined"
+PASS RTCErrorEvent interface: existence and properties of interface object
+FAIL RTCErrorEvent interface object length assert_equals: wrong value for RTCErrorEvent.length expected 1 but got 2
+PASS RTCErrorEvent interface object name
+PASS RTCErrorEvent interface: existence and properties of interface prototype object
+PASS RTCErrorEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS RTCErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS RTCErrorEvent interface: attribute error
+FAIL RTCErrorEvent must be primary interface of new RTCErrorEvent('error') assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCErrorEvent': 2 arguments required, but only 1 present."
+FAIL Stringification of new RTCErrorEvent('error') assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCErrorEvent': 2 arguments required, but only 1 present."
+FAIL RTCErrorEvent interface: new RTCErrorEvent('error') must inherit property "error" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'RTCErrorEvent': 2 arguments required, but only 1 present."
 Harness: the test ran to completion.
 

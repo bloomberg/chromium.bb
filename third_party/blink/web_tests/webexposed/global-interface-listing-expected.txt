@@ -5628,6 +5628,10 @@ interface RTCError : DOMException
     getter sdpLineNumber
     getter sentAlert
     method constructor
+interface RTCErrorEvent : Event
+    attribute @@toStringTag
+    getter error
+    method constructor
 interface RTCIceCandidate
     attribute @@toStringTag
     getter address

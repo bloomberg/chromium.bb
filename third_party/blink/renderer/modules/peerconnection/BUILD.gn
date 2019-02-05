@@ -61,6 +61,8 @@ blink_modules_sources("peerconnection") {
     "rtc_dtmf_tone_change_event.h",
     "rtc_error.cc",
     "rtc_error.h",
+    "rtc_error_event.cc",
+    "rtc_error_event.h",
     "rtc_error_util.cc",
     "rtc_error_util.h",
     "rtc_ice_candidate.cc",
