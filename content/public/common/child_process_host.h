@@ -88,6 +88,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_

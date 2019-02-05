@@ -17,7 +17,7 @@ class WebContents;
 // ScreenOrientationProvider.
 class CONTENT_EXPORT ScreenOrientationDelegate {
  public:
-  ScreenOrientationDelegate() {};
+  ScreenOrientationDelegate() {}
   virtual ~ScreenOrientationDelegate() {}
 
   // Returns true if the tab must be fullscreen in order for

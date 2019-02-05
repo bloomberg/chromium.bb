@@ -24,6 +24,6 @@ enum class FontFallbackPriority {
 
 bool IsNonTextFallbackPriority(FontFallbackPriority);
 
-};  // namespace blink
+}  // namespace blink
 
 #endif

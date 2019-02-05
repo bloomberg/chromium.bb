@@ -754,8 +754,8 @@ class PLATFORM_EXPORT BaseArena {
 
   bool WillObjectBeLazilySwept(BasePage*, void*) const;
 
-  virtual void VerifyObjectStartBitmap(){};
-  virtual void VerifyMarking(){};
+  virtual void VerifyObjectStartBitmap() {}
+  virtual void VerifyMarking() {}
 
  protected:
   bool SweepingCompleted() const { return !first_unswept_page_; }

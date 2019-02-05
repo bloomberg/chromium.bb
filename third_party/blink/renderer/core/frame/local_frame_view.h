@@ -654,7 +654,7 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutUnit CaretWidth() const;
 
-  size_t PaintFrameCount() const { return paint_frame_count_; };
+  size_t PaintFrameCount() const { return paint_frame_count_; }
 
   // Return the ScrollableArea in a FrameView with the given ElementId, if any.
   // This is not recursive and will only return ScrollableAreas owned by this

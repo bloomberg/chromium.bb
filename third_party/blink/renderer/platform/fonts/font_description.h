@@ -189,7 +189,7 @@ class PLATFORM_EXPORT FontDescription {
   VariantLigatures GetVariantLigatures() const;
   FontVariantNumeric VariantNumeric() const {
     return FontVariantNumeric::InitializeFromUnsigned(fields_.variant_numeric_);
-  };
+  }
   LigaturesState CommonLigaturesState() const {
     return static_cast<LigaturesState>(fields_.common_ligatures_state_);
   }

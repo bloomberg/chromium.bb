@@ -53,7 +53,7 @@ struct DigestValueHash {
   }
   static bool Equal(const blink::DigestValue& a, const blink::DigestValue& b) {
     return a == b;
-  };
+  }
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 template <>

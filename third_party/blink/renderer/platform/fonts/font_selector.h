@@ -64,7 +64,7 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
   virtual void RegisterForInvalidationCallbacks(FontSelectorClient*) = 0;
   virtual void UnregisterForInvalidationCallbacks(FontSelectorClient*) = 0;
 
-  virtual void FontFaceInvalidated(){};
+  virtual void FontFaceInvalidated() {}
 
   virtual ExecutionContext* GetExecutionContext() const = 0;
 

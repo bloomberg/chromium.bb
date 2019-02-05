@@ -31,7 +31,7 @@ class AX_EXPORT AXActionHandler {
 
   // A tree id appropriate for annotating events sent to an accessibility
   // client.
-  const AXTreeID& ax_tree_id() const { return tree_id_; };
+  const AXTreeID& ax_tree_id() const { return tree_id_; }
 
  protected:
   AXActionHandler();

@@ -28,7 +28,7 @@ struct FinalizerTraitImpl<T, true> {
   static void Finalize(void* obj) {
     static_assert(sizeof(T), "T must be fully defined");
     static_cast<T*>(obj)->FinalizeGarbageCollectedObject();
-  };
+  }
 };
 
 template <typename T>
@@ -36,7 +36,7 @@ struct FinalizerTraitImpl<T, false> {
   STATIC_ONLY(FinalizerTraitImpl);
   static void Finalize(void* obj) {
     static_assert(sizeof(T), "T must be fully defined");
-  };
+  }
 };
 
 // The FinalizerTrait is used to determine if a type requires finalization and

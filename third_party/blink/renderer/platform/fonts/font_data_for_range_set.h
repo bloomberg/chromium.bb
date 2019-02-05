@@ -39,14 +39,14 @@ class SimpleFontData;
 class PLATFORM_EXPORT FontDataForRangeSet
     : public RefCounted<FontDataForRangeSet> {
  public:
-  explicit FontDataForRangeSet(scoped_refptr<SimpleFontData> font_data = nullptr,
-                               scoped_refptr<UnicodeRangeSet> range_set = nullptr)
+  explicit FontDataForRangeSet(
+      scoped_refptr<SimpleFontData> font_data = nullptr,
+      scoped_refptr<UnicodeRangeSet> range_set = nullptr)
       : font_data_(std::move(font_data)), range_set_(std::move(range_set)) {}
 
   FontDataForRangeSet(const FontDataForRangeSet& other);
 
   virtual ~FontDataForRangeSet() = default;
-  ;
 
   bool Contains(UChar32 test_char) const {
     return !range_set_ || range_set_->Contains(test_char);

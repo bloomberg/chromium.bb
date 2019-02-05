@@ -14,7 +14,7 @@
 
 namespace base {
 class HistogramBase;
-};
+}
 
 namespace blink {
 

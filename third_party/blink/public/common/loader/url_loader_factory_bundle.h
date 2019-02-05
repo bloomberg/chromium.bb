@@ -18,7 +18,7 @@
 
 namespace network {
 struct ResourceRequest;
-};
+}
 
 namespace blink {
 

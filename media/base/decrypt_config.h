@@ -70,7 +70,7 @@ class MEDIA_EXPORT DecryptConfig {
   const EncryptionMode& encryption_mode() const { return encryption_mode_; }
   const base::Optional<EncryptionPattern>& encryption_pattern() const {
     return encryption_pattern_;
-  };
+  }
 
   std::unique_ptr<DecryptConfig> Clone() const;
 

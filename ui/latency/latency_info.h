@@ -192,7 +192,7 @@ class LatencyInfo {
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
   void set_ukm_source_id(ukm::SourceId id) { ukm_source_id_ = id; }
   const std::string& trace_name() const { return trace_name_; }
-  void set_scroll_update_delta(float delta) { scroll_update_delta_ = delta; };
+  void set_scroll_update_delta(float delta) { scroll_update_delta_ = delta; }
   float scroll_update_delta() const { return scroll_update_delta_; }
 
  private:

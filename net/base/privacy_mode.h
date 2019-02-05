@@ -14,6 +14,6 @@ enum PrivacyMode {
   PRIVACY_MODE_ENABLED = 1,
 };
 
-};  // namespace net
+}  // namespace net
 
 #endif  // NET_BASE_PRIVACY_MODE_H_

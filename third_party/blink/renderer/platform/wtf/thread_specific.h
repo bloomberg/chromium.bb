@@ -49,7 +49,7 @@ class ThreadSpecific {
   USING_FAST_MALLOC(ThreadSpecific);
 
  public:
-  ThreadSpecific() : slot_(&Destroy){};
+  ThreadSpecific() : slot_(&Destroy) {}
   bool
   IsSet();  // Useful as a fast check to see if this thread has set this value.
   T* operator->();
