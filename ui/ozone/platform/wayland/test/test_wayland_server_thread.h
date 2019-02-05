@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_FAKE_SERVER_H_
-#define UI_OZONE_PLATFORM_WAYLAND_FAKE_SERVER_H_
+#ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_WAYLAND_SERVER_THREAD_H_
+#define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_WAYLAND_SERVER_THREAD_H_
 
 #include <memory>
 #include <vector>
@@ -33,23 +33,25 @@ struct DisplayDeleter {
   void operator()(wl_display* display);
 };
 
-class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
+class TestWaylandServerThread : public base::Thread,
+                                base::MessagePumpLibevent::FdWatcher {
  public:
-  FakeServer();
-  ~FakeServer() override;
+  TestWaylandServerThread();
+  ~TestWaylandServerThread() override;
 
-  // Start the fake Wayland server. If this succeeds, the WAYLAND_SOCKET
+  // Starts the test Wayland server thread. If this succeeds, the WAYLAND_SOCKET
   // environment variable will be set to the string representation of a file
   // descriptor that a client can connect to. The caller is responsible for
   // ensuring that this file descriptor gets closed (for example, by calling
-  // wl_display_connect). Start instantiates an xdg_shell version 5 or 6
-  // according to |shell_version| passed.
+  // wl_display_connect).
+  // Instantiates an xdg_shell of version |shell_version|; versions 5 and 6 are
+  // supported.
   bool Start(uint32_t shell_version);
 
-  // Pause the server when it becomes idle.
+  // Pauses the server thread when it becomes idle.
   void Pause();
 
-  // Resume the server after flushing client connections.
+  // Resumes the server thread after flushing client connections.
   void Resume();
 
   template <typename T>
@@ -108,9 +110,9 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
 
   base::MessagePumpLibevent::FdWatchController controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeServer);
+  DISALLOW_COPY_AND_ASSIGN(TestWaylandServerThread);
 };
 
 }  // namespace wl
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_FAKE_SERVER_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_WAYLAND_SERVER_THREAD_H_

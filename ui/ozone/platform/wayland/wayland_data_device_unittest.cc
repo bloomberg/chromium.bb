@@ -9,13 +9,13 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_data_device.h"
 #include "ui/ozone/platform/wayland/test/test_data_device_manager.h"
 #include "ui/ozone/platform/wayland/test/test_data_offer.h"
 #include "ui/ozone/platform/wayland/test/test_data_source.h"
+#include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
@@ -86,6 +86,7 @@ class WaylandDataDeviceManagerTest : public WaylandTest {
   wl::TestDataDeviceManager* data_device_manager_;
   std::unique_ptr<MockClipboardClient> clipboard_client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(WaylandDataDeviceManagerTest);
 };
 

@@ -8,9 +8,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
-#include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_pointer.h"
+#include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_screen.h"

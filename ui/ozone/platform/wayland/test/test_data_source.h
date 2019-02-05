@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_DATA_SOURCE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_DATA_SOURCE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,10 +13,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 
 struct wl_resource;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace wl {
 
@@ -37,7 +41,7 @@ class TestDataSource : public ServerObject {
  private:
   void DataReadCb(ReadDataCallback callback, const std::vector<uint8_t>& data);
 
-  base::Thread io_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<TestDataSource> read_data_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataSource);

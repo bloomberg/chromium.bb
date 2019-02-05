@@ -16,39 +16,23 @@ namespace {
 constexpr uint32_t kDataDeviceManagerVersion = 3;
 
 void CreateDataSource(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* data_source_resource = wl_resource_create(
-      client, &wl_data_source_interface, wl_resource_get_version(resource), id);
-  if (!data_source_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-
-  SetImplementation(data_source_resource, &kTestDataSourceImpl,
-                    std::make_unique<TestDataSource>(data_source_resource));
-
-  auto* data_device_manager = GetUserDataAs<TestDataDeviceManager>(resource);
-  data_device_manager->set_data_source(
+  wl_resource* data_source_resource = CreateResourceWithImpl<TestDataSource>(
+      client, &wl_data_source_interface, wl_resource_get_version(resource),
+      &kTestDataSourceImpl, id);
+  GetUserDataAs<TestDataDeviceManager>(resource)->set_data_source(
       GetUserDataAs<TestDataSource>(data_source_resource));
 }
 
 void GetDataDevice(wl_client* client,
-                   wl_resource* resource,
+                   wl_resource* data_device_manager_resource,
                    uint32_t id,
                    wl_resource* seat_resource) {
-  wl_resource* data_device_resource = wl_resource_create(
-      client, &wl_data_device_interface, wl_resource_get_version(resource), id);
-  if (!data_device_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-
-  SetImplementation(
-      data_device_resource, &kTestDataDeviceImpl,
-      std::make_unique<TestDataDevice>(client, data_device_resource));
-
-  auto* data_device_manager = GetUserDataAs<TestDataDeviceManager>(resource);
-  data_device_manager->set_data_device(
-      GetUserDataAs<TestDataDevice>(data_device_resource));
+  wl_resource* resource = CreateResourceWithImpl<TestDataDevice>(
+      client, &wl_data_device_interface,
+      wl_resource_get_version(data_device_manager_resource),
+      &kTestDataDeviceImpl, id, client);
+  GetUserDataAs<TestDataDeviceManager>(data_device_manager_resource)
+      ->set_data_device(GetUserDataAs<TestDataDevice>(resource));
 }
 
 }  // namespace

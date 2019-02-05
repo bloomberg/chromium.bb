@@ -112,15 +112,9 @@ void GetZXdgPopupV6(struct wl_client* client,
     return;
   }
 
-  wl_resource* popup_resource = wl_resource_create(
-      client, &zxdg_popup_v6_interface, wl_resource_get_version(resource), id);
-  if (!popup_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-
-  SetImplementation(popup_resource, &kZxdgPopupV6Impl,
-                    std::make_unique<MockXdgPopup>(popup_resource));
+  CreateResourceWithImpl<MockXdgPopup>(client, &zxdg_popup_v6_interface,
+                                       wl_resource_get_version(resource),
+                                       &kZxdgPopupV6Impl, id);
 }
 
 const struct xdg_surface_interface kMockXdgSurfaceImpl = {

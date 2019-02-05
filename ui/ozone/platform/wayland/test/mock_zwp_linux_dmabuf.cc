@@ -17,12 +17,9 @@ namespace {
 constexpr uint32_t kLinuxDmabufVersion = 1;
 
 void CreateParams(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* buffer_params_resource =
-      wl_resource_create(client, &zwp_linux_buffer_params_v1_interface,
-                         wl_resource_get_version(resource), id);
-  SetImplementation(
-      buffer_params_resource, &kMockZwpLinuxBufferParamsV1Impl,
-      std::make_unique<MockZwpLinuxBufferParamsV1>(buffer_params_resource));
+  CreateResourceWithImpl<MockZwpLinuxBufferParamsV1>(
+      client, &zwp_linux_buffer_params_v1_interface,
+      wl_resource_get_version(resource), &kMockZwpLinuxBufferParamsV1Impl, id);
 
   GetUserDataAs<MockZwpLinuxDmabufV1>(resource)->CreateParams(client, resource,
                                                               id);

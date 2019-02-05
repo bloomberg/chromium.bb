@@ -72,15 +72,9 @@ void GetXdgPopup(struct wl_client* client,
     return;
   }
 
-  wl_resource* popup_resource = wl_resource_create(
-      client, &xdg_popup_interface, wl_resource_get_version(resource), id);
-  if (!popup_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-
-  SetImplementation(popup_resource, &kXdgPopupImpl,
-                    std::make_unique<MockXdgPopup>(popup_resource));
+  CreateResourceWithImpl<MockXdgPopup>(client, &xdg_popup_interface,
+                                       wl_resource_get_version(resource),
+                                       &kXdgPopupImpl, id);
 }
 
 void Pong(wl_client* client, wl_resource* resource, uint32_t serial) {
@@ -90,16 +84,9 @@ void Pong(wl_client* client, wl_resource* resource, uint32_t serial) {
 void CreatePositioner(wl_client* client,
                       struct wl_resource* resource,
                       uint32_t id) {
-  wl_resource* positioner_resource =
-      wl_resource_create(client, &zxdg_positioner_v6_interface,
-                         wl_resource_get_version(resource), id);
-  if (!positioner_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-
-  SetImplementation(positioner_resource, &kTestZxdgPositionerV6Impl,
-                    std::make_unique<TestPositioner>(positioner_resource));
+  CreateResourceWithImpl<TestPositioner>(client, &zxdg_positioner_v6_interface,
+                                         wl_resource_get_version(resource),
+                                         &kTestZxdgPositionerV6Impl, id);
 }
 
 void GetXdgSurfaceV6(wl_client* client,

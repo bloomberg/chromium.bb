@@ -5,10 +5,14 @@
 #include "ui/ozone/platform/wayland/test/test_data_offer.h"
 
 #include <wayland-server-core.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
 
 namespace wl {
@@ -58,12 +62,9 @@ const struct wl_data_offer_interface kTestDataOfferImpl = {
 
 TestDataOffer::TestDataOffer(wl_resource* resource)
     : ServerObject(resource),
-      io_thread_("Worker thread"),
-      write_data_weak_ptr_factory_(this) {
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  io_thread_.StartWithOptions(options);
-}
+      task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      write_data_weak_ptr_factory_(this) {}
 
 TestDataOffer::~TestDataOffer() {}
 
@@ -75,9 +76,8 @@ void TestDataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
   else if (mime_type == kTextMimeTypeText)
     text_data = kSampleTextForDragAndDrop;
 
-  io_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WriteDataOnWorkerThread, std::move(fd), text_data));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&WriteDataOnWorkerThread,
+                                                   std::move(fd), text_data));
 }
 
 void TestDataOffer::OnOffer(const std::string& mime_type) {

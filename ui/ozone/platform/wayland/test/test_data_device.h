@@ -22,7 +22,7 @@ class TestDataSource;
 
 class TestDataDevice : public ServerObject {
  public:
-  TestDataDevice(wl_client* client, wl_resource* resource);
+  TestDataDevice(wl_resource* resource, wl_client* client);
   ~TestDataDevice() override;
 
   void SetSelection(TestDataSource* data_source, uint32_t serial);

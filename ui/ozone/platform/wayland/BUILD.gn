@@ -153,8 +153,6 @@ source_set("test_support") {
   testonly = true
 
   sources = [
-    "fake_server.cc",
-    "fake_server.h",
     "test/constants.h",
     "test/global_object.cc",
     "test/global_object.h",
@@ -200,6 +198,8 @@ source_set("test_support") {
     "test/test_seat.h",
     "test/test_touch.cc",
     "test/test_touch.h",
+    "test/test_wayland_server_thread.cc",
+    "test/test_wayland_server_thread.h",
     "test/test_zwp_text_input_manager.cc",
     "test/test_zwp_text_input_manager.h",
   ]

@@ -6,6 +6,8 @@
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_SERVER_OBJECT_H_
 
 #include <memory>
+#include <type_traits>
+#include <utility>
 
 #include "base/macros.h"
 
@@ -40,8 +42,10 @@ T* GetUserDataAs(wl_resource* resource) {
 template <class T>
 std::unique_ptr<T> TakeUserDataAs(wl_resource* resource) {
   std::unique_ptr<T> user_data(GetUserDataAs<T>(resource));
-  // Make sure ServerObject doesn't try to destroy the resource twice.
-  ServerObject::OnResourceDestroyed(resource);
+  if (std::is_base_of<ServerObject, T>::value) {
+    // Make sure ServerObject doesn't try to destroy the resource twice.
+    ServerObject::OnResourceDestroyed(resource);
+  }
   wl_resource_set_user_data(resource, nullptr);
   return user_data;
 }
@@ -59,6 +63,24 @@ void SetImplementation(wl_resource* resource,
                                  DestroyUserData<T>);
 }
 
+template <typename ImplClass, typename... ImplArgs>
+wl_resource* CreateResourceWithImpl(wl_client* client,
+                                    const struct wl_interface* interface,
+                                    int version,
+                                    const void* implementation,
+                                    uint32_t id,
+                                    ImplArgs&&... impl_args) {
+  wl_resource* resource = wl_resource_create(client, interface, version, id);
+  if (!resource) {
+    wl_client_post_no_memory(client);
+    return nullptr;
+  }
+  SetImplementation(resource, implementation,
+                    std::make_unique<ImplClass>(
+                        resource, std::forward<ImplArgs&&>(impl_args)...));
+  return resource;
+}
+
 // Does not transfer ownership of the user_data.  Use with caution.  The only
 // legitimate purpose is setting more than one implementation to the same user
 // data.
@@ -66,6 +88,8 @@ template <class T>
 void SetImplementationUnretained(wl_resource* resource,
                                  const void* implementation,
                                  T* user_data) {
+  static_assert(std::is_base_of<ServerObject, T>::value,
+                "Only types derived from ServerObject are supported!");
   wl_resource_set_implementation(resource, implementation, user_data,
                                  &ServerObject::OnResourceDestroyed);
 }

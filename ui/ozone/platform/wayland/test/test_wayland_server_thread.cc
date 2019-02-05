@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/fake_server.h"
+#include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -21,20 +21,20 @@ void DisplayDeleter::operator()(wl_display* display) {
   wl_display_destroy(display);
 }
 
-FakeServer::FakeServer()
-    : Thread("fake_wayland_server"),
+TestWaylandServerThread::TestWaylandServerThread()
+    : Thread("test_wayland_server"),
       pause_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       resume_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
       controller_(FROM_HERE) {}
 
-FakeServer::~FakeServer() {
+TestWaylandServerThread::~TestWaylandServerThread() {
   Resume();
   Stop();
 }
 
-bool FakeServer::Start(uint32_t shell_version) {
+bool TestWaylandServerThread::Start(uint32_t shell_version) {
   display_.reset(wl_display_create());
   if (!display_)
     return false;
@@ -63,23 +63,24 @@ bool FakeServer::Start(uint32_t shell_version) {
   if (shell_version == 5) {
     if (!xdg_shell_.Initialize(display_.get()))
       return false;
-  } else {
+  } else if (shell_version == 6) {
     if (!zxdg_shell_v6_.Initialize(display_.get()))
       return false;
+  } else {
+    NOTREACHED() << "Unsupported shell version: " << shell_version;
   }
   if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
     return false;
   if (!zwp_linux_dmabuf_v1_.Initialize(display_.get()))
     return false;
 
-  client_ = wl_client_create(display_.get(), server_fd.get());
+  client_ = wl_client_create(display_.get(), server_fd.release());
   if (!client_)
     return false;
-  (void)server_fd.release();
 
   base::Thread::Options options;
   options.message_pump_factory = base::BindRepeating(
-      &FakeServer::CreateMessagePump, base::Unretained(this));
+      &TestWaylandServerThread::CreateMessagePump, base::Unretained(this));
   if (!base::Thread::StartWithOptions(options))
     return false;
 
@@ -88,25 +89,27 @@ bool FakeServer::Start(uint32_t shell_version) {
   return true;
 }
 
-void FakeServer::Pause() {
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeServer::DoPause, base::Unretained(this)));
+void TestWaylandServerThread::Pause() {
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&TestWaylandServerThread::DoPause,
+                                         base::Unretained(this)));
   pause_event_.Wait();
 }
 
-void FakeServer::Resume() {
+void TestWaylandServerThread::Resume() {
   if (display_)
     wl_display_flush_clients(display_.get());
   resume_event_.Signal();
 }
 
-void FakeServer::DoPause() {
+void TestWaylandServerThread::DoPause() {
   base::RunLoop().RunUntilIdle();
   pause_event_.Signal();
   resume_event_.Wait();
 }
 
-std::unique_ptr<base::MessagePump> FakeServer::CreateMessagePump() {
+std::unique_ptr<base::MessagePump>
+TestWaylandServerThread::CreateMessagePump() {
   auto pump = std::make_unique<base::MessagePumpLibevent>();
   pump->WatchFileDescriptor(wl_event_loop_get_fd(event_loop_), true,
                             base::MessagePumpLibevent::WATCH_READ, &controller_,
@@ -114,11 +117,11 @@ std::unique_ptr<base::MessagePump> FakeServer::CreateMessagePump() {
   return std::move(pump);
 }
 
-void FakeServer::OnFileCanReadWithoutBlocking(int fd) {
+void TestWaylandServerThread::OnFileCanReadWithoutBlocking(int fd) {
   wl_event_loop_dispatch(event_loop_, 0);
   wl_display_flush_clients(display_.get());
 }
 
-void FakeServer::OnFileCanWriteWithoutBlocking(int fd) {}
+void TestWaylandServerThread::OnFileCanWriteWithoutBlocking(int fd) {}
 
 }  // namespace wl

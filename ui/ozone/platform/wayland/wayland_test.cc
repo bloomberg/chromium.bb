@@ -15,12 +15,14 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
 
-using ::testing::SaveArg;
 using ::testing::_;
+using ::testing::SaveArg;
 
 namespace ui {
 
-WaylandTest::WaylandTest() {
+WaylandTest::WaylandTest()
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
 #if BUILDFLAG(USE_XKBCOMMON)
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
       std::make_unique<WaylandXkbKeyboardLayoutEngine>(
