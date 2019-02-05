@@ -8,6 +8,7 @@
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
@@ -16,28 +17,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace media_router {
-
-namespace {
-
-SkColor GetIconColor(const gfx::VectorIcon* icon_id) {
-  if (icon_id == &::vector_icons::kMediaRouterIdleIcon)
-    return gfx::kChromeIconGrey;
-  else if (icon_id == &::vector_icons::kMediaRouterActiveIcon)
-    return gfx::kGoogleBlue500;
-  else if (icon_id == &::vector_icons::kMediaRouterWarningIcon)
-    return gfx::kGoogleYellow700;
-  else if (icon_id == &::vector_icons::kMediaRouterErrorIcon)
-    return gfx::kGoogleRed700;
-
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<CastToolbarButton> CastToolbarButton::Create(Browser* browser) {
@@ -177,6 +162,23 @@ void CastToolbarButton::UpdateIcon() {
 
 MediaRouterActionController* CastToolbarButton::GetActionController() const {
   return MediaRouterUIService::Get(profile_)->action_controller();
+}
+
+SkColor CastToolbarButton::GetIconColor(const gfx::VectorIcon* icon_id) const {
+  if (icon_id == &::vector_icons::kMediaRouterIdleIcon) {
+    return GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  } else if (icon_id == &::vector_icons::kMediaRouterActiveIcon) {
+    return gfx::kGoogleBlue500;
+  } else if (icon_id == &::vector_icons::kMediaRouterWarningIcon) {
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityMedium);
+  } else if (icon_id == &::vector_icons::kMediaRouterErrorIcon) {
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityHigh);
+  }
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
 }
 
 }  // namespace media_router
