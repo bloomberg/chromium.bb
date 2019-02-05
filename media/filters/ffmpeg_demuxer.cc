@@ -570,7 +570,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   const base::TimeDelta stream_timestamp =
       ConvertStreamTimestamp(stream_->time_base, packet->pts);
 
-  if (stream_timestamp == kNoTimestamp) {
+  if (stream_timestamp == kNoTimestamp ||
+      stream_timestamp == kInfiniteDuration) {
     MEDIA_LOG(ERROR, media_log_) << "FFmpegDemuxer: PTS is not defined";
     demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
     return;
