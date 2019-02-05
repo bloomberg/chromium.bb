@@ -128,6 +128,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
     native_printers_allowed_.Init(prefs::kUserNativePrintersAllowed,
                                   pref_service);
+    send_username_and_filename_.Init(
+        prefs::kPrintingSendUsernameAndFilenameEnabled, pref_service);
   }
 
   ~CupsPrintersManagerImpl() override = default;
@@ -140,6 +142,17 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       LOG(WARNING) << "Attempting to retrieve native printers when "
                       "UserNativePrintersAllowed is set to false";
       return {};
+    }
+    if (send_username_and_filename_.GetValue()) {
+      std::vector<Printer> result(printers_[printer_class].size());
+      auto it_end = std::copy_if(
+          printers_[printer_class].begin(), printers_[printer_class].end(),
+          result.begin(), [](const Printer& printer) {
+            return !printer.HasNetworkProtocol() ||
+                   printer.GetProtocol() == Printer::kIpps;
+          });
+      result.resize(it_end - result.begin());
+      return result;
     }
     return printers_.at(printer_class);
   }
@@ -556,6 +569,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Holds the current value of the pref |UserNativePrintersAllowed|.
   BooleanPrefMember native_printers_allowed_;
 
+  // Holds the current value of the pref
+  // |PrintingSendUsernameAndFilenameEnabled|.
+  BooleanPrefMember send_username_and_filename_;
+
   base::WeakPtrFactory<CupsPrintersManagerImpl> weak_ptr_factory_;
 };
 
@@ -599,6 +616,8 @@ void CupsPrintersManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kUserNativePrintersAllowed, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPrintingSendUsernameAndFilenameEnabled,
+                                false);
 }
 
 }  // namespace chromeos
