@@ -979,6 +979,13 @@ void GpuProcessHost::DidInitialize(
                                            gpu_feature_info_for_hardware_gpu);
     gpu_data_manager->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
   }
+
+#if defined(OS_ANDROID)
+  // Android may kill the GPU process to free memory, especially when the app
+  // is the background, so Android cannot have a hard limit on GPU starts.
+  // Reset crash count on Android when context creation succeeds.
+  hardware_accelerated_recent_crash_count_ = 0;
+#endif
 }
 
 void GpuProcessHost::DidFailInitialize() {
