@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/traced_process.h"
-#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/public/mojom/traced_process.mojom.h"
 
 namespace service_manager {
 

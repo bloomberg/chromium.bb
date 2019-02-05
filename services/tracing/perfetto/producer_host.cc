@@ -105,41 +105,11 @@ void ProducerHost::Flush(
 // sanitization here because ProducerEndpoint::CommitData() (And any other
 // ProducerEndpoint methods) are designed to deal with malformed / malicious
 // inputs.
-void ProducerHost::CommitData(mojom::CommitDataRequestPtr data_request) {
-  perfetto::CommitDataRequest native_data_request;
-
-  // TODO(oysteine): Set up a TypeTrait for this instead of manual conversion.
-  native_data_request.set_flush_request_id(data_request->flush_request_id);
-
-  for (auto& chunk : data_request->chunks_to_move) {
-    auto* new_chunk = native_data_request.add_chunks_to_move();
-    new_chunk->set_page(chunk->page);
-    new_chunk->set_chunk(chunk->chunk);
-    new_chunk->set_target_buffer(chunk->target_buffer);
-  }
-
-  for (auto& chunk_patch : data_request->chunks_to_patch) {
-    auto* new_chunk_patch = native_data_request.add_chunks_to_patch();
-    new_chunk_patch->set_target_buffer(chunk_patch->target_buffer);
-    new_chunk_patch->set_writer_id(chunk_patch->writer_id);
-    new_chunk_patch->set_chunk_id(chunk_patch->chunk_id);
-
-    for (auto& patch : chunk_patch->patches) {
-      auto* new_patch = new_chunk_patch->add_patches();
-      new_patch->set_offset(patch->offset);
-      new_patch->set_data(patch->data);
-    }
-
-    new_chunk_patch->set_has_more_patches(chunk_patch->has_more_patches);
-  }
-
+void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request) {
   if (on_commit_callback_for_testing_) {
-    on_commit_callback_for_testing_.Run(native_data_request);
+    on_commit_callback_for_testing_.Run(data_request);
   }
-
-  // TODO(oysteine): Pass through an optional callback for
-  // tests to know when a commit is completed.
-  producer_endpoint_->CommitData(native_data_request);
+  producer_endpoint_->CommitData(data_request);
 }
 
 void ProducerHost::RegisterDataSource(

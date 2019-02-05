@@ -242,39 +242,6 @@ void ProducerClient::NotifyDataSourceStopped(
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
-  // The CommitDataRequest which the SharedMemoryArbiter uses to
-  // signal Perfetto that individual chunks have finished being
-  // written and is ready for consumption, needs to be serialized
-  // into the corresponding Mojo class and sent over to the
-  // service-side.
-  auto new_data_request = mojom::CommitDataRequest::New();
-
-  new_data_request->flush_request_id = commit.flush_request_id();
-  for (auto& chunk : commit.chunks_to_move()) {
-    auto new_chunk = mojom::ChunksToMove::New();
-    new_chunk->page = chunk.page();
-    new_chunk->chunk = chunk.chunk();
-    new_chunk->target_buffer = chunk.target_buffer();
-    new_data_request->chunks_to_move.push_back(std::move(new_chunk));
-  }
-
-  for (auto& chunk_patch : commit.chunks_to_patch()) {
-    auto new_chunk_patch = mojom::ChunksToPatch::New();
-    new_chunk_patch->target_buffer = chunk_patch.target_buffer();
-    new_chunk_patch->writer_id = chunk_patch.writer_id();
-    new_chunk_patch->chunk_id = chunk_patch.chunk_id();
-
-    for (auto& patch : chunk_patch.patches()) {
-      auto new_patch = mojom::ChunkPatch::New();
-      new_patch->offset = patch.offset();
-      new_patch->data = patch.data();
-      new_chunk_patch->patches.push_back(std::move(new_patch));
-    }
-
-    new_chunk_patch->has_more_patches = chunk_patch.has_more_patches();
-    new_data_request->chunks_to_patch.push_back(std::move(new_chunk_patch));
-  }
-
   // TODO(oysteine): Remove the PostTask once Perfetto is fixed to always call
   // CommitData on its provided TaskRunner, right now it'll call it on whatever
   // thread is requesting a new chunk when the SharedMemoryBuffer is full. Until
@@ -282,18 +249,18 @@ void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
   // ProducerClient gets destroyed) but should be okay while the Perfetto
   // integration is behind a flag.
   if (GetTaskRunner()->RunsTasksInCurrentSequence()) {
-    producer_host_->CommitData(std::move(new_data_request));
+    producer_host_->CommitData(commit);
   } else {
     GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ProducerClient::CommitDataOnSequence,
-                       base::Unretained(this), std::move(new_data_request)));
+        FROM_HERE, base::BindOnce(&ProducerClient::CommitDataOnSequence,
+                                  base::Unretained(this), commit));
   }
 }
 
-void ProducerClient::CommitDataOnSequence(mojom::CommitDataRequestPtr request) {
+void ProducerClient::CommitDataOnSequence(
+    const perfetto::CommitDataRequest& request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  producer_host_->CommitData(std::move(request));
+  producer_host_->CommitData(request);
 }
 
 perfetto::SharedMemory* ProducerClient::shared_memory() const {

@@ -66,7 +66,7 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   // This interface gets called by the per-process ProducerClients
   // to signal that there's changes to be committed to the
   // Shared Memory buffer (like finished chunks).
-  void CommitData(mojom::CommitDataRequestPtr data_request) override;
+  void CommitData(const perfetto::CommitDataRequest& data_request) override;
 
   // Called by the ProducerClient to signal the Host that it can
   // provide a specific data source.
