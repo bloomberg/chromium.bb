@@ -920,7 +920,7 @@ void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
         MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
         base::BindRepeating(&WebURLLoaderImpl::Context::OnBodyAvailable, this));
     if (defers_loading_ == NOT_DEFERRING)
-      body_watcher_.ArmOrNotify();
+      OnBodyAvailable(MOJO_RESULT_OK, {});
     return;
   }
 
