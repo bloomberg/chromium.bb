@@ -90,7 +90,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     const blink::mojom::RendererPreferences& renderer_preferences,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
     int appcache_host_id,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo

@@ -87,7 +87,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
@@ -103,7 +103,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,

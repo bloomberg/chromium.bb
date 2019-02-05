@@ -290,8 +290,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Must be called on the IO thread.
   base::WeakPtr<ServiceWorkerProviderHost> PreCreateHostForSharedWorker(
       int process_id,
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr*
-          out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
 
  private:
   friend class BackgroundSyncManagerTest;

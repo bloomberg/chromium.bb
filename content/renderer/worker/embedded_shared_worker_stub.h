@@ -63,7 +63,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       const blink::mojom::RendererPreferences& renderer_preferences,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -129,7 +129,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   // S13nServiceWorker: The info needed to connect to the
   // ServiceWorkerProviderHost on the browser.
-  blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+  blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
       service_worker_provider_info_;
 
   // NetworkService: The URLLoaderFactory used for loading the shared worker

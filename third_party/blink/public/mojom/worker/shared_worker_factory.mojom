@@ -43,7 +43,7 @@ interface SharedWorkerFactory {
       // The info about the service worker host in the browser process that
       // provides support for this shared worker to be a service worker client.
       // Null when S13nServiceWorker is disabled.
-      ServiceWorkerProviderInfoForSharedWorker? service_worker_provider_info,
+      ServiceWorkerProviderInfoForWorker? service_worker_provider_info,
 
       // NetworkService:
       // The ID of the AppCacheHost in the browser process that serves resources

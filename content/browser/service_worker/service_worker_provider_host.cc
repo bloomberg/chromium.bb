@@ -254,8 +254,7 @@ base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateForSharedWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
-    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr*
-        out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
       blink::mojom::ServiceWorkerProviderHostInfo::New(

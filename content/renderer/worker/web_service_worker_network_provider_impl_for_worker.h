@@ -38,7 +38,7 @@ class WebServiceWorkerNetworkProviderImplForWorker final
   // - |is_secure_context|: whether this context is secure
   // - |response_override|: the main script response
   static std::unique_ptr<WebServiceWorkerNetworkProviderImplForWorker> Create(
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,

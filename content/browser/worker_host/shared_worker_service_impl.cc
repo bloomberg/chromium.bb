@@ -238,7 +238,7 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     int process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
-    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
@@ -274,7 +274,7 @@ void SharedWorkerServiceImpl::StartWorker(
     int process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
-    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
