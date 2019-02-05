@@ -11,7 +11,6 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/atomicops.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
