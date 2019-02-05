@@ -2327,6 +2327,9 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       // we need to propagate the flags into the ancestor chain so that
       // PrePaintTreeWalk can reach this frame.
       frame_view.SetNeedsPaintPropertyUpdate();
+      // We may record more foreign layers under the frame.
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+        frame_view.SetPaintArtifactCompositorNeedsUpdate();
       if (auto* owner = frame_view.GetFrame().OwnerLayoutObject())
         owner->SetShouldCheckForPaintInvalidation();
     }
@@ -3912,6 +3915,9 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
       layout_view->AddSubtreePaintPropertyUpdateReason(
           SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
     }
+    // We may record more foreign layers under the frame.
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+      SetPaintArtifactCompositorNeedsUpdate();
   }
 
   EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();

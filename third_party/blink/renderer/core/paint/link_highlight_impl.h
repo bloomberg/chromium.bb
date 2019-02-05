@@ -111,6 +111,8 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   // changed size since the last call to this function.
   bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
+  void SetPaintArtifactCompositorNeedsUpdate();
+
   class LinkHighlightFragment : private cc::ContentLayerClient {
    public:
     LinkHighlightFragment(CompositorElementId);

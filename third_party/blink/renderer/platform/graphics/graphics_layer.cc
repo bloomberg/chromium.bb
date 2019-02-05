@@ -260,6 +260,8 @@ void GraphicsLayer::RemoveFromParent() {
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
       !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->RemoveFromParent();
+  } else {
+    SetPaintArtifactCompositorNeedsUpdate();
   }
 }
 
@@ -402,6 +404,7 @@ void GraphicsLayer::UpdateChildList() {
   // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    SetPaintArtifactCompositorNeedsUpdate();
     return;
   }
 
@@ -1045,6 +1048,9 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
 void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
                                   const IntPoint& layer_offset) {
   if (layer_state_) {
+    if (layer_state_->state == layer_state &&
+        layer_state_->offset == layer_offset)
+      return;
     layer_state_->state = layer_state;
     layer_state_->offset = layer_offset;
   } else {

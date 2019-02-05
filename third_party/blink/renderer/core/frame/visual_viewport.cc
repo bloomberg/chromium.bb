@@ -110,6 +110,7 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     return;
 
   needs_paint_property_update_ = false;
+  SetPaintArtifactCompositorNeedsUpdate();
 
   auto* transform_parent = context.current.transform;
   auto* scroll_parent = context.current.scroll;
