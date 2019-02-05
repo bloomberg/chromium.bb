@@ -2216,9 +2216,62 @@ TEST_F(OverviewSessionTest, Backdrop) {
   ToggleOverview();
 }
 
-// Verify that the mask that is applied to add rounded corners in overview mode
-// is removed during animations and drags.
+// Test that the mask that is applied to add rounded corners in overview mode
+// is removed during animations.
 TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+
+  ::wm::ActivateWindow(window2.get());
+  ::wm::ActivateWindow(window1.get());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Test that entering overview mode normally will disable all the masks until
+  // the animation is complete.
+  EnterTabletMode();
+  ToggleOverview();
+  OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
+  OverviewItem* item2 = GetWindowItemForWindow(0, window2.get());
+  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_FALSE(HasMaskForItem(item2));
+  window1->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(HasMaskForItem(item1));
+  EXPECT_TRUE(HasMaskForItem(item2));
+
+  // Tests that entering overview mode with all windows minimized (launcher
+  // button pressed) will still disable all the masks until the animation is
+  // complete.
+  ToggleOverview();
+  wm::GetWindowState(window1.get())->Minimize();
+  wm::GetWindowState(window2.get())->Minimize();
+  ToggleOverview();
+  item1 = GetWindowItemForWindow(0, window1.get());
+  item2 = GetWindowItemForWindow(0, window2.get());
+  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_FALSE(HasMaskForItem(item2));
+  minimized_widget(item1)
+      ->GetNativeWindow()
+      ->layer()
+      ->GetAnimator()
+      ->StopAnimating();
+  minimized_widget(item2)
+      ->GetNativeWindow()
+      ->layer()
+      ->GetAnimator()
+      ->StopAnimating();
+  EXPECT_TRUE(HasMaskForItem(item1));
+  EXPECT_TRUE(HasMaskForItem(item2));
+
+  // Test that leaving overview mode cleans up properly.
+  ToggleOverview();
+}
+
+// Test that the mask that is applied to add rounded corners in overview mode
+// is removed during drags.
+TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibilityDragging) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2227,12 +2280,8 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
 
   EnterTabletMode();
   ToggleOverview();
-  base::RunLoop().RunUntilIdle();
   OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
   OverviewItem* item2 = GetWindowItemForWindow(0, window2.get());
-  EXPECT_TRUE(HasMaskForItem(item1));
-  EXPECT_TRUE(HasMaskForItem(item2));
-
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -2245,7 +2294,6 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
   generator->PressLeftButton();
   EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
@@ -2263,12 +2311,8 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
   // Verify that the mask is visble again after animation is finished.
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
-
-  // Test that leaving overview mode cleans up properly.
-  ToggleOverview();
 }
 
 TEST_F(OverviewSessionTest, NoRoundedEdgeMaskFor11Windows) {
