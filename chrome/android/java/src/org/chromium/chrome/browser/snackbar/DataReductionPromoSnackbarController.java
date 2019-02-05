@@ -10,7 +10,7 @@ import android.os.Bundle;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -133,7 +133,7 @@ public class DataReductionPromoSnackbarController implements SnackbarManager.Sna
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putBoolean(FROM_PROMO, true);
         PreferencesLauncher.launchSettingsPage(
-                mContext, DataReductionPreferences.class, fragmentArgs);
+                mContext, DataReductionPreferenceFragment.class, fragmentArgs);
     }
 
     @Override

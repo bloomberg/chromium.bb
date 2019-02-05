@@ -27,6 +27,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/previews/core/previews_features.h"
 #include "components/safe_browsing/features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -184,6 +185,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kQueryInOmnibox,
     &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordsKeyboardAccessory,
+    &previews::features::kDataSaverLiteModeRebranding,
     &switches::kSyncSendTabToSelf,
     &translate::kTranslateAndroidManualTrigger,
     &unified_consent::kUnifiedConsent,
