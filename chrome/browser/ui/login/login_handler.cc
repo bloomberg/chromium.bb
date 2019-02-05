@@ -651,8 +651,7 @@ void LoginHandler::MaybeSetUpLoginPrompt(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* parent_contents = handler->GetWebContentsForLogin();
-  if (!parent_contents || !parent_contents()->GetDelegate() ||
-      handler->WasAuthHandled()) {
+  if (!parent_contents || handler->WasAuthHandled()) {
     // The request may have been canceled, or it may be for a renderer not
     // hosted by a tab (e.g. an extension). Cancel just in case (canceling twice
     // is a no-op).
