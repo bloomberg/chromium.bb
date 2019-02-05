@@ -13,14 +13,9 @@ import android.util.Xml;
 import org.xmlpull.v1.XmlSerializer;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.identity.SettingsSecureBasedIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
-import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.IOException;
@@ -103,12 +98,6 @@ public abstract class RequestGenerator {
             serializer.attribute(null, "lang", getLanguage());
             serializer.attribute(null, "installage", String.valueOf(installAge));
             serializer.attribute(null, "ap", getAdditionalParameters());
-            // <code>_numaccounts</code> is actually number of profiles, which is always one for
-            // Chrome Android.
-            serializer.attribute(null, "_numaccounts", "1");
-            serializer.attribute(null, "_numgoogleaccountsondevice",
-                    String.valueOf(getNumGoogleAccountsOnDevice()));
-            serializer.attribute(null, "_numsignedin", String.valueOf(getNumSignedIn()));
             serializer.attribute(
                     null, "_dl_mgr_disabled", String.valueOf(getDownloadManagerState()));
 
@@ -185,43 +174,6 @@ public abstract class RequestGenerator {
         String brand = StringSanitizer.sanitize(Build.BRAND);
         String model = StringSanitizer.sanitize(Build.MODEL);
         return applicationLabel + ";" + brand + ";" + model;
-    }
-
-    /**
-     * Returns the number of accounts on the device, bucketed into:
-     * 0 accounts, 1 account, or 2+ accounts.
-     *
-     * @return Number of accounts on the device, bucketed as above.
-     */
-    @VisibleForTesting
-    public int getNumGoogleAccountsOnDevice() {
-        // RequestGenerator may be invoked from JobService or AlarmManager (through OmahaService),
-        // so have to make sure AccountManagerFacade instance is initialized.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> ProcessInitializationHandler.getInstance().initializePreNative());
-        int numAccounts = 0;
-        try {
-            numAccounts = AccountManagerFacade.get().getGoogleAccounts().size();
-        } catch (Exception e) {
-            Log.e(TAG, "Can't get number of accounts.", e);
-        }
-        switch (numAccounts) {
-            case 0:
-                return 0;
-            case 1:
-                return 1;
-            default:
-                return 2;
-        }
-    }
-
-    /**
-     * Determine number of accounts signed in.
-     */
-    @VisibleForTesting
-    public int getNumSignedIn() {
-        // We only have a single account.
-        return ChromeSigninController.get().isSignedIn() ? 1 : 0;
     }
 
     /**
