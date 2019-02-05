@@ -284,8 +284,18 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   CreateController();
 
   EXPECT_FALSE(trial_controller().IsAllowed());
+#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+  // In a real official build, expect the trial config to be updated.
+  EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(true)).Times(1);
+#endif
   safe_browsing::SetExtendedReportingPref(pref_service(), true);
 
+#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+  // In a real official build, expect the trial to be allowed now.  (Don't
+  // need to test sending reports here, since that'll be tested by
+  // OfficialBuildTrialEnabled.)
+  EXPECT_TRUE(trial_controller().IsAllowed());
+#else
   // Trial still not allowed, and OnTrialConfigUpdated should not be called
   // either.
   EXPECT_FALSE(trial_controller().IsAllowed());
@@ -299,6 +309,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
 
   // Expect no report since the trial is not allowed.
   reporting_service_test_helper()->ExpectNoRequests(reporting_service());
+#endif
 }
 
 TEST_F(TrialComparisonCertVerifierControllerTest, OfficialBuildTrialEnabled) {
