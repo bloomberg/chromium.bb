@@ -83,10 +83,12 @@ WheelEvent::WheelEvent()
 WheelEvent::WheelEvent(const AtomicString& type,
                        const WheelEventInit* initializer)
     : MouseEvent(type, initializer),
-      wheel_delta_(initializer->wheelDeltaX() ? initializer->wheelDeltaX()
-                                              : -initializer->deltaX(),
-                   initializer->wheelDeltaY() ? initializer->wheelDeltaY()
-                                              : -initializer->deltaY()),
+      wheel_delta_(initializer->wheelDeltaX()
+                       ? initializer->wheelDeltaX()
+                       : NegateIfPossible(-initializer->deltaX()),
+                   initializer->wheelDeltaY()
+                       ? initializer->wheelDeltaY()
+                       : NegateIfPossible(-initializer->deltaY())),
       delta_x_(initializer->deltaX()
                    ? initializer->deltaX()
                    : NegateIfPossible(initializer->wheelDeltaX())),
