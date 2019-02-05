@@ -281,7 +281,7 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     SerializerMarkupAccumulator accumulator(delegate_, document,
                                             serialized_nodes);
     String text =
-        SerializeNodes<EditingStrategy>(accumulator, document, kIncludeNode);
+        accumulator.SerializeNodes<EditingStrategy>(document, kIncludeNode);
 
     CString frame_html =
         document.Encoding().Encode(text, WTF::kEntitiesForUnencodables);

@@ -452,8 +452,8 @@ String CreateMarkup(const Node* node,
     return "";
 
   MarkupAccumulator accumulator(should_resolve_urls);
-  return SerializeNodes<EditingStrategy>(accumulator, const_cast<Node&>(*node),
-                                         children_only);
+  return accumulator.SerializeNodes<EditingStrategy>(const_cast<Node&>(*node),
+                                                     children_only);
 }
 
 static void FillContainerFromString(ContainerNode* paragraph,
