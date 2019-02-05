@@ -29,6 +29,9 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/tracing/public/cpp/tracing_features.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
+#include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
@@ -129,6 +132,10 @@ bool UtilityServiceFactory::HandleServiceRequest(
     content::UtilityThread::Get()->EnsureBlinkInitialized();
     service =
         std::make_unique<data_decoder::DataDecoderService>(std::move(request));
+  } else if (name == tracing::mojom::kServiceName &&
+             !base::FeatureList::IsEnabled(
+                 features::kTracingServiceInProcess)) {
+    service = std::make_unique<tracing::TracingService>(std::move(request));
   } else if (name == mojom::kNetworkServiceName &&
              base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Unlike other services supported by the utility process, the network

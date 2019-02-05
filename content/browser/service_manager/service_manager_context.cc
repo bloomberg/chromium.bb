@@ -85,6 +85,7 @@
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_launcher.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -596,11 +597,6 @@ ServiceManagerContext::ServiceManagerContext(
       base::BindRepeating(&CreateResourceCoordinatorService));
 
   RegisterInProcessService(packaged_services_connection_.get(),
-                           tracing::mojom::kServiceName,
-                           service_manager_thread_task_runner_,
-                           base::BindRepeating(&CreateTracingService));
-
-  RegisterInProcessService(packaged_services_connection_.get(),
                            metrics::mojom::kMetricsServiceName,
                            service_manager_thread_task_runner_,
                            base::BindRepeating(&metrics::CreateMetricsService));
@@ -647,6 +643,16 @@ ServiceManagerContext::ServiceManagerContext(
   ContentBrowserClient::OutOfProcessServiceMap out_of_process_services;
   GetContentClient()->browser()->RegisterOutOfProcessServices(
       &out_of_process_services);
+
+  if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
+    RegisterInProcessService(packaged_services_connection_.get(),
+                             tracing::mojom::kServiceName,
+                             service_manager_thread_task_runner_,
+                             base::BindRepeating(&CreateTracingService));
+  } else {
+    out_of_process_services[tracing::mojom::kServiceName] =
+        base::BindRepeating(&base::ASCIIToUTF16, "Tracing Service");
+  }
 
   out_of_process_services[data_decoder::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");

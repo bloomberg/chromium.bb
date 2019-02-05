@@ -291,6 +291,10 @@ JSONTraceExporter::JSONTraceExporter(const std::string& config,
   perfetto::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(4096 * 100);
 
+  // Perfetto uses clock_gettime for its internal snapshotting, which gets
+  // blocked by the sandboxed and isn't needed for Chrome regardless.
+  trace_config.set_disable_clock_snapshotting(true);
+
   auto* trace_event_config = trace_config.add_data_sources()->mutable_config();
   trace_event_config->set_name(mojom::kTraceEventDataSourceName);
   trace_event_config->set_target_buffer(0);
