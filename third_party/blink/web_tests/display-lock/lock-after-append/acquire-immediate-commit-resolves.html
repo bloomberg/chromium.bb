@@ -43,7 +43,7 @@ function runTest() {
 
   container.displayLock.commit().then(
     () => { finishTest("PASS"); },
-    () => { finishTest("FAIL"); });
+    (e) => { finishTest("FAIL " + e.message); });
 }
 
 window.onload = runTest;

@@ -37,7 +37,7 @@ function runTest() {
         document.body.appendChild(container);
         finishTest("PASS");
       },
-      () => { finishTest("FAIL"); });
+      (e) => { finishTest("FAIL " + e.message); });
   });
 }
 

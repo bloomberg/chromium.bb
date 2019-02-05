@@ -45,7 +45,7 @@ function runTest() {
     container.displayLock.update().then(() => {
       container.displayLock.commit().then(
         () => { finishTest("PASS"); },
-        () => { finishTest("FAIL"); });
+        (e) => { finishTest("FAIL " + e.message); });
     });
   });
 }

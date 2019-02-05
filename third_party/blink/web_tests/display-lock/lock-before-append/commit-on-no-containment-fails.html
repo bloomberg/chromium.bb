@@ -25,7 +25,7 @@ async function acquire() {
   document.body.appendChild(container);
   container.displayLock.commit().then(
     () => { finishTest("FAIL"); },
-    () => { finishTest("PASS"); });
+    (e) => { finishTest("PASS " + e.message); });
 }
 
 window.onload = acquire;

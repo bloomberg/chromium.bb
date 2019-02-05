@@ -214,10 +214,13 @@ class CORE_EXPORT DisplayLockContext final
 
   // Helper functions to resolve the update/commit promises.
   enum ResolverState { kResolve, kReject, kDetach };
-  void FinishUpdateResolver(ResolverState);
-  void FinishCommitResolver(ResolverState);
-  void FinishAcquireResolver(ResolverState);
-  void FinishResolver(Member<ScriptPromiseResolver>*, ResolverState);
+  void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
+  void FinishCommitResolver(ResolverState, const char* reject_reason = nullptr);
+  void FinishAcquireResolver(ResolverState,
+                             const char* reject_reason = nullptr);
+  void FinishResolver(Member<ScriptPromiseResolver>*,
+                      ResolverState,
+                      const char* reject_reason);
 
   // Returns true if the element supports display locking. Note that this can
   // only be called if the style is clean. It checks the layout object if it

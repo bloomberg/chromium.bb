@@ -36,7 +36,7 @@ function runTest() {
   let container = document.getElementById("container");
   container.displayLock.acquire({ timeout: Infinity }).then(
     () => { finishTest("FAIL"); },
-    () => { finishTest("PASS"); });
+    (e) => { finishTest("PASS " + e.message); });
 }
 
 window.onload = runTest;

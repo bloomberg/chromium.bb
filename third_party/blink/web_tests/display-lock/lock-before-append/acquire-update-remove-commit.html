@@ -36,9 +36,9 @@ function runTest() {
     document.body.appendChild(container);
     container.displayLock.update().then(
       () => { finishTest("FAIL"); },
-      () => {
+      (e) => {
         document.body.appendChild(container);
-        finishTest("PASS");
+        finishTest("PASS " + e.message);
       });
     container.remove();
     container.displayLock.commit();
