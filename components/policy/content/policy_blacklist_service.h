@@ -21,8 +21,7 @@ class URLChecker;
 // PolicyBlacklistService and PolicyBlacklistFactory provide a way for
 // us to access URLBlacklistManager, a policy block list service based on
 // the Preference Service. The URLBlacklistManager responds to permission
-// changes and is per-Profile. The PolicyBlacklistNavigationThrottle accesses
-// this service to determine what we should block.
+// changes and is per-Profile.
 class PolicyBlacklistService : public KeyedService {
  public:
   using CheckSafeSearchCallback = base::OnceCallback<void(bool is_safe)>;

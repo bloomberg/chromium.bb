@@ -551,6 +551,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsBuiltinComponent(content::BrowserContext* browser_context,
                           const url::Origin& origin) override;
 
+  bool IsRendererDebugURLBlacklisted(const GURL& url,
+                                     content::BrowserContext* context) override;
+
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(
       const GURL& url,
