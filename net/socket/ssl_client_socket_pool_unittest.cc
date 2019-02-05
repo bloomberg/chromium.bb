@@ -103,18 +103,16 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
   }
 
-  void CreatePool(bool transport_pool, bool http_proxy_pool) {
+  void CreatePool(bool http_proxy_pool) {
     pool_.reset(new TransportClientSocketPool(
-        kMaxSockets, kMaxSocketsPerGroup, &socket_factory_,
-        nullptr /* host_resolver */, cert_verifier_.get(),
-        NULL /* channel_id_service */, transport_security_state_.get(),
-        &ct_verifier_, &ct_policy_enforcer_,
+        kMaxSockets, kMaxSocketsPerGroup, &socket_factory_, &host_resolver_,
+        cert_verifier_.get(), NULL /* channel_id_service */,
+        transport_security_state_.get(), &ct_verifier_, &ct_policy_enforcer_,
         nullptr /* ssl_client_session_cache */,
         std::string() /* ssl_session_cache_shard */,
         nullptr /* ssl_config_service */,
         nullptr /* socket_performance_watcher_factory */,
         nullptr /* network_quality_estimator */, nullptr /* net_log */,
-        transport_pool ? &transport_socket_pool_ : nullptr,
         nullptr /* socks_pool */,
         http_proxy_pool ? &http_proxy_socket_pool_ : nullptr));
   }
@@ -186,7 +184,7 @@ TEST_F(SSLClientSocketPoolTest, DirectCertError) {
   SSLSocketDataProvider ssl(ASYNC, ERR_CERT_COMMON_NAME_INVALID);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
-  CreatePool(true /* tcp pool */, false);
+  CreatePool(false /* http_proxy_pool */);
   scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_DIRECT);
 
   ClientSocketHandle handle;
@@ -224,7 +222,7 @@ TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
-  CreatePool(false, true /* http proxy pool */);
+  CreatePool(true /* http proxy pool */);
   scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_HTTP);
 
   ClientSocketHandle handle;
@@ -268,17 +266,6 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   // socket to be reusable.
   ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
 
-  TransportClientSocketPool tcp_pool(
-      kMaxSockets, kMaxSocketsPerGroup,
-      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
-      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-      nullptr /* transport_security_state */,
-      nullptr /* cert_transparency_verifier */,
-      nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
-      nullptr /* ssl_config_service */,
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
   TransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup,
@@ -289,8 +276,7 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
       std::string() /* ssl_session_cache_shard */,
       nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* netlog */, &tcp_pool,
-      nullptr /* socks_pool */, nullptr /* http_proxy_pool */);
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
@@ -356,17 +342,6 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
   test_server.AddDefaultHandlers(base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
-  TransportClientSocketPool tcp_pool(
-      kMaxSockets, kMaxSocketsPerGroup,
-      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
-      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-      nullptr /* transport_security_state */,
-      nullptr /* cert_transparency_verifier */,
-      nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
-      nullptr /* ssl_config_service */,
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
   TransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup,
@@ -377,8 +352,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
       std::string() /* ssl_session_cache_shard */,
       nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* netlog */, &tcp_pool,
-      nullptr /* socks_pool */, nullptr /* http_proxy_pool */);
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
   SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
@@ -436,17 +410,6 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   test_server.AddDefaultHandlers(base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
-  TransportClientSocketPool tcp_pool(
-      kMaxSockets, kMaxSocketsPerGroup,
-      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
-      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-      nullptr /* transport_security_state */,
-      nullptr /* cert_transparency_verifier */,
-      nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
-      nullptr /* ssl_config_service */,
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
   TransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup,
@@ -457,8 +420,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
       std::string() /* ssl_session_cache_shard */,
       nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* netlog */, &tcp_pool,
-      nullptr /* socks_pool */, nullptr /* http_proxy_pool */);
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
@@ -481,7 +443,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
                          TransportClientSocketPool::SocketParams::
                              CreateFromTransportSocketParams(tcp_params),
                          LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
-                         callback.callback(), &tcp_pool, NetLogWithSource());
+                         callback.callback(), &pool, NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
     EXPECT_TRUE(tcp_handle.socket());
     EXPECT_TRUE(tcp_handle.socket()->IsConnected());

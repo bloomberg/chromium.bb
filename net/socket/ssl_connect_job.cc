@@ -95,10 +95,9 @@ SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<SSLSocketParams>& params,
-    TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool,
-    Delegate* delegate)
+    ConnectJob::Delegate* delegate)
     : ConnectJob(priority,
                  ConnectionTimeout(
                      *params,
@@ -108,7 +107,6 @@ SSLConnectJob::SSLConnectJob(
                  NetLogWithSource::Make(common_connect_job_params.net_log,
                                         NetLogSourceType::SSL_CONNECT_JOB)),
       params_(params),
-      transport_pool_(transport_pool),
       socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
@@ -118,15 +116,17 @@ SSLConnectJob::~SSLConnectJob() = default;
 
 LoadState SSLConnectJob::GetLoadState() const {
   switch (next_state_) {
+    case STATE_TRANSPORT_CONNECT:
+    case STATE_SOCKS_CONNECT:
+    case STATE_TUNNEL_CONNECT:
+      return LOAD_STATE_IDLE;
+    case STATE_TRANSPORT_CONNECT_COMPLETE:
+      return nested_connect_job_->GetLoadState();
+    case STATE_SOCKS_CONNECT_COMPLETE:
+      return transport_socket_handle_->GetLoadState();
     case STATE_TUNNEL_CONNECT_COMPLETE:
       if (transport_socket_handle_->socket())
         return LOAD_STATE_ESTABLISHING_PROXY_TUNNEL;
-      FALLTHROUGH;
-    case STATE_TRANSPORT_CONNECT:
-    case STATE_TRANSPORT_CONNECT_COMPLETE:
-    case STATE_SOCKS_CONNECT:
-    case STATE_SOCKS_CONNECT_COMPLETE:
-    case STATE_TUNNEL_CONNECT:
       return transport_socket_handle_->GetLoadState();
     case STATE_SSL_CONNECT:
     case STATE_SSL_CONNECT_COMPLETE:
@@ -138,10 +138,21 @@ LoadState SSLConnectJob::GetLoadState() const {
 }
 
 bool SSLConnectJob::HasEstablishedConnection() const {
-  // Return true to prevent creating any backup jobs when this is used in a
-  // TransportClientSocketPool.
-  // TODO(mmenke): Implement this, as nested pools are removed.
-  return true;
+  // Return true to prevent creating any backup jobs when this is used on top of
+  // another socket pool type.
+  if (socks_pool_ || http_proxy_pool_)
+    return true;
+
+  // If waiting on a nested ConnectJob, defer to that ConnectJob's state.
+  if (nested_connect_job_)
+    return nested_connect_job_->HasEstablishedConnection();
+  // Otherwise, return true if a socket has been created.
+  return nested_socket_ || ssl_socket_;
+}
+
+void SSLConnectJob::OnConnectJobComplete(int result, ConnectJob* job) {
+  DCHECK_EQ(job, nested_connect_job_.get());
+  OnIOComplete(result);
 }
 
 void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
@@ -234,26 +245,27 @@ int SSLConnectJob::DoLoop(int result) {
 }
 
 int SSLConnectJob::DoTransportConnect() {
-  DCHECK(transport_pool_);
+  DCHECK(!nested_connect_job_);
+  DCHECK(params_->GetDirectConnectionParams());
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  scoped_refptr<TransportClientSocketPool::SocketParams> direct_params =
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          params_->GetDirectConnectionParams());
-  return transport_socket_handle_->Init(group_name(), direct_params, priority(),
-                                        socket_tag(), respect_limits(),
-                                        callback_, transport_pool_, net_log());
+  nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
+      params_->GetDirectConnectionParams(), priority(),
+      common_connect_job_params(), this);
+  return nested_connect_job_->Connect();
 }
 
 int SSLConnectJob::DoTransportConnectComplete(int result) {
-  connection_attempts_.insert(
-      connection_attempts_.end(),
-      transport_socket_handle_->connection_attempts().begin(),
-      transport_socket_handle_->connection_attempts().end());
+  // TODO(mmenke): Implement a better API to get this information.
+  ClientSocketHandle bogus_handle;
+  nested_connect_job_->GetAdditionalErrorState(&bogus_handle);
+  connection_attempts_.insert(connection_attempts_.end(),
+                              bogus_handle.connection_attempts().begin(),
+                              bogus_handle.connection_attempts().end());
   if (result == OK) {
     next_state_ = STATE_SSL_CONNECT;
-    transport_socket_handle_->socket()->GetPeerAddress(&server_address_);
+    nested_socket_ = nested_connect_job_->PassSocket();
+    nested_socket_->GetPeerAddress(&server_address_);
   }
 
   return result;
@@ -319,17 +331,24 @@ int SSLConnectJob::DoSSLConnect() {
   ResetTimer(base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds));
 
   // If the handle has a fresh socket, get its connect start and DNS times.
-  // This should always be the case.
-  const LoadTimingInfo::ConnectTiming& socket_connect_timing =
-      transport_socket_handle_->connect_timing();
-  if (!transport_socket_handle_->is_reused() &&
-      !socket_connect_timing.connect_start.is_null()) {
+  // This should always be the case in the nested socket pool path, and
+  // *will* always be the case in the non-nested socket pool path.
+  const LoadTimingInfo::ConnectTiming* socket_connect_timing = nullptr;
+  if (nested_connect_job_) {
+    socket_connect_timing = &nested_connect_job_->connect_timing();
+  } else if (!transport_socket_handle_->is_reused() &&
+             !transport_socket_handle_->connect_timing()
+                  .connect_start.is_null()) {
+    socket_connect_timing = &transport_socket_handle_->connect_timing();
+  }
+
+  if (socket_connect_timing) {
     // Overwriting |connect_start| serves two purposes - it adjusts timing so
     // |connect_start| doesn't include dns times, and it adjusts the time so
     // as not to include time spent waiting for an idle socket.
-    connect_timing_.connect_start = socket_connect_timing.connect_start;
-    connect_timing_.dns_start = socket_connect_timing.dns_start;
-    connect_timing_.dns_end = socket_connect_timing.dns_end;
+    connect_timing_.connect_start = socket_connect_timing->connect_start;
+    connect_timing_.dns_start = socket_connect_timing->dns_start;
+    connect_timing_.dns_end = socket_connect_timing->dns_end;
   }
 
   connect_timing_.ssl_start = base::TimeTicks::Now();
@@ -347,9 +366,17 @@ int SSLConnectJob::DoSSLConnect() {
       ssl_client_socket_context().ssl_client_session_cache,
       (params_->privacy_mode() == PRIVACY_MODE_ENABLED ? "pm/" : "nopm/") +
           ssl_client_socket_context().ssl_session_cache_shard);
-  ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
-      std::move(transport_socket_handle_), params_->host_and_port(),
-      params_->ssl_config(), context_with_privacy_mode);
+  if (nested_socket_.get()) {
+    DCHECK(!transport_socket_handle_);
+    ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
+        std::move(nested_socket_), params_->host_and_port(),
+        params_->ssl_config(), context_with_privacy_mode);
+    nested_connect_job_.reset();
+  } else {
+    ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
+        std::move(transport_socket_handle_), params_->host_and_port(),
+        params_->ssl_config(), context_with_privacy_mode);
+  }
   return ssl_socket_->Connect(callback_);
 }
 
@@ -453,6 +480,8 @@ int SSLConnectJob::ConnectInternal() {
 void SSLConnectJob::ChangePriorityInternal(RequestPriority priority) {
   if (transport_socket_handle_)
     transport_socket_handle_->SetPriority(priority);
+  if (nested_connect_job_)
+    nested_connect_job_->ChangePriority(priority);
 }
 
 }  // namespace net

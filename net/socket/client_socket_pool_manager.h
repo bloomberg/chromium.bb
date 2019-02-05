@@ -77,8 +77,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 
   virtual void FlushSocketPoolsWithError(int error) = 0;
   virtual void CloseIdleSockets() = 0;
+  // Returns the socket pool for direct HTTP and SSL connections.
   virtual TransportClientSocketPool* GetTransportSocketPool() = 0;
-  virtual TransportClientSocketPool* GetSSLSocketPool() = 0;
   virtual TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& socks_proxy) = 0;
   // Returns the HttpProxyClientSocketPool for a ProxyServer that uses an

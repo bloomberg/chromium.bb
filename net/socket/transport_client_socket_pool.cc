@@ -38,10 +38,8 @@ std::unique_ptr<ConnectJob> CreateTransportConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool) {
-  DCHECK(!transport_pool);
   DCHECK(!socks_pool);
   DCHECK(!http_proxy_pool);
   return TransportConnectJob::CreateTransportConnectJob(
@@ -54,10 +52,8 @@ std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool) {
-  DCHECK(!transport_pool);
   DCHECK(!socks_pool);
   DCHECK(!http_proxy_pool);
   return std::make_unique<SOCKSConnectJob>(priority, common_connect_job_params,
@@ -70,12 +66,11 @@ std::unique_ptr<ConnectJob> CreateSSLConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool) {
-  return std::make_unique<SSLConnectJob>(
-      priority, common_connect_job_params, std::move(ssl_socket_params),
-      transport_pool, socks_pool, http_proxy_pool, delegate);
+  return std::make_unique<SSLConnectJob>(priority, common_connect_job_params,
+                                         std::move(ssl_socket_params),
+                                         socks_pool, http_proxy_pool, delegate);
 }
 
 }  // namespace
@@ -118,7 +113,6 @@ TransportClientSocketPool::TransportConnectJobFactory::
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log,
-        TransportClientSocketPool* transport_pool,
         TransportClientSocketPool* socks_pool,
         HttpProxyClientSocketPool* http_proxy_pool)
     : client_socket_factory_(client_socket_factory),
@@ -127,7 +121,6 @@ TransportClientSocketPool::TransportConnectJobFactory::
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       network_quality_estimator_(network_quality_estimator),
       net_log_(net_log),
-      transport_pool_(transport_pool),
       socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool) {}
 
@@ -147,7 +140,7 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
           client_socket_factory_, host_resolver_, ssl_client_socket_context_,
           socket_performance_watcher_factory_, network_quality_estimator_,
           net_log_, nullptr /* websocket_endpoint_lock_manager */),
-      delegate, transport_pool_, socks_pool_, http_proxy_pool_);
+      delegate, socks_pool_, http_proxy_pool_);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -166,7 +159,6 @@ TransportClientSocketPool::TransportClientSocketPool(
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
-    TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool)
     : base_(this,
@@ -187,7 +179,6 @@ TransportClientSocketPool::TransportClientSocketPool(
                 socket_performance_watcher_factory,
                 network_quality_estimator,
                 net_log,
-                transport_pool,
                 socks_pool,
                 http_proxy_pool)),
       client_socket_factory_(client_socket_factory),
@@ -196,8 +187,6 @@ TransportClientSocketPool::TransportClientSocketPool(
   if (ssl_config_service_)
     ssl_config_service_->AddObserver(this);
 
-  if (transport_pool)
-    base_.AddLowerLayeredPool(transport_pool);
   if (socks_pool)
     base_.AddLowerLayeredPool(socks_pool);
   if (http_proxy_pool)

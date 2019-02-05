@@ -306,11 +306,6 @@ TransportClientSocketPool* HttpNetworkSession::GetTransportSocketPool(
   return GetSocketPoolManager(pool_type)->GetTransportSocketPool();
 }
 
-TransportClientSocketPool* HttpNetworkSession::GetSSLSocketPool(
-    SocketPoolType pool_type) {
-  return GetSocketPoolManager(pool_type)->GetSSLSocketPool();
-}
-
 TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForSOCKSProxy(
     SocketPoolType pool_type,
     const ProxyServer& socks_proxy) {

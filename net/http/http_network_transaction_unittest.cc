@@ -153,11 +153,6 @@ int GetIdleSocketCountInTransportSocketPool(HttpNetworkSession* session) {
       ->IdleSocketCount();
 }
 
-int GetIdleSocketCountInSSLSocketPool(HttpNetworkSession* session) {
-  return session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
-      ->IdleSocketCount();
-}
-
 bool IsTransportSocketPoolStalled(HttpNetworkSession* session) {
   return session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
       ->IsStalled();
@@ -1820,7 +1815,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   // Wait for the preconnect to complete.
   // TODO(davidben): Some way to wait for an idle socket count might be handy.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   // Make the request.
   TestCompletionCallback callback;
@@ -8017,7 +8012,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleSSLSocket) {
   base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 // Grab a SSL socket, use it, and put it back into the pool.  Then, reuse it
@@ -8082,7 +8077,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
   base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   // Now start the second transaction, which should reuse the previous socket.
 
@@ -8110,7 +8105,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
   base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 // Grab a socket, use it, and put it back into the pool. Then, make
@@ -8290,7 +8285,7 @@ TEST_F(HttpNetworkTransactionTest, FlushSSLSocketPoolOnLowMemoryNotifications) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
   int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
 
   EXPECT_THAT(callback.GetResult(rv), IsOk());
@@ -8306,7 +8301,7 @@ TEST_F(HttpNetworkTransactionTest, FlushSSLSocketPoolOnLowMemoryNotifications) {
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   std::string response_data;
   rv = ReadTransaction(&trans, &response_data);
@@ -8318,14 +8313,14 @@ TEST_F(HttpNetworkTransactionTest, FlushSSLSocketPoolOnLowMemoryNotifications) {
   base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   // Make memory notification once again and ensure idle socket is closed.
   base::MemoryPressureListener::NotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 // Make sure that we recycle a socket after a zero-length response.
@@ -11058,27 +11053,15 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
     HttpNetworkSessionPeer peer(session.get());
     CaptureGroupNameTransportSocketPool* transport_conn_pool =
         new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
-    CaptureGroupNameTransportSocketPool* ssl_conn_pool =
-        new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
-    mock_pool_manager->SetSSLSocketPool(ssl_conn_pool);
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session.get()));
-    if (tests[i].ssl) {
-      EXPECT_EQ(tests[i].expected_group_name,
-                ssl_conn_pool->last_group_name_received());
-    } else {
-      EXPECT_EQ(tests[i].expected_group_name,
-                transport_conn_pool->last_group_name_received());
-    }
-    // When SSL proxy is in use, socket must be requested from |ssl_conn_pool|.
-    EXPECT_EQ(tests[i].ssl, ssl_conn_pool->socket_requested());
-    // When SSL proxy is not in use, socket must be requested from
-    // |transport_conn_pool|.
-    EXPECT_EQ(!tests[i].ssl, transport_conn_pool->socket_requested());
+    EXPECT_EQ(tests[i].expected_group_name,
+              transport_conn_pool->last_group_name_received());
+    EXPECT_TRUE(transport_conn_pool->socket_requested());
   }
 }
 
@@ -17016,7 +16999,7 @@ TEST_F(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
 
   // The SSL socket should automatically be closed, so the HTTP request can
   // start.
-  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
   ASSERT_FALSE(IsTransportSocketPoolStalled(session.get()));
 
   // The HTTP request can now complete.
@@ -17080,7 +17063,7 @@ TEST_F(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
   // cancelled when a normal transaction is cancelled.
   HttpStreamFactory* http_stream_factory = session->http_stream_factory();
   http_stream_factory->PreconnectStreams(1, ssl_request);
-  EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   // Start the HTTP request.  Pool should stall.
   TestCompletionCallback http_callback;

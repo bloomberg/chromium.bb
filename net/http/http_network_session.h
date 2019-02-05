@@ -292,7 +292,6 @@ class NET_EXPORT HttpNetworkSession {
   void RemoveResponseDrainer(HttpResponseBodyDrainer* drainer);
 
   TransportClientSocketPool* GetTransportSocketPool(SocketPoolType pool_type);
-  TransportClientSocketPool* GetSSLSocketPool(SocketPoolType pool_type);
   // Currently only works for SOCKS proxies.
   TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       SocketPoolType pool_type,

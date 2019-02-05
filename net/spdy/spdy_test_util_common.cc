@@ -502,7 +502,8 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
           ssl_params),
       MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(),
-      http_session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
+      http_session->GetTransportSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL),
       net_log);
   rv = callback.GetResult(rv);
   EXPECT_THAT(rv, IsOk());

@@ -95,7 +95,7 @@ class WebSocketClientSocketHandleAdapterTest
         TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
             ssl_params_),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-        callback.callback(), socket_pool_manager_->GetSSLSocketPool(),
+        callback.callback(), socket_pool_manager_->GetTransportSocketPool(),
         net_log_);
     rv = callback.GetResult(rv);
     return rv == OK;

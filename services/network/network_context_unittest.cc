@@ -11,6 +11,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -300,30 +301,36 @@ class NetworkContextTest : public testing::Test,
     return value;
   }
 
-  // Looks up a value with the given name from the NetworkContext's
-  // SSLSocketPool info dictionary.
-  int GetSSLSocketPoolInfo(NetworkContext* context, base::StringPiece name) {
-    int value;
-    context->url_request_context()
-        ->http_transaction_factory()
-        ->GetSession()
-        ->GetSSLSocketPool(
-            net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-        ->GetInfoAsValue("", "", false)
-        ->GetInteger(name, &value);
-    return value;
-  }
+  int GetSocketCountForGroup(NetworkContext* context,
+                             const std::string& group_name) {
+    std::unique_ptr<base::Value> pool_info =
+        context->url_request_context()
+            ->http_transaction_factory()
+            ->GetSession()
+            ->GetTransportSocketPool(
+                net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+            ->GetInfoAsValue("", "", false);
 
-  int GetSocketCount(NetworkContext* network_context) {
-    return GetSocketPoolInfo(network_context, "idle_socket_count") +
-           GetSocketPoolInfo(network_context, "connecting_socket_count") +
-           GetSocketPoolInfo(network_context, "handed_out_socket_count");
-  }
-
-  int GetSSLSocketCount(NetworkContext* network_context) {
-    return GetSSLSocketPoolInfo(network_context, "idle_socket_count") +
-           GetSSLSocketPoolInfo(network_context, "connecting_socket_count") +
-           GetSSLSocketPoolInfo(network_context, "handed_out_socket_count");
+    int count = 0;
+    base::Value* active_socket_count = pool_info->FindPathOfType(
+        base::span<const base::StringPiece>{
+            {"groups", group_name, "active_socket_count"}},
+        base::Value::Type::INTEGER);
+    if (active_socket_count)
+      count += active_socket_count->GetInt();
+    base::Value* idle_sockets = pool_info->FindPathOfType(
+        base::span<const base::StringPiece>{
+            {"groups", group_name, "idle_sockets"}},
+        base::Value::Type::LIST);
+    if (idle_sockets)
+      count += idle_sockets->GetList().size();
+    base::Value* connect_jobs = pool_info->FindPathOfType(
+        base::span<const base::StringPiece>{
+            {"groups", group_name, "connect_jobs"}},
+        base::Value::Type::LIST);
+    if (connect_jobs)
+      count += connect_jobs->GetList().size();
+    return count;
   }
 
   GURL GetHttpUrlFromHttps(const GURL& https_url) {
@@ -3405,10 +3412,10 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
                                      true);
   connection_listener.WaitForAcceptedConnections(1u);
 
-  int num_sockets = GetSocketCount(network_context.get());
+  int num_sockets = GetSocketCountForGroup(
+      network_context.get(),
+      "pm/" + net::HostPortPair::FromURL(server_http_url).ToString());
   EXPECT_EQ(num_sockets, 1);
-  int num_ssl_sockets = GetSSLSocketCount(network_context.get());
-  EXPECT_EQ(num_ssl_sockets, 0);
 
   const base::Time expiry =
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
@@ -3418,10 +3425,11 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
                                      true);
   connection_listener.WaitForAcceptedConnections(1u);
 
-  num_sockets = GetSocketCount(network_context.get());
-  EXPECT_EQ(num_sockets, 2);
-  num_ssl_sockets = GetSSLSocketCount(network_context.get());
-  EXPECT_EQ(num_ssl_sockets, 1);
+  // If HSTS weren't respected, the initial connection would have been reused.
+  num_sockets = GetSocketCountForGroup(
+      network_context.get(),
+      "pm/ssl/" + net::HostPortPair::FromURL(server_http_url).ToString());
+  EXPECT_EQ(num_sockets, 1);
 }
 
 TEST_F(NetworkContextTest, PreconnectZero) {
