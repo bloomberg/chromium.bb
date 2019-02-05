@@ -451,13 +451,11 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   DCHECK(scaling_factor);
 
   FloatPoint text_origin(fragment.x, fragment.y);
-  FloatSize text_size(fragment.width, fragment.height);
 
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context, false);
   if (scaling_factor != 1) {
     text_origin.Scale(scaling_factor, scaling_factor);
-    text_size.Scale(scaling_factor);
     state_saver.Save();
     context.Scale(1 / scaling_factor, 1 / scaling_factor);
   }
@@ -465,15 +463,6 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   TextRunPaintInfo text_run_paint_info(text_run);
   text_run_paint_info.from = start_position;
   text_run_paint_info.to = end_position;
-
-  const SimpleFontData* font_data = scaled_font.PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return;
-  float baseline = font_data->GetFontMetrics().FloatAscent();
-  text_run_paint_info.bounds =
-      FloatRect(text_origin.X(), text_origin.Y() - baseline, text_size.Width(),
-                text_size.Height());
 
   context.DrawText(scaled_font, text_run_paint_info, text_origin, flags);
   // TODO(npm): Check that there are non-whitespace characters. See

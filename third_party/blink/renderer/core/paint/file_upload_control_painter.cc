@@ -69,16 +69,6 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
           kPositionOnContainingLine));
     TextRunPaintInfo text_run_paint_info(text_run);
 
-    const SimpleFontData* font_data =
-        layout_file_upload_control_.StyleRef().GetFont().PrimaryFont();
-    if (!font_data)
-      return;
-    // FIXME: Shouldn't these offsets be rounded? crbug.com/350474
-    text_run_paint_info.bounds =
-        FloatRect(text_x.ToFloat(),
-                  text_y.ToFloat() - font_data->GetFontMetrics().Ascent(),
-                  text_width, font_data->GetFontMetrics().Height());
-
     // Draw the filename.
     DrawingRecorder recorder(paint_info.context, layout_file_upload_control_,
                              paint_info.phase);

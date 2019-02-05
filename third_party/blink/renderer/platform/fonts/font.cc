@@ -200,7 +200,6 @@ bool Font::DrawBidiText(cc::PaintCanvas* canvas,
     subrun.SetDirectionalOverride(bidi_run->DirOverride(false));
 
     TextRunPaintInfo subrun_info(subrun);
-    subrun_info.bounds = run_info.bounds;
 
     ShapeResultBloberizer bloberizer(*this, device_scale_factor);
     ShapeResultBuffer buffer;

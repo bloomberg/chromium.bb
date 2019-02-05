@@ -79,7 +79,6 @@ void TextPainter::PaintInternal(unsigned start_offset,
                                 unsigned end_offset,
                                 unsigned truncation_point) {
   TextRunPaintInfo text_run_paint_info(run_);
-  text_run_paint_info.bounds = FloatRect(text_bounds_);
   if (start_offset <= end_offset) {
     PaintInternalRun<Step>(text_run_paint_info, start_offset, end_offset);
   } else {
@@ -120,7 +119,6 @@ void TextPainter::PaintEmphasisMarkForCombinedText() {
                                       font_data->GetFontMetrics().Ascent() +
                                       emphasis_mark_offset_);
   TextRunPaintInfo text_run_paint_info(placeholder_text_run);
-  text_run_paint_info.bounds = FloatRect(text_bounds_);
   graphics_context_.ConcatCTM(Rotation(text_bounds_, kClockwise));
   graphics_context_.DrawEmphasisMarks(combined_text_->OriginalFont(),
                                       text_run_paint_info, emphasis_mark_,
