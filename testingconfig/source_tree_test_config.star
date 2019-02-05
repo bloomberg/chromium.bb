@@ -9,7 +9,11 @@
 # go get -u go.chromium.org/luci/lucicfg/cmd/lucicfg
 # ${GOBIN}/lucicfg generate ./source_tree_test_config.star
 
-load("//source_tree_test_config_helper.star", "source_tree_test_config")
+load("//source_tree_test_config_helper.star",
+     "set_up_graph",
+     "source_tree_test_config")
+
+set_up_graph()
 
 source_tree_test_config(
     source_trees = [

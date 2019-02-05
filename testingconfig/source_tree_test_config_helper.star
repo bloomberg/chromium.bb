@@ -10,7 +10,10 @@ load(
 source_tree_kind = 'source_tree'
 # Set up the root node in the graph.
 root_key = graph.key(source_tree_kind, '...')
-graph.add_node(root_key)
+
+def set_up_graph():
+  """Call this once to set up the Starlark graph root node."""
+  graph.add_node(root_key)
 
 def source_tree_test_config(
     source_trees,
