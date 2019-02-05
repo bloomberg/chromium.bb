@@ -754,7 +754,7 @@ bool Extension::LoadManifestVersion(base::string16* error) {
     LOG(WARNING) << "Failed to load extension.  Manifest JSON: " << json;
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidManifestVersionOld,
-        base::IntToString(kModernManifestVersion),
+        base::NumberToString(kModernManifestVersion),
         is_platform_app() ? "apps" : "extensions");
     return false;
   }

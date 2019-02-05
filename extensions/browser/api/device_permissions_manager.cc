@@ -338,7 +338,7 @@ std::unique_ptr<base::Value> DevicePermissionEntry::ToValue() const {
   if (!last_used_.is_null()) {
     entry_dict->SetKey(
         kDeviceLastUsed,
-        base::Value(base::Int64ToString(last_used_.ToInternalValue())));
+        base::Value(base::NumberToString(last_used_.ToInternalValue())));
   }
 
   return std::move(entry_dict);

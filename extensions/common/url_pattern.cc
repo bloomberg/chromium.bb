@@ -782,7 +782,7 @@ bool URLPattern::MatchesSecurityOriginHelper(const GURL& test) const {
   if (scheme_ != url::kFileScheme && !MatchesHost(test))
     return false;
 
-  if (!MatchesPortPattern(base::IntToString(test.EffectiveIntPort())))
+  if (!MatchesPortPattern(base::NumberToString(test.EffectiveIntPort())))
     return false;
 
   return true;

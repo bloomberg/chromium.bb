@@ -695,7 +695,8 @@ ExtensionFunction::ResponseAction RuntimeRestartAfterDelayFunction::Run() {
   int seconds = params->seconds;
 
   if (seconds <= 0 && seconds != -1)
-    return RespondNow(Error(kErrorInvalidArgument, base::IntToString(seconds)));
+    return RespondNow(
+        Error(kErrorInvalidArgument, base::NumberToString(seconds)));
 
   RuntimeAPI::RestartAfterDelayStatus request_status =
       RuntimeAPI::GetFactoryInstance()
