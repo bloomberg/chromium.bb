@@ -177,8 +177,7 @@ PreviewsLitePageDecider::~PreviewsLitePageDecider() = default;
 void PreviewsLitePageDecider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kUserNeedsNotification, true);
-  registry->RegisterDictionaryPref(kHostBlacklist,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(kHostBlacklist);
 }
 
 // static
