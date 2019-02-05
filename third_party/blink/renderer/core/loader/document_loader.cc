@@ -101,7 +101,6 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -1056,29 +1055,7 @@ void DocumentLoader::StartLoadingInternal() {
     }
   }
 
-  ResourceResponse final_response;
-  if (!params_->body_loader) {
-    // We can handle data urls in place.
-    // TODO(dgozman): This is currently only used in tests. Perhaps we should
-    // either handle all data urls locally, or rework tests.
-    scoped_refptr<SharedBuffer> data;
-    if (url_.ProtocolIsData()) {
-      data =
-          network_utils::ParseDataURLAndPopulateResponse(url_, final_response);
-    }
-    if (data) {
-      auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
-      body_loader->Write(*data);
-      body_loader->Finish();
-      body_loader_ = std::move(body_loader);
-    }
-  } else {
-    // The common case - both final response and body loader should be
-    // provided.
-    final_response = params_->response.ToResourceResponse();
-    body_loader_ = std::move(params_->body_loader);
-  }
-
+  body_loader_ = std::move(params_->body_loader);
   if (!body_loader_) {
     // TODO(dgozman): we should try to get rid of this case.
     LoadFailed(ResourceError::Failure(url_));
@@ -1151,36 +1128,36 @@ void DocumentLoader::StartLoadingInternal() {
     HandleRedirect(redirect_response.CurrentRequestUrl());
   }
 
-  if (!frame_->IsMainFrame() && final_response.GetCTPolicyCompliance() ==
+  ResourceResponse response = params_->response.ToResourceResponse();
+  if (!frame_->IsMainFrame() && response.GetCTPolicyCompliance() ==
                                     ResourceResponse::kCTPolicyDoesNotComply) {
     // Exclude main-frame navigations; those are tracked elsewhere.
     GetUseCounter().Count(
         WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe,
         GetFrame());
   }
-  MixedContentChecker::CheckMixedPrivatePublic(
-      GetFrame(), final_response.RemoteIPAddress());
-  ParseAndPersistClientHints(final_response);
+  MixedContentChecker::CheckMixedPrivatePublic(GetFrame(),
+                                               response.RemoteIPAddress());
+  ParseAndPersistClientHints(response);
   PreloadHelper::LoadLinksFromHeader(
-      final_response.HttpHeaderField(http_names::kLink),
-      final_response.CurrentRequestUrl(), *GetFrame(), nullptr,
-      NetworkHintsInterfaceImpl(), PreloadHelper::kDoNotLoadResources,
-      PreloadHelper::kLoadAll, nullptr);
-  if (!frame_->IsMainFrame() && final_response.HasMajorCertificateErrors()) {
+      response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
+      *GetFrame(), nullptr, NetworkHintsInterfaceImpl(),
+      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll, nullptr);
+  if (!frame_->IsMainFrame() && response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
-        GetFrame(), final_response, mojom::RequestContextType::HYPERLINK);
+        GetFrame(), response, mojom::RequestContextType::HYPERLINK);
   }
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
-                                                final_response);
+                                                response);
   // TODO(dgozman): remove this client call, it is only used in tests.
-  GetLocalFrameClient().DispatchDidReceiveResponse(final_response);
+  GetLocalFrameClient().DispatchDidReceiveResponse(response);
   probe::didReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
-                                    main_resource_identifier_, this,
-                                    final_response, nullptr /* resource */);
+                                    main_resource_identifier_, this, response,
+                                    nullptr /* resource */);
   frame_->Console().ReportResourceResponseReceived(
-      this, main_resource_identifier_, final_response);
+      this, main_resource_identifier_, response);
 
-  if (!HandleResponse(final_response))
+  if (!HandleResponse(response))
     return;
 
   if (defers_loading_)

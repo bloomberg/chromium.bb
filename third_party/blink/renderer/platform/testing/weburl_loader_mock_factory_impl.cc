@@ -19,8 +19,10 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
@@ -144,6 +146,20 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
 
 void WebURLLoaderMockFactoryImpl::FillNavigationParamsResponse(
     WebNavigationParams* params) {
+  KURL kurl = params->url;
+  if (kurl.ProtocolIsData()) {
+    ResourceResponse response;
+    scoped_refptr<SharedBuffer> buffer =
+        network_utils::ParseDataURLAndPopulateResponse(kurl, response);
+    DCHECK(buffer);
+    params->response = WrappedResourceResponse(response);
+    auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+    body_loader->Write(*buffer);
+    body_loader->Finish();
+    params->body_loader = std::move(body_loader);
+    return;
+  }
+
   if (delegate_ && delegate_->FillNavigationParamsResponse(params))
     return;
 

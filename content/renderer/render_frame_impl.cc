@@ -3391,11 +3391,28 @@ void RenderFrameImpl::CommitNavigationInternal(
         InternalDocumentStateData::FromDocumentState(document_state.get());
     FillNavigationParamsRequest(common_params, commit_params,
                                 navigation_params.get());
-    NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        common_params, commit_params, internal_data->request_id(), head,
-        std::move(url_loader_client_endpoints),
-        GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
-        !frame_->Parent(), navigation_params.get());
+    if (!url_loader_client_endpoints &&
+        common_params.url.SchemeIs(url::kDataScheme)) {
+      // Normally, data urls will have |url_loader_client_endpoints| set.
+      // However, tests and interstitial pages pass data urls directly,
+      // without creating url loader.
+      std::string mime_type, charset, data;
+      if (!net::DataURL::Parse(common_params.url, &mime_type, &charset,
+                               &data)) {
+        CHECK(false) << "Invalid URL passed: "
+                     << common_params.url.possibly_invalid_spec();
+        return;
+      }
+      WebNavigationParams::FillStaticResponse(
+          navigation_params.get(), WebString::FromUTF8(mime_type),
+          WebString::FromUTF8(charset), data);
+    } else {
+      NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
+          common_params, commit_params, internal_data->request_id(), head,
+          std::move(url_loader_client_endpoints),
+          GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
+          !frame_->Parent(), navigation_params.get());
+    }
   }
 
   frame_->CommitNavigation(std::move(navigation_params),

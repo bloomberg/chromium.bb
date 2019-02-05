@@ -171,11 +171,9 @@ void PumpPendingRequestsForFrameToLoad(WebLocalFrame* frame) {
 
 void FillNavigationParamsResponse(WebNavigationParams* params) {
   KURL kurl(params->url);
-  // Empty documents, data urls and srcdoc will be handled by DocumentLoader.
-  if (DocumentLoader::WillLoadUrlAsEmpty(kurl) || kurl.ProtocolIsData() ||
-      kurl.IsAboutSrcdocURL()) {
+  // Empty documents and srcdoc will be handled by DocumentLoader.
+  if (DocumentLoader::WillLoadUrlAsEmpty(kurl) || kurl.IsAboutSrcdocURL())
     return;
-  }
   Platform::Current()->GetURLLoaderMockFactory()->FillNavigationParamsResponse(
       params);
 }

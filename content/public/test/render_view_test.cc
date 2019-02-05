@@ -592,8 +592,9 @@ void RenderViewTest::Reload(const GURL& url) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
+  FrameLoadWaiter waiter(frame);
   frame->Navigate(common_params, CommitNavigationParams());
-  FrameLoadWaiter(frame).Wait();
+  waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kTest);
 }
@@ -742,11 +743,11 @@ void RenderViewTest::GoToOffset(int offset,
 
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
+  FrameLoadWaiter waiter(frame);
   frame->Navigate(common_params, commit_params);
-
-  // The load actually happens asynchronously, so we pump messages to process
+  // The load may actually happen asynchronously, so we pump messages to process
   // the pending continuation.
-  FrameLoadWaiter(frame).Wait();
+  waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kTest);
 }

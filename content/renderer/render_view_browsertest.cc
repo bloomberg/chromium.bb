@@ -1928,10 +1928,11 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   TestRenderFrame* subframe =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
           frame()->GetWebFrame()->FindFrameByName("frame")));
+  FrameLoadWaiter waiter(subframe);
   subframe->Navigate(common_params, commit_params);
-  FrameLoadWaiter(subframe).Wait();
+  waiter.Wait();
 
-  // Copy the document content to std::wstring and compare with the
+  // Copy the document content to std::string and compare with the
   // expected result.
   const int kMaxOutputCharacters = 256;
   std::string output = WebFrameContentDumper::DumpWebViewAsText(
