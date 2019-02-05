@@ -83,7 +83,9 @@ class MockNavigationHandle : public NavigationHandle {
   bool WasResponseCached() override { return was_response_cached_; }
   const net::ProxyServer& GetProxyServer() override { return proxy_server_; }
   MOCK_METHOD0(GetHrefTranslate, const std::string&());
-  MOCK_METHOD0(GetInitiatorOrigin, const base::Optional<url::Origin>&());
+  const base::Optional<url::Origin>& GetInitiatorOrigin() override {
+    return initiator_origin_;
+  }
   MOCK_METHOD1(RegisterThrottleForTesting,
                void(std::unique_ptr<NavigationThrottle>));
   MOCK_METHOD0(IsDeferredForTesting, bool());
@@ -149,6 +151,7 @@ class MockNavigationHandle : public NavigationHandle {
   bool is_form_submission_ = false;
   bool was_response_cached_ = false;
   net::ProxyServer proxy_server_;
+  base::Optional<url::Origin> initiator_origin_;
 };
 
 }  // namespace content

@@ -82,7 +82,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
@@ -488,6 +487,20 @@ class PDFPluginDisabledTest : public PDFExtensionTest {
         content::BrowserContext::GetDownloadManager(browser_context);
     download_awaiter_ = std::make_unique<DownloadAwaiter>();
     download_manager->AddObserver(download_awaiter_.get());
+
+    // TODO(tommycli): PDFIFrameNavigationThrottle currently doesn't wait for
+    // the plugin list to be loaded, and this causes some unpredictable (but not
+    // catastrophic) behavior on startup. Remove this after we fix that.
+    base::RunLoop run_loop;
+    content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
+        &PDFPluginDisabledTest::PluginsLoadedCallback, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  static void PluginsLoadedCallback(
+      base::OnceClosure callback,
+      const std::vector<content::WebPluginInfo>& plugins) {
+    std::move(callback).Run();
   }
 
   void TearDownOnMainThread() override {
@@ -507,6 +520,28 @@ class PDFPluginDisabledTest : public PDFExtensionTest {
     PDFExtensionTest::TearDownOnMainThread();
   }
 
+  void ClickOpenButtonInIframe() {
+    int iframes_found = 0;
+    for (auto* host : GetActiveWebContents()->GetAllFrames()) {
+      if (host != GetActiveWebContents()->GetMainFrame()) {
+        ASSERT_TRUE(content::ExecJs(
+            host, "document.getElementById('open-button').click();"));
+        ++iframes_found;
+      }
+    }
+    ASSERT_EQ(1, iframes_found);
+  }
+
+  void ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch() {
+    // Validate that we downloaded a single PDF and didn't launch the PDF
+    // plugin.
+    GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+    EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
+    EXPECT_EQ(1u, GetNumberOfDownloads());
+    EXPECT_EQ(0, CountPDFProcesses());
+  }
+
+ private:
   size_t GetNumberOfDownloads() {
     content::BrowserContext* browser_context =
         GetActiveWebContents()->GetBrowserContext();
@@ -522,7 +557,6 @@ class PDFPluginDisabledTest : public PDFExtensionTest {
     return download_awaiter_->GetLastUrl();
   }
 
- private:
   std::unique_ptr<DownloadAwaiter> download_awaiter_;
 };
 
@@ -531,10 +565,7 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, DirectNavigationToPDF) {
   GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ui_test_utils::NavigateToURL(browser(), pdf_url);
 
-  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
-  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
-  EXPECT_EQ(1u, GetNumberOfDownloads());
-  EXPECT_EQ(0, CountPDFProcesses());
+  ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
 IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, EmbedPdfPlaceholderWithCSP) {
@@ -553,11 +584,7 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, EmbedPdfPlaceholderWithCSP) {
                             ui::DomCode::ENTER, ui::VKEY_RETURN, false, false,
                             false, false);
 
-  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
-  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
-  EXPECT_EQ(1u, GetNumberOfDownloads());
-  EXPECT_EQ(0, CountPDFProcesses());
+  ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
 IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
@@ -566,29 +593,30 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
       embedded_test_server()->GetURL("/pdf/pdf_iframe_csp.html");
   ui_test_utils::NavigateToURL(browser(), iframe_page_url);
 
-  // Pass an Enter keystroke to the child <iframe>.
-  int keys_passed = 0;
-  for (auto* host : GetActiveWebContents()->GetAllFrames()) {
-    if (host != GetActiveWebContents()->GetMainFrame()) {
-      content::NativeWebKeyboardEvent key_event(
-          blink::WebKeyboardEvent::kChar, blink::WebInputEvent::kNoModifiers,
-          blink::WebInputEvent::GetStaticTimeStampForTests());
-      key_event.windows_key_code = ui::VKEY_RETURN;
-      key_event.native_key_code =
-          ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ENTER);
-      key_event.dom_code = static_cast<int>(ui::DomCode::ENTER);
-      key_event.dom_key = ui::DomKey::ENTER;
-      host->GetView()->GetRenderWidgetHost()->ForwardKeyboardEvent(key_event);
-      keys_passed++;
-    }
-  }
-  ASSERT_EQ(1, keys_passed);
+  ClickOpenButtonInIframe();
+  ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
+}
 
-  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
-  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
-  EXPECT_EQ(1u, GetNumberOfDownloads());
-  EXPECT_EQ(0, CountPDFProcesses());
+IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
+                       IframePlaceholderInjectedIntoNewWindow) {
+  // This is an unusual test to verify crbug.com/924823. We are injecting the
+  // HTML for a PDF IFRAME into a newly created popup with an undefined URL.
+  ASSERT_TRUE(
+      content::EvalJs(
+          GetActiveWebContents(),
+          content::JsReplace(
+              "new Promise((resolve) => {"
+              "  var popup = window.open();"
+              "  popup.document.writeln("
+              "      '<iframe id=\"pdf_iframe\" src=\"' + $1 + '\"></iframe>');"
+              "  var iframe = popup.document.getElementById('pdf_iframe');"
+              "  iframe.onload = () => resolve(true);"
+              "});",
+              embedded_test_server()->GetURL("/pdf/test.pdf").spec()))
+          .ExtractBool());
+
+  ClickOpenButtonInIframe();
+  ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
 // We break PDFExtensionLoadTest up into kNumberLoadTestParts.
