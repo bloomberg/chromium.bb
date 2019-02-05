@@ -435,36 +435,6 @@ def CopyIfChanged(src, target_dir):
     shutil.copyfile(src, dest)
 
 
-# Taken and modified from:
-# third_party\blink\tools\blinkpy\web_tests\port\factory.py
-def _read_configuration_from_gn(build_dir):
-  """Return the configuration to used based on args.gn, if possible."""
-  path = os.path.join(build_dir, 'args.gn')
-  if not os.path.exists(path):
-    path = os.path.join(build_dir, 'toolchain.ninja')
-    if not os.path.exists(path):
-      # This does not appear to be a GN-based build directory, so we don't
-      # know how to interpret it.
-      return None
-
-    # toolchain.ninja exists, but args.gn does not; this can happen when
-    # `gn gen` is run with no --args.
-    return 'Debug'
-
-  args = open(path).read()
-  for l in args.splitlines():
-    # See the original of this function and then gn documentation for why this
-    # regular expression is correct:
-    # https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md#GN-build-language-grammar
-    m = re.match('^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', l)
-    if m:
-      return 'Release'
-
-  # if is_debug is set to anything other than false, or if it
-  # does not exist at all, we should use the default value (True).
-  return 'Debug'
-
-
 def ParseDLLsFromDeps(build_dir, runtime_deps_file):
   """Parses the runtime_deps file and returns the set of DLLs in it, relative
   to build_dir."""

@@ -82,10 +82,12 @@ if (is_win) {
   }
 
   group("runtime_libs") {
-    if (is_component_build) {
+    if (is_component_build || current_cpu != "arm64") {
       # Copy the VS runtime DLLs into the isolate so that they don't have to be
       # preinstalled on the target machine. The debug runtimes have a "d" at
-      # the end.
+      # the end. The UCRT files are needed for all non-arm64 builds because
+      # d3dcompiler_47.dll depends on them and they are missing on some Windows
+      # 7 machines.
       if (is_debug) {
         vcrt_suffix = "d"
       } else {
