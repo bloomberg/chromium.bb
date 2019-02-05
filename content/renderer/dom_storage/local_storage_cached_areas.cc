@@ -134,7 +134,6 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     LOCAL_HISTOGRAM_ENUMERATION("SessionStorage.RendererAreaCacheHit", metric);
 
   if (!result) {
-    ClearAreasIfNeeded();
     if (!dom_namespace) {
       dom_namespace = &cached_namespaces_[namespace_id];
     }
@@ -155,6 +154,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
           this, scheduler);
     }
     dom_namespace->cached_areas.emplace(origin, result);
+    ClearAreasIfNeeded();
   }
   return result;
 }
