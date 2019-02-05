@@ -3878,6 +3878,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="210" label="RFH_DETACH_MAIN_FRAME"/>
   <int value="211" label="RFH_DOCUMENT_INTERFACE_BROKER_MISSING"/>
   <int value="212" label="RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN"/>
+  <int value="213" label="INVALID_INITIATOR_ORIGIN"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
