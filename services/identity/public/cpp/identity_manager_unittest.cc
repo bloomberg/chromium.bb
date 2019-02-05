@@ -93,6 +93,43 @@ class CustomFakeProfileOAuth2TokenService
   base::OnceClosure on_access_token_invalidated_callback_;
 };
 
+class FakeCookieManager : public network::mojom::CookieManager {
+ public:
+  void SetCanonicalCookie(const net::CanonicalCookie& cookie,
+                          bool secure_source,
+                          bool modify_http_only,
+                          SetCanonicalCookieCallback callback) override {
+    std::move(callback).Run(false);
+  }
+  void GetAllCookies(GetAllCookiesCallback callback) override {}
+  void GetCookieList(const GURL& url,
+                     const net::CookieOptions& cookie_options,
+                     GetCookieListCallback callback) override {}
+  void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
+                             DeleteCanonicalCookieCallback callback) override {}
+  void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
+                     DeleteCookiesCallback callback) override {}
+  void AddCookieChangeListener(
+      const GURL& url,
+      const std::string& name,
+      network::mojom::CookieChangeListenerPtr listener) override {
+    listener_ = std::move(listener);
+  }
+  void AddGlobalChangeListener(
+      network::mojom::CookieChangeListenerPtr notification_pointer) override {}
+  void CloneInterface(
+      network::mojom::CookieManagerRequest new_interface) override {}
+  void FlushCookieStore(FlushCookieStoreCallback callback) override {}
+  void SetContentSettings(
+      const std::vector<::ContentSettingPatternSource>& settings) override {}
+  void SetForceKeepSessionState() override {}
+  void BlockThirdPartyCookies(bool block) override {}
+
+ private:
+  // The observer receiving change notifications.
+  network::mojom::CookieChangeListenerPtr listener_;
+};
+
 class AccountTrackerServiceForTest : public AccountTrackerService {
  public:
   void SetAccountInfoFromUserInfo(const std::string& account_id,
@@ -218,6 +255,9 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   void set_on_primary_account_signin_failed_callback(
       base::OnceClosure callback) {
     on_primary_account_signin_failed_callback_ = std::move(callback);
+  }
+  void set_on_cookie_deleted_by_user_callback(base::OnceClosure callback) {
+    on_cookie_deleted_by_user_callback_ = std::move(callback);
   }
 
   const AccountInfo& primary_account_from_set_callback() {
@@ -368,6 +408,9 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       const GoogleServiceAuthError& error) override {
     error_from_set_accounts_in_cookie_completed_callback_ = error;
   }
+  void OnAccountsCookieDeletedByUserAction() override {
+    std::move(on_cookie_deleted_by_user_callback_).Run();
+  }
 
   void OnStartBatchOfRefreshTokenStateChanges() override {
     EXPECT_FALSE(is_inside_batch_);
@@ -395,6 +438,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_primary_account_cleared_callback_;
   base::OnceClosure on_primary_account_signin_failed_callback_;
   base::OnceClosure on_refresh_token_updated_callback_;
+  base::OnceClosure on_cookie_deleted_by_user_callback_;
   base::RepeatingCallback<void(const std::string&)>
       on_refresh_token_removed_callback_;
   base::OnceClosure on_error_state_of_refresh_token_updated_callback_;
@@ -500,7 +544,10 @@ class IdentityManagerTest : public testing::Test {
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
+    signin_client_.set_cookie_manager(std::make_unique<FakeCookieManager>());
     account_tracker_.Initialize(&pref_service_, base::FilePath());
+
+    gaia_cookie_manager_service_.InitCookieListener();
 
     RecreateSigninAndIdentityManager(
         signin::AccountConsistencyMethod::kDisabled,
@@ -606,6 +653,13 @@ class IdentityManagerTest : public testing::Test {
       GaiaAuthConsumer* consumer,
       const GoogleServiceAuthError& error) {
     consumer->OnMergeSessionFailure(error);
+  }
+
+  void SimulateCookieDeletedByUser(
+      network::mojom::CookieChangeListener* listener,
+      const net::CanonicalCookie& cookie) {
+    listener->OnCookieChange(cookie,
+                             network::mojom::CookieChangeCause::EXPLICIT);
   }
 
   void SimulateOAuthMultiloginFinished(GaiaAuthConsumer* consumer,
@@ -2179,6 +2233,49 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(identity_manager_observer()
                 ->error_from_set_accounts_in_cookie_completed_callback(),
             error);
+}
+
+TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
+  const char kTestAccountId[] = "account_id";
+  const char kTestAccountId2[] = "account_id2";
+  const std::vector<std::string> account_ids = {kTestAccountId,
+                                                kTestAccountId2};
+
+  // Needed to insert request in the queue.
+  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
+                                                     gaia::GaiaSource::kChrome);
+
+  // Sample success cookie response.
+  std::string data =
+      R"()]}'
+      {
+        "status": "OK",
+        "cookies":[
+        {
+            "name":"APISID",
+            "value":"vAlUe1",
+            "domain":".google.com",
+            "path":"/",
+            "isSecure":true,
+            "isHttpOnly":false,
+            "priority":"HIGH",
+            "maxAge":63070000
+          }
+        ]
+      }
+    )";
+  OAuthMultiloginResult result(data);
+
+  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_cookie_deleted_by_user_callback(
+      run_loop.QuitClosure());
+
+  const std::vector<net::CanonicalCookie>& cookies = result.cookies();
+  SimulateCookieDeletedByUser(gaia_cookie_manager_service(), cookies[0]);
+  run_loop.Run();
 }
 
 TEST_F(IdentityManagerTest,
