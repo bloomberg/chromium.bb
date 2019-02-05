@@ -399,10 +399,9 @@ message VisualFeatures {
   }
 
   // Blurred, downsampled image of the current page.
+  // Using Rec 2020 color space:
+  // https://en.wikipedia.org/wiki/Rec._2020
   optional BlurredImage image = 2;
-
-  // The final pHash for the current page.
-  optional bytes phash = 3;
 }
 
 message ClientMalwareResponse {

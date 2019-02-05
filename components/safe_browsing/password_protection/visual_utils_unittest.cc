@@ -197,51 +197,5 @@ TEST_F(VisualUtilsTest, BlurImageHalfWhiteHalfBlack) {
   }
 }
 
-TEST_F(VisualUtilsTest, PHashUniformImage) {
-  // Create 8x1 image.
-  VisualFeatures::BlurredImage blurred;
-  blurred.set_width(1);
-  blurred.set_height(8);
-  for (int i = 0; i < 8; i++) {
-    *blurred.mutable_data() += "\x30\x30\x30";
-  }
-
-  std::string phash;
-  ASSERT_TRUE(GetPHash(blurred, &phash));
-  EXPECT_EQ("\xff", phash);
-}
-
-TEST_F(VisualUtilsTest, PHashPadsExtraBits) {
-  // Create 9x1 image.
-  VisualFeatures::BlurredImage blurred;
-  blurred.set_width(1);
-  blurred.set_height(9);
-  for (int i = 0; i < 9; i++) {
-    *blurred.mutable_data() += "\x30\x30\x30";
-  }
-
-  std::string phash;
-  ASSERT_TRUE(GetPHash(blurred, &phash));
-  EXPECT_EQ("\xff\x80", phash);
-}
-
-TEST_F(VisualUtilsTest, PHashDistinctLuminances) {
-  // Create 9x1 image, with all pixels distinct
-  VisualFeatures::BlurredImage blurred;
-  blurred.set_width(1);
-  blurred.set_height(9);
-  for (int i = 0; i < 9; i++) {
-    *blurred.mutable_data() += "\x30\x30";
-    // Using 10*i to ensure that the luminances are distinct.
-    *blurred.mutable_data() += static_cast<char>(10 * i);
-  }
-
-  // With 9 distinct pixels, the first 4 will be below the median, and the last
-  // 5 will be at least the median.
-  std::string phash;
-  ASSERT_TRUE(GetPHash(blurred, &phash));
-  EXPECT_EQ("\x0f\x80", phash);
-}
-
 }  // namespace visual_utils
 }  // namespace safe_browsing

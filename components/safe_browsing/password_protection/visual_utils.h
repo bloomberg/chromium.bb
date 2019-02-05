@@ -32,12 +32,6 @@ bool GetHistogramForImage(const SkBitmap& image,
 bool GetBlurredImage(const SkBitmap& image,
                      VisualFeatures::BlurredImage* blurred_image);
 
-// Computes the pHash from the Blurred image. This involves computing the
-// luminance for each pixel, then outputs a bitstring, where each pixel
-// contributes a "1" if the luminance is above the median, and a "0" otherwise.
-bool GetPHash(const VisualFeatures::BlurredImage& blurred_image,
-              std::string* phash);
-
 }  // namespace visual_utils
 }  // namespace safe_browsing
 
