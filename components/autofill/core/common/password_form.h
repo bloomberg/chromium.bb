@@ -334,6 +334,9 @@ struct PasswordForm {
   // include signup forms.
   bool IsPossibleChangePasswordFormWithoutUsername() const;
 
+  // Returns true if current password element is set.
+  bool HasPasswordElement() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;
