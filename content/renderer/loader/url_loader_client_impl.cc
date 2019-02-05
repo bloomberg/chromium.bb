@@ -379,7 +379,8 @@ void URLLoaderClientImpl::OnComplete(
 }
 
 bool URLLoaderClientImpl::NeedsStoringMessage() const {
-  return is_deferred_ || deferred_messages_.size() > 0;
+  return is_deferred_ || deferred_messages_.size() > 0 ||
+         accumulated_transfer_size_diff_during_deferred_ > 0;
 }
 
 void URLLoaderClientImpl::StoreAndDispatch(
@@ -387,7 +388,8 @@ void URLLoaderClientImpl::StoreAndDispatch(
   DCHECK(NeedsStoringMessage());
   if (is_deferred_) {
     deferred_messages_.push_back(std::move(message));
-  } else if (deferred_messages_.size() > 0) {
+  } else if (deferred_messages_.size() > 0 ||
+             accumulated_transfer_size_diff_during_deferred_ > 0) {
     deferred_messages_.push_back(std::move(message));
     FlushDeferredMessages();
   } else {
