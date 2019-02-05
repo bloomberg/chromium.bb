@@ -71,9 +71,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_DisplayModeWindowIsInFullscreen) {
-  // TODO(crbug.com/897879): this test is flaky.
-  if (features::IsSingleProcessMash())
-    return;
   ASSERT_TRUE(RunPlatformAppTest("fullscreen/mq_display_mode")) << message_;
 }
 

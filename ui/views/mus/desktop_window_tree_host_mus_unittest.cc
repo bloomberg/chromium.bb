@@ -36,6 +36,7 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
+#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -766,6 +767,39 @@ TEST_F(DesktopWindowTreeHostMusTest, MaximizeMinimizeRestore) {
   // DesktopWindowTreeHostMus::RestoreToPreminimizedState() for details.
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_FALSE(widget->IsMaximized());
+}
+
+// Tests that toggling fullscreen synchronously updates kTopViewInset (via its
+// effect on client bounds).
+TEST_F(DesktopWindowTreeHostMusTest, FullscreenTopViewInset) {
+  WindowManagerFrameValues frame_values;
+  frame_values.normal_insets = gfx::Insets(7, 0, 0, 0);
+  WindowManagerFrameValues::SetInstance(frame_values);
+
+  std::unique_ptr<Widget> widget(CreateWidget());
+  widget->Show();
+  EXPECT_TRUE(widget->IsActive());
+
+  gfx::Rect before_fullscreen_client_bounds = widget->client_view()->bounds();
+  gfx::Rect frame_bounds = widget->non_client_view()->bounds();
+  EXPECT_EQ(frame_values.normal_insets,
+            frame_bounds.InsetsFrom(before_fullscreen_client_bounds));
+
+  widget->SetFullscreen(true);
+
+  gfx::Rect fullscreen_client_bounds = widget->client_view()->bounds();
+  frame_bounds = widget->non_client_view()->bounds();
+  EXPECT_EQ(fullscreen_client_bounds, frame_bounds);
+
+  widget->SetFullscreen(false);
+
+  gfx::Rect after_fullscreen_client_bounds = widget->client_view()->bounds();
+  frame_bounds = widget->non_client_view()->bounds();
+  EXPECT_EQ(frame_values.normal_insets,
+            frame_bounds.InsetsFrom(after_fullscreen_client_bounds));
+
+  EXPECT_EQ(before_fullscreen_client_bounds, after_fullscreen_client_bounds);
+  EXPECT_NE(fullscreen_client_bounds, after_fullscreen_client_bounds);
 }
 
 // TransferTouchEventsCounter observes the GestureRecognizer and counts how many
