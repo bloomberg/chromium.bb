@@ -1626,22 +1626,26 @@ void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
   LayoutUnit offset_left = ContainingBlock()->LogicalLeftOffsetForContent();
   LayoutUnit available_space = ContainingBlock()->ContentLogicalWidth();
 
-  switch (StyleRef().GetTextAlign(true)) {
-    case ETextAlign::kLeft:
-    case ETextAlign::kWebkitLeft:
-    case ETextAlign::kJustify:
-    case ETextAlign::kStart:
-      // Do nothing.
-      break;
-    case ETextAlign::kRight:
-    case ETextAlign::kWebkitRight:
-    case ETextAlign::kEnd:
-      offset_left += available_space - text_width;
-      break;
-    case ETextAlign::kCenter:
-    case ETextAlign::kWebkitCenter:
-      offset_left += (available_space - text_width) / 2;
-      break;
+  // If |text_width| is bigger than |available_space| it's because the text
+  // doesn't wrap so we don't need to align anything.
+  if (text_width < available_space) {
+    switch (StyleRef().GetTextAlign(true)) {
+      case ETextAlign::kLeft:
+      case ETextAlign::kWebkitLeft:
+      case ETextAlign::kJustify:
+      case ETextAlign::kStart:
+        // Do nothing.
+        break;
+      case ETextAlign::kRight:
+      case ETextAlign::kWebkitRight:
+      case ETextAlign::kEnd:
+        offset_left += available_space - text_width;
+        break;
+      case ETextAlign::kCenter:
+      case ETextAlign::kWebkitCenter:
+        offset_left += (available_space - text_width) / 2;
+        break;
+    }
   }
 
   FirstTextBox()->SetLogicalLeft(offset_left);
