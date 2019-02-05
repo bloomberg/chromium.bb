@@ -2215,6 +2215,7 @@ enum WebFeature {
   kCSSValueAppearanceButtonForOthersRendered = 2775,
   kCustomCursorIntersectsViewport = 2776,
   kClientHintsLang = 2777,
+  kLinkRelPreloadImageSrcset = 2778,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

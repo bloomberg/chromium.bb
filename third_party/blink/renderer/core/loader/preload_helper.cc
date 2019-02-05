@@ -209,6 +209,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   KURL url;
   if (resource_type == ResourceType::kImage && !params.image_srcset.IsEmpty() &&
       RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()) {
+    UseCounter::Count(document, WebFeature::kLinkRelPreloadImageSrcset);
     media_values = CreateMediaValues(document, viewport_description);
     float source_size =
         SizesAttributeParser(media_values, params.image_sizes).length();

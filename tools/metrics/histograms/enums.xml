@@ -21500,6 +21500,7 @@ Called by update_net_error_codes.py.-->
   <int value="2775" label="CSSValueAppearanceButtonForOthersRendered"/>
   <int value="2776" label="CustomCursorIntersectsViewport"/>
   <int value="2777" label="ClientHintsLang"/>
+  <int value="2778" label="LinkRelPreloadImageSrcset"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
