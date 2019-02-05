@@ -1905,20 +1905,8 @@ ivi_layout_surface_dump(struct weston_surface *surface,
  * methods of interaction between ivi-shell with ivi-layout
  */
 
-void
-ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
-			     int32_t width, int32_t height)
-{
-	struct ivi_layout *layout = get_instance();
-
-	/* emit callback which is set by ivi-layout api user */
-	wl_signal_emit(&layout->surface_notification.configure_changed,
-		       ivisurf);
-}
-
-struct ivi_layout_surface*
-ivi_layout_surface_create(struct weston_surface *wl_surface,
-			  uint32_t id_surface)
+static struct ivi_layout_surface*
+surface_create(struct weston_surface *wl_surface, uint32_t id_surface)
 {
 	struct ivi_layout *layout = get_instance();
 	struct ivi_layout_surface *ivisurf = NULL;
@@ -1926,14 +1914,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	if (wl_surface == NULL) {
 		weston_log("ivi_layout_surface_create: invalid argument\n");
 		return NULL;
-	}
-
-	ivisurf = get_surface(&layout->surface_list, id_surface);
-	if (ivisurf != NULL) {
-		if (ivisurf->surface != NULL) {
-			weston_log("id_surface(%d) is already created\n", id_surface);
-			return NULL;
-		}
 	}
 
 	ivisurf = calloc(1, sizeof *ivisurf);
@@ -1959,7 +1939,54 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 
 	wl_list_insert(&layout->surface_list, &ivisurf->link);
 
-	wl_signal_emit(&layout->surface_notification.created, ivisurf);
+	return ivisurf;
+}
+
+void
+ivi_layout_desktop_surface_configure(struct ivi_layout_surface *ivisurf,
+				 int32_t width, int32_t height)
+{
+	struct ivi_layout *layout = get_instance();
+
+	/* emit callback which is set by ivi-layout api user */
+	wl_signal_emit(&layout->surface_notification.configure_desktop_changed,
+		       ivisurf);
+}
+
+struct ivi_layout_surface*
+ivi_layout_desktop_surface_create(struct weston_surface *wl_surface)
+{
+	return surface_create(wl_surface, IVI_INVALID_ID);
+}
+
+void
+ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
+			     int32_t width, int32_t height)
+{
+	struct ivi_layout *layout = get_instance();
+
+	/* emit callback which is set by ivi-layout api user */
+	wl_signal_emit(&layout->surface_notification.configure_changed,
+		       ivisurf);
+}
+
+struct ivi_layout_surface*
+ivi_layout_surface_create(struct weston_surface *wl_surface,
+			  uint32_t id_surface)
+{
+	struct ivi_layout *layout = get_instance();
+	struct ivi_layout_surface *ivisurf = NULL;
+
+	ivisurf = get_surface(&layout->surface_list, id_surface);
+	if (ivisurf) {
+		weston_log("id_surface(%d) is already created\n", id_surface);
+		return NULL;
+	}
+
+	ivisurf = surface_create(wl_surface, id_surface);
+
+	if (ivisurf)
+		wl_signal_emit(&layout->surface_notification.created, ivisurf);
 
 	return ivisurf;
 }
