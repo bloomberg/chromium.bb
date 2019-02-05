@@ -55,6 +55,21 @@
   <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DESCRIPTION" desc="Description of what this section in the onboarding workflow does.">
     Pick a wallpaper for your start page
   </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_ART_TITLE" desc="Label for choosing a background/wallpaper from the 'Art' category">
+    Art
+  </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LANDSCAPE_TITLE" desc="Label for choosing a background/wallpaper from the 'Landscape' category, as in a category of photos of nature">
+    Landscape
+  </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE" desc="Label for choosing a background/wallpaper from the 'Cityscape' category">
+    Cityscape
+  </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_SEASCAPE_TITLE" desc="Label for choosing a background/wallpaper from the 'Seascape' category">
+    Seascape
+  </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE" desc="Label for choosing a background/wallpaper from the 'Geometric Shapes' category">
+    Geometric shapes
+  </message>
 
   <!-- NUX set default module -->
   <message name="IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER" desc="Header for the page that prompts user to set Chrome as their default browser.">

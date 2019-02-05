@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/ntp_background_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome/welcome_handler.h"
@@ -160,6 +161,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
     // Add google apps bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
+
+    // Add NTP custom background onboarding module.
+    web_ui->AddMessageHandler(std::make_unique<nux::NtpBackgroundHandler>());
 
     // Add set-as-default onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
