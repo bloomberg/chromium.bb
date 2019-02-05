@@ -110,7 +110,7 @@ void PowerTrayView::UpdateImage() {
   icon_session_state_color_ = session_state;
 
   image_view()->SetImage(PowerStatus::GetBatteryImage(
-      info, kTrayIconSize, kTrayIconBackgroundColor,
+      info, kUnifiedTrayIconSize, kTrayIconBackgroundColor,
       TrayIconColor(session_state)));
 }
 
