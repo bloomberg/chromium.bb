@@ -868,9 +868,15 @@ video::-internal-media-controls-overflow-menu-list-item {
   padding-left: 16px;
   padding-right: 16px;
   cursor: pointer;
-
   /* Cursor: pointer will cause a highlight when touch on it, this will disable it */
   -webkit-tap-highlight-color: transparent;
+
+  /*
+   * Avoid slight text movement after item transition ends.
+   * By setting translateZ, we are using hardware acceleration,
+   * which allows a smoother transition.
+   */
+  transform: translateZ(0);
 }
 
 video::-webkit-media-controls div[pseudo="-internal-media-controls-text-track-list" i].pip-presented,
