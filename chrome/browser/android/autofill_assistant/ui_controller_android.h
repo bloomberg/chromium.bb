@@ -53,7 +53,7 @@ class UiControllerAndroid : public UiController {
   void OnDetailsChanged(const Details* details) override;
   void ShowProgressBar(int progress) override;
   void HideProgressBar() override;
-  void SetTouchableArea(const std::vector<RectF>& areas) override;
+  void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();

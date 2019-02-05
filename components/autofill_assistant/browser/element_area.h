@@ -60,6 +60,11 @@ class ElementArea {
     on_update_ = cb;
   }
 
+  // Adds the current touchable area to the vector, if any are available.
+  //
+  // Note that the vector is not cleared before rectangles are added.
+  void GetArea(std::vector<RectF>* area);
+
  private:
   // A rectangle that corresponds to the area of the visual viewport covered by
   // an element. Coordinates are values between 0 and 1, relative to the size of

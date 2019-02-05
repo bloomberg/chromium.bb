@@ -6,8 +6,10 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "components/autofill_assistant/browser/metrics.h"
+#include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
 
 namespace autofill_assistant {
@@ -41,6 +43,15 @@ class UiDelegate {
 
   // Returns the drop out reason for the last state transition to STOPPED.
   virtual Metrics::DropOutReason GetDropOutReason() const = 0;
+
+  // Adds the rectangles that correspond to the current touchable area to the
+  // given vector.
+  //
+  // |areas| is expressed in coordinates relative to the width or height of the
+  // visible viewport, as a number between 0 and 1. It can be empty.
+  //
+  // Note that the vector is not cleared before rectangles are added.
+  virtual void GetTouchableArea(std::vector<RectF>* area) const = 0;
 
  protected:
   UiDelegate() = default;

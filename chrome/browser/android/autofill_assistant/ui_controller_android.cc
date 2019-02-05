@@ -279,7 +279,8 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
                                       state);
 }
 
-void UiControllerAndroid::SetTouchableArea(const std::vector<RectF>& areas) {
+void UiControllerAndroid::OnTouchableAreaChanged(
+    const std::vector<RectF>& areas) {
   JNIEnv* env = AttachCurrentThread();
   std::vector<float> flattened;
   for (const auto& rect : areas) {

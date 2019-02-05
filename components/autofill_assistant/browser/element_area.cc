@@ -92,6 +92,15 @@ bool ElementArea::IsEmpty() const {
   return true;
 }
 
+void ElementArea::GetArea(std::vector<RectF>* area) {
+  for (auto& rectangle : rectangles_) {
+    RectF rect;
+    if (rectangle.FillRect(&rect)) {
+      area->emplace_back(rect);
+    }
+  }
+}
+
 ElementArea::ElementPosition::ElementPosition() = default;
 ElementArea::ElementPosition::ElementPosition(const ElementPosition& orig) =
     default;
@@ -181,14 +190,9 @@ void ElementArea::ReportUpdate() {
     }
   }
 
-  std::vector<RectF> areas;
-  for (auto& rectangle : rectangles_) {
-    RectF rect;
-    if (rectangle.FillRect(&rect)) {
-      areas.emplace_back(rect);
-    }
-  }
-  on_update_.Run(areas);
+  std::vector<RectF> area;
+  GetArea(&area);
+  on_update_.Run(area);
 }
 
 }  // namespace autofill_assistant

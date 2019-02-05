@@ -68,7 +68,7 @@ class UiController {
   //
   // |areas| is expressed in coordinates relative to the width or height of the
   // visible viewport, as a number between 0 and 1. It can be empty.
-  virtual void SetTouchableArea(const std::vector<RectF>& areas) = 0;
+  virtual void OnTouchableAreaChanged(const std::vector<RectF>& areas) = 0;
 
  protected:
   UiController() = default;
