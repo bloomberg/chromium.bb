@@ -138,6 +138,30 @@ TEST_F(NotificationEventDispatcherImplTest,
 }
 
 TEST_F(NotificationEventDispatcherImplTest,
+       RegisterNonPersistentListener_SecondListenerGetsOnShow) {
+  auto original_listener = std::make_unique<TestNotificationListener>();
+  dispatcher_->RegisterNonPersistentNotificationListener(
+      kPrimaryUniqueId, original_listener->GetPtr());
+
+  dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
+
+  WaitForMojoTasksToComplete();
+
+  ASSERT_EQ(original_listener->on_show_count(), 1);
+
+  auto replacement_listener = std::make_unique<TestNotificationListener>();
+  dispatcher_->RegisterNonPersistentNotificationListener(
+      kPrimaryUniqueId, replacement_listener->GetPtr());
+
+  dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
+
+  WaitForMojoTasksToComplete();
+
+  ASSERT_EQ(original_listener->on_show_count(), 1);
+  ASSERT_EQ(replacement_listener->on_show_count(), 1);
+}
+
+TEST_F(NotificationEventDispatcherImplTest,
        RegisterNonPersistentListener_ReplacedListenerGetsOnClick) {
   auto original_listener = std::make_unique<TestNotificationListener>();
   dispatcher_->RegisterNonPersistentNotificationListener(

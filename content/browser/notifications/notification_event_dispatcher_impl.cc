@@ -443,13 +443,9 @@ void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
     // from the JavaScript point of view there will be two notification objects,
     // and the old one needs to receive a close event before the new one
     // receives a show event.
-    DispatchNonPersistentCloseEvent(
-        notification_id,
-        base::BindOnce(&NotificationEventDispatcherImpl::
-                           ReplaceNonPersistentNotificationListener,
-                       base::Unretained(this), notification_id,
-                       std::move(event_listener_ptr)));
-    return;
+    non_persistent_notification_listeners_[notification_id]->OnClose(
+        base::DoNothing());
+    non_persistent_notification_listeners_.erase(notification_id);
   }
 
   non_persistent_notification_listeners_.emplace(notification_id,
@@ -495,13 +491,6 @@ void NotificationEventDispatcherImpl::OnNonPersistentCloseComplete(
     base::OnceClosure completed_closure) {
   non_persistent_notification_listeners_.erase(notification_id);
   std::move(completed_closure).Run();
-}
-
-void NotificationEventDispatcherImpl::ReplaceNonPersistentNotificationListener(
-    const std::string& notification_id,
-    blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
-  non_persistent_notification_listeners_.emplace(notification_id,
-                                                 std::move(event_listener_ptr));
 }
 
 void NotificationEventDispatcherImpl::
