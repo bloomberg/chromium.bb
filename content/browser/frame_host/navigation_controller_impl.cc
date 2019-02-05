@@ -2673,6 +2673,14 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   // URLs, unlike the cases below where we clear it if the navigation doesn't
   // proceed.
   if (IsRendererDebugURL(params.url)) {
+    // Renderer-debug URLs won't go through NavigationThrottlers so we have to
+    // check them explicitly. See bug 913334.
+    if (GetContentClient()->browser()->IsRendererDebugURLBlacklisted(
+            params.url, browser_context_)) {
+      DiscardPendingEntry(false);
+      return;
+    }
+
     HandleRendererDebugURL(node, params.url);
     return;
   }

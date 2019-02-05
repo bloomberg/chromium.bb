@@ -1448,6 +1448,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to native code, and as such whether its log messages should be recorded.
   virtual bool IsBuiltinComponent(BrowserContext* browser_context,
                                   const url::Origin& origin);
+
+  // Returns whether given |url| has to be blocked. It's used only for renderer
+  // debug URLs, as other requests are handled via NavigationThrottlers and
+  // blacklist policies are applied there.
+  virtual bool IsRendererDebugURLBlacklisted(const GURL& url,
+                                             BrowserContext* context);
 };
 
 }  // namespace content
