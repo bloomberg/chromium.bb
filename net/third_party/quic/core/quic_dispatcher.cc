@@ -561,9 +561,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
     // expediency. Stop doing this when removing flag
     // quic_always_reset_ietf_connections.
     if (!GetQuicReloadableFlag(quic_always_reset_ietf_connections) &&
-        (!GetQuicReloadableFlag(
-             quic_send_reset_for_post_handshake_connections_without_termination_packets) ||  // NOLINT
-         (source == ConnectionCloseSource::FROM_PEER))) {
+        source == ConnectionCloseSource::FROM_PEER) {
       action = QuicTimeWaitListManager::DO_NOTHING;
     } else if (!connection->IsHandshakeConfirmed()) {
       QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_handshake_failed);

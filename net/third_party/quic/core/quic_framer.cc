@@ -1726,8 +1726,8 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
                       kQuicDefaultConnectionIdLength &&
                   transport_version() < QUIC_VERSION_99)
           << "Cannot use connection ID of length "
-          << header.destination_connection_id.length() << " with version "
-          << QuicVersionToString(transport_version());
+          << static_cast<uint32_t>(header.destination_connection_id.length())
+          << " with version " << QuicVersionToString(transport_version());
       public_flags |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID;
       if (perspective_ == Perspective::IS_CLIENT) {
         public_flags |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID_OLD;
@@ -1808,8 +1808,8 @@ bool QuicFramer::AppendIetfPacketHeader(const QuicPacketHeader& header,
                   kQuicDefaultConnectionIdLength &&
               transport_version() < QUIC_VERSION_99)
       << "Cannot use connection ID of length "
-      << header.destination_connection_id.length() << " with version "
-      << QuicVersionToString(transport_version());
+      << static_cast<uint32_t>(header.destination_connection_id.length())
+      << " with version " << QuicVersionToString(transport_version());
   if (!AppendIetfHeaderTypeByte(header, writer)) {
     return false;
   }

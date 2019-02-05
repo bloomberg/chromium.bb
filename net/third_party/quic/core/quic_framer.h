@@ -516,7 +516,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns header wire format of last received packet.
   // Please do not use this method.
   // TODO(fayang): Remove last_header_form_ when deprecating
-  // quic_proxy_use_real_packet_format_when_reject flag.
+  // quic_fix_last_packet_is_ietf_quic flag.
   PacketHeaderFormat GetLastPacketFormat() const;
 
   void set_validate_flags(bool value) { validate_flags_ = value; }

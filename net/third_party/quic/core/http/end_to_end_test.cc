@@ -20,6 +20,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
@@ -61,8 +62,6 @@
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 #include "net/tools/epoll_server/epoll_server.h"
 
-using net::EpollEvent;
-using net::EpollServer;
 using spdy::kV3LowestPriority;
 using spdy::SETTINGS_MAX_HEADER_LIST_SIZE;
 using spdy::SpdyFramer;
@@ -259,7 +258,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   ~ClientDelegate() override = default;
   void OnCanWrite() override {
-    EpollEvent event(EPOLLOUT);
+    QuicEpollEvent event(EPOLLOUT);
     client_->epoll_network_helper()->OnEvent(client_->GetLatestFD(), &event);
   }
 
@@ -418,7 +417,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     }
 
     CreateClientWithWriter();
-    static EpollEvent event(EPOLLOUT);
+    static QuicEpollEvent event(EPOLLOUT);
     if (client_writer_ != nullptr) {
       client_writer_->Initialize(
           QuicConnectionPeer::GetHelper(
@@ -1880,7 +1879,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
 
   // Register the new FD for epoll events.
   int new_fd = client_->client()->GetLatestFD();
-  EpollServer* eps = client_->epoll_server();
+  QuicEpollServer* eps = client_->epoll_server();
   eps->RegisterFD(new_fd, client_->client()->epoll_network_helper(),
                   EPOLLIN | EPOLLOUT | EPOLLET);
 
@@ -3129,7 +3128,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   client->UseWriter(client_writer_);
   client->Connect();
   client_.reset(client);
-  static EpollEvent event(EPOLLOUT);
+  static QuicEpollEvent event(EPOLLOUT);
   client_writer_->Initialize(
       QuicConnectionPeer::GetHelper(
           client_->client()->client_session()->connection()),

@@ -18,12 +18,10 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_time.h"
+#include "net/third_party/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quic/platform/impl/quic_epoll_clock.h"
 
 namespace quic {}  // namespace quic
-namespace net {
-class EpollServer;
-}  // namespace net
 namespace quic {
 class QuicRandom;
 
@@ -33,7 +31,7 @@ enum class QuicAllocator { SIMPLE, BUFFER_POOL };
 
 class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
  public:
-  QuicEpollConnectionHelper(net::EpollServer* eps, QuicAllocator allocator);
+  QuicEpollConnectionHelper(QuicEpollServer* eps, QuicAllocator allocator);
   QuicEpollConnectionHelper(const QuicEpollConnectionHelper&) = delete;
   QuicEpollConnectionHelper& operator=(const QuicEpollConnectionHelper&) =
       delete;

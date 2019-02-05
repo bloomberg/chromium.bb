@@ -160,7 +160,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, true)
 // If true, increase size of random bytes in IETF stateless reset packet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_more_random_bytes_in_stateless_reset,
-          false)
+          true)
 
 // If true, use new, lower-overhead implementation of LRU cache for compressed
 // certificates.
@@ -237,7 +237,7 @@ QUIC_FLAG(
 
 // If true, make GeneralLossAlgorithm::DetectLosses faster by never rescanning
 // the same packet in QuicUnackedPacketMap.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_detect_loss, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_detect_loss, true)
 
 // If true, use common code for checking whether a new stream ID may be
 // allocated.
@@ -315,7 +315,7 @@ QUIC_FLAG(bool,
 // type of the next successfully added frame.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_set_transmission_type_for_next_frame,
-          false)
+          true)
 // If true, always send connection close/reset for IETF connections.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_reset_ietf_connections,
@@ -342,3 +342,11 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_connection_with_zero_least_unacked_stop_waiting,
     true)
+
+// If true, QuicCryptoServerConfig will correctly rotate configs based on
+// primary time.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_config_rotation, false)
+
+// If true, use numeric_limits<uint64_t>::max() to represent uninitialized
+// packet number.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_uint64max_uninitialized_pn, false)

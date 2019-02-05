@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "net/third_party/quic/platform/api/quic_export.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
@@ -40,17 +41,17 @@ class QUIC_EXPORT_PRIVATE QuicPacketNumber {
   bool IsInitialized() const;
 
   // REQUIRES: IsInitialized() == true && ToUint64() <
-  // numeric_limits<uint64_t>::max().
+  // numeric_limits<uint64_t>::max() - 1.
   QuicPacketNumber& operator++();
   QuicPacketNumber operator++(int);
-  // REQUIRES: IsInitialized() == true && ToUint64() > 1.
+  // REQUIRES: IsInitialized() == true && ToUint64() >= 1.
   QuicPacketNumber& operator--();
   QuicPacketNumber operator--(int);
 
   // REQUIRES: IsInitialized() == true && numeric_limits<uint64_t>::max() -
-  // ToUint64() >= |delta|.
+  // ToUint64() > |delta|.
   QuicPacketNumber& operator+=(uint64_t delta);
-  // REQUIRES: IsInitialized() == true && ToUint64() > |delta|.
+  // REQUIRES: IsInitialized() == true && ToUint64() >= |delta|.
   QuicPacketNumber& operator-=(uint64_t delta);
 
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
@@ -66,14 +67,17 @@ class QUIC_EXPORT_PRIVATE QuicPacketNumber {
   friend inline bool operator>(QuicPacketNumber lhs, QuicPacketNumber rhs);
   friend inline bool operator>=(QuicPacketNumber lhs, QuicPacketNumber rhs);
 
-  // REQUIRES: numeric_limits<uint64_t>::max() - lhs.ToUint64() >= |delta|.
+  // REQUIRES: numeric_limits<uint64_t>::max() - lhs.ToUint64() > |delta|.
   friend inline QuicPacketNumber operator+(QuicPacketNumber lhs,
                                            uint64_t delta);
-  // REQUIRES: lhs.ToUint64() > |delta|.
+  // REQUIRES: lhs.ToUint64() >= |delta|.
   friend inline QuicPacketNumber operator-(QuicPacketNumber lhs,
                                            uint64_t delta);
   // REQUIRES: lhs >= rhs.
   friend inline uint64_t operator-(QuicPacketNumber lhs, QuicPacketNumber rhs);
+
+  // The sentinel value representing an uninitialized packet number.
+  static uint64_t UninitializedPacketNumber();
 
   uint64_t packet_number_;
 };
@@ -116,13 +120,26 @@ inline bool operator>=(QuicPacketNumber lhs, QuicPacketNumber rhs) {
 }
 
 inline QuicPacketNumber operator+(QuicPacketNumber lhs, uint64_t delta) {
-  DCHECK(lhs.IsInitialized() &&
-         std::numeric_limits<uint64_t>::max() - lhs.ToUint64() >= delta);
+#ifndef NDEBUG
+  DCHECK(lhs.IsInitialized());
+  if (GetQuicRestartFlag(quic_uint64max_uninitialized_pn)) {
+    DCHECK_GT(std::numeric_limits<uint64_t>::max() - lhs.ToUint64(), delta);
+  } else {
+    DCHECK_GE(std::numeric_limits<uint64_t>::max() - lhs.ToUint64(), delta);
+  }
+#endif
   return QuicPacketNumber(lhs.packet_number_ + delta);
 }
 
 inline QuicPacketNumber operator-(QuicPacketNumber lhs, uint64_t delta) {
-  DCHECK(lhs.IsInitialized() && lhs.ToUint64() > delta);
+#ifndef NDEBUG
+  DCHECK(lhs.IsInitialized());
+  if (GetQuicRestartFlag(quic_uint64max_uninitialized_pn)) {
+    DCHECK_GE(lhs.ToUint64(), delta);
+  } else {
+    DCHECK_GT(lhs.ToUint64(), delta);
+  }
+#endif
   return QuicPacketNumber(lhs.packet_number_ - delta);
 }
 

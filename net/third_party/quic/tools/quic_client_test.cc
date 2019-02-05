@@ -49,8 +49,7 @@ size_t NumOpenSocketFDs() {
 
 // Creates a new QuicClient and Initializes it. Caller is responsible for
 // deletion.
-QuicClient* CreateAndInitializeQuicClient(net::EpollServer* eps,
-                                          uint16_t port) {
+QuicClient* CreateAndInitializeQuicClient(QuicEpollServer* eps, uint16_t port) {
   QuicSocketAddress server_address(QuicSocketAddress(TestLoopback(), port));
   QuicServerId server_id("hostname", server_address.port(), false);
   ParsedQuicVersionVector versions = AllSupportedVersions();
@@ -71,8 +70,8 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
   // around some memory corruption detector weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
 
-  // Record initial number of FDs, after creation of net::EpollServer.
-  net::EpollServer eps;
+  // Record initial number of FDs, after creation of EpollServer.
+  QuicEpollServer eps;
   size_t number_of_open_fds = NumOpenSocketFDs();
 
   // Create a number of clients, initialize them, and verify this has resulted
@@ -95,7 +94,7 @@ TEST_F(QuicClientTest, CreateAndCleanUpUDPSockets) {
   // around some memory corruption detector weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
 
-  net::EpollServer eps;
+  QuicEpollServer eps;
   size_t number_of_open_fds = NumOpenSocketFDs();
 
   std::unique_ptr<QuicClient> client(
