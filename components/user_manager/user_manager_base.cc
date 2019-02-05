@@ -333,13 +333,18 @@ void UserManagerBase::RemoveUserInternal(const AccountId& account_id,
 
 void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
                                                  RemoveUserDelegate* delegate) {
+  // If account_id points to AccountId in User object, it will become deleted
+  // after RemoveUserFromList(), which could lead to use-after-free in observer.
+  // TODO(https://crbug.com/928534): Update user removal flow to prevent this.
+  const AccountId account_id_copy(account_id);
+
   if (delegate)
     delegate->OnBeforeUserRemoved(account_id);
   AsyncRemoveCryptohome(account_id);
   RemoveUserFromList(account_id);
 
   if (delegate)
-    delegate->OnUserRemoved(account_id);
+    delegate->OnUserRemoved(account_id_copy);
 }
 
 void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
