@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/mock_demo_setup_screen.h"
 
-using ::testing::AtLeast;
-using ::testing::NotNull;
-
 namespace chromeos {
 
 MockDemoSetupScreen::MockDemoSetupScreen(
@@ -16,9 +13,7 @@ MockDemoSetupScreen::MockDemoSetupScreen(
 
 MockDemoSetupScreen::~MockDemoSetupScreen() = default;
 
-MockDemoSetupScreenView::MockDemoSetupScreenView() {
-  EXPECT_CALL(*this, MockBind(NotNull())).Times(AtLeast(1));
-}
+MockDemoSetupScreenView::MockDemoSetupScreenView() = default;
 
 MockDemoSetupScreenView::~MockDemoSetupScreenView() {
   if (screen_)

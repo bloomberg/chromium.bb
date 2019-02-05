@@ -17,6 +17,9 @@ class MockEnableDebuggingScreen : public EnableDebuggingScreen {
   MockEnableDebuggingScreen(BaseScreenDelegate* base_screen_delegate,
                             EnableDebuggingScreenView* view);
   ~MockEnableDebuggingScreen() override;
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockEnableDebuggingScreenView : public EnableDebuggingScreenView {

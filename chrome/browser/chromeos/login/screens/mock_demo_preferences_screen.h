@@ -18,6 +18,9 @@ class MockDemoPreferencesScreen : public DemoPreferencesScreen {
                             DemoPreferencesScreenView* view);
   ~MockDemoPreferencesScreen() override;
 
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemoPreferencesScreen);
 };
@@ -34,7 +37,7 @@ class MockDemoPreferencesScreenView : public DemoPreferencesScreenView {
   void Bind(DemoPreferencesScreen* screen) override;
 
  private:
-  DemoPreferencesScreen* screen_;
+  DemoPreferencesScreen* screen_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockDemoPreferencesScreenView);
 };

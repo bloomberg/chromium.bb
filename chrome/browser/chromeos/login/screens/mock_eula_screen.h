@@ -18,6 +18,9 @@ class MockEulaScreen : public EulaScreen {
                  Delegate* delegate,
                  EulaView* view);
   ~MockEulaScreen() override;
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockEulaView : public EulaView {
