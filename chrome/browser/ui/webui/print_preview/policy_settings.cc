@@ -20,8 +20,6 @@ void PolicySettings::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
   registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
-  registry->RegisterBooleanPref(prefs::kPrintingSendUsernameAndFilenameEnabled,
-                                false);
 #endif
 }
 
