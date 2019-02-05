@@ -60,9 +60,8 @@ void PlatformNativeWorkerPoolWin::JoinForTesting() {
 #endif
 }
 
-void PlatformNativeWorkerPoolWin::ReEnqueueSequence(
-    SequenceAndTransaction sequence_and_transaction,
-    bool is_changing_pools) {
+void PlatformNativeWorkerPoolWin::ReEnqueueSequenceChangingPool(
+    SequenceAndTransaction sequence_and_transaction) {
   OnCanScheduleSequence(std::move(sequence_and_transaction));
 }
 
@@ -82,8 +81,10 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
   sequence = worker_pool->task_tracker_->RunAndPopNextTask(
       std::move(sequence.get()), worker_pool);
 
-  // Re-enqueue sequence and then submit another task to the Windows thread
-  // pool.
+  // Reenqueue sequence and then submit another task to the Windows thread pool.
+  //
+  // TODO(fdoray): Use |delegate_| to decide in which pool the Sequence should
+  // be reenqueued.
   if (sequence)
     worker_pool->OnCanScheduleSequence(std::move(sequence));
 

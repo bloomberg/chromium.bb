@@ -520,12 +520,10 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   workers_.clear();
 }
 
-void SchedulerWorkerPoolImpl::ReEnqueueSequence(
-    SequenceAndTransaction sequence_and_transaction,
-    bool is_changing_pools) {
+void SchedulerWorkerPoolImpl::ReEnqueueSequenceChangingPool(
+    SequenceAndTransaction sequence_and_transaction) {
   PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
-  if (is_changing_pools)
-    WakeUpOneWorker();
+  WakeUpOneWorker();
 }
 
 size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() const {
@@ -717,8 +715,19 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::ReEnqueueSequence(
     scoped_refptr<Sequence> sequence) {
-  outer_->delegate_->ReEnqueueSequence(
-      SequenceAndTransaction::FromSequence(std::move(sequence)));
+  auto sequence_and_transaction =
+      SequenceAndTransaction::FromSequence(std::move(sequence));
+
+  SchedulerWorkerPool* destination_pool =
+      outer_->delegate_->GetWorkerPoolForTraits(
+          sequence_and_transaction.transaction.traits());
+
+  if (outer_ == destination_pool) {
+    outer_->PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
+  } else {
+    destination_pool->ReEnqueueSequenceChangingPool(
+        std::move(sequence_and_transaction));
+  }
 }
 
 TimeDelta
