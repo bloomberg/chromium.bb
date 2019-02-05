@@ -4961,10 +4961,10 @@ ChromeContentBrowserClient::CreateClientCertStore(
       ->CreateClientCertStore();
 }
 
-std::unique_ptr<content::LoginDelegate>
+scoped_refptr<content::LoginDelegate>
 ChromeContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
-    content::WebContents* web_contents,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
     const GURL& url,
@@ -4972,8 +4972,8 @@ ChromeContentBrowserClient::CreateLoginDelegate(
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {
   return CreateLoginPrompt(
-      auth_info, web_contents, request_id, is_request_for_main_frame, url,
-      std::move(response_headers), std::move(auth_required_callback));
+      auth_info, web_contents_getter, request_id, is_request_for_main_frame,
+      url, std::move(response_headers), std::move(auth_required_callback));
 }
 
 bool ChromeContentBrowserClient::HandleExternalProtocol(

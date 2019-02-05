@@ -188,9 +188,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 ui::PageTransition transition,
                                 bool* ignore_navigation) override;
   bool ShouldCreateTaskScheduler() override;
-  std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
+  scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
-      content::WebContents* web_contents,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       const content::GlobalRequestID& request_id,
       bool is_main_frame,
       const GURL& url,

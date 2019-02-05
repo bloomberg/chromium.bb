@@ -19,7 +19,7 @@
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
-#include "android_webview/browser/aw_http_auth_handler.h"
+#include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
@@ -834,19 +834,19 @@ bool AwContentBrowserClient::ShouldCreateTaskScheduler() {
   return g_should_create_task_scheduler;
 }
 
-std::unique_ptr<content::LoginDelegate>
+scoped_refptr<content::LoginDelegate>
 AwContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
-    content::WebContents* web_contents,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {
-  return std::make_unique<AwHttpAuthHandler>(auth_info, web_contents,
-                                             first_auth_attempt,
-                                             std::move(auth_required_callback));
+  return AwLoginDelegate::Create(auth_info, web_contents_getter,
+                                 first_auth_attempt,
+                                 std::move(auth_required_callback));
 }
 
 bool AwContentBrowserClient::HandleExternalProtocol(

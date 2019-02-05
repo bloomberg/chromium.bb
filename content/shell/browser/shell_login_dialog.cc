@@ -18,47 +18,60 @@
 namespace content {
 
 // static
-std::unique_ptr<ShellLoginDialog> ShellLoginDialog::Create(
+scoped_refptr<ShellLoginDialog> ShellLoginDialog::Create(
     net::AuthChallengeInfo* auth_info,
     LoginAuthRequiredCallback auth_required_callback) {
-  auto ret =
-      std::make_unique<ShellLoginDialog>(std::move(auth_required_callback));
+  auto ret = base::WrapRefCounted(
+      new ShellLoginDialog(std::move(auth_required_callback)));
   ret->Init(auth_info);
   return ret;
 }
 
 ShellLoginDialog::ShellLoginDialog(
     LoginAuthRequiredCallback auth_required_callback)
-    : auth_required_callback_(std::move(auth_required_callback)),
-      weak_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
-ShellLoginDialog::~ShellLoginDialog() {
-  PlatformRequestCancelled();
-  PlatformCleanUp();
+    : auth_required_callback_(std::move(auth_required_callback)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void ShellLoginDialog::Init(net::AuthChallengeInfo* auth_info) {
-  // Run this in a new event loop iteration, to ensure the callback isn't called
-  // reentrantly.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          &ShellLoginDialog::PrepDialog, weak_factory_.GetWeakPtr(),
+          &ShellLoginDialog::PrepDialog, this,
           url_formatter::FormatOriginForSecurityDisplay(auth_info->challenger),
           base::UTF8ToUTF16(auth_info->realm)));
+}
+
+void ShellLoginDialog::OnRequestCancelled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ShellLoginDialog::PlatformRequestCancelled, this));
 }
 
 void ShellLoginDialog::UserAcceptedAuth(const base::string16& username,
                                         const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendAuthToRequester(true, username, password);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ShellLoginDialog::SendAuthToRequester, this, true,
+                     username, password));
 }
 
 void ShellLoginDialog::UserCancelledAuth() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendAuthToRequester(false, base::string16(), base::string16());
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ShellLoginDialog::SendAuthToRequester, this, false,
+                     base::string16(), base::string16()));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ShellLoginDialog::PlatformCleanUp, this));
+}
+
+ShellLoginDialog::~ShellLoginDialog() {
+  // Cannot post any tasks here; this object is going away and cannot be
+  // referenced/dereferenced.
 }
 
 #if !defined(OS_MACOSX)
@@ -94,7 +107,7 @@ void ShellLoginDialog::PrepDialog(const base::string16& host,
 void ShellLoginDialog::SendAuthToRequester(bool success,
                                            const base::string16& username,
                                            const base::string16& password) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!auth_required_callback_.is_null()) {
     if (success) {
@@ -105,7 +118,9 @@ void ShellLoginDialog::SendAuthToRequester(bool success,
     }
   }
 
-  PlatformCleanUp();
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ShellLoginDialog::PlatformCleanUp, this));
 }
 
 }  // namespace content
