@@ -869,11 +869,6 @@ var init = function() {
     html.dir = 'rtl';
   }
 
-  // Enable dark mode.
-  if (queryArgs['enableDarkMode'] == '1') {
-    document.documentElement.setAttribute('darkmode', true);
-  }
-
   // Enable custom links.
   if (queryArgs['enableCustomLinks'] == '1') {
     isCustomLinksEnabled = true;
