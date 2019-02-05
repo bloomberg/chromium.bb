@@ -55,13 +55,14 @@ class InternalServices {
 
    private:
     InternalServices* const parent_;
+    std::vector<platform::UdpSocketUniquePtr> open_sockets_;
   };
 
   InternalServices();
   ~InternalServices();
 
-  void RegisterMdnsSocket(platform::UdpSocketPtr socket);
-  void DeregisterMdnsSocket(platform::UdpSocketPtr socket);
+  void RegisterMdnsSocket(platform::UdpSocket* socket);
+  void DeregisterMdnsSocket(platform::UdpSocket* socket);
 
   static InternalServices* ReferenceSingleton();
   static void DereferenceSingleton(void* instance);

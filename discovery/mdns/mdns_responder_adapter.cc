@@ -9,7 +9,7 @@ namespace mdns {
 
 QueryEventHeader::QueryEventHeader() = default;
 QueryEventHeader::QueryEventHeader(QueryEventHeader::Type response_type,
-                                   platform::UdpSocketPtr socket)
+                                   platform::UdpSocket* socket)
     : response_type(response_type), socket(socket) {}
 QueryEventHeader::QueryEventHeader(const QueryEventHeader&) = default;
 QueryEventHeader::~QueryEventHeader() = default;

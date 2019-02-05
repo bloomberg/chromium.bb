@@ -25,21 +25,21 @@ class QuicConnectionFactoryImpl;
 
 class UdpTransport final : public ::quic::QuartcPacketTransport {
  public:
-  UdpTransport(platform::UdpSocketPtr socket, const IPEndpoint& destination);
-  UdpTransport(UdpTransport&&);
+  UdpTransport(platform::UdpSocket* socket, const IPEndpoint& destination);
+  UdpTransport(UdpTransport&&) noexcept;
   ~UdpTransport() override;
 
-  UdpTransport& operator=(UdpTransport&&);
+  UdpTransport& operator=(UdpTransport&&) noexcept;
 
   // ::quic::QuartcPacketTransport overrides.
   int Write(const char* buffer,
             size_t buffer_length,
             const PacketInfo& info) override;
 
-  platform::UdpSocketPtr socket() { return socket_; }
+  platform::UdpSocket* socket() const { return socket_; }
 
  private:
-  platform::UdpSocketPtr socket_;
+  platform::UdpSocket* socket_;
   IPEndpoint destination_;
 };
 

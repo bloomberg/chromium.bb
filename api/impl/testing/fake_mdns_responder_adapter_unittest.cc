@@ -8,26 +8,32 @@
 
 namespace openscreen {
 
+namespace {
+
 constexpr char kTestServiceInstance[] = "turtle";
 constexpr char kTestServiceName[] = "_foo";
 constexpr char kTestServiceProtocol[] = "_udp";
 
-platform::UdpSocketPtr default_socket =
-    reinterpret_cast<platform::UdpSocketPtr>(8);
+platform::UdpSocket* const kDefaultSocket =
+    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(8));
+platform::UdpSocket* const kSecondSocket =
+    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(32));
+
+}  // namespace
 
 TEST(FakeMdnsResponderAdapterTest, AQueries) {
   FakeMdnsResponderAdapter mdns_responder;
 
   mdns_responder.Init();
   ASSERT_TRUE(mdns_responder.running());
-  auto event = MakeAEvent("alpha", IPAddress{1, 2, 3, 4}, default_socket);
+  auto event = MakeAEvent("alpha", IPAddress{1, 2, 3, 4}, kDefaultSocket);
   auto domain_name = event.domain_name;
   mdns_responder.AddAEvent(std::move(event));
 
   auto a_events = mdns_responder.TakeAResponses();
   EXPECT_TRUE(a_events.empty());
 
-  auto result = mdns_responder.StartAQuery(default_socket, domain_name);
+  auto result = mdns_responder.StartAQuery(kDefaultSocket, domain_name);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   a_events = mdns_responder.TakeAResponses();
@@ -35,15 +41,15 @@ TEST(FakeMdnsResponderAdapterTest, AQueries) {
   EXPECT_EQ(domain_name, a_events[0].domain_name);
   EXPECT_EQ((IPAddress{1, 2, 3, 4}), a_events[0].address);
 
-  result = mdns_responder.StopAQuery(default_socket, domain_name);
+  result = mdns_responder.StopAQuery(kDefaultSocket, domain_name);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   mdns_responder.Close();
   ASSERT_FALSE(mdns_responder.running());
 
   mdns_responder.AddAEvent(
-      MakeAEvent("alpha", IPAddress{1, 2, 3, 4}, default_socket));
-  result = mdns_responder.StartAQuery(default_socket, domain_name);
+      MakeAEvent("alpha", IPAddress{1, 2, 3, 4}, kDefaultSocket));
+  result = mdns_responder.StartAQuery(kDefaultSocket, domain_name);
   EXPECT_NE(mdns::MdnsResponderErrorCode::kNoError, result);
   a_events = mdns_responder.TakeAResponses();
   EXPECT_TRUE(a_events.empty());
@@ -54,14 +60,14 @@ TEST(FakeMdnsResponderAdapterTest, AaaaQueries) {
 
   mdns_responder.Init();
   ASSERT_TRUE(mdns_responder.running());
-  auto event = MakeAaaaEvent("alpha", IPAddress{1, 2, 3, 4}, default_socket);
+  auto event = MakeAaaaEvent("alpha", IPAddress{1, 2, 3, 4}, kDefaultSocket);
   auto domain_name = event.domain_name;
   mdns_responder.AddAaaaEvent(std::move(event));
 
   auto aaaa_events = mdns_responder.TakeAaaaResponses();
   EXPECT_TRUE(aaaa_events.empty());
 
-  auto result = mdns_responder.StartAaaaQuery(default_socket, domain_name);
+  auto result = mdns_responder.StartAaaaQuery(kDefaultSocket, domain_name);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   aaaa_events = mdns_responder.TakeAaaaResponses();
@@ -69,15 +75,15 @@ TEST(FakeMdnsResponderAdapterTest, AaaaQueries) {
   EXPECT_EQ(domain_name, aaaa_events[0].domain_name);
   EXPECT_EQ((IPAddress{1, 2, 3, 4}), aaaa_events[0].address);
 
-  result = mdns_responder.StopAaaaQuery(default_socket, domain_name);
+  result = mdns_responder.StopAaaaQuery(kDefaultSocket, domain_name);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   mdns_responder.Close();
   ASSERT_FALSE(mdns_responder.running());
 
   mdns_responder.AddAaaaEvent(
-      MakeAaaaEvent("alpha", IPAddress{1, 2, 3, 4}, default_socket));
-  result = mdns_responder.StartAaaaQuery(default_socket, domain_name);
+      MakeAaaaEvent("alpha", IPAddress{1, 2, 3, 4}, kDefaultSocket));
+  result = mdns_responder.StartAaaaQuery(kDefaultSocket, domain_name);
   EXPECT_NE(mdns::MdnsResponderErrorCode::kNoError, result);
   aaaa_events = mdns_responder.TakeAaaaResponses();
   EXPECT_TRUE(aaaa_events.empty());
@@ -96,12 +102,12 @@ TEST(FakeMdnsResponderAdapterTest, PtrQueries) {
   ASSERT_TRUE(mdns_responder.running());
   mdns_responder.AddPtrEvent(
       MakePtrEvent(kTestServiceInstance, kTestServiceName, kTestServiceProtocol,
-                   default_socket));
+                   kDefaultSocket));
 
   auto ptr_events = mdns_responder.TakePtrResponses();
   EXPECT_TRUE(ptr_events.empty());
 
-  auto result = mdns_responder.StartPtrQuery(default_socket, kTestServiceType);
+  auto result = mdns_responder.StartPtrQuery(kDefaultSocket, kTestServiceType);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   ptr_events = mdns_responder.TakePtrResponses();
@@ -115,7 +121,7 @@ TEST(FakeMdnsResponderAdapterTest, PtrQueries) {
   ASSERT_TRUE(st);
   EXPECT_EQ(kTestServiceTypeCanon, st.value());
 
-  result = mdns_responder.StopPtrQuery(default_socket, kTestServiceType);
+  result = mdns_responder.StopPtrQuery(kDefaultSocket, kTestServiceType);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   mdns_responder.Close();
@@ -123,8 +129,8 @@ TEST(FakeMdnsResponderAdapterTest, PtrQueries) {
 
   mdns_responder.AddPtrEvent(
       MakePtrEvent(kTestServiceInstance, kTestServiceName, kTestServiceProtocol,
-                   default_socket));
-  result = mdns_responder.StartPtrQuery(default_socket, kTestServiceType);
+                   kDefaultSocket));
+  result = mdns_responder.StartPtrQuery(kDefaultSocket, kTestServiceType);
   EXPECT_NE(mdns::MdnsResponderErrorCode::kNoError, result);
   ptr_events = mdns_responder.TakePtrResponses();
   EXPECT_TRUE(ptr_events.empty());
@@ -138,7 +144,7 @@ TEST(FakeMdnsResponderAdapterTest, SrvQueries) {
 
   auto event =
       MakeSrvEvent(kTestServiceInstance, kTestServiceName, kTestServiceProtocol,
-                   "alpha", 12345, default_socket);
+                   "alpha", 12345, kDefaultSocket);
   auto service_instance = event.service_instance;
   auto domain_name = event.domain_name;
   mdns_responder.AddSrvEvent(std::move(event));
@@ -146,7 +152,7 @@ TEST(FakeMdnsResponderAdapterTest, SrvQueries) {
   auto srv_events = mdns_responder.TakeSrvResponses();
   EXPECT_TRUE(srv_events.empty());
 
-  auto result = mdns_responder.StartSrvQuery(default_socket, service_instance);
+  auto result = mdns_responder.StartSrvQuery(kDefaultSocket, service_instance);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   srv_events = mdns_responder.TakeSrvResponses();
@@ -155,7 +161,7 @@ TEST(FakeMdnsResponderAdapterTest, SrvQueries) {
   EXPECT_EQ(domain_name, srv_events[0].domain_name);
   EXPECT_EQ(12345, srv_events[0].port);
 
-  result = mdns_responder.StopSrvQuery(default_socket, service_instance);
+  result = mdns_responder.StopSrvQuery(kDefaultSocket, service_instance);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   mdns_responder.Close();
@@ -163,8 +169,8 @@ TEST(FakeMdnsResponderAdapterTest, SrvQueries) {
 
   mdns_responder.AddSrvEvent(
       MakeSrvEvent(kTestServiceInstance, kTestServiceName, kTestServiceProtocol,
-                   "alpha", 12345, default_socket));
-  result = mdns_responder.StartSrvQuery(default_socket, service_instance);
+                   "alpha", 12345, kDefaultSocket));
+  result = mdns_responder.StartSrvQuery(kDefaultSocket, service_instance);
   EXPECT_NE(mdns::MdnsResponderErrorCode::kNoError, result);
   srv_events = mdns_responder.TakeSrvResponses();
   EXPECT_TRUE(srv_events.empty());
@@ -178,14 +184,14 @@ TEST(FakeMdnsResponderAdapterTest, TxtQueries) {
 
   const auto txt_lines = std::vector<std::string>{"asdf", "jkl;", "j"};
   auto event = MakeTxtEvent(kTestServiceInstance, kTestServiceName,
-                            kTestServiceProtocol, txt_lines, default_socket);
+                            kTestServiceProtocol, txt_lines, kDefaultSocket);
   auto service_instance = event.service_instance;
   mdns_responder.AddTxtEvent(std::move(event));
 
   auto txt_events = mdns_responder.TakeTxtResponses();
   EXPECT_TRUE(txt_events.empty());
 
-  auto result = mdns_responder.StartTxtQuery(default_socket, service_instance);
+  auto result = mdns_responder.StartTxtQuery(kDefaultSocket, service_instance);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   txt_events = mdns_responder.TakeTxtResponses();
@@ -193,7 +199,7 @@ TEST(FakeMdnsResponderAdapterTest, TxtQueries) {
   EXPECT_EQ(service_instance, txt_events[0].service_instance);
   EXPECT_EQ(txt_lines, txt_events[0].txt_info);
 
-  result = mdns_responder.StopTxtQuery(default_socket, service_instance);
+  result = mdns_responder.StopTxtQuery(kDefaultSocket, service_instance);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
 
   mdns_responder.Close();
@@ -201,8 +207,8 @@ TEST(FakeMdnsResponderAdapterTest, TxtQueries) {
 
   mdns_responder.AddTxtEvent(
       MakeTxtEvent(kTestServiceInstance, kTestServiceName, kTestServiceProtocol,
-                   txt_lines, default_socket));
-  result = mdns_responder.StartTxtQuery(default_socket, service_instance);
+                   txt_lines, kDefaultSocket));
+  result = mdns_responder.StartTxtQuery(kDefaultSocket, service_instance);
   EXPECT_NE(mdns::MdnsResponderErrorCode::kNoError, result);
   txt_events = mdns_responder.TakeTxtResponses();
   EXPECT_TRUE(txt_events.empty());
@@ -253,27 +259,25 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
   ASSERT_TRUE(mdns_responder.running());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 
-  auto socket1 = reinterpret_cast<platform::UdpSocketPtr>(16);
-  auto socket2 = reinterpret_cast<platform::UdpSocketPtr>(24);
   Error result = mdns_responder.RegisterInterface(
-      platform::InterfaceInfo{}, platform::IPSubnet{}, socket1);
+      platform::InterfaceInfo{}, platform::IPSubnet{}, kDefaultSocket);
   EXPECT_TRUE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
-                                            platform::IPSubnet{}, socket1);
+  result = mdns_responder.RegisterInterface(
+      platform::InterfaceInfo{}, platform::IPSubnet{}, kDefaultSocket);
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
-                                            platform::IPSubnet{}, socket2);
+  result = mdns_responder.RegisterInterface(
+      platform::InterfaceInfo{}, platform::IPSubnet{}, kSecondSocket);
   EXPECT_TRUE(result.ok());
   EXPECT_EQ(2u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.DeregisterInterface(socket2);
+  result = mdns_responder.DeregisterInterface(kSecondSocket);
   EXPECT_TRUE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
-  result = mdns_responder.DeregisterInterface(socket2);
+  result = mdns_responder.DeregisterInterface(kSecondSocket);
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
@@ -281,8 +285,8 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
   ASSERT_FALSE(mdns_responder.running());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 
-  result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
-                                            platform::IPSubnet{}, socket1);
+  result = mdns_responder.RegisterInterface(
+      platform::InterfaceInfo{}, platform::IPSubnet{}, kDefaultSocket);
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 }

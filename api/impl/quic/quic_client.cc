@@ -159,6 +159,14 @@ uint64_t QuicClient::StartConnectionRequest(
   auto delegate = std::make_unique<ServiceConnectionDelegate>(this, endpoint);
   std::unique_ptr<QuicConnection> connection =
       connection_factory_->Connect(endpoint, delegate.get());
+  if (!connection) {
+    // TODO(btolsch): Need interface/handling for Connect() failures. Or, should
+    // request->OnConnectionFailed() be called?
+    OSP_DCHECK(false)
+        << __func__
+        << ": Factory connect failed, but requestor will never know.";
+    return 0;
+  }
   auto pending_result = pending_connections_.emplace(
       endpoint, PendingConnectionData(ServiceConnectionData(
                     std::move(connection), std::move(delegate))));

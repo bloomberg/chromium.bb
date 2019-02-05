@@ -147,6 +147,8 @@ class Voidify {
 
 #define OSP_UNIMPLEMENTED() OSP_LOG_ERROR << __func__ << ": unimplemented"
 
+#define OSP_NOTREACHED() OSP_CHECK(false) << __func__ << ": NOTREACHED() hit."
+
 }  // namespace platform
 }  // namespace openscreen
 

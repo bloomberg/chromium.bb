@@ -17,9 +17,14 @@ namespace openscreen {
 // code and an optional message.
 class Error {
  public:
-  enum class Code {
+  enum class Code : int8_t {
     // No error occurred.
     kNone = 0,
+
+    // A transient condition prevented the operation from proceeding (e.g.,
+    // cannot send on a non-blocking socket without blocking). This indicates
+    // the caller should try again later.
+    kAgain = -1,
 
     // CBOR errors.
     kCborParsing = 1,
@@ -51,6 +56,7 @@ class Error {
     kSocketBindFailure,
     kSocketClosedFailure,
     kSocketReadFailure,
+    kSocketSendFailure,
 
     kMdnsRegisterFailure,
 

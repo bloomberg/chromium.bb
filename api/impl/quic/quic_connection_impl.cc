@@ -4,27 +4,41 @@
 
 #include "api/impl/quic/quic_connection_impl.h"
 
+#include <limits>
 #include <memory>
 
 #include "api/impl/quic/quic_connection_factory_impl.h"
+#include "base/error.h"
+#include "platform/api/logging.h"
 #include "third_party/abseil/src/absl/types/optional.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/platform/impl/quic_chromium_clock.h"
 
 namespace openscreen {
 
-UdpTransport::UdpTransport(platform::UdpSocketPtr socket,
+UdpTransport::UdpTransport(platform::UdpSocket* socket,
                            const IPEndpoint& destination)
-    : socket_(socket), destination_(destination) {}
-UdpTransport::UdpTransport(UdpTransport&&) = default;
+    : socket_(socket), destination_(destination) {
+  OSP_DCHECK(socket_);
+}
+
+UdpTransport::UdpTransport(UdpTransport&&) noexcept = default;
 UdpTransport::~UdpTransport() = default;
 
-UdpTransport& UdpTransport::operator=(UdpTransport&&) = default;
+UdpTransport& UdpTransport::operator=(UdpTransport&&) noexcept = default;
 
 int UdpTransport::Write(const char* buffer,
                         size_t buffer_length,
                         const PacketInfo& info) {
-  return platform::SendUdp(socket_, buffer, buffer_length, destination_)
-      .value_or(-1);
+  switch (socket_->SendMessage(buffer, buffer_length, destination_).code()) {
+    case Error::Code::kNone:
+      OSP_DCHECK_LE(buffer_length,
+                    static_cast<size_t>(std::numeric_limits<int>::max()));
+      return static_cast<int>(buffer_length);
+    case Error::Code::kAgain:
+      return 0;
+    default:
+      return -1;
+  }
 }
 
 QuicStreamImpl::QuicStreamImpl(QuicStream::Delegate* delegate,

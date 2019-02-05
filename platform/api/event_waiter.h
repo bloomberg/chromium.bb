@@ -18,11 +18,11 @@ struct EventWaiterPrivate;
 using EventWaiterPtr = EventWaiterPrivate*;
 
 struct UdpSocketReadableEvent {
-  UdpSocketPtr socket;
+  UdpSocket* socket;
 };
 
 struct UdpSocketWritableEvent {
-  UdpSocketPtr socket;
+  UdpSocket* socket;
 };
 
 // This struct represents a set of events associated with a particular
@@ -44,11 +44,11 @@ struct Events {
 EventWaiterPtr CreateEventWaiter();
 void DestroyEventWaiter(EventWaiterPtr waiter);
 
-Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
-Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
+Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocket* socket);
+Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocket* socket);
 
-Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
-Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
+Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocket* socket);
+Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocket* socket);
 
 Error WatchNetworkChange(EventWaiterPtr waiter);
 Error StopWatchingNetworkChange(EventWaiterPtr waiter);

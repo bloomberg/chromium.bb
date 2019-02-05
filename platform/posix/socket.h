@@ -5,16 +5,24 @@
 #ifndef PLATFORM_POSIX_SOCKET_H_
 #define PLATFORM_POSIX_SOCKET_H_
 
+#include "platform/api/socket.h"
+
 namespace openscreen {
 namespace platform {
 
-struct UdpSocketPrivate {
-  enum class Version {
-    kV4,
-    kV6,
-  };
+struct UdpSocketPosix : public UdpSocket {
   const int fd;
-  Version version;
+  const UdpSocket::Version version;
+
+  UdpSocketPosix(int fd, Version version);
+
+  static const UdpSocketPosix* From(const UdpSocket* socket) {
+    return static_cast<const UdpSocketPosix*>(socket);
+  }
+
+  static UdpSocketPosix* From(UdpSocket* socket) {
+    return static_cast<UdpSocketPosix*>(socket);
+  }
 };
 
 }  // namespace platform

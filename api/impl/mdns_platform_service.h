@@ -19,7 +19,7 @@ class MdnsPlatformService {
   struct BoundInterface {
     BoundInterface(const platform::InterfaceInfo& interface_info,
                    const platform::IPSubnet& subnet,
-                   platform::UdpSocketPtr socket);
+                   platform::UdpSocket* socket);
     ~BoundInterface();
 
     bool operator==(const BoundInterface& other) const;
@@ -27,7 +27,7 @@ class MdnsPlatformService {
 
     platform::InterfaceInfo interface_info;
     platform::IPSubnet subnet;
-    platform::UdpSocketPtr socket;
+    platform::UdpSocket* socket;
   };
 
   virtual ~MdnsPlatformService() = default;

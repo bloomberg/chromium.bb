@@ -28,7 +28,7 @@ struct ReceivedData {
   IPEndpoint original_destination;
   std::array<uint8_t, kUdpMaxPacketSize> bytes;
   ssize_t length;
-  UdpSocketPtr socket;
+  UdpSocket* socket;
 };
 
 Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,

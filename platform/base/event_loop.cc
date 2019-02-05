@@ -4,7 +4,6 @@
 
 #include "platform/base/event_loop.h"
 
-#include "platform/api/error.h"
 #include "platform/api/logging.h"
 #include "platform/api/socket.h"
 
@@ -17,18 +16,16 @@ ReceivedData::~ReceivedData() = default;
 Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
                            ReceivedData* data) {
   OSP_DCHECK(data);
-  absl::optional<int> len =
-      ReceiveUdp(read_event.socket, &data->bytes[0], data->bytes.size(),
-                 &data->source, &data->original_destination);
+  ErrorOr<size_t> len = read_event.socket->ReceiveMessage(
+      &data->bytes[0], data->bytes.size(), &data->source,
+      &data->original_destination);
   if (!len) {
-    OSP_LOG_ERROR << "recv() failed: " << GetLastErrorString();
-    return Error::Code::kSocketReadFailure;
-  } else if (len == 0) {
-    OSP_LOG_WARN << "recv() = 0, closed?";
-    return Error::Code::kSocketClosedFailure;
+    OSP_LOG_ERROR << "ReceiveMessage() on socket failed: "
+                  << len.error().message();
+    return len.error();
   }
-  OSP_DCHECK_LE(*len, kUdpMaxPacketSize);
-  data->length = *len;
+  OSP_DCHECK_LE(len.value(), kUdpMaxPacketSize);
+  data->length = len.value();
   data->socket = read_event.socket;
   return Error::None();
 }

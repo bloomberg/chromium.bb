@@ -9,7 +9,6 @@
 #include "api/impl/mdns_responder_service.h"
 #include "base/error.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
-#include "platform/api/error.h"
 #include "platform/api/logging.h"
 #include "platform/api/socket.h"
 
@@ -37,32 +36,30 @@ class MdnsResponderAdapterImplFactory final
   }
 };
 
-Error GetLastError() {
-  // TODO(jophba): Add platform error handling, we shouldn't know about
-  // EADDRINUSE here.
-  if (platform::GetLastError() == EADDRINUSE) {
-    OSP_LOG_ERROR
-        << "Is there a mDNS service, such as Bonjour, already running?";
-    return Error::Code::kAddressInUse;
-  }
-
-  return Error::Code::kGenericPlatformError;
-}
-
-Error SetUpMulticastSocket(platform::UdpSocketPtr socket,
+Error SetUpMulticastSocket(platform::UdpSocket* socket,
                            platform::NetworkInterfaceIndex ifindex) {
   const IPAddress broadcast_address =
-      IsIPv6Socket(socket) ? kMulticastIPv6Address : kMulticastAddress;
-  if (!JoinUdpMulticastGroup(socket, broadcast_address, ifindex).ok()) {
+      socket->IsIPv6() ? kMulticastIPv6Address : kMulticastAddress;
+
+  Error result = socket->JoinMulticastGroup(broadcast_address, ifindex);
+  if (!result.ok()) {
     OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
-                  << ": " << platform::GetLastErrorString();
-    return GetLastError();
+                  << ": " << result.message();
+    return result;
   }
 
-  if (!BindUdpSocket(socket, {{}, kMulticastListeningPort}, ifindex).ok()) {
+  result = socket->SetMulticastOutboundInterface(ifindex);
+  if (!result.ok()) {
+    OSP_LOG_ERROR << "set multicast outbound interface failed for interface "
+                  << ifindex << ": " << result.message();
+    return result;
+  }
+
+  result = socket->Bind({{}, kMulticastListeningPort});
+  if (!result.ok()) {
     OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                  << platform::GetLastErrorString();
-    return GetLastError();
+                  << result.message();
+    return result;
   }
 
   return Error::None();
@@ -113,7 +110,12 @@ std::unique_ptr<ServicePublisher> InternalServices::CreatePublisher(
 InternalServices::InternalPlatformLinkage::InternalPlatformLinkage(
     InternalServices* parent)
     : parent_(parent) {}
-InternalServices::InternalPlatformLinkage::~InternalPlatformLinkage() = default;
+
+InternalServices::InternalPlatformLinkage::~InternalPlatformLinkage() {
+  // If there are open sockets, then there will be dangling references to
+  // destroyed objects after destruction.
+  OSP_CHECK(open_sockets_.empty());
+}
 
 std::vector<MdnsPlatformService::BoundInterface>
 InternalServices::InternalPlatformLinkage::RegisterInterfaces(
@@ -133,7 +135,8 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
       index_list.push_back(interface.info.index);
   }
 
-  // Listen on all interfaces
+  // Set up sockets to send and listen to mDNS multicast traffic on all
+  // interfaces.
   std::vector<BoundInterface> result;
   for (platform::NetworkInterfaceIndex index : index_list) {
     const auto& addr =
@@ -141,29 +144,45 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
                       [index](const platform::InterfaceAddresses& addr) {
                         return addr.info.index == index;
                       });
-    auto* socket = addr.addresses.front().address.IsV4()
-                       ? platform::CreateUdpSocketIPv4()
-                       : platform::CreateUdpSocketIPv6();
-    if (!SetUpMulticastSocket(socket, index).ok()) {
-      DestroyUdpSocket(socket);
+    if (addr.addresses.empty()) {
       continue;
     }
 
     // Pick any address for the given interface.
-    result.emplace_back(addr.info, addr.addresses.front(), socket);
+    const platform::IPSubnet& primary_subnet = addr.addresses.front();
+
+    auto create_result =
+        platform::UdpSocket::Create(primary_subnet.address.version());
+    if (!create_result) {
+      OSP_LOG_ERROR << "failed to create socket for interface " << index << ": "
+                    << create_result.error().message();
+      continue;
+    }
+    platform::UdpSocketUniquePtr socket = create_result.MoveValue();
+    if (!SetUpMulticastSocket(socket.get(), index).ok()) {
+      continue;
+    }
+    result.emplace_back(addr.info, primary_subnet, socket.get());
+    parent_->RegisterMdnsSocket(socket.get());
+    open_sockets_.emplace_back(std::move(socket));
   }
 
-  for (auto& interface : result) {
-    parent_->RegisterMdnsSocket(interface.socket);
-  }
   return result;
 }
 
 void InternalServices::InternalPlatformLinkage::DeregisterInterfaces(
     const std::vector<BoundInterface>& registered_interfaces) {
   for (const auto& interface : registered_interfaces) {
-    parent_->DeregisterMdnsSocket(interface.socket);
-    platform::DestroyUdpSocket(interface.socket);
+    platform::UdpSocket* const socket = interface.socket;
+    parent_->DeregisterMdnsSocket(socket);
+
+    const auto it =
+        std::find_if(open_sockets_.begin(), open_sockets_.end(),
+                     [socket](const platform::UdpSocketUniquePtr& s) {
+                       return s.get() == socket;
+                     });
+    OSP_DCHECK(it != open_sockets_.end());
+    open_sockets_.erase(it);
   }
 }
 
@@ -180,11 +199,11 @@ InternalServices::~InternalServices() {
   DestroyEventWaiter(mdns_waiter_);
 }
 
-void InternalServices::RegisterMdnsSocket(platform::UdpSocketPtr socket) {
+void InternalServices::RegisterMdnsSocket(platform::UdpSocket* socket) {
   platform::WatchUdpSocketReadable(mdns_waiter_, socket);
 }
 
-void InternalServices::DeregisterMdnsSocket(platform::UdpSocketPtr socket) {
+void InternalServices::DeregisterMdnsSocket(platform::UdpSocket* socket) {
   platform::StopWatchingUdpSocketReadable(mdns_waiter_, socket);
 }
 

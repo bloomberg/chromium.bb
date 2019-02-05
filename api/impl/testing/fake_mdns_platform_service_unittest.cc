@@ -4,32 +4,33 @@
 
 #include "api/impl/testing/fake_mdns_platform_service.h"
 
+#include <cstdint>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
 namespace {
 
-platform::UdpSocketPtr AsUdpSocketPtr(int32_t x) {
-  return reinterpret_cast<platform::UdpSocketPtr>(x);
-}
+platform::UdpSocket* const kDefaultSocket =
+    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(16));
+platform::UdpSocket* const kSecondSocket =
+    reinterpret_cast<platform::UdpSocket*>(static_cast<uintptr_t>(24));
 
 class FakeMdnsPlatformServiceTest : public ::testing::Test {
  protected:
-  platform::UdpSocketPtr socket1_ = AsUdpSocketPtr(16);
-  platform::UdpSocketPtr socket2_ = AsUdpSocketPtr(24);
   const uint8_t mac1_[6] = {11, 22, 33, 44, 55, 66};
   const uint8_t mac2_[6] = {12, 23, 34, 45, 56, 67};
   std::vector<MdnsPlatformService::BoundInterface> bound_interfaces_{
       MdnsPlatformService::BoundInterface{
           platform::InterfaceInfo{1, mac1_, "eth0",
                                   platform::InterfaceInfo::Type::kEthernet},
-          platform::IPSubnet{IPAddress{192, 168, 3, 2}, 24}, socket1_},
+          platform::IPSubnet{IPAddress{192, 168, 3, 2}, 24}, kDefaultSocket},
       MdnsPlatformService::BoundInterface{
           platform::InterfaceInfo{2, mac2_, "eth1",
                                   platform::InterfaceInfo::Type::kEthernet},
           platform::IPSubnet{
               IPAddress{1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8}, 24},
-          socket2_}};
+          kSecondSocket}};
 };
 
 }  // namespace

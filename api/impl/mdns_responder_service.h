@@ -66,7 +66,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
  private:
   // NOTE: service_instance implicit in map key.
   struct ServiceInstance {
-    platform::UdpSocketPtr ptr_socket = nullptr;
+    platform::UdpSocket* ptr_socket = nullptr;
     mdns::DomainName domain_name;
     uint16_t port = 0;
     bool has_ptr_record = false;
@@ -84,7 +84,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   };
 
   struct NetworkScopedDomainName {
-    platform::UdpSocketPtr socket;
+    platform::UdpSocket* socket;
     mdns::DomainName domain_name;
   };
 
@@ -114,7 +114,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
                       InstanceNameSet* modified_instance_names);
   bool HandleTxtEvent(const mdns::TxtEvent& txt_event,
                       InstanceNameSet* modified_instance_names);
-  bool HandleAddressEvent(platform::UdpSocketPtr socket,
+  bool HandleAddressEvent(platform::UdpSocket* socket,
                           mdns::QueryEventHeader::Type response_type,
                           const mdns::DomainName& domain_name,
                           bool a_event,
@@ -125,13 +125,13 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   bool HandleAaaaEvent(const mdns::AaaaEvent& aaaa_event,
                        InstanceNameSet* modified_instance_names);
 
-  HostInfo* AddOrGetHostInfo(platform::UdpSocketPtr socket,
+  HostInfo* AddOrGetHostInfo(platform::UdpSocket* socket,
                              const mdns::DomainName& domain_name);
-  HostInfo* GetHostInfo(platform::UdpSocketPtr socket,
+  HostInfo* GetHostInfo(platform::UdpSocket* socket,
                         const mdns::DomainName& domain_name);
   bool IsServiceReady(const ServiceInstance& instance, HostInfo* host) const;
   platform::NetworkInterfaceIndex GetNetworkInterfaceIndexFromSocket(
-      platform::UdpSocketPtr socket) const;
+      const platform::UdpSocket* socket) const;
 
   // Service type separated as service name and service protocol for both
   // listening and publishing (e.g. {"_openscreen", "_udp"}).

@@ -17,8 +17,8 @@ namespace openscreen {
 namespace platform {
 namespace {
 
-template <typename T>
-Error WatchUdpSocket(std::vector<T>* watched_sockets, T socket) {
+Error AddToVectorIfMissing(UdpSocketPosix* socket,
+                           std::vector<UdpSocketPosix*>* watched_sockets) {
   for (const auto* s : *watched_sockets) {
     if (s->fd == socket->fd)
       return Error::Code::kAlreadyListening;
@@ -27,10 +27,11 @@ Error WatchUdpSocket(std::vector<T>* watched_sockets, T socket) {
   return Error::None();
 }
 
-template <typename T>
-Error StopWatchingUdpSocket(std::vector<T>* watched_sockets, T socket) {
-  const auto it = std::find_if(watched_sockets->begin(), watched_sockets->end(),
-                               [socket](T s) { return s->fd == socket->fd; });
+Error RemoveFromVectorIfPresent(UdpSocketPosix* socket,
+                                std::vector<UdpSocketPosix*>* watched_sockets) {
+  const auto it =
+      std::find_if(watched_sockets->begin(), watched_sockets->end(),
+                   [socket](UdpSocketPosix* s) { return s->fd == socket->fd; });
   if (it == watched_sockets->end())
     return Error::Code::kNoItemFound;
 
@@ -41,8 +42,8 @@ Error StopWatchingUdpSocket(std::vector<T>* watched_sockets, T socket) {
 }  // namespace
 
 struct EventWaiterPrivate {
-  std::vector<UdpSocketPtr> read_sockets;
-  std::vector<UdpSocketPtr> write_sockets;
+  std::vector<UdpSocketPosix*> read_sockets;
+  std::vector<UdpSocketPosix*> write_sockets;
 };
 
 EventWaiterPtr CreateEventWaiter() {
@@ -53,22 +54,24 @@ void DestroyEventWaiter(EventWaiterPtr waiter) {
   delete waiter;
 }
 
-Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket) {
-  return WatchUdpSocket(&waiter->read_sockets, socket);
+Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocket* socket) {
+  return AddToVectorIfMissing(UdpSocketPosix::From(socket),
+                              &waiter->read_sockets);
 }
 
-Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter,
-                                    UdpSocketPtr socket) {
-  return StopWatchingUdpSocket(&waiter->read_sockets, socket);
+Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocket* socket) {
+  return RemoveFromVectorIfPresent(UdpSocketPosix::From(socket),
+                                   &waiter->read_sockets);
 }
 
-Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket) {
-  return WatchUdpSocket(&waiter->write_sockets, socket);
+Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocket* socket) {
+  return AddToVectorIfMissing(UdpSocketPosix::From(socket),
+                              &waiter->write_sockets);
 }
 
-Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter,
-                                    UdpSocketPtr socket) {
-  return StopWatchingUdpSocket(&waiter->write_sockets, socket);
+Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocket* socket) {
+  return RemoveFromVectorIfPresent(UdpSocketPosix::From(socket),
+                                   &waiter->write_sockets);
 }
 
 Error WatchNetworkChange(EventWaiterPtr waiter) {

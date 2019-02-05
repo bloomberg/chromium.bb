@@ -12,7 +12,6 @@
 
 #include "base/error.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
-#include "platform/api/error.h"
 #include "platform/api/logging.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
@@ -97,29 +96,45 @@ void SignalThings() {
   OSP_LOG_INFO << "pid: " << getpid();
 }
 
-std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
+std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
     const std::vector<platform::NetworkInterfaceIndex>& index_list) {
-  std::vector<platform::UdpSocketPtr> fds;
+  std::vector<platform::UdpSocketUniquePtr> sockets;
   for (const auto ifindex : index_list) {
-    auto* socket = platform::CreateUdpSocketIPv4();
-    if (!JoinUdpMulticastGroup(socket, IPAddress{224, 0, 0, 251}, ifindex)
-             .ok()) {
-      OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
-                    << ": " << platform::GetLastErrorString();
-      DestroyUdpSocket(socket);
+    auto create_result =
+        platform::UdpSocket::Create(platform::UdpSocket::Version::kV4);
+    if (!create_result) {
+      OSP_LOG_ERROR << "failed to create IPv4 socket for interface " << ifindex
+                    << ": " << create_result.error().message();
       continue;
     }
-    if (!BindUdpSocket(socket, {{}, 5353}, ifindex).ok()) {
+    platform::UdpSocketUniquePtr socket = create_result.MoveValue();
+
+    Error result =
+        socket->JoinMulticastGroup(IPAddress{224, 0, 0, 251}, ifindex);
+    if (!result.ok()) {
+      OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
+                    << ": " << result.message();
+      continue;
+    }
+
+    result = socket->SetMulticastOutboundInterface(ifindex);
+    if (!result.ok()) {
+      OSP_LOG_ERROR << "set multicast outbound interface failed for interface "
+                    << ifindex << ": " << result.message();
+      continue;
+    }
+
+    result = socket->Bind({{}, 5353});
+    if (!result.ok()) {
       OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                    << platform::GetLastErrorString();
-      DestroyUdpSocket(socket);
+                    << result.message();
       continue;
     }
 
     OSP_LOG_INFO << "listening on interface " << ifindex;
-    fds.push_back(socket);
+    sockets.emplace_back(std::move(socket));
   }
-  return fds;
+  return sockets;
 }
 
 void LogService(const Service& s) {
@@ -249,9 +264,14 @@ void BrowseDemo(const std::string& service_name,
       index_list.push_back(interface.info.index);
   }
 
-  auto sockets = SetupMulticastSockets(index_list);
-  // Listen on all interfaces
-  auto fd_it = sockets.begin();
+  auto sockets = SetUpMulticastSockets(index_list);
+  // The code below assumes the elements in |sockets| is in exact 1:1
+  // correspondence with the elements in |index_list|. Crash the demo if any
+  // sockets are missing (i.e., failed to be set up).
+  OSP_CHECK_EQ(sockets.size(), index_list.size());
+
+  // Listen on all interfaces.
+  auto socket_it = sockets.begin();
   for (platform::NetworkInterfaceIndex index : index_list) {
     const auto& addr = *std::find_if(
         interface_addresses.begin(), interface_addresses.end(),
@@ -260,7 +280,8 @@ void BrowseDemo(const std::string& service_name,
         });
     // Pick any address for the given interface.
     mdns_adapter->RegisterInterface(addr.info, addr.addresses.front(),
-                                    *fd_it++);
+                                    socket_it->get());
+    ++socket_it;
   }
 
   if (!service_instance.empty()) {
@@ -269,9 +290,9 @@ void BrowseDemo(const std::string& service_name,
                                   {{"k1", "yurtle"}, {"k2", "turtle"}});
   }
 
-  for (auto* socket : sockets) {
-    platform::WatchUdpSocketReadable(waiter, socket);
-    mdns_adapter->StartPtrQuery(socket, service_type.value());
+  for (const platform::UdpSocketUniquePtr& socket : sockets) {
+    platform::WatchUdpSocketReadable(waiter, socket.get());
+    mdns_adapter->StartPtrQuery(socket.get(), service_type.value());
   }
 
   while (!g_done) {
@@ -301,9 +322,9 @@ void BrowseDemo(const std::string& service_name,
     LogService(s.second);
   }
   platform::StopWatchingNetworkChange(waiter);
-  for (auto* socket : sockets) {
-    platform::StopWatchingUdpSocketReadable(waiter, socket);
-    mdns_adapter->DeregisterInterface(socket);
+  for (const platform::UdpSocketUniquePtr& socket : sockets) {
+    platform::StopWatchingUdpSocketReadable(waiter, socket.get());
+    mdns_adapter->DeregisterInterface(socket.get());
   }
   platform::DestroyEventWaiter(waiter);
   mdns_adapter->Close();

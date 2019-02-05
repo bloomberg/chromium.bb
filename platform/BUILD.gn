@@ -8,7 +8,6 @@ source_set("platform") {
   defines = []
 
   sources = [
-    "api/error.h",
     "api/event_waiter.cc",
     "api/event_waiter.h",
     "api/logging.cc",
@@ -28,13 +27,12 @@ source_set("platform") {
 
   if (build_with_chromium) {
     sources += [
-      "chromium/error.cc",
       "chromium/event_waiter.cc",
       "chromium/logging.cc",
       "chromium/network_interface.cc",
-      "chromium/time.cc",
       "chromium/socket.cc",
       "chromium/socket.h",
+      "chromium/time.cc",
     ]
   } else {  # !build_with_chromium
     sources += [
@@ -54,7 +52,6 @@ source_set("platform") {
 
     if (is_posix) {
       sources += [
-        "posix/error.cc",
         "posix/event_waiter.cc",
         "posix/logging.cc",
         "posix/socket.cc",

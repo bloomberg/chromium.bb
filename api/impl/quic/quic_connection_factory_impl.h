@@ -42,10 +42,16 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
   std::unique_ptr<::quic::QuartcFactory> quartc_factory_;
 
   ServerDelegate* server_delegate_ = nullptr;
-  std::vector<platform::UdpSocketPtr> server_sockets_;
+
+  std::vector<platform::UdpSocketUniquePtr> sockets_;
 
   platform::EventWaiterPtr waiter_;
-  std::map<IPEndpoint, QuicConnection*, IPEndpointComparator> connections_;
+
+  struct OpenConnection {
+    QuicConnection* connection;
+    platform::UdpSocket* socket;  // References one of the owned |sockets_|.
+  };
+  std::map<IPEndpoint, OpenConnection, IPEndpointComparator> connections_;
 };
 
 }  // namespace openscreen
