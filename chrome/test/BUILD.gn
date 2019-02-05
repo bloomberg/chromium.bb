@@ -2817,6 +2817,8 @@ test("unit_tests") {
     "../browser/signin/test_signin_client_builder.h",
     "../browser/ssl/certificate_error_report_unittest.cc",
     "../browser/ssl/certificate_error_reporter_unittest.cc",
+    "../browser/ssl/certificate_reporting_test_utils.cc",
+    "../browser/ssl/certificate_reporting_test_utils.h",
     "../browser/ssl/insecure_sensitive_input_driver_unittest.cc",
     "../browser/ssl/origin_util_unittest.cc",
     "../browser/ssl/security_state_tab_helper_unittest.cc",
