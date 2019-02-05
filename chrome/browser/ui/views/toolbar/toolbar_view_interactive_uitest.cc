@@ -50,7 +50,7 @@ class ToolbarViewInteractiveUITest : public extensions::ExtensionBrowserTest,
   void OnMenuOpened() override;
 
  protected:
-  ToolbarView* toolbar_view() { return toolbar_view_; }
+  AppMenuButton* app_menu_button() { return app_menu_button_; }
   BrowserActionsContainer* browser_actions() { return browser_actions_; }
 
   // Performs a drag-and-drop operation by moving the mouse to |start|, clicking
@@ -63,7 +63,7 @@ class ToolbarViewInteractiveUITest : public extensions::ExtensionBrowserTest,
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  ToolbarView* toolbar_view_ = nullptr;
+  AppMenuButton* app_menu_button_ = nullptr;
   BrowserActionsContainer* browser_actions_ = nullptr;
   bool menu_opened_ = false;
   base::OnceClosure quit_closure_;
@@ -83,7 +83,7 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
   // TODO(devlin): In a perfect world, this would be factored better.
 
   // Begin listening for the app menu to open.
-  toolbar_view()->app_menu_button()->AddMenuListener(this);
+  app_menu_button()->AddMenuListener(this);
 
   // Send the mouse to |start|, and click.  The event queue must be flushed
   // after processing the click, or the next mouse move sent may get processed
@@ -114,9 +114,9 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
   EXPECT_TRUE(menu_opened_);
 
   // The app menu should have closed once the drag-and-drop completed.
-  EXPECT_FALSE(toolbar_view()->app_menu_button()->IsMenuShowing());
+  EXPECT_FALSE(app_menu_button()->IsMenuShowing());
 
-  toolbar_view()->app_menu_button()->RemoveMenuListener(this);
+  app_menu_button()->RemoveMenuListener(this);
 }
 
 void ToolbarViewInteractiveUITest::SetUpCommandLine(
@@ -130,8 +130,10 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   extensions::ExtensionBrowserTest::SetUpOnMainThread();
   ExtensionToolbarMenuView::set_close_menu_delay_for_testing(0);
 
-  toolbar_view_ = BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
-  browser_actions_ = toolbar_view_->browser_actions();
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  auto* toolbar_button_provider = browser_view->toolbar_button_provider();
+  app_menu_button_ = toolbar_button_provider->GetAppMenuButton();
+  browser_actions_ = toolbar_button_provider->GetBrowserActionsContainer();
 }
 
 void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
@@ -168,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
 
   gfx::Point browser_action_view_loc =
       ui_test_utils::GetCenterInScreenCoordinates(view);
-  gfx::Point app_button_loc = ui_test_utils::GetCenterInScreenCoordinates(
-      toolbar_view()->app_menu_button());
+  gfx::Point app_button_loc =
+      ui_test_utils::GetCenterInScreenCoordinates(app_menu_button());
 
   // Perform a drag and drop from the browser action view to the app button,
   // which should open the app menu.

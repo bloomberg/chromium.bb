@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -314,12 +313,10 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
 }
 
 bool BrowserActionsContainer::CloseOverflowMenuIfOpen() {
-  // TODO(mgiuca): Use toolbar_button_provider() instead of toolbar(), so this
-  // also works for hosted app windows.
-  BrowserAppMenuButton* app_menu_button =
+  AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser_)
-          ->toolbar()
-          ->app_menu_button();
+          ->toolbar_button_provider()
+          ->GetAppMenuButton();
   if (!app_menu_button || !app_menu_button->IsMenuShowing())
     return false;
 

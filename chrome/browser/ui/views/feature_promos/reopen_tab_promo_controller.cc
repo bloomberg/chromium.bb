@@ -49,11 +49,6 @@ ReopenTabPromoController::ReopenTabPromoController(BrowserView* browser_view)
     : iph_service_(ReopenTabInProductHelpFactory::GetForProfile(
           browser_view->browser()->profile())),
       browser_view_(browser_view) {
-  // Check that the app menu button exists. It should only not exist when there
-  // is no tab strip, in which case this shouldn't trigger in the first place.
-  BrowserAppMenuButton* app_menu_button =
-      browser_view_->toolbar()->app_menu_button();
-  DCHECK(app_menu_button);
 }
 
 void ReopenTabPromoController::ShowPromo() {
@@ -74,18 +69,27 @@ void ReopenTabPromoController::ShowPromo() {
   promo_bubble_->GetWidget()->AddObserver(this);
 }
 
+void ReopenTabPromoController::OnTabReopened(int command_id) {
+  iph_service_->TabReopened();
+
+  if (command_id == AppMenuModel::kMinRecentTabsCommandId) {
+    DCHECK(!tab_reopened_before_app_menu_closed_);
+    UMA_HISTOGRAM_ENUMERATION(kReopenTabPromoDismissedAtHistogram,
+                              ReopenTabPromoStepAtDismissal::kTabReopened);
+    tab_reopened_before_app_menu_closed_ = true;
+  }
+}
+
 void ReopenTabPromoController::OnMenuOpened() {
   // The user followed the promo and opened the menu. First, we close the promo
   // bubble since it doesn't automatically close on click. Then, we highlight
   // the history item and observe for the history submenu opening.
   promo_bubble_->GetWidget()->Close();
 
-  BrowserAppMenuButton* app_menu_button =
-      browser_view_->toolbar()->app_menu_button();
+  auto* app_menu_button = browser_view_->toolbar()->app_menu_button();
   app_menu_button->RemoveMenuListener(this);
 
-  AppMenu* app_menu = app_menu_button->app_menu();
-  app_menu->AddObserver(this);
+  app_menu_button->app_menu()->AddObserver(this);
 }
 
 void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
@@ -94,12 +98,11 @@ void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
 
   // If the menu isn't showing, that means the promo bubble timed out. We should
   // notify our IPH service that help was dismissed.
-  if (!browser_view_->toolbar()->app_menu_button()->IsMenuShowing()) {
+  auto* app_menu_button = browser_view_->toolbar()->app_menu_button();
+  if (!app_menu_button->IsMenuShowing()) {
     UMA_HISTOGRAM_ENUMERATION(kReopenTabPromoDismissedAtHistogram,
                               ReopenTabPromoStepAtDismissal::kBubbleShown);
 
-    BrowserAppMenuButton* app_menu_button =
-        browser_view_->toolbar()->app_menu_button();
     app_menu_button->RemoveMenuListener(this);
     app_menu_button->SetPromoFeature(base::nullopt);
     iph_service_->HelpDismissed();
@@ -117,17 +120,7 @@ void ReopenTabPromoController::AppMenuClosed() {
 
   iph_service_->HelpDismissed();
 
-  browser_view_->toolbar()->app_menu_button()->SetPromoFeature(base::nullopt);
-
-  AppMenu* app_menu = browser_view_->toolbar()->app_menu_button()->app_menu();
-  app_menu->RemoveObserver(this);
-}
-
-void ReopenTabPromoController::OnExecuteCommand(int command_id) {
-  if (command_id == AppMenuModel::kMinRecentTabsCommandId) {
-    DCHECK(!tab_reopened_before_app_menu_closed_);
-    UMA_HISTOGRAM_ENUMERATION(kReopenTabPromoDismissedAtHistogram,
-                              ReopenTabPromoStepAtDismissal::kTabReopened);
-    tab_reopened_before_app_menu_closed_ = true;
-  }
+  auto* app_menu_button = browser_view_->toolbar()->app_menu_button();
+  app_menu_button->SetPromoFeature(base::nullopt);
+  app_menu_button->app_menu()->RemoveObserver(this);
 }

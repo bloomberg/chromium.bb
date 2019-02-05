@@ -17,8 +17,8 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     auto* app_menu_button = BrowserView::GetBrowserViewForBrowser(browser())
-                                ->toolbar()
-                                ->app_menu_button();
+                                ->toolbar_button_provider()
+                                ->GetAppMenuButton();
     // We use one of the strings for the new tab feature promo since there is
     // currently no infrastructure for test-only string resources.
     int placeholder_string = IDS_NEWTAB_PROMO_0;

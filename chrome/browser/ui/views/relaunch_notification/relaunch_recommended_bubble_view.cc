@@ -48,8 +48,8 @@ views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
 
   // Anchor the popup to the browser's app menu.
   auto* anchor_button = BrowserView::GetBrowserViewForBrowser(browser)
-                            ->toolbar()
-                            ->app_menu_button();
+                            ->toolbar_button_provider()
+                            ->GetAppMenuButton();
   auto* bubble_view = new RelaunchRecommendedBubbleView(
       anchor_button, gfx::Point(), detection_time, std::move(on_accept));
   bubble_view->SetArrow(views::BubbleBorder::TOP_RIGHT);

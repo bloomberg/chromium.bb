@@ -35,10 +35,10 @@
 
 namespace {
 
-BrowserAppMenuButton* GetAppButtonFromBrowser(Browser* browser) {
+AppMenuButton* GetAppMenuButtonFromBrowser(Browser* browser) {
   return BrowserView::GetBrowserViewForBrowser(browser)
-      ->toolbar()
-      ->app_menu_button();
+      ->toolbar_button_provider()
+      ->GetAppMenuButton();
 }
 
 class AppMenuShowingWaiter : public views::MenuListener {
@@ -89,7 +89,7 @@ void TestOverflowedToolbarAction(Browser* browser,
                                  ui_controls::MouseButton button,
                                  ToolbarActionView** toolbar_action_view) {
   // A bunch of plumbing to safely get at the overflowed toolbar action.
-  BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
+  auto* app_menu_button = GetAppMenuButtonFromBrowser(browser);
   EXPECT_TRUE(app_menu_button->IsMenuShowing());
   AppMenu* app_menu = app_menu_button->app_menu();
   ASSERT_TRUE(app_menu);
@@ -132,7 +132,7 @@ void TestWhileContextMenuOpen(Browser* browser,
   EXPECT_TRUE(first_menu_item->enabled());
 
   // Get the overflow container.
-  BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
+  auto* app_menu_button = GetAppMenuButtonFromBrowser(browser);
   AppMenu* app_menu = app_menu_button->app_menu();
   ASSERT_TRUE(app_menu);
   ExtensionToolbarMenuView* menu_view =
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // opened. Listen for the message.
   ExtensionTestMessageListener listener("Popup opened", false);
 
-  BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
+  auto* app_menu_button = GetAppMenuButtonFromBrowser(browser());
 
   // Click on the app button.
   gfx::Point app_button_loc =
@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // Reduce visible count to 0 so that all actions are overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
 
-  BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
+  auto* app_menu_button = GetAppMenuButtonFromBrowser(browser());
   // Click on the app button.
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Open the app menu, navigate to the toolbar action, and activate it via the
   // keyboard.
-  BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser());
+  auto* app_menu_button = GetAppMenuButtonFromBrowser(browser());
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   EXPECT_TRUE(

@@ -207,8 +207,9 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
 
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  SendKeysMenuListener menu_listener(browser_view->toolbar()->app_menu_button(),
-                                     browser(), false);
+  SendKeysMenuListener menu_listener(
+      browser_view->toolbar_button_provider()->GetAppMenuButton(), browser(),
+      false);
 
   if (focus_omnibox)
     browser()->window()->GetLocationBar()->FocusLocation();
@@ -318,8 +319,9 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
 
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  SendKeysMenuListener menu_listener(browser_view->toolbar()->app_menu_button(),
-                                     browser(), true);
+  SendKeysMenuListener menu_listener(
+      browser_view->toolbar_button_provider()->GetAppMenuButton(), browser(),
+      true);
 
   browser()->window()->GetLocationBar()->FocusLocation();
 

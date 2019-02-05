@@ -25,8 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
-#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
-#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
@@ -312,11 +311,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     }
   }
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  auto* reopen_tab_iph =
-      ReopenTabInProductHelpFactory::GetForProfile(browser_->profile());
-  reopen_tab_iph->TabReopened();
-#endif
+  browser_->window()->OnTabRestoredFromMenu(command_id);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenRecentTab",
                              menu_opened_timer_.Elapsed());
