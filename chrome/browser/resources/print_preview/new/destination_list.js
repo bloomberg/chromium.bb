@@ -117,7 +117,9 @@ Polymer({
       this.throbberHidden_ =
           maxDisplayedItems <= this.matchingDestinations_.length;
     }
-    this.forceIronResize();
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      this.forceIronResize();
+    });
   }
 });
 })();
