@@ -235,9 +235,9 @@ LayoutRect PaintLayerClipper::LocalClipRect(
     // TODO(chrishtr): not correct for fragmentation.
     premapped_rect.MoveBy(context.root_fragment->PaintOffset());
 
-    const auto* clip_root_layer_transform =
+    const auto& clip_root_layer_transform =
         context.root_fragment->LocalBorderBoxProperties().Transform();
-    const auto* layer_transform = layer_.GetLayoutObject()
+    const auto& layer_transform = layer_.GetLayoutObject()
                                       .FirstFragment()
                                       .LocalBorderBoxProperties()
                                       .Transform();
@@ -493,8 +493,8 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
                                               destination_property_tree_state,
                                               clip_rect, clip_behavior);
     output.SetRect(clip_rect);
-  } else if (source_property_tree_state.Clip() !=
-             destination_property_tree_state.Clip()) {
+  } else if (&source_property_tree_state.Clip() !=
+             &destination_property_tree_state.Clip()) {
     const FloatClipRect& clipped_rect_in_root_layer_space =
         GeometryMapper::LocalToAncestorClipRect(
             source_property_tree_state, destination_property_tree_state,

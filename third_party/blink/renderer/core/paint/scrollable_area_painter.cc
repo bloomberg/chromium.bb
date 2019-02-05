@@ -184,7 +184,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
   DCHECK(properties);
   if (properties) {
     if (const auto* clip = properties->OverflowControlsClip()) {
-      scoped_paint_chunk_properties.emplace(context.GetPaintController(), clip,
+      scoped_paint_chunk_properties.emplace(context.GetPaintController(), *clip,
                                             box,
                                             DisplayItem::kOverflowControls);
     }

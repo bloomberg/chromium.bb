@@ -39,10 +39,10 @@ namespace {
 // exists as this implies that all of those ancestor nodes have already been
 // inserted.
 template <typename NodeType>
-void InsertAncestorElementIds(const NodeType* node,
+void InsertAncestorElementIds(const NodeType& node,
                               CompositorElementIdSet& composited_element_ids) {
-  while (node) {
-    const CompositorElementId& element_id = node->GetCompositorElementId();
+  for (const auto* n = &node; n; n = SafeUnalias(n->Parent())) {
+    const CompositorElementId& element_id = n->GetCompositorElementId();
     if (element_id) {
       if (composited_element_ids.count(element_id)) {
         // Once we reach a node already counted we can stop traversing the
@@ -51,7 +51,6 @@ void InsertAncestorElementIds(const NodeType* node,
       }
       composited_element_ids.insert(element_id);
     }
-    node = node->Parent() ? node->Parent()->Unalias() : nullptr;
   }
 }
 
@@ -149,11 +148,11 @@ PaintArtifactCompositor::ScrollTranslationForPendingLayer(
           paint_artifact, pending_layer)) {
     return *scroll_translation;
   }
-  const auto* transform = pending_layer.property_tree_state.Transform();
+  const auto& transform = pending_layer.property_tree_state.Transform();
   // TODO(pdr): This could be a performance issue because it crawls up the
   // transform tree for each pending layer. If this is on profiles, we should
   // cache a lookup of transform node to scroll translation transform node.
-  return transform->NearestScrollTranslationNode();
+  return transform.NearestScrollTranslationNode();
 }
 
 const TransformPaintPropertyNode*
@@ -320,12 +319,10 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
 
 bool PaintArtifactCompositor::PropertyTreeStateChanged(
     const PropertyTreeState& state) const {
-  const PropertyTreeState root = PropertyTreeState::Root();
-  bool changed = false;
-  changed = changed || state.Transform()->Changed(*root.Transform());
-  changed = changed || state.Clip()->Changed(root, state.Transform());
-  changed = changed || state.Effect()->Changed(root, state.Transform());
-  return changed;
+  const auto& root = PropertyTreeState::Root();
+  return state.Transform().Changed(root.Transform()) ||
+         state.Clip().Changed(root, &state.Transform()) ||
+         state.Effect().Changed(root, &state.Transform());
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
@@ -361,8 +358,8 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
     const PendingLayer& guest) const {
   if (requires_own_layer || guest.requires_own_layer)
     return false;
-  if (property_tree_state.Effect()->Unalias() !=
-      guest.property_tree_state.Effect()->Unalias()) {
+  if (&property_tree_state.Effect().Unalias() !=
+      &guest.property_tree_state.Effect().Unalias()) {
     return false;
   }
   return CanUpcastTo(guest.property_tree_state, property_tree_state);
@@ -392,10 +389,11 @@ const PaintChunk& PaintArtifactCompositor::PendingLayer::FirstPaintChunk(
 }
 
 static bool IsNonCompositingAncestorOf(
-    const TransformPaintPropertyNode* unaliased_ancestor,
-    const TransformPaintPropertyNode* node) {
-  for (; node != unaliased_ancestor; node = SafeUnalias(node->Parent())) {
-    if (!node || node->HasDirectCompositingReasons())
+    const TransformPaintPropertyNode& unaliased_ancestor,
+    const TransformPaintPropertyNode& node) {
+  for (const auto* n = &node; n != &unaliased_ancestor;
+       n = SafeUnalias(n->Parent())) {
+    if (!n || n->HasDirectCompositingReasons())
       return false;
   }
   return true;
@@ -415,44 +413,41 @@ static bool IsNonCompositingAncestorOf(
 //    transform space.
 static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home) {
-  DCHECK_EQ(home.Effect()->Unalias(), guest.Effect()->Unalias());
+  DCHECK_EQ(&home.Effect().Unalias(), &guest.Effect().Unalias());
 
-  if (home.Transform()->IsBackfaceHidden() !=
-      guest.Transform()->IsBackfaceHidden())
+  if (home.Transform().IsBackfaceHidden() !=
+      guest.Transform().IsBackfaceHidden())
     return false;
 
-  // TODO(crbug.com/923729): Note that SafeUnalias() is a speculative fix for
-  // the referenced bug. The home and guest Clips should always exist, so we can
-  // just call Unalias on them.
-  auto* home_clip = SafeUnalias(home.Clip());
-  for (const ClipPaintPropertyNode* current_clip = SafeUnalias(guest.Clip());
-       current_clip != home_clip;
+  const auto& home_clip = home.Clip().Unalias();
+  for (const auto* current_clip = &guest.Clip().Unalias();
+       current_clip != &home_clip;
        current_clip = SafeUnalias(current_clip->Parent())) {
     if (!current_clip || current_clip->HasDirectCompositingReasons())
       return false;
     if (!IsNonCompositingAncestorOf(
-            home.Transform()->Unalias(),
-            current_clip->LocalTransformSpace()->Unalias())) {
+            home.Transform().Unalias(),
+            current_clip->LocalTransformSpace().Unalias())) {
       return false;
     }
   }
 
-  return IsNonCompositingAncestorOf(home.Transform()->Unalias(),
-                                    guest.Transform()->Unalias());
+  return IsNonCompositingAncestorOf(home.Transform().Unalias(),
+                                    guest.Transform().Unalias());
 }
 
 // Returns nullptr if 'ancestor' is not a strict ancestor of 'node'.
 // Otherwise, return the child of 'ancestor' that is an ancestor of 'node' or
 // 'node' itself.
 static const EffectPaintPropertyNode* StrictUnaliasedChildOfAlongPath(
-    const EffectPaintPropertyNode* unaliased_ancestor,
-    const EffectPaintPropertyNode* node) {
-  node = node->Unalias();
-  while (node) {
-    auto* parent = SafeUnalias(node->Parent());
-    if (parent == unaliased_ancestor)
-      return node;
-    node = parent;
+    const EffectPaintPropertyNode& unaliased_ancestor,
+    const EffectPaintPropertyNode& node) {
+  const auto* n = &node.Unalias();
+  while (n) {
+    const auto* parent = SafeUnalias(n->Parent());
+    if (parent == &unaliased_ancestor)
+      return n;
+    n = parent;
   }
   return nullptr;
 }
@@ -470,25 +465,25 @@ bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
 }
 
 bool PaintArtifactCompositor::CanDecompositeEffect(
-    const EffectPaintPropertyNode* unaliased_effect,
+    const EffectPaintPropertyNode& unaliased_effect,
     const PendingLayer& layer) {
   // If the effect associated with the layer is deeper than than the effect
   // we are attempting to decomposite, than implies some previous decision
   // did not allow to decomposite intermediate effects.
-  if (layer.property_tree_state.Effect()->Unalias() != unaliased_effect)
+  if (&layer.property_tree_state.Effect().Unalias() != &unaliased_effect)
     return false;
   if (layer.requires_own_layer)
     return false;
   // TODO(trchen): Exotic blending layer may be decomposited only if it could
   // be merged into the first layer of the current group.
-  if (unaliased_effect->BlendMode() != SkBlendMode::kSrcOver)
+  if (unaliased_effect.BlendMode() != SkBlendMode::kSrcOver)
     return false;
-  if (unaliased_effect->HasDirectCompositingReasons())
+  if (unaliased_effect.HasDirectCompositingReasons())
     return false;
   if (!CanUpcastTo(layer.property_tree_state,
-                   PropertyTreeState(unaliased_effect->LocalTransformSpace(),
-                                     unaliased_effect->OutputClip()
-                                         ? unaliased_effect->OutputClip()
+                   PropertyTreeState(unaliased_effect.LocalTransformSpace(),
+                                     unaliased_effect.OutputClip()
+                                         ? *unaliased_effect.OutputClip()
                                          : layer.property_tree_state.Clip(),
                                      unaliased_effect)))
     return false;
@@ -498,9 +493,9 @@ bool PaintArtifactCompositor::CanDecompositeEffect(
 static bool EffectGroupContainsChunk(
     const EffectPaintPropertyNode& unaliased_group_effect,
     const PaintChunk& chunk) {
-  const auto* effect = SafeUnalias(chunk.properties.Effect());
-  return effect == &unaliased_group_effect ||
-         StrictUnaliasedChildOfAlongPath(&unaliased_group_effect, effect);
+  const auto& effect = chunk.properties.Effect().Unalias();
+  return &effect == &unaliased_group_effect ||
+         StrictUnaliasedChildOfAlongPath(unaliased_group_effect, effect);
 }
 
 static bool SkipGroupIfEffectivelyInvisible(
@@ -535,7 +530,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // Skip paint chunks that are effectively invisible due to opacity and don't
   // have a direct compositing reason.
-  const auto& unaliased_group = *current_group.Unalias();
+  const auto& unaliased_group = current_group.Unalias();
   if (SkipGroupIfEffectivelyInvisible(paint_artifact, unaliased_group,
                                       chunk_it))
     return;
@@ -564,9 +559,8 @@ void PaintArtifactCompositor::LayerizeGroup(
     // A. The next chunk belongs to the current group but no subgroup.
     // B. The next chunk does not belong to the current group.
     // C. The next chunk belongs to some subgroup of the current group.
-    DCHECK(chunk_it->properties.Effect());
-    const auto* chunk_effect = chunk_it->properties.Effect()->Unalias();
-    if (chunk_effect == &unaliased_group) {
+    const auto& chunk_effect = chunk_it->properties.Effect().Unalias();
+    if (&chunk_effect == &unaliased_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
       const auto& last_display_item =
           paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
@@ -582,7 +576,7 @@ void PaintArtifactCompositor::LayerizeGroup(
         continue;
     } else {
       const EffectPaintPropertyNode* unaliased_subgroup =
-          StrictUnaliasedChildOfAlongPath(&unaliased_group, chunk_effect);
+          StrictUnaliasedChildOfAlongPath(unaliased_group, chunk_effect);
       // Case B: This means we need to close the current group without
       //         processing the next chunk.
       if (!unaliased_subgroup)
@@ -603,14 +597,14 @@ void PaintArtifactCompositor::LayerizeGroup(
         continue;
       // Now attempt to "decomposite" subgroup.
       PendingLayer& subgroup_layer = pending_layers[first_layer_in_subgroup];
-      if (!CanDecompositeEffect(unaliased_subgroup, subgroup_layer))
+      if (!CanDecompositeEffect(*unaliased_subgroup, subgroup_layer))
         continue;
       subgroup_layer.Upcast(
           PropertyTreeState(unaliased_subgroup->LocalTransformSpace(),
                             unaliased_subgroup->OutputClip()
-                                ? unaliased_subgroup->OutputClip()
+                                ? *unaliased_subgroup->OutputClip()
                                 : subgroup_layer.property_tree_state.Clip(),
-                            &unaliased_group));
+                            unaliased_group));
     }
     // At this point pending_layers.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
@@ -618,7 +612,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     // layer.
     const PendingLayer& new_layer = pending_layers.back();
     DCHECK(!new_layer.requires_own_layer);
-    DCHECK_EQ(&unaliased_group, new_layer.property_tree_state.Effect());
+    DCHECK_EQ(&unaliased_group, &new_layer.property_tree_state.Effect());
     // This iterates pending_layers[first_layer_in_current_group:-1] in reverse.
     for (wtf_size_t candidate_index = pending_layers.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
@@ -742,22 +736,24 @@ class SynthesizedClip : private cc::ContentLayerClient {
 
 // TODO(pdr): There is no test that synthetic clip layers are re-used.
 cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
-    const ClipPaintPropertyNode* node,
+    const ClipPaintPropertyNode& node,
     CompositorElementId& mask_isolation_id,
     CompositorElementId& mask_effect_id) {
-  auto entry = std::find_if(
-      synthesized_clip_cache_.begin(), synthesized_clip_cache_.end(),
-      [node](const auto& entry) { return entry.key == node && !entry.in_use; });
+  auto entry =
+      std::find_if(synthesized_clip_cache_.begin(),
+                   synthesized_clip_cache_.end(), [&node](const auto& entry) {
+                     return entry.key == &node && !entry.in_use;
+                   });
   if (entry == synthesized_clip_cache_.end()) {
     auto clip = std::make_unique<SynthesizedClip>();
     clip->GetLayer()->SetLayerTreeHost(root_layer_->layer_tree_host());
     entry = synthesized_clip_cache_.insert(
-        entry, SynthesizedClipEntry{node, std::move(clip), false});
+        entry, SynthesizedClipEntry{&node, std::move(clip), false});
   }
 
   entry->in_use = true;
   SynthesizedClip& synthesized_clip = *entry->synthesized_clip;
-  synthesized_clip.Update(node->ClipRect(), node->ClipPath());
+  synthesized_clip.Update(node.ClipRect(), node.ClipPath());
   mask_isolation_id = synthesized_clip.GetMaskIsolationId();
   mask_effect_id = synthesized_clip.GetMaskEffectId();
   return synthesized_clip.GetLayer();
@@ -773,12 +769,12 @@ static void UpdateCompositorViewportProperties(
   if (properties.page_scale) {
     ids.page_scale_transform =
         property_tree_manager.EnsureCompositorPageScaleTransformNode(
-            properties.page_scale);
+            *properties.page_scale);
   }
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (properties.inner_scroll_translation) {
       ids.inner_scroll = property_tree_manager.EnsureCompositorScrollNode(
-          properties.inner_scroll_translation);
+          *properties.inner_scroll_translation);
     }
     layer_tree_host->RegisterViewportPropertyIds(ids);
   }
@@ -837,14 +833,14 @@ void PaintArtifactCompositor::Update(
   composited_element_ids.clear();
   for (auto& pending_layer : pending_layers) {
     const auto& property_state = pending_layer.property_tree_state;
-    const auto* transform = property_state.Transform();
-    const auto* clip = property_state.Clip();
+    const auto& transform = property_state.Transform();
+    const auto& clip = property_state.Clip();
 
-    if (clip->LocalTransformSpace() == transform) {
+    if (&clip.LocalTransformSpace() == &transform) {
       // Limit layer bounds to hide the areas that will be never visible because
       // of the clip.
-      pending_layer.bounds.Intersect(clip->ClipRect().Rect());
-    } else if (const auto* scroll = transform->ScrollNode()) {
+      pending_layer.bounds.Intersect(clip.ClipRect().Rect());
+    } else if (const auto* scroll = transform.ScrollNode()) {
       // Limit layer bounds to the scroll range to hide the areas that will
       // never be scrolled into the visible area.
       pending_layer.bounds.Intersect(FloatRect(
@@ -871,13 +867,13 @@ void PaintArtifactCompositor::Update(
         property_tree_manager.EnsureCompositorTransformNode(transform);
     int clip_id = property_tree_manager.EnsureCompositorClipNode(clip);
     int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
-        *property_state.Effect(), *clip);
+        property_state.Effect(), clip);
     // The compositor scroll node is not directly stored in the property tree
     // state but can be created via the scroll offset translation node.
     const auto& scroll_translation =
         ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
     int scroll_id =
-        property_tree_manager.EnsureCompositorScrollNode(&scroll_translation);
+        property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
 
     layer->SetOffsetToTransformParent(layer_offset);
 
@@ -889,7 +885,7 @@ void PaintArtifactCompositor::Update(
     layer->SetScrollTreeIndex(scroll_id);
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
-    bool backface_hidden = property_state.Transform()->IsBackfaceHidden();
+    bool backface_hidden = property_state.Transform().IsBackfaceHidden();
     layer->SetDoubleSided(!backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
 

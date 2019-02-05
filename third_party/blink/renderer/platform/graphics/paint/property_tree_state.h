@@ -17,10 +17,10 @@ class PLATFORM_EXPORT PropertyTreeState {
   USING_FAST_MALLOC(PropertyTreeState);
 
  public:
-  PropertyTreeState(const TransformPaintPropertyNode* transform,
-                    const ClipPaintPropertyNode* clip,
-                    const EffectPaintPropertyNode* effect)
-      : transform_(transform), clip_(clip), effect_(effect) {
+  PropertyTreeState(const TransformPaintPropertyNode& transform,
+                    const ClipPaintPropertyNode& clip,
+                    const EffectPaintPropertyNode& effect)
+      : transform_(&transform), clip_(&clip), effect_(&effect) {
     // TODO(crbug.com/923729): These CHECKs are temporary to determine the cause
     // of the referenced bug.
     CHECK(transform_);
@@ -43,43 +43,43 @@ class PLATFORM_EXPORT PropertyTreeState {
   // Returns an unaliased property tree state.
   PropertyTreeState Unalias() const;
 
-  const TransformPaintPropertyNode* Transform() const {
+  const TransformPaintPropertyNode& Transform() const {
     DCHECK_NE(transform_, Uninitialized().transform_);
-    return transform_;
+    return *transform_;
   }
-  void SetTransform(const TransformPaintPropertyNode* node) {
+  void SetTransform(const TransformPaintPropertyNode& node) {
+    transform_ = &node;
     // TODO(crbug.com/923729): This CHECK is temporary to determine the cause
     // of the referenced bug.
-    CHECK(node);
-    transform_ = node;
+    CHECK(transform_);
   }
 
-  const ClipPaintPropertyNode* Clip() const {
+  const ClipPaintPropertyNode& Clip() const {
     DCHECK_NE(clip_, Uninitialized().clip_);
-    return clip_;
+    return *clip_;
   }
-  void SetClip(const ClipPaintPropertyNode* node) {
+  void SetClip(const ClipPaintPropertyNode& node) {
+    clip_ = &node;
     // TODO(crbug.com/923729): This CHECK is temporary to determine the cause
     // of the referenced bug.
-    CHECK(node);
-    clip_ = node;
+    CHECK(clip_);
   }
 
-  const EffectPaintPropertyNode* Effect() const {
+  const EffectPaintPropertyNode& Effect() const {
     DCHECK_NE(effect_, Uninitialized().effect_);
-    return effect_;
+    return *effect_;
   }
-  void SetEffect(const EffectPaintPropertyNode* node) {
+  void SetEffect(const EffectPaintPropertyNode& node) {
+    effect_ = &node;
     // TODO(crbug.com/923729): This CHECK is temporary to determine the cause
     // of the referenced bug.
-    CHECK(node);
-    effect_ = node;
+    CHECK(effect_);
   }
 
   void ClearChangedToRoot() const {
-    Transform()->ClearChangedToRoot();
-    Clip()->ClearChangedToRoot();
-    Effect()->ClearChangedToRoot();
+    Transform().ClearChangedToRoot();
+    Clip().ClearChangedToRoot();
+    Effect().ClearChangedToRoot();
   }
 
   String ToString() const;

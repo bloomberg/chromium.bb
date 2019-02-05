@@ -279,16 +279,16 @@ void PaintLayerPainter::AdjustForPaintProperties(
     const auto& first_root_fragment =
         painting_info.root_layer->GetLayoutObject().FirstFragment();
     const auto* source_transform =
-        first_root_fragment.LocalBorderBoxProperties().Transform();
+        &first_root_fragment.LocalBorderBoxProperties().Transform();
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
         IsMainFrameNotClippingContents(*painting_info.root_layer)) {
       // Use PostScrollTranslation as the source transform to avoid clipping of
       // the scrolling contents in CullRect::ApplyTransforms().
-      source_transform = first_root_fragment.PostScrollTranslation();
+      source_transform = &first_root_fragment.PostScrollTranslation();
     }
-    const auto* destination_transform =
+    const auto& destination_transform =
         first_fragment.LocalBorderBoxProperties().Transform();
-    if (source_transform == destination_transform)
+    if (source_transform == &destination_transform)
       return;
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -302,7 +302,7 @@ void PaintLayerPainter::AdjustForPaintProperties(
         // Convert old_cull_rect into the layer's transform space.
         old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));
       }
-      cull_rect.ApplyTransforms(source_transform, destination_transform,
+      cull_rect.ApplyTransforms(*source_transform, destination_transform,
                                 old_cull_rect);
       // Convert cull_rect from the layer's transform space to the layer's local
       // space.
@@ -611,10 +611,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     auto state = fragment_data.LocalBorderBoxProperties();
     const auto* properties = fragment_data.PaintProperties();
     DCHECK(properties && properties->Mask());
-    state.SetEffect(properties->Mask());
+    state.SetEffect(*properties->Mask());
     if (properties && properties->ClipPathClip()) {
       DCHECK_EQ(properties->ClipPathClip()->Parent(), properties->MaskClip());
-      state.SetClip(properties->ClipPathClip());
+      state.SetClip(*properties->ClipPathClip());
     }
     ScopedPaintChunkProperties path_based_clip_path_scope(
         context.GetPaintController(), state,
@@ -771,13 +771,13 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   if (phase == PaintPhase::kMask) {
     const auto* properties = fragment.fragment_data->PaintProperties();
     DCHECK(properties && properties->Mask());
-    chunk_properties.SetEffect(properties->Mask());
+    chunk_properties.SetEffect(*properties->Mask());
     // Special case for SPv1 composited mask layer. Path-based clip-path
     // is only applies to the mask chunk, but not to the layer property
     // or local box box property.
     if (properties->ClipPathClip() &&
         properties->ClipPathClip()->Parent() == properties->MaskClip()) {
-      chunk_properties.SetClip(properties->ClipPathClip());
+      chunk_properties.SetClip(*properties->ClipPathClip());
     }
   }
   ScopedPaintChunkProperties fragment_paint_chunk_properties(

@@ -44,7 +44,7 @@ void ScrollHitTestDisplayItem::Record(
 
   // The scroll hit test should be in the non-scrolled transform space and
   // therefore should not be scrolled by the associated scroll offset.
-  DCHECK_NE(paint_controller.CurrentPaintChunkProperties().Transform(),
+  DCHECK_NE(&paint_controller.CurrentPaintChunkProperties().Transform(),
             &scroll_offset_node);
 
   if (paint_controller.DisplayItemConstructionIsDisabled())

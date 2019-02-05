@@ -37,18 +37,18 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
     return;
   }
 
-  if (new_chunk_state.Transform() != chunk_state_.Transform()) {
+  if (&new_chunk_state.Transform() != &chunk_state_.Transform()) {
     transform_ = GeometryMapper::SourceToDestinationProjection(
         new_chunk_state.Transform(), layer_state_.Transform());
     transform_.PostTranslate(-layer_offset_.x(), -layer_offset_.y());
   }
 
   bool new_has_filter_that_moves_pixels = has_filter_that_moves_pixels_;
-  if (new_chunk_state.Effect() != chunk_state_.Effect()) {
+  if (&new_chunk_state.Effect() != &chunk_state_.Effect()) {
     new_has_filter_that_moves_pixels = false;
-    for (const auto* effect = new_chunk_state.Effect();
-         effect && effect != layer_state_.Effect();
-         effect = effect->Parent() ? effect->Parent()->Unalias() : nullptr) {
+    for (const auto* effect = &new_chunk_state.Effect();
+         effect && effect != &layer_state_.Effect();
+         effect = SafeUnalias(effect->Parent())) {
       if (effect->HasFilterThatMovesPixels()) {
         new_has_filter_that_moves_pixels = true;
         break;
@@ -58,7 +58,7 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
 
   bool needs_clip_recalculation =
       new_has_filter_that_moves_pixels != has_filter_that_moves_pixels_ ||
-      new_chunk_state.Clip() != chunk_state_.Clip();
+      &new_chunk_state.Clip() != &chunk_state_.Clip();
   if (needs_clip_recalculation) {
     clip_rect_ =
         GeometryMapper::LocalToAncestorClipRect(new_chunk_state, layer_state_);
@@ -125,7 +125,7 @@ void ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(
   // visual rect by
   // PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation().
   // The condition below should be kept consistent with that function.
-  if (chunk_state_.Transform() == layer_state_.Transform())
+  if (&chunk_state_.Transform() == &layer_state_.Transform())
     rect.Move(visual_rect_subpixel_offset_);
 }
 

@@ -22,12 +22,12 @@ const ClipPaintPropertyNode& ClipPaintPropertyNode::Root() {
 bool ClipPaintPropertyNode::Changed(
     const PropertyTreeState& relative_to_state,
     const TransformPaintPropertyNode* transform_not_to_check) const {
-  for (const auto* node = this; node && node != relative_to_state.Clip();
+  for (const auto* node = this; node && node != &relative_to_state.Clip();
        node = node->Parent()) {
     if (node->NodeChanged())
       return true;
-    if (node->LocalTransformSpace() != transform_not_to_check &&
-        node->LocalTransformSpace()->Changed(*relative_to_state.Transform()))
+    if (&node->LocalTransformSpace() != transform_not_to_check &&
+        node->LocalTransformSpace().Changed(relative_to_state.Transform()))
       return true;
   }
 

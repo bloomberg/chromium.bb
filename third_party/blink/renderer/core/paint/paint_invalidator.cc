@@ -51,7 +51,7 @@ void PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation(
     return;
 
   if (object != context.paint_invalidation_container &&
-      context.paint_invalidation_container->FirstFragment()
+      &context.paint_invalidation_container->FirstFragment()
               .PostScrollTranslation() !=
           context.tree_builder_context_->current.transform) {
     // Subpixel accumulation doesn't propagate through non-translation

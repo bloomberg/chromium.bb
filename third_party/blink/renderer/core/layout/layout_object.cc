@@ -1476,7 +1476,7 @@ bool LayoutObject::HasDistortingVisualEffects() const {
                                            .LocalBorderBoxProperties();
 
   // No filters, no blends, no opacity < 100%.
-  for (const auto* effect = SafeUnalias(paint_properties.Effect()); effect;
+  for (const auto* effect = &paint_properties.Effect().Unalias(); effect;
        effect = SafeUnalias(effect->Parent())) {
     if (!effect->Filter().IsEmpty() || !effect->BackdropFilter().IsEmpty() ||
         effect->GetColorFilter() != kColorFilterNone ||
@@ -1509,7 +1509,7 @@ bool LayoutObject::HasNonZeroEffectiveOpacity() const {
                                            .FirstFragment()
                                            .LocalBorderBoxProperties();
 
-  for (const auto* effect = SafeUnalias(paint_properties.Effect()); effect;
+  for (const auto* effect = &paint_properties.Effect().Unalias(); effect;
        effect = SafeUnalias(effect->Parent())) {
     if (effect->Opacity() == 0.0)
       return false;

@@ -92,7 +92,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
       if (const auto* properties = fragment->PaintProperties()) {
         if (const auto* overflow_clip = properties->OverflowClip()) {
           paint_chunk_properties.emplace(
-              paint_info.context.GetPaintController(), overflow_clip,
+              paint_info.context.GetPaintController(), *overflow_clip,
               layout_block_, DisplayItem::kCaret);
         }
       }

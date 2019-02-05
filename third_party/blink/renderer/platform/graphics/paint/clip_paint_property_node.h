@@ -103,12 +103,12 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // work. The parent's transform node qualifies as that. Also note, although
   // this is a walk up the parent chain, the only case it would be heavy is if
   // there is a long chain of nested aliases, which is unlikely.
-  const TransformPaintPropertyNode* LocalTransformSpace() const {
+  const TransformPaintPropertyNode& LocalTransformSpace() const {
     // TODO(vmpstr): If this becomes a performance problem, then we should audit
     // the call sites and explicitly unalias clip nodes everywhere. If this is
     // done, then here we can add a DCHECK that we never invoke this function on
     // a parent alias.
-    return Unalias()->state_.local_transform_space.get();
+    return *Unalias().state_.local_transform_space;
   }
   const FloatRoundedRect& ClipRect() const { return state_.clip_rect; }
   const FloatRoundedRect& ClipRectExcludingOverlayScrollbars() const {

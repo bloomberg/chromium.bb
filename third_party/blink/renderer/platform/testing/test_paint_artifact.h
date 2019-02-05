@@ -71,7 +71,7 @@ class TestPaintArtifact {
   TestPaintArtifact& Properties(const TransformPaintPropertyNode& transform,
                                 const ClipPaintPropertyNode& clip,
                                 const EffectPaintPropertyNode& effect) {
-    return Properties(PropertyTreeState(&transform, &clip, &effect));
+    return Properties(PropertyTreeState(transform, clip, effect));
   }
   TestPaintArtifact& Properties(const RefCountedPropertyTreeState& properties) {
     return Properties(properties.GetPropertyTreeState());

@@ -60,7 +60,7 @@ class ScopedSVGTransformState {
     if (const auto* transform_node = properties->Transform()) {
       DCHECK(transform_node->Matrix() == transform.ToTransformationMatrix());
       transform_property_scope_.emplace(
-          paint_info.context.GetPaintController(), transform_node, object,
+          paint_info.context.GetPaintController(), *transform_node, object,
           DisplayItem::PaintPhaseToSVGTransformType(paint_info.phase));
     }
   }

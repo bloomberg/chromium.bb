@@ -47,7 +47,7 @@ class PLATFORM_EXPORT CullRect {
   // 1. it's clipped by the container rect,
   // 2. transformed by inverse of the scroll translation,
   // 3. expanded by thousands of pixels for composited scrolling.
-  void ApplyTransform(const TransformPaintPropertyNode* transform) {
+  void ApplyTransform(const TransformPaintPropertyNode& transform) {
     ApplyTransformInternal(transform);
   }
 
@@ -58,8 +58,8 @@ class PLATFORM_EXPORT CullRect {
   // doesn't cover the whole scrolling contents, and the new cull rect doesn't
   // change enough (by hundreds of pixels) from |old_cull_rect|, the cull rect
   // will be set to |old_cull_rect| to avoid repaint on each composited scroll.
-  void ApplyTransforms(const TransformPaintPropertyNode* source,
-                       const TransformPaintPropertyNode* destination,
+  void ApplyTransforms(const TransformPaintPropertyNode& source,
+                       const TransformPaintPropertyNode& destination,
                        const base::Optional<CullRect>& old_cull_rect);
 
   const IntRect& Rect() const { return rect_; }
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT CullRect {
     kExpandedForPartialScrollingContents,
   };
   ApplyTransformResult ApplyTransformInternal(
-      const TransformPaintPropertyNode*);
+      const TransformPaintPropertyNode&);
 
   bool ChangedEnough(const CullRect& old_cull_rect) const;
 

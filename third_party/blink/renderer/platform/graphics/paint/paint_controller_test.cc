@@ -619,12 +619,12 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   PaintChunk::Id container1_id(container1, kBackgroundType);
   auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_properties = DefaultPaintChunkProperties();
-  container1_properties.SetEffect(container1_effect.get());
+  container1_properties.SetEffect(*container1_effect);
 
   PaintChunk::Id container2_id(container2, kBackgroundType);
   auto container2_effect = CreateOpacityEffect(e0(), 0.5);
   auto container2_properties = DefaultPaintChunkProperties();
-  container2_properties.SetEffect(container2_effect.get());
+  container2_properties.SetEffect(*container2_effect);
 
   {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -927,12 +927,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   PaintChunk::Id container1_id(container1, kBackgroundType);
   auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_properties = DefaultPaintChunkProperties();
-  container1_properties.SetEffect(container1_effect.get());
+  container1_properties.SetEffect(*container1_effect);
 
   PaintChunk::Id container2_id(container2, kBackgroundType);
   auto container2_effect = CreateOpacityEffect(e0(), 0.5);
   auto container2_properties = DefaultPaintChunkProperties();
-  container2_properties.SetEffect(container2_effect.get());
+  container2_properties.SetEffect(*container2_effect);
 
   GetPaintController().UpdateCurrentPaintChunkProperties(container1_id,
                                                          container1_properties);
@@ -1027,25 +1027,25 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   PaintChunk::Id container1_background_id(container1, kBackgroundType);
   auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_background_properties = DefaultPaintChunkProperties();
-  container1_background_properties.SetEffect(container1_effect.get());
+  container1_background_properties.SetEffect(*container1_effect);
   PaintChunk::Id container1_foreground_id(container1, kForegroundType);
   auto container1_foreground_properties = DefaultPaintChunkProperties();
-  container1_foreground_properties.SetEffect(container1_effect.get());
+  container1_foreground_properties.SetEffect(*container1_effect);
 
   PaintChunk::Id content1_id(content1, kBackgroundType);
   auto content1_effect = CreateOpacityEffect(e0(), 0.6);
   auto content1_properties = DefaultPaintChunkProperties();
-  content1_properties.SetEffect(content1_effect.get());
+  content1_properties.SetEffect(*content1_effect);
 
   PaintChunk::Id container2_background_id(container2, kBackgroundType);
   auto container2_effect = CreateOpacityEffect(e0(), 0.7);
   auto container2_background_properties = DefaultPaintChunkProperties();
-  container2_background_properties.SetEffect(container2_effect.get());
+  container2_background_properties.SetEffect(*container2_effect);
 
   PaintChunk::Id content2_id(content2, kBackgroundType);
   auto content2_effect = CreateOpacityEffect(e0(), 0.8);
   auto content2_properties = DefaultPaintChunkProperties();
-  content2_properties.SetEffect(content2_effect.get());
+  content2_properties.SetEffect(*content2_effect);
 
   {
     SubsequenceRecorder r(context, container1);

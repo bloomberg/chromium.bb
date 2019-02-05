@@ -1044,8 +1044,6 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
 
 void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
                                   const IntPoint& layer_offset) {
-  DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
-
   if (layer_state_) {
     layer_state_->state = layer_state;
     layer_state_->offset = layer_offset;
@@ -1069,7 +1067,6 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
 
 void GraphicsLayer::SetContentsPropertyTreeState(
     const PropertyTreeState& layer_state) {
-  DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
   DCHECK(ContentsLayer());
 
   if (contents_property_tree_state_) {

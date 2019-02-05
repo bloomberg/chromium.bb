@@ -65,7 +65,7 @@ static bool SmallerThanRegionGranularity(const FloatRect& rect,
          rect.Height() * granularity_scale < 0.5;
 }
 
-static const TransformPaintPropertyNode* TransformNodeFor(
+static const TransformPaintPropertyNode& TransformNodeFor(
     LayoutObject& object) {
   return object.FirstFragment().LocalBorderBoxProperties().Transform();
 }
@@ -131,8 +131,8 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   if (source.IsSVG())
     return;
 
-  const auto* local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
-  const auto* root_xform = TransformNodeFor(*source.View());
+  const auto& local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
+  const auto& root_xform = TransformNodeFor(*source.View());
 
   GeometryMapper::SourceToDestinationRect(local_xform, root_xform, old_rect);
   GeometryMapper::SourceToDestinationRect(local_xform, root_xform, new_rect);

@@ -50,14 +50,14 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
 
   const auto* content_transform = paint_properties->ReplacedContentTransform();
   if (content_transform && replaced.IsSVGRoot()) {
-    new_properties.SetTransform(content_transform);
+    new_properties.SetTransform(*content_transform);
     adjusted_paint_info_.emplace(input_paint_info_);
-    adjusted_paint_info_->TransformCullRect(content_transform);
+    adjusted_paint_info_->TransformCullRect(*content_transform);
     property_changed = true;
   }
 
   if (const auto* clip = paint_properties->OverflowClip()) {
-    new_properties.SetClip(clip);
+    new_properties.SetClip(*clip);
     property_changed = true;
   }
 

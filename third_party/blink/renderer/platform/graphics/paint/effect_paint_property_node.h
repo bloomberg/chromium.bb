@@ -103,9 +103,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   bool Changed(const PropertyTreeState& relative_to_state,
                const TransformPaintPropertyNode* transform_not_to_check) const;
 
-  const TransformPaintPropertyNode* LocalTransformSpace() const {
+  const TransformPaintPropertyNode& LocalTransformSpace() const {
     DCHECK(!Parent() || !IsParentAlias());
-    return state_.local_transform_space.get();
+    return *state_.local_transform_space;
   }
   const ClipPaintPropertyNode* OutputClip() const {
     DCHECK(!Parent() || !IsParentAlias());

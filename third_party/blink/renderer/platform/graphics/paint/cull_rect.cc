@@ -46,13 +46,13 @@ void CullRect::Move(const IntSize& offset) {
 }
 
 CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
-    const TransformPaintPropertyNode* transform) {
+    const TransformPaintPropertyNode& transform) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (const auto* scroll = transform->ScrollNode()) {
+    if (const auto* scroll = transform.ScrollNode()) {
       rect_.Intersect(scroll->ContainerRect());
       if (rect_.IsEmpty())
         return kNotExpanded;
-      rect_ = transform->Matrix().Inverse().MapRect(rect_);
+      rect_ = transform.Matrix().Inverse().MapRect(rect_);
 
       // Expand the cull rect for scrolling contents in case of composited
       // scrolling.
@@ -73,17 +73,17 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
   }
 
   if (!IsInfinite())
-    rect_ = transform->Matrix().Inverse().MapRect(rect_);
+    rect_ = transform.Matrix().Inverse().MapRect(rect_);
   return kNotExpanded;
 }
 
-void CullRect::ApplyTransforms(const TransformPaintPropertyNode* source,
-                               const TransformPaintPropertyNode* destination,
+void CullRect::ApplyTransforms(const TransformPaintPropertyNode& source,
+                               const TransformPaintPropertyNode& destination,
                                const base::Optional<CullRect>& old_cull_rect) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   Vector<const TransformPaintPropertyNode*> scroll_translations;
-  for (const auto* t = destination; t != source; t = t->Parent()) {
+  for (const auto* t = &destination; t != &source; t = t->Parent()) {
     if (!t) {
       // |source| is not an ancestor of |destination|. Simply map.
       GeometryMapper::SourceToDestinationRect(source, destination, rect_);
@@ -93,21 +93,25 @@ void CullRect::ApplyTransforms(const TransformPaintPropertyNode* source,
       scroll_translations.push_back(t);
   }
 
-  const auto* last_transform = source;
+  const auto* last_transform = &source;
   ApplyTransformResult last_scroll_translation_result = kNotExpanded;
   for (auto it = scroll_translations.rbegin(); it != scroll_translations.rend();
        ++it) {
     const auto* scroll_translation = *it;
     if (!IsInfinite()) {
+      DCHECK(scroll_translation->Parent());
       GeometryMapper::SourceToDestinationRect(
-          last_transform, scroll_translation->Parent(), rect_);
+          *last_transform, *scroll_translation->Parent(), rect_);
     }
-    last_scroll_translation_result = ApplyTransformInternal(scroll_translation);
+    last_scroll_translation_result =
+        ApplyTransformInternal(*scroll_translation);
     last_transform = scroll_translation;
   }
 
-  if (!IsInfinite())
-    GeometryMapper::SourceToDestinationRect(last_transform, destination, rect_);
+  if (!IsInfinite()) {
+    GeometryMapper::SourceToDestinationRect(*last_transform, destination,
+                                            rect_);
+  }
 
   if (last_scroll_translation_result == kExpandedForPartialScrollingContents &&
       old_cull_rect && !ChangedEnough(*old_cull_rect))

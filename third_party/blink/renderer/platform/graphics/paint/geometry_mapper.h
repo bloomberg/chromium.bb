@@ -46,8 +46,8 @@ class PLATFORM_EXPORT GeometryMapper {
   // Not every cases outlined above are supported!
   // Read implementation comments for specific restrictions.
   static const TransformationMatrix& SourceToDestinationProjection(
-      const TransformPaintPropertyNode* source,
-      const TransformPaintPropertyNode* destination);
+      const TransformPaintPropertyNode& source,
+      const TransformPaintPropertyNode& destination);
 
   // Same as SourceToDestinationProjection() except that it maps the rect
   // rather than returning the matrix.
@@ -55,26 +55,25 @@ class PLATFORM_EXPORT GeometryMapper {
   // LayoutRect or IntRect.
   template <typename Rect>
   ALWAYS_INLINE static void SourceToDestinationRect(
-      const TransformPaintPropertyNode* source,
-      const TransformPaintPropertyNode* destination,
+      const TransformPaintPropertyNode& source,
+      const TransformPaintPropertyNode& destination,
       Rect& mapping_rect) {
-    if (source == destination)
+    if (&source == &destination)
       return;
 
     // Fast-path optimization for mapping through just |source| when |source| is
     // a 2d translation.
-    if (destination == source->Parent() &&
-        source->IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, source->Matrix().E(), source->Matrix().F());
+    if (&destination == source.Parent() && source.IsIdentityOr2DTranslation()) {
+      MoveRect(mapping_rect, source.Matrix().E(), source.Matrix().F());
       return;
     }
 
     // Fast-path optimization for mapping through just |destination| when
     // |destination| is a 2d translation.
-    if (source == destination->Parent() &&
-        destination->IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, -destination->Matrix().E(),
-               -destination->Matrix().F());
+    if (&source == destination.Parent() &&
+        destination.IsIdentityOr2DTranslation()) {
+      MoveRect(mapping_rect, -destination.Matrix().E(),
+               -destination.Matrix().F());
       return;
     }
 
@@ -164,14 +163,14 @@ class PLATFORM_EXPORT GeometryMapper {
   // conditions.
 
   static const TransformationMatrix& SourceToDestinationProjectionInternal(
-      const TransformPaintPropertyNode* source,
-      const TransformPaintPropertyNode* destination,
+      const TransformPaintPropertyNode& source,
+      const TransformPaintPropertyNode& destination,
       bool& success);
 
   static FloatClipRect LocalToAncestorClipRectInternal(
-      const ClipPaintPropertyNode* descendant,
-      const ClipPaintPropertyNode* ancestor_clip,
-      const TransformPaintPropertyNode* ancestor_transform,
+      const ClipPaintPropertyNode& descendant,
+      const ClipPaintPropertyNode& ancestor_clip,
+      const TransformPaintPropertyNode& ancestor_transform,
       OverlayScrollbarClipBehavior,
       InclusiveIntersectOrNot,
       bool& success);

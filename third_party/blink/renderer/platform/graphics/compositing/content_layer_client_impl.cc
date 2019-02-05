@@ -130,7 +130,7 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
       raster_invalidator_.GetTracking())
     raster_invalidator_.GetTracking()->AsJSON(json.get());
 
-  if (int transform_id = GetTransformId(layer_state_.Transform(), context))
+  if (int transform_id = GetTransformId(&layer_state_.Transform(), context))
     json->SetInteger("transform", transform_id);
 
 #if DCHECK_IS_ON()

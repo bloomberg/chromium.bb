@@ -380,8 +380,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
               visual_viewport.GetScrollTranslationNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(0, -300),
               GeometryMapper::SourceToDestinationProjection(
-                  visual_viewport.GetScrollTranslationNode(),
-                  &TransformPaintPropertyNode::Root()));
+                  *visual_viewport.GetScrollTranslationNode(),
+                  TransformPaintPropertyNode::Root()));
   }
 
   // Perform the resizing
@@ -404,8 +404,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
               visual_viewport.GetScrollTranslationNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(0, -75),
               GeometryMapper::SourceToDestinationProjection(
-                  visual_viewport.GetScrollTranslationNode(),
-                  &TransformPaintPropertyNode::Root()));
+                  *visual_viewport.GetScrollTranslationNode(),
+                  TransformPaintPropertyNode::Root()));
   }
 }
 
@@ -468,8 +468,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
               visual_viewport.GetScrollTranslationNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
-                  visual_viewport.GetScrollTranslationNode(),
-                  &TransformPaintPropertyNode::Root()));
+                  *visual_viewport.GetScrollTranslationNode(),
+                  TransformPaintPropertyNode::Root()));
   }
 
   WebView()->MainFrameWidget()->Resize(IntSize(200, 100));
@@ -491,8 +491,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
               visual_viewport.GetScrollTranslationNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
-                  visual_viewport.GetScrollTranslationNode(),
-                  &TransformPaintPropertyNode::Root()));
+                  *visual_viewport.GetScrollTranslationNode(),
+                  TransformPaintPropertyNode::Root()));
   }
 }
 
@@ -2430,22 +2430,20 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
       GetFrame()->GetPage()->GetChromeClient().WindowToViewportScalar(
           theme.ScrollbarThickness(kRegularScrollbar))));
 
-  EXPECT_TRUE(vertical_scrollbar_state.Effect());
-  EXPECT_EQ(vertical_scrollbar_state.Effect()->GetCompositorElementId(),
+  EXPECT_EQ(vertical_scrollbar_state.Effect().GetCompositorElementId(),
             visual_viewport.GetScrollbarElementId(
                 ScrollbarOrientation::kVerticalScrollbar));
   EXPECT_EQ(vertical_scrollbar->GetOffsetFromTransformNode(),
             IntPoint(400 - scrollbar_thickness, 0));
 
-  EXPECT_TRUE(horizontal_scrollbar_state.Effect());
-  EXPECT_EQ(horizontal_scrollbar_state.Effect()->GetCompositorElementId(),
+  EXPECT_EQ(horizontal_scrollbar_state.Effect().GetCompositorElementId(),
             visual_viewport.GetScrollbarElementId(
                 ScrollbarOrientation::kHorizontalScrollbar));
   EXPECT_EQ(horizontal_scrollbar->GetOffsetFromTransformNode(),
             IntPoint(0, 400 - scrollbar_thickness));
 
-  EXPECT_EQ(vertical_scrollbar_state.Effect()->Parent(),
-            horizontal_scrollbar_state.Effect()->Parent());
+  EXPECT_EQ(vertical_scrollbar_state.Effect().Parent(),
+            horizontal_scrollbar_state.Effect().Parent());
 }
 
 // Make sure we don't crash when the visual viewport's height is 0. This can
