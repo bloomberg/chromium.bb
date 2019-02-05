@@ -14,7 +14,7 @@ namespace base {
 class CopyOnlyInt {
  public:
   explicit CopyOnlyInt(int data = 1) : data_(data) {}
-  CopyOnlyInt(const CopyOnlyInt& other) = default;
+  CopyOnlyInt(const CopyOnlyInt& other) : data_(other.data_) { ++num_copies_; }
   ~CopyOnlyInt() { data_ = 0; }
 
   friend bool operator==(const CopyOnlyInt& lhs, const CopyOnlyInt& rhs) {
@@ -43,8 +43,14 @@ class CopyOnlyInt {
 
   int data() const { return data_; }
 
+  static void reset_num_copies() { num_copies_ = 0; }
+
+  static int num_copies() { return num_copies_; }
+
  private:
   volatile int data_;
+
+  static int num_copies_;
 
   CopyOnlyInt(CopyOnlyInt&&) = delete;
   CopyOnlyInt& operator=(CopyOnlyInt&) = delete;

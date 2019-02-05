@@ -12,8 +12,8 @@ namespace base {
 
 // This is here to help test base::TypeId.
 struct COMPONENT_EXPORT(BASE_TEST) TypeIdTestSupportB {
-  static experimental::TypeId GetTypeIdForTypeInAnonymousNameSpace();
-  static experimental::TypeId GetTypeIdForUniquePtrInt();
+  static TypeId GetTypeIdForTypeInAnonymousNameSpace();
+  static TypeId GetTypeIdForUniquePtrInt();
 };
 
 }  // namespace base

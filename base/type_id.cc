@@ -7,7 +7,6 @@
 #include "base/strings/string_number_conversions.h"
 
 namespace base {
-namespace experimental {
 
 TypeId::TypeId(const char* function_name, internal::TypeUniqueId unique_type_id)
     :
@@ -33,5 +32,4 @@ std::ostream& operator<<(std::ostream& out, const TypeId& type_id) {
   return out << type_id.ToString();
 }
 
-}  // namespace experimental
 }  // namespace base

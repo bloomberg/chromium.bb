@@ -15,13 +15,12 @@ struct TypeInAnonymousNameSpace {};
 namespace base {
 
 // static
-experimental::TypeId
-TypeIdTestSupportA::GetTypeIdForTypeInAnonymousNameSpace() {
-  return experimental::TypeId::From<TypeInAnonymousNameSpace>();
+TypeId TypeIdTestSupportA::GetTypeIdForTypeInAnonymousNameSpace() {
+  return TypeId::From<TypeInAnonymousNameSpace>();
 }
 
-experimental::TypeId TypeIdTestSupportA::GetTypeIdForUniquePtrInt() {
-  return experimental::TypeId::From<std::unique_ptr<int>>();
+TypeId TypeIdTestSupportA::GetTypeIdForUniquePtrInt() {
+  return TypeId::From<std::unique_ptr<int>>();
 }
 
 }  // namespace base
