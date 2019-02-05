@@ -34,11 +34,14 @@ class AvatarToolbarButton : public ToolbarButton,
   void UpdateText();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
+                           HighlightMeetsMinimumContrast);
   enum class SyncState { kNormal, kPaused, kError };
 
   // ToolbarButton:
   void NotifyClick(const ui::Event& event) override;
   void OnThemeChanged() override;
+  void AddedToWidget() override;
 
   // AvatarButtonErrorControllerDelegate:
   void OnAvatarErrorChanged() override;
@@ -77,6 +80,18 @@ class AvatarToolbarButton : public ToolbarButton,
   SyncState GetSyncState() const;
 
   void SetInsets();
+
+  // Chooses from |desired_dark_color| and |desired_light_color| based on
+  // whether the toolbar background is dark or light.
+  //
+  // If the resulting color will achieve sufficient contrast,
+  // returns it. Otherwise, blends it towards |dark_extreme| if it's light, or
+  // |dark_extreme| if it's dark until minimum contrast is achieved, and returns
+  // the result.
+  SkColor AdjustHighlightColorForContrast(SkColor desired_dark_color,
+                                          SkColor desired_light_color,
+                                          SkColor dark_extreme,
+                                          SkColor light_extreme) const;
 
   Browser* const browser_;
   Profile* const profile_;
