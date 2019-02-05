@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_backend_impl.h"
 
+#include <memory>
 #include <vector>
 
 #include "content/browser/appcache/appcache.h"
@@ -70,18 +71,21 @@ void AppCacheBackendImpl::SelectCache(
     const int64_t cache_document_was_loaded_from,
     const GURL& manifest_url) {
   AppCacheHost* host = GetHost(host_id);
-  if (!host || !host->SelectCache(document_url, cache_document_was_loaded_from,
-                                  manifest_url)) {
+  if (!host) {
     mojo::ReportBadMessage("ACDH_SELECT_CACHE");
+    return;
   }
+  host->SelectCache(document_url, cache_document_was_loaded_from, manifest_url);
 }
 
 void AppCacheBackendImpl::SelectCacheForSharedWorker(int32_t host_id,
                                                      int64_t appcache_id) {
   AppCacheHost* host = GetHost(host_id);
-  if (!host || !host->SelectCacheForSharedWorker(appcache_id)) {
+  if (!host) {
     mojo::ReportBadMessage("ACDH_SELECT_CACHE_FOR_SHARED_WORKER");
+    return;
   }
+  host->SelectCacheForSharedWorker(appcache_id);
 }
 
 void AppCacheBackendImpl::MarkAsForeignEntry(
@@ -89,10 +93,11 @@ void AppCacheBackendImpl::MarkAsForeignEntry(
     const GURL& document_url,
     int64_t cache_document_was_loaded_from) {
   AppCacheHost* host = GetHost(host_id);
-  if (!host ||
-      !host->MarkAsForeignEntry(document_url, cache_document_was_loaded_from)) {
+  if (!host) {
     mojo::ReportBadMessage("ACDH_MARK_AS_FOREIGN_ENTRY");
+    return;
   }
+  host->MarkAsForeignEntry(document_url, cache_document_was_loaded_from);
 }
 
 void AppCacheBackendImpl::GetStatus(int32_t host_id,
@@ -105,8 +110,7 @@ void AppCacheBackendImpl::GetStatus(int32_t host_id,
     return;
   }
 
-  if (!host->GetStatusWithCallback(std::move(callback)))
-    mojo::ReportBadMessage("ACDH_GET_STATUS");
+  host->GetStatusWithCallback(std::move(callback));
 }
 
 void AppCacheBackendImpl::StartUpdate(int32_t host_id,
@@ -118,8 +122,7 @@ void AppCacheBackendImpl::StartUpdate(int32_t host_id,
     return;
   }
 
-  if (!host->StartUpdateWithCallback(std::move(callback)))
-    mojo::ReportBadMessage("ACDH_START_UPDATE");
+  host->StartUpdateWithCallback(std::move(callback));
 }
 
 void AppCacheBackendImpl::SwapCache(int32_t host_id,
@@ -131,8 +134,7 @@ void AppCacheBackendImpl::SwapCache(int32_t host_id,
     return;
   }
 
-  if (!host->SwapCacheWithCallback(std::move(callback)))
-    mojo::ReportBadMessage("ACDH_SWAP_CACHE");
+  host->SwapCacheWithCallback(std::move(callback));
 }
 
 void AppCacheBackendImpl::GetResourceList(int32_t host_id,
@@ -162,6 +164,11 @@ void AppCacheBackendImpl::RegisterPrecreatedHost(
   // here on.
   host->set_frontend(frontend_);
   hosts_[host->host_id()] = std::move(host);
+}
+
+void AppCacheBackendImpl::RegisterHostForTesting(int32_t id) {
+  hosts_[id] =
+      std::make_unique<AppCacheHost>(id, process_id(), frontend_, service_);
 }
 
 }  // namespace content

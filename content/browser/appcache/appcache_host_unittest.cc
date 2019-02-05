@@ -17,6 +17,8 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -550,20 +552,46 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
 }
 
 TEST_F(AppCacheHostTest, SelectCacheTwice) {
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
 
-  EXPECT_TRUE(host.SelectCache(kDocAndOriginUrl,
-                               blink::mojom::kAppCacheNoCacheId, GURL()));
+  AppCacheBackendImpl backend(&service_, kProcessIdForTest);
+  backend.set_frontend_for_testing(&mock_frontend_);
+  backend.RegisterHostForTesting(kHostIdForTest);
+
+  blink::mojom::AppCacheBackendPtr backend_ptr;
+  mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(
+      &backend, mojo::MakeRequest(&backend_ptr));
+
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+    backend_ptr->SelectCache(kHostIdForTest, kDocAndOriginUrl,
+                             blink::mojom::kAppCacheNoCacheId, GURL());
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(bad_message_observer.got_bad_message());
+  }
 
   // Select methods should bail if cache has already been selected.
-  EXPECT_FALSE(host.SelectCache(kDocAndOriginUrl,
-                                blink::mojom::kAppCacheNoCacheId, GURL()));
-  EXPECT_FALSE(
-      host.SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId));
-  EXPECT_FALSE(host.MarkAsForeignEntry(kDocAndOriginUrl,
-                                       blink::mojom::kAppCacheNoCacheId));
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+    backend_ptr->SelectCache(kHostIdForTest, kDocAndOriginUrl,
+                             blink::mojom::kAppCacheNoCacheId, GURL());
+    EXPECT_EQ("ACH_SELECT_CACHE", bad_message_observer.WaitForBadMessage());
+  }
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+    backend_ptr->SelectCacheForSharedWorker(kHostIdForTest,
+                                            blink::mojom::kAppCacheNoCacheId);
+    EXPECT_EQ("ACH_SELECT_CACHE_FOR_SHARED_WORKER",
+              bad_message_observer.WaitForBadMessage());
+  }
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+    backend_ptr->MarkAsForeignEntry(kHostIdForTest, kDocAndOriginUrl,
+                                    blink::mojom::kAppCacheNoCacheId);
+    EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY",
+              bad_message_observer.WaitForBadMessage());
+  }
 }
 
 }  // namespace content

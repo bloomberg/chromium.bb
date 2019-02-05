@@ -57,6 +57,8 @@ class CONTENT_EXPORT AppCacheBackendImpl
   // this function and ignore registrations for this host id from the renderer.
   void RegisterPrecreatedHost(std::unique_ptr<AppCacheHost> host);
 
+  void RegisterHostForTesting(int32_t host_id);
+
   void set_frontend_for_testing(blink::mojom::AppCacheFrontend* frontend) {
     frontend_ = frontend;
   }
