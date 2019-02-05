@@ -17,6 +17,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/event_router.h"
@@ -28,28 +30,78 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace extensions {
 namespace {
 
-enum BindingsType { NATIVE_BINDINGS, JAVASCRIPT_BINDINGS };
+void MouseDownInWebContents(content::WebContents* web_contents) {
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(10, 10);
+  mouse_event.click_count = 1;
+  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
+}
+
+void MouseUpInWebContents(content::WebContents* web_contents) {
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(10, 10);
+  mouse_event.click_count = 1;
+  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      mouse_event);
+}
+
+enum BindingsFeatureType {
+  kNativeBindings,
+  kJavaScriptBindings,
+};
+
+enum UserActivationType {
+  kUserActivationV1,
+  kUserActivationV2,
+};
+
+struct BindingsApiTestConfig {
+  BindingsFeatureType bindings_type;
+  base::Optional<UserActivationType> user_activation_type;
+};
 
 class ExtensionBindingsApiTest
     : public ExtensionApiTest,
-      public ::testing::WithParamInterface<BindingsType> {
+      public ::testing::WithParamInterface<BindingsApiTestConfig> {
  public:
   ExtensionBindingsApiTest() {}
   ~ExtensionBindingsApiTest() override {}
 
   void SetUp() override {
-    if (GetParam() == NATIVE_BINDINGS) {
-      scoped_feature_list_.InitAndEnableFeature(
-          extensions_features::kNativeCrxBindings);
+    BindingsApiTestConfig config = GetParam();
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disable_features;
+
+    if (config.bindings_type == kNativeBindings) {
+      enable_features.push_back(extensions_features::kNativeCrxBindings);
     } else {
-      DCHECK_EQ(JAVASCRIPT_BINDINGS, GetParam());
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kNativeCrxBindings);
+      DCHECK_EQ(kJavaScriptBindings, config.bindings_type);
+      disable_features.push_back(extensions_features::kNativeCrxBindings);
     }
+
+    if (config.user_activation_type.has_value()) {
+      if (*config.user_activation_type == kUserActivationV2) {
+        enable_features.push_back(features::kUserActivationV2);
+      } else {
+        DCHECK_EQ(kUserActivationV1, *config.user_activation_type);
+        disable_features.push_back(features::kUserActivationV2);
+      }
+    }
+
+    scoped_feature_list_.InitWithFeatures(enable_features, disable_features);
+
     ExtensionApiTest::SetUp();
   }
 
@@ -525,8 +577,11 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(SessionTabHelper::IdForTab(new_tab).id(), result_tab_id);
 }
 
+// Alias purely for test instantiation purposes.
+using ExtensionBindingsUserGestureTest = ExtensionBindingsApiTest;
+
 // Verifies that user gestures are carried through extension messages.
-IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
                        UserGestureFromExtensionMessageTest) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -591,7 +646,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
 
 // Verifies that user gestures from API calls are active when the callback is
 // triggered.
-IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
                        UserGestureInExtensionAPICallback) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -636,6 +691,121 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(tab, kScript, &message));
     EXPECT_EQ("Has gesture: true", message);
   }
+}
+
+// Tests that a web page can consume a user gesture after an extension sends and
+// receives a reply during the same user gesture.
+// Regression test for https://crbug.com/921141.
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
+                       WebUserGestureAfterMessagingCallback) {
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "User Gesture Messaging Test",
+           "version": "0.1",
+           "manifest_version": 2,
+           "content_scripts": [{
+             "matches": ["*://*/*"],
+             "js": ["content_script.js"],
+             "run_at": "document_start"
+           }],
+           "background": {
+             "scripts": ["background.js"]
+           }
+         })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"),
+                     R"(window.addEventListener('mousedown', () => {
+           chrome.runtime.sendMessage('hello', () => {
+             let message = chrome.test.isProcessingUserGesture() ?
+                 'got reply' : 'no user gesture';
+             chrome.test.sendMessage(message);
+           });
+         });)");
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      R"(chrome.runtime.onMessage.addListener((message, sender, respond) => {
+           respond('reply');
+         });
+         chrome.test.sendMessage('ready');)");
+
+  const Extension* extension = nullptr;
+  {
+    ExtensionTestMessageListener listener("ready", false);
+    extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/extensions/api_test/bindings/user_gesture_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  {
+    ExtensionTestMessageListener listener("got reply", false);
+    listener.set_failure_message("no user gesture");
+    MouseDownInWebContents(web_contents);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  MouseUpInWebContents(web_contents);
+
+  EXPECT_EQ("success",
+            content::EvalJs(web_contents, "window.getEnteredFullscreen",
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+}
+
+// Tests that a web page can consume a user gesture after an extension calls a
+// method and receives the response in the callback.
+// Regression test for https://crbug.com/921141.
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
+                       WebUserGestureAfterApiCallback) {
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "User Gesture Messaging Test",
+           "version": "0.1",
+           "manifest_version": 2,
+           "content_scripts": [{
+             "matches": ["*://*/*"],
+             "js": ["content_script.js"],
+             "run_at": "document_start"
+           }],
+           "permissions": ["storage"]
+         })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"),
+                     R"(window.addEventListener('mousedown', () => {
+           chrome.storage.local.get('foo', () => {
+             let message = chrome.test.isProcessingUserGesture() ?
+                 'got reply' : 'no user gesture';
+             chrome.test.sendMessage(message);
+           });
+         });)");
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/extensions/api_test/bindings/user_gesture_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  {
+    ExtensionTestMessageListener listener("got reply", false);
+    listener.set_failure_message("no user gesture");
+    MouseDownInWebContents(web_contents);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  MouseUpInWebContents(web_contents);
+
+  EXPECT_EQ("success",
+            content::EvalJs(web_contents, "window.getEnteredFullscreen",
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Tests that bindings are properly instantiated for a window navigated to an
@@ -713,19 +883,29 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
 // Run core bindings API tests with both native and JS-based bindings. This
 // ensures we have some minimum level of coverage while in the experimental
 // phase, when native bindings may be enabled on trunk but not at 100% stable.
-INSTANTIATE_TEST_SUITE_P(Native,
-                         ExtensionBindingsApiTest,
-                         ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_SUITE_P(JavaScript,
-                         ExtensionBindingsApiTest,
-                         ::testing::Values(JAVASCRIPT_BINDINGS));
+constexpr BindingsApiTestConfig kBindingsConfigs[] = {
+    {kNativeBindings, base::nullopt},
+    {kJavaScriptBindings, base::nullopt},
+};
 
-INSTANTIATE_TEST_SUITE_P(Native,
+// Run user-gesture related tests with combinations of native and JS-based
+// bindings as well as UAv1 and UAv2.
+constexpr BindingsApiTestConfig kBindingsAndUserGestureConfigs[] = {
+    {kNativeBindings, kUserActivationV1},
+    {kNativeBindings, kUserActivationV2},
+    {kJavaScriptBindings, kUserActivationV1},
+    {kJavaScriptBindings, kUserActivationV2},
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionBindingsApiTest,
+                         ::testing::ValuesIn(kBindingsConfigs));
+INSTANTIATE_TEST_SUITE_P(,
                          FramesExtensionBindingsApiTest,
-                         ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_SUITE_P(JavaScript,
-                         FramesExtensionBindingsApiTest,
-                         ::testing::Values(JAVASCRIPT_BINDINGS));
+                         ::testing::ValuesIn(kBindingsConfigs));
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionBindingsUserGestureTest,
+                         ::testing::ValuesIn(kBindingsAndUserGestureConfigs));
 
 }  // namespace
 }  // namespace extensions

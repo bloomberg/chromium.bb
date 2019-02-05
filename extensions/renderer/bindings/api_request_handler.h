@@ -74,6 +74,7 @@ class APIRequestHandler {
   // CompleteRequest). This is used by renderer-side implementations that
   // shouldn't be dispatched to the browser in the normal flow, but means other
   // classes don't have to worry about context invalidation.
+  // Note: Unlike StartRequest(), this will not track user gesture state.
   int AddPendingRequest(v8::Local<v8::Context> context,
                         v8::Local<v8::Function> callback);
 
@@ -111,7 +112,8 @@ class APIRequestHandler {
         v8::Local<v8::Context> context,
         const std::string& method_name,
         v8::Local<v8::Function> callback,
-        const base::Optional<std::vector<v8::Local<v8::Value>>>& callback_args);
+        const base::Optional<std::vector<v8::Local<v8::Value>>>& callback_args,
+        const base::Optional<blink::WebUserGestureToken>& user_gesture_token);
     ~PendingRequest();
     PendingRequest(PendingRequest&&);
     PendingRequest& operator=(PendingRequest&&);
