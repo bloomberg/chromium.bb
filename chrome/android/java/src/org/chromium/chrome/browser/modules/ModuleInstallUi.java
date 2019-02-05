@@ -110,6 +110,11 @@ public class ModuleInstallUi {
                 }
                 return false;
             }
+
+            @Override
+            public boolean onInfoBarLinkClicked() {
+                return false;
+            }
         };
 
         String text = String.format(context.getString(R.string.module_install_failure_text),
@@ -118,6 +123,6 @@ public class ModuleInstallUi {
                 InfoBarIdentifier.MODULE_INSTALL_FAILURE_INFOBAR_ANDROID,
                 R.drawable.ic_error_outline_googblue_24dp, text,
                 context.getString(R.string.try_again), context.getString(R.string.cancel),
-                /* autoExpire = */ true);
+                /* linkText = */ null, /* autoExpire = */ true);
     }
 }

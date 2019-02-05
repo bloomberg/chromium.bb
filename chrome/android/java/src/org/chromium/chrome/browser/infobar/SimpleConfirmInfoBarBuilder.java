@@ -38,6 +38,13 @@ public class SimpleConfirmInfoBarBuilder {
          *         false otherwise.
          */
         boolean onInfoBarButtonClicked(boolean isPrimary);
+
+        /**
+         * Called when the link of a ConfirmInfoBar is clicked.
+         * @return True if the listener caused the closing of this info bar as a side effect,
+         *         false otherwise.
+         */
+        boolean onInfoBarLinkClicked();
     }
 
     /**
@@ -52,7 +59,7 @@ public class SimpleConfirmInfoBarBuilder {
      */
     public static void create(
             Tab tab, int infobarTypeIdentifier, String message, boolean autoExpire) {
-        create(tab, null, infobarTypeIdentifier, 0, message, null, null, autoExpire);
+        create(tab, null, infobarTypeIdentifier, 0, message, null, null, null, autoExpire);
     }
 
     /**
@@ -65,16 +72,17 @@ public class SimpleConfirmInfoBarBuilder {
      * @param message Message displayed to the user.
      * @param primaryText String shown on the primary ConfirmInfoBar button.
      * @param secondaryText String shown on the secondary ConfirmInfoBar button.
+     * @param linkText String shown as the link text on the ConfirmInfoBar.
      * @param autoExpire Whether the infobar disappears on navigation.
      */
-    public static void create(Tab tab, Listener listener, int infobarTypeIdentifier,
-            int drawableId, String message, String primaryText, String secondaryText,
+    public static void create(Tab tab, Listener listener, int infobarTypeIdentifier, int drawableId,
+            String message, String primaryText, String secondaryText, String linkText,
             boolean autoExpire) {
         Activity activity = tab.getWindowAndroid().getActivity().get();
         Bitmap drawable = activity == null || drawableId == 0 ? null
                 : BitmapFactory.decodeResource(activity.getResources(), drawableId);
         nativeCreate(tab, infobarTypeIdentifier, drawable, message, primaryText, secondaryText,
-                autoExpire, listener);
+                linkText, autoExpire, listener);
     }
 
     @CalledByNative
@@ -87,8 +95,13 @@ public class SimpleConfirmInfoBarBuilder {
         return listener == null ? false : listener.onInfoBarButtonClicked(isPrimary);
     }
 
-    private static native void nativeCreate(
-            Tab tab, int infobarTypeIdentifier, Bitmap drawable, String message, String primaryText,
-            String secondaryText, boolean autoExpire, Object listener);
+    @CalledByNative
+    private static boolean onInfoBarLinkClicked(Listener listener) {
+        return listener == null ? false : listener.onInfoBarLinkClicked();
+    }
+
+    private static native void nativeCreate(Tab tab, int infobarTypeIdentifier, Bitmap drawable,
+            String message, String primaryText, String secondaryText, String linkText,
+            boolean autoExpire, Object listener);
 }
 

@@ -228,10 +228,15 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
 
                 return false;
             }
+
+            @Override
+            public boolean onInfoBarLinkClicked() {
+                return false;
+            }
         };
         // TODO(ijamardo, https://crbug.com/838833): Add icon for AR info bar.
         SimpleConfirmInfoBarBuilder.create(tab, listener, InfoBarIdentifier.AR_CORE_UPGRADE_ANDROID,
-                R.drawable.vr_services, infobarText, buttonText, null, true);
+                R.drawable.vr_services, infobarText, buttonText, null, null, true);
     }
 
     @CalledByNative

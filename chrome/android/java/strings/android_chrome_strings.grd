@@ -1940,6 +1940,17 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <ph name="MESSAGE">%1$s<ex>Downloading file (200 MB)</ex></ph> <ph name="LINK_NAME">%2$s<ex>Details</ex></ph> button
       </message>
 
+      <!-- Inline Update Infobar -->
+      <message name="IDS_INLINE_UPDATE_INFOBAR_READY_MESSAGE" desc="Text showing that the update process is almost ready.">
+        Almost finished!
+      </message>
+      <message name="IDS_INLINE_UPDATE_INFOBAR_READY_LINK_TEXT" desc="The clickable link letting the user know they can click to restart Chrome.">
+        Restart Chrome
+      </message>
+      <message name="IDS_INLINE_UPDATE_INFOBAR_FAILED_MESSAGE" desc="Text showing that the update process failed.">
+        Couldn’t download the update
+      </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_ERROR">
         Oops. This page could not be translated.

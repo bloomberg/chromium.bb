@@ -19,6 +19,7 @@ import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -118,6 +119,13 @@ public class UpdateMenuItemHelper {
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
 
+    private final Callback<UpdateStatusProvider.UpdateStatus> mUpdateCallback = status -> {
+        mStatus = status;
+        handleStateChanged();
+        pingObservers();
+        recordUpdateHistogram();
+    };
+
     /**
      * The current state of updates for Chrome.  This can change during runtime and may be {@code
      * null} if the status hasn't been determined yet.
@@ -156,12 +164,7 @@ public class UpdateMenuItemHelper {
             return;
         }
 
-        UpdateStatusProvider.getInstance().addObserver(status -> {
-            mStatus = status;
-            handleStateChanged();
-            pingObservers();
-            recordUpdateHistogram();
-        });
+        UpdateStatusProvider.getInstance().addObserver(mUpdateCallback);
     }
 
     /** Unregisters {@code observer} from menu state changes. */
