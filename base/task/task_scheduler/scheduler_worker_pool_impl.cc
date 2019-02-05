@@ -299,7 +299,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     : SchedulerWorkerPool(std::move(task_tracker), std::move(delegate)),
       pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
-      lock_(priority_queue_.container_lock()),
       idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
       // Mimics the UMA_HISTOGRAM_LONG_TIMES macro.
       detach_duration_histogram_(Histogram::FactoryTimeGet(
@@ -434,9 +433,9 @@ void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
     SequenceAndTransaction sequence_and_transaction) {
   DCHECK(sequence_and_transaction.sequence);
-  priority_queue_.BeginTransaction().Push(
-      std::move(sequence_and_transaction.sequence),
-      sequence_and_transaction.transaction.GetSortKey());
+  AutoSchedulerLock auto_lock(lock_);
+  priority_queue_.Push(std::move(sequence_and_transaction.sequence),
+                       sequence_and_transaction.transaction.GetSortKey());
 }
 
 void SchedulerWorkerPoolImpl::GetHistograms(
@@ -493,11 +492,10 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   join_for_testing_started_.Set();
 #endif
 
-  priority_queue_.EnableFlushSequencesOnDestroyForTesting();
-
   decltype(workers_) workers_copy;
   {
     AutoSchedulerLock auto_lock(lock_);
+    priority_queue_.EnableFlushSequencesOnDestroyForTesting();
 
     DCHECK_GT(workers_.size(), size_t(0)) << "Joined an unstarted worker pool.";
 
@@ -553,12 +551,13 @@ void SchedulerWorkerPoolImpl::UpdateSortKey(
   // TODO(fdoray): A worker should be woken up when the priority of a
   // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
   // equal to |max_best_effort_tasks_|.
-  priority_queue_.BeginTransaction().UpdateSortKey(
-      std::move(sequence_and_transaction));
+  AutoSchedulerLock auto_lock(lock_);
+  priority_queue_.UpdateSortKey(std::move(sequence_and_transaction));
 }
 
 bool SchedulerWorkerPoolImpl::RemoveSequence(scoped_refptr<Sequence> sequence) {
-  return priority_queue_.BeginTransaction().RemoveSequence(std::move(sequence));
+  AutoSchedulerLock auto_lock(lock_);
+  return priority_queue_.RemoveSequence(std::move(sequence));
 }
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
@@ -625,68 +624,39 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   DCHECK(!read_worker().is_running_best_effort_task);
 
   SchedulerWorkerActionExecutor executor(outer_);
+  AutoSchedulerLock auto_lock(outer_->lock_);
 
-  {
-    AutoSchedulerLock auto_lock(outer_->lock_);
-    DCHECK(ContainsWorker(outer_->workers_, worker));
+  DCHECK(ContainsWorker(outer_->workers_, worker));
 
-    if (!CanGetWorkLockRequired(worker))
-      return nullptr;
+  if (!CanGetWorkLockRequired(worker))
+    return nullptr;
 
-    // Replace this worker if it was the last one, capacity permitting.
-    // TODO(etiennep): An idle worker should be created only if this worker
-    // isn't added to the idle stack below.
-    outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
+  if (outer_->priority_queue_.IsEmpty()) {
+    OnWorkerBecomesIdleLockRequired(worker);
+    return nullptr;
   }
 
-  scoped_refptr<Sequence> sequence;
-  {
-    auto transaction = outer_->priority_queue_.BeginTransaction();
-
-    if (transaction.IsEmpty()) {
-      // |transaction| is kept alive while |worker| is added to
-      // |idle_workers_stack_| to avoid this race:
-      // 1. This thread creates a Transaction, finds |priority_queue_| empty and
-      //    ends the Transaction.
-      // 2. Other thread creates a Transaction, inserts a Sequence into
-      //    |priority_queue_| and ends the Transaction. This can't happen if the
-      //    Transaction of step 1 is still active because there can only be one
-      //    active Transaction per PriorityQueue at a time.
-      // 3. Other thread calls WakeUpOneWorker(). No thread is woken up because
-      //    |idle_workers_stack_| is empty.
-      // 4. This thread adds itself to |idle_workers_stack_| and goes to sleep.
-      //    No thread runs the Sequence inserted in step 2.
-      AutoSchedulerLock auto_lock(outer_->lock_);
+  // Enforce that no more than |max_best_effort_tasks_| run concurrently.
+  const TaskPriority priority =
+      outer_->priority_queue_.PeekSortKey().priority();
+  if (priority == TaskPriority::BEST_EFFORT) {
+    if (outer_->num_running_best_effort_tasks_ <
+        outer_->max_best_effort_tasks_) {
+      ++outer_->num_running_best_effort_tasks_;
+      write_worker().is_running_best_effort_task = true;
+    } else {
       OnWorkerBecomesIdleLockRequired(worker);
       return nullptr;
     }
-
-    // Enforce that no more than |max_best_effort_tasks_| run concurrently.
-    const TaskPriority priority = transaction.PeekSortKey().priority();
-    if (priority == TaskPriority::BEST_EFFORT) {
-      AutoSchedulerLock auto_lock(outer_->lock_);
-      if (outer_->num_running_best_effort_tasks_ <
-          outer_->max_best_effort_tasks_) {
-        ++outer_->num_running_best_effort_tasks_;
-        write_worker().is_running_best_effort_task = true;
-      } else {
-        OnWorkerBecomesIdleLockRequired(worker);
-        return nullptr;
-      }
-    }
-
-    sequence = transaction.PopSequence();
   }
-  DCHECK(sequence);
-#if DCHECK_IS_ON()
-  {
-    AutoSchedulerLock auto_lock(outer_->lock_);
-    DCHECK(!outer_->idle_workers_stack_.Contains(worker));
-  }
-#endif
 
+  // Replace this worker if it was the last one, capacity permitting.
+  outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
+
+  DCHECK(!outer_->idle_workers_stack_.Contains(worker));
   worker_only().is_running_task = true;
-  return sequence;
+
+  return outer_->priority_queue_.PopSequence();
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
@@ -941,7 +911,6 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerActionExecutor executor(outer_);
   {
-    auto transaction = outer_->priority_queue_.BeginTransaction();
     AutoSchedulerLock auto_lock(outer_->lock_);
 
     DCHECK(!incremented_max_tasks_since_blocked_);
@@ -956,7 +925,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
     if (outer_->workers_.size() < outer_->max_tasks_ - 1)
       return;
 
-    if (transaction.IsEmpty()) {
+    if (outer_->priority_queue_.IsEmpty()) {
       outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
     } else {
       // TODO(crbug.com/757897): We may create extra workers in this case:
@@ -1116,7 +1085,6 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
       after_start().service_thread_task_runner->RunsTasksInCurrentSequence());
 
   SchedulerWorkerActionExecutor executor(tracked_ref_factory_.GetTrackedRef());
-  auto transaction = priority_queue_.BeginTransaction();
   AutoSchedulerLock auto_lock(lock_);
 
   const size_t previous_max_tasks = max_tasks_;
@@ -1136,7 +1104,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
   }
 
   // Wake up a worker per pending sequence, capacity permitting.
-  const size_t num_pending_sequences = transaction.Size();
+  const size_t num_pending_sequences = priority_queue_.Size();
   const size_t num_wake_ups_needed =
       std::min(max_tasks_ - previous_max_tasks, num_pending_sequences);
 

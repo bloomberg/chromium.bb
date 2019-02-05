@@ -305,14 +305,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   const std::string pool_label_;
   const ThreadPriority priority_hint_;
 
-  // PriorityQueue from which all threads of this worker pool get work.
-  PriorityQueue priority_queue_;
-
   // Synchronizes accesses to all members of this class which are neither const,
-  // atomic, nor InitializedInStart. Has |priority_queue_|'s lock as its
-  // predecessor so that a worker can be pushed to |idle_workers_stack_| within
-  // the scope of a Transaction (more details in GetWork()).
+  // atomic, nor InitializedInStart. Since this lock is a bottleneck to post and
+  // schedule work, only simple data structure manipulations are allowed within
+  // its scope (no thread creation or wake up).
   mutable SchedulerLock lock_;
+
+  // PriorityQueue from which all threads of this worker pool get work.
+  PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
   // All workers owned by this worker pool.
   std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);

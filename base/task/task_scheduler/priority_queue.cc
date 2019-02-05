@@ -73,55 +73,46 @@ class PriorityQueue::SequenceAndSortKey {
   DISALLOW_COPY_AND_ASSIGN(SequenceAndSortKey);
 };
 
-PriorityQueue::Transaction::Transaction(Transaction&& other)
-    : outer_queue_(other.outer_queue_) {
-  other.outer_queue_ = nullptr;
-}
+PriorityQueue::PriorityQueue() = default;
 
-PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
-    : outer_queue_(outer_queue) {
-  outer_queue_->container_lock_.Acquire();
-}
+PriorityQueue::~PriorityQueue() {
+  if (!is_flush_sequences_on_destroy_enabled_)
+    return;
 
-PriorityQueue::Transaction::~Transaction() {
-  if (outer_queue_) {
-    outer_queue_->container_lock_.AssertAcquired();
-    outer_queue_->container_lock_.Release();
+  while (!container_.empty()) {
+    scoped_refptr<Sequence> sequence = PopSequence();
+    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
+    while (!sequence_transaction.IsEmpty()) {
+      sequence_transaction.TakeTask();
+      sequence_transaction.Pop();
+    }
   }
 }
 
-void PriorityQueue::Transaction::Push(
-    scoped_refptr<Sequence> sequence,
-    const SequenceSortKey& sequence_sort_key) {
-  DCHECK(outer_queue_);
-  outer_queue_->container_.insert(
-      SequenceAndSortKey(std::move(sequence), sequence_sort_key));
+void PriorityQueue::Push(scoped_refptr<Sequence> sequence,
+                         const SequenceSortKey& sequence_sort_key) {
+  container_.insert(SequenceAndSortKey(std::move(sequence), sequence_sort_key));
 }
 
-const SequenceSortKey& PriorityQueue::Transaction::PeekSortKey() const {
-  DCHECK(outer_queue_);
+const SequenceSortKey& PriorityQueue::PeekSortKey() const {
   DCHECK(!IsEmpty());
-  return outer_queue_->container_.Min().sort_key();
+  return container_.Min().sort_key();
 }
 
-scoped_refptr<Sequence> PriorityQueue::Transaction::PopSequence() {
-  DCHECK(outer_queue_);
+scoped_refptr<Sequence> PriorityQueue::PopSequence() {
   DCHECK(!IsEmpty());
 
   // The const_cast on top() is okay since the SequenceAndSortKey is
   // transactionally being popped from |container_| right after and taking its
   // Sequence does not alter its sort order.
   scoped_refptr<Sequence> sequence =
-      const_cast<PriorityQueue::SequenceAndSortKey&>(
-          outer_queue_->container_.Min())
+      const_cast<PriorityQueue::SequenceAndSortKey&>(container_.Min())
           .take_sequence();
-  outer_queue_->container_.Pop();
+  container_.Pop();
   return sequence;
 }
 
-bool PriorityQueue::Transaction::RemoveSequence(
-    scoped_refptr<Sequence> sequence) {
-  DCHECK(outer_queue_);
+bool PriorityQueue::RemoveSequence(scoped_refptr<Sequence> sequence) {
   DCHECK(sequence);
 
   if (IsEmpty())
@@ -131,15 +122,13 @@ bool PriorityQueue::Transaction::RemoveSequence(
   if (!heap_handle.IsValid())
     return false;
 
-  DCHECK_EQ(outer_queue_->container_.at(heap_handle).sequence(),
-            sequence.get());
-  outer_queue_->container_.erase(heap_handle);
+  DCHECK_EQ(container_.at(heap_handle).sequence(), sequence.get());
+  container_.erase(heap_handle);
   return true;
 }
 
-void PriorityQueue::Transaction::UpdateSortKey(
+void PriorityQueue::UpdateSortKey(
     SequenceAndTransaction sequence_and_transaction) {
-  DCHECK(outer_queue_);
   DCHECK(sequence_and_transaction.sequence);
 
   if (IsEmpty())
@@ -151,37 +140,17 @@ void PriorityQueue::Transaction::UpdateSortKey(
     return;
 
   auto sort_key = sequence_and_transaction.transaction.GetSortKey();
-  outer_queue_->container_.ChangeKey(
+  container_.ChangeKey(
       heap_handle, SequenceAndSortKey(
                        std::move(sequence_and_transaction.sequence), sort_key));
 }
 
-bool PriorityQueue::Transaction::IsEmpty() const {
-  DCHECK(outer_queue_);
-  return outer_queue_->container_.empty();
+bool PriorityQueue::IsEmpty() const {
+  return container_.empty();
 }
 
-size_t PriorityQueue::Transaction::Size() const {
-  DCHECK(outer_queue_);
-  return outer_queue_->container_.size();
-}
-
-PriorityQueue::PriorityQueue() = default;
-
-PriorityQueue::~PriorityQueue() {
-  if (is_flush_sequences_on_destroy_enabled_) {
-    while (!container_.empty()) {
-      scoped_refptr<Sequence> sequence = BeginTransaction().PopSequence();
-      {
-        Sequence::Transaction sequence_transaction(
-            sequence->BeginTransaction());
-        while (!sequence_transaction.IsEmpty()) {
-          sequence_transaction.TakeTask();
-          sequence_transaction.Pop();
-        }
-      }
-    }
-  }
+size_t PriorityQueue::Size() const {
+  return container_.size();
 }
 
 void PriorityQueue::EnableFlushSequencesOnDestroyForTesting() {

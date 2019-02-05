@@ -18,79 +18,50 @@
 namespace base {
 namespace internal {
 
-// A PriorityQueue holds Sequences of Tasks. This class is thread-safe.
+// A PriorityQueue holds Sequences of Tasks. This class is not thread-safe
+// (requires external synchronization).
 class BASE_EXPORT PriorityQueue {
  public:
-  // A Transaction can perform multiple operations atomically on a
-  // PriorityQueue. While a Transaction is alive, it is guaranteed that nothing
-  // else will access the PriorityQueue.
-  //
-  // A Worker needs to be able to Peek sequences from both its PriorityQueues
-  // (single-threaded and shared) and then Pop the sequence with the highest
-  // priority. If the Peek and the Pop are done through the same Transaction, it
-  // is guaranteed that the PriorityQueue hasn't changed between the 2
-  // operations.
-  class BASE_EXPORT Transaction {
-   public:
-    Transaction(Transaction&& other);
-    ~Transaction();
-
-    // Inserts |sequence| in the PriorityQueue with |sequence_sort_key|.
-    // Note: |sequence_sort_key| is required as a parameter instead of being
-    // extracted from |sequence| in Push() to avoid this Transaction having a
-    // lock interdependency with |sequence|.
-    void Push(scoped_refptr<Sequence> sequence,
-              const SequenceSortKey& sequence_sort_key);
-
-    // Returns a reference to the SequenceSortKey representing the priority of
-    // the highest pending task in this PriorityQueue. The reference becomes
-    // invalid the next time that this PriorityQueue is modified.
-    // Cannot be called on an empty PriorityQueue.
-    const SequenceSortKey& PeekSortKey() const;
-
-    // Removes and returns the highest priority Sequence in this PriorityQueue.
-    // Cannot be called on an empty PriorityQueue.
-    scoped_refptr<Sequence> PopSequence();
-
-    // Removes |sequence| from the PriorityQueue. Returns true if successful,
-    // or false if |sequence| is not currently in the PriorityQueue or the
-    // PriorityQueue is empty.
-    bool RemoveSequence(scoped_refptr<Sequence> sequence);
-
-    // Updates the sort key of the Sequence in |sequence_and_transaction| to
-    // match its current traits. No-ops if the Sequence is not in the
-    // PriorityQueue or the PriorityQueue is empty.
-    void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
-
-    // Returns true if the PriorityQueue is empty.
-    bool IsEmpty() const;
-
-    // Returns the number of Sequences in the PriorityQueue.
-    size_t Size() const;
-
-   private:
-    friend class PriorityQueue;
-
-    explicit Transaction(PriorityQueue* outer_queue);
-
-    PriorityQueue* outer_queue_;
-
-    DISALLOW_COPY_AND_ASSIGN(Transaction);
-  };
-
   PriorityQueue();
-
   ~PriorityQueue();
 
-  // Begins a Transaction.
-  Transaction BeginTransaction() { return Transaction(this); }
+  // Inserts |sequence| in the PriorityQueue with |sequence_sort_key|. Note:
+  // |sequence_sort_key| is required as a parameter instead of being extracted
+  // from |sequence| in Push() to avoid this Transaction having a lock
+  // interdependency with |sequence|.
+  void Push(scoped_refptr<Sequence> sequence,
+            const SequenceSortKey& sequence_sort_key);
+
+  // Returns a reference to the SequenceSortKey representing the priority of
+  // the highest pending task in this PriorityQueue. The reference becomes
+  // invalid the next time that this PriorityQueue is modified.
+  // Cannot be called on an empty PriorityQueue.
+  const SequenceSortKey& PeekSortKey() const;
+
+  // Removes and returns the highest priority Sequence in this PriorityQueue.
+  // Cannot be called on an empty PriorityQueue.
+  scoped_refptr<Sequence> PopSequence();
+
+  // Removes |sequence| from the PriorityQueue. Returns true if successful, or
+  // false if |sequence| is not currently in the PriorityQueue or the
+  // PriorityQueue is empty.
+  bool RemoveSequence(scoped_refptr<Sequence> sequence);
+
+  // Updates the sort key of the Sequence in |sequence_and_transaction| to
+  // match its current traits. No-ops if the Sequence is not in the
+  // PriorityQueue or the PriorityQueue is empty.
+  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
+
+  // Returns true if the PriorityQueue is empty.
+  bool IsEmpty() const;
+
+  // Returns the number of Sequences in the PriorityQueue.
+  size_t Size() const;
 
   // Set the PriorityQueue to empty all its Sequences of Tasks when it is
   // destroyed; needed to prevent memory leaks caused by a reference cycle
   // (Sequence -> Task -> TaskRunner -> Sequence...) during test teardown.
   void EnableFlushSequencesOnDestroyForTesting();
-
-  const SchedulerLock* container_lock() const { return &container_lock_; }
 
  private:
   // A class combining a Sequence and the SequenceSortKey that determines its
@@ -98,9 +69,6 @@ class BASE_EXPORT PriorityQueue {
   class SequenceAndSortKey;
 
   using ContainerType = IntrusiveHeap<SequenceAndSortKey>;
-
-  // Synchronizes access to |container_|.
-  SchedulerLock container_lock_;
 
   ContainerType container_;
 
