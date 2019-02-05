@@ -10,7 +10,7 @@
 #include "base/test/simple_test_clock.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/base/mock_network_change_notifier.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,11 +55,16 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
 
 class DriveFsSearchTest : public testing::Test {
  public:
-  DriveFsSearchTest() { clock_.SetNow(base::Time::Now()); }
+  DriveFsSearchTest()
+      : network_connection_tracker_(
+            network::TestNetworkConnectionTracker::CreateInstance()) {
+    clock_.SetNow(base::Time::Now());
+  }
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
-  net::test::MockNetworkChangeNotifier network_;
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      network_connection_tracker_;
   MockDriveFs mock_drivefs_;
   base::SimpleTestClock clock_;
 };
@@ -99,7 +104,8 @@ MATCHER_P5(MatchQuery, source, text, title, shared, offline, "") {
 };
 
 TEST_F(DriveFsSearchTest, Search) {
-  DriveFsSearch search(&mock_drivefs_, &clock_);
+  DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),
+                       &clock_);
 
   EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_));
   EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
@@ -125,7 +131,8 @@ TEST_F(DriveFsSearchTest, Search) {
 }
 
 TEST_F(DriveFsSearchTest, Search_Fail) {
-  DriveFsSearch search(&mock_drivefs_, &clock_);
+  DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),
+                       &clock_);
 
   EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_));
   EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
@@ -149,10 +156,11 @@ TEST_F(DriveFsSearchTest, Search_Fail) {
 }
 
 TEST_F(DriveFsSearchTest, Search_OnlineToOffline) {
-  DriveFsSearch search(&mock_drivefs_, &clock_);
+  DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),
+                       &clock_);
 
-  network_.SetConnectionType(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+  network_connection_tracker_->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
 
   EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_));
   EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
@@ -178,7 +186,8 @@ TEST_F(DriveFsSearchTest, Search_OnlineToOffline) {
 }
 
 TEST_F(DriveFsSearchTest, Search_OnlineToOfflineFallback) {
-  DriveFsSearch search(&mock_drivefs_, &clock_);
+  DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),
+                       &clock_);
 
   EXPECT_CALL(mock_drivefs_,
               OnStartSearchQuery(
@@ -214,7 +223,8 @@ TEST_F(DriveFsSearchTest, Search_OnlineToOfflineFallback) {
 }
 
 TEST_F(DriveFsSearchTest, Search_SharedWithMeCaching) {
-  DriveFsSearch search(&mock_drivefs_, &clock_);
+  DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),
+                       &clock_);
 
   EXPECT_CALL(mock_drivefs_,
               OnStartSearchQuery(
@@ -294,7 +304,8 @@ TEST_F(DriveFsSearchTest, Search_SharedWithMeCaching) {
 }
 
 TEST_F(DriveFsSearchTest, Search_NoErrorCaching) {
-  DriveFsSearch search(&mock_drivefs_, &clock_);
+  DriveFsSearch search(&mock_drivefs_, network_connection_tracker_.get(),
+                       &clock_);
 
   EXPECT_CALL(mock_drivefs_,
               OnStartSearchQuery(
