@@ -66,6 +66,7 @@ class MutatorHost {
   // Tick animations that depends on scroll offset.
   virtual void TickScrollAnimations(base::TimeTicks monotonic_time,
                                     const ScrollTree& scroll_tree) = 0;
+  virtual void TickWorkletAnimations(base::TimeTicks monotonic_time) = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
                                     MutatorEvents* events) = 0;
   virtual void PromoteScrollTimelinesPendingToActive() = 0;

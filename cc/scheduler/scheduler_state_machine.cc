@@ -233,6 +233,10 @@ void SchedulerStateMachine::AsValueInto(
                     current_pending_tree_is_impl_side_);
   state->SetBoolean("previous_pending_tree_was_impl_side",
                     previous_pending_tree_was_impl_side_);
+  state->SetBoolean("processing_animation_worklets_for_active_tree",
+                    processing_animation_worklets_for_active_tree_);
+  state->SetBoolean("processing_animation_worklets_for_pending_tree",
+                    processing_animation_worklets_for_pending_tree_);
   state->EndDictionary();
 }
 
@@ -373,6 +377,11 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
 
   if (ShouldAbortCurrentFrame())
     return true;
+
+  // Delay pending tree activation until animation worklets have completed
+  // their asynchronous updates to pick up initial values.
+  if (processing_animation_worklets_for_pending_tree_)
+    return false;
 
   // At this point, only activate if we are ready to activate.
   return pending_tree_is_ready_for_activation_;
@@ -1122,6 +1131,11 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (IsDrawThrottled())
     return false;
 
+  // Delay immediate draws when we have pending animation worklet updates to
+  // give them time to produce output before we draw.
+  if (processing_animation_worklets_for_active_tree_)
+    return false;
+
   // In full-pipe mode, we just gave all pipeline stages a chance to contribute.
   // We shouldn't wait any longer in any case - even if there are no updates.
   if (settings_.wait_for_all_pipeline_stages_before_draw)
@@ -1360,6 +1374,25 @@ bool SchedulerStateMachine::NotifyReadyToActivate() {
 
 void SchedulerStateMachine::NotifyReadyToDraw() {
   active_tree_is_ready_to_draw_ = true;
+}
+
+void SchedulerStateMachine::NotifyAnimationWorkletStateChange(
+    AnimationWorkletState state,
+    TreeType tree) {
+  if (tree == TreeType::ACTIVE) {
+    processing_animation_worklets_for_active_tree_ =
+        (state == AnimationWorkletState::PROCESSING);
+    // TODO(kevers): Determine when we should stop waiting for a mutation cycle
+    // to complete. For example, after pending tree activation, we can discard
+    // stale results for an active tree mutation cycle. Setting needs_redraw_
+    // after completion of each active tree mutation can lead to extra redraws
+    // that are unnecessary.
+    if (state == AnimationWorkletState::IDLE)
+      needs_redraw_ = true;
+  } else {
+    processing_animation_worklets_for_pending_tree_ =
+        (state == AnimationWorkletState::PROCESSING);
+  }
 }
 
 void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {

@@ -149,7 +149,7 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
 
 // Tests that verify interaction of AnimationHost with LayerTreeMutator.
 
-TEST_F(AnimationHostTest, LayerTreeMutatorUpdateTakesEffectInSameFrame) {
+TEST_F(AnimationHostTest, FastLayerTreeMutatorUpdateTakesEffectInSameFrame) {
   AttachWorkletAnimation();
 
   const float start_opacity = .7f;
@@ -178,6 +178,11 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateTakesEffectInSameFrame) {
   // Ticking host should cause layer tree mutator to update output state which
   // should take effect in the same animation frame.
   TickAnimationsTransferEvents(base::TimeTicks(), 0u);
+
+  // Emulate behavior in PrepareToDraw. Animation worklet updates are best
+  // effort, and the animation tick is deferred until draw to allow time for the
+  // updates to arrive.
+  host_impl_->TickWorkletAnimations(base::TimeTicks());
 
   TestLayer* layer =
       client_.FindTestLayer(element_id_, ElementListType::ACTIVE);

@@ -106,6 +106,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
                       bool is_active_tree) override;
   void TickScrollAnimations(base::TimeTicks monotonic_time,
                             const ScrollTree& scroll_tree) override;
+  void TickWorkletAnimations(base::TimeTicks monotonic_time) override;
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
   void PromoteScrollTimelinesPendingToActive() override;

@@ -105,6 +105,15 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void NotifyReadyToDraw();
   void SetBeginFrameSource(viz::BeginFrameSource* source);
 
+  using AnimationWorkletState = SchedulerStateMachine::AnimationWorkletState;
+  using TreeType = SchedulerStateMachine::TreeType;
+
+  // Sets whether asynchronous animation worklet mutations are running.
+  // Mutations on the pending tree should block activiation. Mutations on the
+  // active tree should delay draw to allow time for the mutations to complete.
+  void NotifyAnimationWorkletStateChange(AnimationWorkletState state,
+                                         TreeType tree);
+
   // Set |needs_begin_main_frame_| to true, which will cause the BeginFrame
   // source to be told to send BeginFrames to this client so that this client
   // can send a CompositorFrame to the display compositor with appropriate

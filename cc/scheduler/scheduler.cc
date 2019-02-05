@@ -109,6 +109,12 @@ void Scheduler::SetBeginFrameSource(viz::BeginFrameSource* source) {
     begin_frame_source_->AddObserver(this);
 }
 
+void Scheduler::NotifyAnimationWorkletStateChange(AnimationWorkletState state,
+                                                  TreeType tree) {
+  state_machine_.NotifyAnimationWorkletStateChange(state, tree);
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetNeedsBeginMainFrame() {
   state_machine_.SetNeedsBeginMainFrame();
   ProcessScheduledActions();

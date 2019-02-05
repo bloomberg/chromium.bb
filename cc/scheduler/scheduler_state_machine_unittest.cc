@@ -2688,5 +2688,60 @@ TEST(SchedulerStateMachineTest, AllowSkippingActiveTreeFirstDraws) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
 }
 
+TEST(SchedulerStateMachineTest, BlockDrawIfAnimationWorkletsPending) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  SET_UP_STATE(state)
+
+  // This test verifies that having pending mutations from Animation Worklets on
+  // the active tree will not trigger the deadline early.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 10, kAnimateOnly);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
+            state.CurrentBeginImplFrameDeadlineMode());
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+}
+
+TEST(SchedulerStateMachineTest, BlockActivationIfAnimationWorkletsPending) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state)
+
+  // Verify that pending mutations from Animation Worklets block activation.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 10, kAnimateOnly);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::PENDING);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::PENDING);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+}
+
 }  // namespace
 }  // namespace cc
