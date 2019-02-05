@@ -1254,10 +1254,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
-const char kMemoryCoordinatorName[] = "Memory coordinator";
-const char kMemoryCoordinatorDescription[] =
-    "Enable memory coordinator instead of memory pressure listeners.";
-
 const char kMessageCenterNewStyleNotificationName[] = "New style notification";
 const char kMessageCenterNewStyleNotificationDescription[] =
     "Enables the experiment style of material-design notification";

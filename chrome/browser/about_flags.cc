@@ -1946,10 +1946,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWakeOnPacketsDescription, kOsCrOSOwnerOnly,
      SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnWifiPacket)},
 #endif  // OS_CHROMEOS
-    {"enable-memory-coordinator", flag_descriptions::kMemoryCoordinatorName,
-     flag_descriptions::kMemoryCoordinatorDescription,
-     kOsAndroid | kOsCrOS | kOsLinux | kOsWin,
-     FEATURE_VALUE_TYPE(features::kMemoryCoordinator)},
     {"reduced-referrer-granularity",
      flag_descriptions::kReducedReferrerGranularityName,
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
