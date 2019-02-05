@@ -55,6 +55,14 @@ class MidiManagerAndroid {
     private final long mNativeManagerPointer;
 
     /**
+     * True is this object is stopped.
+     * This is needed because MidiManagerAndroid functions are called from the IO thread but
+     * callbacks are called on the UI thread (because the IO thread doesn't have a Looper). We need
+     * to protect each native function call with a synchronized block that also checks this flag.
+     */
+    private boolean mStopped;
+
+    /**
      * Checks if Android MIDI is supported on the device.
      */
     @CalledByNative
@@ -94,7 +102,12 @@ class MidiManagerAndroid {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    nativeOnInitializationFailed(mNativeManagerPointer);
+                    synchronized (MidiManagerAndroid.this) {
+                        if (mStopped) {
+                            return;
+                        }
+                        nativeOnInitializationFailed(mNativeManagerPointer);
+                    }
                 }
             });
             return;
@@ -119,13 +132,26 @@ class MidiManagerAndroid {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (mPendingDevices.isEmpty() && !mIsInitialized) {
-                    nativeOnInitialized(
-                            mNativeManagerPointer, mDevices.toArray(new MidiDeviceAndroid[0]));
-                    mIsInitialized = true;
+                synchronized (MidiManagerAndroid.this) {
+                    if (mStopped) {
+                        return;
+                    }
+                    if (mPendingDevices.isEmpty() && !mIsInitialized) {
+                        nativeOnInitialized(
+                                mNativeManagerPointer, mDevices.toArray(new MidiDeviceAndroid[0]));
+                        mIsInitialized = true;
+                    }
                 }
             }
         });
+    }
+
+    /**
+     * Marks this object as stopped.
+     */
+    @CalledByNative
+    synchronized void stop() {
+        mStopped = true;
     }
 
     private void openDevice(final MidiDeviceInfo info) {
@@ -152,7 +178,10 @@ class MidiManagerAndroid {
      * Called when a midi device is detached.
      * @param info the detached device information.
      */
-    private void onDeviceRemoved(MidiDeviceInfo info) {
+    private synchronized void onDeviceRemoved(MidiDeviceInfo info) {
+        if (mStopped) {
+            return;
+        }
         for (MidiDeviceAndroid device : mDevices) {
             if (device.isOpen() && device.getInfo().getId() == info.getId()) {
                 device.close();
@@ -161,7 +190,10 @@ class MidiManagerAndroid {
         }
     }
 
-    private void onDeviceOpened(MidiDevice device, MidiDeviceInfo info) {
+    private synchronized void onDeviceOpened(MidiDevice device, MidiDeviceInfo info) {
+        if (mStopped) {
+            return;
+        }
         mPendingDevices.remove(info);
         if (device != null) {
             MidiDeviceAndroid xdevice = new MidiDeviceAndroid(device);
