@@ -1908,12 +1908,25 @@ bool ProfileSyncService::IsSyncAllowedByFlag() {
 
 void ProfileSyncService::StopAndClear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!is_stopping_and_clearing_);
+
+  // This can happen if the user had disabled sync before and is now setting up
+  // sync again but hits the "Cancel" button on the confirmation dialog.
+  // TODO(crbug.com/906034): Maybe we can streamline the defaults and the
+  // behavior on setting up sync so that either this whole early return goes
+  // away or it treats all "Cancel the confirmation" cases?
+  if (!user_settings_->IsSyncRequested()) {
+    StopImpl(CLEAR_DATA);
+    return;
+  }
+
   // We need to remember that clearing of data is needed when sync will be
   // stopped. This flag is cleared in OnSyncRequestedPrefChange() where sync
-  // gets stopped.
+  // gets stopped. This happens synchronously when |user_settings_| get changed
+  // below.
+  DCHECK(!is_stopping_and_clearing_);
   is_stopping_and_clearing_ = true;
   user_settings_->SetSyncRequested(false);
+  DCHECK(!is_stopping_and_clearing_);
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager(
