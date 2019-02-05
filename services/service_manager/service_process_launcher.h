@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_RUNNER_HOST_SERVICE_PROCESS_LAUNCHER_H_
-#define SERVICES_SERVICE_MANAGER_RUNNER_HOST_SERVICE_PROCESS_LAUNCHER_H_
+#ifndef SERVICES_SERVICE_MANAGER_SERVICE_PROCESS_LAUNCHER_H_
+#define SERVICES_SERVICE_MANAGER_SERVICE_PROCESS_LAUNCHER_H_
 
 #include <memory>
 #include <string>
@@ -16,8 +16,8 @@
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
-#include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/service_process_launcher_delegate.h"
 
 namespace service_manager {
 
@@ -60,4 +60,4 @@ class ServiceProcessLauncher {
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_SERVICE_PROCESS_LAUNCHER_H_
+#endif  // SERVICES_SERVICE_MANAGER_SERVICE_PROCESS_LAUNCHER_H_

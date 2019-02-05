@@ -27,7 +27,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/runner/host/service_process_launcher_factory.h"
+#include "services/service_manager/service_process_launcher_factory.h"
 
 namespace service_manager {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/background/background_service_manager.h"
+#include "services/service_manager/background_service_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,19 +20,40 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/service_manager.h"
-#include "services/service_manager/standalone/context.h"
+
+#if !defined(OS_IOS)
+#include "services/service_manager/service_process_launcher.h"
+#include "services/service_manager/service_process_launcher_factory.h"
+#endif
 
 namespace service_manager {
 
+namespace {
+
+#if !defined(OS_IOS)
+// Used to ensure we only init once.
+class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
+ public:
+  ServiceProcessLauncherFactoryImpl() = default;
+
+ private:
+  std::unique_ptr<ServiceProcessLauncher> Create(
+      const base::FilePath& service_path) override {
+    return std::make_unique<ServiceProcessLauncher>(nullptr, service_path);
+  }
+};
+#endif
+
+}  // namespace
+
 BackgroundServiceManager::BackgroundServiceManager(
-    ServiceProcessLauncherDelegate* launcher_delegate,
     const std::vector<Manifest>& manifests)
     : background_thread_("service_manager") {
   background_thread_.Start();
   background_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&BackgroundServiceManager::InitializeOnBackgroundThread,
-                     base::Unretained(this), launcher_delegate, manifests));
+                     base::Unretained(this), manifests));
 }
 
 BackgroundServiceManager::~BackgroundServiceManager() {
@@ -41,10 +62,10 @@ BackgroundServiceManager::~BackgroundServiceManager() {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   background_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&BackgroundServiceManager::ShutDownOnBackgroundThread,
-                 base::Unretained(this), &done_event));
+      base::BindOnce(&BackgroundServiceManager::ShutDownOnBackgroundThread,
+                     base::Unretained(this), &done_event));
   done_event.Wait();
-  DCHECK(!context_);
+  DCHECK(!service_manager_);
 }
 
 void BackgroundServiceManager::RegisterService(
@@ -54,20 +75,27 @@ void BackgroundServiceManager::RegisterService(
   mojom::ServicePtrInfo service_info = service.PassInterface();
   background_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&BackgroundServiceManager::RegisterServiceOnBackgroundThread,
-                 base::Unretained(this), identity, base::Passed(&service_info),
-                 base::Passed(&pid_receiver_request)));
+      base::BindOnce(
+          &BackgroundServiceManager::RegisterServiceOnBackgroundThread,
+          base::Unretained(this), identity, base::Passed(&service_info),
+          base::Passed(&pid_receiver_request)));
 }
 
 void BackgroundServiceManager::InitializeOnBackgroundThread(
-    ServiceProcessLauncherDelegate* launcher_delegate,
     const std::vector<Manifest>& manifests) {
-  context_ = std::make_unique<Context>(launcher_delegate, manifests);
+  std::unique_ptr<ServiceProcessLauncherFactory> process_launcher_factory;
+#if !defined(OS_IOS)
+  process_launcher_factory =
+      std::make_unique<ServiceProcessLauncherFactoryImpl>();
+#endif
+
+  service_manager_ = std::make_unique<ServiceManager>(
+      std::move(process_launcher_factory), manifests);
 }
 
 void BackgroundServiceManager::ShutDownOnBackgroundThread(
     base::WaitableEvent* done_event) {
-  context_.reset();
+  service_manager_.reset();
   done_event->Signal();
 }
 
@@ -77,8 +105,8 @@ void BackgroundServiceManager::RegisterServiceOnBackgroundThread(
     mojom::PIDReceiverRequest pid_receiver_request) {
   mojom::ServicePtr service;
   service.Bind(std::move(service_info));
-  context_->service_manager()->RegisterService(
-      identity, std::move(service), std::move(pid_receiver_request));
+  service_manager_->RegisterService(identity, std::move(service),
+                                    std::move(pid_receiver_request));
 }
 
 }  // namespace service_manager

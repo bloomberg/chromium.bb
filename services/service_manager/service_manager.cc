@@ -41,7 +41,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if !defined(OS_IOS)
-#include "services/service_manager/runner/host/service_process_launcher.h"
+#include "services/service_manager/service_process_launcher.h"
 #endif
 
 namespace service_manager {

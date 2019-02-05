@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/background/background_service_manager.h"
+#include "services/service_manager/background_service_manager.h"
 
 #include <memory>
 #include <vector>
@@ -12,13 +12,14 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "services/service_manager/background/tests/background.test-mojom.h"
+#include "build/build_config.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/tests/background.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -58,9 +59,9 @@ class ServiceImpl : public Service {
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 
-void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
+void SetFlagAndRunClosure(bool* flag, base::OnceClosure closure) {
   *flag = true;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 // Uses BackgroundServiceManager to start the service manager in the background
@@ -75,8 +76,7 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 #endif
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  BackgroundServiceManager background_service_manager(nullptr,
-                                                      GetTestManifests());
+  BackgroundServiceManager background_service_manager(GetTestManifests());
   mojom::ServicePtr service;
   ServiceImpl service_impl(mojo::MakeRequest(&service));
   background_service_manager.RegisterService(
@@ -89,8 +89,8 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
                                           &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
-  test_service->Test(
-      base::Bind(&SetFlagAndRunClosure, &got_result, run_loop.QuitClosure()));
+  test_service->Test(base::BindOnce(&SetFlagAndRunClosure, &got_result,
+                                    run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(got_result);
 }

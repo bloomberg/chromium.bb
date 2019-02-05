@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_
-#define SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_
+#ifndef SERVICES_SERVICE_MANAGER_BACKGROUND_SERVICE_MANAGER_H_
+#define SERVICES_SERVICE_MANAGER_BACKGROUND_SERVICE_MANAGER_H_
 
 #include <memory>
 #include <vector>
@@ -14,7 +14,6 @@
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 
 namespace base {
 class WaitableEvent;
@@ -22,16 +21,19 @@ class WaitableEvent;
 
 namespace service_manager {
 
-class Context;
 class Identity;
 class ServiceManager;
 
-// BackgroundServiceManager runs a Service Manager on a dedicated background
-// thread.
+// BackgroundServiceManager is a helper class that be can used to instantiate a
+// ServiceManager instance on a dedicated background thread. This is only
+// slightly more convenient than simply running your own background thread and
+// instantiating ServiceManager there yourself.
+//
+// TODO(https://crbug.com/904240): Consider deleting this class since it has
+// such limited use and is trivial to replicate.
 class BackgroundServiceManager {
  public:
-  BackgroundServiceManager(ServiceProcessLauncherDelegate* launcher_delegate,
-                           const std::vector<Manifest>& manifests);
+  explicit BackgroundServiceManager(const std::vector<Manifest>& manifests);
   ~BackgroundServiceManager();
 
   // Creates a service instance for |identity|. This is intended for use by the
@@ -45,9 +47,7 @@ class BackgroundServiceManager {
                        mojom::PIDReceiverRequest pid_receiver_request);
 
  private:
-  void InitializeOnBackgroundThread(
-      ServiceProcessLauncherDelegate* launcher_delegate,
-      const std::vector<Manifest>& manifests);
+  void InitializeOnBackgroundThread(const std::vector<Manifest>& manifests);
   void ShutDownOnBackgroundThread(base::WaitableEvent* done_event);
   void RegisterServiceOnBackgroundThread(
       const Identity& identity,
@@ -56,12 +56,12 @@ class BackgroundServiceManager {
 
   base::Thread background_thread_;
 
-  // The ServiceManager context. Must only be used on the background thread.
-  std::unique_ptr<Context> context_;
+  // Must only be used on the background thread.
+  std::unique_ptr<ServiceManager> service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundServiceManager);
 };
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_
+#endif  // SERVICES_SERVICE_MANAGER_BACKGROUND_SERVICE_MANAGER_H_

@@ -45,7 +45,7 @@ if (!is_ios) {
       ":embedder_switches",
       "//base",
       "//mojo/core/embedder",
-      "//services/service_manager/background:lib",
+      "//services/service_manager",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/cpp/service_executable:support",
       "//services/service_manager/public/mojom",
