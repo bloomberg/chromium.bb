@@ -13,8 +13,6 @@
 namespace blink {
 namespace scheduler {
 
-using QueueType = MainThreadTaskQueue::QueueType;
-
 class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
  public:
   // QueueingTimeEstimator::Client implementation:
@@ -30,7 +28,6 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
   const std::map<std::string, std::vector<base::TimeDelta>>& split_eqts() {
     return split_eqts_;
   }
-  const std::vector<base::TimeDelta>& QueueTypeValues(QueueType queue_type);
   const std::vector<base::TimeDelta>& FrameStatusValues(
       FrameStatus frame_status);
 
