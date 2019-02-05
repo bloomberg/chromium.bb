@@ -450,7 +450,7 @@ void NGPaintFragment::PopulateDescendants(
                       std::move(previous_child), &populate_children);
 
     if (children_are_inline) {
-      if (!child_fragment->IsOutOfFlowPositioned() &&
+      if (!child_fragment->IsFloatingOrOutOfFlowPositioned() &&
           !child_fragment->IsListMarker()) {
         if (LayoutObject* layout_object = child_fragment->GetLayoutObject())
           child->AssociateWithLayoutObject(layout_object, last_fragment_map);
