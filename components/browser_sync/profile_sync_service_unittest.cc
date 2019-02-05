@@ -951,6 +951,28 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
   EXPECT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 }
 
+TEST_F(ProfileSyncServiceWithStandaloneTransportTest, CancelSyncAfterSignOut) {
+  SignIn();
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForNthSync();
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+  base::Time last_synced_time = service()->GetLastSyncedTime();
+  ASSERT_LT(base::Time::Now() - last_synced_time,
+            base::TimeDelta::FromMinutes(1));
+
+  // Disable sync.
+  service()->StopAndClear();
+  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
+
+  // Calling StopAndClear while already stopped should not crash. This may
+  // (under some circumstances) happen when the user enables sync again but hits
+  // the cancel button at the end of the process.
+  ASSERT_FALSE(service()->GetUserSettings()->IsSyncRequested());
+  service()->StopAndClear();
+  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
+}
+
 // Verify that credential errors get returned from GetAuthError().
 TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // This test needs to manually send access tokens (or errors), so disable
