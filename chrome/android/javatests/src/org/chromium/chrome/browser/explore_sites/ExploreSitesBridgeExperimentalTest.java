@@ -26,6 +26,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Tests for {@link ExploreSitesBridgeExperimental}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -48,7 +49,24 @@ public final class ExploreSitesBridgeExperimentalTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        mTestServer = null;
+    }
+
+    private boolean bitmapsEqual(Bitmap expected, Bitmap actual) {
+        if (expected.sameAs(actual)) return true;
+        // The documentation for Bitmap.sameAs claims that it should return true as long as the
+        // images have the same config, dimensions, and pixel data. However, there's a bug of some
+        // sort on O+ that makes it sometimes return false even if those conditions are met. As a
+        // workaround, fall back to our own comparison logic if sameAs returns false.
+        // See https://crbug.com/927014 for more tracking.
+        if (expected.getConfig() != actual.getConfig()) return false;
+        if (expected.getWidth() != actual.getWidth() || expected.getHeight() != actual.getHeight())
+            return false;
+        for (int i = 0; i < expected.getWidth(); i++) {
+            for (int j = 0; j < expected.getHeight(); j++) {
+                if (expected.getPixel(i, j) != actual.getPixel(i, j)) return false;
+            }
+        }
+        return true;
     }
 
     @Test
@@ -59,6 +77,9 @@ public final class ExploreSitesBridgeExperimentalTest {
         String testImageUrl = mTestServer.getURL(TEST_IMAGE);
 
         final Semaphore semaphore = new Semaphore(0);
+        // Use an AtomicReference and assert on the Instrumentation thread so that failures show
+        // up as proper failures instead of browser crashes.
+        final AtomicReference<Bitmap> actualIcon = new AtomicReference<Bitmap>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -66,13 +87,14 @@ public final class ExploreSitesBridgeExperimentalTest {
                         mProfile, testImageUrl, new Callback<Bitmap>() {
                             @Override
                             public void onResult(Bitmap icon) {
-                                Assert.assertNotNull(icon);
-                                Assert.assertTrue(expectedIcon.sameAs(icon));
+                                actualIcon.set(icon);
                                 semaphore.release();
                             }
                         });
             }
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertNotNull(actualIcon.get());
+        Assert.assertTrue(bitmapsEqual(expectedIcon, actualIcon.get()));
     }
 }
