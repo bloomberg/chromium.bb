@@ -86,6 +86,9 @@ void PointerEventManager::Clear() {
 
 void PointerEventManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
+  visitor->Trace(element_under_pointer_);
+  visitor->Trace(pointer_capture_target_);
+  visitor->Trace(pending_pointer_capture_target_);
   visitor->Trace(touch_event_manager_);
   visitor->Trace(mouse_event_manager_);
 }
@@ -227,20 +230,20 @@ void PointerEventManager::SendBoundaryEvents(EventTarget* exited_target,
 
 void PointerEventManager::SetElementUnderPointer(PointerEvent* pointer_event,
                                                  Element* target) {
-  const auto& element_iterator =
-      element_under_pointer_.find(pointer_event->pointerId());
-  if (element_iterator != element_under_pointer_.end()) {
-    Element* old_target = element_iterator->second.target;
+  if (element_under_pointer_.Contains(pointer_event->pointerId())) {
+    EventTargetAttributes node =
+        element_under_pointer_.at(pointer_event->pointerId());
     if (!target) {
-      element_under_pointer_.erase(element_iterator);
-    } else if (target != old_target) {
-      element_under_pointer_[pointer_event->pointerId()] =
-          EventTargetAttributes(target);
+      element_under_pointer_.erase(pointer_event->pointerId());
+    } else if (target !=
+               element_under_pointer_.at(pointer_event->pointerId()).target) {
+      element_under_pointer_.Set(pointer_event->pointerId(),
+                                 EventTargetAttributes(target));
     }
-    SendBoundaryEvents(old_target, target, pointer_event);
+    SendBoundaryEvents(node.target, target, pointer_event);
   } else if (target) {
-    element_under_pointer_[pointer_event->pointerId()] =
-        EventTargetAttributes(target);
+    element_under_pointer_.insert(pointer_event->pointerId(),
+                                  EventTargetAttributes(target));
     SendBoundaryEvents(nullptr, target, pointer_event);
   }
 }
@@ -279,10 +282,9 @@ void PointerEventManager::HandlePointerInterruption(
   for (auto pointer_event : canceled_pointer_events) {
     // If we are sending a pointercancel we have sent the pointerevent to some
     // target before.
-    const auto& element_iterator =
-        element_under_pointer_.find(pointer_event->pointerId());
-    DCHECK(element_iterator != element_under_pointer_.end());
-    Element* target = element_iterator->second.target;
+    DCHECK(element_under_pointer_.Contains(pointer_event->pointerId()));
+    Element* target =
+        element_under_pointer_.at(pointer_event->pointerId()).target;
 
     DispatchPointerEvent(
         GetEffectiveTargetForPointerEvent(target, pointer_event->pointerId()),
@@ -364,10 +366,8 @@ PointerEventManager::ComputePointerEventTarget(
   // that will be capturing this event. |m_pointerCaptureTarget| may not
   // have this target yet since the processing of that will be done right
   // before firing the event.
-  const auto& capture_iterator =
-      pending_pointer_capture_target_.find(pointer_id);
   if (web_pointer_event.GetType() == WebInputEvent::kPointerDown ||
-      capture_iterator == pending_pointer_capture_target_.end()) {
+      !pending_pointer_capture_target_.Contains(pointer_id)) {
     HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
                                                   HitTestRequest::kReadOnly |
                                                   HitTestRequest::kActive;
@@ -392,7 +392,8 @@ PointerEventManager::ComputePointerEventTarget(
     // Set the target of pointer event to the captured element as this
     // pointer is captured otherwise it would have gone to the if block
     // and perform a hit-test.
-    pointer_event_target.target_element = capture_iterator->second;
+    pointer_event_target.target_element =
+        pending_pointer_capture_target_.at(pointer_id);
     pointer_event_target.target_frame =
         pointer_event_target.target_element->GetDocument().GetFrame();
   }
@@ -771,12 +772,14 @@ bool PointerEventManager::GetPointerCaptureState(
     PointerId pointer_id,
     Element** pointer_capture_target,
     Element** pending_pointer_capture_target) {
-  auto it = pointer_capture_target_.find(pointer_id);
+  PointerCapturingMap::const_iterator it;
+
+  it = pointer_capture_target_.find(pointer_id);
   Element* pointer_capture_target_temp =
-      (it != pointer_capture_target_.end()) ? it->second : nullptr;
+      (it != pointer_capture_target_.end()) ? it->value : nullptr;
   it = pending_pointer_capture_target_.find(pointer_id);
   Element* pending_pointercapture_target_temp =
-      (it != pending_pointer_capture_target_.end()) ? it->second : nullptr;
+      (it != pending_pointer_capture_target_.end()) ? it->value : nullptr;
 
   if (pointer_capture_target)
     *pointer_capture_target = pointer_capture_target_temp;
@@ -793,9 +796,10 @@ Element* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
     const WebMouseEvent* mouse_event) {
   ProcessPendingPointerCapture(pointer_event);
 
-  const auto& it = pointer_capture_target_.find(pointer_event->pointerId());
+  PointerCapturingMap::const_iterator it =
+      pointer_capture_target_.find(pointer_event->pointerId());
   if (Element* pointercapture_target =
-          (it != pointer_capture_target_.end()) ? it->second : nullptr)
+          (it != pointer_capture_target_.end()) ? it->value : nullptr)
     hit_test_target = pointercapture_target;
 
   SetElementUnderPointer(pointer_event, hit_test_target);
@@ -837,7 +841,7 @@ void PointerEventManager::ProcessPendingPointerCapture(
         pending_pointer_capture_target,
         pointer_event_factory_.CreatePointerCaptureEvent(
             pointer_event, event_type_names::kGotpointercapture));
-    pointer_capture_target_[pointer_id] = pending_pointer_capture_target;
+    pointer_capture_target_.Set(pointer_id, pending_pointer_capture_target);
   } else {
     pointer_capture_target_.erase(pointer_id);
   }
@@ -860,16 +864,15 @@ void PointerEventManager::RemoveTargetFromPointerCapturingMapping(
   // the performance improvement considering there might not be a lot of
   // active pointer or pointer captures at the same time.
   PointerCapturingMap tmp = map;
-  for (auto it = tmp.begin(); it != tmp.end(); ++it) {
-    if (it->second == target)
-      map.erase(it->first);
+  for (PointerCapturingMap::iterator it = tmp.begin(); it != tmp.end(); ++it) {
+    if (it->value == target)
+      map.erase(it->key);
   }
 }
 
 Element* PointerEventManager::GetCapturingElement(PointerId pointer_id) {
-  const auto& capture_iterator = pointer_capture_target_.find(pointer_id);
-  if (capture_iterator != pointer_capture_target_.end())
-    return capture_iterator->second;
+  if (pointer_capture_target_.Contains(pointer_id))
+    return pointer_capture_target_.at(pointer_id);
   return nullptr;
 }
 
@@ -895,7 +898,7 @@ void PointerEventManager::SetPointerCapture(PointerId pointer_id,
       UseCounter::Count(frame_,
                         WebFeature::kPointerEventSetCaptureOutsideDispatch);
     }
-    pending_pointer_capture_target_[pointer_id] = target;
+    pending_pointer_capture_target_.Set(pointer_id, target);
   }
 }
 
@@ -908,7 +911,7 @@ void PointerEventManager::ReleasePointerCapture(PointerId pointer_id,
   // but |m_pendingPointerCaptureTarget| indicated the element that gets the
   // very next pointer event. They will be the same if there was no change in
   // capturing of a particular |pointerId|. See crbug.com/614481.
-  if (HasPointerCapture(pointer_id, target))
+  if (pending_pointer_capture_target_.at(pointer_id) == target)
     ReleasePointerCapture(pointer_id);
 }
 
@@ -918,10 +921,7 @@ void PointerEventManager::ReleaseMousePointerCapture() {
 
 bool PointerEventManager::HasPointerCapture(PointerId pointer_id,
                                             const Element* target) const {
-  const auto& capture_iterator =
-      pending_pointer_capture_target_.find(pointer_id);
-  return capture_iterator != pending_pointer_capture_target_.end() &&
-         capture_iterator->second == target;
+  return pending_pointer_capture_target_.at(pointer_id) == target;
 }
 
 void PointerEventManager::ReleasePointerCapture(PointerId pointer_id) {
@@ -942,10 +942,9 @@ bool PointerEventManager::IsTouchPointerIdActiveOnFrame(
   if (pointer_event_factory_.GetPointerType(pointer_id) !=
       WebPointerProperties::PointerType::kTouch)
     return false;
-  const auto& element_iterator = element_under_pointer_.find(pointer_id);
   Element* last_element_receiving_event =
-      element_iterator != element_under_pointer_.end()
-          ? element_iterator->second.target
+      element_under_pointer_.Contains(pointer_id)
+          ? element_under_pointer_.at(pointer_id).target
           : nullptr;
   return last_element_receiving_event &&
          last_element_receiving_event->GetDocument().GetFrame() == frame;
