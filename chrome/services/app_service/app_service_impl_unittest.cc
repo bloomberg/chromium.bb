@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,10 +118,7 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 
 class AppServiceImplTest : public testing::Test {
  private:
-  // https://www.chromium.org/developers/design-documents/mojo/mojo-migration-guide#TOC-Mocking-in-tests
-  // says, "You will not actually use the loop_ variable, but one need to exist
-  // and this declaration causes a global message loop to be created".
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(AppServiceImplTest, PubSub) {
