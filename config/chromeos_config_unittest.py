@@ -397,6 +397,18 @@ class CBuildBotTest(ChromeosConfigTestBase):
                       'Non affinity luci_builder "%s" on "%s"' %
                       (config.luci_builder, build_name))
 
+  def testAffinityPoolSize(self):
+    """Verify we have enough affinity builders."""
+    affinity_count = len([b for b in self.site_config.itervalues()
+                          if b.build_affinity])
+
+    # Keep in sync with bots.cfg
+    # https://chrome-internal.googlesource.com/infradata/config/+/
+    #         master/configs/chromeos-swarming/bots.cfg
+    affinity_pool_size = 460 - 350
+
+    self.assertTrue(affinity_count <= affinity_pool_size)
+
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""
     for config in self.site_config.itervalues():
