@@ -597,7 +597,6 @@
     },
     {
       name: "HeapUnifiedGarbageCollection",
-      status: "stable",
     },
     {
       name: "HrefTranslate",
