@@ -45,6 +45,22 @@ bool VerifyBlobToken(
   return true;
 }
 
+bool VerifyInitiatorOrigin(int process_id,
+                           const url::Origin& initiator_origin) {
+  // TODO(lukasza, nasko): Verify precursor origin via CanAccessDataForOrigin.
+  if (initiator_origin.opaque())
+    return true;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanAccessDataForOrigin(process_id, initiator_origin.GetURL())) {
+    bad_message::ReceivedBadMessage(process_id,
+                                    bad_message::INVALID_INITIATOR_ORIGIN);
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 bool VerifyDownloadUrlParams(
@@ -62,7 +78,9 @@ bool VerifyDownloadUrlParams(
     return false;
   }
 
-  // TODO(lukasza): Verify |params.initiator_origin|.
+  // Verify |params.initiator_origin|.
+  if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
+    return false;
 
   return true;
 }
@@ -106,7 +124,9 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
     return false;
   }
 
-  // TODO(lukasza): Verify |params.initiator_origin|.
+  // Verify |params.initiator_origin|.
+  if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
+    return false;
 
   return true;
 }

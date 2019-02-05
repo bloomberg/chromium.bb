@@ -238,6 +238,7 @@ enum BadMessageReason {
   RFH_DETACH_MAIN_FRAME = 210,
   RFH_DOCUMENT_INTERFACE_BROKER_MISSING = 211,
   RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN = 212,
+  INVALID_INITIATOR_ORIGIN = 213,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
