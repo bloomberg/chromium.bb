@@ -17,18 +17,11 @@ constexpr uint32_t kTextInputManagerVersion = 1;
 void CreateTextInput(struct wl_client* client,
                      struct wl_resource* resource,
                      uint32_t id) {
-  auto* im = static_cast<TestZwpTextInputManagerV1*>(
-      wl_resource_get_user_data(resource));
-  wl_resource* text_resource =
-      wl_resource_create(client, &zwp_text_input_v1_interface,
-                         wl_resource_get_version(resource), id);
-  if (!text_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-  SetImplementation(text_resource, &kMockZwpTextInputV1Impl,
-                    std::make_unique<MockZwpTextInput>(text_resource));
-  im->set_text_input(GetUserDataAs<MockZwpTextInput>(text_resource));
+  wl_resource* text_resource = CreateResourceWithImpl<MockZwpTextInput>(
+      client, &zwp_text_input_v1_interface, wl_resource_get_version(resource),
+      &kMockZwpTextInputV1Impl, id);
+  GetUserDataAs<TestZwpTextInputManagerV1>(resource)->set_text_input(
+      GetUserDataAs<MockZwpTextInput>(text_resource));
 }
 
 }  // namespace

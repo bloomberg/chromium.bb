@@ -26,24 +26,23 @@ void Add(wl_client* client,
 }
 
 void Create(wl_client* client,
-            wl_resource* resource,
+            wl_resource* buffer_params_resource,
             int32_t width,
             int32_t height,
             uint32_t format,
             uint32_t flags) {
-  auto* buffer_params = GetUserDataAs<MockZwpLinuxBufferParamsV1>(resource);
+  auto* buffer_params =
+      GetUserDataAs<MockZwpLinuxBufferParamsV1>(buffer_params_resource);
 
-  wl_resource* buffer_resource =
-      wl_resource_create(client, &wl_buffer_interface, 1, 0);
+  wl_resource* buffer_resource = CreateResourceWithImpl<MockBuffer>(
+      client, &wl_buffer_interface, 1, &kMockWlBufferImpl, 0,
+      std::move(buffer_params->fds_));
 
-  SetImplementation(buffer_resource, &kMockWlBufferImpl,
-                    std::make_unique<MockBuffer>(
-                        buffer_resource, std::move(buffer_params->fds_)));
+  zwp_linux_buffer_params_v1_send_created(buffer_params_resource,
+                                          buffer_resource);
 
-  zwp_linux_buffer_params_v1_send_created(resource, buffer_resource);
-
-  GetUserDataAs<MockZwpLinuxBufferParamsV1>(resource)->Create(
-      client, resource, width, height, format, flags);
+  buffer_params->Create(client, buffer_params_resource, width, height, format,
+                        flags);
 }
 
 void CreateImmed(wl_client* client,

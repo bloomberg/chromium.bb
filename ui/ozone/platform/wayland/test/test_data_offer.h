@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_DATA_OFFER_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_DATA_OFFER_H_
 
+#include <memory>
 #include <string>
 
 #include <wayland-server-protocol-core.h>
@@ -16,6 +17,10 @@
 #include "ui/ozone/platform/wayland/test/server_object.h"
 
 struct wl_resource;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace wl {
 
@@ -30,9 +35,10 @@ class TestDataOffer : public ServerObject {
   void OnOffer(const std::string& mime_type);
 
  private:
-  // TODO(adunaev): get rid of this in favor of using a task runner.
-  base::Thread io_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<TestDataOffer> write_data_weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDataOffer);
 };
 
 }  // namespace wl

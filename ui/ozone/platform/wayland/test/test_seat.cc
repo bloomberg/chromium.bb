@@ -15,45 +15,27 @@ namespace {
 constexpr uint32_t kSeatVersion = 4;
 
 void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* pointer_resource = wl_resource_create(
-      client, &wl_pointer_interface, wl_resource_get_version(resource), id);
-  if (!pointer_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-  SetImplementation(pointer_resource, &kTestPointerImpl,
-                    std::make_unique<TestPointer>(pointer_resource));
-
-  auto* seat = GetUserDataAs<TestSeat>(resource);
-  seat->set_pointer(GetUserDataAs<TestPointer>(pointer_resource));
+  wl_resource* pointer_resource = CreateResourceWithImpl<TestPointer>(
+      client, &wl_pointer_interface, wl_resource_get_version(resource),
+      &kTestPointerImpl, id);
+  GetUserDataAs<TestSeat>(resource)->set_pointer(
+      GetUserDataAs<TestPointer>(pointer_resource));
 }
 
 void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* keyboard_resource = wl_resource_create(
-      client, &wl_keyboard_interface, wl_resource_get_version(resource), id);
-  if (!keyboard_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-  SetImplementation(keyboard_resource, &kTestKeyboardImpl,
-                    std::make_unique<TestKeyboard>(keyboard_resource));
-
-  auto* seat = GetUserDataAs<TestSeat>(resource);
-  seat->set_keyboard(GetUserDataAs<TestKeyboard>(keyboard_resource));
+  wl_resource* keyboard_resource = CreateResourceWithImpl<TestKeyboard>(
+      client, &wl_keyboard_interface, wl_resource_get_version(resource),
+      &kTestKeyboardImpl, id);
+  GetUserDataAs<TestSeat>(resource)->set_keyboard(
+      GetUserDataAs<TestKeyboard>(keyboard_resource));
 }
 
 void GetTouch(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* touch_resource = wl_resource_create(
-      client, &wl_touch_interface, wl_resource_get_version(resource), id);
-  if (!touch_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-  SetImplementation(touch_resource, &kTestTouchImpl,
-                    std::make_unique<TestTouch>(touch_resource));
-
-  auto* seat = GetUserDataAs<TestSeat>(resource);
-  seat->set_touch(GetUserDataAs<TestTouch>(touch_resource));
+  wl_resource* touch_resource = CreateResourceWithImpl<TestTouch>(
+      client, &wl_touch_interface, wl_resource_get_version(resource),
+      &kTestTouchImpl, id);
+  GetUserDataAs<TestSeat>(resource)->set_touch(
+      GetUserDataAs<TestTouch>(touch_resource));
 }
 
 }  // namespace

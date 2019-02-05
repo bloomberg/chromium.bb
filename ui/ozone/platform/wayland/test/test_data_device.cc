@@ -40,7 +40,7 @@ void DataDeviceRelease(wl_client* client, wl_resource* resource) {
 const struct wl_data_device_interface kTestDataDeviceImpl = {
     &DataDeviceStartDrag, &DataDeviceSetSelection, &DataDeviceRelease};
 
-TestDataDevice::TestDataDevice(wl_client* client, wl_resource* resource)
+TestDataDevice::TestDataDevice(wl_resource* resource, wl_client* client)
     : ServerObject(resource), client_(client) {}
 
 TestDataDevice::~TestDataDevice() {}
@@ -51,11 +51,9 @@ void TestDataDevice::SetSelection(TestDataSource* data_source,
 }
 
 TestDataOffer* TestDataDevice::OnDataOffer() {
-  wl_resource* data_offer_resource =
-      wl_resource_create(client_, &wl_data_offer_interface,
-                         wl_resource_get_version(resource()), 0);
-  SetImplementation(data_offer_resource, &kTestDataOfferImpl,
-                    std::make_unique<TestDataOffer>(data_offer_resource));
+  wl_resource* data_offer_resource = CreateResourceWithImpl<TestDataOffer>(
+      client_, &wl_data_offer_interface, wl_resource_get_version(resource()),
+      &kTestDataOfferImpl, 0);
   data_offer_ = GetUserDataAs<TestDataOffer>(data_offer_resource);
   wl_data_device_send_data_offer(resource(), data_offer_resource);
 

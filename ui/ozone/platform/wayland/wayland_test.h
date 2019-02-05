@@ -6,10 +6,11 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_TEST_H_
 
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
-#include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -27,7 +28,7 @@ namespace ui {
 const uint32_t kXdgShellV5 = 5;
 const uint32_t kXdgShellV6 = 6;
 
-// WaylandTest is a base class that sets up a display, window, and fake server,
+// WaylandTest is a base class that sets up a display, window, and test server,
 // and allows easy synchronization between them.
 class WaylandTest : public ::testing::TestWithParam<uint32_t> {
  public:
@@ -39,12 +40,8 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
 
   void Sync();
 
- private:
-  base::MessageLoopForUI message_loop_;
-  bool initialized_ = false;
-
  protected:
-  wl::FakeServer server_;
+  wl::TestWaylandServerThread server_;
   wl::MockSurface* surface_;
 
   MockPlatformWindowDelegate delegate_;
@@ -54,6 +51,9 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  bool initialized_ = false;
+
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
 #endif

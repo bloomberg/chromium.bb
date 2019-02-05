@@ -10,6 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
 
@@ -66,12 +69,9 @@ const struct wl_data_source_interface kTestDataSourceImpl = {
 
 TestDataSource::TestDataSource(wl_resource* resource)
     : ServerObject(resource),
-      io_thread_("Worker thread"),
-      read_data_weak_ptr_factory_(this) {
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  io_thread_.StartWithOptions(options);
-}
+      task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      read_data_weak_ptr_factory_(this) {}
 
 TestDataSource::~TestDataSource() {}
 
@@ -86,8 +86,8 @@ void TestDataSource::ReadData(ReadDataCallback callback) {
 
   wl_data_source_send_send(resource(), kTextMimeTypeUtf8, write_fd.get());
 
-  base::PostTaskAndReplyWithResult(
-      io_thread_.task_runner().get(), FROM_HERE,
+  PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::BindOnce(&ReadDataOnWorkerThread, std::move(read_fd)),
       base::BindOnce(&TestDataSource::DataReadCb,
                      read_data_weak_ptr_factory_.GetWeakPtr(),
