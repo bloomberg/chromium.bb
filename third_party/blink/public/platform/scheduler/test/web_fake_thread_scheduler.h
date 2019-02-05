@@ -34,6 +34,10 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   void DidHandleInputEventOnCompositorThread(
       const WebInputEvent& web_input_event,
       InputEventState event_state) override;
+  void WillPostInputEventToMainThread(
+      WebInputEvent::Type web_input_event_type) override;
+  void WillHandleInputEventOnMainThread(
+      WebInputEvent::Type web_input_event_type) override;
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;

@@ -4813,6 +4813,7 @@ interface Navigator
     getter presentation
     getter product
     getter productSub
+    getter scheduling
     getter serial
     getter serviceWorker
     getter storage
@@ -7064,6 +7065,10 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
+interface Scheduling
+    attribute @@toStringTag
+    method constructor
+    method isInputPending
 interface Screen
     attribute @@toStringTag
     getter availHeight

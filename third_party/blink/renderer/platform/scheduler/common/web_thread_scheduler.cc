@@ -113,6 +113,16 @@ void WebThreadScheduler::DidHandleInputEventOnCompositorThread(
   NOTREACHED();
 }
 
+void WebThreadScheduler::WillPostInputEventToMainThread(
+    WebInputEvent::Type web_input_event_type) {
+  NOTREACHED();
+}
+
+void WebThreadScheduler::WillHandleInputEventOnMainThread(
+    WebInputEvent::Type web_input_event_type) {
+  NOTREACHED();
+}
+
 void WebThreadScheduler::DidHandleInputEventOnMainThread(
     const WebInputEvent& web_input_event,
     WebInputEventResult result) {
