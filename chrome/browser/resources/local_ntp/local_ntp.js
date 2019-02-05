@@ -458,6 +458,23 @@ function sendThemeInfoToMostVisitedIframe() {
 
 
 /**
+ * Sends the current theme info to the edit custom link iframe.
+ * @private
+ */
+function sendThemeInfoToEditCustomLinkIframe() {
+  const info = getThemeBackgroundInfo();
+  if (!info) {
+    return;
+  }
+
+  let message = {cmd: 'updateTheme'};
+  message.isDarkMode = !!info.usingDarkMode;
+
+  $(IDS.CUSTOM_LINKS_EDIT_IFRAME).contentWindow.postMessage(message, '*');
+}
+
+
+/**
  * Updates the OneGoogleBar (if it is loaded) based on the current theme.
  * TODO(crbug.com/918582): Add support for OGB dark mode.
  * @private
@@ -491,6 +508,7 @@ function onThemeChange() {
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
+  sendThemeInfoToEditCustomLinkIframe();
 
   // If dark mode has been changed, refresh the MV tiles to render the
   // appropriate icon.
@@ -1168,10 +1186,6 @@ function createIframes() {
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
-  if (isDarkModeEnabled) {
-    args.push('enableDarkMode=1');
-  }
-
   if (configData.isGooglePage) {
     args.push('enableCustomLinks=1');
     args.push(
@@ -1194,8 +1208,8 @@ function createIframes() {
   $(IDS.TILES).appendChild(iframe);
 
   iframe.onload = function() {
-    reloadTiles();
     sendThemeInfoToMostVisitedIframe();
+    reloadTiles();
   };
 
   if (configData.isGooglePage) {
@@ -1204,10 +1218,6 @@ function createIframes() {
 
     if (searchboxApiHandle.rtl) {
       clArgs.push('rtl=1');
-    }
-
-    if (isDarkModeEnabled) {
-      clArgs.push('enableDarkMode=1');
     }
 
     clArgs.push(
@@ -1246,6 +1256,10 @@ function createIframes() {
     clIframeDialog.classList.add(CLASSES.CUSTOMIZE_DIALOG);
     clIframeDialog.appendChild(clIframe);
     document.body.appendChild(clIframeDialog);
+
+    clIframe.onload = () => {
+      sendThemeInfoToEditCustomLinkIframe();
+    };
   }
 
   window.addEventListener('message', handlePostMessage);
