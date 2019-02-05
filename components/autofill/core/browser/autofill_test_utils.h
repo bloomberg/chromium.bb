@@ -216,7 +216,7 @@ void InitializePossibleTypesAndValidities(
     std::vector<ServerFieldTypeValidityStatesMap>&
         possible_field_types_validities,
     const std::vector<ServerFieldType>& possible_type,
-    const std::vector<AutofillProfile::ValidityState>& validity_state = {});
+    const std::vector<AutofillDataModel::ValidityState>& validity_state = {});
 
 // Fills the upload |field| with the information passed by parameter. If the
 // value of a const char* parameter is NULL, the corresponding attribute won't

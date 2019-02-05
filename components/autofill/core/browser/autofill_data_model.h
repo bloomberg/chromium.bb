@@ -22,6 +22,26 @@ struct AutofillMetadata;
 // PersonalDataManager.
 class AutofillDataModel : public FormGroup {
  public:
+  enum ValidityState {
+    // The field has not been validated.
+    UNVALIDATED = 0,
+    // The field is empty.
+    EMPTY = 1,
+    // The field is valid.
+    VALID = 2,
+    // The field is invalid.
+    INVALID = 3,
+    // The validation for the field is unsupported.
+    UNSUPPORTED = 4,
+  };
+
+  enum ValidationSource {
+    // The validity state is according to the client validation.
+    CLIENT = 0,
+    // The validity state is according to the server validation.
+    SERVER = 1,
+  };
+
   AutofillDataModel(const std::string& guid, const std::string& origin);
   ~AutofillDataModel() override;
 
@@ -69,6 +89,10 @@ class AutofillDataModel : public FormGroup {
   // Returns whether the data model is deletable: if it has not been used for
   // longer than |kDisusedCreditCardDeletionTimeDelta|.
   virtual bool IsDeletable() const;
+
+  // Returns the validity state of the specified autofill type.
+  virtual ValidityState GetValidityState(ServerFieldType type,
+                                         ValidationSource source) const;
 
  protected:
   // Called to update |use_count_| and |use_date_| when this data model is

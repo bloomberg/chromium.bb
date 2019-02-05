@@ -9,6 +9,7 @@
 
 #include <iosfwd>
 #include <list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -38,26 +39,6 @@ class AutofillProfile : public AutofillDataModel {
     LOCAL_PROFILE,
     // A profile synced down from the server. These are read-only locally.
     SERVER_PROFILE,
-  };
-
-  enum ValidityState {
-    // The field has not been validated.
-    UNVALIDATED = 0,
-    // The field is empty.
-    EMPTY = 1,
-    // The field is valid.
-    VALID = 2,
-    // The field is invalid.
-    INVALID = 3,
-    // The validation for the field is unsupported.
-    UNSUPPORTED = 4,
-  };
-
-  enum ValidationSource {
-    // The validity state is according to the client validation.
-    CLIENT = 0,
-    // The validity state is according to the server validation.
-    SERVER = 1,
   };
 
   AutofillProfile(const std::string& guid, const std::string& origin);
@@ -253,7 +234,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // Returns the validity state of the specified autofill type.
   ValidityState GetValidityState(ServerFieldType type,
-                                 ValidationSource source) const;
+                                 ValidationSource source) const override;
 
   // Sets the validity state of the specified autofill type.
   // This should only be called from autofill profile validtion API or in tests.

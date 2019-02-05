@@ -80,4 +80,10 @@ bool AutofillDataModel::IsDeletable() const {
   return use_date_ < AutofillClock::Now() - kDisusedDataModelDeletionTimeDelta;
 }
 
+AutofillDataModel::ValidityState AutofillDataModel::GetValidityState(
+    ServerFieldType type,
+    AutofillDataModel::ValidationSource source) const {
+  return AutofillDataModel::UNSUPPORTED;
+}
+
 }  // namespace autofill

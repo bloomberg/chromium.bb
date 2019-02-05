@@ -2325,7 +2325,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
     personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
                                              autofill_profile_validity);
     (*profile_validity_map.mutable_field_validity_states())[static_cast<int>(
-        ADDRESS_HOME_STATE)] = static_cast<int>(AutofillProfile::INVALID);
+        ADDRESS_HOME_STATE)] = static_cast<int>(AutofillDataModel::INVALID);
     (*user_profile_validity_map
           .mutable_profile_validity())[invalid_profile.guid()] =
         profile_validity_map;
@@ -6950,10 +6950,10 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
   std::vector<ServerFieldType> types = {
       ADDRESS_HOME_LINE1, ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
       EMAIL_ADDRESS,      ADDRESS_HOME_ZIP,   NAME_FULL};
-  std::vector<AutofillProfile::ValidityState> states = {
-      AutofillProfile::UNSUPPORTED, AutofillProfile::EMPTY,
-      AutofillProfile::INVALID,     AutofillProfile::VALID,
-      AutofillProfile::UNVALIDATED, AutofillProfile::INVALID};
+  std::vector<AutofillDataModel::ValidityState> states = {
+      AutofillDataModel::UNSUPPORTED, AutofillDataModel::EMPTY,
+      AutofillDataModel::INVALID,     AutofillDataModel::VALID,
+      AutofillDataModel::UNVALIDATED, AutofillDataModel::INVALID};
   ASSERT_EQ(types.size(), states.size());
   for (unsigned long i = 0; i < types.size(); ++i) {
     (*profile_validity_map
@@ -6974,7 +6974,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
   autofill_profile_validity.clear();
   (*profile_validity_map
         .mutable_field_validity_states())[static_cast<int>(EMAIL_ADDRESS)] =
-      static_cast<int>(AutofillProfile::VALID);
+      static_cast<int>(AutofillDataModel::VALID);
   (*user_profile_validity_map.mutable_profile_validity())[guid] =
       profile_validity_map;
   ASSERT_TRUE(
@@ -7001,7 +7001,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
   validities =
       personal_data_->GetProfileValidityByGUID(guid).field_validity_states();
   ASSERT_FALSE(validities.empty());
-  EXPECT_EQ(validities.at(EMAIL_ADDRESS), AutofillProfile::VALID);
+  EXPECT_EQ(validities.at(EMAIL_ADDRESS), AutofillDataModel::VALID);
 }
 
 // Use the client side validation API to validate three PDM profiles. This one
@@ -7024,25 +7024,25 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates) {
   ASSERT_EQ(1U, profiles.size());
 
   EXPECT_TRUE(profiles[0]->is_client_validity_states_updated());
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillDataModel::VALID,
             profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
                                           AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::INVALID,
+  EXPECT_EQ(AutofillDataModel::INVALID,
             profiles[0]->GetValidityState(ADDRESS_HOME_STATE,
                                           AutofillProfile::CLIENT));
   EXPECT_EQ(
-      AutofillProfile::VALID,
+      AutofillDataModel::VALID,
       profiles[0]->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::INVALID,
+  EXPECT_EQ(AutofillDataModel::INVALID,
             profiles[0]->GetValidityState(ADDRESS_HOME_CITY,
                                           AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::EMPTY,
+  EXPECT_EQ(AutofillDataModel::EMPTY,
             profiles[0]->GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
                                           AutofillProfile::CLIENT));
   EXPECT_EQ(
-      AutofillProfile::VALID,
+      AutofillDataModel::VALID,
       profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillDataModel::VALID,
             profiles[0]->GetValidityState(PHONE_HOME_WHOLE_NUMBER,
                                           AutofillProfile::CLIENT));
 }
@@ -7110,7 +7110,7 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates_AlreadyUpdated) {
   ASSERT_EQ(1U, profiles.size());
   // The validities were updated when the profile was added.
   EXPECT_EQ(
-      AutofillProfile::INVALID,
+      AutofillDataModel::INVALID,
       profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
 
   // Change the email, the validity update would turn false.
@@ -7126,7 +7126,7 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates_AlreadyUpdated) {
   profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
   EXPECT_EQ(
-      AutofillProfile::INVALID,
+      AutofillDataModel::INVALID,
       profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
 
   // Try with the flag as not updated.
@@ -7137,7 +7137,7 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates_AlreadyUpdated) {
   profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
   EXPECT_EQ(
-      AutofillProfile::VALID,
+      AutofillDataModel::VALID,
       profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
 }
 
@@ -7200,17 +7200,17 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates_Version) {
   // Verify that the version of the last update is set to this version.
   EXPECT_EQ(CHROME_VERSION_MAJOR, GetLastVersionValidatedUpdate());
 
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillDataModel::VALID,
             profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
                                           AutofillProfile::CLIENT));
   EXPECT_EQ(
-      AutofillProfile::INVALID,
+      AutofillDataModel::INVALID,
       profiles[0]->GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
 
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillDataModel::VALID,
             profiles[1]->GetValidityState(ADDRESS_HOME_COUNTRY,
                                           AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::INVALID,
+  EXPECT_EQ(AutofillDataModel::INVALID,
             profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
                                           AutofillProfile::CLIENT));
 }
@@ -7271,7 +7271,7 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_Disabled) {
   personal_data_->UpdateClientValidityStates(profiles);
 
   EXPECT_FALSE(profiles[0]->is_client_validity_states_updated());
-  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+  EXPECT_EQ(AutofillDataModel::UNVALIDATED,
             profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
                                           AutofillProfile::CLIENT));
 }
@@ -7428,7 +7428,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
     EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
     // The metric should not be logged if the user had no server cards.
     histogram_tester.ExpectTotalCount(kHistogramName, 0);
-  };
+  }
 
   // Re-set some server cards. Check that the function now returns true.
   SetServerCards(server_cards);
