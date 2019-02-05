@@ -149,10 +149,6 @@ bool WebViewFrameWidget::IsAcceleratedCompositingActive() const {
   return web_view_->IsAcceleratedCompositingActive();
 }
 
-void WebViewFrameWidget::WillCloseLayerTreeView() {
-  web_view_->WillCloseLayerTreeView();
-}
-
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }

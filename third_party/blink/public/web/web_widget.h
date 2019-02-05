@@ -227,10 +227,6 @@ class WebWidget {
   // Returns true if the WebWidget created is of type WebFrameWidget.
   virtual bool IsWebFrameWidget() const { return false; }
 
-  // The WebLayerTreeView initialized on this WebWidgetClient will be going away
-  // and is no longer safe to access.
-  virtual void WillCloseLayerTreeView() {}
-
   // Calling WebWidgetClient::requestPointerLock() will result in one
   // return call to didAcquirePointerLock() or didNotAcquirePointerLock().
   virtual void DidAcquirePointerLock() {}

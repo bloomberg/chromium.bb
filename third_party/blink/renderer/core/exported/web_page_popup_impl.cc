@@ -134,9 +134,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       popup_->web_view_->WidgetClient()->ScheduleAnimation();
       return;
     }
-
-    // TODO(danakj): Why null check? Can ScheduleAnimation() happen after the
-    // call to WillCloseLayerTreeView()?
     popup_->WidgetClient()->ScheduleAnimation();
   }
 
@@ -393,15 +390,6 @@ void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time, bool) {
   PageWidgetDelegate::Animate(*page_, CurrentTimeTicks());
 }
 
-void WebPagePopupImpl::WillCloseLayerTreeView() {
-  if (page_ && layer_tree_view_)
-    page_->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
-
-  is_accelerated_compositing_active_ = false;
-  layer_tree_view_ = nullptr;
-  animation_host_ = nullptr;
-}
-
 void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
                                        LifecycleUpdateReason reason) {
   if (!page_)
@@ -539,6 +527,14 @@ WebURL WebPagePopupImpl::GetURLForDebugTrace() {
 }
 
 void WebPagePopupImpl::Close() {
+  // TODO(danakj): |layer_tree_view_| should never be null here.
+  if (page_ && layer_tree_view_)
+    page_->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+
+  is_accelerated_compositing_active_ = false;
+  layer_tree_view_ = nullptr;
+  animation_host_ = nullptr;
+
   closing_ = true;
   // In case closePopup() was not called.
   if (page_)

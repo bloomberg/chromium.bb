@@ -1839,20 +1839,12 @@ void RenderWidget::CloseWebWidget() {
   // closing. Then we would not have to destroy this so carefully.
   screen_metrics_emulator_.reset();
 
-  // Informs the WebWidget that compositor is being destroyed, so it can remove
-  // references to it first.
-  //
   // When delegate() is present, the RenderWidget is for a main frame,
-  // and the GetWebWidget() is not the same as |webwidget_internal_|. However
-  // that widget is responsible for doing WillCloseLayerTreeView() on the
-  // |webwidget_internal_|, not us. Otherwise, they are the same and this is
-  // notifying |webwidget_internal_|.
-  GetWebWidget()->WillCloseLayerTreeView();
-
-  // While the wrapping WebWidget from an delegate() is responsible for
-  // doing WillCloseLayerTreeView() on the |webwidget_internal_|, this class is
-  // responsible for calling Close() on it. Notably, then, the wrapping
-  // WebWidget does not.
+  // and the GetWebWidget() will be a WebFrameWidget, which is not the same as
+  // |webwidget_internal_|. The WebFrameWidget will be closed when the main
+  // frame is detached, so we do not close it here. But it does not close the
+  // |webwidget_internal_| since this class takes responsibility for that here
+  // in all cases.
   webwidget_internal_->Close();
   webwidget_internal_ = nullptr;
 }

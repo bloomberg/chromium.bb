@@ -159,7 +159,6 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
       root_layer_(nullptr),
       root_graphics_layer_(nullptr),
       is_accelerated_compositing_active_(false),
-      layer_tree_view_closed_(false),
       suppress_next_keypress_event_(false),
       ime_accept_events_(true),
       self_keep_alive_(this) {}
@@ -174,13 +173,18 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 // WebWidget ------------------------------------------------------------------
 
 void WebFrameWidgetImpl::Close() {
+  if (layer_tree_view_) {
+    GetPage()->WillCloseLayerTreeView(*layer_tree_view_,
+                                      LocalRootImpl()->GetFrame()->View());
+  }
+
   WebFrameWidgetBase::Close();
 
   mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
+  animation_host_ = nullptr;
   root_layer_ = nullptr;
   root_graphics_layer_ = nullptr;
-  animation_host_ = nullptr;
 
   self_keep_alive_.Clear();
 }
@@ -634,19 +638,6 @@ bool WebFrameWidgetImpl::IsAcceleratedCompositingActive() const {
   return is_accelerated_compositing_active_;
 }
 
-void WebFrameWidgetImpl::WillCloseLayerTreeView() {
-  if (layer_tree_view_) {
-    GetPage()->WillCloseLayerTreeView(*layer_tree_view_,
-                                      LocalRootImpl()->GetFrame()->View());
-  }
-
-  SetIsAcceleratedCompositingActive(false);
-  mutator_dispatcher_ = nullptr;
-  layer_tree_view_ = nullptr;
-  animation_host_ = nullptr;
-  layer_tree_view_closed_ = true;
-}
-
 void WebFrameWidgetImpl::SetRemoteViewportIntersection(
     const WebRect& viewport_intersection,
     bool occluded_or_obscured) {
@@ -1029,24 +1020,17 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
 }
 
 void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
-  // In the middle of shutting down; don't try to spin back up a compositor.
-  // FIXME: compositing startup/shutdown should be refactored so that it
-  // turns on explicitly rather than lazily, which causes this awkwardness.
-  if (layer_tree_view_closed_)
+  if (!active)
     return;
-
-  DCHECK(!active || layer_tree_view_);
-
-  if (is_accelerated_compositing_active_ == active)
+  if (is_accelerated_compositing_active_)
     return;
+  DCHECK(layer_tree_view_);
 
-  if (active) {
-    TRACE_EVENT0("blink",
-                 "WebViewImpl::setIsAcceleratedCompositingActive(true)");
-    layer_tree_view_->SetRootLayer(root_layer_);
-    UpdateLayerTreeViewport();
-    is_accelerated_compositing_active_ = true;
-  }
+  TRACE_EVENT0("blink",
+               "WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(true)");
+  layer_tree_view_->SetRootLayer(root_layer_);
+  UpdateLayerTreeViewport();
+  is_accelerated_compositing_active_ = true;
 }
 
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {

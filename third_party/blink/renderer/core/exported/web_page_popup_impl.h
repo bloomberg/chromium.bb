@@ -88,7 +88,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
-  void WillCloseLayerTreeView() override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void Resize(const WebSize&) override;
   void Close() override;

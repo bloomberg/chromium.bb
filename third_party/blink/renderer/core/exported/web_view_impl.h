@@ -460,7 +460,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
-  void WillCloseLayerTreeView() override;
   void DidAcquirePointerLock() override;
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;

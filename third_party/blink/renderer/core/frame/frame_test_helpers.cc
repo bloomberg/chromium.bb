@@ -492,14 +492,8 @@ void TestWebFrameClient::BindWidgetClient(
 }
 
 void TestWebFrameClient::FrameDetached(DetachType type) {
-  if (frame_->FrameWidget()) {
-    // TODO(dcheng): This shouldn't exclude the main frame, but it is currently
-    // unsafe to close the LTV for the main frame: that's handled separately by
-    // closing the entire WebView itself.
-    if (frame_->Parent())
-      frame_->FrameWidget()->WillCloseLayerTreeView();
+  if (frame_->FrameWidget())
     frame_->FrameWidget()->Close();
-  }
 
   owned_widget_client_.reset();
   frame_->Close();
