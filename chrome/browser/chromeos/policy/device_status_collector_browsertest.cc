@@ -433,6 +433,8 @@ class DeviceStatusCollectorTest : public testing::Test {
         chromeos::kReportDeviceNetworkInterfaces, false);
   }
 
+  void TearDown() override { status_collector_.reset(); };
+
  protected:
   // States tracked to calculate a child's active time.
   enum class DeviceStateTransitions {
@@ -498,10 +500,10 @@ class DeviceStatusCollectorTest : public testing::Test {
       const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
       const TimeDelta activity_day_start = kMidnight) {
     std::vector<em::VolumeInfo> expected_volume_info;
-    status_collector_.reset(new TestingDeviceStatusCollector(
+    status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
-        activity_day_start, true /* is_enterprise_device */));
+        activity_day_start, true /* is_enterprise_device */);
   }
 
   void GetStatus() {
@@ -2285,6 +2287,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
   }
 
   void TearDown() override {
+    status_collector_.reset();
     chromeos::NetworkHandler::Shutdown();
   }
 
@@ -2666,7 +2669,10 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
       DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
       DeviceStateTransitions::kLeaveSleep,
       DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive};
+      DeviceStateTransitions::kLeaveSessionActive,
+      DeviceStateTransitions::kEnterSleep,
+      DeviceStateTransitions::kLeaveSleep,
+      DeviceStateTransitions::kPeriodicCheckTriggered};
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
 

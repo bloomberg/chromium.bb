@@ -398,6 +398,11 @@ extern const base::Feature kTopSitesFromSiteEngagement;
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kUsageTimeStateNotifier;
+#endif
+
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAdaptiveScreenBrightnessLogging;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
