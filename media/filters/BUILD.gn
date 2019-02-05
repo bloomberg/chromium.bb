@@ -161,6 +161,14 @@ jumbo_source_set("filters") {
     deps += [ "//third_party/libaom" ]
   }
 
+  if (enable_dav1d_decoder) {
+    sources += [
+      "dav1d_video_decoder.cc",
+      "dav1d_video_decoder.h",
+    ]
+    deps += [ "//third_party/dav1d" ]
+  }
+
   if (media_use_ffmpeg) {
     if (proprietary_codecs) {
       sources += [
@@ -363,6 +371,10 @@ source_set("unit_tests") {
 
   if (enable_av1_decoder) {
     sources += [ "aom_video_decoder_unittest.cc" ]
+
+    if (enable_dav1d_decoder) {
+      sources += [ "dav1d_video_decoder_unittest.cc" ]
+    }
   }
 
   if (current_cpu != "arm" && is_linux) {

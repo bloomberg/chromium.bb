@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libaom/options.gni")
 
 # Do not expand this list without double-checking with OWNERS, this is a list of
 # all targets which roll up into the //media component. It controls visibility
@@ -83,6 +84,10 @@ declare_args() {
   # If true, use cast CMA backend instead of default chromium media pipeline.
   # TODO(sanfin): Remove this flag when all builds enable CMA.
   is_cast_using_cma_backend = true
+
+  # Dav1d is only enabled when av1 decoding is enabled.
+  # TODO(dalecurtis): Re-enable once bugs fixed. https://crbug.com/924370.
+  enable_dav1d_decoder = false
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
