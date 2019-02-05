@@ -95,9 +95,9 @@ TEST_F(ScopedUserPrefUpdateTest, UpdatingListPrefWithDefaults) {
 }
 
 TEST_F(ScopedUserPrefUpdateTest, UpdatingDictionaryPrefWithDefaults) {
-  auto defaults = std::make_unique<base::DictionaryValue>();
-  defaults->SetKey("firstkey", base::Value("value"));
-  defaults->SetKey("secondkey", base::Value("value"));
+  base::Value defaults(base::Value::Type::DICTIONARY);
+  defaults.SetKey("firstkey", base::Value("value"));
+  defaults.SetKey("secondkey", base::Value("value"));
 
   std::string pref_name = "mypref";
   prefs_.registry()->RegisterDictionaryPref(pref_name, std::move(defaults));

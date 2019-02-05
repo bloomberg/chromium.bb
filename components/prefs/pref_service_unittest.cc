@@ -381,7 +381,6 @@ TEST(PrefServiceTest, WriteablePrefStoreFlags) {
   for (size_t i = 0; i < base::size(kRegistrationToWriteFlags); ++i) {
     RegistrationToWriteFlags entry = kRegistrationToWriteFlags[i];
     registry->RegisterDictionaryPref(entry.pref_name,
-                                     std::make_unique<base::DictionaryValue>(),
                                      entry.registration_flags);
 
     SCOPED_TRACE("Currently testing pref with name: " +
