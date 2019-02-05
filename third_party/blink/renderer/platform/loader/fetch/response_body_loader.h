@@ -24,21 +24,34 @@ namespace blink {
 class ResponseBodyLoader;
 
 // See ResponseBodyLoader for details. This is a virtual interface to expose
-// only DrainAsDataPipe function.
+// only Drain functions.
 class PLATFORM_EXPORT ResponseBodyLoaderDrainableInterface
     : public GarbageCollectedFinalized<ResponseBodyLoaderDrainableInterface> {
  public:
   virtual ~ResponseBodyLoaderDrainableInterface() = default;
 
-  // Drains the response body and returns it. This function must be called
-  // before calling Start(). This function may return an invalid handle when
-  // it is unable to convert the body to a data pipe, even when the body itself
-  // is valid. In that case, this function is no-op.
-  // If this function returns a valid handle, the caller is responsible for
-  // reading the body and providing the information to the client this
-  // function provides.
+  // Drains the response body and returns it. This function must not be called
+  // when the load has already been started or aborted, or the body has already
+  // been drained. This function may return an invalid handle when it is
+  // unable to convert the body to a data pipe, even when the body itself is
+  // valid. In that case, this function is no-op. If this function returns a
+  // valid handle, the caller is responsible for reading the body and providing
+  // the information to the client this function provides.
+  // Note that the notification from the client is *synchronously* propergated
+  // to the original client ResponseBodyLoader owns,  e.g., when the caller
+  // calls ResponseBodyLoaderClient::DidCancelLoadingBody, it synchronously
+  // cancels the resource loading (if |this| is associated with
+  // blink::ResourceLoader). A user of this function should ensure that calling
+  // the client's method doesn't lead to a reentrant problem.
   virtual mojo::ScopedDataPipeConsumerHandle DrainAsDataPipe(
       ResponseBodyLoaderClient** client) = 0;
+
+  // Drains the response body and returns it. This function must not be called
+  // when the load has already been started or aborted, or the body has already
+  // been drained. Unlike DrainAsDataPipe, this function always succeeds.
+  // This ResponseBodyLoader will still monitor the loading signals, and report
+  // them back to the associated client asynchronously.
+  virtual BytesConsumer& DrainAsBytesConsumer() = 0;
 
   virtual void Trace(Visitor*) {}
 };
@@ -50,6 +63,8 @@ class PLATFORM_EXPORT ResponseBodyLoaderDrainableInterface
 //  - By calling DrainAsDataPipe, a user can "drain" the contents from
 //    ResponseBodyLoader. The caller is responsible for reading the body and
 //    providing the information to the client this function provides.
+//  - By calling DrainBytesConsumer, a user can "drain" the contents from
+//    ResponseBodyLoader.
 // A ResponseBodyLoader is bound to the thread on which it is created.
 class PLATFORM_EXPORT ResponseBodyLoader final
     : public ResponseBodyLoaderDrainableInterface,
@@ -65,13 +80,14 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   // ResponseBodyLoaderDrainableInterface implementation.
   mojo::ScopedDataPipeConsumerHandle DrainAsDataPipe(
       ResponseBodyLoaderClient**) override;
+  BytesConsumer& DrainAsBytesConsumer() override;
 
   // Starts loading.
   void Start();
 
   // Aborts loading. This is expected to be called from the client's side, and
   // does not report the failure to the client. This doesn't affect a
-  // drained data pipe.
+  // drained data pipe. This function cannot be called when suspended.
   void Abort();
 
   // Suspendes loading.
@@ -94,16 +110,20 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   static constexpr size_t kMaxNumConsumedBytesInTask = 64 * 1024;
 
  private:
+  class DelegatingBytesConsumer;
+
   // ResponseBodyLoaderClient implementation.
   void DidReceiveData(base::span<const char> data) override;
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
+  void DidCancelLoadingBody() override;
 
   // BytesConsumer::Client implementation.
   void OnStateChange() override;
   String DebugName() const override { return "ResponseBodyLoader"; }
 
   Member<BytesConsumer> bytes_consumer_;
+  Member<DelegatingBytesConsumer> delegating_bytes_consumer_;
   const Member<ResponseBodyLoaderClient> client_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool started_ = false;
@@ -112,6 +132,7 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   bool drained_ = false;
   bool finish_signal_is_pending_ = false;
   bool fail_signal_is_pending_ = false;
+  bool cancel_signal_is_pending_ = false;
   bool in_two_phase_read_ = false;
 };
 

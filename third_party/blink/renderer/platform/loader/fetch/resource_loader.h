@@ -169,6 +169,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveData(base::span<const char> data) override;
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
+  void DidCancelLoadingBody() override;
 
   bool ShouldFetchCodeCache();
   void StartWith(const ResourceRequest&);
