@@ -12,6 +12,7 @@
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/websockets/websocket_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -26,7 +27,7 @@ namespace {
 
 // A host for a single dedicated worker. Its lifetime is managed by the
 // DedicatedWorkerGlobalScope of the corresponding worker in the renderer via a
-// StrongBinding.
+// StrongBinding. This lives on the UI thread.
 class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
  public:
   DedicatedWorkerHost(int process_id,
@@ -35,12 +36,14 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       : process_id_(process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
         origin_(origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     RegisterMojoInterfaces();
   }
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
     if (!process)
       return;
@@ -56,6 +59,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
  private:
   void RegisterMojoInterfaces() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateWebSocket, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
@@ -65,6 +69,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     auto* host =
         RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
     GetContentClient()->browser()->CreateWebUsbService(host,
@@ -72,6 +77,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void CreateWebSocket(network::mojom::WebSocketRequest request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     network::mojom::AuthenticationHandlerPtr auth_handler;
     auto* frame =
         RenderFrameHost::FromID(process_id_, ancestor_render_frame_id_);
@@ -93,6 +99,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
   void CreateDedicatedWorker(
       blink::mojom::DedicatedWorkerFactoryRequest request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CreateDedicatedWorkerHostFactory(process_id_, ancestor_render_frame_id_,
                                      origin_, std::move(request));
   }
@@ -110,7 +117,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 };
 
 // A factory for creating DedicatedWorkerHosts. Its lifetime is managed by
-// the renderer over mojo via a StrongBinding.
+// the renderer over mojo via a StrongBinding. This lives on the UI thread.
 class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
  public:
   DedicatedWorkerFactoryImpl(int process_id,
@@ -118,12 +125,15 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
                              const url::Origin& parent_context_origin)
       : process_id_(process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
-        parent_context_origin_(parent_context_origin) {}
+        parent_context_origin_(parent_context_origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  }
 
   // blink::mojom::DedicatedWorkerFactory:
   void CreateDedicatedWorker(
       const url::Origin& origin,
       service_manager::mojom::InterfaceProviderRequest request) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // TODO(crbug.com/729021): Once |parent_context_origin_| is no longer races
     // with the request for |DedicatedWorkerFactory|, enforce that the worker's
     // origin either matches the creating document's origin, or is unique.
@@ -149,6 +159,7 @@ void CreateDedicatedWorkerHostFactory(
     int ancestor_render_frame_id,
     const url::Origin& origin,
     blink::mojom::DedicatedWorkerFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerFactoryImpl>(
                               process_id, ancestor_render_frame_id, origin),
                           std::move(request));

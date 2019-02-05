@@ -13,6 +13,7 @@ class Origin;
 
 namespace content {
 
+// Creates a host for a dedicated worker. This must be called on the UI thread.
 void CreateDedicatedWorkerHostFactory(
     int process_id,
     int parent_render_frame_id,
