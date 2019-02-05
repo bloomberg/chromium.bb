@@ -624,11 +624,31 @@ bool FieldFiller::FillFormField(const AutofillField& field,
                                 FormFieldData* field_data,
                                 const base::string16& cvc) {
   const AutofillType type = field.Type();
+
   // Don't fill if autocomplete=off is set on |field| on desktop for non credit
   // card related fields.
   if (!base::FeatureList::IsEnabled(features::kAutofillAlwaysFillAddresses) &&
       !field.should_autocomplete && IsDesktopPlatform() &&
       (type.group() != CREDIT_CARD)) {
+    return false;
+  }
+
+  // Check for the validity of the data. Leave the field empty if the data is
+  // invalid and the relevant feature is enabled.
+  bool use_server_validation = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillProfileServerValidation);
+  bool use_client_validation = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillProfileClientValidation);
+  ServerFieldType server_field_type = type.GetStorableType();
+
+  if ((use_client_validation &&
+       data_model.GetValidityState(server_field_type,
+                                   AutofillProfile::CLIENT) ==
+           AutofillProfile::INVALID) ||
+      (use_server_validation &&
+       data_model.GetValidityState(server_field_type,
+                                   AutofillProfile::SERVER) ==
+           AutofillProfile::INVALID)) {
     return false;
   }
 

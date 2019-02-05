@@ -110,6 +110,29 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
   EXPECT_EQ(ASCIIToUTF16("Nov"), field.option_contents[content_index]);
 }
 
+void TestFillingInvalidFields(const base::string16& state,
+                              const base::string16& city) {
+  AutofillProfile profile = test::GetFullProfile();
+  profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::INVALID,
+                           AutofillProfile::SERVER);
+  profile.SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::INVALID,
+                           AutofillProfile::CLIENT);
+
+  AutofillField field_state;
+  field_state.set_heuristic_type(ADDRESS_HOME_STATE);
+  AutofillField field_city;
+  field_city.set_heuristic_type(ADDRESS_HOME_CITY);
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field_state, profile, &field_state,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(state, field_state.value);
+
+  filler.FillFormField(field_city, profile, &field_city,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(city, field_city.value);
+}
+
 struct CreditCardTestCase {
   std::string card_number_;
   size_t total_splits_;
@@ -386,6 +409,50 @@ TEST_F(AutofillFieldFillerTest, FillFormField_AutocompleteOff_CreditCardField) {
 
   // Verify that the field is filled.
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
+}
+
+// Verify that when the relevant feature is enabled, the invalid fields don't
+// get filled.
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_ServerClient) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileServerValidation,
+                            features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/base::string16(),
+                           /*city=*/base::string16());
+}
+
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_OnlyServer) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileServerValidation},
+      /*disabled_features=*/{features::kAutofillProfileClientValidation});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/base::string16(),
+                           /*city=*/ASCIIToUTF16("Elysium"));
+}
+
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_OnlyClient) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{features::kAutofillProfileServerValidation});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/ASCIIToUTF16("CA"),
+                           /*city=*/base::string16());
+}
+
+TEST_F(AutofillFieldFillerTest, FillFormField_NoValidity) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kAutofillProfileServerValidation,
+                             features::kAutofillProfileClientValidation});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/ASCIIToUTF16("CA"),
+                           /*city=*/ASCIIToUTF16("Elysium"));
 }
 
 struct AutofillFieldFillerTestCase {
