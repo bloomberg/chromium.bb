@@ -66,8 +66,10 @@
 #include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
+#include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -1155,16 +1157,35 @@ void DocumentLoader::StartLoadingInternal() {
     HandleRedirect(redirect_response.CurrentRequestUrl());
   }
 
-  // TODO(dgozman): get rid of fake request, we only use it for
-  // DispatchDidReceiveResponse.
-  ResourceRequest fake_request;
-  fake_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
-  fake_request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
-  fetcher_->Context().DispatchDidReceiveResponse(
-      main_resource_identifier_, fake_request, final_response, nullptr,
-      FetchContext::ResourceResponseType::kNotFromMemoryCache);
+  if (!frame_->IsMainFrame() && final_response.GetCTPolicyCompliance() ==
+                                    ResourceResponse::kCTPolicyDoesNotComply) {
+    // Exclude main-frame navigations; those are tracked elsewhere.
+    GetUseCounter().Count(
+        WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe,
+        GetFrame());
+  }
+  MixedContentChecker::CheckMixedPrivatePublic(
+      GetFrame(), final_response.RemoteIPAddress());
+  ParseAndPersistClientHints(final_response);
+  PreloadHelper::LoadLinksFromHeader(
+      final_response.HttpHeaderField(http_names::kLink),
+      final_response.CurrentRequestUrl(), *GetFrame(), nullptr,
+      NetworkHintsInterfaceImpl(), PreloadHelper::kDoNotLoadResources,
+      PreloadHelper::kLoadAll, nullptr);
+  if (!frame_->IsMainFrame() && final_response.HasMajorCertificateErrors()) {
+    MixedContentChecker::HandleCertificateError(
+        GetFrame(), final_response, mojom::RequestContextType::HYPERLINK);
+  }
+  GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
+                                                final_response);
+  // TODO(dgozman): remove this client call, it is only used in tests.
+  GetLocalFrameClient().DispatchDidReceiveResponse(final_response);
+  probe::didReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
+                                    main_resource_identifier_, this,
+                                    final_response, nullptr /* resource */);
+  frame_->Console().ReportResourceResponseReceived(
+      this, main_resource_identifier_, final_response);
+
   if (!HandleResponse(final_response))
     return;
 
@@ -1200,6 +1221,8 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
     document->SetStateForNewFormElements(history_item_->GetDocumentState());
 
   DCHECK(document->GetFrame());
+  // TODO(dgozman): modify frame's client hints directly once we commit
+  // synchronously.
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(
       client_hints_preferences_);
 
@@ -1591,6 +1614,48 @@ void DocumentLoader::ReportPreviewsIntervention() const {
       "Modified page load behavior on the page because the page was expected "
       "to take a long amount of time to load. "
       "https://www.chromestatus.com/feature/5148050062311424");
+}
+
+void DocumentLoader::ParseAndPersistClientHints(
+    const ResourceResponse& response) {
+  const KURL& url = response.CurrentRequestUrl();
+
+  // The accept-ch-lifetime header is honored only on the navigation responses
+  // from a top level frame or with an origin matching the origin of the top
+  // level frame.
+  if (!frame_->IsMainFrame()) {
+    bool is_first_party_origin =
+        frame_->Tree()
+            .Top()
+            .GetSecurityContext()
+            ->GetSecurityOrigin()
+            ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
+    if (!is_first_party_origin)
+      return;
+  }
+
+  FrameClientHintsPreferencesContext hints_context(GetFrame());
+  client_hints_preferences_.UpdateFromAcceptClientHintsLifetimeHeader(
+      response.HttpHeaderField(http_names::kAcceptCHLifetime), url,
+      &hints_context);
+  client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
+      response.HttpHeaderField(http_names::kAcceptCH), url, &hints_context);
+
+  // Notify content settings client of persistent client hints.
+  if (client_hints_preferences_.GetPersistDuration().InSeconds() <= 0)
+    return;
+
+  auto* settings_client = frame_->GetContentSettingsClient();
+  if (!settings_client)
+    return;
+
+  // Do not persist client hint preferences if the JavaScript is disabled.
+  bool allow_script = frame_->GetSettings()->GetScriptEnabled();
+  if (!settings_client->AllowScriptFromSource(allow_script, url))
+    return;
+  settings_client->PersistClientHints(
+      client_hints_preferences_.GetWebEnabledClientHints(),
+      client_hints_preferences_.GetPersistDuration(), url);
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);

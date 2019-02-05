@@ -348,6 +348,11 @@ class CORE_EXPORT DocumentLoader
                            bool should_report_corb_blocking,
                            const base::Optional<WebURLError>& error) override;
 
+  // Checks if the origin requested persisting the client hints, and notifies
+  // the |WebContentSettingsClient| with the list of client hints and the
+  // persistence duration.
+  void ParseAndPersistClientHints(const ResourceResponse&);
+
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
   AtomicString http_method_;
