@@ -380,6 +380,9 @@ T GetValueFromDictionary(CFDictionaryRef dict, CFStringRef key) {
   return value_specific;
 }
 
+// Converts |path| to an autoreleased NSURL. Returns nil if |path| is empty.
+BASE_EXPORT NSURL* FilePathToNSURL(const FilePath& path);
+
 // Converts |path| to an autoreleased NSString. Returns nil if |path| is empty.
 BASE_EXPORT NSString* FilePathToNSString(const FilePath& path);
 

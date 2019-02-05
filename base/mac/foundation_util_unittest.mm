@@ -305,6 +305,12 @@ TEST(FoundationUtilTest, GetValueFromDictionary) {
   EXPECT_FALSE(GetValueFromDictionary<CFStringRef>(test_dict, CFSTR("one")));
 }
 
+TEST(FoundationUtilTest, FilePathToNSURL) {
+  EXPECT_NSEQ(nil, FilePathToNSURL(FilePath()));
+  EXPECT_NSEQ([NSURL fileURLWithPath:@"/a/b"],
+              FilePathToNSURL(FilePath("/a/b")));
+}
+
 TEST(FoundationUtilTest, FilePathToNSString) {
   EXPECT_NSEQ(nil, FilePathToNSString(FilePath()));
   EXPECT_NSEQ(@"/a/b", FilePathToNSString(FilePath("/a/b")));
