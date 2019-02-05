@@ -20,7 +20,7 @@ class ListValue;
 }
 
 namespace identity {
-class AccessTokenFetcher;
+class PrimaryAccountAccessTokenFetcher;
 }
 
 namespace network {
@@ -108,10 +108,8 @@ class FamilyInfoFetcher : public identity::IdentityManager::Observer {
       const AccountInfo& account_info) override;
   void OnRefreshTokensLoaded() override;
 
-  void OnAccessTokenFetchCompleteForAccount(
-      std::string account_id,
-      GoogleServiceAuthError error,
-      identity::AccessTokenInfo access_token_info);
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo access_token_info);
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -133,7 +131,8 @@ class FamilyInfoFetcher : public identity::IdentityManager::Observer {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::string request_path_;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
   std::string access_token_;
   bool access_token_expired_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
