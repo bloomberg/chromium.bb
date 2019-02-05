@@ -1117,7 +1117,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
 // Check that the SSLConfig is hooked up. PRE_SSLConfig checks that changing
 // local_state() after start modifies the SSLConfig, SSLConfig makes sure the
 // (now modified) initial value of local_state() is respected.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       DISABLED_PRE_SSLConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   // Start a TLS 1.0 server.
@@ -1164,7 +1165,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
   EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       DISABLED_SSLConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   // Start a TLS 1.0 server.
@@ -1191,7 +1193,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
   EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       DISABLED_ProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   SetProxyPref(embedded_test_server()->host_port_pair());
