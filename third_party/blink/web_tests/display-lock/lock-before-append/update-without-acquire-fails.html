@@ -37,7 +37,7 @@ function runTest() {
   container.id = "container";
   container.displayLock.update().then(
       () => { finishTest("FAIL"); },
-      () => { finishTest("PASS"); });
+      (e) => { finishTest("PASS " + e.message); });
   document.body.appendChild(container);
 }
 

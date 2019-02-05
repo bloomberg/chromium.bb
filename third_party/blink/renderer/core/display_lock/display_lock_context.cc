@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -27,11 +28,22 @@ namespace {
 // sec.
 double kDefaultLockTimeoutMs = 1000.;
 
+namespace rejection_names {
+const char* kElementIsUnlocked = "Element is unlocked.";
+const char* kExecutionContextDestroyed = "Execution context destroyed.";
+const char* kContainmentNotSatisfied =
+    "Containment requirement is not satisfied.";
+const char* kElementIsDisconnected = "Element is disconnected.";
+const char* kLockCommitted = "Lock commit was requested.";
+}  // namespace rejection_names
+
 // Helper function that returns an immediately rejected promise.
-ScriptPromise GetRejectedPromise(ScriptState* script_state) {
+ScriptPromise GetRejectedPromise(ScriptState* script_state,
+                                 const char* rejection_reason) {
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   auto promise = resolver->Promise();
-  resolver->Reject();
+  resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                                        rejection_reason));
   return promise;
 }
 
@@ -92,9 +104,9 @@ void DisplayLockContext::Dispose() {
 }
 
 void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
-  FinishUpdateResolver(kReject);
-  FinishCommitResolver(kReject);
-  FinishAcquireResolver(kReject);
+  FinishUpdateResolver(kReject, rejection_names::kExecutionContextDestroyed);
+  FinishCommitResolver(kReject, rejection_names::kExecutionContextDestroyed);
+  FinishAcquireResolver(kReject, rejection_names::kExecutionContextDestroyed);
   CancelTimeoutTask();
   state_ = kUnlocked;
 }
@@ -154,7 +166,8 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
   // Reject if we're unlocked or disconnected.
   if (state_ == kUnlocked || state_ == kPendingAcquire ||
       !element_->isConnected()) {
-    return GetRejectedPromise(script_state);
+    return GetRejectedPromise(script_state,
+                              rejection_names::kElementIsUnlocked);
   }
 
   // If we have a resolver, then we're at least updating already, just return
@@ -223,20 +236,24 @@ ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
   return commit_resolver_->Promise();
 }
 
-void DisplayLockContext::FinishUpdateResolver(ResolverState state) {
-  FinishResolver(&update_resolver_, state);
+void DisplayLockContext::FinishUpdateResolver(ResolverState state,
+                                              const char* rejection_reason) {
+  FinishResolver(&update_resolver_, state, rejection_reason);
 }
 
-void DisplayLockContext::FinishCommitResolver(ResolverState state) {
-  FinishResolver(&commit_resolver_, state);
+void DisplayLockContext::FinishCommitResolver(ResolverState state,
+                                              const char* rejection_reason) {
+  FinishResolver(&commit_resolver_, state, rejection_reason);
 }
 
-void DisplayLockContext::FinishAcquireResolver(ResolverState state) {
-  FinishResolver(&acquire_resolver_, state);
+void DisplayLockContext::FinishAcquireResolver(ResolverState state,
+                                               const char* rejection_reason) {
+  FinishResolver(&acquire_resolver_, state, rejection_reason);
 }
 
 void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
-                                        ResolverState state) {
+                                        ResolverState state,
+                                        const char* rejection_reason) {
   if (!*resolver)
     return;
   switch (state) {
@@ -252,7 +269,9 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
                                     WrapPersistent(resolver->Get())));
       break;
     case kReject:
-      (*resolver)->Reject();
+      DCHECK(rejection_reason);
+      (*resolver)->Reject(DOMException::Create(
+          DOMExceptionCode::kNotAllowedError, rejection_reason));
       break;
     case kDetach:
       (*resolver)->Detach();
@@ -279,9 +298,9 @@ void DisplayLockContext::DidStyle() {
   // by script.
   if (!ElementSupportsDisplayLocking()) {
     bool should_stay_locked = state_ == kUpdating && !commit_resolver_;
-    FinishUpdateResolver(kReject);
-    FinishCommitResolver(kReject);
-    FinishAcquireResolver(kReject);
+    FinishUpdateResolver(kReject, rejection_names::kContainmentNotSatisfied);
+    FinishCommitResolver(kReject, rejection_names::kContainmentNotSatisfied);
+    FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
     state_ = should_stay_locked ? kLocked : kUnlocked;
     return;
   }
@@ -347,8 +366,8 @@ void DisplayLockContext::DidAttachLayoutTree() {
   // layout object level. This confirms that containment should apply.
   if (!ElementSupportsDisplayLocking()) {
     bool should_stay_locked = state_ == kUpdating && !commit_resolver_;
-    FinishUpdateResolver(kReject);
-    FinishCommitResolver(kReject);
+    FinishUpdateResolver(kReject, rejection_names::kContainmentNotSatisfied);
+    FinishCommitResolver(kReject, rejection_names::kContainmentNotSatisfied);
     state_ = should_stay_locked ? kLocked : kUnlocked;
   }
 }
@@ -401,7 +420,7 @@ void DisplayLockContext::StartCommit() {
     update_budget_.reset();
     CancelTimeoutTask();
     // Note that we reject the update, but resolve the commit.
-    FinishUpdateResolver(kReject);
+    FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
     FinishCommitResolver(kResolve);
     return;
   }
@@ -409,7 +428,7 @@ void DisplayLockContext::StartCommit() {
   // If we have just started to acquire, we can unlock immediately since we
   // didn't have a chance to lock yet.
   if (state_ == kPendingAcquire) {
-    FinishAcquireResolver(kReject);
+    FinishAcquireResolver(kReject, rejection_names::kLockCommitted);
     FinishCommitResolver(kResolve);
     CancelTimeoutTask();
     state_ = kUnlocked;
@@ -565,7 +584,7 @@ void DisplayLockContext::WillStartLifecycleUpdate() {
 void DisplayLockContext::DidFinishLifecycleUpdate() {
   if (state_ == kPendingAcquire) {
     if (!ElementSupportsDisplayLocking()) {
-      FinishAcquireResolver(kReject);
+      FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
       CancelTimeoutTask();
       state_ = kUnlocked;
       return;
@@ -600,7 +619,7 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   // If we became disconnected for any reason, then we should reject the
   // update promise and go back to the locked state.
   if (!element_ || !element_->isConnected()) {
-    FinishUpdateResolver(kReject);
+    FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
     update_budget_.reset();
 
     if (commit_resolver_) {
