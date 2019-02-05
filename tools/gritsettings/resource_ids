@@ -415,16 +415,16 @@
     "messages": [27350],
   },
   "ui/views/resources/views_resources.grd": {
-    "structures": [27550],
+    "structures": [27580],
   },
   "ui/webui/resources/webui_resources.grd": {
-    "includes": [27850],
-    "structures": [28050],
+    "includes": [27880],
+    "structures": [28080],
   },
 
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [28850],
+    "includes": [28880],
   },
 
   # END "everything else" section.
