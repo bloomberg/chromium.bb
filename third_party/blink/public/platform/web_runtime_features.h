@@ -223,6 +223,9 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMergeBlockingNonBlockingPools(bool);
   BLINK_PLATFORM_EXPORT static void EnableGetDisplayMedia(bool);
   BLINK_PLATFORM_EXPORT static void EnableForbidSyncXHRInPageDismissal(bool);
+  BLINK_PLATFORM_EXPORT static void EnableShadowDOMV0(bool);
+  BLINK_PLATFORM_EXPORT static void EnableCustomElementsV0(bool);
+  BLINK_PLATFORM_EXPORT static void EnableHTMLImports(bool);
 
  private:
   WebRuntimeFeatures();
