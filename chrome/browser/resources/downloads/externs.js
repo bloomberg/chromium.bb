@@ -13,6 +13,6 @@ var downloads = {};
 /**
  * The type of the download object. The definition is based on the Data struct
  * in downloads.mojom.
- * @typedef {mdDownloads.mojom.Data | {hideDate: boolean}}
+ * @typedef {downloads.mojom.Data | {hideDate: boolean}}
  */
 downloads.Data;

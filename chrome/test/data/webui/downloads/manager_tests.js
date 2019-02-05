@@ -6,7 +6,7 @@ suite('manager tests', function() {
   /** @type {!downloads.Manager} */
   let manager;
 
-  /** @type {!mdDownloads.mojom.PageHandlerCallbackRouter} */
+  /** @type {!downloads.mojom.PageHandlerCallbackRouter} */
   let pageRouterProxy;
 
   /** @type {TestDownloadsProxy} */

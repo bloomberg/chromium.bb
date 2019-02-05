@@ -31,19 +31,19 @@ class DownloadItem;
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
 // TODO(calamity): Remove WebUIMessageHandler.
-class MdDownloadsDOMHandler : public content::WebContentsObserver,
-                              public md_downloads::mojom::PageHandler {
+class DownloadsDOMHandler : public content::WebContentsObserver,
+                            public downloads::mojom::PageHandler {
  public:
-  MdDownloadsDOMHandler(md_downloads::mojom::PageHandlerRequest request,
-                        md_downloads::mojom::PagePtr page,
-                        content::DownloadManager* download_manager,
-                        content::WebUI* web_ui);
-  ~MdDownloadsDOMHandler() override;
+  DownloadsDOMHandler(downloads::mojom::PageHandlerRequest request,
+                      downloads::mojom::PagePtr page,
+                      content::DownloadManager* download_manager,
+                      content::WebUI* web_ui);
+  ~DownloadsDOMHandler() override;
 
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;
 
-  // md_downloads::mojom::PageHandler:
+  // downloads::mojom::PageHandler:
   void GetDownloads(const std::vector<std::string>& search_terms) override;
   void OpenFileRequiringGesture(const std::string& id) override;
   void Drag(const std::string& id) override;
@@ -123,11 +123,11 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
 
   content::WebUI* web_ui_;
 
-  mojo::Binding<md_downloads::mojom::PageHandler> binding_;
+  mojo::Binding<downloads::mojom::PageHandler> binding_;
 
-  base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_{this};
+  base::WeakPtrFactory<DownloadsDOMHandler> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(MdDownloadsDOMHandler);
+  DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_DOM_HANDLER_H_

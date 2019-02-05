@@ -29,7 +29,7 @@ class DownloadsListTracker
     : public download::AllDownloadItemNotifier::Observer {
  public:
   DownloadsListTracker(content::DownloadManager* download_manager,
-                       md_downloads::mojom::PagePtr page);
+                       downloads::mojom::PagePtr page);
   ~DownloadsListTracker() override;
 
   // Clears all downloads on the page if currently sending updates and resets
@@ -62,11 +62,11 @@ class DownloadsListTracker
  protected:
   // Testing constructor.
   DownloadsListTracker(content::DownloadManager* download_manager,
-                       md_downloads::mojom::PagePtr page,
+                       downloads::mojom::PagePtr page,
                        base::Callback<bool(const download::DownloadItem&)>);
 
   // Creates a dictionary value that's sent to the page as JSON.
-  virtual md_downloads::mojom::DataPtr CreateDownloadData(
+  virtual downloads::mojom::DataPtr CreateDownloadData(
       download::DownloadItem* item) const;
 
   // Exposed for testing.
@@ -108,7 +108,7 @@ class DownloadsListTracker
   download::AllDownloadItemNotifier main_notifier_;
   std::unique_ptr<download::AllDownloadItemNotifier> original_notifier_;
 
-  md_downloads::mojom::PagePtr page_;
+  downloads::mojom::PagePtr page_;
 
   // Callback used to determine if an item should show on the page. Set to
   // |ShouldShow()| in default constructor, passed in while testing.

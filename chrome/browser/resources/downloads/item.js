@@ -98,7 +98,7 @@ cr.define('downloads', function() {
       'observeIsDangerous_(isDangerous_, data)',
     ],
 
-    /** @private {mdDownloads.mojom.PageHandlerInterface} */
+    /** @private {downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
 
     /** @override */

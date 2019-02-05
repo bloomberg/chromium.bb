@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
@@ -59,10 +60,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("openDownloadsFolder",
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
   source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
-  source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
+  source->AddLocalizedString("search", IDS_DOWNLOAD_SEARCH);
 
   // No results message that shows instead of the downloads list.
-  source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
+  source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
   source->AddLocalizedString("noSearchResults", IDS_SEARCH_NO_RESULTS);
 
   // Status.
@@ -91,7 +92,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE);
   source->AddLocalizedString("controlRemoveFromListAriaLabel",
                              IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL);
-  source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
+  source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
   source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
 
   PrefService* prefs = profile->GetPrefs();
@@ -102,15 +103,15 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("inIncognito", IDS_DOWNLOAD_IN_INCOGNITO);
 
   source->AddResourcePath("1x/incognito_marker.png",
-                          IDR_MD_DOWNLOADS_1X_INCOGNITO_MARKER_PNG);
+                          IDR_DOWNLOADS_1X_INCOGNITO_MARKER_PNG);
   source->AddResourcePath("2x/incognito_marker.png",
-                          IDR_MD_DOWNLOADS_2X_INCOGNITO_MARKER_PNG);
+                          IDR_DOWNLOADS_2X_INCOGNITO_MARKER_PNG);
   source->AddResourcePath("1x/no_downloads.png",
-                          IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
+                          IDR_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
   source->AddResourcePath("2x/no_downloads.png",
-                          IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
+                          IDR_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
   source->AddResourcePath("downloads.mojom-lite.js",
-                          IDR_MD_DOWNLOADS_MOJO_LITE_JS);
+                          IDR_DOWNLOADS_MOJO_LITE_JS);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip(base::BindRepeating([](const std::string& path) {
@@ -119,35 +120,32 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
            path != "downloads.mojom-lite.js";
   }));
 
-  source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
+  source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(
       base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_MD_DOWNLOADS_VULCANIZED_P2_HTML
-          : IDR_MD_DOWNLOADS_VULCANIZED_HTML);
+          ? IDR_DOWNLOADS_VULCANIZED_P2_HTML
+          : IDR_DOWNLOADS_VULCANIZED_HTML);
 #else
   source->AddResourcePath("browser_proxy.html",
-                          IDR_MD_DOWNLOADS_BROWSER_PROXY_HTML);
-  source->AddResourcePath("browser_proxy.js",
-                          IDR_MD_DOWNLOADS_BROWSER_PROXY_JS);
-  source->AddResourcePath("constants.html", IDR_MD_DOWNLOADS_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_MD_DOWNLOADS_CONSTANTS_JS);
-  source->AddResourcePath("downloads.js", IDR_MD_DOWNLOADS_DOWNLOADS_JS);
-  source->AddResourcePath("i18n_setup.html", IDR_MD_DOWNLOADS_I18N_SETUP_HTML);
-  source->AddResourcePath("icon_loader.html",
-                          IDR_MD_DOWNLOADS_ICON_LOADER_HTML);
-  source->AddResourcePath("icon_loader.js", IDR_MD_DOWNLOADS_ICON_LOADER_JS);
-  source->AddResourcePath("icons.html", IDR_MD_DOWNLOADS_ICONS_HTML);
-  source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
-  source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
-  source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
-  source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
+                          IDR_DOWNLOADS_BROWSER_PROXY_HTML);
+  source->AddResourcePath("browser_proxy.js", IDR_DOWNLOADS_BROWSER_PROXY_JS);
+  source->AddResourcePath("constants.html", IDR_DOWNLOADS_CONSTANTS_HTML);
+  source->AddResourcePath("constants.js", IDR_DOWNLOADS_CONSTANTS_JS);
+  source->AddResourcePath("downloads.js", IDR_DOWNLOADS_DOWNLOADS_JS);
+  source->AddResourcePath("i18n_setup.html", IDR_DOWNLOADS_I18N_SETUP_HTML);
+  source->AddResourcePath("icon_loader.html", IDR_DOWNLOADS_ICON_LOADER_HTML);
+  source->AddResourcePath("icon_loader.js", IDR_DOWNLOADS_ICON_LOADER_JS);
+  source->AddResourcePath("icons.html", IDR_DOWNLOADS_ICONS_HTML);
+  source->AddResourcePath("item.html", IDR_DOWNLOADS_ITEM_HTML);
+  source->AddResourcePath("item.js", IDR_DOWNLOADS_ITEM_JS);
+  source->AddResourcePath("manager.html", IDR_DOWNLOADS_MANAGER_HTML);
+  source->AddResourcePath("manager.js", IDR_DOWNLOADS_MANAGER_JS);
   source->AddResourcePath("search_service.html",
-                          IDR_MD_DOWNLOADS_SEARCH_SERVICE_HTML);
-  source->AddResourcePath("search_service.js",
-                          IDR_MD_DOWNLOADS_SEARCH_SERVICE_JS);
-  source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
-  source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
-  source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
+                          IDR_DOWNLOADS_SEARCH_SERVICE_HTML);
+  source->AddResourcePath("search_service.js", IDR_DOWNLOADS_SEARCH_SERVICE_JS);
+  source->AddResourcePath("toolbar.html", IDR_DOWNLOADS_TOOLBAR_HTML);
+  source->AddResourcePath("toolbar.js", IDR_DOWNLOADS_TOOLBAR_JS);
+  source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 
   source->SetJsonPath("strings.js");
@@ -159,11 +157,11 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// MdDownloadsUI
+// DownloadsUI
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui)
+DownloadsUI::DownloadsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, true), page_factory_binding_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -175,34 +173,34 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
-  AddHandlerToRegistry(base::BindRepeating(
-      &MdDownloadsUI::BindPageHandlerFactory, base::Unretained(this)));
+  AddHandlerToRegistry(base::BindRepeating(&DownloadsUI::BindPageHandlerFactory,
+                                           base::Unretained(this)));
 }
 
-MdDownloadsUI::~MdDownloadsUI() = default;
+DownloadsUI::~DownloadsUI() = default;
 
 // static
-base::RefCountedMemory* MdDownloadsUI::GetFaviconResourceBytes(
+base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_DOWNLOADS_FAVICON, scale_factor);
 }
 
-void MdDownloadsUI::BindPageHandlerFactory(
-    md_downloads::mojom::PageHandlerFactoryRequest request) {
+void DownloadsUI::BindPageHandlerFactory(
+    downloads::mojom::PageHandlerFactoryRequest request) {
   if (page_factory_binding_.is_bound())
     page_factory_binding_.Unbind();
 
   page_factory_binding_.Bind(std::move(request));
 }
 
-void MdDownloadsUI::CreatePageHandler(
-    md_downloads::mojom::PagePtr page,
-    md_downloads::mojom::PageHandlerRequest request) {
+void DownloadsUI::CreatePageHandler(
+    downloads::mojom::PagePtr page,
+    downloads::mojom::PageHandlerRequest request) {
   DCHECK(page);
   Profile* profile = Profile::FromWebUI(web_ui());
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
-  page_handler_.reset(new MdDownloadsDOMHandler(
-      std::move(request), std::move(page), dlm, web_ui()));
+  page_handler_.reset(new DownloadsDOMHandler(std::move(request),
+                                              std::move(page), dlm, web_ui()));
 }

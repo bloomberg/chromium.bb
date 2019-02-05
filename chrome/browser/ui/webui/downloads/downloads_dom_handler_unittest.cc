@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 
 #include <vector>
+#include <utility>
 
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
@@ -20,26 +21,26 @@
 
 namespace {
 
-class TestMdDownloadsDOMHandler : public MdDownloadsDOMHandler {
+class TestDownloadsDOMHandler : public DownloadsDOMHandler {
  public:
-  TestMdDownloadsDOMHandler(md_downloads::mojom::PagePtr page,
-                            content::DownloadManager* download_manager,
-                            content::WebUI* web_ui)
-      : MdDownloadsDOMHandler(md_downloads::mojom::PageHandlerRequest(),
-                              std::move(page),
-                              download_manager,
-                              web_ui) {}
+  TestDownloadsDOMHandler(downloads::mojom::PagePtr page,
+                          content::DownloadManager* download_manager,
+                          content::WebUI* web_ui)
+      : DownloadsDOMHandler(downloads::mojom::PageHandlerRequest(),
+                            std::move(page),
+                            download_manager,
+                            web_ui) {}
 
-  using MdDownloadsDOMHandler::FinalizeRemovals;
-  using MdDownloadsDOMHandler::RemoveDownloads;
+  using DownloadsDOMHandler::FinalizeRemovals;
+  using DownloadsDOMHandler::RemoveDownloads;
 };
 
 }  // namespace
 
-// A fixture to test MdDownloadsDOMHandler.
-class MdDownloadsDOMHandlerTest : public testing::Test {
+// A fixture to test DownloadsDOMHandler.
+class DownloadsDOMHandlerTest : public testing::Test {
  public:
-  MdDownloadsDOMHandlerTest() {}
+  DownloadsDOMHandlerTest() {}
 
   // testing::Test:
   void SetUp() override {
@@ -63,24 +64,24 @@ class MdDownloadsDOMHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
 };
 
-TEST_F(MdDownloadsDOMHandlerTest, ChecksForRemovedFiles) {
+TEST_F(DownloadsDOMHandlerTest, ChecksForRemovedFiles) {
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
-  TestMdDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
 
   testing::Mock::VerifyAndClear(manager());
 
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
 }
 
-TEST_F(MdDownloadsDOMHandlerTest, HandleGetDownloads) {
-  TestMdDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+TEST_F(DownloadsDOMHandlerTest, HandleGetDownloads) {
+  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
 
   handler.GetDownloads(std::vector<std::string>());
 
   EXPECT_CALL(page_, InsertItems(0, testing::_));
 }
 
-TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
+TEST_F(DownloadsDOMHandlerTest, ClearAll) {
   std::vector<download::DownloadItem*> downloads;
 
   // Safe, in-progress items should be passed over.
@@ -109,7 +110,7 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
 
   ASSERT_TRUE(DownloadItemModel(&completed).ShouldShowInShelf());
 
-  TestMdDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
   handler.RemoveDownloads(downloads);
 
   // Ensure |completed| has been "soft removed" (i.e. can be revived).

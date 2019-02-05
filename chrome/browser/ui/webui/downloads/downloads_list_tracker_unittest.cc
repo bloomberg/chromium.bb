@@ -44,7 +44,7 @@ bool ShouldShowItem(const DownloadItem& item) {
 class TestDownloadsListTracker : public DownloadsListTracker {
  public:
   TestDownloadsListTracker(content::DownloadManager* manager,
-                           md_downloads::mojom::PagePtr page)
+                           downloads::mojom::PagePtr page)
       : DownloadsListTracker(manager,
                              std::move(page),
                              base::BindRepeating(&ShouldShowItem)) {}
@@ -55,9 +55,9 @@ class TestDownloadsListTracker : public DownloadsListTracker {
   using DownloadsListTracker::SetChunkSizeForTesting;
 
  protected:
-  md_downloads::mojom::DataPtr CreateDownloadData(
+  downloads::mojom::DataPtr CreateDownloadData(
       download::DownloadItem* download_item) const override {
-    auto file_value = md_downloads::mojom::Data::New();
+    auto file_value = downloads::mojom::Data::New();
     file_value->id = base::NumberToString(download_item->GetId());
     return file_value;
   }

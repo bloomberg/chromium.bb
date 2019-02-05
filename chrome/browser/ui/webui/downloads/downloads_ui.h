@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -15,31 +17,30 @@ namespace base {
 class RefCountedMemory;
 }
 
-class MdDownloadsDOMHandler;
+class DownloadsDOMHandler;
 
-class MdDownloadsUI : public ui::MojoWebUIController,
-                      public md_downloads::mojom::PageHandlerFactory {
+class DownloadsUI : public ui::MojoWebUIController,
+                    public downloads::mojom::PageHandlerFactory {
  public:
-  explicit MdDownloadsUI(content::WebUI* web_ui);
-  ~MdDownloadsUI() override;
+  explicit DownloadsUI(content::WebUI* web_ui);
+  ~DownloadsUI() override;
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
  private:
   void BindPageHandlerFactory(
-      md_downloads::mojom::PageHandlerFactoryRequest request);
+      downloads::mojom::PageHandlerFactoryRequest request);
 
-  // md_downloads::mojom::PageHandlerFactory:
-  void CreatePageHandler(
-      md_downloads::mojom::PagePtr page,
-      md_downloads::mojom::PageHandlerRequest request) override;
+  // downloads::mojom::PageHandlerFactory:
+  void CreatePageHandler(downloads::mojom::PagePtr page,
+                         downloads::mojom::PageHandlerRequest request) override;
 
-  std::unique_ptr<MdDownloadsDOMHandler> page_handler_;
+  std::unique_ptr<DownloadsDOMHandler> page_handler_;
 
-  mojo::Binding<md_downloads::mojom::PageHandlerFactory> page_factory_binding_;
+  mojo::Binding<downloads::mojom::PageHandlerFactory> page_factory_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(MdDownloadsUI);
+  DISALLOW_COPY_AND_ASSIGN(DownloadsUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOWNLOADS_UI_H_

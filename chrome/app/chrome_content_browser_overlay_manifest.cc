@@ -223,8 +223,8 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     // WebUI-only interfaces go below this line. These should be
                     // brokered through a dedicated interface, but they're here
                     // for for now.
+                    downloads::mojom::PageHandlerFactory,
                     feed_internals::mojom::PageHandler,
-                    md_downloads::mojom::PageHandlerFactory,
 #if defined(OS_ANDROID)
                     eoc_internals::mojom::PageHandler,
 #else

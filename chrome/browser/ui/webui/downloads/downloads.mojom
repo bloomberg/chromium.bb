@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module md_downloads.mojom;
+module downloads.mojom;
 
 struct Data {
   bool file_externally_removed;
