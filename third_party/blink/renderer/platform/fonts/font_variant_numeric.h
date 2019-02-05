@@ -41,17 +41,17 @@ class FontVariantNumeric {
 
   void SetNumericFigure(NumericFigure figure) {
     fields_.numeric_figure_ = figure;
-  };
+  }
   void SetNumericSpacing(NumericSpacing spacing) {
     fields_.numeric_spacing_ = spacing;
-  };
+  }
   void SetNumericFraction(NumericFraction fraction) {
     fields_.numeric_fraction_ = fraction;
-  };
-  void SetOrdinal(Ordinal ordinal) { fields_.ordinal_ = ordinal; };
+  }
+  void SetOrdinal(Ordinal ordinal) { fields_.ordinal_ = ordinal; }
   void SetSlashedZero(SlashedZero slashed_zero) {
     fields_.slashed_zero_ = slashed_zero;
-  };
+  }
 
   NumericFigure NumericFigureValue() const {
     return static_cast<NumericFigure>(fields_.numeric_figure_);
@@ -64,7 +64,7 @@ class FontVariantNumeric {
   }
   Ordinal OrdinalValue() const {
     return static_cast<Ordinal>(fields_.ordinal_);
-  };
+  }
   SlashedZero SlashedZeroValue() const {
     return static_cast<SlashedZero>(fields_.slashed_zero_);
   }

@@ -84,7 +84,7 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // cache.
   virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
     return nullptr;
-  };
+  }
 
   // Returns a WebURLLoaderFactory for loading scripts in this worker context.
   // Unlike GetURLLoaderFactory(), this may return nullptr.

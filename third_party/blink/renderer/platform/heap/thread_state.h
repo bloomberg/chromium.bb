@@ -53,7 +53,7 @@
 
 namespace v8 {
 class Isolate;
-};
+}
 
 namespace blink {
 

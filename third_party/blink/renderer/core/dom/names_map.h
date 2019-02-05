@@ -29,7 +29,7 @@ class CORE_EXPORT NamesMap {
   // Clears any existing mapping, parses the string and sets the mapping from
   // that.
   void Set(const AtomicString&);
-  void Clear() { data_.clear(); };
+  void Clear() { data_.clear(); }
   // Inserts value into the ordered set under key.
   void Add(const AtomicString& key, const AtomicString& value);
   base::Optional<SpaceSplitString> Get(const AtomicString& key) const;

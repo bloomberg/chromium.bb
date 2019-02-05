@@ -75,7 +75,7 @@ class TaskSchedulerWorkerPoolImplTestBase
  protected:
   TaskSchedulerWorkerPoolImplTestBase()
       : service_thread_("TaskSchedulerServiceThread"),
-        tracked_ref_factory_(this){};
+        tracked_ref_factory_(this) {}
 
   void CommonTearDown() {
     service_thread_.Stop();

@@ -166,7 +166,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetZoomFactorForDeviceScaleFactor(float) override;
   float ZoomFactorForDeviceScaleFactor() override {
     return zoom_factor_for_device_scale_factor_;
-  };
+  }
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;

@@ -226,7 +226,7 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
   explicit TestServiceWorkerContextObserver(ServiceWorkerContext* context)
       : context_(context) {
     context_->AddObserver(this);
-  };
+  }
 
   ~TestServiceWorkerContextObserver() override {
     context_->RemoveObserver(this);

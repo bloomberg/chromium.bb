@@ -189,7 +189,7 @@ class NET_EXPORT IPAddress {
       WARN_UNUSED_RESULT;
 
   // Returns the underlying bytes.
-  const IPAddressBytes& bytes() const { return ip_address_; };
+  const IPAddressBytes& bytes() const { return ip_address_; }
 
   // Copies the bytes to a new vector. Generally callers should be using
   // |bytes()| and the IPAddressBytes abstraction. This method is provided as a

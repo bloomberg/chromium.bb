@@ -68,7 +68,7 @@ class PLATFORM_EXPORT RuntimeCallCounter {
 class PLATFORM_EXPORT RuntimeCallTimer {
  public:
   explicit RuntimeCallTimer(const base::TickClock* clock) : clock_(clock) {}
-  ~RuntimeCallTimer() { DCHECK(!IsRunning()); };
+  ~RuntimeCallTimer() { DCHECK(!IsRunning()); }
 
   // Starts recording time for <counter>, and pauses <parent> (if non-null).
   void Start(RuntimeCallCounter*, RuntimeCallTimer* parent);

@@ -941,7 +941,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   bool IsUnicodeKeyCode() const;
 
   // Returns the DOM .code (physical key identifier) for a keystroke event.
-  DomCode code() const { return code_; };
+  DomCode code() const { return code_; }
   std::string GetCodeString() const;
 
   // Returns the DOM .key (layout meaning) for a keystroke event.

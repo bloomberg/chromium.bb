@@ -53,7 +53,7 @@ class SequenceBoundTest : public ::testing::Test {
   // Another base class, which sets ints to different values.
   class Other {
    public:
-    Other(Value* ptr) : ptr_(ptr) { *ptr = kOtherCtorValue; };
+    Other(Value* ptr) : ptr_(ptr) { *ptr = kOtherCtorValue; }
     virtual ~Other() { *ptr_ = kOtherDtorValue; }
     void SetValue(Value value) { *ptr_ = value; }
     Value* ptr_;

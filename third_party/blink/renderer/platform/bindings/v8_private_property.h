@@ -188,7 +188,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
         return GetWindowDocumentCachedAccessor(isolate);
       case kNoCachedAccessor:
         break;
-    };
+    }
     NOTREACHED();
     return GetSymbol(isolate, "unexpected cached accessor");
   }

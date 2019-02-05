@@ -16,6 +16,7 @@ struct PageImportanceSignals {
 
   bool had_form_interaction;
 };
-};
+
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_PAGE_IMPORTANCE_SIGNALS_H_

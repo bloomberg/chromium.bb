@@ -179,11 +179,11 @@ struct UniquePtrHash : PtrHash<T> {
 // Useful compounding hash functions.
 inline void AddIntToHash(unsigned& hash, unsigned key) {
   hash = ((hash << 5) + hash) + key;  // Djb2
-};
+}
 
 inline void AddFloatToHash(unsigned& hash, float value) {
   AddIntToHash(hash, FloatHash<float>::GetHash(value));
-};
+}
 
 // Default hash function for each type.
 template <typename T>

@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobEntry {
   }
 
   // Total size of this blob in bytes.
-  uint64_t total_size() const { return size_; };
+  uint64_t total_size() const { return size_; }
 
   // We record the cumulative offsets of each blob item (except for the first,
   // which would always be 0) to enable binary searching for an item at a
