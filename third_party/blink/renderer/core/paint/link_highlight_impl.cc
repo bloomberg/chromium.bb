@@ -105,6 +105,9 @@ void LinkHighlightImpl::ReleaseResources() {
 
   if (auto* layout_object = node_->GetLayoutObject())
     layout_object->SetNeedsPaintPropertyUpdate();
+  else
+    SetPaintArtifactCompositorNeedsUpdate();
+
   node_.Clear();
 }
 
@@ -254,12 +257,7 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     FloatPoint offset(current_graphics_layer_->GetOffsetFromTransformNode());
     offset.MoveBy(bounding_rect.Location());
     layer->SetOffsetToTransformParent(gfx::Vector2dF(offset.X(), offset.Y()));
-    if (node_ && node_->GetLayoutObject() &&
-        node_->GetLayoutObject()->GetFrameView()) {
-      node_->GetLayoutObject()
-          ->GetFrameView()
-          ->SetPaintArtifactCompositorNeedsUpdate();
-    }
+    SetPaintArtifactCompositorNeedsUpdate();
   }
 
   return path_has_changed;
@@ -477,8 +475,12 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
         new_path.AddRect(snapped_rect);
     }
 
-    if (index == fragments_.size())
+    if (index == fragments_.size()) {
       fragments_.emplace_back(element_id());
+      // PaintArtifactCompositor needs update for the new cc::PictureLayer we
+      // just created for the fragment.
+      SetPaintArtifactCompositorNeedsUpdate();
+    }
 
     auto& link_highlight_fragment = fragments_[index];
     link_highlight_fragment.SetColor(color);
@@ -495,12 +497,6 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // Always set offset because it is excluded from the above equality check.
     layer->SetOffsetToTransformParent(
         gfx::Vector2dF(bounding_rect.X(), bounding_rect.Y()));
-    if (node_ && node_->GetLayoutObject() &&
-        node_->GetLayoutObject()->GetFrameView()) {
-      node_->GetLayoutObject()
-          ->GetFrameView()
-          ->SetPaintArtifactCompositorNeedsUpdate();
-    }
 
     auto property_tree_state = fragment->LocalBorderBoxProperties();
     DCHECK(fragment->PaintProperties());
@@ -511,8 +507,18 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
                        property_tree_state);
   }
 
-  if (index < fragments_.size())
+  if (index < fragments_.size()) {
     fragments_.Shrink(index);
+    // PaintArtifactCompositor needs update for the cc::PictureLayers we just
+    // removed for the extra fragments.
+    SetPaintArtifactCompositorNeedsUpdate();
+  }
+}
+
+void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
+  DCHECK(node_);
+  if (auto* frame_view = node_->GetDocument().View())
+    frame_view->SetPaintArtifactCompositorNeedsUpdate();
 }
 
 }  // namespace blink
