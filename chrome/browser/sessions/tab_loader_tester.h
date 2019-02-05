@@ -34,12 +34,12 @@ class TabLoaderTester {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void SetTabLoadingEnabled(bool enabled);
+  bool IsLoadingEnabled() const;
 
   // Accessors to TabLoader internals.
   size_t force_load_delay_multiplier() const;
   base::TimeTicks force_load_time() const;
   base::OneShotTimer& force_load_timer();
-  bool is_loading_enabled() const;
   const TabVector& tabs_to_load() const;
   size_t scheduled_to_load_count() const;
   static TabLoader* shared_tab_loader();
@@ -47,6 +47,7 @@ class TabLoaderTester {
   // Additional helper functions.
   bool IsSharedTabLoader() const;
   bool HasTimedOutLoads() const;
+  void WaitForTabLoadingEnabled();
 
  private:
   TabLoader* tab_loader_ = nullptr;

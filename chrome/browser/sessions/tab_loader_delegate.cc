@@ -54,6 +54,16 @@ class TabLoaderDelegateImpl
   }
 
   // TabLoaderDelegate:
+  float AddTabForScoring(content::WebContents* contents) const override {
+    return policy_->AddTabForScoring(contents);
+  }
+
+  // TabLoaderDelegate:
+  void RemoveTabForScoring(content::WebContents* contents) const override {
+    policy_->RemoveTabForScoring(contents);
+  }
+
+  // TabLoaderDelegate:
   bool ShouldLoad(content::WebContents* contents) const override {
     return policy_->ShouldLoad(contents);
   }
@@ -63,6 +73,10 @@ class TabLoaderDelegateImpl
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
+
+  // Callback that is invoked by the policy engine, and forwarded over to the
+  // TabLoader.
+  void NotifyTabScoreChanged(content::WebContents* content, float score);
 
  private:
   // The default policy engine used to implement ShouldLoad.
@@ -107,6 +121,11 @@ TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
   if (g_testing_policy) {
     policy_ = g_testing_policy;
   }
+
+  // Register the policy callback.
+  policy_->SetTabScoreChangedCallback(
+      base::BindRepeating(&TabLoaderDelegateImpl::NotifyTabScoreChanged,
+                          weak_factory_.GetWeakPtr()));
 }
 
 TabLoaderDelegateImpl::~TabLoaderDelegateImpl() {
@@ -117,6 +136,11 @@ void TabLoaderDelegateImpl::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   callback_->SetTabLoadingEnabled(
       type != network::mojom::ConnectionType::CONNECTION_NONE);
+}
+
+void TabLoaderDelegateImpl::NotifyTabScoreChanged(content::WebContents* content,
+                                                  float score) {
+  callback_->NotifyTabScoreChanged(content, score);
 }
 
 }  // namespace
