@@ -7,7 +7,10 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -22,8 +25,11 @@
 
 namespace autofill {
 
-typedef std::map<ServerFieldType, std::vector<AutofillProfile::ValidityState>>
+typedef std::map<ServerFieldType, std::vector<AutofillDataModel::ValidityState>>
     ServerFieldTypeValidityStatesMap;
+
+typedef std::map<ServerFieldType, AutofillDataModel::ValidityState>
+    ServerFieldTypeValidityStateMap;
 
 class AutofillField : public FormFieldData {
  public:
@@ -60,8 +66,7 @@ class AutofillField : public FormFieldData {
   void set_heuristic_type(ServerFieldType type);
   void set_server_type(ServerFieldType type);
   void add_possible_types_validities(
-      const std::map<ServerFieldType, AutofillProfile::ValidityState>&
-          possible_types_validities);
+      const ServerFieldTypeValidityStateMap& possible_types_validities);
   void set_server_predictions(
       const std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           predictions) {
@@ -74,8 +79,8 @@ class AutofillField : public FormFieldData {
       const ServerFieldTypeValidityStatesMap& possible_types_validities) {
     possible_types_validities_ = possible_types_validities;
   }
-  std::vector<AutofillProfile::ValidityState> get_validities_for_possible_type(
-      ServerFieldType);
+  std::vector<AutofillDataModel::ValidityState>
+      get_validities_for_possible_type(ServerFieldType);
 
   void SetHtmlType(HtmlFieldType type, HtmlFieldMode mode);
   void set_previously_autofilled(bool previously_autofilled) {

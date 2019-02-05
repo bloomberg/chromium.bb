@@ -587,7 +587,7 @@ void InitializePossibleTypesAndValidities(
     std::vector<ServerFieldTypeValidityStatesMap>&
         possible_field_types_validities,
     const std::vector<ServerFieldType>& possible_types,
-    const std::vector<AutofillProfile::ValidityState>& validity_states) {
+    const std::vector<AutofillDataModel::ValidityState>& validity_states) {
   possible_field_types.push_back(ServerFieldTypeSet());
   possible_field_types_validities.push_back(ServerFieldTypeValidityStatesMap());
 

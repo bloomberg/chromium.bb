@@ -1819,8 +1819,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     for (const AutofillProfile& profile : profiles) {
-      std::map<ServerFieldType, AutofillProfile::ValidityState>
-          matching_types_validities;
+      ServerFieldTypeValidityStateMap matching_types_validities;
       profile.GetMatchingTypesAndValidities(value, app_locale, &matching_types,
                                             &matching_types_validities);
       field->add_possible_types_validities(matching_types_validities);
@@ -1833,9 +1832,8 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
 
     if (matching_types.empty()) {
       matching_types.insert(UNKNOWN_TYPE);
-      std::map<ServerFieldType, AutofillProfile::ValidityState>
-          matching_types_validities;
-      matching_types_validities[UNKNOWN_TYPE] = AutofillProfile::UNVALIDATED;
+      ServerFieldTypeValidityStateMap matching_types_validities;
+      matching_types_validities[UNKNOWN_TYPE] = AutofillDataModel::UNVALIDATED;
       field->add_possible_types_validities(matching_types_validities);
     }
 

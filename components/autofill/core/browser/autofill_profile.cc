@@ -337,8 +337,7 @@ void AutofillProfile::GetMatchingTypesAndValidities(
     const base::string16& text,
     const std::string& app_locale,
     ServerFieldTypeSet* matching_types,
-    std::map<ServerFieldType, AutofillProfile::ValidityState>*
-        matching_types_validities) const {
+    ServerFieldTypeValidityStateMap* matching_types_validities) const {
   if (!matching_types && !matching_types_validities)
     return;
 
@@ -892,7 +891,7 @@ bool AutofillProfile::IsAnInvalidPhoneNumber(ServerFieldType type) const {
   return false;
 }
 
-AutofillProfile::ValidityState AutofillProfile::GetValidityState(
+AutofillDataModel::ValidityState AutofillProfile::GetValidityState(
     ServerFieldType type,
     ValidationSource validation_source) const {
   if (validation_source == CLIENT) {

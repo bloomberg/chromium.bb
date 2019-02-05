@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -4423,8 +4424,8 @@ class ProfileMatchingTypesTest
     : public AutofillManagerTest,
       public ::testing::WithParamInterface<
           std::tuple<ProfileMatchingTypesTestCase,
-                     int,        // AutofillProfile::ValidityState
-                     bool>> {};  // AutofillProfile::ValidationSource
+                     int,        // AutofillDataModel::ValidityState
+                     bool>> {};  // AutofillDataModel::ValidationSource
 
 const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     // Profile fields matches.
@@ -4518,9 +4519,9 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   // Unpack the test paramters
   const auto& test_case = std::get<0>(GetParam());
   auto validity_state =
-      static_cast<AutofillProfile::ValidityState>(std::get<1>(GetParam()));
+      static_cast<AutofillDataModel::ValidityState>(std::get<1>(GetParam()));
   const auto& validation_source =
-      static_cast<AutofillProfile::ValidationSource>(std::get<2>(GetParam()));
+      static_cast<AutofillDataModel::ValidationSource>(std::get<2>(GetParam()));
 
   SCOPED_TRACE(base::StringPrintf(
       "Test: input_value='%s', field_type=%s, validity_state=%d, "
@@ -4529,8 +4530,8 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
       AutofillType(test_case.field_type).ToString().c_str(), validity_state,
       validation_source));
 
-  ASSERT_LE(AutofillProfile::UNVALIDATED, validity_state);
-  ASSERT_LE(validity_state, AutofillProfile::UNSUPPORTED);
+  ASSERT_LE(AutofillDataModel::UNVALIDATED, validity_state);
+  ASSERT_LE(validity_state, AutofillDataModel::UNSUPPORTED);
 
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
@@ -4557,11 +4558,11 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
     for (auto& profile : profiles) {
       if (test_case.field_type == UNKNOWN_TYPE) {
         // An UNKNOWN type is always UNVALIDATED
-        validity_state = AutofillProfile::UNVALIDATED;
+        validity_state = AutofillDataModel::UNVALIDATED;
       } else if (profile.IsAnInvalidPhoneNumber(test_case.field_type)) {
         // a phone field is a compound field, an invalid part would make it
         // invalid.
-        validity_state = AutofillProfile::INVALID;
+        validity_state = AutofillDataModel::INVALID;
       }
       profile.SetValidityState(test_case.field_type, validity_state,
                                validation_source);
@@ -4606,9 +4607,9 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
     EXPECT_NE(possible_types_validities.end(),
               possible_types_validities.find(test_case.field_type));
     EXPECT_EQ(possible_types_validities[test_case.field_type][0],
-              (validation_source == AutofillProfile::SERVER)
+              (validation_source == AutofillDataModel::SERVER)
                   ? validity_state
-                  : AutofillProfile::UNVALIDATED);
+                  : AutofillDataModel::UNVALIDATED);
   }
 }
 
@@ -4617,8 +4618,8 @@ INSTANTIATE_TEST_CASE_P(
     ProfileMatchingTypesTest,
     testing::Combine(
         testing::ValuesIn(kProfileMatchingTypesTestCases),
-        testing::Range(static_cast<int>(AutofillProfile::UNVALIDATED),
-                       static_cast<int>(AutofillProfile::UNSUPPORTED) + 1),
+        testing::Range(static_cast<int>(AutofillDataModel::UNVALIDATED),
+                       static_cast<int>(AutofillDataModel::UNSUPPORTED) + 1),
         testing::Bool()));
 
 // Tests that DeterminePossibleFieldTypesForUpload is called when a form is
@@ -4684,8 +4685,8 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
                          "", "Memphis", "Tennessee", "38116", "US",
                          "(234) 567-8901");
     profile.set_guid("00000000-0000-0000-0000-000000000001");
-    profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::VALID,
-                             AutofillProfile::SERVER);
+    profile.SetValidityState(ADDRESS_HOME_STATE, AutofillDataModel::VALID,
+                             AutofillDataModel::SERVER);
     profiles.push_back(profile);
   }
   {
@@ -4694,8 +4695,8 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
                          "1331 W Georgia", "", "Vancouver", "Tennessee",
                          "V4D 4S4", "CA", "(778) 567-8901");
     profile.set_guid("00000000-0000-0000-0000-000000000002");
-    profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::INVALID,
-                             AutofillProfile::SERVER);
+    profile.SetValidityState(ADDRESS_HOME_STATE, AutofillDataModel::INVALID,
+                             AutofillDataModel::SERVER);
     profiles.push_back(profile);
   }
 
@@ -4703,7 +4704,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
   typedef struct {
     std::string input_value;
     ServerFieldType field_type;
-    std::vector<AutofillProfile::ValidityState> expected_validity_states;
+    std::vector<AutofillDataModel::ValidityState> expected_validity_states;
   } TestFieldData;
 
   std::vector<TestFieldData> test_cases[3];
@@ -4712,16 +4713,18 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
   // possible_field_types would only include the type ADDRESS_HOME_STATE, and
   // the corresponding validity of that type would include both VALID and
   // INVALID.
-  test_cases[0].push_back({"Tennessee",
-                           ADDRESS_HOME_STATE,
-                           {AutofillProfile::VALID, AutofillProfile::INVALID}});
+  test_cases[0].push_back(
+      {"Tennessee",
+       ADDRESS_HOME_STATE,
+       {AutofillDataModel::VALID, AutofillDataModel::INVALID}});
   // Alice appears only in the second profile as a NAME_FIRST, and it's
   // UNVALIDATED.
   test_cases[1].push_back(
-      {"Alice", NAME_FIRST, {AutofillProfile::UNVALIDATED}});
+      {"Alice", NAME_FIRST, {AutofillDataModel::UNVALIDATED}});
   // An UNKNOWN type is always UNVALIDATED.
-  test_cases[2].push_back(
-      {"What a beautiful day!", UNKNOWN_TYPE, {AutofillProfile::UNVALIDATED}});
+  test_cases[2].push_back({"What a beautiful day!",
+                           UNKNOWN_TYPE,
+                           {AutofillDataModel::UNVALIDATED}});
 
   for (const std::vector<TestFieldData>& test_fields : test_cases) {
     FormData form;
