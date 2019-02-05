@@ -81,6 +81,11 @@
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" compress="gzip" type="BINDATA" />
         <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJO_JS" file="${root_gen_dir}\services\resource_coordinator\public\mojom\webui_graph_dump.mojom.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
+      <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
+        <include name="IDR_BROWSER_SWITCHER_APP_HTML" file="resources\browser_switcher\app.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCHER_APP_JS" file="resources\browser_switcher\app.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML" file="resources\browser_switcher\browser_switcher.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
+      </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\conflicts\about_conflicts.js" type="BINDATA" />

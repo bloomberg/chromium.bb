@@ -4707,6 +4707,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- about:browser-switch strings -->
+      <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_TITLE" desc="about:browser-switch page title">
+          Legacy Browser Support
+        </message>
+        <message name="IDS_ABOUT_BROWSER_SWITCH_OPENING" desc="Shown while waiting for an alternative browser to open">
+          Opening in alternate browser now.
+        </message>
+      </if>
+
       <!-- NaCl plugin strings -->
       <message name="IDS_NACL_APP_MISSING_ARCH_MESSAGE" desc="Shown if a Native Client app does not support the current architecture">
         This page uses a Native Client app that doesn't work on your computer.
