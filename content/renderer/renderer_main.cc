@@ -9,9 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -67,9 +65,6 @@
 
 namespace content {
 namespace {
-
-const base::Feature kMainThreadUsesSequenceManager{
-    "BlinkMainThreadUsesSequenceManager", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
@@ -163,19 +158,9 @@ int RendererMain(const MainFunctionParams& parameters) {
     }
   }
 
-  std::unique_ptr<base::MessageLoop> main_message_loop;
-  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler;
-  if (!base::FeatureList::IsEnabled(kMainThreadUsesSequenceManager)) {
-    main_message_loop =
-        std::make_unique<base::MessageLoop>(CreateMainThreadMessagePump());
-    main_thread_scheduler =
-        blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
-            /*message_pump=*/nullptr, initial_virtual_time);
-  } else {
-    main_thread_scheduler =
-        blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
-            CreateMainThreadMessagePump(), initial_virtual_time);
-  }
+  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
+      blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
+          CreateMainThreadMessagePump(), initial_virtual_time);
 
   platform.PlatformInitialize();
 
