@@ -151,7 +151,7 @@ TEST_F(ErrorMapUnitTest, DuplicateErrorsAreReplaced) {
   // Create an error identical to the second error reported, save its
   // location, and add it to the error map.
   std::unique_ptr<ExtensionError> runtime_error2 =
-      CreateNewRuntimeError(kId, base::UintToString(1u));
+      CreateNewRuntimeError(kId, base::NumberToString(1u));
   const ExtensionError* weak_error = runtime_error2.get();
   ASSERT_TRUE(errors_.AddError(std::move(runtime_error2)));
 

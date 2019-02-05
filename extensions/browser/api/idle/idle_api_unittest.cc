@@ -217,7 +217,7 @@ TEST_F(IdleTest, QueryMinThreshold) {
       SCOPED_TRACE(time);
       idle_provider_->set_idle_time(time);
 
-      std::string args = "[" + base::IntToString(threshold) + "]";
+      std::string args = "[" + base::NumberToString(threshold) + "]";
       std::unique_ptr<base::Value> result(
           RunFunctionAndReturnValue(new IdleQueryStateFunction(), args));
 
@@ -246,7 +246,7 @@ TEST_F(IdleTest, QueryMaxThreshold) {
       SCOPED_TRACE(time);
       idle_provider_->set_idle_time(time);
 
-      std::string args = "[" + base::IntToString(threshold) + "]";
+      std::string args = "[" + base::NumberToString(threshold) + "]";
       std::unique_ptr<base::Value> result(
           RunFunctionAndReturnValue(new IdleQueryStateFunction(), args));
 

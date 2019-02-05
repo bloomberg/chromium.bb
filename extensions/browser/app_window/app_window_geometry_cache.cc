@@ -121,7 +121,7 @@ void AppWindowGeometryCache::SyncToStorage() {
       value->SetInteger("screen_bounds_h", screen_bounds.height());
       value->SetInteger("state", it->second.window_state);
       value->SetString(
-          "ts", base::Int64ToString(it->second.last_change.ToInternalValue()));
+          "ts", base::NumberToString(it->second.last_change.ToInternalValue()));
       dict->SetWithoutPathExpansion(it->first, std::move(value));
 
       for (auto& observer : observers_)

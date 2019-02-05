@@ -38,7 +38,7 @@ void AddEnabledStateToPing(std::string* ping_value,
     for (int enum_value = 1; enum_value < disable_reason::DISABLE_REASON_LAST;
          enum_value <<= 1) {
       if (ping_data->disable_reasons & enum_value)
-        *ping_value += "&dr=" + base::IntToString(enum_value);
+        *ping_value += "&dr=" + base::NumberToString(enum_value);
     }
   }
 }
@@ -165,7 +165,7 @@ bool ManifestFetchData::AddExtension(const std::string& id,
     if (ping_data) {
       if (ping_data->rollcall_days == kNeverPinged ||
           ping_data->rollcall_days > 0) {
-        ping_value += "r=" + base::IntToString(ping_data->rollcall_days);
+        ping_value += "r=" + base::NumberToString(ping_data->rollcall_days);
         if (ping_mode_ == PING_WITH_ENABLED_STATE)
           AddEnabledStateToPing(&ping_value, ping_data);
         pings_[id].rollcall_days = ping_data->rollcall_days;
@@ -175,7 +175,7 @@ bool ManifestFetchData::AddExtension(const std::string& id,
           ping_data->active_days > 0) {
         if (!ping_value.empty())
           ping_value += "&";
-        ping_value += "a=" + base::IntToString(ping_data->active_days);
+        ping_value += "a=" + base::NumberToString(ping_data->active_days);
         pings_[id].active_days = ping_data->active_days;
       }
     }

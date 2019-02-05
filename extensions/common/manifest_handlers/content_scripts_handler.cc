@@ -51,7 +51,7 @@ bool LoadGlobsHelper(const base::Value& content_script,
 
   if (!list->is_list()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidGlobList, base::IntToString(content_script_index),
+        errors::kInvalidGlobList, base::NumberToString(content_script_index),
         globs_property_name);
     return false;
   }
@@ -60,7 +60,7 @@ bool LoadGlobsHelper(const base::Value& content_script,
   for (size_t i = 0; i < list_storage.size(); ++i) {
     if (!list_storage[i].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidGlob, base::IntToString(content_script_index),
+          errors::kInvalidGlob, base::NumberToString(content_script_index),
           globs_property_name, base::NumberToString(i));
       return false;
     }
@@ -84,7 +84,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   if (run_at != nullptr) {
     if (!run_at->is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidRunAt, base::IntToString(definition_index));
+          errors::kInvalidRunAt, base::NumberToString(definition_index));
       return nullptr;
     }
 
@@ -97,7 +97,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       result->set_run_location(UserScript::DOCUMENT_IDLE);
     } else {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidRunAt, base::IntToString(definition_index));
+          errors::kInvalidRunAt, base::NumberToString(definition_index));
       return nullptr;
     }
   }
@@ -107,7 +107,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   if (all_frames != nullptr) {
     if (!all_frames->is_bool()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidAllFrames, base::IntToString(definition_index));
+          errors::kInvalidAllFrames, base::NumberToString(definition_index));
       return nullptr;
     }
     result->set_match_all_frames(all_frames->GetBool());
@@ -119,7 +119,8 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   if (match_about_blank != nullptr) {
     if (!match_about_blank->is_bool()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidMatchAboutBlank, base::IntToString(definition_index));
+          errors::kInvalidMatchAboutBlank,
+          base::NumberToString(definition_index));
       return nullptr;
     }
     result->set_match_about_blank(match_about_blank->GetBool());
@@ -130,14 +131,14 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       content_script.FindKeyOfType(keys::kMatches, base::Value::Type::LIST);
   if (matches == nullptr) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidMatches, base::IntToString(definition_index));
+        errors::kInvalidMatches, base::NumberToString(definition_index));
     return nullptr;
   }
 
   const base::Value::ListStorage& list_storage = matches->GetList();
   if (list_storage.empty()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidMatchCount, base::IntToString(definition_index));
+        errors::kInvalidMatchCount, base::NumberToString(definition_index));
     return nullptr;
   }
 
@@ -153,7 +154,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   for (size_t j = 0; j < list_storage.size(); ++j) {
     if (!list_storage[j].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidMatch, base::IntToString(definition_index),
+          errors::kInvalidMatch, base::NumberToString(definition_index),
           base::NumberToString(j), errors::kExpectString);
       return nullptr;
     }
@@ -164,7 +165,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     URLPattern::ParseResult parse_result = pattern.Parse(match_str);
     if (parse_result != URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidMatch, base::IntToString(definition_index),
+          errors::kInvalidMatch, base::NumberToString(definition_index),
           base::NumberToString(j),
           URLPattern::GetParseResultString(parse_result));
       return nullptr;
@@ -200,7 +201,8 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   if (exclude_matches != nullptr) {  // optional
     if (!exclude_matches->is_list()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidExcludeMatches, base::IntToString(definition_index));
+          errors::kInvalidExcludeMatches,
+          base::NumberToString(definition_index));
       return nullptr;
     }
     const base::Value::ListStorage& list_storage = exclude_matches->GetList();
@@ -208,8 +210,9 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     for (size_t j = 0; j < list_storage.size(); ++j) {
       if (!list_storage[j].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidExcludeMatch, base::IntToString(definition_index),
-            base::NumberToString(j), errors::kExpectString);
+            errors::kInvalidExcludeMatch,
+            base::NumberToString(definition_index), base::NumberToString(j),
+            errors::kExpectString);
         return nullptr;
       }
       const std::string& match_str = list_storage[j].GetString();
@@ -218,8 +221,8 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);
       if (parse_result != URLPattern::ParseResult::kSuccess) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidExcludeMatch, base::IntToString(definition_index),
-            base::NumberToString(j),
+            errors::kInvalidExcludeMatch,
+            base::NumberToString(definition_index), base::NumberToString(j),
             URLPattern::GetParseResultString(parse_result));
         return nullptr;
       }
@@ -243,14 +246,14 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   const base::Value* js = content_script.FindKey(keys::kJs);
   if (js != nullptr && !js->is_list()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidJsList, base::IntToString(definition_index));
+        errors::kInvalidJsList, base::NumberToString(definition_index));
     return nullptr;
   }
 
   const base::Value* css = content_script.FindKey(keys::kCss);
   if (css != nullptr && !css->is_list()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidCssList, base::IntToString(definition_index));
+        errors::kInvalidCssList, base::NumberToString(definition_index));
     return nullptr;
   }
 
@@ -258,7 +261,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   if (((js ? js->GetList().size() : 0) + (css ? css->GetList().size() : 0)) ==
       0) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kMissingFile, base::IntToString(definition_index));
+        errors::kMissingFile, base::NumberToString(definition_index));
     return nullptr;
   }
 
@@ -269,7 +272,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
          ++script_index) {
       if (!js_list[script_index].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidJs, base::IntToString(definition_index),
+            errors::kInvalidJs, base::NumberToString(definition_index),
             base::NumberToString(script_index));
         return nullptr;
       }
@@ -288,7 +291,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
          ++script_index) {
       if (!css_list[script_index].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidCss, base::IntToString(definition_index),
+            errors::kInvalidCss, base::NumberToString(definition_index),
             base::NumberToString(script_index));
         return nullptr;
       }

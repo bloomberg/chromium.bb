@@ -889,7 +889,7 @@ static bool ApplyResponseCookieModification(const ResponseCookie& modification,
   if (modification.expires.has_value())
     modified |= cookie->SetExpires(*modification.expires);
   if (modification.max_age.has_value())
-    modified |= cookie->SetMaxAge(base::IntToString(*modification.max_age));
+    modified |= cookie->SetMaxAge(base::NumberToString(*modification.max_age));
   if (modification.domain.has_value())
     modified |= cookie->SetDomain(*modification.domain);
   if (modification.path.has_value())
@@ -921,7 +921,7 @@ static bool DoesResponseCookieMatchFilter(
   if (filter->max_age) {
     std::string actual_value =
         cookie.HasMaxAge() ? cookie.MaxAge() : std::string();
-    if (actual_value != base::IntToString(*filter->max_age))
+    if (actual_value != base::NumberToString(*filter->max_age))
       return false;
   }
   if (filter->domain) {
