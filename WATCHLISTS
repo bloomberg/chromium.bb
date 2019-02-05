@@ -142,7 +142,8 @@
       'filepath': 'ash/',
     },
     'assistant': {
-      'filepath': 'ash/assistant/'\
+      'filepath': 'ash/app_list/views/assistant/'\
+                  '|ash/assistant/'\
                   '|chromeos/assistant/'\
                   '|chromeos/services/assistant/'\
                   '|chrome/browser/ui/ash/assistant/'
