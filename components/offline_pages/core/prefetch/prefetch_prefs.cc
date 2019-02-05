@@ -16,8 +16,6 @@ namespace {
 const char kEnabled[] = "offline_prefetch.enabled";
 const char kLimitlessPrefetchingEnabledTimePref[] =
     "offline_prefetch.limitless_prefetching_enabled_time";
-
-const bool is_limitless_prefetch_enabled_default = false;
 }  // namespace
 
 const char kBackoff[] = "offline_prefetch.backoff";
@@ -46,9 +44,6 @@ void SetLimitlessPrefetchingEnabled(PrefService* prefs, bool enabled) {
 }
 
 bool IsLimitlessPrefetchingEnabled(PrefService* prefs) {
-  if (is_limitless_prefetch_enabled_default)
-    return true;
-
   base::TimeDelta max_duration;
   if (version_info::IsOfficialBuild())
     max_duration = base::TimeDelta::FromDays(1);
