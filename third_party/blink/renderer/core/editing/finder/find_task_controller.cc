@@ -119,7 +119,7 @@ class FindTaskController::IdleFindTask
         (options_->match_case ? 0 : kCaseInsensitive) |
         (options_->find_next ? 0 : kStartInSelection);
 
-    do {
+    while (search_start != search_end) {
       // Find in the whole block.
       FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
       std::unique_ptr<FindBuffer::Results> match_results =
@@ -150,7 +150,9 @@ class FindTaskController::IdleFindTask
         break;
       }
       next_task_start_position = search_start;
-    } while (deadline->timeRemaining() > 0);
+      if (deadline->timeRemaining() <= 0)
+        break;
+    }
 
     const TimeDelta time_spent = CurrentTimeTicks() - start_time;
     UMA_HISTOGRAM_TIMES("WebCore.FindInPage.ScopingTime",

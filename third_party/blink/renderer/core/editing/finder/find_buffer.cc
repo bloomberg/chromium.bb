@@ -24,7 +24,7 @@
 namespace blink {
 
 FindBuffer::FindBuffer(const EphemeralRangeInFlatTree& range) {
-  DCHECK(range.IsNotNull());
+  DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
   CollectTextUntilBlockBoundary(range);
 }
 
@@ -265,6 +265,7 @@ std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
 // |node_after_block_|.
 void FindBuffer::CollectTextUntilBlockBoundary(
     const EphemeralRangeInFlatTree& range) {
+  DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
   // Get first visible text node from |start_position|.
   Node* node =
       GetVisibleTextNode(*range.StartPosition().NodeAsRangeFirstNode());
