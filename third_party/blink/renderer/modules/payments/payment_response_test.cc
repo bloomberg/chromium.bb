@@ -78,8 +78,11 @@ TEST(PaymentResponseTest, DataCopiedOver) {
 
   ScriptValue transaction_id(
       scope.GetScriptState(),
-      details.V8Value().As<v8::Object>()->Get(
-          V8String(scope.GetScriptState()->GetIsolate(), "transactionId")));
+      details.V8Value()
+          .As<v8::Object>()
+          ->Get(scope.GetContext(),
+                V8String(scope.GetIsolate(), "transactionId"))
+          .ToLocalChecked());
 
   ASSERT_TRUE(transaction_id.V8Value()->IsNumber());
   EXPECT_EQ(123, transaction_id.V8Value().As<v8::Number>()->Value());

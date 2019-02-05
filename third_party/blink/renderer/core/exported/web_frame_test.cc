@@ -6516,7 +6516,8 @@ class CompositedSelectionBoundsTest
     ASSERT_NE(selection.end, cc::LayerSelectionBound());
 
     blink::Node* layer_owner_node_for_start = V8Node::ToImplWithTypeCheck(
-        v8::Isolate::GetCurrent(), expected_result.Get(0));
+        v8::Isolate::GetCurrent(),
+        expected_result.Get(context, 0).ToLocalChecked());
     ASSERT_TRUE(layer_owner_node_for_start);
     EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_start)
                   ->CcLayer()

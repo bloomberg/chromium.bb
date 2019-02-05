@@ -84,7 +84,10 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
     v8::Local<v8::Value> devtools_host_obj =
         ToV8(devtools_host_.Get(), global, script_state->GetIsolate());
     DCHECK(!devtools_host_obj.IsEmpty());
-    global->Set(V8AtomicString(isolate, "DevToolsHost"), devtools_host_obj);
+    global
+        ->Set(script_state->GetContext(),
+              V8AtomicString(isolate, "DevToolsHost"), devtools_host_obj)
+        .Check();
   }
 
   if (!api_script_.IsEmpty()) {
