@@ -30,6 +30,8 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 
+using content::BrowserContext;
+
 namespace safe_browsing {
 
 namespace {
@@ -102,7 +104,7 @@ AndroidTelemetryService::AndroidTelemetryService(
   DCHECK(sb_service_);
 
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(profile_);
+      BrowserContext::GetDownloadManager(profile_);
   if (download_manager) {
     // Look for new downloads being created.
     download_manager->AddObserver(this);
@@ -112,7 +114,7 @@ AndroidTelemetryService::AndroidTelemetryService(
 AndroidTelemetryService::~AndroidTelemetryService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(profile_);
+      BrowserContext::GetDownloadManager(profile_);
   if (download_manager) {
     download_manager->RemoveObserver(this);
   }
@@ -122,6 +124,10 @@ void AndroidTelemetryService::OnDownloadCreated(
     content::DownloadManager* manager,
     download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!BrowserContext::GetDownloadManager(profile_)->IsManagerInitialized()) {
+    return;
+  }
 
   if (item->GetMimeType() != kApkMimeType) {
     return;
