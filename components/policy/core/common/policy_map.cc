@@ -10,16 +10,9 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace policy {
-
-const char kPolicyConfictSameValue[] =
-    "Warning: More than one source is present for the policy, but the values "
-    "are the same.";
-const char kPolicyConfictDiffValue[] =
-    "Warning: More than one source with conflicting values is present for this "
-    "policy!";
-
 PolicyMap::Entry::Entry() = default;
 
 PolicyMap::Entry::~Entry() = default;
@@ -184,11 +177,10 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
     if (!entry || it.second.has_higher_priority_than(*entry))
       Set(it.first, it.second.DeepCopy());
     if (entry) {
-      // TODO(pastarmovj): Figure out a way to localize those errors.
       if (entry->value && it.second.value->Equals(entry->value.get()))
-        GetMutable(it.first)->AddError(kPolicyConfictSameValue);
+        GetMutable(it.first)->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
       else
-        GetMutable(it.first)->AddError(kPolicyConfictDiffValue);
+        GetMutable(it.first)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
     }
   }
 }

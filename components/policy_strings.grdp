@@ -482,4 +482,10 @@ Additional details:
   <message name="IDS_POLICY_HIDE_EXPANDED_STATUS" desc="Text for the link that hides the policy status. Used when the policy status is too long to be always visible.">
     Hide status
   </message>
+  <message name="IDS_POLICY_CONFLICT_SAME_VALUE" desc="Text explaining that a policy had conflicting sources, but with the same values.">
+    Warning: More than one source is present for the policy, but the values are the same.
+  </message>
+  <message name="IDS_POLICY_CONFLICT_DIFF_VALUE" desc="Text explaining that a policy had conflicting sources and values.">
+    Warning: More than one source with conflicting values is present for this policy!
+  </message>
 </grit-part>

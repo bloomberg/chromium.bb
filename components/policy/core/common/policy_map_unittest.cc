@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -238,25 +239,25 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("chromium.org"),
         nullptr);
-  c.GetMutable(kTestPolicyName1)->AddError(kPolicyConfictSameValue);
+  c.GetMutable(kTestPolicyName1)->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
   // |a| has precedence over |b|.
   c.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
-  c.GetMutable(kTestPolicyName2)->AddError(kPolicyConfictDiffValue);
+  c.GetMutable(kTestPolicyName2)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
         CreateExternalDataFetcher("a"));
-  c.GetMutable(kTestPolicyName3)->AddError(kPolicyConfictDiffValue);
+  c.GetMutable(kTestPolicyName3)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
-  c.GetMutable(kTestPolicyName4)->AddError(kPolicyConfictSameValue);
+  c.GetMutable(kTestPolicyName4)->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(std::string()),
         nullptr);
-  c.GetMutable(kTestPolicyName5)->AddError(kPolicyConfictSameValue);
+  c.GetMutable(kTestPolicyName5)->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
   // Merge new ones.
   c.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
@@ -264,7 +265,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(true),
         nullptr);
-  c.GetMutable(kTestPolicyName7)->AddError(kPolicyConfictSameValue);
+  c.GetMutable(kTestPolicyName7)->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
 
   EXPECT_TRUE(a.Equals(c));
 }

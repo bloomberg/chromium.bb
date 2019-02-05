@@ -13,6 +13,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -184,7 +185,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
   // Merged twice so this causes a conflict.
   expected_bundle.Get(chrome_ns)
       .GetMutable("ChromePolicy")
-      ->AddError(kPolicyConfictSameValue);
+      ->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 
   // Mismatched types are also removed.

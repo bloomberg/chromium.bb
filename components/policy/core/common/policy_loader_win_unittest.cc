@@ -38,6 +38,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_map.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::UTF8ToUTF16;
@@ -450,7 +451,7 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
            nullptr);
   expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .GetMutable(test_keys::kKeyString)
-      ->AddError(kPolicyConfictDiffValue);
+      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -503,19 +504,19 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   expected_policy.Set(
       "a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(kMachineMandatory), nullptr);
-  expected_policy.GetMutable("a")->AddError(kPolicyConfictDiffValue);
-  expected_policy.GetMutable("a")->AddError(kPolicyConfictDiffValue);
-  expected_policy.GetMutable("a")->AddError(kPolicyConfictDiffValue);
+  expected_policy.GetMutable("a")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected_policy.GetMutable("a")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected_policy.GetMutable("a")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kUserMandatory), nullptr);
-  expected_policy.GetMutable("b")->AddError(kPolicyConfictSameValue);
-  expected_policy.GetMutable("b")->AddError(kPolicyConfictDiffValue);
+  expected_policy.GetMutable("b")->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
+  expected_policy.GetMutable("b")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_policy.Set("c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kMachineRecommended),
                       nullptr);
-  expected_policy.GetMutable("c")->AddError(kPolicyConfictDiffValue);
+  expected_policy.GetMutable("c")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kUserRecommended), nullptr);
