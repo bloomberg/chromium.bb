@@ -2537,6 +2537,16 @@ hooks = [
                 '-d', 'src/components/zucchini',
     ],
   },
+  # Pull down Android RenderTest goldens
+  {
+    'name': 'Fetch Android RenderTest goldens',
+    'pattern': '.',
+    'condition': 'checkout_android',
+    'action': [ 'python',
+                'src/chrome/test/data/android/manage_render_test_goldens.py',
+                'download',
+    ],
+  },
   {
     'name': 'Fetch Android AFDO profile',
     'pattern': '.',
