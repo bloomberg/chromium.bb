@@ -55,7 +55,7 @@ class ManagedUIHandlerTest : public testing::Test {
 
   void TearDown() override { policy_provider()->Shutdown(); }
 
-  Profile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_.get(); }
   policy::MockConfigurationPolicyProvider* policy_provider() {
     return &policy_provider_;
   }
@@ -118,3 +118,14 @@ TEST_F(ManagedUIHandlerTest, ManagedUIBecomesEnabledByProfile) {
   // Source should auto-update.
   EXPECT_TRUE(IsSourceManaged());
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(ManagedUIHandlerTest, ManagedUIDisabledForChildAccount) {
+  profile_policy_connector()->OverrideIsManagedForTesting(true);
+  profile()->SetSupervisedUserId("supervised");
+
+  InitializeHandler();
+
+  EXPECT_FALSE(IsSourceManaged());
+}
+#endif

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace content {
@@ -66,6 +67,8 @@ class ManagedUIHandler : public content::WebUIMessageHandler,
   // To avoid double-removing the observers, which would cause a DCHECK()
   // failure.
   bool has_observers_ = false;
+
+  PrefChangeRegistrar pref_registrar_;
 
   // Profile to update data sources on. Injected for testing.
   Profile* const profile_;
