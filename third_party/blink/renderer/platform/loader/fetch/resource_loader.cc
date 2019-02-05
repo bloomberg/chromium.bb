@@ -443,6 +443,10 @@ void ResourceLoader::DidFailLoadingBody() {
   DidFail(ResourceError::Failure(resource_->Url()), 0, 0, 0);
 }
 
+void ResourceLoader::DidCancelLoadingBody() {
+  Cancel();
+}
+
 void ResourceLoader::StartWith(const ResourceRequest& request) {
   DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   DCHECK(loader_);

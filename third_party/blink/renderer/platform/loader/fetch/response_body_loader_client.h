@@ -22,6 +22,9 @@ class ResponseBodyLoaderClient : public GarbageCollectedMixin {
   // Called when seeing an error while reading the body. This must be the last
   // signal.
   virtual void DidFailLoadingBody() = 0;
+
+  // Called when the loader cancelled loading the body.
+  virtual void DidCancelLoadingBody() = 0;
 };
 
 }  // namespace blink
