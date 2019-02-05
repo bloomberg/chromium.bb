@@ -88,7 +88,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual PerformanceTiming* timing() const;
   virtual PerformanceNavigation* navigation() const;
   virtual MemoryInfo* memory() const;
-  virtual bool shouldYield() const;
 
   virtual void UpdateLongTaskInstrumentation() {}
 
