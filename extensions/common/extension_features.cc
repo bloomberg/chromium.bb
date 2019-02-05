@@ -27,4 +27,8 @@ const base::Feature kNewExtensionUpdaterService{
 const base::Feature kRuntimeHostPermissions{"RuntimeHostPermissions",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Forces requests to go through WebRequestProxyingURLLoaderFactory.
+const base::Feature kForceWebRequestProxyForTest{
+    "ForceWebRequestProxyForTest", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace extensions_features

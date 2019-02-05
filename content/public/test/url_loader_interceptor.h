@@ -146,11 +146,6 @@ class URLLoaderInterceptor {
   network::mojom::URLLoaderFactoryPtr GetURLLoaderFactoryForBrowserProcess(
       network::mojom::URLLoaderFactoryPtr original_factory);
 
-  // Callback on UI thread whenever NavigationURLLoaderImpl needs a
-  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient.
-  void InterceptNavigationRequestCallback(
-      network::mojom::URLLoaderFactoryRequest* request);
-
   // Callback on IO thread whenever a NavigationURLLoaderImpl is loading a frame
   // request through ResourceDispatcherHost (i.e. when the network service is
   // disabled).
@@ -178,8 +173,6 @@ class URLLoaderInterceptor {
   // per StoragePartition. Only accessed on UI thread.
   std::set<std::unique_ptr<BrowserProcessWrapper>>
       browser_process_interceptors_;
-  std::set<std::unique_ptr<URLLoaderFactoryNavigationWrapper>>
-      navigation_wrappers_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderInterceptor);
 };
