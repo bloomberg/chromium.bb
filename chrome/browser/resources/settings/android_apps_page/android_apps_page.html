@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -52,8 +53,10 @@
           </div>
         </template>
         <template is="dom-if" if="[[!havePlayStoreApp]]" restamp>
-          <settings-android-settings-element>
-          </settings-android-settings-element>
+          <cr-link-row id="manageApps" icon-class="icon-external"
+              label="$i18n{androidAppsManageApps}"
+              on-click="onManageAndroidAppsTap_">
+          </cr-link-row>
         </template>
       </div>
 

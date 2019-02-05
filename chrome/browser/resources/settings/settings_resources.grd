@@ -1231,12 +1231,6 @@
                    type="chrome_html"
                    preprocess="true"
                    allowexternalscript="true" />
-        <structure name="IDR_SETTINGS_ANDROID_SETTINGS_ELEMENT_HTML"
-                   file="android_apps_page/android_settings_element.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_ANDROID_SETTINGS_ELEMENT_JS"
-                   file="android_apps_page/android_settings_element.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CROSTINI_PAGE_HTML"
                    file="crostini_page/crostini_page.html"
                    type="chrome_html" />
