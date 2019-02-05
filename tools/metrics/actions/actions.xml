@@ -2165,6 +2165,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppList_ShowZeroStateSuggestions">
+  <owner>jennyz@chromium.org</owner>
+  <owner>newcomer@chromium.org</owner>
+  <description>
+    Cros Launcher shows zero state suggestions to user when user activate the
+    search box.
+  </description>
+</action>
+
 <action name="AppList_VoiceSearchCanceled">
   <obsolete>App list doesn't have voice search anymore.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

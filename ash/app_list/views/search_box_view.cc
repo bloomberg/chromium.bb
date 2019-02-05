@@ -27,6 +27,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/composition_text.h"
@@ -361,6 +362,8 @@ void SearchBoxView::UpdateOpacity() {
 }
 
 void SearchBoxView::ShowZeroStateSuggestions() {
+  base::RecordAction(
+      base::UserMetricsAction("AppList_ShowZeroStateSuggestions"));
   base::string16 empty_query;
   ContentsChanged(search_box(), empty_query);
 }
