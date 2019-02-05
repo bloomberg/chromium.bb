@@ -20,7 +20,7 @@ class ListValue;
 }
 
 namespace identity {
-class PrimaryAccountAccessTokenFetcher;
+class AccessTokenFetcher;
 }
 
 namespace network {
@@ -31,7 +31,7 @@ class SharedURLLoaderFactory;
 // Fetches information about the family of the signed-in user. It can get
 // information about the family itself (e.g. a name), as well as a list of
 // family members and their properties.
-class FamilyInfoFetcher {
+class FamilyInfoFetcher : public identity::IdentityManager::Observer {
  public:
   enum ErrorCode {
     TOKEN_ERROR,    // Failed to get OAuth2 token.
@@ -86,7 +86,7 @@ class FamilyInfoFetcher {
       Consumer* consumer,
       identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~FamilyInfoFetcher();
+  ~FamilyInfoFetcher() override;
 
   // Public so tests can use them.
   static std::string RoleToString(FamilyMemberRole role);
@@ -103,8 +103,15 @@ class FamilyInfoFetcher {
                                       const std::string& response_body);
 
  private:
-  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo access_token_info);
+  // IdentityManager::Observer implementation:
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
+  void OnRefreshTokensLoaded() override;
+
+  void OnAccessTokenFetchCompleteForAccount(
+      std::string account_id,
+      GoogleServiceAuthError error,
+      identity::AccessTokenInfo access_token_info);
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -115,6 +122,7 @@ class FamilyInfoFetcher {
   static void ParseProfile(const base::DictionaryValue* dict,
                            FamilyMember* member);
 
+  void StartFetching();
   void StartFetchingAccessToken();
   void FamilyProfileFetched(const std::string& response);
   void FamilyMembersFetched(const std::string& response);
@@ -125,8 +133,7 @@ class FamilyInfoFetcher {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::string request_path_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      access_token_fetcher_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
   std::string access_token_;
   bool access_token_expired_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
