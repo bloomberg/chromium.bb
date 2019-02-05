@@ -5,7 +5,6 @@
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/repack.gni")
 
 source_set("lib") {
@@ -42,9 +41,4 @@ service_executable("quick_launch_app") {
   data_deps = [
     "//ui/views/mus:resources",
   ]
-}
-
-service_manifest("manifest") {
-  name = "quick_launch_app"
-  source = "manifest.json"
 }

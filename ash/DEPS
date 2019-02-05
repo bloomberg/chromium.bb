@@ -102,7 +102,6 @@ include_rules = [
 
 specific_include_rules = {
   "app_launch_unittest.cc": [
-    "+ash/components/quick_launch/manifest.h",
     "+ash/components/quick_launch/public",
   ],
   "ash_service\.*": [

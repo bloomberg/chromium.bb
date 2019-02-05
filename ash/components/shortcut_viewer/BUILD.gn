@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 # KSV: Keyboard Shortcut Viewer
 source_set("lib") {
   sources = [
@@ -49,11 +47,6 @@ source_set("lib") {
     "//ui/views/mus",
     "//ui/views/mus:resources",
   ]
-}
-
-service_manifest("manifest") {
-  name = "shortcut_viewer_app"
-  source = "manifest.json"
 }
 
 source_set("unit_tests") {

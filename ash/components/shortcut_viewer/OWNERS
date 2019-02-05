@@ -1,5 +1,2 @@
 afakhry@chromium.org
 wutao@chromium.org
-
-per-file manifest.json=set noparent
-per-file manifest.json=file://ipc/SECURITY_OWNERS
