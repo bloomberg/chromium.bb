@@ -310,7 +310,7 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 #elif defined(OS_WIN)
   enterprise_managed = base::IsMachineExternallyManaged();
 #endif
-  source->AddBoolean("IsEnterpriseManaged", enterprise_managed);
+  source->AddBoolean("isEnterpriseManaged", enterprise_managed);
 
   bool nup_printing_enabled =
       base::FeatureList::IsEnabled(features::kNupPrinting);
