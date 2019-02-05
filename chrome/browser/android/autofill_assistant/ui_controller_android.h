@@ -15,6 +15,7 @@
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
+#include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -44,15 +45,13 @@ class UiControllerAndroid : public UiController {
   void OnStatusMessageChanged(const std::string& message) override;
   void Shutdown(Metrics::DropOutReason reason) override;
   void Close() override;
-  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
-  void ClearChips() override;
+  void OnChipsChanged(const std::vector<Chip>& chips) override;
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::vector<std::string>& supported_basic_card_networks) override;
   void OnDetailsChanged(const Details* details) override;
-  void ShowProgressBar(int progress) override;
-  void HideProgressBar() override;
+  void OnProgressChanged(int progress) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
 
   // Called by AssistantOverlayDelegate:
@@ -103,7 +102,6 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaGlobalRef<jobject>
       java_autofill_assistant_ui_controller_;
 
-  std::unique_ptr<std::vector<Chip>> current_chips_;
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       get_payment_information_callback_;
 

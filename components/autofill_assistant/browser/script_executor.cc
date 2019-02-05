@@ -188,11 +188,11 @@ void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
   }
 
   delegate_->EnterState(AutofillAssistantState::PROMPT);
-  delegate_->GetUiController()->SetChips(std::move(chips));
+  delegate_->SetChips(std::move(chips));
 }
 
 void ScriptExecutor::CancelPrompt() {
-  delegate_->GetUiController()->ClearChips();
+  delegate_->SetChips(nullptr);
   CleanUpAfterPrompt();
 }
 
@@ -246,12 +246,8 @@ void ScriptExecutor::SetTouchableElementArea(
       std::make_unique<ElementAreaProto>(touchable_element_area);
 }
 
-void ScriptExecutor::ShowProgressBar(int progress) {
-  delegate_->GetUiController()->ShowProgressBar(progress);
-}
-
-void ScriptExecutor::HideProgressBar() {
-  delegate_->GetUiController()->HideProgressBar();
+void ScriptExecutor::SetProgress(int progress) {
+  delegate_->SetProgress(progress);
 }
 
 void ScriptExecutor::SetFieldValue(const Selector& selector,

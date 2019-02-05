@@ -138,8 +138,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(StopCurrentScriptAndShutdown, void(const std::string& message));
   MOCK_METHOD1(SetDetails, void(const Details& details));
   MOCK_METHOD0(ClearDetails, void());
-  MOCK_METHOD1(ShowProgressBar, void(int progress));
-  MOCK_METHOD0(HideProgressBar, void());
+  MOCK_METHOD1(SetProgress, void(int progress));
+  MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
 };
 
 }  // namespace autofill_assistant

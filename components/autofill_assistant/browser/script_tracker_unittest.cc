@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/test/mock_callback.h"
-#include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/mock_ui_controller.h"
@@ -30,9 +30,7 @@ using ::testing::StrEq;
 using ::testing::StrictMock;
 using ::testing::UnorderedElementsAre;
 
-class ScriptTrackerTest : public testing::Test,
-                          public ScriptTracker::Listener,
-                          public ScriptExecutorDelegate {
+class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
  public:
   void SetUp() override {
     ON_CALL(mock_web_controller_,
@@ -53,39 +51,11 @@ class ScriptTrackerTest : public testing::Test,
   ScriptTrackerTest()
       : no_runnable_scripts_anymore_(0),
         runnable_scripts_changed_(0),
-        tracker_(this, this) {}
-
-  // Overrides ScriptTrackerDelegate
-  Service* GetService() override { return &mock_service_; }
-
-  UiController* GetUiController() override { return &mock_ui_controller_; }
-
-  WebController* GetWebController() override { return &mock_web_controller_; }
-
-  ClientMemory* GetClientMemory() override { return &client_memory_; }
-
-  void EnterState(AutofillAssistantState state) override {}
-
-  const std::map<std::string, std::string>& GetParameters() override {
-    return parameters_;
+        tracker_(&delegate_, /* listener=*/this) {
+    delegate_.SetService(&mock_service_);
+    delegate_.SetUiController(&mock_ui_controller_);
+    delegate_.SetWebController(&mock_web_controller_);
   }
-
-  autofill::PersonalDataManager* GetPersonalDataManager() override {
-    return nullptr;
-  }
-
-  content::WebContents* GetWebContents() override { return nullptr; }
-
-  void SetTouchableElementArea(const ElementAreaProto& element_area) override {}
-
-  void SetStatusMessage(const std::string& status_message) override {
-    status_message_ = status_message;
-  }
-  std::string GetStatusMessage() const { return status_message_; }
-
-  void SetDetails(const Details& details) override {}
-
-  void ClearDetails() override {}
 
   // Overrides ScriptTracker::Listener
   void OnRunnableScriptsChanged(
@@ -150,16 +120,14 @@ class ScriptTrackerTest : public testing::Test,
   NiceMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
   NiceMock<MockUiController> mock_ui_controller_;
-  ClientMemory client_memory_;
-  std::map<std::string, std::string> parameters_;
 
   // Number of times NoRunnableScriptsAnymore was called.
   int no_runnable_scripts_anymore_;
   // Number of times OnRunnableScriptsChanged was called.
   int runnable_scripts_changed_;
   std::vector<ScriptHandle> runnable_scripts_;
+  FakeScriptExecutorDelegate delegate_;
   ScriptTracker tracker_;
-  std::string status_message_;
 };
 
 TEST_F(ScriptTrackerTest, NoScripts) {

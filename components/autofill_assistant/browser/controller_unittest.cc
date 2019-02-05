@@ -20,10 +20,13 @@
 namespace autofill_assistant {
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Field;
+using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -88,6 +91,9 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     ON_CALL(*mock_service_, OnGetActions(_, _, _, _, _, _))
         .WillByDefault(RunOnceCallback<5>(true, ""));
 
+    ON_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
+        .WillByDefault(RunOnceCallback<3>(true, ""));
+
     // Make WebController::GetUrl accessible.
     ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
@@ -123,6 +129,14 @@ class ControllerTest : public content::RenderViewHostTestHarness {
                          ->add_script_status_match();
     run_once->set_script(proto->path());
     run_once->set_status(SCRIPT_STATUS_NOT_RUN);
+  }
+
+  void SetupScriptsForURL(const std::string& url,
+                          SupportsScriptResponseProto scripts) {
+    std::string scripts_str;
+    scripts.SerializeToString(&scripts_str);
+    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(GURL(url)), _, _))
+        .WillOnce(RunOnceCallback<2>(true, scripts_str));
   }
 
   void Start() {
@@ -185,45 +199,75 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   Start();
 
   // Going to the URL triggers a whole flow:
-  // 1. loading scripts
+  // loading scripts
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script1");
+  auto* script2 = AddRunnableScript(&script_response, "script2");
+  RunOnce(script2);
+  SetNextScriptResponse(script_response);
+
+  testing::InSequence seq;
+
+  // Start the flow.
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+
+  // Offering the choices: script1 and script2
+  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
+            controller_->GetState());
+  EXPECT_THAT(controller_->GetChips(),
+              UnorderedElementsAre(Field(&Chip::text, StrEq("script1")),
+                                   Field(&Chip::text, StrEq("script2"))));
+
+  // Choose script2 and run it successfully.
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script2"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, ""));
+  controller_->SelectChip(1);
+
+  // Offering the remaining choice: script1 as script2 can only run once.
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+  EXPECT_THAT(controller_->GetChips(),
+              ElementsAre(Field(&Chip::text, StrEq("script1"))));
+}
+
+TEST_F(ControllerTest, ReportPromptAndChipsChanged) {
+  Start();
+
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
-  // 2. checking the scripts
-  // 3. offering the choices: script1 and script2
-  // 4. script1 is chosen
-  EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(2))))
-      .WillOnce([this](std::unique_ptr<std::vector<Chip>> chips) {
-        std::vector<std::string> texts;
-        for (const auto& chip : *chips) {
-          texts.emplace_back(chip.text);
-        }
-        EXPECT_THAT(texts, UnorderedElementsAre("script1", "script2"));
-
-        Sequence sequence;
-        // Selecting a script should clean the bottom bar.
-        EXPECT_CALL(mock_ui_controller_, ClearChips()).InSequence(sequence);
-        // After the script is done both scripts are again valid and should be
-        // shown.
-        EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(2))))
-            .InSequence(sequence);
-
-        std::move((*chips)[0].callback).Run();
-      });
-
-  // 5. script1 run successfully (no actions).
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, ""));
-
-  // 6. As nothing is selected the flow terminates.
-
-  // Start the flow.
+  EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(2)));
+  EXPECT_CALL(
+      mock_ui_controller_,
+      OnStateChanged(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT));
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
-TEST_F(ControllerTest, ShowFirstInitialPrompt) {
+TEST_F(ControllerTest, ClearChipsWhenRunning) {
+  Start();
+
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script1");
+  AddRunnableScript(&script_response, "script2");
+  SetNextScriptResponse(script_response);
+
+  // Discover 2 scripts, one is selected and run (with no chips shown), then the
+  // same chips are shown.
+  {
+    testing::InSequence seq;
+    // Discover 2 scripts, script1 and script2.
+    EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(2)));
+    // Set of chips is cleared while running script1.
+    EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(0)));
+    // This test doesn't specify what happens after that.
+    EXPECT_CALL(mock_ui_controller_, OnChipsChanged(_)).Times(AnyNumber());
+  }
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  controller_->SelectChip(0);
+}
+
+TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
   Start();
 
   SupportsScriptResponseProto script_response;
@@ -246,12 +290,12 @@ TEST_F(ControllerTest, ShowFirstInitialPrompt) {
 
   SetNextScriptResponse(script_response);
 
-  // Script3, with higher priority (lower number), wins.
-  EXPECT_CALL(mock_ui_controller_, OnStatusMessageChanged("script3 prompt"));
-  EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(4))));
-
   // Start the flow.
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+
+  // Script3, with higher priority (lower number), wins.
+  EXPECT_EQ("script3 prompt", controller_->GetStatusMessage());
+  EXPECT_THAT(controller_->GetChips(), SizeIs(4));
 }
 
 TEST_F(ControllerTest, Stop) {
@@ -263,8 +307,6 @@ TEST_F(ControllerTest, Stop) {
   actions_response.SerializeToString(&actions_response_str);
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, actions_response_str));
-  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
 
   EXPECT_CALL(mock_ui_controller_, Shutdown(_));
 
@@ -273,26 +315,21 @@ TEST_F(ControllerTest, Stop) {
 
 TEST_F(ControllerTest, Reset) {
   Start();
-  {
-    InSequence sequence;
 
     // 1. Fetch scripts for URL, which in contains a single "reset" script.
     SupportsScriptResponseProto script_response;
-    AddRunnableScript(&script_response, "reset");
+    auto* reset_script = AddRunnableScript(&script_response, "reset");
+    RunOnce(reset_script);
     std::string script_response_str;
     script_response.SerializeToString(&script_response_str);
     EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-        .WillOnce(RunOnceCallback<2>(true, script_response_str));
+        .WillRepeatedly(RunOnceCallback<2>(true, script_response_str));
+
+    SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+    EXPECT_THAT(controller_->GetChips(),
+                ElementsAre(Field(&Chip::text, StrEq("reset"))));
 
     // 2. Execute the "reset" script, which contains a reset action.
-    EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(1))))
-        .WillOnce([](std::unique_ptr<std::vector<Chip>> chips) {
-          std::move((*chips)[0].callback).Run();
-        });
-
-    // Selecting a script should clean the bottom bar.
-    EXPECT_CALL(mock_ui_controller_, ClearChips());
-
     ActionsResponseProto actions_response;
     actions_response.add_actions()->mutable_reset();
     std::string actions_response_str;
@@ -300,26 +337,19 @@ TEST_F(ControllerTest, Reset) {
     EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _, _, _, _))
         .WillOnce(RunOnceCallback<5>(true, actions_response_str));
 
-    // 3. Report the result of running that action.
-    EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
-        .WillOnce(RunOnceCallback<3>(true, ""));
+    controller_->GetClientMemory()->set_selected_card(
+        std::make_unique<autofill::CreditCard>());
+    EXPECT_TRUE(controller_->GetClientMemory()->has_selected_card());
 
-    // 4. The reset action forces a reload of the scripts, even though the URL
-    // hasn't changed. The "reset" script is reported again to UpdateScripts.
-    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-        .WillOnce(RunOnceCallback<2>(true, script_response_str));
+    controller_->SelectChip(0);
 
-    // Reset forces the controller to fetch the scripts twice, even though the
-    // URL doesn't change..
-    EXPECT_CALL(mock_ui_controller_, SetChips(Pointee(SizeIs(1))));
-  }
+    // Resetting should have cleared the client memory
+    EXPECT_FALSE(controller_->GetClientMemory()->has_selected_card());
 
-  // Resetting should clear the client memory
-  controller_->GetClientMemory()->set_selected_card(nullptr);
-
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-
-  EXPECT_FALSE(controller_->GetClientMemory()->selected_card());
+    // The reset script should be available again, even though it's marked
+    // RunOnce, as the script state should have been cleared as well.
+    EXPECT_THAT(controller_->GetChips(),
+                ElementsAre(Field(&Chip::text, StrEq("reset"))));
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
@@ -432,9 +462,12 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   RunOnce(autostart);
   SetRepeatedScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, ClearChips()).Times(AtLeast(1));
+  EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(0u)))
+      .Times(AnyNumber());
+  EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(Gt(0u)))).Times(0);
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  EXPECT_THAT(controller_->GetChips(), SizeIs(0));
 }
 
 TEST_F(ControllerTest, LoadProgressChanged) {
@@ -479,6 +512,29 @@ TEST_F(ControllerTest, CookieExperimentEnabled) {
   // test when we pass the cookie data along in the initial request so that it
   // can be tested.
   EXPECT_TRUE(controller_->IsCookieExperimentEnabled());
+}
+
+TEST_F(ControllerTest, ProgressIncreasesAtStart) {
+  EXPECT_EQ(0, controller_->GetProgress());
+  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(10));
+  Start();
+  EXPECT_EQ(10, controller_->GetProgress());
+}
+
+TEST_F(ControllerTest, SetProgress) {
+  Start();
+  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(20));
+  controller_->SetProgress(20);
+  EXPECT_EQ(20, controller_->GetProgress());
+}
+
+TEST_F(ControllerTest, IgnoreProgressDecreases) {
+  Start();
+  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(Not(15)))
+      .Times(AnyNumber());
+  controller_->SetProgress(20);
+  controller_->SetProgress(15);
+  EXPECT_EQ(20, controller_->GetProgress());
 }
 
 TEST_F(ControllerTest, StateChanges) {

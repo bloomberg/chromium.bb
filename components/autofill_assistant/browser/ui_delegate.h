@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
@@ -40,6 +41,15 @@ class UiDelegate {
 
   // Returns the current contextual information. May be null if empty.
   virtual const Details* GetDetails() const = 0;
+
+  // Returns the current progress; a percentage.
+  virtual int GetProgress() const = 0;
+
+  // Returns the current set of chips.
+  virtual const std::vector<Chip>& GetChips() const = 0;
+
+  // Selects a chip, from the set of chips returned by GetChips().
+  virtual void SelectChip(int chip) = 0;
 
   // Returns the drop out reason for the last state transition to STOPPED.
   virtual Metrics::DropOutReason GetDropOutReason() const = 0;

@@ -167,16 +167,9 @@ void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
   }
 }
 
-void UiControllerAndroid::ShowProgressBar(int progress) {
-  // TODO(crbug.com/806868): Get progress first and call setProgress only if
-  // progress > current_progress, and remove that logic from
-  // AnimatedProgressBar.
+void UiControllerAndroid::OnProgressChanged(int progress) {
   Java_AssistantHeaderModel_setProgress(AttachCurrentThread(), GetHeaderModel(),
                                         progress);
-}
-
-void UiControllerAndroid::HideProgressBar() {
-  // TODO(crbug.com/806868): Remove calls to this function.
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
@@ -231,40 +224,28 @@ UiControllerAndroid::GetCarouselModel() {
                                               GetModel());
 }
 
-void UiControllerAndroid::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
-  DCHECK(chips);
-  current_chips_ = std::move(chips);
+void UiControllerAndroid::OnChipsChanged(const std::vector<Chip>& chips) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetCarouselModel();
+  if (chips.empty()) {
+    Java_AssistantCarouselModel_clearChips(env, jmodel);
+    return;
+  }
 
-  int types[current_chips_->size()];
+  std::vector<int> types;
   std::vector<std::string> texts;
-  int i = 0;
-  for (const auto& chip : *current_chips_) {
-    types[i++] = chip.type;
+  for (const auto& chip : chips) {
+    types.emplace_back(chip.type);
     texts.emplace_back(chip.text);
   }
-  SetProgressPulsingEnabled(true);
-  JNIEnv* env = AttachCurrentThread();
   Java_AssistantCarouselModel_setChips(
-      env, GetCarouselModel(),
-      base::android::ToJavaIntArray(env, types, current_chips_->size()),
+      env, jmodel, base::android::ToJavaIntArray(env, types),
       base::android::ToJavaArrayOfStrings(env, texts),
       carousel_delegate_.GetJavaObject());
 }
 
-void UiControllerAndroid::ClearChips() {
-  current_chips_.reset();
-  SetProgressPulsingEnabled(false);
-  Java_AssistantCarouselModel_clearChips(AttachCurrentThread(),
-                                         GetCarouselModel());
-}
-
 void UiControllerAndroid::OnChipSelected(int index) {
-  if (current_chips_ && index >= 0 && index < (int)current_chips_->size()) {
-    auto callback = std::move((*current_chips_)[index].callback);
-    current_chips_.reset();
-    SetProgressPulsingEnabled(false);
-    std::move(callback).Run();
-  }
+  ui_delegate_->SelectChip(index);
 }
 
 // Overlay related methods.

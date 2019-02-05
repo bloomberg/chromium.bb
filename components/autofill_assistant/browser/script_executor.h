@@ -157,8 +157,7 @@ class ScriptExecutor : public ActionDelegate {
   void StopCurrentScriptAndShutdown(const std::string& message) override;
   void ClearDetails() override;
   void SetDetails(const Details& details) override;
-  void ShowProgressBar(int progress) override;
-  void HideProgressBar() override;
+  void SetProgress(int progress) override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to

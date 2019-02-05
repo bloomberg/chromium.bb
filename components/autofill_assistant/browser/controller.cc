@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -145,6 +146,44 @@ const Details* Controller::GetDetails() const {
   return details_.get();
 }
 
+int Controller::GetProgress() const {
+  return progress_;
+}
+
+void Controller::SetProgress(int progress) {
+  // Progress can only increase.
+  if (progress_ >= progress)
+    return;
+
+  progress_ = progress;
+  GetUiController()->OnProgressChanged(progress);
+}
+
+const std::vector<Chip>& Controller::GetChips() const {
+  static const base::NoDestructor<std::vector<Chip>> no_chips_;
+  return chips_ ? *chips_ : *no_chips_;
+}
+
+void Controller::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
+  if (!chips || chips->empty()) {
+    chips_.reset();
+  } else {
+    chips_ = std::move(chips);
+  }
+  GetUiController()->OnChipsChanged(GetChips());
+}
+
+void Controller::SelectChip(int chip_index) {
+  if (!chips_ || chip_index < 0 ||
+      static_cast<size_t>(chip_index) >= chips_->size()) {
+    NOTREACHED() << "Invalid chip index: " << chip_index;
+    return;
+  }
+  auto callback = std::move((*chips_)[chip_index].callback);
+  SetChips(nullptr);
+  std::move(callback).Run();
+}
+
 void Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return;
@@ -255,8 +294,8 @@ void Controller::ExecuteScript(const std::string& script_path) {
   StopPeriodicScriptChecks();
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
-  script_tracker()->ClearRunnableScripts();
-  GetUiController()->ClearChips();
+  script_tracker_->ClearRunnableScripts();
+  SetChips(nullptr);
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker()->ExecuteScript(
@@ -396,7 +435,7 @@ void Controller::FinishStart(const GURL& initial_url) {
     MaybeSetInitialDetails();
     SetStatusMessage(l10n_util::GetStringFUTF8(
         IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(initial_url.host())));
-    GetUiController()->ShowProgressBar(kAutostartInitialProgress);
+    SetProgress(kAutostartInitialProgress);
   }
 }
 
@@ -551,7 +590,7 @@ void Controller::OnRunnableScriptsChanged(
   } else {
     EnterState(AutofillAssistantState::PROMPT);
   }
-  GetUiController()->SetChips(std::move(chips));
+  SetChips(std::move(chips));
 }
 
 void Controller::DidAttachInterstitialPage() {

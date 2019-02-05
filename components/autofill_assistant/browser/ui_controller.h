@@ -40,11 +40,8 @@ class UiController {
   // Shuts down Autofill Assistant and closes Chrome.
   virtual void Close() = 0;
 
-  // Show UI to ask user to make a choice between different chips.
-  virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
-
-  // Remove all chips from the UI.
-  virtual void ClearChips() = 0;
+  // Report that the set of chips has changed.
+  virtual void OnChipsChanged(const std::vector<Chip>& chips) = 0;
 
   // Get payment information (through similar to payment request UX) to fill
   // forms.
@@ -57,11 +54,9 @@ class UiController {
   // cleared.
   virtual void OnDetailsChanged(const Details* details) = 0;
 
-  // Show the progress bar and set it at |progress|%.
-  virtual void ShowProgressBar(int progress) = 0;
-
-  // Hide the progress bar.
-  virtual void HideProgressBar() = 0;
+  // Called when the current progress has changed. Progress, is expressed as a
+  // percentage.
+  virtual void OnProgressChanged(int progress) = 0;
 
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.
