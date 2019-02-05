@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace vr {
@@ -182,7 +183,7 @@ TextEdits EditedText::GetDiff() const {
   int to_commit =
       current.CommittedTextBeforeCursor().size() - common_prefix_length;
   if (to_commit > 0 || had_selection) {
-    DCHECK(to_delete == 0);
+    DCHECK_EQ(0, to_delete);
     edits.push_back(TextEditAction(TextEditActionType::COMMIT_TEXT,
                                    current.CommittedTextBeforeCursor().substr(
                                        common_prefix_length, to_commit),

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/glowplug_key_value_table.h"
 
+#include "base/strings/stringprintf.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace predictors {
