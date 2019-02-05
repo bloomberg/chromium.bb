@@ -14,11 +14,8 @@ namespace scheduler {
 
 namespace {
 
-using QueueType = MainThreadTaskQueue::QueueType;
-
 #define FRAME_STATUS_PREFIX \
   "RendererScheduler.ExpectedQueueingTimeByFrameStatus2."
-#define TASK_QUEUE_PREFIX "RendererScheduler.ExpectedQueueingTimeByTaskQueue2."
 
 // On Windows, when a computer sleeps, we may end up getting extremely long
 // tasks or idling. We'll ignore tasks longer than |kInvalidPeriodThreshold|.
@@ -147,8 +144,6 @@ QueueingTimeEstimator::Calculator::Calculator(int steps_per_window)
 
 void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
     MainThreadTaskQueue* queue) {
-  current_queue_type_ =
-      queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kOther;
   FrameScheduler* scheduler = queue ? queue->GetFrameScheduler() : nullptr;
   current_frame_status_ =
       scheduler ? GetFrameStatus(scheduler) : FrameStatus::kNone;
@@ -157,7 +152,6 @@ void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
 void QueueingTimeEstimator::Calculator::AddQueueingTime(
     base::TimeDelta queueing_time) {
   step_expected_queueing_time_ += queueing_time;
-  eqt_by_queue_type_[static_cast<int>(current_queue_type_)] += queueing_time;
   eqt_by_frame_status_[static_cast<int>(current_frame_status_)] +=
       queueing_time;
 }
@@ -177,31 +171,6 @@ void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
   ResetStep();
   if (!sliding_window_.IndexIsZero())
     return;
-
-// Report splits by task queue type.
-#define REPORT_BY_TASK_QUEUE(queue)                               \
-  client->OnReportFineGrainedExpectedQueueingTime(                \
-      TASK_QUEUE_PREFIX #queue,                                   \
-      eqt_by_queue_type_[static_cast<int>(QueueType::k##queue)] / \
-          steps_per_window_);
-  REPORT_BY_TASK_QUEUE(Default)
-  REPORT_BY_TASK_QUEUE(Unthrottled)
-  REPORT_BY_TASK_QUEUE(FrameLoading)
-  REPORT_BY_TASK_QUEUE(Compositor)
-  REPORT_BY_TASK_QUEUE(FrameThrottleable)
-  REPORT_BY_TASK_QUEUE(FramePausable)
-#undef REPORT_BY_TASK_QUEUE
-  client->OnReportFineGrainedExpectedQueueingTime(
-      TASK_QUEUE_PREFIX "Other",
-      (eqt_by_queue_type_[static_cast<int>(QueueType::kControl)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kIdle)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kTest)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kFrameLoadingControl)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kFrameDeferrable)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kFrameUnpausable)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kV8)] +
-       eqt_by_queue_type_[static_cast<int>(QueueType::kOther)]) /
-          steps_per_window_);
 
 // Report splits by frame status.
 #define REPORT_BY_FRAME_TYPE(frame)                                            \
@@ -236,8 +205,6 @@ void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
       (eqt_by_frame_status_[static_cast<int>(FrameStatus::kNone)] +
        eqt_by_frame_status_[static_cast<int>(FrameStatus::kDetached)]) /
           steps_per_window_);
-  std::fill(eqt_by_queue_type_.begin(), eqt_by_queue_type_.end(),
-            base::TimeDelta());
   std::fill(eqt_by_frame_status_.begin(), eqt_by_frame_status_.end(),
             base::TimeDelta());
 }
