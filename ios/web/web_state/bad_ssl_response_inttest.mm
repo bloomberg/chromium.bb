@@ -5,11 +5,13 @@
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
+#include "ios/web/public/web_state/session_certificate_policy_cache.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -117,6 +119,23 @@ TEST_P(BadSslResponseTest, AllowLoad) {
   // the load succeeds.
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
   EXPECT_EQ(url, web_state()->GetLastCommittedURL());
+
+  // Verify that |UpdateCertificatePolicyCache| correctly updates
+  // CertificatePolicyCache from another BrowserState.
+  TestBrowserState other_browser_state;
+  auto cache = BrowserState::GetCertificatePolicyCache(&other_browser_state);
+  scoped_refptr<net::X509Certificate> cert = https_server_.GetCertificate();
+  CertPolicy::Judgment default_judgement = cache->QueryPolicy(
+      cert.get(), url.host(), net::CERT_STATUS_AUTHORITY_INVALID);
+  ASSERT_EQ(CertPolicy::Judgment::UNKNOWN, default_judgement);
+  web_state()->GetSessionCertificatePolicyCache()->UpdateCertificatePolicyCache(
+      cache);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    CertPolicy::Judgment policy = cache->QueryPolicy(
+        cert.get(), url.host(), net::CERT_STATUS_AUTHORITY_INVALID);
+    return CertPolicy::Judgment::ALLOWED == policy;
+  }));
 }
 
 // Tests navigation to a page with self signed SSL cert and allowing the load
