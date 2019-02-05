@@ -85,14 +85,6 @@ TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
   auto result = arc::mojom::BluetoothSdpAttribute::New();
   result->type = attr_bluez.type();
   result->type_size = attr_bluez.size();
-
-  // TODO(b/111367421): Remove after migration.
-  if (result->type != bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE) {
-    std::string json;
-    base::JSONWriter::Write(attr_bluez.value(), &json);
-    result->json_value = std::move(json);
-  }
-
   switch (result->type) {
     case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
       result->value = base::Value();
@@ -127,15 +119,6 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
               arc::mojom::BluetoothSdpAttributePtr>::
     Convert(const arc::mojom::BluetoothSdpAttributePtr& attr, size_t depth) {
   bluez::BluetoothServiceAttributeValueBlueZ::Type type = attr->type;
-
-  // TODO(b/111367421): Remove after migration.
-  if (type != bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE &&
-      attr->json_value.has_value()) {
-    return bluez::BluetoothServiceAttributeValueBlueZ(
-        type, static_cast<size_t>(attr->type_size),
-        base::JSONReader::Read(attr->json_value.value()));
-  }
-
   if (type != bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE &&
       !attr->value.has_value()) {
     return bluez::BluetoothServiceAttributeValueBlueZ();
