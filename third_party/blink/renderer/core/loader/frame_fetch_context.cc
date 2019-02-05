@@ -539,9 +539,10 @@ void FrameFetchContext::DispatchDidReceiveResponse(
       NetworkHintsInterfaceImpl(), resource_loading_policy,
       PreloadHelper::kLoadAll, nullptr);
 
-  if (response.HasMajorCertificateErrors()) {
+  if (response.HasMajorCertificateErrors() &&
+      request.GetFrameType() !=
+          network::mojom::RequestContextFrameType::kTopLevel) {
     MixedContentChecker::HandleCertificateError(GetFrame(), response,
-                                                request.GetFrameType(),
                                                 request.GetRequestContext());
   }
 

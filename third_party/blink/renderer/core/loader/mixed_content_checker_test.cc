@@ -134,7 +134,6 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
   EXPECT_CALL(*client, DidRunContentWithCertificateErrors());
   MixedContentChecker::HandleCertificateError(
       &dummy_page_holder->GetFrame(), response1,
-      network::mojom::RequestContextFrameType::kNone,
       mojom::RequestContextType::SCRIPT);
 
   ResourceResponse response2(displayed_url);
@@ -146,9 +145,8 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
                                .GetSettings()
                                ->GetStrictMixedContentCheckingForPlugin()));
   EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors());
-  MixedContentChecker::HandleCertificateError(
-      &dummy_page_holder->GetFrame(), response2,
-      network::mojom::RequestContextFrameType::kNone, request_context);
+  MixedContentChecker::HandleCertificateError(&dummy_page_holder->GetFrame(),
+                                              response2, request_context);
 }
 
 TEST(MixedContentCheckerTest, DetectMixedForm) {

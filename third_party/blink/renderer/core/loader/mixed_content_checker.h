@@ -112,7 +112,6 @@ class CORE_EXPORT MixedContentChecker final {
 
   static void HandleCertificateError(LocalFrame*,
                                      const ResourceResponse&,
-                                     network::mojom::RequestContextFrameType,
                                      mojom::RequestContextType);
 
   // Receive information about mixed content found externally.
