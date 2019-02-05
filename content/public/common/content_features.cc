@@ -258,13 +258,6 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 #endif
 };
 
-// Enables the memory coordinator.
-// WARNING:
-// The memory coordinator is not ready for use and enabling this may cause
-// unexpected memory regression at this point. Please do not enable this.
-const base::Feature kMemoryCoordinator{"MemoryCoordinator",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Instead of BrowserPlugin or GuestViews, MimeHandlerView will use a cross
 // process frame to render its handler.
 const base::Feature kMimeHandlerViewInCrossProcessFrame{

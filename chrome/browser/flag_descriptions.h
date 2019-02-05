@@ -757,9 +757,6 @@ extern const char kMaterialDesignIncognitoNTPDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
-extern const char kMemoryCoordinatorName[];
-extern const char kMemoryCoordinatorDescription[];
-
 extern const char kMessageCenterNewStyleNotificationName[];
 extern const char kMessageCenterNewStyleNotificationDescription[];
 

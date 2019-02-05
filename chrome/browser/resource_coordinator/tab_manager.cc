@@ -233,7 +233,7 @@ void TabManager::Start() {
   // MemoryCoordinator is disabled. When MemoryCoordinator is enabled
   // it asks TabManager to do tab discarding.
   base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
-  if (monitor && !base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+  if (monitor) {
     memory_pressure_listener_.reset(new base::MemoryPressureListener(
         base::Bind(&TabManager::OnMemoryPressure, base::Unretained(this))));
     base::MemoryPressureListener::MemoryPressureLevel level =
