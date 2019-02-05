@@ -265,10 +265,6 @@ namespace inspector_paint_invalidation_tracking_event {
 std::unique_ptr<TracedValue> Data(const LayoutObject&);
 }
 
-namespace inspector_scroll_invalidation_tracking_event {
-std::unique_ptr<TracedValue> Data(const LayoutObject&);
-}
-
 namespace inspector_change_resource_priority_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   unsigned long identifier,

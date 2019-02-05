@@ -252,9 +252,6 @@ crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index
 crbug.com/862483 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 crbug.com/862483 virtual/stable/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 
-crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
-crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
-
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
 ########## Ref tests can't be rebaselined ##########

@@ -1335,11 +1335,6 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
       }
     }
 
-    TRACE_EVENT_INSTANT1(
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-        "ScrollInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-        inspector_scroll_invalidation_tracking_event::Data(*layout_object));
-
     // If the fixed layer has a blur/drop-shadow filter applied on at least one
     // of its parents, we cannot scroll using the fast path, otherwise the
     // outsets of the filter will be moved around the page.

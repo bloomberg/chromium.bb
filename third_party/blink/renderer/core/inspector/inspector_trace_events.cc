@@ -726,20 +726,6 @@ std::unique_ptr<TracedValue> inspector_paint_invalidation_tracking_event::Data(
   return value;
 }
 
-std::unique_ptr<TracedValue> inspector_scroll_invalidation_tracking_event::Data(
-    const LayoutObject& layout_object) {
-  static const char kScrollInvalidationReason[] =
-      "Scroll with viewport-constrained element";
-
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("frame",
-                   IdentifiersFactory::FrameId(layout_object.GetFrame()));
-  value->SetString("reason", kScrollInvalidationReason);
-  SetGeneratingNodeInfo(value.get(), &layout_object, "nodeId", "nodeName");
-  SourceLocation::Capture()->ToTracedValue(value.get(), "stackTrace");
-  return value;
-}
-
 std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
     DocumentLoader* loader,
     unsigned long identifier,
