@@ -111,9 +111,6 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ClickAndDoubleClick) {
 // OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
 // OS_LINUX: http://crbug.com/133361.
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
-#elif defined(OS_WIN)
-// Flaky on Windows; see https://crbug.com/419468.
-#define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #else
 #define MAYBE_TestOnMouseOut TestOnMouseOut
 #endif
