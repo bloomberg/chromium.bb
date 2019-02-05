@@ -749,6 +749,31 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
   EXPECT_FALSE(GetButtonByID(last_added)->visible());
 }
 
+TEST_F(ShelfViewTest, OverflowVisibleIndex) {
+  AddButtonsUntilOverflow();
+  ASSERT_TRUE(test_api_->IsOverflowButtonVisible());
+  const int last_visible_index = test_api_->GetLastVisibleIndex();
+
+  test_api_->ShowOverflowBubble();
+  auto overflow_test_api = std::make_unique<ShelfViewTestAPI>(
+      shelf_view_->overflow_bubble()->bubble_view()->shelf_view());
+  base::RunLoop().RunUntilIdle();
+
+  // Opening overflow doesn't change last visible index.
+  EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex());
+
+  test_api_->HideOverflowBubble();
+  AddAppShortcut();
+  test_api_->ShowOverflowBubble();
+  overflow_test_api = std::make_unique<ShelfViewTestAPI>(
+      shelf_view_->overflow_bubble()->bubble_view()->shelf_view());
+  base::RunLoop().RunUntilIdle();
+
+  // Adding another shortcut should go into overflow bubble and not change
+  // shelf index.
+  EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex());
+}
+
 // Adds one platform app button then adds app shortcut until overflow. Verifies
 // that the browser button gets hidden on overflow and last added app shortcut
 // is still visible.
@@ -907,10 +932,8 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
   test_api_->RunMessageLoopUntilAnimationsDone();
   overflow_test_api.RunMessageLoopUntilAnimationsDone();
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-  // TODO(manucornet): Parts of this test fail with the new UI. Find out why
-  // and re-enable. https://crbug.com/891080
-  // EXPECT_FALSE(is_visible_on_shelf(last_visible_index, test_api_.get()));
-  // EXPECT_TRUE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
+  EXPECT_FALSE(is_visible_on_shelf(last_visible_index, test_api_.get()));
+  EXPECT_TRUE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
 
   // Verify that the item at |last_visible_index| is once again shown on the
   // main shelf after exiting tablet mode.
