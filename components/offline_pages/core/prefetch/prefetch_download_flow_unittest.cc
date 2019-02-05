@@ -195,8 +195,6 @@ TEST_F(PrefetchDownloadFlowTest, DelayRunningDownloadCleanupTask) {
   // Start the prefetch processing pipeline.
   BeginBackgroundTask();
 
-  DLOG(ERROR) << "began background task";
-
   // The download cleanup task should be created and run. The item should
   // finally transit to IMPORTING state.
   found_item = store_util()->GetPrefetchItem(item.offline_id);
