@@ -135,7 +135,13 @@ PasswordSyncBridge::PasswordSyncBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       password_store_sync_(password_store_sync) {
   DCHECK(password_store_sync_);
-  DCHECK(password_store_sync_->GetMetadataStore());
+  // The metadata store could be null if the login database initialization
+  // fails.
+  if (!password_store_sync_->GetMetadataStore()) {
+    this->change_processor()->ReportError(
+        {FROM_HERE, "Password metadata store isn't available."});
+    return;
+  }
   std::unique_ptr<syncer::MetadataBatch> batch =
       password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
   if (!batch) {
