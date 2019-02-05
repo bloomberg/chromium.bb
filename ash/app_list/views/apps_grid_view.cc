@@ -36,6 +36,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -650,10 +651,13 @@ void AppsGridView::EndDrag(bool cancel) {
       UpdateDropTargetRegion();
       if (drop_target_region_ == ON_ITEM && DraggedItemCanEnterFolder() &&
           DropTargetIsValidFolder()) {
+        MaybeCreateFolderDroppingAccessibilityEvent();
         MoveItemToFolder(drag_view_, drop_target_);
         folder_item_view =
             GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
       } else if (IsValidReorderTargetIndex(drop_target_)) {
+        // Ensure reorder event has already been announced by the end of drag.
+        MaybeCreateReorderAccessibilityEvent();
         MoveItemInModel(drag_view_, drop_target_);
       }
     }
@@ -804,6 +808,8 @@ bool AppsGridView::IsDragViewMoved(const AppListItemView& view) const {
 }
 
 void AppsGridView::ClearDragState() {
+  last_folder_dropping_a11y_event_location_ = GridIndex();
+  last_reorder_a11y_event_location_ = GridIndex();
   drop_target_region_ = NO_TARGET;
   drag_pointer_ = NONE;
   drop_target_ = GridIndex();
@@ -861,6 +867,11 @@ int AppsGridView::OnDragUpdated(const ui::DropTargetEvent& event) {
 
 const char* AppsGridView::GetClassName() const {
   return "AppsGridView";
+}
+
+void AppsGridView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kAlert;
+  node_data->SetName(accessible_name_);
 }
 
 void AppsGridView::Layout() {
@@ -1456,6 +1467,7 @@ bool AppsGridView::DragIsCloseToItem() {
 
 void AppsGridView::OnReorderTimer() {
   reorder_placeholder_ = drop_target_;
+  MaybeCreateReorderAccessibilityEvent();
   AnimateToIdealBounds();
 }
 
@@ -1472,10 +1484,16 @@ void AppsGridView::OnFolderItemReparentTimer() {
     // Do not observe any data change since it is going to be hidden.
     item_list_->RemoveObserver(this);
     item_list_ = nullptr;
+
+    // Announce the folder close for dragging to the outside of the folder.
+    accessible_name_ = l10n_util::GetStringUTF16(
+        IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }
 
 void AppsGridView::OnFolderDroppingTimer() {
+  MaybeCreateFolderDroppingAccessibilityEvent();
   SetAsFolderDroppingTarget(drop_target_, true);
 }
 
@@ -1652,6 +1670,8 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     if (drop_target_region_ == ON_ITEM && DropTargetIsValidFolder() &&
         DraggedItemCanEnterFolder()) {
       cancel_reparent = !ReparentItemToAnotherFolder(drag_view_, drop_target_);
+      // Announce folder dropping event before end of drag of reparented item.
+      MaybeCreateFolderDroppingAccessibilityEvent();
       if (!cancel_reparent) {
         folder_item_view =
             GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
@@ -1659,6 +1679,9 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     } else if (drop_target_region_ != NO_TARGET &&
                IsValidReorderTargetIndex(drop_target_)) {
       ReparentItemForReorder(drag_view_, drop_target_);
+      // Announce accessibility event before the end of drag for reparented
+      // item.
+      MaybeCreateReorderAccessibilityEvent();
     } else {
       NOTREACHED();
     }
@@ -2719,6 +2742,62 @@ void AppsGridView::StartFolderDroppingAnimation(
   animation_view->AddObserver(
       new FolderDroppingAnimationObserver(model_, folder_item->id()));
   animation_view->TransformView();
+}
+
+void AppsGridView::MaybeCreateFolderDroppingAccessibilityEvent() {
+  if (drop_target_region_ != ON_ITEM || !DropTargetIsValidFolder() ||
+      IsFolderItem(drag_view_->item()) || folder_delegate_ ||
+      drop_target_ == last_folder_dropping_a11y_event_location_) {
+    return;
+  }
+
+  last_folder_dropping_a11y_event_location_ = drop_target_;
+  last_reorder_a11y_event_location_ = GridIndex();
+
+  AppListItemView* drop_view =
+      GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
+  DCHECK(drop_view);
+
+  // Set a11y name to announce possible move to folder or creation of folder.
+  accessible_name_ = l10n_util::GetStringFUTF16(
+      IsFolderItem(drop_view->item())
+          ? IDS_APP_LIST_APP_DRAG_MOVE_TO_FOLDER_ACCESSIBILE_NAME
+          : IDS_APP_LIST_APP_DRAG_CREATE_FOLDER_ACCESSIBILE_NAME,
+      drag_view_->title()->text(), drop_view->title()->text());
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+}
+
+void AppsGridView::MaybeCreateReorderAccessibilityEvent() {
+  if (drop_target_region_ == ON_ITEM && !IsFolderItem(drag_view_->item()))
+    return;
+
+  // If app was dragged out of folder, no need to announce location for the
+  // now closed folder.
+  if (drag_out_of_folder_container_)
+    return;
+
+  // If drop_target is not set or was already reset, then return.
+  if (drop_target_ == GridIndex())
+    return;
+
+  // Don't create a11y event if |drop_target| has not changed.
+  if (last_reorder_a11y_event_location_ == drop_target_)
+    return;
+
+  last_folder_dropping_a11y_event_location_ = GridIndex();
+  last_reorder_a11y_event_location_ = drop_target_;
+
+  const int row_number =
+      ((drop_target_.slot - (drop_target_.slot % cols_)) / cols_) + 1;
+  const int col_number = (drop_target_.slot % cols_) + 1;
+
+  // Set accessible name to announce drop target location by row and column.
+  accessible_name_ = l10n_util::GetStringFUTF16(
+      IDS_APP_LIST_APP_DRAG_LOCATION_ACCESSIBILE_NAME,
+      base::NumberToString16(drop_target_.page + 1),
+      base::NumberToString16(row_number), base::NumberToString16(col_number));
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 }  // namespace app_list

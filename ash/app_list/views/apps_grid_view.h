@@ -183,6 +183,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   const char* GetClassName() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Updates the visibility of app list items according to |app_list_state| and
   // |is_in_drag|.
@@ -590,6 +591,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                     AppListItem* drag_item,
                                     const gfx::Rect& source_bounds);
 
+  // During an app drag, creates an a11y event to verbalize dropping onto a
+  // folder or creating a folder with two apps.
+  void MaybeCreateFolderDroppingAccessibilityEvent();
+
+  // During an app drag, creates an a11y event to verbalize drop target
+  // location.
+  void MaybeCreateReorderAccessibilityEvent();
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
@@ -707,6 +716,15 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Tile spacing between the tile views.
   int horizontal_tile_padding_ = 0;
   int vertical_tile_padding_ = 0;
+
+  // Name used for app dragging accessibility events.
+  base::string16 accessible_name_;
+
+  // The drop location of the most recent reorder related accessibility event.
+  GridIndex last_reorder_a11y_event_location_;
+
+  // The location of the most recent foldering drag related accessibility event.
+  GridIndex last_folder_dropping_a11y_event_location_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
