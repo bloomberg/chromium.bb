@@ -32,8 +32,8 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/stream_socket.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,8 +54,7 @@ const size_t kMaxPayloadSize =
 
 // Helper method to create a connected ClientSocketHandle using |data|.
 // Modifies |data|.
-std::unique_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
-    SequencedSocketData* data) {
+std::unique_ptr<StreamSocket> CreateConnectedSocket(SequencedSocketData* data) {
   data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
 
   std::unique_ptr<MockTCPClientSocket> socket(
@@ -64,9 +63,7 @@ std::unique_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
   TestCompletionCallback callback;
   EXPECT_THAT(socket->Connect(callback.callback()), IsOk());
 
-  std::unique_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-  socket_handle->SetSocket(std::move(socket));
-  return socket_handle;
+  return socket;
 }
 
 class ReadErrorUploadDataStream : public UploadDataStream {
@@ -108,8 +105,7 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
@@ -135,8 +131,8 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Content-Length", "12");
@@ -164,8 +160,7 @@ TEST(HttpStreamParser, DataReadErrorAsynchronous) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::ASYNC);
@@ -180,8 +175,8 @@ TEST(HttpStreamParser, DataReadErrorAsynchronous) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Content-Length", "12");
@@ -255,13 +250,12 @@ TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Transfer-Encoding", "chunked");
@@ -441,8 +435,7 @@ TEST(HttpStreamParser, SentBytesNoHeaders) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -450,8 +443,8 @@ TEST(HttpStreamParser, SentBytesNoHeaders) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpResponseInfo response;
   TestCompletionCallback callback;
@@ -471,8 +464,7 @@ TEST(HttpStreamParser, SentBytesWithHeaders) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -480,8 +472,8 @@ TEST(HttpStreamParser, SentBytesWithHeaders) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Host", "localhost");
@@ -504,8 +496,7 @@ TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -513,8 +504,8 @@ TEST(HttpStreamParser, SentBytesWithHeadersMultiWrite) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Host", "localhost");
@@ -538,8 +529,7 @@ TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -547,8 +537,8 @@ TEST(HttpStreamParser, SentBytesWithErrorWritingHeaders) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Host", "localhost");
@@ -572,8 +562,7 @@ TEST(HttpStreamParser, SentBytesPost) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
@@ -590,8 +579,8 @@ TEST(HttpStreamParser, SentBytesPost) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Content-Length", "12");
@@ -622,8 +611,7 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
   };
 
   SequencedSocketData data(base::span<MockRead>(), writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   ChunkedUploadDataStream upload_data_stream(0);
   ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback(),
@@ -637,8 +625,8 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */, &request,
+                          read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders headers;
   headers.SetHeader("Transfer-Encoding", "chunked");
@@ -697,8 +685,7 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
               IsOk());
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -707,8 +694,8 @@ TEST(HttpStreamParser, AsyncSingleChunkAndAsyncSocket) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          &request_info, read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders request_headers;
   request_headers.SetHeader("Transfer-Encoding", "chunked");
@@ -782,8 +769,7 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
   upload_stream.AppendData(kChunk, base::size(kChunk) - 1, true);
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -792,8 +778,8 @@ TEST(HttpStreamParser, SyncSingleChunkAndAsyncSocket) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          &request_info, read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders request_headers;
   request_headers.SetHeader("Transfer-Encoding", "chunked");
@@ -867,8 +853,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
               IsOk());
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -877,8 +862,8 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocketWithMultipleChunks) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          &request_info, read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders request_headers;
   request_headers.SetHeader("Transfer-Encoding", "chunked");
@@ -956,8 +941,7 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
               IsOk());
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -966,8 +950,8 @@ TEST(HttpStreamParser, AsyncEmptyChunkedUpload) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          &request_info, read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders request_headers;
   request_headers.SetHeader("Transfer-Encoding", "chunked");
@@ -1036,8 +1020,7 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
   upload_stream.AppendData(nullptr, 0, true);
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1046,8 +1029,8 @@ TEST(HttpStreamParser, SyncEmptyChunkedUpload) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          &request_info, read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders request_headers;
   request_headers.SetHeader("Transfer-Encoding", "chunked");
@@ -1137,8 +1120,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
     for (size_t i = 0; i < base::size(reads); i++) {
       SCOPED_TRACE(i);
       SequencedSocketData data(reads[i], writes);
-      std::unique_ptr<ClientSocketHandle> socket_handle(
-          CreateConnectedSocketHandle(&data));
+      std::unique_ptr<StreamSocket> stream_socket(CreateConnectedSocket(&data));
 
       HttpRequestInfo request_info;
       request_info.method = "GET";
@@ -1151,8 +1133,9 @@ TEST(HttpStreamParser, TruncatedHeaders) {
 
       scoped_refptr<GrowableIOBuffer> read_buffer =
           base::MakeRefCounted<GrowableIOBuffer>();
-      HttpStreamParser parser(socket_handle.get(), &request_info,
-                              read_buffer.get(), NetLogWithSource());
+      HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                              &request_info, read_buffer.get(),
+                              NetLogWithSource());
 
       HttpRequestHeaders request_headers;
       HttpResponseInfo response_info;
@@ -1199,8 +1182,7 @@ TEST(HttpStreamParser, WebSocket101Response) {
   };
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1209,8 +1191,8 @@ TEST(HttpStreamParser, WebSocket101Response) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer.get(),
-                          NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          &request_info, read_buffer.get(), NetLogWithSource());
 
   HttpRequestHeaders request_headers;
   HttpResponseInfo response_info;
@@ -1277,13 +1259,14 @@ class SimpleGetRunner {
     reads_.push_back(MockRead(SYNCHRONOUS, 0, sequence_number_++));  // EOF
 
     data_.reset(new SequencedSocketData(reads_, writes_));
-    socket_handle_ = CreateConnectedSocketHandle(data_.get());
+    stream_socket_ = CreateConnectedSocket(data_.get());
 
     request_info_.method = "GET";
     request_info_.url = url_;
     request_info_.load_flags = LOAD_NORMAL;
 
-    parser_.reset(new HttpStreamParser(socket_handle_.get(), &request_info_,
+    parser_.reset(new HttpStreamParser(stream_socket_.get(),
+                                       false /* is_reused */, &request_info_,
                                        read_buffer(), NetLogWithSource()));
 
     parser_->set_http_09_on_non_default_ports_enabled(
@@ -1332,7 +1315,7 @@ class SimpleGetRunner {
   scoped_refptr<GrowableIOBuffer> read_buffer_;
   std::vector<MockRead> reads_;
   std::vector<MockWrite> writes_;
-  std::unique_ptr<ClientSocketHandle> socket_handle_;
+  std::unique_ptr<StreamSocket> stream_socket_;
   std::unique_ptr<SequencedSocketData> data_;
   std::unique_ptr<HttpStreamParser> parser_;
   int sequence_number_;
@@ -1744,8 +1727,7 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   };
 
   SequencedSocketData data(reads, writes);
-  std::unique_ptr<ClientSocketHandle> socket_handle =
-      CreateConnectedSocketHandle(&data);
+  std::unique_ptr<StreamSocket> stream_socket = CreateConnectedSocket(&data);
 
   std::unique_ptr<HttpRequestInfo> request_info(new HttpRequestInfo());
   request_info->method = "GET";
@@ -1753,8 +1735,9 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
 
   scoped_refptr<GrowableIOBuffer> read_buffer =
       base::MakeRefCounted<GrowableIOBuffer>();
-  HttpStreamParser parser(socket_handle.get(), request_info.get(),
-                          read_buffer.get(), NetLogWithSource());
+  HttpStreamParser parser(stream_socket.get(), false /* is_reused */,
+                          request_info.get(), read_buffer.get(),
+                          NetLogWithSource());
 
   std::unique_ptr<HttpRequestHeaders> request_headers(new HttpRequestHeaders());
   std::unique_ptr<HttpResponseInfo> response_info(new HttpResponseInfo());

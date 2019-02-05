@@ -65,12 +65,20 @@ class NET_EXPORT_PRIVATE HttpBasicState {
     return traffic_annotation_;
   }
 
+  // Returns true if the connection has been "reused" as defined by HttpStream -
+  // either actually reused, or has not been used yet, but has been idle for
+  // some time.
+  //
+  // TODO(mmenke): Consider renaming this concept, to avoid confusion with
+  // ClientSocketHandle::is_reused().
+  bool IsConnectionReused() const;
+
  private:
   scoped_refptr<GrowableIOBuffer> read_buf_;
 
-  std::unique_ptr<HttpStreamParser> parser_;
-
   std::unique_ptr<ClientSocketHandle> connection_;
+
+  std::unique_ptr<HttpStreamParser> parser_;
 
   const bool using_proxy_;
 
