@@ -397,7 +397,7 @@ out/Default/bin/chrome_public_apk uninstall
 
 To avoid typing `_incremental` when building targets, you can use the GN arg:
 
-```
+```gn
 incremental_apk_by_default = true
 ```
 

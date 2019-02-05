@@ -60,7 +60,7 @@ one](http://www.samsungmobileusa.com/simulators/ATT_GalaxyMega/mobile/screens/06
 which states, _Google may regularly check installed apps for potentially harmful
 behavior._ This can interfere with the test runner. To disable this dialog, run:
 
-```
+```shell
 adb shell settings put global package_verifier_enable 0
 ```
 
