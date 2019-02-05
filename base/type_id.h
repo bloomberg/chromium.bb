@@ -21,8 +21,6 @@
 
 namespace base {
 
-// Not ready for public consumption yet.
-namespace experimental {
 namespace internal {
 
 // The __attribute__((visibility("default"))) trick does not work for shared
@@ -96,7 +94,6 @@ class BASE_EXPORT TypeId {
 
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const TypeId& type_id);
 
-}  // namespace experimental
 }  // namespace base
 
 #endif  // BASE_TYPE_ID_H_

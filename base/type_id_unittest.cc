@@ -11,7 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace experimental {
 namespace {
 
 struct T {};
@@ -78,5 +77,4 @@ TEST(TypeId, IdenticalTypesFromComponentAndStaticLibrary) {
   EXPECT_EQ(static_linked_type, TypeIdTestSupportA::GetTypeIdForUniquePtrInt());
 }
 
-}  // namespace experimental
 }  // namespace base
