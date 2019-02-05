@@ -21,7 +21,6 @@ namespace blink {
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFontDescription;
-struct WebRect;
 struct WebTextRun;
 
 class WebFont {
@@ -38,8 +37,7 @@ class WebFont {
   BLINK_PLATFORM_EXPORT void DrawText(cc::PaintCanvas*,
                                       const WebTextRun&,
                                       const WebFloatPoint& left_baseline,
-                                      SkColor,
-                                      const WebRect& clip) const;
+                                      SkColor) const;
   BLINK_PLATFORM_EXPORT int CalculateWidth(const WebTextRun&) const;
   BLINK_PLATFORM_EXPORT int OffsetForPosition(const WebTextRun&,
                                               float position) const;

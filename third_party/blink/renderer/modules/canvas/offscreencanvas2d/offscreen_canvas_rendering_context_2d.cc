@@ -432,15 +432,13 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
       break;
   }
 
-  // The slop built in to this mask rect matches the heuristic used in
-  // FontCGWin.cpp for GDI text.
   TextRunPaintInfo text_run_paint_info(text_run);
-  text_run_paint_info.bounds =
-      FloatRect(location.X() - font_metrics.Height() / 2,
-                location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
-                width + font_metrics.Height(), font_metrics.LineSpacing());
+  FloatRect bounds(
+      location.X() - font_metrics.Height() / 2,
+      location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
+      width + font_metrics.Height(), font_metrics.LineSpacing());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
-    InflateStrokeRect(text_run_paint_info.bounds);
+    InflateStrokeRect(bounds);
 
   int save_count = c->getSaveCount();
   if (use_max_width) {
@@ -462,7 +460,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
-      text_run_paint_info.bounds, paint_type);
+      bounds, paint_type);
   c->restoreToCount(save_count);
   ValidateStateStack();
 }

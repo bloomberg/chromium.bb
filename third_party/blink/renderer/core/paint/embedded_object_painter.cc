@@ -84,7 +84,6 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
   FloatRect text_rect(FloatPoint(), text_geometry);
   text_rect.Move(FloatPoint(content_rect.Center()) - text_rect.Center());
   TextRunPaintInfo run_info(text_run);
-  run_info.bounds = float_background_rect;
   context.SetFillColor(ScaleAlpha(Color::kBlack, kReplacementTextTextOpacity));
   context.DrawBidiText(font, run_info,
                        text_rect.Location() +

@@ -79,23 +79,12 @@ TSAN_TEST(TextRendererThreadedTest, DrawText) {
     Font font = Font(font_description);
     font.Update(nullptr);
 
-    const SimpleFontData* font_data = font.PrimaryFont();
-    ASSERT_TRUE(font_data);
-
-    const FontMetrics& font_metrics = font_data->GetFontMetrics();
-
     FloatPoint location(0, 0);
     TextRun text_run(text, 0, 0, TextRun::kAllowTrailingExpansion,
                      TextDirection::kLtr, false);
     text_run.SetNormalizeSpace(true);
-    float width = font.Width(text_run);
 
     TextRunPaintInfo text_run_paint_info(text_run);
-
-    text_run_paint_info.bounds =
-        FloatRect(location.X() - font_metrics.Height() / 2,
-                  location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
-                  width + font_metrics.Height(), font_metrics.LineSpacing());
 
     MockPaintCanvas mpc;
     PaintFlags flags;

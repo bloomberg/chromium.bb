@@ -133,7 +133,6 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   }
 
   TextRunPaintInfo text_run_paint_info(text_run);
-  text_run_paint_info.bounds = FloatRect(EnclosingIntRect(marker));
   const SimpleFontData* font_data =
       layout_list_marker_.StyleRef().GetFont().PrimaryFont();
   FloatPoint text_origin =
@@ -164,7 +163,6 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),
                        layout_list_marker_.StyleRef().Direction());
   TextRunPaintInfo suffix_run_info(suffix_run);
-  suffix_run_info.bounds = FloatRect(EnclosingIntRect(marker));
 
   if (layout_list_marker_.StyleRef().IsLeftToRightDirection()) {
     context.DrawText(font, text_run_paint_info, text_origin);
