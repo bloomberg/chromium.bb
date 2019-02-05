@@ -953,6 +953,7 @@ String FrameSelection::SelectedTextForClipboard() const {
                      frame_->GetSettings() &&
                      frame_->GetSettings()->GetSelectionIncludesAltImageText())
                  .SetSkipsUnselectableContent(true)
+                 .SetEntersTextControls(true)
                  .Build());
 }
 

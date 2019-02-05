@@ -1091,4 +1091,14 @@ TEST_F(FrameSelectionTest, SelectionContainsBidiBoundary) {
   EXPECT_TRUE(Selection().Contains(f_left));
 }
 
+// This is a regression test for https://crbug.com/927394 where 'copy' operation
+// stopped copying content from inside text controls.
+// Note that this is a non-standard behavior.
+TEST_F(FrameSelectionTest, SelectedTextForClipboardEntersTextControls) {
+  Selection().SetSelection(
+      SetSelectionTextToBody("^foo<input value=\"bar\">baz|"),
+      SetSelectionOptions());
+  EXPECT_EQ("foo\nbar\nbaz", Selection().SelectedTextForClipboard());
+}
+
 }  // namespace blink
