@@ -303,6 +303,7 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
     int len) const {
   DCHECK_GE(pos, 0);
   DCHECK_GE(static_cast<unsigned>(pos), start_offset_);
+  DCHECK_LE(pos, len);
   int next_break = -1;
   UChar last_last_ch = pos > 1 ? str[pos - 2] : SecondToLastCharacter();
   UChar last_ch = pos > 0 ? str[pos - 1] : LastCharacter();
@@ -446,6 +447,7 @@ int LazyLineBreakIterator::NextBreakablePosition(
 }
 
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
+  DCHECK_LE(offset, string_.length());
   int next_break = NextBreakablePosition(offset, break_type_);
   DCHECK_GE(next_break, 0);
   return next_break;
@@ -453,6 +455,7 @@ unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
 
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset,
                                                      unsigned len) const {
+  DCHECK_LE(offset, string_.length());
   DCHECK_LE(len, string_.length());
   int next_break = NextBreakablePosition(offset, break_type_, len);
   DCHECK_GE(next_break, 0);
