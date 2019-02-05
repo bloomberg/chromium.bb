@@ -202,7 +202,7 @@ class SafeBrowsingNavigationObserverManager
   void RecordNewWebContents(content::WebContents* source_web_contents,
                             int source_render_process_id,
                             int source_render_frame_id,
-                            GURL target_url,
+                            const GURL& target_url,
                             ui::PageTransition page_transition,
                             content::WebContents* target_web_contents,
                             bool renderer_initiated);

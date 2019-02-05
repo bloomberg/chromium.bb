@@ -645,8 +645,8 @@ void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
 
 StoresToCheck V4LocalDatabaseManager::GetStoresForFullHashRequests() {
   StoresToCheck stores_for_full_hash;
-  for (auto it : list_infos_) {
-    stores_for_full_hash.insert(it.list_id());
+  for (const auto& info : list_infos_) {
+    stores_for_full_hash.insert(info.list_id());
   }
   return stores_for_full_hash;
 }
