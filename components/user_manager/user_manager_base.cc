@@ -350,7 +350,11 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
 void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   RemoveNonCryptohomeData(account_id);
+  known_user::RemovePrefs(account_id);
   if (user_loading_stage_ == STAGE_LOADED) {
+    // After the User object is deleted from memory in DeleteUser() here,
+    // the account_id reference will be invalid if the reference points
+    // to the account_id in the User object.
     DeleteUser(
         RemoveRegularOrSupervisedUserFromList(account_id, true /* notify */));
   } else if (user_loading_stage_ == STAGE_LOADING) {
@@ -364,8 +368,6 @@ void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
     NOTREACHED() << "Users are not loaded yet.";
     return;
   }
-
-  known_user::RemovePrefs(account_id);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();

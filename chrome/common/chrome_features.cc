@@ -493,6 +493,12 @@ const base::Feature kNupPrinting{"NupPrinting",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// Enables permanent removal of Legacy Supervised Users on startup.
+const base::Feature kRemoveSupervisedUsersOnStartup{
+    "RemoveSupervisedUsersOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables Load image context menu item for broken images.
 const base::Feature kLoadBrokenImagesFromContextMenu{
     "LoadBrokenImagesFromContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
