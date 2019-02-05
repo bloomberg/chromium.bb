@@ -93,7 +93,7 @@
         android:fragment="org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferenceFragment"
         android:key="data_reduction"
         android:order="17"
-        android:title="@string/data_reduction_title_lite_mode"/>
+        android:title="@string/data_reduction_title"/>
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.preferences.download.DownloadPreferences"
         android:key="downloads"
