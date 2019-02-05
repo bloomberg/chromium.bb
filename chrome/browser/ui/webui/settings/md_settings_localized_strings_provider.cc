@@ -59,6 +59,7 @@
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -466,10 +467,14 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
       {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
       {"crostiniSharedPaths", IDS_SETTINGS_CROSTINI_SHARED_PATHS},
+      {"crostiniSharedPathsListHeading",
+       IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_HEADING},
       {"crostiniSharedPathsInstructionsAdd",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_ADD},
       {"crostiniSharedPathsInstructionsRemove",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_REMOVE},
+      {"crostiniSharedPathsRemoveSharing",
+       IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_SHARING},
       {"crostiniSharedUsbDevicesLabel",
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL},
       {"crostiniSharedUsbDevicesDescription",
@@ -482,7 +487,12 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CROSTINI_SUBTEXT,
           GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)));
-
+  html_source->AddString(
+      "crostiniSharedPathsInstructionsLocate",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_LOCATE,
+          base::ASCIIToUTF16(
+              crostini::ContainerChromeOSBaseDirectory().value())));
   html_source->AddBoolean(
       "enableCrostiniUsbDeviceSupport",
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
