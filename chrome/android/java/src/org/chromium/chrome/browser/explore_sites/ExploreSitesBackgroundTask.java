@@ -116,7 +116,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
                                 ExploreSitesBackgroundTask.class,
                                 TimeUnit.HOURS.toMillis(DEFAULT_DELAY_HOURS),
                                 TimeUnit.HOURS.toMillis(DEFAULT_FLEX_HOURS))
-                        .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_ANY)
+                        .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
                         .setIsPersisted(true)
                         .setUpdateCurrent(updateCurrent);
         BackgroundTaskSchedulerFactory.getScheduler().schedule(

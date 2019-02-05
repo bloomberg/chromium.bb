@@ -75,8 +75,8 @@ public class BackgroundScheduler {
                 TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID,
                                 OfflineBackgroundTask.class, delayStartMs, executionDeadlineMs)
                         .setRequiredNetworkType(triggerConditions.requireUnmeteredNetwork()
-                                        ? TaskInfo.NETWORK_TYPE_UNMETERED
-                                        : TaskInfo.NETWORK_TYPE_ANY)
+                                        ? TaskInfo.NetworkType.UNMETERED
+                                        : TaskInfo.NetworkType.ANY)
                         .setUpdateCurrent(overwrite)
                         .setIsPersisted(true)
                         .setExtras(taskExtras)

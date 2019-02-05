@@ -72,7 +72,7 @@ public class UpdateScheduler {
         TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.COMPONENT_UPDATE_JOB_ID,
                                             UpdateTask.class, delayMs, Integer.MAX_VALUE)
                                     .setUpdateCurrent(true)
-                                    .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED)
+                                    .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
                                     .setIsPersisted(true)
                                     .build();
         BackgroundTaskSchedulerFactory.getScheduler().schedule(

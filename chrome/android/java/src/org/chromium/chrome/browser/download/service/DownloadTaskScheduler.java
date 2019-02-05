@@ -92,14 +92,14 @@ public class DownloadTaskScheduler {
             @DownloadTaskType int taskType, boolean requiresUnmeteredNetwork) {
         switch (taskType) {
             case DownloadTaskType.CLEANUP_TASK:
-                return TaskInfo.NETWORK_TYPE_NONE;
+                return TaskInfo.NetworkType.NONE;
             case DownloadTaskType.DOWNLOAD_TASK: // intentional fall-through
             case DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK:
-                return requiresUnmeteredNetwork ? TaskInfo.NETWORK_TYPE_UNMETERED
-                                                : TaskInfo.NETWORK_TYPE_ANY;
+                return requiresUnmeteredNetwork ? TaskInfo.NetworkType.UNMETERED
+                                                : TaskInfo.NetworkType.ANY;
             default:
                 assert false;
-                return TaskInfo.NETWORK_TYPE_ANY;
+                return TaskInfo.NetworkType.ANY;
         }
     }
 }

@@ -98,7 +98,7 @@ public class FeedRefreshTaskTest {
             Assert.assertEquals(1, mTaskScheduler.getTaskInfoList().size());
             TaskInfo actualInfo = mTaskScheduler.getTaskInfoList().get(0);
             Assert.assertEquals(TaskIds.FEED_REFRESH_JOB_ID, actualInfo.getTaskId());
-            Assert.assertEquals(TaskInfo.NETWORK_TYPE_ANY, actualInfo.getRequiredNetworkType());
+            Assert.assertEquals(TaskInfo.NetworkType.ANY, actualInfo.getRequiredNetworkType());
             Assert.assertEquals(false, actualInfo.requiresCharging());
             Assert.assertEquals(true, actualInfo.isPeriodic());
             Assert.assertEquals(true, actualInfo.isPersisted());

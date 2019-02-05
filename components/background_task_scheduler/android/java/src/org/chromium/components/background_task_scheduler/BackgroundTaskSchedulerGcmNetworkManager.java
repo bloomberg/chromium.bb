@@ -120,11 +120,11 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
             @TaskInfo.NetworkType int networkType) {
         switch (networkType) {
             // This is correct: GcmNM ANY means no network is guaranteed.
-            case TaskInfo.NETWORK_TYPE_NONE:
+            case TaskInfo.NetworkType.NONE:
                 return Task.NETWORK_STATE_ANY;
-            case TaskInfo.NETWORK_TYPE_ANY:
+            case TaskInfo.NetworkType.ANY:
                 return Task.NETWORK_STATE_CONNECTED;
-            case TaskInfo.NETWORK_TYPE_UNMETERED:
+            case TaskInfo.NetworkType.UNMETERED:
                 return Task.NETWORK_STATE_UNMETERED;
             default:
                 assert false;

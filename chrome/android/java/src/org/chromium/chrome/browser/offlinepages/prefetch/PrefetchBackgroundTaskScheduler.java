@@ -53,7 +53,7 @@ public class PrefetchBackgroundTaskScheduler {
                                 // Maximum time to wait.  After this interval the event will fire
                                 // regardless of whether the conditions are right.
                                 TimeUnit.DAYS.toMillis(7))
-                        .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED)
+                        .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
                         .setIsPersisted(true)
                         .setUpdateCurrent(true);
         /* Limitless prefetching eliminates the default wait time but still complies with backoff
@@ -61,7 +61,7 @@ public class PrefetchBackgroundTaskScheduler {
          * type.
          */
         if (limitlessPrefetching) {
-            taskInfoBuilder.setRequiredNetworkType(TaskInfo.NETWORK_TYPE_ANY);
+            taskInfoBuilder.setRequiredNetworkType(TaskInfo.NetworkType.ANY);
             Bundle bundle = new Bundle(1);
             bundle.putBoolean(PrefetchBackgroundTask.LIMITLESS_BUNDLE_KEY, true);
             taskInfoBuilder.setExtras(bundle);

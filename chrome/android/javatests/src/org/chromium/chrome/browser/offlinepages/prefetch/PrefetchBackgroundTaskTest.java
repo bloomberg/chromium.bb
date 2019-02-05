@@ -173,7 +173,7 @@ public class PrefetchBackgroundTaskTest {
         assertNotNull(scheduledTask);
         TaskInfo scheduledTaskInfo = scheduledTask.taskInfo();
         assertEquals(true, scheduledTaskInfo.isPersisted());
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, scheduledTaskInfo.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, scheduledTaskInfo.getRequiredNetworkType());
 
         long defaultTaskStartTimeMs = TimeUnit.SECONDS.toMillis(
                 PrefetchBackgroundTaskScheduler.DEFAULT_START_DELAY_SECONDS);

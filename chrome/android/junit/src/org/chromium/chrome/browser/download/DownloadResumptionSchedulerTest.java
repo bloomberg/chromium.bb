@@ -201,7 +201,7 @@ public class DownloadResumptionSchedulerTest {
     private static void assertTaskIsDownloadResumptionTask(TaskInfo task, boolean meteredOk) {
         @NetworkType
         int expectedNetworkType =
-                meteredOk ? TaskInfo.NETWORK_TYPE_ANY : TaskInfo.NETWORK_TYPE_UNMETERED;
+                meteredOk ? TaskInfo.NetworkType.ANY : TaskInfo.NetworkType.UNMETERED;
 
         assertNotNull(task);
         assertEquals(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID, task.getTaskId());
