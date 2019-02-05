@@ -32,7 +32,7 @@ they are doing - politely bringing their behavior to their attention is
 encouraged.
 
 If you are uncomfortable speaking up, or feel that your concerns are not being
-duly considered, you can email community@chromium.org, dknox@google.com, or
+duly considered, you can email community@chromium.org, dpranke@chromium.org, or
 groby@chromium.org to request involvement from a community manager. All
 concerns shared with community managers will be kept confidential, but you may
 also submit an anonymous report [here](https://docs.google.com/a/google.com/forms/d/e/1FAIpQLSe-LDjW9eIJ-TpI2poZxnGtU-SvUWkFZc8x0aiKGY1s7NKPdA/viewform?c=0&w=1).
@@ -75,9 +75,6 @@ discretion of the Chromium community managers:
 
 Participants warned to stop any harassing behavior are expected to comply
 immediately; failure to do so will result in an escalation of consequences.
-
-The decisions of the Chromium community managers may be appealed via
-community-appeals@chromium.org.
 
 ## Acknowledgements
 
