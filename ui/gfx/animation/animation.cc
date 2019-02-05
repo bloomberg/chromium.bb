@@ -118,6 +118,7 @@ bool Animation::ScrollAnimationsEnabledBySystem() {
   return true;
 }
 
+#if !defined(OS_ANDROID)
 // static
 void Animation::UpdatePrefersReducedMotion() {
   // prefers_reduced_motion_ should only be modified on the UI thread.
@@ -127,7 +128,8 @@ void Animation::UpdatePrefersReducedMotion() {
   // experience for users on systems that don't have APIs for reduced motion.
   prefers_reduced_motion_ = false;
 }
-#endif
+#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_WIN) && (!defined(OS_MACOSX) || defined(OS_IOS))
 
 // static
 bool Animation::PrefersReducedMotion() {
