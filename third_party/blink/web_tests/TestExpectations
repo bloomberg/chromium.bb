@@ -1800,7 +1800,6 @@ crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_character_23_rtl.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_character_24_ltr.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_character_24_rtl.html [ Failure ]
-crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_right_character_in_mixed_bidi.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_word_01_ltr_multi_line.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_word_01_rtl_multi_line.html [ Failure Crash ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_left_word_02_ltr_multi_line.html [ Failure ]
