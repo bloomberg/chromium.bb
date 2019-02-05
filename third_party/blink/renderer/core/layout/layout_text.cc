@@ -2174,13 +2174,7 @@ Position LayoutText::PositionForCaretOffset(unsigned offset) const {
     return Position();
   DCHECK(node->IsTextNode());
   // TODO(layout-dev): Support offset change due to text-transform.
-#if DCHECK_IS_ON()
-  // Ensures that the clamping hack kicks in only with text-transform.
-  if (StyleRef().TextTransform() == ETextTransform::kNone)
-    DCHECK_LE(offset, ToText(node)->length());
-#endif
-  const unsigned clamped_offset = std::min(offset, ToText(node)->length());
-  return Position(node, clamped_offset);
+  return Position(node, offset);
 }
 
 base::Optional<unsigned> LayoutText::CaretOffsetForPosition(
