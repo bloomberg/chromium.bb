@@ -292,6 +292,8 @@
     bob-postsubmit
     buddy-postsubmit
     candy-postsubmit
+    capri-postsubmit
+    capri-zfpga-postsubmit
     caroline-arcnext-postsubmit
     caroline-postsubmit
     cave-postsubmit
@@ -299,18 +301,22 @@
     chell-postsubmit
     cheza-postsubmit
     clapper-postsubmit
+    cobblepot-postsubmit
     cyan-postsubmit
     daisy-postsubmit
     daisy_skate-postsubmit
     daisy_spring-postsubmit
+    dragonegg-postsubmit
     edgar-postsubmit
     elm-postsubmit
     enguarde-postsubmit
     eve-arcnext-postsubmit
+    eve-campfire-postsubmit
     eve-postsubmit
     expresso-postsubmit
     falco-postsubmit
     falco_li-postsubmit
+    fizz-accelerator-postsubmit
     fizz-postsubmit
     flapjack-postsubmit
     gale-postsubmit
@@ -318,10 +324,13 @@
     glados-postsubmit
     glimmer-postsubmit
     gnawty-postsubmit
+    gonzo-postsubmit
     grunt-postsubmit
+    guado-accelerator-postsubmit
     guado-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
+    hatch-postsubmit
     heli-postsubmit
     jecht-postsubmit
     kalista-postsubmit
@@ -330,13 +339,16 @@
     kevin-postsubmit
     kip-postsubmit
     kukui-postsubmit
+    lakitu-gpu-postsubmit
     lakitu-postsubmit
     lakitu-st-postsubmit
     lars-postsubmit
+    lasilla-ground-postsubmit
     leon-postsubmit
     link-postsubmit
     lulu-postsubmit
     mccloud-postsubmit
+    moblab-generic-vm-postsubmit
     monroe-postsubmit
     nami-postsubmit
     nautilus-postsubmit
@@ -348,6 +360,7 @@
     nyan_blaze-postsubmit
     nyan_kitty-postsubmit
     oak-postsubmit
+    octavius-postsubmit
     octopus-postsubmit
     orco-postsubmit
     panther-postsubmit
@@ -362,6 +375,8 @@
     reks-postsubmit
     relm-postsubmit
     rikku-postsubmit
+    romer-postsubmit
+    samus-kernelnext-postsubmit
     samus-postsubmit
     sand-postsubmit
     sarien-postsubmit
@@ -394,6 +409,7 @@
     winky-postsubmit
     wizpig-postsubmit
     wolf-postsubmit
+    wooten-postsubmit
     zako-postsubmit
 
 == pre_cq ==
@@ -2610,6 +2626,8 @@
     bob-postsubmit
     buddy-postsubmit
     candy-postsubmit
+    capri-postsubmit
+    capri-zfpga-postsubmit
     caroline-arcnext-postsubmit
     caroline-postsubmit
     cave-postsubmit
@@ -2617,18 +2635,22 @@
     chell-postsubmit
     cheza-postsubmit
     clapper-postsubmit
+    cobblepot-postsubmit
     cyan-postsubmit
     daisy-postsubmit
     daisy_skate-postsubmit
     daisy_spring-postsubmit
+    dragonegg-postsubmit
     edgar-postsubmit
     elm-postsubmit
     enguarde-postsubmit
     eve-arcnext-postsubmit
+    eve-campfire-postsubmit
     eve-postsubmit
     expresso-postsubmit
     falco-postsubmit
     falco_li-postsubmit
+    fizz-accelerator-postsubmit
     fizz-postsubmit
     flapjack-postsubmit
     gale-postsubmit
@@ -2636,10 +2658,13 @@
     glados-postsubmit
     glimmer-postsubmit
     gnawty-postsubmit
+    gonzo-postsubmit
     grunt-postsubmit
+    guado-accelerator-postsubmit
     guado-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
+    hatch-postsubmit
     heli-postsubmit
     jecht-postsubmit
     kalista-postsubmit
@@ -2648,13 +2673,16 @@
     kevin-postsubmit
     kip-postsubmit
     kukui-postsubmit
+    lakitu-gpu-postsubmit
     lakitu-postsubmit
     lakitu-st-postsubmit
     lars-postsubmit
+    lasilla-ground-postsubmit
     leon-postsubmit
     link-postsubmit
     lulu-postsubmit
     mccloud-postsubmit
+    moblab-generic-vm-postsubmit
     monroe-postsubmit
     nami-postsubmit
     nautilus-postsubmit
@@ -2666,6 +2694,7 @@
     nyan_blaze-postsubmit
     nyan_kitty-postsubmit
     oak-postsubmit
+    octavius-postsubmit
     octopus-postsubmit
     orco-postsubmit
     panther-postsubmit
@@ -2680,6 +2709,8 @@
     reks-postsubmit
     relm-postsubmit
     rikku-postsubmit
+    romer-postsubmit
+    samus-kernelnext-postsubmit
     samus-postsubmit
     sand-postsubmit
     sarien-postsubmit
@@ -2712,6 +2743,7 @@
     winky-postsubmit
     wizpig-postsubmit
     wolf-postsubmit
+    wooten-postsubmit
     zako-postsubmit
   master-release-tryjob
     amd64-generic-cheets-release

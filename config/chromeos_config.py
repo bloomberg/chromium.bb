@@ -1768,48 +1768,64 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_important_boards = frozenset([
       'amd64-generic',
       'arm-generic',
+      'atlas',
       'auron_paine',
       'auron_yuna',
-      'atlas',
       'beaglebone',
       'betty',
       'betty-arc64',
       'betty-arcnext',
       'bob',
+      'capri',
+      'capri-zfpga',
       'caroline',
       'caroline-arcnext',
       'cave',
       'chell',
       'cheza',
+      'cobblepot',
       'cyan',
       'daisy',
       'daisy_skate',
       'daisy_spring',
+      'dragonegg',
       'edgar',
       'elm',
       'eve',
+      'eve-campfire',
       'falco',
       'fizz',
+      'fizz-accelerator',
+      'flapjack',
       'gale',
       'glados',
+      'gonzo',
       'grunt',
+      'guado',
+      'guado-accelerator',
       'guado_moblab',
       'hana',
+      'hatch',
       'kalista',
       'kevin',
       'kevin-arcnext',
       'kip',
       'kukui',
       'lakitu',
+      'lakitu-gpu',
       'lakitu-st',
+      'lasilla-ground',
       'leon',
       'link',
+      'moblab-generic-vm', #
       'monroe',
       'nami',
       'nocturne',
       'nyan_big',
+      'nyan_blaze',
       'nyan_kitty',
       'oak',
+      'octavius',
       'octopus',
       'panther',
       'peach_pit',
@@ -1818,7 +1834,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'quawks',
       'rammus',
       'reef',
+      'romer',
       'samus',
+      'samus-kernelnext',
       'scarlet',
       'sentry',
       'sludge',
@@ -1835,9 +1853,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
+      'whirlwind',
       'winky',
       'wizpig',
       'wolf',
+      'wooten',
   ])
 
   # Paladin configs that exist and should be important as soon as they are
@@ -1860,34 +1880,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      'dragonegg', # contact:yueherngl@
-      'eve-campfire', # contact:yueherngl@
-      'flapjack', # contact:yueherngl@
-      'hatch', # contact:yueherngl@
-      'samus-kernelnext', # contact:bhthompson@
   ])
 
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'capri', # contact:ghines@
-      'capri-zfpga', # contact:victoryang@
-      'cobblepot', # contact:jkoleszar@
-      'eve-arcnext', # contact: ihf@ (crbug.com/826755)
-      'fizz-accelerator', # contact:perley@
-      'gonzo', # contact:icoolidge@
-      'guado', # contact:egemih@
-      'guado-accelerator', # contact:perley@ (crbug.com/748635)
-      'kevin64', # contact:manojgupta@@
-      'lakitu-gpu', # contact:gmeinke@ (crbug.com/907222)
-      'lasilla-ground', # contact:jemele@
-      'moblab-generic-vm', # crbug.com/920855
-      'octavius', # contact:dpjacques@
-      'romer', # contact:michaelho@
-      'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
-      'wooten', # contact:icoolidge@
-      'nyan_blaze', # contact: xixuan@
       'coral', # contact: xixuan@
+      'eve-arcnext', # contact: ihf@ (crbug.com/826755)
+      'kevin64', # contact:manojgupta@@
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
@@ -2182,7 +2182,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           build_before_patching=True,
           compilecheck=True,
           unittests=False,
-          important=False,
       ),
   ])
 
