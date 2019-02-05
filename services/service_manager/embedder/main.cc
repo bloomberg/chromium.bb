@@ -76,34 +76,6 @@ namespace {
 // service manager embedder process.
 constexpr size_t kMaximumMojoMessageSize = 128 * 1024 * 1024;
 
-class ServiceProcessLauncherDelegateImpl
-    : public service_manager::ServiceProcessLauncherDelegate {
- public:
-  explicit ServiceProcessLauncherDelegateImpl(MainDelegate* main_delegate)
-      : main_delegate_(main_delegate) {}
-  ~ServiceProcessLauncherDelegateImpl() override {}
-
- private:
-  // service_manager::ServiceProcessLauncherDelegate:
-  void AdjustCommandLineArgumentsForTarget(
-      const service_manager::Identity& target,
-      base::CommandLine* command_line) override {
-    if (main_delegate_->ShouldLaunchAsServiceProcess(target)) {
-      command_line->AppendSwitchASCII(switches::kProcessType,
-                                      switches::kProcessTypeService);
-#if defined(OS_WIN)
-      command_line->AppendArg(switches::kDefaultServicePrefetchArgument);
-#endif
-    }
-
-    main_delegate_->AdjustServiceProcessCommandLine(target, command_line);
-  }
-
-  MainDelegate* const main_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
-};
-
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
@@ -232,10 +204,8 @@ int RunServiceManager(MainDelegate* delegate) {
       ipc_thread.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  ServiceProcessLauncherDelegateImpl service_process_launcher_delegate(
-      delegate);
   service_manager::BackgroundServiceManager background_service_manager(
-      &service_process_launcher_delegate, delegate->GetServiceManifests());
+      delegate->GetServiceManifests());
 
   base::RunLoop run_loop;
   delegate->OnServiceManagerInitialized(run_loop.QuitClosure(),

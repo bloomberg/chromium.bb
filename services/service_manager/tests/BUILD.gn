@@ -15,6 +15,7 @@ group("tests") {
 
 test("service_manager_unittests") {
   sources = [
+    "background_service_manager_unittest.cc",
     "test_support_unittest.cc",
   ]
 
@@ -27,13 +28,10 @@ test("service_manager_unittests") {
     "//mojo/public/cpp/system",
     "//services/catalog:lib",
     "//services/service_manager",
-    "//services/service_manager/background:lib",
-    "//services/service_manager/background/tests:unittests",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:unittests",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/host:unittests",
     "//services/service_manager/tests/connect",
     "//services/service_manager/tests/lifecycle",
     "//services/service_manager/tests/sandbox",
@@ -41,11 +39,22 @@ test("service_manager_unittests") {
     "//services/service_manager/tests/shutdown",
     "//testing/gtest",
   ]
+
+  data_deps = [
+    ":background_service_manager_test_service",
+  ]
+
+  if (!is_ios) {
+    sources += [ "service_process_launcher_unittest.cc" ]
+
+    data_deps += [ ":service_process_launcher_test_service" ]
+  }
 }
 
 mojom("interfaces") {
   testonly = true
   sources = [
+    "background.test-mojom",
     "test_support.test-mojom",
   ]
 }
@@ -63,5 +72,29 @@ source_set("util") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
+  ]
+}
+
+service_executable("background_service_manager_test_service") {
+  testonly = true
+
+  sources = [
+    "background_service_manager_test_service_main.cc",
+  ]
+
+  deps = [
+    ":interfaces",
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+  ]
+}
+
+service_executable("service_process_launcher_test_service") {
+  testonly = true
+
+  sources = [
+    "service_process_launcher_test_service_main.cc",
   ]
 }

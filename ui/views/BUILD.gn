@@ -914,7 +914,7 @@ jumbo_source_set("test_support") {
     ]
 
     deps += [
-      "//services/service_manager/background:lib",
+      "//services/service_manager",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
       "//services/ws/common",

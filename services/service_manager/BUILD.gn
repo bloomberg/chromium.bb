@@ -2,15 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 group("all") {
   testonly = true
   deps = [
     ":service_manager",
-    "//services/service_manager/background",
-    "//services/service_manager/standalone",
   ]
 
   if (!is_ios) {
@@ -24,10 +21,14 @@ group("all") {
 
 source_set("service_manager") {
   sources = [
+    "background_service_manager.cc",
+    "background_service_manager.h",
     "connect_params.cc",
     "connect_params.h",
     "service_manager.cc",
     "service_manager.h",
+    "service_process_launcher_delegate.h",
+    "service_process_launcher_factory.h",
     "switches.cc",
     "switches.h",
   ]
@@ -41,11 +42,25 @@ source_set("service_manager") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
+    "//services/catalog:constants",
     "//services/catalog:lib",
     "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/host:lib",
+    "//services/service_manager/runner/common",
     "//services/service_manager/sandbox",
   ]
+
+  if (!is_ios) {
+    sources += [
+      "service_process_launcher.cc",
+      "service_process_launcher.h",
+    ]
+
+    deps += [ "//mojo/core/embedder" ]
+  }
+
+  if (is_linux) {
+    deps += [ "//sandbox/linux:sandbox_services" ]
+  }
 }

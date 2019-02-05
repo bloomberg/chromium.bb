@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/threading/simple_thread.h"
-#include "services/service_manager/background/background_service_manager.h"
+#include "services/service_manager/background_service_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -116,13 +116,13 @@ class PlatformTestHelperMus::ServiceManagerConnection {
 
     background_service_manager_ =
         std::make_unique<service_manager::BackgroundServiceManager>(
-            nullptr, std::vector<service_manager::Manifest>{
-                         test_ws::GetManifest(), test_ime_driver::GetManifest(),
-                         service_manager::ManifestBuilder()
-                             .WithServiceName(kServiceName)
-                             .RequireCapability("*", "app")
-                             .RequireCapability("*", "test")
-                             .Build()});
+            std::vector<service_manager::Manifest>{
+                test_ws::GetManifest(), test_ime_driver::GetManifest(),
+                service_manager::ManifestBuilder()
+                    .WithServiceName(kServiceName)
+                    .RequireCapability("*", "app")
+                    .RequireCapability("*", "test")
+                    .Build()});
 
     service_manager::mojom::ServicePtr service;
     default_service_binding_.Bind(mojo::MakeRequest(&service));

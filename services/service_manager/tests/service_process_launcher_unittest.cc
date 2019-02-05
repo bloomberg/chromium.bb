@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/runner/host/service_process_launcher.h"
+#include "services/service_manager/service_process_launcher.h"
 
 #include <memory>
 #include <utility>
@@ -23,7 +23,7 @@
 namespace service_manager {
 namespace {
 
-const char kTestServiceName[] = "host_test_service";
+const char kTestServiceName[] = "service_process_launcher_test_service";
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kServiceExtension[] =
@@ -82,7 +82,7 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
   base::PathService::Get(base::DIR_EXE, &test_service_path);
 #endif
   test_service_path = test_service_path.AppendASCII(kTestServiceName)
-      .AddExtension(kServiceExtension);
+                          .AddExtension(kServiceExtension);
 
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
   base::Optional<ServiceProcessLauncher> launcher(

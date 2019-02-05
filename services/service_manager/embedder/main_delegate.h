@@ -13,7 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/core/embedder/configuration.h"
-#include "services/service_manager/background/background_service_manager.h"
+#include "services/service_manager/background_service_manager.h"
 #include "services/service_manager/embedder/process_type.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"

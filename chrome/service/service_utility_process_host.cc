@@ -55,11 +55,11 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/runner/host/service_process_launcher.h"
-#include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/service_manager.h"
+#include "services/service_manager/service_process_launcher.h"
+#include "services/service_manager/service_process_launcher_factory.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {

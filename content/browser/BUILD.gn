@@ -159,7 +159,6 @@ jumbo_source_set("browser") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
-    "//services/service_manager/runner/host:lib",
     "//services/service_manager/zygote:zygote_buildflags",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/mojom",

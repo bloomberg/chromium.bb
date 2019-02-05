@@ -17,7 +17,6 @@ source_set("test_support") {
   public_deps = [
     "//base",
     "//services/service_manager",
-    "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
