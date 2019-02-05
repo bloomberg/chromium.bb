@@ -183,7 +183,9 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
             GetPathDisplayTextForSettings(
                 profile_.get(),
                 "/media/fuse/crostini_0123456789abcdef_termina_penguin/foo"));
-
+  EXPECT_EQ(
+      "External storage \u203a foo",
+      GetPathDisplayTextForSettings(profile_.get(), "/media/removable/foo"));
   {
     base::test::ScopedFeatureList features;
     features.InitAndDisableFeature(chromeos::features::kDriveFs);
