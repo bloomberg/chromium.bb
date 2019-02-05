@@ -589,7 +589,7 @@ void TraceEventDataSource::LogHistogram(base::HistogramBase* histogram) {
   base::Base64Encode(
       std::string(static_cast<const char*>(pickle.data()), pickle.size()),
       &buckets);
-  TRACE_EVENT_INSTANT2("benchmark", "UMAHistogramDelta",
+  TRACE_EVENT_INSTANT2("benchmark", "UMAHistogramSamples",
                        TRACE_EVENT_SCOPE_PROCESS, "name",
                        histogram->histogram_name(), "buckets", buckets);
 }
