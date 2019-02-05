@@ -77,8 +77,6 @@ class WebAppProvider : public KeyedService,
   static void InstallWebApp(content::WebContents* web_contents,
                             bool force_shortcut_app);
 
-  void Reset();
-
   // content::NotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,
@@ -100,6 +98,8 @@ class WebAppProvider : public KeyedService,
   void CreateBookmarkAppsSubsystems(Profile* profile);
 
   void OnRegistryReady();
+
+  void Reset();
 
   void OnScanForExternalWebApps(
       std::vector<web_app::PendingAppManager::AppInfo>);

@@ -178,26 +178,6 @@ void WebAppProvider::InstallWebApp(content::WebContents* web_contents,
                                             base::DoNothing());
 }
 
-void WebAppProvider::Reset() {
-  // TODO(loyso): Make it independent to the order of destruction via using two
-  // end-to-end passes:
-  // 1) Do Reset() for each subsystem to nullify pointers (detach subsystems).
-  // 2) Destroy subsystems.
-
-  // PendingAppManager is used by WebAppPolicyManager and therefore should be
-  // deleted after it.
-  web_app_policy_manager_.reset();
-  system_web_app_manager_.reset();
-  pending_app_manager_.reset();
-
-  install_manager_.reset();
-  icon_manager_.reset();
-  registrar_.reset();
-  database_.reset();
-  database_factory_.reset();
-  audio_focus_id_map_.reset();
-}
-
 void WebAppProvider::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& detals) {
@@ -226,6 +206,26 @@ int WebAppProvider::CountUserInstalledApps() const {
     return 0;
 
   return extensions::CountUserInstalledBookmarkApps(profile_);
+}
+
+void WebAppProvider::Reset() {
+  // TODO(loyso): Make it independent to the order of destruction via using two
+  // end-to-end passes:
+  // 1) Do Reset() for each subsystem to nullify pointers (detach subsystems).
+  // 2) Destroy subsystems.
+
+  // PendingAppManager is used by WebAppPolicyManager and therefore should be
+  // deleted after it.
+  web_app_policy_manager_.reset();
+  system_web_app_manager_.reset();
+  pending_app_manager_.reset();
+
+  install_manager_.reset();
+  icon_manager_.reset();
+  registrar_.reset();
+  database_.reset();
+  database_factory_.reset();
+  audio_focus_id_map_.reset();
 }
 
 void WebAppProvider::OnScanForExternalWebApps(

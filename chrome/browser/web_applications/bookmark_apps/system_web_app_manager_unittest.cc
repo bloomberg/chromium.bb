@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -50,20 +51,31 @@ PendingAppManager::AppInfo GetWindowedAppInfo() {
 
 class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  SystemWebAppManagerTest() = default;
+  SystemWebAppManagerTest()
+      : test_web_app_provider_creator_(
+            base::BindOnce(&SystemWebAppManagerTest::CreateWebAppProvider,
+                           base::Unretained(this))) {
+    scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
+  }
+
   ~SystemWebAppManagerTest() override = default;
 
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
+  std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile) {
+    auto provider = std::make_unique<TestWebAppProvider>(profile);
 
-    // Reset WebAppProvider so that its SystemWebAppManager doesn't interfere
-    // with tests.
-    WebAppProvider::Get(profile())->Reset();
+    auto test_pending_app_manager = std::make_unique<TestPendingAppManager>();
+    test_pending_app_manager_ = test_pending_app_manager.get();
+    provider->SetPendingAppManager(std::move(test_pending_app_manager));
+
+    auto system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
+        profile, test_pending_app_manager_);
+    system_web_app_manager_ = system_web_app_manager.get();
+    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+
+    return provider;
   }
 
   void SimulatePreviouslyInstalledApp(
-      TestPendingAppManager* pending_app_manager,
       GURL url,
       InstallSource install_source) {
     std::string id =
@@ -74,11 +86,23 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
     extension_ids_map.Insert(url, id, install_source);
 
-    pending_app_manager->SimulatePreviouslyInstalledApp(url, install_source);
+    pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
+  }
+
+ protected:
+  TestPendingAppManager* pending_app_manager() {
+    return test_pending_app_manager_;
+  }
+
+  TestSystemWebAppManager* system_web_app_manager() {
+    return system_web_app_manager_;
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  TestWebAppProviderCreator test_web_app_provider_creator_;
+  TestPendingAppManager* test_pending_app_manager_ = nullptr;
+  TestSystemWebAppManager* system_web_app_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerTest);
 };
@@ -88,79 +112,66 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   base::test::ScopedFeatureList disable_feature_list;
   disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
-
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl1),
+  SimulatePreviouslyInstalledApp(GURL(kAppUrl1),
                                  InstallSource::kSystemInstalled);
 
   std::vector<GURL> system_apps;
   system_apps.push_back(GURL(kAppUrl1));
 
-  TestSystemWebAppManager system_web_app_manager(profile(),
-                                                 pending_app_manager.get());
-  system_web_app_manager.SetSystemApps(std::move(system_apps));
-  system_web_app_manager.Start();
+  system_web_app_manager()->SetSystemApps(std::move(system_apps));
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(pending_app_manager->install_requests().empty());
+  EXPECT_TRUE(pending_app_manager()->install_requests().empty());
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
   EXPECT_EQ(std::vector<GURL>({GURL(kAppUrl1)}),
-            pending_app_manager->uninstall_requests());
+            pending_app_manager()->uninstall_requests());
 }
 
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
-  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
-
   std::vector<GURL> system_apps;
   system_apps.push_back(GURL(kAppUrl1));
   system_apps.push_back(GURL(kAppUrl2));
 
-  TestSystemWebAppManager system_web_app_manager(profile(),
-                                                 pending_app_manager.get());
-  system_web_app_manager.SetSystemApps(std::move(system_apps));
-  system_web_app_manager.Start();
-
+  system_web_app_manager()->SetSystemApps(std::move(system_apps));
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  const auto& apps_to_install = pending_app_manager->install_requests();
+  const auto& apps_to_install = pending_app_manager()->install_requests();
   EXPECT_FALSE(apps_to_install.empty());
 }
 
 // Test that changing the set of System Apps uninstalls apps.
 TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
-  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
-
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl1),
+  SimulatePreviouslyInstalledApp(GURL(kAppUrl1),
                                  InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl2),
+  SimulatePreviouslyInstalledApp(GURL(kAppUrl2),
                                  InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl3),
-                                 InstallSource::kInternal);
+  SimulatePreviouslyInstalledApp(GURL(kAppUrl3), InstallSource::kInternal);
   std::vector<GURL> system_apps;
   system_apps.push_back(GURL(kAppUrl1));
 
-  TestSystemWebAppManager system_web_app_manager(profile(),
-                                                 pending_app_manager.get());
-  system_web_app_manager.SetSystemApps(std::move(system_apps));
-  system_web_app_manager.Start();
+  system_web_app_manager()->SetSystemApps(std::move(system_apps));
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the System App list.
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.push_back(GetWindowedAppInfo());
-  EXPECT_EQ(pending_app_manager->install_requests(), expected_apps_to_install);
+  EXPECT_EQ(pending_app_manager()->install_requests(),
+            expected_apps_to_install);
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
   EXPECT_EQ(std::vector<GURL>({GURL(kAppUrl2)}),
-            pending_app_manager->uninstall_requests());
+            pending_app_manager()->uninstall_requests());
 }
 
 }  // namespace web_app

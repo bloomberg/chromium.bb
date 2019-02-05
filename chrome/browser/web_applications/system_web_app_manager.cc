@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -37,7 +36,7 @@ PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
 
 SystemWebAppManager::SystemWebAppManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
-    : profile_(profile), pending_app_manager_(pending_app_manager) {}
+    : pending_app_manager_(pending_app_manager) {}
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
@@ -57,7 +56,7 @@ bool SystemWebAppManager::IsEnabled() {
 
 void SystemWebAppManager::StartAppInstallation() {
   std::vector<GURL> urls_to_install;
-  if (AreWebAppsEnabled(profile_) && IsEnabled()) {
+  if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
     urls_to_install = CreateSystemWebApps();
   }
