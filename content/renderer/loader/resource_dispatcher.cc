@@ -406,6 +406,8 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
   // TODO(yhirano): Consider using int64_t in
   // RequestPeer::OnTransferSizeUpdated.
   request_info->peer->OnTransferSizeUpdated(transfer_size_diff);
+  if (!GetPendingRequestInfo(request_id))
+    return;
 
   NotifyResourceTransferSizeUpdated(request_info->render_frame_id,
                                     request_info->resource_load_info.get(),
