@@ -567,8 +567,11 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
         server_id, sync_pb::WalletMetadataSpecifics::CARD, &cache_);
     if (it == cache_.end())
       return;
-    // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
-    DCHECK(change.type() == AutofillProfileChange::UPDATE);
+    // Deletions and creations are treated by Wallet data sync (and propagated
+    // here by AutofillMultipleChanged()). We only treat updates here.
+    if (change.type() != AutofillProfileChange::UPDATE) {
+      return;
+    }
 
     const sync_pb::WalletMetadataSpecifics& remote =
         it->GetSpecifics().wallet_metadata();
