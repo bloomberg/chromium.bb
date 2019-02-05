@@ -39,7 +39,7 @@ namespace quic {
 QuicClient::QuicClient(QuicSocketAddress server_address,
                        const QuicServerId& server_id,
                        const ParsedQuicVersionVector& supported_versions,
-                       net::EpollServer* epoll_server,
+                       QuicEpollServer* epoll_server,
                        std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicClient(
           server_address,
@@ -54,7 +54,7 @@ QuicClient::QuicClient(
     QuicSocketAddress server_address,
     const QuicServerId& server_id,
     const ParsedQuicVersionVector& supported_versions,
-    net::EpollServer* epoll_server,
+    QuicEpollServer* epoll_server,
     std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
     std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicClient(server_address,
@@ -70,7 +70,7 @@ QuicClient::QuicClient(
     const QuicServerId& server_id,
     const ParsedQuicVersionVector& supported_versions,
     const QuicConfig& config,
-    net::EpollServer* epoll_server,
+    QuicEpollServer* epoll_server,
     std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
     std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicSpdyClientBase(

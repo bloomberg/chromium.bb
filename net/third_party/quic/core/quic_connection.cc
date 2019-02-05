@@ -350,10 +350,11 @@ QuicConnection::QuicConnection(
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
                   << QuicVersionToString(transport_version());
-  QUIC_BUG_IF(connection_id.length() != sizeof(uint64_t) &&
+  QUIC_BUG_IF(connection_id.length() != kQuicDefaultConnectionIdLength &&
               transport_version() < QUIC_VERSION_99)
-      << "Cannot use connection ID of length " << connection_id.length()
-      << " with version " << QuicVersionToString(transport_version());
+      << "Cannot use connection ID of length "
+      << static_cast<uint32_t>(connection_id.length()) << " with version "
+      << QuicVersionToString(transport_version());
 
   framer_.set_visitor(this);
   stats_.connection_creation_time = clock_->ApproximateNow();

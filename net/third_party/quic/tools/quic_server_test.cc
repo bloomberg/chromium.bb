@@ -21,10 +21,10 @@
 #include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 
-using ::testing::_;
-
 namespace quic {
 namespace test {
+
+using ::testing::_;
 
 namespace {
 
@@ -179,7 +179,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
-  net::EpollServer eps_;
+  QuicEpollServer eps_;
   QuicMemoryCacheBackend quic_simple_server_backend_;
   MockQuicDispatcher dispatcher_;
 };

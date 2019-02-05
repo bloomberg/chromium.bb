@@ -949,10 +949,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
       NeuterUnencryptedData();
-      if (GetQuicReloadableFlag(quic_optimize_encryption_established)) {
-        QUIC_RELOADABLE_FLAG_COUNT(quic_optimize_encryption_established);
-        is_handshake_confirmed_ = true;
-      }
+      is_handshake_confirmed_ = true;
       break;
 
     default:

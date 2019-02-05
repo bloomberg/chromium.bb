@@ -457,6 +457,33 @@ TEST_F(CryptoServerConfigsTest, AdvancePrimary) {
   test_peer_.CheckConfigs({{"a", false}, {"b", true}});
 }
 
+class ValidateCallback : public ValidateClientHelloResultCallback {
+ public:
+  void Run(QuicReferenceCountedPointer<Result> result,
+           std::unique_ptr<ProofSource::Details> /* details */) override {}
+};
+
+TEST_F(CryptoServerConfigsTest, AdvancePrimaryViaValidate) {
+  SetQuicReloadableFlag(quic_fix_config_rotation, true);
+  // Check that a new primary config is enabled at the right time.
+  SetConfigs({{"a", 900, 1}, {"b", 1100, 1}});
+  test_peer_.SelectNewPrimaryConfig(1000);
+  test_peer_.CheckConfigs({{"a", true}, {"b", false}});
+  CryptoHandshakeMessage client_hello;
+  QuicIpAddress client_ip;
+  QuicSocketAddress server_address;
+  QuicTransportVersion version = QUIC_VERSION_99;
+  MockClock clock;
+  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config(
+      new QuicSignedServerConfig);
+  std::unique_ptr<ValidateClientHelloResultCallback> done_cb(
+      new ValidateCallback);
+  clock.AdvanceTime(QuicTime::Delta::FromSeconds(1100));
+  config_.ValidateClientHello(client_hello, client_ip, server_address, version,
+                              &clock, signed_config, std::move(done_cb));
+  test_peer_.CheckConfigs({{"a", false}, {"b", true}});
+}
+
 TEST_F(CryptoServerConfigsTest, InvalidConfigs) {
   // Ensure that invalid configs don't change anything.
   SetConfigs({{"a", 800, 1}, {"b", 900, 1}, {"c", 1100, 1}});

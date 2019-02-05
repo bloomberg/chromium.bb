@@ -34,7 +34,6 @@
 namespace quic {
 
 class CryptoHandshakeMessage;
-class EphemeralKeySource;
 class ProofSource;
 class QuicClock;
 class QuicRandom;
@@ -369,12 +368,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const QuicCryptoNegotiatedParameters& params,
       const CachedNetworkParameters* cached_network_params,
       std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const;
-
-  // SetEphemeralKeySource installs an object that can cache ephemeral keys for
-  // a short period of time. If not set, ephemeral keys will be generated
-  // per-connection.
-  void SetEphemeralKeySource(
-      std::unique_ptr<EphemeralKeySource> ephemeral_key_source);
 
   // set_replay_protection controls whether replay protection is enabled. If
   // replay protection is disabled then no strike registers are needed and
@@ -772,6 +765,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       CryptoHandshakeMessage message,
       std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const;
 
+  // Returns true if the next config promotion should happen now.
+  bool IsNextConfigReady(QuicWallTime now) const
+      SHARED_LOCKS_REQUIRED(configs_lock_);
+
   // replay_protection_ controls whether the server enforces that handshakes
   // aren't replays.
   bool replay_protection_;
@@ -822,10 +819,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // ssl_ctx_ contains the server configuration for doing TLS handshakes.
   bssl::UniquePtr<SSL_CTX> ssl_ctx_;
-
-  // ephemeral_key_source_ contains an object that caches ephemeral keys for a
-  // short period of time.
-  std::unique_ptr<EphemeralKeySource> ephemeral_key_source_;
 
   // These fields store configuration values. See the comments for their
   // respective setter functions.

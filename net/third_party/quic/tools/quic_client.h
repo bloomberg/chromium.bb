@@ -21,6 +21,7 @@
 #include "net/third_party/quic/core/quic_packet_reader.h"
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
+#include "net/third_party/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quic/tools/quic_client_base.h"
 #include "net/third_party/quic/tools/quic_client_epoll_network_helper.h"
 #include "net/third_party/quic/tools/quic_spdy_client_base.h"
@@ -40,20 +41,20 @@ class QuicClient : public QuicSpdyClientBase {
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
              const ParsedQuicVersionVector& supported_versions,
-             net::EpollServer* epoll_server,
+             QuicEpollServer* epoll_server,
              std::unique_ptr<ProofVerifier> proof_verifier);
   // This will take ownership of a passed in network primitive.
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
              const ParsedQuicVersionVector& supported_versions,
-             net::EpollServer* epoll_server,
+             QuicEpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
              std::unique_ptr<ProofVerifier> proof_verifier);
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
              const ParsedQuicVersionVector& supported_versions,
              const QuicConfig& config,
-             net::EpollServer* epoll_server,
+             QuicEpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
              std::unique_ptr<ProofVerifier> proof_verifier);
   QuicClient(const QuicClient&) = delete;

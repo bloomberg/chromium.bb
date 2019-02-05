@@ -21,6 +21,7 @@
 #include "net/third_party/quic/core/quic_packet_reader.h"
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
+#include "net/third_party/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quic/tools/quic_client_base.h"
 #include "net/third_party/quic/tools/quic_spdy_client_base.h"
 #include "net/tools/epoll_server/epoll_server.h"
@@ -34,12 +35,12 @@ class QuicClientPeer;
 // An implementation of the QuicClientBase::NetworkHelper based off
 // the epoll server.
 class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
-                                     public net::EpollCallbackInterface,
+                                     public QuicEpollCallbackInterface,
                                      public ProcessPacketInterface {
  public:
   // Create a quic client, which will have events managed by an externally owned
-  // net::EpollServer.
-  QuicClientEpollNetworkHelper(net::EpollServer* epoll_server,
+  // EpollServer.
+  QuicClientEpollNetworkHelper(QuicEpollServer* epoll_server,
                                QuicClientBase* client);
   QuicClientEpollNetworkHelper(const QuicClientEpollNetworkHelper&) = delete;
   QuicClientEpollNetworkHelper& operator=(const QuicClientEpollNetworkHelper&) =
@@ -50,15 +51,15 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
   // Return a name describing the class for use in debug/error reporting.
   QuicString Name() const override;
 
-  // From net::EpollCallbackInterface
-  void OnRegistration(net::EpollServer* eps, int fd, int event_mask) override;
+  // From EpollCallbackInterface
+  void OnRegistration(QuicEpollServer* eps, int fd, int event_mask) override;
   void OnModification(int fd, int event_mask) override;
-  void OnEvent(int fd, net::EpollEvent* event) override;
+  void OnEvent(int fd, QuicEpollEvent* event) override;
   // |fd_| can be unregistered without the client being disconnected. This
   // happens in b3m QuicProber where we unregister |fd_| to feed in events to
   // the client from the SelectServer.
   void OnUnregistration(int fd, bool replaced) override;
-  void OnShutdown(net::EpollServer* eps, int fd) override;
+  void OnShutdown(QuicEpollServer* eps, int fd) override;
 
   // From ProcessPacketInterface. This will be called for each received
   // packet.
@@ -77,7 +78,7 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
 
   // Accessors provided for convenience, not part of any interface.
 
-  net::EpollServer* epoll_server() { return epoll_server_; }
+  QuicEpollServer* epoll_server() { return epoll_server_; }
 
   const QuicLinkedHashMap<int, QuicSocketAddress>& fd_address_map() const {
     return fd_address_map_;
@@ -112,7 +113,7 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
   void CleanUpUDPSocketImpl(int fd);
 
   // Listens for events on the client socket.
-  net::EpollServer* epoll_server_;
+  QuicEpollServer* epoll_server_;
 
   // Map mapping created UDP sockets to their addresses. By using linked hash
   // map, the order of socket creation can be recorded.

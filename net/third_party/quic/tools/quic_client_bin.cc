@@ -260,8 +260,8 @@ int main(int argc, char* argv[]) {
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
-  net::EpollServer epoll_server;
-  quic::QuicServerId server_id(url.host(), url.port(), false);
+  quic::QuicEpollServer epoll_server;
+  quic::QuicServerId server_id(url.host(), port, false);
   quic::ParsedQuicVersionVector versions = quic::CurrentSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();

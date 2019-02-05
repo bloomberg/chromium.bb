@@ -18,7 +18,6 @@
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/crypto/crypto_utils.h"
 #include "net/third_party/quic/core/crypto/curve25519_key_exchange.h"
-#include "net/third_party/quic/core/crypto/ephemeral_key_source.h"
 #include "net/third_party/quic/core/crypto/key_exchange.h"
 #include "net/third_party/quic/core/crypto/p256_key_exchange.h"
 #include "net/third_party/quic/core/crypto/proof_source.h"
@@ -512,13 +511,11 @@ void QuicCryptoServerConfig::ValidateClientHello(
   QuicReferenceCountedPointer<Config> primary_config;
   {
     QuicReaderMutexLock locked(&configs_lock_);
-
     if (!primary_config_.get()) {
       result->error_code = QUIC_CRYPTO_INTERNAL_ERROR;
       result->error_details = "No configurations loaded";
     } else {
-      if (!next_config_promotion_time_.IsZero() &&
-          next_config_promotion_time_.IsAfter(now)) {
+      if (IsNextConfigReady(now)) {
         configs_lock_.ReaderUnlock();
         configs_lock_.WriterLock();
         SelectNewPrimaryConfig(now);
@@ -785,8 +782,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
     if (!primary_config_) {
       no_primary_config = true;
     } else {
-      if (!next_config_promotion_time_.IsZero() &&
-          next_config_promotion_time_.IsAfter(now)) {
+      if (IsNextConfigReady(now)) {
         configs_lock_.ReaderUnlock();
         configs_lock_.WriterLock();
         SelectNewPrimaryConfig(now);
@@ -1136,30 +1132,14 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
   }
 
   QuicString forward_secure_public_value;
-  if (GetQuicRestartFlag(quic_no_ephemeral_key_source)) {
-    if (ephemeral_key_source_) {
-      QUIC_BUG << "quic_no_ephemeral_key_source flag is on, but "
-                  "ephemeral_key_source is present";
-    } else {
-      QUIC_RESTART_FLAG_COUNT(quic_no_ephemeral_key_source);
-    }
-  }
-  if (ephemeral_key_source_) {
-    params->forward_secure_premaster_secret =
-        ephemeral_key_source_->CalculateForwardSecureKey(
-            key_exchange_factory, rand, clock->ApproximateNow(), public_value,
-            &forward_secure_public_value);
-  } else {
-    std::unique_ptr<KeyExchange> forward_secure_key_exchange =
-        key_exchange_factory.Create(rand);
-    forward_secure_public_value =
-        QuicString(forward_secure_key_exchange->public_value());
-    if (!forward_secure_key_exchange->CalculateSharedKey(
-            public_value, &params->forward_secure_premaster_secret)) {
-      helper.Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
-                  "Invalid public value");
-      return;
-    }
+  std::unique_ptr<KeyExchange> forward_secure_key_exchange =
+      key_exchange_factory.Create(rand);
+  forward_secure_public_value =
+      QuicString(forward_secure_key_exchange->public_value());
+  if (!forward_secure_key_exchange->CalculateSharedKey(
+          public_value, &params->forward_secure_premaster_secret)) {
+    helper.Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER, "Invalid public value");
+    return;
   }
 
   QuicString forward_secure_hkdf_input;
@@ -1888,11 +1868,6 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   return config;
 }
 
-void QuicCryptoServerConfig::SetEphemeralKeySource(
-    std::unique_ptr<EphemeralKeySource> ephemeral_key_source) {
-  ephemeral_key_source_ = std::move(ephemeral_key_source);
-}
-
 void QuicCryptoServerConfig::set_replay_protection(bool on) {
   replay_protection_ = on;
 }
@@ -2099,6 +2074,15 @@ bool QuicCryptoServerConfig::ClientDemandsX509Proof(
     }
   }
   return false;
+}
+
+bool QuicCryptoServerConfig::IsNextConfigReady(QuicWallTime now) const {
+  if (GetQuicReloadableFlag(quic_fix_config_rotation)) {
+    return !next_config_promotion_time_.IsZero() &&
+           !next_config_promotion_time_.IsAfter(now);
+  }
+  return !next_config_promotion_time_.IsZero() &&
+         next_config_promotion_time_.IsAfter(now);
 }
 
 QuicCryptoServerConfig::Config::Config()
