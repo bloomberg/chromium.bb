@@ -180,6 +180,7 @@
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/browser_switcher/browser_switch_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
@@ -657,6 +658,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   if (url.host_piece() == chrome::kChromeUIDiscardsHost)
     return &NewWebUI<DiscardsUI>;
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (url.host_piece() == chrome::kChromeUIBrowserSwitchHost)
+    return &NewWebUI<BrowserSwitchUI>;
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;

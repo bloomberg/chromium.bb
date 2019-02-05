@@ -689,6 +689,13 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
+      <!-- about:browser-switch strings -->
+      <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION" desc="Description shown while waiting for an alternative browser to open">
+          Your system administrator has configured Chromium to open an alternate browser.
+        </message>
+      </if>
+
       <!-- Signin Email Confirmation tab modal dialog -->
       <if expr="not chromeos">
         <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE" desc="Title of the signin email confirmation tab modal dialog.">
