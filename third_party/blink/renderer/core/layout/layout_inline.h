@@ -213,8 +213,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   using LayoutBoxModelObject::SetContinuation;
 
   bool AlwaysCreateLineBoxes() const {
-    DCHECK(!IsInLayoutNGInlineFormattingContext());
-    return AlwaysCreateLineBoxesForLayoutInline();
+    return AlwaysCreateLineBoxesForLayoutInline() &&
+           !IsInLayoutNGInlineFormattingContext();
   }
   void SetAlwaysCreateLineBoxes(bool always_create_line_boxes = true) {
     DCHECK(!IsInLayoutNGInlineFormattingContext());
@@ -224,10 +224,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   // True if this inline box should force creation of NGPhysicalBoxFragment.
   bool ShouldCreateBoxFragment() const {
-    DCHECK(IsInLayoutNGInlineFormattingContext());
-    return AlwaysCreateLineBoxesForLayoutInline();
+    return AlwaysCreateLineBoxesForLayoutInline() &&
+           IsInLayoutNGInlineFormattingContext();
   }
   void SetShouldCreateBoxFragment(bool value = true) {
+    DCHECK(IsInLayoutNGInlineFormattingContext());
     SetAlwaysCreateLineBoxesForLayoutInline(value);
   }
   void UpdateShouldCreateBoxFragment();
