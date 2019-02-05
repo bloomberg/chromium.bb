@@ -10,7 +10,9 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #include <vector>
 
@@ -133,6 +135,16 @@ class PasswordProtectionRequest
 
   // Fill |request_proto_| with appropriate values.
   void FillRequestProto();
+
+  // Collects visual features from the current login page.
+  void CollectVisualFeatures();
+
+  // Processes the screenshot of the login page into visual features.
+  void OnScreenshotTaken(const SkBitmap& bitmap);
+
+  // Called when the visual feature extraction is complete.
+  void OnVisualFeatureCollectionDone(
+      std::unique_ptr<VisualFeatures> visual_features);
 
   // Initiates network request to Safe Browsing backend.
   void SendRequest();
