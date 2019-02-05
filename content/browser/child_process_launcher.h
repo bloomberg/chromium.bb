@@ -60,8 +60,7 @@ struct ChildProcessLauncherPriority {
                                bool has_media_stream,
                                unsigned int frame_depth,
                                bool intersects_viewport,
-                               bool boost_for_pending_views,
-                               bool should_boost_for_pending_views
+                               bool boost_for_pending_views
 #if defined(OS_ANDROID)
                                ,
                                ChildProcessImportance importance
@@ -71,8 +70,7 @@ struct ChildProcessLauncherPriority {
         has_media_stream(has_media_stream),
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
-        boost_for_pending_views(boost_for_pending_views),
-        should_boost_for_pending_views(should_boost_for_pending_views)
+        boost_for_pending_views(boost_for_pending_views)
 #if defined(OS_ANDROID)
         ,
         importance(importance)
@@ -82,8 +80,7 @@ struct ChildProcessLauncherPriority {
 
   // Returns true if the child process is backgrounded.
   bool is_background() const {
-    return !visible && !has_media_stream &&
-           !(should_boost_for_pending_views && boost_for_pending_views);
+    return !visible && !has_media_stream && !boost_for_pending_views;
   }
 
   bool operator==(const ChildProcessLauncherPriority& other) const;
@@ -122,14 +119,6 @@ struct ChildProcessLauncherPriority {
   // during navigation).
   bool boost_for_pending_views;
 
-  // True iff |boost_for_pending_views| should be considered in
-  // |is_background()|. This needs to be a separate parameter as opposed to
-  // having the experiment set |boost_for_pending_views == false| when
-  // |!should_boost_for_pending_views| as that would result in different
-  // |is_background()| logic than before and defeat the purpose of the
-  // experiment. TODO(gab): Remove this field when the
-  // BoostRendererPriorityForPendingViews desktop experiment is over.
-  bool should_boost_for_pending_views;
 #if defined(OS_ANDROID)
   ChildProcessImportance importance;
 #endif
