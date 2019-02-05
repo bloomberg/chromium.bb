@@ -1920,6 +1920,8 @@ jumbo_split_static_library("ui") {
       "webui/welcome/nux/email_providers_list.h",
       "webui/welcome/nux/google_apps_handler.cc",
       "webui/welcome/nux/google_apps_handler.h",
+      "webui/welcome/nux/ntp_background_handler.cc",
+      "webui/welcome/nux/ntp_background_handler.h",
       "webui/welcome/nux/set_as_default_handler.cc",
       "webui/welcome/nux/set_as_default_handler.h",
       "webui/welcome/nux_helper.cc",
