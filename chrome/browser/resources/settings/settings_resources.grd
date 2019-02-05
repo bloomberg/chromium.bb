@@ -679,6 +679,12 @@
       <structure name="IDR_SETTINGS_AUTOFILL_PAGE_JS"
                  file="autofill_page/autofill_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CREDIT_CARD_LIST_HTML"
+                 file="autofill_page/credit_card_list.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CREDIT_CARD_LIST_JS"
+                 file="autofill_page/credit_card_list.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CREDIT_CARD_LIST_ENTRY_HTML"
                  file="autofill_page/credit_card_list_entry.html"
                  type="chrome_html" />

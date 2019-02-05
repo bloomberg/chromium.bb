@@ -95,13 +95,23 @@ cr.define('settings_payments_section', function() {
     }
 
     /**
+     * Returns an array containing the local and server credit card items.
+     * @return {!Array<!chrome.autofillPrivate.CreditCardEntry>}
+     */
+    function getLocalAndServerListItems() {
+      return document.body.querySelector('settings-payments-section')
+          .$$('#creditCardList')
+          .shadowRoot.querySelectorAll('settings-credit-card-list-entry');
+    }
+
+    /**
      * Returns an array containing the local credit card items.
      * @return {!Array<!chrome.autofillPrivate.CreditCardEntry>}
      */
     function getLocalListItems() {
       return document.body.querySelector('settings-payments-section')
-          .shadowRoot.querySelectorAll(
-              '#localCreditCardList settings-credit-card-list-entry');
+          .$$('#localCreditCardList')
+          .shadowRoot.querySelectorAll('settings-credit-card-list-entry');
     }
 
     /**
@@ -110,8 +120,8 @@ cr.define('settings_payments_section', function() {
      */
     function getServerListItems() {
       return document.body.querySelector('settings-payments-section')
-          .shadowRoot.querySelectorAll(
-              '#serverCreditCardList settings-credit-card-list-entry');
+          .$$('#serverCreditCardList')
+          .shadowRoot.querySelectorAll('settings-credit-card-list-entry');
     }
 
     /**
@@ -131,7 +141,7 @@ cr.define('settings_payments_section', function() {
      * @return {?HTMLElement}
      */
     function getCardRowShadowRoot(cardList) {
-      const row = cardList.querySelector('settings-credit-card-list-entry');
+      const row = cardList.$$('settings-credit-card-list-entry');
       assertTrue(!!row);
       return row.shadowRoot;
     }
@@ -142,13 +152,10 @@ cr.define('settings_payments_section', function() {
 
       const creditCardList = section.$$('#creditCardList');
       assertTrue(!!creditCardList);
-      assertEquals(
-          0,
-          creditCardList.querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(0, getLocalAndServerListItems().length);
 
-      assertFalse(section.$$('#noCreditCardsLabel').hidden);
-      assertTrue(section.$$('#creditCardsHeading').hidden);
+      assertFalse(creditCardList.$$('#noCreditCardsLabel').hidden);
+      assertTrue(creditCardList.$$('#creditCardsHeading').hidden);
       assertFalse(section.$$('#autofillCreditCardToggle').disabled);
       assertFalse(section.$$('#addCreditCard').disabled);
     });
@@ -175,13 +182,10 @@ cr.define('settings_payments_section', function() {
           creditCards, {credit_card_enabled: {value: true}});
       const creditCardList = section.$$('#creditCardList');
       assertTrue(!!creditCardList);
-      assertEquals(
-          creditCards.length,
-          creditCardList.querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(creditCards.length, getLocalAndServerListItems().length);
 
-      assertTrue(section.$$('#noCreditCardsLabel').hidden);
-      assertFalse(section.$$('#creditCardsHeading').hidden);
+      assertTrue(creditCardList.$$('#noCreditCardsLabel').hidden);
+      assertFalse(creditCardList.$$('#creditCardsHeading').hidden);
       assertFalse(section.$$('#autofillCreditCardToggle').disabled);
       assertFalse(section.$$('#addCreditCard').disabled);
     });
@@ -393,12 +397,7 @@ cr.define('settings_payments_section', function() {
       creditCard.metadata.isCached = undefined;
 
       const section = createPaymentsSection([creditCard], {});
-      const creditCardList = section.$$('#creditCardList');
-      assertTrue(!!creditCardList);
-      assertEquals(
-          1,
-          creditCardList.querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(1, getLocalAndServerListItems().length);
 
       // Local credit cards will show the overflow menu.
       const rowShadowRoot = getCardRowShadowRoot(section.$$('#creditCardList'));
@@ -427,12 +426,7 @@ cr.define('settings_payments_section', function() {
       creditCard.metadata.isCached = true;
 
       const section = createPaymentsSection([creditCard], {});
-      const creditCardList = section.$$('#creditCardList');
-      assertTrue(!!creditCardList);
-      assertEquals(
-          1,
-          creditCardList.querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(1, getLocalAndServerListItems().length);
 
       // Cached remote CCs will show overflow menu.
       const rowShadowRoot = getCardRowShadowRoot(section.$$('#creditCardList'));
@@ -461,12 +455,7 @@ cr.define('settings_payments_section', function() {
       creditCard.metadata.isCached = false;
 
       const section = createPaymentsSection([creditCard], {});
-      const creditCardList = section.$$('#creditCardList');
-      assertTrue(!!creditCardList);
-      assertEquals(
-          1,
-          creditCardList.querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(1, getLocalAndServerListItems().length);
 
       // No overflow menu when not cached.
       const rowShadowRoot = getCardRowShadowRoot(section.$$('#creditCardList'));
@@ -548,13 +537,7 @@ cr.define('settings_payments_section', function() {
       assertTrue(creditCard.metadata.isLocal);
 
       const section = createSplitPaymentsSection([creditCard], []);
-      const localCreditCardList = section.$$('#localCreditCardList');
-      assertTrue(!!localCreditCardList);
-      assertEquals(
-          1,
-          localCreditCardList
-              .querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(1, getLocalListItems().length);
 
       // Local credit cards will show the overflow menu.
       const localRowShadowRoot =
@@ -634,12 +617,7 @@ cr.define('settings_payments_section', function() {
       maskedCard.metadata.isCached = false;
 
       const section = createSplitPaymentsSection([], [maskedCard]);
-      const serverCardList = section.$$('#serverCreditCardList');
-      assertTrue(!!serverCardList);
-      assertEquals(
-          1,
-          serverCardList.querySelectorAll('settings-credit-card-list-entry')
-              .length);
+      assertEquals(1, getServerListItems().length);
 
       // No overflow menu when not cached.
       const serverRowShadowRoot =

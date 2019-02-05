@@ -500,16 +500,6 @@ Polymer({
   },
 
   /**
-   * Returns true if the list exists and has items.
-   * @param {Array<Object>} list
-   * @return {boolean}
-   * @private
-   */
-  hasSome_: function(list) {
-    return !!(list && list.length);
-  },
-
-  /**
    * Listens for the save-credit-card event, and calls the private API.
    * @param {!Event} event
    * @private
