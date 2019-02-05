@@ -18,10 +18,12 @@
 #include "content/browser/isolation_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_process_host_observer.h"
 
 class GURL;
 
 namespace content {
+class RenderProcessHost;
 class SiteInstanceImpl;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,7 +65,8 @@ class SiteInstanceImpl;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT BrowsingInstance final
-    : public base::RefCounted<BrowsingInstance> {
+    : public base::RefCounted<BrowsingInstance>,
+      public RenderProcessHostObserver {
  private:
   friend class base::RefCounted<BrowsingInstance>;
   friend class SiteInstanceImpl;
@@ -81,7 +84,10 @@ class CONTENT_EXPORT BrowsingInstance final
   // Create a new BrowsingInstance.
   explicit BrowsingInstance(BrowserContext* context);
 
-  ~BrowsingInstance();
+  ~BrowsingInstance() final;
+
+  // RenderProcessHostObserver implementation.
+  void RenderProcessHostDestroyed(RenderProcessHost* host) final;
 
   // Get the browser context to which this BrowsingInstance belongs.
   BrowserContext* browser_context() const { return browser_context_; }
@@ -118,6 +124,11 @@ class CONTENT_EXPORT BrowsingInstance final
     active_contents_count_--;
   }
 
+  // Stores the process that should be used if a SiteInstance doesn't need
+  // a dedicated process.
+  void SetDefaultProcess(RenderProcessHost* default_process);
+  RenderProcessHost* default_process() const { return default_process_; }
+
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.
   typedef std::unordered_map<std::string, SiteInstanceImpl*> SiteInstanceMap;
@@ -144,6 +155,10 @@ class CONTENT_EXPORT BrowsingInstance final
 
   // Number of WebContentses currently using this BrowsingInstance.
   size_t active_contents_count_;
+
+  // The process to use for any SiteInstance in this BrowsingInstance that
+  // doesn't require a dedicated process.
+  RenderProcessHost* default_process_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };

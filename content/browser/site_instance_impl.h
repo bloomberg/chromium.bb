@@ -275,6 +275,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // about the current BrowsingInstance.
   const IsolationContext& GetIsolationContext();
 
+  // If this SiteInstance doesn't require a dedicated process, this will return
+  // the BrowsingInstance's default process.
+  RenderProcessHost* GetDefaultProcessIfUsable();
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;
@@ -292,6 +296,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Used to restrict a process' origin access rights.
   void LockToOriginIfNeeded();
+
+  // If kProcessSharingWithStrictSiteInstances is enabled, this will check
+  // whether both a site and a process have been assigned to this SiteInstance,
+  // and if this doesn't require a dedicated process, will offer process_ to
+  // BrowsingInstance as the default process for SiteInstances that don't need
+  // a dedicated process.
+  void MaybeSetBrowsingInstanceDefaultProcess();
 
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;

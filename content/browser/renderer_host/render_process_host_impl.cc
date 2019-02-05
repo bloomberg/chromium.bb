@@ -4052,6 +4052,18 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
         UnmatchedServiceWorkerProcessTracker::MatchWithSite(site_instance);
   }
 
+  // If a process hasn't been selected yet, check whether a default process
+  // has been assigned for this browsing instance and use that. This is used
+  // to group all SiteInstance that don't require a dedicated process into a
+  // single process. This will only be set if
+  // kProcessSharingWithStrictSiteInstances is enabled.
+  if (!render_process_host) {
+    render_process_host = site_instance->GetDefaultProcessIfUsable();
+    DCHECK(!render_process_host ||
+           base::FeatureList::IsEnabled(
+               features::kProcessSharingWithStrictSiteInstances));
+  }
+
   // See if the spare RenderProcessHost can be used.
   SpareRenderProcessHostManager& spare_process_manager =
       g_spare_render_process_host_manager.Get();
