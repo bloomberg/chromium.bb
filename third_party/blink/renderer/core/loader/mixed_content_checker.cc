@@ -724,19 +724,13 @@ Frame* MixedContentChecker::EffectiveFrameForFrameType(
 void MixedContentChecker::HandleCertificateError(
     LocalFrame* frame,
     const ResourceResponse& response,
-    network::mojom::RequestContextFrameType frame_type,
     mojom::RequestContextType request_context) {
-  Frame* effective_frame = EffectiveFrameForFrameType(frame, frame_type);
-  if (frame_type == network::mojom::RequestContextFrameType::kTopLevel ||
-      !effective_frame)
-    return;
-
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
   LocalFrameClient* client = frame->Client();
   bool strict_mixed_content_checking_for_plugin =
-      effective_frame->GetSettings() &&
-      effective_frame->GetSettings()->GetStrictMixedContentCheckingForPlugin();
+      frame->GetSettings() &&
+      frame->GetSettings()->GetStrictMixedContentCheckingForPlugin();
   WebMixedContentContextType context_type =
       WebMixedContent::ContextTypeFromRequestContext(
           request_context, strict_mixed_content_checking_for_plugin);
