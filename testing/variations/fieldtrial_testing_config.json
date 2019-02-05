@@ -1335,6 +1335,21 @@
             ]
         }
     ],
+    "D3D11VideoDecoderWin": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "D3D11VideoDecoderEnabled",
+                    "enable_features": [
+                        "D3D11VideoDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataCompressionProxyLoFi": [
         {
             "platforms": [
