@@ -307,7 +307,6 @@ const char kInternetSubPage[] = "internet";
 // 'multidevice/features' is a child of the 'multidevice' route
 const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kLockScreenSubPage[] = "lockScreen";
-const char kManagementSubPage[] = "help/management";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kPowerSubPage[] = "power";
 const char kSmbSharesPageAddDialog[] = "smbShares?showAddShare=true";

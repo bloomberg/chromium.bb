@@ -125,14 +125,6 @@ Polymer({
     },
 
     /** @private */
-    managementTitle_: {
-      type: String,
-      // TODO(raleksandrov): Better to use string from management_strings as
-      // default value here, but this should be never shown.
-      value: 'Management overview',
-    },
-
-    /** @private */
     showUpdateWarningDialog_: {
       type: Boolean,
       value: false,
@@ -169,9 +161,6 @@ Polymer({
     // </if>
   ],
 
-  /** @private {?settings.ManagementBrowserProxy} */
-  browserProxy_: null,
-
   /** @private {?settings.AboutPageBrowserProxy} */
   aboutBrowserProxy_: null,
 
@@ -205,10 +194,6 @@ Polymer({
       this.hasEndOfLife_ = result;
     });
 
-    this.browserProxy_ = settings.ManagementBrowserProxyImpl.getInstance();
-    this.browserProxy_.getManagementTitle().then(title => {
-      this.managementTitle_ = title;
-    });
     // </if>
     // <if expr="not chromeos">
     this.startListening_();
@@ -529,11 +514,6 @@ Polymer({
   /** @private */
   onDetailedBuildInfoTap_: function() {
     settings.navigateTo(settings.routes.DETAILED_BUILD_INFO);
-  },
-
-  /** @private */
-  onManagementInfoTap_: function() {
-    settings.navigateTo(settings.routes.MANAGEMENT_INFO);
   },
 
   /** @private */
