@@ -21,7 +21,7 @@ namespace content {
 
 std::unique_ptr<WebServiceWorkerNetworkProviderImplForWorker>
 WebServiceWorkerNetworkProviderImplForWorker::Create(
-    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,

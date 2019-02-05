@@ -92,7 +92,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // service worker controller is sent via ServiceWorkerContainer#SetController.
   void Start(
       blink::mojom::SharedWorkerFactoryPtr factory,
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,

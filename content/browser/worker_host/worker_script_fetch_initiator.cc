@@ -238,8 +238,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   // Set up for service worker.
-  auto provider_info =
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       context->PreCreateHostForSharedWorker(process_id, &provider_info);
 
@@ -321,7 +320,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
 
 void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     CompletionCallback callback,
-    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,

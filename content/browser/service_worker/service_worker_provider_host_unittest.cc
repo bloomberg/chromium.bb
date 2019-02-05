@@ -884,7 +884,7 @@ TEST_P(ServiceWorkerProviderHostTest,
        ReservedClientsAreNotExposedToClientsAPI) {
   {
     auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateForSharedWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
@@ -947,8 +947,7 @@ TEST_P(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
 
 // Tests the client phase transitions for a shared worker.
 TEST_P(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
-  auto provider_info =
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForSharedWorker(
           context_->AsWeakPtr(), helper_->mock_render_process_id(),

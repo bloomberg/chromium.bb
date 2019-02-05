@@ -167,8 +167,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForSharedWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
-      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr*
-          out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
 
   // Used to create a ServiceWorkerProviderHost when the renderer-side provider
   // is created. This ProviderHost will be created for the process specified by
