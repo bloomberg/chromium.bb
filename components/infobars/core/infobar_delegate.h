@@ -157,6 +157,8 @@ class InfoBarDelegate {
     NEAR_OOM_REDUCTION_INFOBAR_ANDROID = 86,
     LITE_PAGE_PREVIEWS_INFOBAR = 87,
     MODULE_INSTALL_FAILURE_INFOBAR_ANDROID = 88,
+    INLINE_UPDATE_READY_INFOBAR_ANDROID = 89,
+    INLINE_UPDATE_FAILED_INFOBAR_ANDROID = 90,
   };
 
   // Describes navigation events, used to decide whether infobars should be

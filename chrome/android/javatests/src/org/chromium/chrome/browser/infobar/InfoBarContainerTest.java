@@ -73,6 +73,11 @@ public class InfoBarContainerTest {
             }
             return false;
         }
+
+        @Override
+        public boolean onInfoBarLinkClicked() {
+            return false;
+        }
     }
 
     private InfoBarTestAnimationListener mListener;
@@ -107,7 +112,7 @@ public class InfoBarContainerTest {
             public void run() {
                 SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
                         testListener, InfoBarIdentifier.TEST_INFOBAR, 0, MESSAGE_TEXT, null, null,
-                        expires);
+                        null, expires);
             }
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added.");

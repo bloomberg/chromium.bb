@@ -819,13 +819,19 @@ public class VrShellDelegate
                 }
                 return false;
             }
+
+            @Override
+            public boolean onInfoBarLinkClicked() {
+                return false;
+            }
         };
 
         SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID, R.drawable.vr_services,
                 activity.getString(R.string.vr_shell_feedback_infobar_description),
                 activity.getString(R.string.vr_shell_feedback_infobar_feedback_button),
-                activity.getString(R.string.no_thanks), true /* autoExpire  */);
+                activity.getString(R.string.no_thanks), null /* linkText */,
+                true /* autoExpire  */);
     }
 
     private static void ensureLifecycleObserverInitialized() {
@@ -999,10 +1005,15 @@ public class VrShellDelegate
                         VR_SERVICES_UPDATE_RESULT);
                 return false;
             }
+
+            @Override
+            public boolean onInfoBarLinkClicked() {
+                return false;
+            }
         };
         SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
-                buttonText, null, true);
+                buttonText, null, null, true);
     }
 
     @VisibleForTesting

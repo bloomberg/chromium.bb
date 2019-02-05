@@ -113,6 +113,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorController;
+import org.chromium.chrome.browser.omaha.UpdateInfoBarController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.page_info.PageInfoController;
@@ -1136,6 +1137,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @CallSuper
     protected void initDeferredStartupForActivity() {
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
+            UpdateInfoBarController.createInstance(ChromeActivity.this);
+            UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
+        });
+
+        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
             if (isActivityDestroyed()) return;
             BeamController.registerForBeam(ChromeActivity.this, () -> {
                 Tab currentTab = getActivityTab();
@@ -1143,8 +1149,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 if (!currentTab.isUserInteractable()) return null;
                 return currentTab.getUrl();
             });
-
-            UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
         });
 
         final String simpleName = getClass().getSimpleName();
