@@ -1,0 +1,36 @@
+syntax = 'proto3';
+package chromite.api;
+
+import "build_api.proto";
+import "common.proto";
+
+
+// Autotest archive messages and service.
+
+// Message for creating dependency graph json map.
+// Example Json:
+// {"build_target":{"name":"board"},"output_file":"/tmp/depgraph.json"}
+message GetBuildDependencyGraphRequest {
+  // The board whose dependency graph is being created.
+  BuildTarget build_target = 1;
+  // The path where the dep graph json file is being saved to.
+  string output_path = 2;
+}
+
+// Response from creating dependency graph json map.
+message GetBuildDependencyGraphResponse {
+  // The created dependency graph file
+  string build_dependency_graph_file = 1;
+}
+
+// Service to create a variety of package dependency graphs.
+service DependencyService {
+  // The module implementing the service.
+  option (service_options) = {
+    module: "board_build_dependency",
+  };
+
+  // Get the build dependency graph.
+  rpc GetBuildDependencyGraph(GetBuildDependencyGraphRequest)
+    returns (GetBuildDependencyGraphResponse);
+}

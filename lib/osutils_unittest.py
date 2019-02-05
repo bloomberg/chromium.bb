@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-path + os.sep)
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -22,6 +22,18 @@ from chromite.lib import partial_mock
 
 class TestOsutils(cros_test_lib.TempDirTestCase):
   """General unittests for the osutils module."""
+
+  def testIsSubPath(self):
+    self.assertTrue(osutils.IsSubPath('/a', '/a'))
+    self.assertTrue(osutils.IsSubPath('/a', '/a/'))
+
+    self.assertTrue(osutils.IsSubPath('/a/b', '/a'))
+    self.assertTrue(osutils.IsSubPath('/a/b', '/a/'))
+
+    self.assertTrue(osutils.IsSubPath('/a/b/e', '/a/b/c/../../b'))
+
+    self.assertFalse(osutils.IsSubPath('/ab', '/a/b'))
+    self.assertFalse(osutils.IsSubPath('/a/bcde', '/a/b'))
 
   def testAllocateFile(self):
     """Verify we can allocate a file of a certain length."""

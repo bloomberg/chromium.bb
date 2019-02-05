@@ -78,6 +78,15 @@ def ExpandPath(path):
   return os.path.realpath(os.path.expanduser(path))
 
 
+def IsSubPath(path, other):
+  """Returns whether |path| is a sub path of |other|."""
+  path = os.path.abspath(path)
+  other = os.path.abspath(other)
+  if path == other:
+    return True
+  return path.startswith(other + os.sep)
+
+
 def AllocateFile(path, size, makedirs=False):
   """Allocates a file of a certain |size| in |path|.
 

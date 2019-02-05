@@ -13,8 +13,9 @@ from google.protobuf import json_format
 from google.protobuf import symbol_database
 
 from chromite.api import service
-from chromite.api.gen import build_api_pb2
 from chromite.api.gen import autotest_pb2
+from chromite.api.gen import build_api_pb2
+from chromite.api.gen import depgraph_pb2
 from chromite.api.gen import image_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -232,6 +233,7 @@ def RegisterServices(router):
     router (Router): The router.
   """
   router.Register(autotest_pb2)
+  router.Register(depgraph_pb2)
   router.Register(image_pb2)
 
 
