@@ -78,15 +78,10 @@ class BASE_EXPORT SchedulerWorker
     // Called by |worker|'s thread to get a Sequence from which to run a Task.
     virtual scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) = 0;
 
-    // Called by the SchedulerWorker after it ran a task.
-    virtual void DidRunTask() = 0;
-
-    // Called when |sequence| isn't empty after the SchedulerWorker pops a Task
-    // from it. |sequence| is the last Sequence returned by GetWork().
-    //
-    // TODO(fdoray): Rename to RescheduleSequence() to match TaskTracker
-    // terminology.
-    virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
+    // Called by the SchedulerWorker after it ran a Task. If the Task's Sequence
+    // should be reenqueued, it is passed to |sequence|. Otherwise, |sequence|
+    // is nullptr.
+    virtual void DidRunTask(scoped_refptr<Sequence> sequence) = 0;
 
     // Called to determine how long to sleep before the next call to GetWork().
     // GetWork() may be called before this timeout expires if the worker's

@@ -90,7 +90,8 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   // SchedulerWorker::Delegate:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override {
     DCHECK(worker_);
-    ReEnqueueSequence(std::move(sequence));
+    ReEnqueueSequence(
+        SequenceAndTransaction::FromSequence(std::move(sequence)));
     worker_->WakeUp();
   }
 
@@ -108,11 +109,11 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     return transaction.IsEmpty() ? nullptr : transaction.PopSequence();
   }
 
-  void DidRunTask() override {}
-
-  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-    ReEnqueueSequence(
-        SequenceAndTransaction::FromSequence(std::move(sequence)));
+  void DidRunTask(scoped_refptr<Sequence> sequence) override {
+    if (sequence) {
+      ReEnqueueSequence(
+          SequenceAndTransaction::FromSequence(std::move(sequence)));
+    }
   }
 
   void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction) {
