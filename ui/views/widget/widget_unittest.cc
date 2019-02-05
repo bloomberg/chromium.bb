@@ -1220,8 +1220,8 @@ TEST_F(WidgetTest, GetWindowBoundsInScreen) {
             widget->GetWindowBoundsInScreen().origin().ToString());
 }
 
-// Non-Desktop widgets need the shell to maximize/fullscreen window.
-// Disable on Linux because windows restore to the wrong bounds.
+// Chrome OS widgets need the shell to maximize/fullscreen window.
+// Disable on desktop Linux because windows restore to the wrong bounds.
 // See http://crbug.com/515369.
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_GetRestoredBounds DISABLED_GetRestoredBounds
@@ -1370,7 +1370,6 @@ TEST_F(DesktopWidgetTest, TestViewWidthAfterMinimizingWidget) {
 #endif
 
 // Desktop native widget Aura tests are for non Chrome OS platforms.
-#if !defined(OS_CHROMEOS)
 // This class validates whether paints are received for a visible Widget.
 // It observes Widget visibility and Close() and tracks whether subsequent
 // paints are expected.
@@ -1493,8 +1492,6 @@ TEST_F(DesktopWidgetTest, TestWindowVisibilityAfterHide) {
   widget.Show();
   EXPECT_TRUE(IsNativeWindowVisible(widget.GetNativeWindow()));
 }
-
-#endif  // !defined(OS_CHROMEOS)
 
 // Tests that wheel events generated from scroll events are targetted to the
 // views under the cursor when the focused view does not processed them.
@@ -3243,7 +3240,6 @@ class WidgetChildDestructionTest : public DesktopWidgetTest {
   DISALLOW_COPY_AND_ASSIGN(WidgetChildDestructionTest);
 };
 
-#if !defined(OS_CHROMEOS)
 // See description of RunDestroyChildWidgetsTest(). Parent uses
 // DesktopNativeWidgetAura.
 TEST_F(WidgetChildDestructionTest,
@@ -3257,7 +3253,6 @@ TEST_F(WidgetChildDestructionTest,
        DestroyChildWidgetsInOrderWithDesktopNativeWidgetForBoth) {
   RunDestroyChildWidgetsTest(true, true);
 }
-#endif  // !defined(OS_CHROMEOS)
 
 // See description of RunDestroyChildWidgetsTest().
 TEST_F(WidgetChildDestructionTest, DestroyChildWidgetsInOrder) {
@@ -3283,7 +3278,6 @@ TEST_F(WidgetTest, FullscreenStatePropagated) {
 
 // Verifies nativeview visbility matches that of Widget visibility when
 // SetFullscreen is invoked, for a widget provided with a desktop widget.
-#if !defined(OS_CHROMEOS)
 TEST_F(DesktopWidgetTest, FullscreenStatePropagated_DesktopWidget) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -3298,7 +3292,6 @@ TEST_F(DesktopWidgetTest, FullscreenStatePropagated_DesktopWidget) {
             IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
   top_level_widget.CloseNow();
 }
-#endif
 
 namespace {
 
@@ -3356,7 +3349,6 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
   EXPECT_TRUE(frame->fullscreen_layout_called());
 }
 
-#if !defined(OS_CHROMEOS)
 namespace {
 
 // Trivial WidgetObserverTest that invokes Widget::IsActive() from
@@ -3396,7 +3388,6 @@ TEST_F(DesktopWidgetTest, IsActiveFromDestroy) {
 
   parent_widget.CloseNow();
 }
-#endif  // !defined(OS_CHROMEOS)
 
 // Tests that events propagate through from the dispatcher with the correct
 // event type, and that the different platforms behave the same.
