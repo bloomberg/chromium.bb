@@ -15,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -139,7 +140,6 @@ void AddCookieToList(const GURL& url,
 
 // Just act like a backing database.  Keep cookie information from
 // Add/Update/Delete and regurgitate it when Load is called.
-// TODO(morlovich): This still assumes that creation times are unique.
 class MockSimplePersistentCookieStore
     : public CookieMonster::PersistentCookieStore {
  public:
@@ -167,7 +167,9 @@ class MockSimplePersistentCookieStore
   ~MockSimplePersistentCookieStore() override;
 
  private:
-  typedef std::map<int64_t, CanonicalCookie> CanonicalCookieMap;
+  typedef std::map<std::tuple<std::string, std::string, std::string>,
+                   CanonicalCookie>
+      CanonicalCookieMap;
 
   CanonicalCookieMap cookies_;
 

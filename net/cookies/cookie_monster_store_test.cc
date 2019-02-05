@@ -164,22 +164,22 @@ void MockSimplePersistentCookieStore::LoadCookiesForKey(
 }
 
 void MockSimplePersistentCookieStore::AddCookie(const CanonicalCookie& cookie) {
-  int64_t creation_time = cookie.CreationDate().ToInternalValue();
-  EXPECT_TRUE(cookies_.find(creation_time) == cookies_.end());
-  cookies_[creation_time] = cookie;
+  const auto& key = cookie.UniqueKey();
+  EXPECT_TRUE(cookies_.find(key) == cookies_.end());
+  cookies_[key] = cookie;
 }
 
 void MockSimplePersistentCookieStore::UpdateCookieAccessTime(
     const CanonicalCookie& cookie) {
-  int64_t creation_time = cookie.CreationDate().ToInternalValue();
-  ASSERT_TRUE(cookies_.find(creation_time) != cookies_.end());
-  cookies_[creation_time].SetLastAccessDate(base::Time::Now());
+  const auto& key = cookie.UniqueKey();
+  ASSERT_TRUE(cookies_.find(key) != cookies_.end());
+  cookies_[key].SetLastAccessDate(base::Time::Now());
 }
 
 void MockSimplePersistentCookieStore::DeleteCookie(
     const CanonicalCookie& cookie) {
-  int64_t creation_time = cookie.CreationDate().ToInternalValue();
-  auto it = cookies_.find(creation_time);
+  const auto& key = cookie.UniqueKey();
+  auto it = cookies_.find(key);
   ASSERT_TRUE(it != cookies_.end());
   cookies_.erase(it);
 }
