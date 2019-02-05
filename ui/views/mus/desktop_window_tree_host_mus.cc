@@ -848,7 +848,23 @@ void DesktopWindowTreeHostMus::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 
+  // Retrieve restore bounds before leaving fullscreen.
+  gfx::Rect restore_bounds;
+  if (!fullscreen)
+    restore_bounds = GetRestoredBounds();
+
+  // Change the fullscreen state.
   wm::SetWindowFullscreen(window(), fullscreen);
+
+  // Preset bounds with heuristic size to provide synchronous bounds change
+  // after the switch to/from fullscreen.
+  if (fullscreen) {
+    window()->SetProperty(aura::client::kRestoreBoundsKey,
+                          new gfx::Rect(GetWindowBoundsInScreen()));
+    SetBoundsInDIP(GetDisplay().bounds());
+  } else {
+    SetBoundsInDIP(restore_bounds);
+  }
 }
 
 bool DesktopWindowTreeHostMus::IsFullscreen() const {

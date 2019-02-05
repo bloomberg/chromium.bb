@@ -63,11 +63,11 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   GURL GetAppUrl() { return https_server_.GetURL("/simple.html"); }
 
-  void LaunchAppBrowser(bool await_url_load = true) {
+  void LaunchAppBrowser(bool wait = true) {
     ui_test_utils::UrlLoadObserver url_observer(
         GetAppUrl(), content::NotificationService::AllSources());
     browser_ = ExtensionBrowserTest::LaunchAppBrowser(app_);
-    if (await_url_load) {
+    if (wait) {
       // Wait for the URL to load so that the location bar end-state stabilizes.
       url_observer.Wait();
     }
@@ -77,7 +77,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     // which triggers an animation.
     ash::ImmersiveFullscreenControllerTestApi(
         static_cast<ImmersiveModeControllerAsh*>(controller_)->controller())
-        .SetupForTest();
+        .SetupForTest(/*wait_for_mouse_event=*/wait);
 
     browser_->window()->Show();
   }

@@ -430,6 +430,37 @@ TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
   }
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, SynchronousBoundsWhenTogglingFullscreen) {
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+
+  const Widget::InitParams::Type kWidgetTypes[] = {
+      Widget::InitParams::TYPE_WINDOW,
+      Widget::InitParams::TYPE_WINDOW_FRAMELESS,
+  };
+
+  for (auto widget_type : kWidgetTypes) {
+    Widget widget;
+    Widget::InitParams params = CreateParams(widget_type);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget.Init(params);
+
+    const gfx::Rect restore_bounds = widget.GetWindowBoundsInScreen();
+
+    // Entering fullscreen synchronously set show state and bounds.
+    widget.SetFullscreen(true);
+    EXPECT_TRUE(widget.IsFullscreen())
+        << "Enter fullscreen failed for type=" << widget_type;
+    EXPECT_EQ(display_bounds, widget.GetWindowBoundsInScreen());
+
+    // Leaving fullscreen synchronously set show state and bounds.
+    widget.SetFullscreen(false);
+    EXPECT_FALSE(widget.IsFullscreen())
+        << "Leave fullscreen failed for type=" << widget_type;
+    EXPECT_EQ(restore_bounds, widget.GetWindowBoundsInScreen());
+  }
+}
+
 TEST_F(DesktopWindowTreeHostMusTest, ClientWindowHasContent) {
   // Opaque window has content.
   {
