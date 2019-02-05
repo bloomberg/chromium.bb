@@ -328,8 +328,19 @@ void NewPasswordFormManager::UpdatePasswordValue(
   parsed_submitted_form_->password_value = new_password;
   parsed_submitted_form_->password_element.clear();
 
-  // TODO(https://crbug.com/831123): Implement processing password editing votes
-  // after implementation of |all_possible_passwords|.
+  // The user updated a password from the prompt. It means that heuristics were
+  // wrong. So clear new password, since it is likely wrong.
+  parsed_submitted_form_->new_password_value.clear();
+  parsed_submitted_form_->new_password_element.clear();
+
+  for (const ValueElementPair& pair :
+       parsed_submitted_form_->all_possible_passwords) {
+    if (pair.first == new_password) {
+      parsed_submitted_form_->password_element = pair.second;
+      break;
+    }
+  }
+
   CreatePendingCredentials();
 }
 
