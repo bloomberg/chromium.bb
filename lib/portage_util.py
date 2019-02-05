@@ -781,7 +781,7 @@ class EBuild(object):
     subtrees = self.cros_workon_vars.subtrees
 
     if always_live:
-      return SourceInfo(projects=[], srcdirs=[], subtrees=[])
+      return SourceInfo(projects=[], srcdirs=[], subdirs=[], subtrees=[])
 
     # Calculate srcdir (used for core packages).
     if self.category in ('chromeos-base', 'brillo-base'):
