@@ -34,7 +34,6 @@ class ClientSocketHandle;
 class IOBuffer;
 class HttpAuthCache;
 class HttpResponseInfo;
-class HttpStream;
 class IOBuffer;
 class ProxyDelegate;
 class SpdySessionPool;
@@ -93,7 +92,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   // ProxyClientSocket implementation.
   const HttpResponseInfo* GetConnectResponseInfo() const override;
-  std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
   int RestartWithAuth(CompletionOnceCallback callback) override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   bool IsUsingSpdy() const override;

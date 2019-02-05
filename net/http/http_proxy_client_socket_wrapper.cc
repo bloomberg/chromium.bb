@@ -170,13 +170,6 @@ const HttpResponseInfo* HttpProxyClientSocketWrapper::GetConnectResponseInfo()
   return nullptr;
 }
 
-std::unique_ptr<HttpStream>
-HttpProxyClientSocketWrapper::CreateConnectResponseStream() {
-  if (transport_socket_)
-    return transport_socket_->CreateConnectResponseStream();
-  return nullptr;
-}
-
 int HttpProxyClientSocketWrapper::RestartWithAuth(
     CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());

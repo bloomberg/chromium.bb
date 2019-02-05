@@ -397,6 +397,11 @@ RequestPriority MockHostResolverBase::request_priority(size_t id) {
   return request(id)->priority();
 }
 
+void MockHostResolverBase::ResolveOnlyRequestNow() {
+  DCHECK_EQ(1u, requests_.size());
+  ResolveNow(requests_.begin()->first);
+}
+
 void MockHostResolverBase::TriggerMdnsListeners(
     const HostPortPair& host,
     DnsQueryType query_type,

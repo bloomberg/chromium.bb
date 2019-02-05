@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_file_util.h"
@@ -9509,6 +9510,10 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeDelta kTimeIncrement = base::TimeDelta::FromSeconds(4);
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
@@ -9516,19 +9521,21 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   MockWrite data_writes[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead data_reads[] = {
-    MockRead("HTTP/1.1 302 Redirect\r\n"),
-    MockRead("Location: http://login.example.com/\r\n"),
-    MockRead("Content-Length: 0\r\n\r\n"),
-    MockRead(SYNCHRONOUS, OK),
+      // Pause on first read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2, "HTTP/1.1 302 Redirect\r\n"),
+      MockRead(ASYNC, 3, "Location: http://login.example.com/\r\n"),
+      MockRead(ASYNC, 4, "Content-Length: 0\r\n\r\n"),
   };
 
-  StaticSocketDataProvider data(data_reads, data_writes);
+  SequencedSocketData data(MockConnect(ASYNC, OK), data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -9541,6 +9548,21 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
 
   int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
+
+  // Host resolution takes |kTimeIncrement|.
+  FastForwardBy(kTimeIncrement);
+  // Resolving the current request with |ResolveNow| will cause the pending
+  // request to instantly complete, and the async connect will start as well.
+  session_deps_.host_resolver->ResolveOnlyRequestNow();
+
+  // Connecting takes |kTimeIncrement|.
+  FastForwardBy(kTimeIncrement);
+  data.RunUntilPaused();
+
+  // The server takes |kTimeIncrement| to respond.
+  FastForwardBy(kTimeIncrement);
+  data.Resume();
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
@@ -9553,24 +9575,29 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   EXPECT_TRUE(response->headers->IsRedirect(&url));
   EXPECT_EQ("http://login.example.com/", url);
 
-  // In the case of redirects from proxies, HttpNetworkTransaction returns
-  // timing for the proxy connection instead of the connection to the host,
-  // and no send / receive times.
-  // See HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
 
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
-  EXPECT_FALSE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_LE(load_timing_info.proxy_resolve_start,
-            load_timing_info.proxy_resolve_end);
-  EXPECT_LE(load_timing_info.proxy_resolve_end,
-            load_timing_info.connect_timing.connect_start);
-  ExpectConnectTimingHasTimes(
-      load_timing_info.connect_timing,
-      CONNECT_TIMING_HAS_DNS_TIMES | CONNECT_TIMING_HAS_SSL_TIMES);
+  // In the case of redirects from proxies, just as with all responses from
+  // proxies, DNS and SSL times reflect timing to look up the destination's
+  // name, and negotiate an SSL connection to it (Neither of which are done in
+  // this case), which the DNS and SSL times for the proxy are all included in
+  // connect_start / connect_end. See
+  // HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
+
+  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
+
+  EXPECT_EQ(start_time, load_timing_info.proxy_resolve_start);
+  EXPECT_EQ(start_time, load_timing_info.proxy_resolve_end);
+  EXPECT_EQ(start_time, load_timing_info.connect_timing.connect_start);
+  EXPECT_EQ(start_time + 3 * kTimeIncrement,
+            load_timing_info.connect_timing.connect_end);
 
   EXPECT_TRUE(load_timing_info.send_start.is_null());
   EXPECT_TRUE(load_timing_info.send_end.is_null());
@@ -9581,6 +9608,12 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
 TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
       "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestNetLog net_log;
+  session_deps_.net_log = &net_log;
+
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeDelta kTimeIncrement = base::TimeDelta::FromSeconds(4);
+  session_deps_.host_resolver->set_ondemand_mode(true);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -9594,7 +9627,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite data_writes[] = {
       CreateMockWrite(conn, 0, SYNCHRONOUS),
-      CreateMockWrite(goaway, 2, SYNCHRONOUS),
+      CreateMockWrite(goaway, 3, SYNCHRONOUS),
   };
 
   static const char* const kExtraHeaders[] = {
@@ -9604,10 +9637,12 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyReplyError(
       "302", kExtraHeaders, base::size(kExtraHeaders) / 2, 1));
   MockRead data_reads[] = {
-      CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),  // EOF
+      // Pause on first read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(resp, 2),
+      MockRead(ASYNC, 0, 4),  // EOF
   };
 
-  SequencedSocketData data(data_reads, data_writes);
+  SequencedSocketData data(MockConnect(ASYNC, OK), data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
   proxy_ssl.next_proto = kProtoHTTP2;
 
@@ -9621,7 +9656,20 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
 
   int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
 
+  // Host resolution takes |kTimeIncrement|.
+  FastForwardBy(kTimeIncrement);
+  // Resolving the current request with |ResolveNow| will cause the pending
+  // request to instantly complete, and the async connect will start as well.
+  session_deps_.host_resolver->ResolveOnlyRequestNow();
+
+  // Connecting takes |kTimeIncrement|.
+  FastForwardBy(kTimeIncrement);
+  data.RunUntilPaused();
+
+  FastForwardBy(kTimeIncrement);
+  data.Resume();
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
   const HttpResponseInfo* response = trans.GetResponseInfo();
@@ -9632,6 +9680,36 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   std::string url;
   EXPECT_TRUE(response->headers->IsRedirect(&url));
   EXPECT_EQ("http://login.example.com/", url);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
+
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
+
+  // No proxy resolution times, since there's no PAC script.
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+
+  // In the case of redirects from proxies, just as with all responses from
+  // proxies, DNS and SSL times reflect timing to look up the destination's
+  // name, and negotiate an SSL connection to it (Neither of which are done in
+  // this case), which the DNS and SSL times for the proxy are all included in
+  // connect_start / connect_end. See
+  // HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
+
+  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
+
+  EXPECT_EQ(start_time, load_timing_info.connect_timing.connect_start);
+  EXPECT_EQ(start_time + 3 * kTimeIncrement,
+            load_timing_info.connect_timing.connect_end);
+
+  EXPECT_TRUE(load_timing_info.send_start.is_null());
+  EXPECT_TRUE(load_timing_info.send_end.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
 // Test that an HTTPS proxy's response to a CONNECT request is filtered.
