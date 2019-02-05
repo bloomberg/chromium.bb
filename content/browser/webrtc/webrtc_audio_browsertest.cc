@@ -20,6 +20,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
+const char kAudioConstraints[] = "audio: {echoCancellation: {exact: false}}";
+const char kVideoConstraints[] = "video:true";
+
 namespace content {
 
 // This class tests the scenario when permission to access mic or camera is
@@ -69,66 +72,96 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
     MakeTypicalCall(javascript, "/media/peerconnection-call-audio.html");
   }
 
+  std::string BuildConstraints(const char* audio, const char* video) {
+    DCHECK(audio);
+    DCHECK(video);
+
+    std::string audio_str(audio);
+    std::string video_str(video);
+    if (!audio_str.empty() && !video_str.empty())
+      return "{" + audio_str + "," + video_str + "}";
+    if (!audio_str.empty())
+      return "{" + audio_str + "}";
+
+    return "{" + video_str + "}";
+  }
+
  private:
   base::test::ScopedFeatureList audio_service_features_;
 };
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        CanMakeVideoCallAndThenRenegotiateToAudio) {
-  MakeAudioDetectingPeerConnectionCall(
-      "callAndRenegotiateToAudio({audio: {echoCancellation: {exact: false}}, "
-      "video:true}, {audio: {echoCancellation: {exact: false}}});");
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
+  std::string audio_only_constraints = BuildConstraints(kAudioConstraints, "");
+  MakeAudioDetectingPeerConnectionCall("callAndRenegotiateToAudio(" +
+                                       constraints + ", " +
+                                       audio_only_constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
-  MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureAudioIsPlaying({audio: {echoCancellation: {exact: false}}, "
-      "video:true});");
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
+  MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioIsPlaying(" +
+                                       constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
-  MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureAudioIsPlaying({audio:{echoCancellation: {exact: "
-      "false}}});");
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
+  MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioIsPlaying(" +
+                                       constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishIsac16KCallAndEnsureAudioIsPlaying) {
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
-      "callWithIsac16KAndEnsureAudioIsPlaying({audio:{echoCancellation: "
-      "{exact: false}}});");
+      "callWithIsac16KAndEnsureAudioIsPlaying(" + constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndVerifyRemoteMutingWorks) {
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureRemoteAudioTrackMutingWorks();");
+      "callAndEnsureRemoteAudioTrackMutingWorks(" + constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndVerifyLocalMutingWorks) {
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureLocalAudioTrackMutingWorks();");
+      "callAndEnsureLocalAudioTrackMutingWorks(" + constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EnsureLocalVideoMuteDoesntMuteAudio) {
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureLocalVideoMutingDoesntMuteAudio();");
+      "callAndEnsureLocalVideoMutingDoesntMuteAudio(" + constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EnsureRemoteVideoMuteDoesntMuteAudio) {
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureRemoteVideoMutingDoesntMuteAudio();");
+      "callAndEnsureRemoteVideoMutingDoesntMuteAudio(" + constraints + ");");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndVerifyUnmutingWorks) {
-  MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureAudioTrackUnmutingWorks();");
+  std::string constraints =
+      BuildConstraints(kAudioConstraints, kVideoConstraints);
+  MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioTrackUnmutingWorks(" +
+                                       constraints + ");");
 }
 
 // We run these tests with the audio service both in and out of the the browser
