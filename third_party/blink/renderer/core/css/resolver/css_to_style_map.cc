@@ -597,19 +597,14 @@ void CSSToStyleMap::MapNinePieceImageSlice(StyleResolverState&,
   image.SetFill(border_image_slice.Fill());
 }
 
-static BorderImageLength ToBorderImageLength(
-    CSSValue& value,
-    const CSSToLengthConversionData& conversion_data) {
+static BorderImageLength ToBorderImageLength(const StyleResolverState& state,
+                                             const CSSValue& value) {
   if (value.IsPrimitiveValue()) {
     const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
     if (primitive_value.IsNumber())
       return primitive_value.GetDoubleValue();
-    if (primitive_value.IsPercentage())
-      return Length(primitive_value.GetDoubleValue(), kPercent);
-    return primitive_value.ComputeLength<Length>(conversion_data);
   }
-  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueAuto);
-  return Length(kAuto);
+  return StyleBuilderConverter::ConvertLengthOrAuto(state, value);
 }
 
 BorderImageLengthBox CSSToStyleMap::MapNinePieceImageQuad(
@@ -619,13 +614,11 @@ BorderImageLengthBox CSSToStyleMap::MapNinePieceImageQuad(
     return BorderImageLengthBox(Length(kAuto));
 
   const CSSQuadValue& slices = ToCSSQuadValue(value);
-
   // Set up a border image length box to represent our image slices.
-  return BorderImageLengthBox(
-      ToBorderImageLength(*slices.Top(), state.CssToLengthConversionData()),
-      ToBorderImageLength(*slices.Right(), state.CssToLengthConversionData()),
-      ToBorderImageLength(*slices.Bottom(), state.CssToLengthConversionData()),
-      ToBorderImageLength(*slices.Left(), state.CssToLengthConversionData()));
+  return BorderImageLengthBox(ToBorderImageLength(state, *slices.Top()),
+                              ToBorderImageLength(state, *slices.Right()),
+                              ToBorderImageLength(state, *slices.Bottom()),
+                              ToBorderImageLength(state, *slices.Left()));
 }
 
 void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,
