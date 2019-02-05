@@ -94,14 +94,11 @@ bool NetworkState::PropertyChanged(const std::string& key,
   if (key == shill::kSignalStrengthProperty) {
     return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == shill::kStateProperty) {
-    std::string saved_state = connection_state_;
-    if (GetStringValue(key, value, &connection_state_)) {
-      if (connection_state_ != saved_state)
-        last_connection_state_ = saved_state;
-      return true;
-    } else {
+    std::string connection_state;
+    if (!GetStringValue(key, value, &connection_state))
       return false;
-    }
+    SetConnectionState(connection_state);
+    return true;
   } else if (key == shill::kVisibleProperty) {
     return GetBooleanValue(key, value, &visible_);
   } else if (key == shill::kConnectableProperty) {
@@ -390,9 +387,16 @@ std::string NetworkState::connection_state() const {
   return connection_state_;
 }
 
-void NetworkState::set_connection_state(const std::string connection_state) {
+void NetworkState::SetConnectionState(const std::string& connection_state) {
+  if (connection_state == connection_state_)
+    return;
   last_connection_state_ = connection_state_;
   connection_state_ = connection_state;
+  // If connected or previously connecting, clear |connect_requested_|.
+  if (StateIsConnected(connection_state_) ||
+      StateIsConnecting(last_connection_state_)) {
+    connect_requested_ = false;
+  }
 }
 
 bool NetworkState::IsManagedByPolicy() const {
@@ -420,12 +424,14 @@ bool NetworkState::IsConnectedState() const {
 }
 
 bool NetworkState::IsConnectingState() const {
-  return visible() && StateIsConnecting(connection_state_);
+  return visible() &&
+         (connect_requested_ || StateIsConnecting(connection_state_));
 }
 
 bool NetworkState::IsConnectingOrConnected() const {
-  return visible() && (StateIsConnecting(connection_state_) ||
-                       StateIsConnected(connection_state_));
+  return visible() &&
+         (connect_requested_ || StateIsConnecting(connection_state_) ||
+          StateIsConnected(connection_state_));
 }
 
 bool NetworkState::IsReconnecting() const {

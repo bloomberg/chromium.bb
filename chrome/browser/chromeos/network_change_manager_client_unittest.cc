@@ -138,10 +138,9 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   void SetDefaultNetworkState(
       const DefaultNetworkState& default_network_state) {
     default_network_.set_visible(true);
-    if (default_network_state.is_connected)
-      default_network_.set_connection_state(shill::kStateOnline);
-    else
-      default_network_.set_connection_state(shill::kStateConfiguration);
+    default_network_.set_connection_state_for_testing(
+        default_network_state.is_connected ? shill::kStateOnline
+                                           : shill::kStateConfiguration);
     default_network_.set_type_for_testing(default_network_state.type);
     default_network_.set_network_technology_for_testing(
         default_network_state.network_technology);

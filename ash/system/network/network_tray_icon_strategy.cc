@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/network/network_icon.h"
 #include "base/logging.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -29,8 +28,6 @@ const NetworkState* GetConnectingOrConnectedNetwork(
     NetworkTypePattern pattern) {
   NetworkStateHandler* state_handler =
       NetworkHandler::Get()->network_state_handler();
-  NetworkConnectionHandler* connect_handler =
-      NetworkHandler::Get()->network_connection_handler();
   const NetworkState* connecting_network =
       state_handler->ConnectingNetworkByType(pattern);
   const NetworkState* connected_network =
@@ -40,7 +37,7 @@ const NetworkState* GetConnectingOrConnectedNetwork(
   // reconnection, use the connecting network.
   if (connecting_network &&
       (!connected_network || connecting_network->IsReconnecting() ||
-       connect_handler->HasConnectingNetwork(connecting_network->path()))) {
+       connecting_network->connect_requested())) {
     return connecting_network;
   }
   return connected_network;

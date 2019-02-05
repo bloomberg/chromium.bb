@@ -17,7 +17,6 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/auto_connect_handler.h"
 #include "chromeos/network/network_cert_loader.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"

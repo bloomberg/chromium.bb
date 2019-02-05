@@ -446,6 +446,16 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
   return first_network;
 }
 
+void NetworkStateHandler::SetNetworkConnectRequested(
+    const std::string& service_path,
+    bool connect_requested) {
+  NetworkState* network = GetModifiableNetworkState(service_path);
+  if (network) {
+    network->connect_requested_ = connect_requested;
+    network_list_sorted_ = false;
+  }
+}
+
 std::string NetworkStateHandler::FormattedHardwareAddressForType(
     const NetworkTypePattern& type) {
   const NetworkState* network = ConnectedNetworkByType(type);
@@ -857,7 +867,7 @@ void NetworkStateHandler::SetTetherNetworkStateConnectionState(
       NetworkTypePattern::Tether().MatchesType(tether_network_state->type()));
 
   std::string prev_connection_state = tether_network_state->connection_state();
-  tether_network_state->set_connection_state(connection_state);
+  tether_network_state->SetConnectionState(connection_state);
   network_list_sorted_ = false;
 
   DCHECK(!tether_network_state->is_captive_portal());
@@ -1576,20 +1586,26 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
       default_network_path_ = network->path();
     }
   }
-  if (network && !network->IsConnectedState()) {
-    if (network->IsConnectingState()) {
-      NET_LOG(EVENT) << "DefaultNetwork is connecting: " << GetLogName(network)
-                     << ": " << network->connection_state();
-    } else {
-      NET_LOG(ERROR) << "DefaultNetwork in unexpected state: "
-                     << GetLogName(network) << ": "
-                     << network->connection_state();
-    }
-    // Do not notify observers here, the notification will occur when the
-    // connection state changes.
+  if (!network) {
+    // Notify that there is no default network.
+    NotifyDefaultNetworkChanged();
     return;
   }
-  NotifyDefaultNetworkChanged();
+
+  const std::string connection_state = network->connection_state();
+  if (NetworkState::StateIsConnected(connection_state)) {
+    NotifyDefaultNetworkChanged();
+    return;
+  }
+
+  if (NetworkState::StateIsConnecting(connection_state)) {
+    NET_LOG(EVENT) << "DefaultNetwork is connecting: " << GetLogName(network)
+                   << ": " << connection_state;
+  } else {
+    NET_LOG(ERROR) << "DefaultNetwork in unexpected state: "
+                   << GetLogName(network) << ": " << connection_state;
+  }
+  // Observers will be notified when the network becomes connected.
 }
 
 //------------------------------------------------------------------------------

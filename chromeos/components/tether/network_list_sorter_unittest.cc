@@ -79,9 +79,9 @@ class NetworkListSorterTest : public testing::Test {
 
 TEST_F(NetworkListSorterTest, ConnectionState) {
   GenerateTestList();
-  NetworkAtIndex(0)->set_connection_state(shill::kStateIdle);
-  NetworkAtIndex(1)->set_connection_state(shill::kStateAssociation);
-  NetworkAtIndex(2)->set_connection_state(shill::kStateOnline);
+  NetworkAtIndex(0)->set_connection_state_for_testing(shill::kStateIdle);
+  NetworkAtIndex(1)->set_connection_state_for_testing(shill::kStateAssociation);
+  NetworkAtIndex(2)->set_connection_state_for_testing(shill::kStateOnline);
   SortAndVerifySortOrder(2, 1, 0);
 }
 

@@ -79,6 +79,14 @@ std::vector<std::string> GetNetworkPaths(
   return result;
 }
 
+bool NetworkListContainsPath(const NetworkStateHandler::NetworkStateList& list,
+                             const std::string& path) {
+  return std::find_if(list.begin(), list.end(),
+                      [path](const NetworkState* network) {
+                        return network->path() == path;
+                      }) != list.end();
+}
+
 class TestObserver final : public chromeos::NetworkStateHandlerObserver {
  public:
   explicit TestObserver(NetworkStateHandler* handler) : handler_(handler) {}
@@ -2127,6 +2135,41 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManagedIfAvailable) {
   EXPECT_FALSE(wifi2->IsManagedByPolicy());
   EXPECT_FALSE(wifi1->blocked_by_policy());
   EXPECT_TRUE(wifi2->blocked_by_policy());
+}
+
+TEST_F(NetworkStateHandlerTest, SetNetworkConnectRequested) {
+  // Verify that wifi2 is not connected or connecting and is not part of the
+  // active list.
+  const NetworkState* wifi2 =
+      network_state_handler_->GetNetworkState(kShillManagerClientStubWifi2);
+  EXPECT_FALSE(wifi2->IsConnectingOrConnected());
+  NetworkStateHandler::NetworkStateList active_networks;
+  network_state_handler_->GetActiveNetworkListByType(
+      NetworkTypePattern::Default(), &active_networks);
+  EXPECT_FALSE(
+      NetworkListContainsPath(active_networks, kShillManagerClientStubWifi2));
+
+  // Set |connect_requested_| for wifi2 and verify that it is connecting and
+  // in the active list.
+  network_state_handler_->SetNetworkConnectRequested(
+      kShillManagerClientStubWifi2, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(wifi2->IsConnectingState());
+  network_state_handler_->GetActiveNetworkListByType(
+      NetworkTypePattern::Default(), &active_networks);
+  EXPECT_TRUE(
+      NetworkListContainsPath(active_networks, kShillManagerClientStubWifi2));
+
+  // Clear |connect_requested_| for wifi2 and verify that it is not connecting
+  // or in the active list.
+  network_state_handler_->SetNetworkConnectRequested(
+      kShillManagerClientStubWifi2, false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(wifi2->IsConnectingState());
+  network_state_handler_->GetActiveNetworkListByType(
+      NetworkTypePattern::Default(), &active_networks);
+  EXPECT_FALSE(
+      NetworkListContainsPath(active_networks, kShillManagerClientStubWifi2));
 }
 
 }  // namespace chromeos

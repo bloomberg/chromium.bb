@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -175,6 +174,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // NULL. Mostly useful for mobile networks where there is generally only one
   // network. Note: O(N).
   const NetworkState* FirstNetworkByType(const NetworkTypePattern& type);
+
+  // Sets the |connect_reqyested_| property of a NetworkState for
+  // |service_path| if it exists. This is used to inform the UI that a network
+  // is connecting before the state is set in Shill. If |connect_requested| is
+  // true, NetworkState::IsConnectingState() will return true. This will cause
+  // the network to be sorted first and it will be part of the active list.
+  void SetNetworkConnectRequested(const std::string& service_path,
+                                  bool connect_requested);
 
   // Returns the aa:bb formatted hardware (MAC) address for the first connected
   // network matching |type|, or an empty string if none is connected.

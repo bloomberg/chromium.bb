@@ -237,13 +237,6 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits() {
   if (did_show_out_of_credits_)
     return;
 
-  // Don't display notification if the UI has requested a network connection.
-  if (NetworkHandler::Get()
-          ->network_connection_handler()
-          ->HasPendingConnectRequest()) {
-    return;
-  }
-
   NetworkStateHandler::NetworkStateList active_networks;
   NetworkHandler::Get()->network_state_handler()->GetActiveNetworkListByType(
       NetworkTypePattern::NonVirtual(), &active_networks);
