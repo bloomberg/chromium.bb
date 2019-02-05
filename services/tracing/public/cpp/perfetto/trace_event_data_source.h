@@ -49,9 +49,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
 
   std::vector<MetadataGeneratorFunction> generator_functions_;
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
-  base::Lock lock_;
-  ProducerClient* producer_client_ = nullptr;
-  uint32_t target_buffer_ = 0;
+  std::unique_ptr<perfetto::TraceWriter> trace_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventMetadataSource);
 };
