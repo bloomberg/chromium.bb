@@ -1083,7 +1083,6 @@ void PeopleHandler::MarkFirstSetupComplete() {
 
   // We're done configuring, so notify SyncService that it is OK to start
   // syncing.
-  sync_blocker_.reset();
   service->GetUserSettings()->SetFirstSetupComplete();
   FireWebUIListener("sync-settings-saved");
 }
