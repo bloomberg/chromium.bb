@@ -214,12 +214,12 @@ void SetDefaultResourceForSite(int index,
 #endif
 
 // Creates the list of popular sites based on a snapshot available for mobile.
-std::unique_ptr<base::ListValue> DefaultPopularSites() {
+base::Value DefaultPopularSites() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return std::make_unique<base::ListValue>();
+  return base::Value(base::Value::Type::LIST);
 #else
   if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature)) {
-    return std::make_unique<base::ListValue>();
+    return base::Value(base::Value::Type::LIST);
   }
   std::unique_ptr<base::ListValue> sites =
       base::ListValue::From(base::JSONReader::Read(
@@ -240,7 +240,7 @@ std::unique_ptr<base::ListValue> DefaultPopularSites() {
     SetDefaultResourceForSite(index++, icon_resource, sites.get());
   }
 #endif  // GOOGLE_CHROME_BUILD
-  return sites;
+  return base::Value::FromUniquePtrValue(std::move(sites));
 #endif  // OS_ANDROID || OS_IOS
 }
 
