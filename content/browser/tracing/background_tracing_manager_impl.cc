@@ -738,7 +738,7 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_RENDERERS:
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ui,v8,renderer,blink,blink_gc,mojom,"
-          "latency,latencyInfo,renderer_host,"
+          "latency,latencyInfo,renderer_host,cc,memory,"
           "disabled-by-default-v8.gc,"
           "disabled-by-default-blink_gc,"
           "disabled-by-default-renderer.scheduler,"
