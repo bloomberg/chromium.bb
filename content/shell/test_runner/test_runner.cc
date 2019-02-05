@@ -332,7 +332,8 @@ void TestRunnerBindings::Install(
   v8::Local<v8::Object> global = context->Global();
   v8::Local<v8::Value> v8_bindings = bindings.ToV8();
 
-  global->Set(gin::StringToV8(isolate, "testRunner"), v8_bindings);
+  global->Set(context, gin::StringToV8(isolate, "testRunner"), v8_bindings)
+      .Check();
 
   // Inject some JavaScript to the top-level frame of a reftest in the
   // web-platform-tests suite to have the same reftest screenshot timing as

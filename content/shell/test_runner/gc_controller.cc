@@ -34,7 +34,10 @@ void GCController::Install(TestInterfaces* interfaces,
   if (controller.IsEmpty())
     return;
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "GCController"), controller.ToV8());
+  global
+      ->Set(context, gin::StringToV8(isolate, "GCController"),
+            controller.ToV8())
+      .Check();
 }
 
 GCController::GCController(TestInterfaces* interfaces)

@@ -71,8 +71,10 @@ void AccessibilityControllerBindings::Install(
   if (bindings.IsEmpty())
     return;
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "accessibilityController"),
-              bindings.ToV8());
+  global
+      ->Set(context, gin::StringToV8(isolate, "accessibilityController"),
+            bindings.ToV8())
+      .Check();
 }
 
 AccessibilityControllerBindings::AccessibilityControllerBindings(
