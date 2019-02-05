@@ -22,6 +22,11 @@ class TabLoaderCallback {
   // This function will get called to suppress and to allow tab loading. Tab
   // loading is initially enabled.
   virtual void SetTabLoadingEnabled(bool enable_tab_loading) = 0;
+
+  // Invoked by the delegate to inform the tab loader of a change in the score
+  // of a tab. A higher score means the tab should be restored sooner.
+  virtual void NotifyTabScoreChanged(content::WebContents* contents,
+                                     float score) = 0;
 };
 
 // TabLoaderDelegate is created once the SessionRestore process is complete and
@@ -45,6 +50,16 @@ class TabLoaderDelegate {
 
   // Returns the maximum number of tabs that should be loading simultaneously.
   virtual size_t GetMaxSimultaneousTabLoads() const = 0;
+
+  // Notifies the delegate of a tab that will be restored. This informs the
+  // delegate that this tab is being tracked, and changes in its priority or
+  // ranking should be forwarded to the TabLoader. WebContents provided to the
+  // delegate via this function are guaranteed to remain valid to derefence
+  // until a subsequent RemoveTab. Returns an initial score for the tab.
+  virtual float AddTabForScoring(content::WebContents* contents) const = 0;
+
+  // Notifies the delegate of a tab that is no longer being tracked.
+  virtual void RemoveTabForScoring(content::WebContents* contents) const = 0;
 
   // Determines whether or not the given tab should be loaded. If this returns
   // false, then the TabLoader no longer attempts to load |contents| and removes
