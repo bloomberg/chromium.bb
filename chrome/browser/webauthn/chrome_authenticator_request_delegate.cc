@@ -85,8 +85,7 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
 
   registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
                                std::string());
-  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName,
-                             std::make_unique<base::ListValue>());
+  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
