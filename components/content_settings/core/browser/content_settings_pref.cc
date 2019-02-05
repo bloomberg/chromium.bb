@@ -5,6 +5,8 @@
 #include "components/content_settings/core/browser/content_settings_pref.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -221,42 +223,50 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
   prefs::ScopedDictionaryPrefUpdate update(prefs_, pref_name_);
   base::AutoLock auto_lock(lock_);
 
-  const base::DictionaryValue* all_settings_dictionary =
-      prefs_->GetDictionary(pref_name_);
-
   value_map_.clear();
 
-  // Careful: The returned value could be nullptr if the pref has never been
-  // set.
+  // The returned value could be nullptr if the pref has never been set.
+  const base::DictionaryValue* all_settings_dictionary =
+      prefs_->GetDictionary(pref_name_);
   if (!all_settings_dictionary)
     return;
 
-  const base::DictionaryValue* settings;
+  // Accumulates non-canonical pattern strings found in Prefs for which the
+  // corresponding canonical pattern is also in Prefs. In these cases the
+  // canonical version takes priority, and the non-canonical pattern is removed.
+  std::vector<std::string> non_canonical_patterns_to_remove;
 
-  if (!is_incognito_) {
-    // Convert all Unicode patterns into punycode form, then read.
-    auto mutable_settings = update.Get();
-    CanonicalizeContentSettingsExceptions(mutable_settings.get());
-    settings = mutable_settings->AsConstDictionary();
-  } else {
-    // Canonicalization is unnecessary when |is_incognito_|. Both incognito and
-    // non-incognito read from the same pref and non-incognito reads occur
-    // before incognito reads. Thus, by the time the incognito call to
-    // ReadContentSettingsFromPref() occurs, the non-incognito call will have
-    // canonicalized the stored pref data.
-    settings = all_settings_dictionary;
-  }
+  // Accumulates non-canonical pattern strings found in Prefs for which the
+  // canonical pattern is not found in Prefs. The exception data for these
+  // patterns is to be re-keyed under the canonical pattern.
+  base::StringPairs non_canonical_patterns_to_canonical_pattern;
 
-  for (base::DictionaryValue::Iterator i(*settings); !i.IsAtEnd();
-       i.Advance()) {
+  for (base::DictionaryValue::Iterator i(*all_settings_dictionary);
+       !i.IsAtEnd(); i.Advance()) {
     const std::string& pattern_str(i.key());
-    std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
-        ParsePatternString(pattern_str);
+    PatternPair pattern_pair = ParsePatternString(pattern_str);
     if (!pattern_pair.first.IsValid() ||
         !pattern_pair.second.IsValid()) {
       // TODO: Change this to DFATAL when crbug.com/132659 is fixed.
       LOG(ERROR) << "Invalid pattern strings: " << pattern_str;
       continue;
+    }
+
+    const std::string canonicalized_pattern_str =
+        CreatePatternString(pattern_pair.first, pattern_pair.second);
+    DCHECK(!canonicalized_pattern_str.empty());
+    if (canonicalized_pattern_str != pattern_str) {
+      if (all_settings_dictionary->HasKey(canonicalized_pattern_str)) {
+        non_canonical_patterns_to_remove.push_back(pattern_str);
+        continue;
+      } else {
+        // Need a container that preserves ordering of insertions, so that if
+        // multiple non-canonical patterns map to the same canonical pattern,
+        // the Preferences updating logic after this loop will preserve the same
+        // value in Prefs that this loop ultimately leaves in |value_map_|.
+        non_canonical_patterns_to_canonical_pattern.push_back(
+            {pattern_str, canonicalized_pattern_str});
+      }
     }
 
     // Get settings dictionary for the current pattern string, and read
@@ -296,6 +306,28 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
       value_map_.SetValue(std::move(pattern_pair.first),
                           std::move(pattern_pair.second), content_type_,
                           ResourceIdentifier(), last_modified, value->Clone());
+    }
+  }
+
+  // Canonicalization is unnecessary when |is_incognito_|. Both incognito and
+  // non-incognito read from the same pref and non-incognito reads occur
+  // before incognito reads. Thus, by the time the incognito call to
+  // ReadContentSettingsFromPref() occurs, the regular profile will have
+  // canonicalized the stored pref data.
+  if (!is_incognito_) {
+    auto mutable_settings = update.Get();
+
+    for (const auto& pattern : non_canonical_patterns_to_remove) {
+      mutable_settings.get()->RemoveWithoutPathExpansion(pattern, nullptr);
+    }
+
+    for (const auto& old_to_new_pattern :
+         non_canonical_patterns_to_canonical_pattern) {
+      std::unique_ptr<base::Value> pattern_settings_dictionary;
+      mutable_settings.get()->RemoveWithoutPathExpansion(
+          old_to_new_pattern.first, &pattern_settings_dictionary);
+      mutable_settings.get()->SetWithoutPathExpansion(
+          old_to_new_pattern.second, std::move(pattern_settings_dictionary));
     }
   }
 }
@@ -396,63 +428,6 @@ void ContentSettingsPref::UpdatePref(
                                                            nullptr);
       }
     }
-  }
-}
-
-// static
-void ContentSettingsPref::CanonicalizeContentSettingsExceptions(
-    prefs::DictionaryValueUpdate* all_settings_dictionary) {
-  DCHECK(all_settings_dictionary);
-
-  std::vector<std::string> remove_items;
-  base::StringPairs move_items;
-  for (base::DictionaryValue::Iterator i(
-           *all_settings_dictionary->AsConstDictionary());
-       !i.IsAtEnd(); i.Advance()) {
-    const std::string& pattern_str(i.key());
-    std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
-         ParsePatternString(pattern_str);
-    if (!pattern_pair.first.IsValid() ||
-        !pattern_pair.second.IsValid()) {
-      LOG(ERROR) << "Invalid pattern strings: " << pattern_str;
-      continue;
-    }
-
-    const std::string canonicalized_pattern_str = CreatePatternString(
-        pattern_pair.first, pattern_pair.second);
-
-    if (canonicalized_pattern_str.empty() ||
-        canonicalized_pattern_str == pattern_str) {
-      continue;
-    }
-
-    // Clear old pattern if prefs already have canonicalized pattern.
-    const base::DictionaryValue* new_pattern_settings_dictionary = nullptr;
-    if (all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-            canonicalized_pattern_str, &new_pattern_settings_dictionary)) {
-      remove_items.push_back(pattern_str);
-      continue;
-    }
-
-    // Move old pattern to canonicalized pattern.
-    const base::DictionaryValue* old_pattern_settings_dictionary = nullptr;
-    if (i.value().GetAsDictionary(&old_pattern_settings_dictionary)) {
-      move_items.push_back(
-          std::make_pair(pattern_str, canonicalized_pattern_str));
-    }
-  }
-
-  for (size_t i = 0; i < remove_items.size(); ++i) {
-    all_settings_dictionary->RemoveWithoutPathExpansion(remove_items[i],
-                                                        nullptr);
-  }
-
-  for (size_t i = 0; i < move_items.size(); ++i) {
-    std::unique_ptr<base::Value> pattern_settings_dictionary;
-    all_settings_dictionary->RemoveWithoutPathExpansion(
-        move_items[i].first, &pattern_settings_dictionary);
-    all_settings_dictionary->SetWithoutPathExpansion(
-        move_items[i].second, std::move(pattern_settings_dictionary));
   }
 }
 
