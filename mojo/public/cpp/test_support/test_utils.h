@@ -64,6 +64,9 @@ class BadMessageObserver {
   // Waits for the bad message and returns the error string.
   std::string WaitForBadMessage();
 
+  // Returns true iff a bad message was already received.
+  bool got_bad_message() const { return got_bad_message_; }
+
  private:
   void OnReportBadMessage(const std::string& message);
 

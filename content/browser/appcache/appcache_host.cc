@@ -113,11 +113,13 @@ void AppCacheHost::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool AppCacheHost::SelectCache(const GURL& document_url,
+void AppCacheHost::SelectCache(const GURL& document_url,
                                const int64_t cache_document_was_loaded_from,
                                const GURL& manifest_url) {
-  if (was_select_cache_called_)
-    return false;
+  if (was_select_cache_called_) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE");
+    return;
+  }
 
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
@@ -127,7 +129,7 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
   was_select_cache_called_ = true;
   if (!is_cache_selection_enabled_) {
     FinishCacheSelection(nullptr, nullptr);
-    return true;
+    return;
   }
 
   origin_in_use_ = url::Origin::Create(document_url);
@@ -146,7 +148,7 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
 
   if (cache_document_was_loaded_from != blink::mojom::kAppCacheNoCacheId) {
     LoadSelectedCache(cache_document_was_loaded_from);
-    return true;
+    return;
   }
 
   if (!manifest_url.is_empty() &&
@@ -175,7 +177,7 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
               blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(),
               0, false /*is_cross_origin*/));
       frontend_->ContentBlocked(host_id_, manifest_url);
-      return true;
+      return;
     }
     // Note: The client detects if the document was not loaded using HTTP GET
     // and invokes SelectCache without a manifest url, so that detection step
@@ -183,17 +185,18 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
     set_preferred_manifest_url(manifest_url);
     new_master_entry_url_ = document_url;
     LoadOrCreateGroup(manifest_url);
-    return true;
+    return;
   }
   // TODO(michaeln): If there was a manifest URL, the user agent may report
   // to the user that it was ignored, to aid in application development.
   FinishCacheSelection(nullptr, nullptr);
-  return true;
 }
 
-bool AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
-  if (was_select_cache_called_)
-    return false;
+void AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
+  if (was_select_cache_called_) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_FOR_SHARED_WORKER");
+    return;
+  }
 
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
@@ -203,41 +206,41 @@ bool AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
   was_select_cache_called_ = true;
   if (appcache_id != blink::mojom::kAppCacheNoCacheId) {
     LoadSelectedCache(appcache_id);
-    return true;
+    return;
   }
   FinishCacheSelection(nullptr, nullptr);
-  return true;
 }
 
 // TODO(michaeln): change method name to MarkEntryAsForeign for consistency
-bool AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
+void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64_t cache_document_was_loaded_from) {
-  if (was_select_cache_called_)
-    return false;
+  if (was_select_cache_called_) {
+    mojo::ReportBadMessage("ACH_MARK_AS_FOREIGN_ENTRY");
+    return;
+  }
 
   // The document url is not the resource url in the fallback case.
   storage()->MarkEntryAsForeign(
       main_resource_was_namespace_entry_ ? namespace_entry_url_ : document_url,
       cache_document_was_loaded_from);
   SelectCache(document_url, blink::mojom::kAppCacheNoCacheId, GURL());
-  return true;
 }
 
-bool AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
+void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
   if (!pending_start_update_callback_.is_null() ||
       !pending_swap_cache_callback_.is_null() ||
       !pending_get_status_callback_.is_null()) {
+    mojo::ReportBadMessage("ACH_GET_STATUS");
     std::move(callback).Run(
         blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
-    return false;
+    return;
   }
 
   pending_get_status_callback_ = std::move(callback);
   if (is_selection_pending())
-    return true;
+    return;
 
   DoPendingGetStatus();
-  return true;
 }
 
 void AppCacheHost::DoPendingGetStatus() {
@@ -246,20 +249,20 @@ void AppCacheHost::DoPendingGetStatus() {
   std::move(pending_get_status_callback_).Run(GetStatus());
 }
 
-bool AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback) {
+void AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback) {
   if (!pending_start_update_callback_.is_null() ||
       !pending_swap_cache_callback_.is_null() ||
       !pending_get_status_callback_.is_null()) {
+    mojo::ReportBadMessage("ACH_START_UPDATE");
     std::move(callback).Run(false);
-    return false;
+    return;
   }
 
   pending_start_update_callback_ = std::move(callback);
   if (is_selection_pending())
-    return true;
+    return;
 
   DoPendingStartUpdate();
-  return true;
 }
 
 void AppCacheHost::DoPendingStartUpdate() {
@@ -278,21 +281,21 @@ void AppCacheHost::DoPendingStartUpdate() {
   std::move(pending_start_update_callback_).Run(success);
 }
 
-bool AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback) {
+void AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback) {
   if (!pending_start_update_callback_.is_null() ||
       !pending_swap_cache_callback_.is_null() ||
       !pending_get_status_callback_.is_null()) {
+    mojo::ReportBadMessage("ACH_SWAP_CACHE");
     std::move(callback).Run(false);
-    return false;
+    return;
   }
 
   pending_swap_cache_callback_ = std::move(callback);
 
   if (is_selection_pending())
-    return true;
+    return;
 
   DoPendingSwapCache();
-  return true;
 }
 
 void AppCacheHost::DoPendingSwapCache() {
