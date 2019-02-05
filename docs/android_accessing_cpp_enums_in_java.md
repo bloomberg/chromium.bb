@@ -40,7 +40,7 @@ class
 
 2. Add a new build target
 
-    ```
+    ```gn
     import("//build/config/android/rules.gni")
 
     java_cpp_enum("foo_generated_enum") {
@@ -52,7 +52,7 @@ class
 
 3. Add the new target to the desired android_library targets srcjar_deps:
 
-    ```
+    ```gn
     android_library("base_java") {
       srcjar_deps = [
         ":foo_generated_enum",
@@ -85,7 +85,7 @@ class
 
 * Handling long package names:
 
-    ```
+    ```cpp
     // GENERATED_JAVA_ENUM_PACKAGE: (
     //   org.chromium.chrome.this.package.is.too.long.to.fit.on.a.single.line)
     ```
@@ -93,27 +93,33 @@ class
 * Enum entries
     * Single line enums should look like this:
 
-            // GENERATED_JAVA_ENUM_PACKAGE: org.foo
-            enum NotificationActionType { BUTTON, TEXT };
+        ```cpp
+        // GENERATED_JAVA_ENUM_PACKAGE: org.foo
+        enum NotificationActionType { BUTTON, TEXT };
+        ```
 
     * Multi-line enums should have one enum entry per line, like this:
 
-            // GENERATED_JAVA_ENUM_PACKAGE: org.foo
-            enum NotificationActionType {
-              BUTTON,
-              TEXT
-            };
+        ```cpp
+        // GENERATED_JAVA_ENUM_PACKAGE: org.foo
+        enum NotificationActionType {
+          BUTTON,
+          TEXT
+        };
+        ```
 
     * Multi-line enum entries are allowed but should be formatted like this:
 
-            // GENERATED_JAVA_ENUM_PACKAGE: org.foo
-            enum NotificationActionType {
-              LongKeyNumberOne,
-              LongKeyNumberTwo,
-              ...
-              LongKeyNumberThree =
-                  LongKeyNumberOne | LongKeyNumberTwo | ...
-            };
+        ```cpp
+        // GENERATED_JAVA_ENUM_PACKAGE: org.foo
+        enum NotificationActionType {
+          LongKeyNumberOne,
+          LongKeyNumberTwo,
+          ...
+          LongKeyNumberThree =
+              LongKeyNumberOne | LongKeyNumberTwo | ...
+        };
+        ```
 
 * Preserving comments
 

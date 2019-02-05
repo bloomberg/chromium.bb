@@ -197,7 +197,7 @@ have package id `0x7f` when run as a regular apk.
 
 This is how a sample R.java file looks like:
 
-```
+```java
 package org.chromium.ui;
 
 public final class R {
