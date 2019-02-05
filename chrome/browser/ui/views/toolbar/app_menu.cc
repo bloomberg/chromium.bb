@@ -1212,7 +1212,7 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
     if (alert_reopen_tab_items_ &&
         ((command_id == IDC_RECENT_TABS_MENU) ||
          (command_id == AppMenuModel::kMinRecentTabsCommandId)))
-      menu_item->SetAlerted(true);
+      menu_item->SetAlerted();
   }
 
   return menu_item;

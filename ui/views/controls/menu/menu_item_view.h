@@ -368,8 +368,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   void SetCornerRadius(int radius);
 
   // Shows an alert on this menu item. An alerted menu item is rendered
-  // differently to draw attention to it.
-  void SetAlerted(bool alerted);
+  // differently to draw attention to it. This must be called before the menu is
+  // run.
+  void SetAlerted();
+  bool is_alerted() const { return is_alerted_; }
 
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
@@ -618,7 +620,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   Separator* vertical_separator_;
 
   // Whether this menu item is rendered differently to draw attention to it.
-  bool alerted_ = false;
+  bool is_alerted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

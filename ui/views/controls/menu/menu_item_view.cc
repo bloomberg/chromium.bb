@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_item_view.h"
 
+#include <math.h>
 #include <stddef.h>
 
 #include "base/i18n/case_conversion.h"
@@ -13,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -719,8 +721,8 @@ void MenuItemView::SetCornerRadius(int radius) {
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
-void MenuItemView::SetAlerted(bool alerted) {
-  alerted_ = alerted;
+void MenuItemView::SetAlerted() {
+  is_alerted_ = true;
   SchedulePaint();
 }
 
@@ -1016,21 +1018,30 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 void MenuItemView::PaintBackground(gfx::Canvas* canvas,
                                    PaintButtonMode mode,
                                    bool render_selection) {
-  if (GetType() == HIGHLIGHTED || alerted_) {
+  if (GetType() == HIGHLIGHTED || is_alerted_) {
+    SkColor color = gfx::kPlaceholderColor;
+
     // Highligted items always have a different-colored background, and ignore
     // system theme.
-    ui::NativeTheme::ColorId color_id;
     if (GetType() == HIGHLIGHTED) {
-      color_id =
+      const ui::NativeTheme::ColorId color_id =
           render_selection
               ? ui::NativeTheme::
                     kColorId_FocusedHighlightedMenuItemBackgroundColor
               : ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
+      color = GetNativeTheme()->GetSystemColor(color_id);
     } else {
-      color_id = ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor;
+      const SkColor color_max = GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMax);
+      const SkColor color_min = GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMin);
+      color = color_utils::AlphaBlend(
+          color_max, color_min,
+          static_cast<float>(
+              GetMenuController()->GetAlertAnimation()->GetCurrentValue()));
     }
 
-    const SkColor color = GetNativeTheme()->GetSystemColor(color_id);
+    DCHECK_NE(color, gfx::kPlaceholderColor);
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);

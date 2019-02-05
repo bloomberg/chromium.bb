@@ -125,7 +125,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
     case ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
-    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor:
+    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
+    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
       return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           color_id);
 
