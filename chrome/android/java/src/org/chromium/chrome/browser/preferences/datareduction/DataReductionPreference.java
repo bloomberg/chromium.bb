@@ -6,9 +6,6 @@ package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
@@ -22,17 +19,8 @@ public class DataReductionPreference extends ChromeBasePreference {
      */
     public DataReductionPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
 
-    @Override
-    protected View onCreateView(ViewGroup parent) {
-        View view = super.onCreateView(parent);
-
-        TextView iconView = (TextView) view.findViewById(android.R.id.title);
-        iconView.setText(getContext().getResources().getString(
-                DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                        R.string.data_reduction_title)));
-
-        return view;
+        setTitle(DataReductionBrandingResourceProvider.getDataSaverBrandedString(
+                R.string.data_reduction_title));
     }
 }
