@@ -1693,8 +1693,8 @@ test("browser_tests") {
     if (is_chromeos) {
       assert(enable_app_list)
       sources += [
-        "../browser/apps/platform_apps/app_window_interactive_uitest.cc",
-        "../browser/apps/platform_apps/app_window_interactive_uitest.h",
+        "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
+        "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
         "../browser/chromeos/accessibility/dictation_chromeos_browsertest.cc",
         "../browser/chromeos/accessibility/magnification_controller_browsertest.cc",
@@ -1904,7 +1904,7 @@ test("browser_tests") {
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/system/device_disabling_browsertest.cc",
         "../browser/chromeos/system/tray_accessibility_browsertest.cc",
-        "../browser/download/notification/download_notification_interactive_uitest.cc",
+        "../browser/download/notification/download_notification_browsertest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
@@ -1937,7 +1937,6 @@ test("browser_tests") {
         "../browser/ui/ash/time_to_first_present_recorder_browsertest.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
-        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
         "../browser/ui/views/arc_app_dialog_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.h",
@@ -4835,7 +4834,8 @@ if (!is_android) {
       "../browser/apps/platform_apps/app_browsertest_util.h",
       "../browser/apps/platform_apps/app_pointer_lock_interactive_uitest.cc",
       "../browser/apps/platform_apps/app_window_interactive_uitest.cc",
-      "../browser/apps/platform_apps/app_window_interactive_uitest.h",
+      "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
+      "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
       "../browser/autofill/autofill_interactive_uitest.cc",
       "../browser/autofill/autofill_uitest.cc",
       "../browser/autofill/autofill_uitest.h",
