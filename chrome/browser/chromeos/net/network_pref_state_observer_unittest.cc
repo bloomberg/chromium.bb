@@ -16,8 +16,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "components/onc/onc_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
@@ -84,15 +84,14 @@ class NetworkPrefStateObserverTest : public testing::Test {
 };
 
 TEST_F(NetworkPrefStateObserverTest, LoginUser) {
-  UIProxyConfig ui_proxy_config;
-
   // UIProxyConfigService should exist with device PrefService.
   UIProxyConfigService* device_ui_proxy_config_service =
       NetworkHandler::Get()->ui_proxy_config_service();
   ASSERT_TRUE(device_ui_proxy_config_service);
-  // Default mode for device prefs should be MODE_DIRECT.
-  device_ui_proxy_config_service->GetProxyConfig(kNetworkId, &ui_proxy_config);
-  EXPECT_EQ(UIProxyConfig::MODE_DIRECT, ui_proxy_config.mode);
+  // There should be no proxy config available.
+  base::Value ui_proxy_config(base::Value::Type::DICTIONARY);
+  EXPECT_FALSE(device_ui_proxy_config_service->MergeEnforcedProxyConfig(
+      kNetworkId, &ui_proxy_config));
 
   Profile* profile = LoginAndReturnProfile();
 
@@ -101,9 +100,9 @@ TEST_F(NetworkPrefStateObserverTest, LoginUser) {
       NetworkHandler::Get()->ui_proxy_config_service();
   ASSERT_TRUE(profile_ui_proxy_config_service);
   ASSERT_NE(device_ui_proxy_config_service, profile_ui_proxy_config_service);
-  // Mode should still be MODE_DIRECT.
-  profile_ui_proxy_config_service->GetProxyConfig(kNetworkId, &ui_proxy_config);
-  EXPECT_EQ(UIProxyConfig::MODE_DIRECT, ui_proxy_config.mode);
+  ui_proxy_config = base::Value(base::Value::Type::DICTIONARY);
+  EXPECT_FALSE(profile_ui_proxy_config_service->MergeEnforcedProxyConfig(
+      kNetworkId, &ui_proxy_config));
 
   // Set the profile pref to PAC script mode.
   std::unique_ptr<base::DictionaryValue> proxy_config(
@@ -114,9 +113,14 @@ TEST_F(NetworkPrefStateObserverTest, LoginUser) {
   base::RunLoop().RunUntilIdle();
 
   // Mode should now be MODE_PAC_SCRIPT.
-  NetworkHandler::Get()->ui_proxy_config_service()->GetProxyConfig(
-      kNetworkId, &ui_proxy_config);
-  EXPECT_EQ(UIProxyConfig::MODE_PAC_SCRIPT, ui_proxy_config.mode);
+  ui_proxy_config = base::Value(base::Value::Type::DICTIONARY);
+  EXPECT_TRUE(NetworkHandler::Get()
+                  ->ui_proxy_config_service()
+                  ->MergeEnforcedProxyConfig(kNetworkId, &ui_proxy_config));
+  base::Value* mode = ui_proxy_config.FindPath(
+      {::onc::network_config::kType, ::onc::kAugmentationActiveSetting});
+  ASSERT_TRUE(mode);
+  EXPECT_EQ(base::Value(::onc::proxy::kPAC), *mode);
 }
 
 }  // namespace chromeos

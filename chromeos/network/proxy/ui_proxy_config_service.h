@@ -9,20 +9,21 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/network/proxy/ui_proxy_config.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 
+namespace base {
+class Value;
+}
+
 namespace chromeos {
 
-class NetworkState;
-
-// This class provides an interface to the UI for getting and setting a proxy
-// configuration. Primarily this class caches the "current" requested config
-// and populates UIProxyConfig for convenient UI consumption.
-// NOTE: This class must be rebuilt when the logged in profile changes.
-// ALSO NOTE: The provided PrefService instances are used both to retreive proxy
+// This class provides an interface to the UI for getting a network proxy
+// configuration.
+// NOTE: This class must be rebuilt with the primary user's profile prefs when
+// the primary user logs in.
+// ALSO NOTE: The provided PrefService instances are used both to retrieve proxy
 // configurations set by an extension, and for ONC policy information associated
 // with a network. (Per-network proxy configurations are stored in Shill,
 // but ONC policy configuration is stored in PrefService).
@@ -35,34 +36,32 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) UIProxyConfigService {
                        PrefService* local_state_prefs);
   ~UIProxyConfigService();
 
-  // Called when ::proxy_config::prefs change or to force an update.
-  void UpdateFromPrefs(const std::string& guid);
-
-  // Called from UI to retrieve the active proxy configuration. This will be,
-  // in highest to lowest priority order:
-  // * A policy enforced proxy associated with |network_guid|.
-  // * A proxy set by an extension in the active PrefService.
-  // * A user specified proxy associated with |network_guid|.
-  void GetProxyConfig(const std::string& network_guid, UIProxyConfig* config);
+  // Generates ONC dictionary for proxy settings enforced for the network, and
+  // writes them to |proxy_settings|. The proxy settings that will be written to
+  // |proxy_settings| will be one of the following (in order of preference):
+  // * A proxy enforced by a user policy (provided by kProxy prefence).
+  // * A proxy set by an extension in the active PrefService (also provided by
+  //   kProxy pref).
+  // * A proxy set by an ONC policy associated with |network_guid|.
+  //
+  // |proxy_settings| is expected to be a dictionary value containing ONC proxy
+  // settings, and will generally contain the proxy settings reported by shill
+  // (which will have user set per-network proxy settings, if they are
+  // available).
+  //
+  // Returns whether |proxy_settings| have been changed.
+  bool MergeEnforcedProxyConfig(const std::string& network_guid,
+                                base::Value* proxy_settings);
 
   // Returns true if there is a default network and it has a proxy configuration
   // with mode == MODE_FIXED_SERVERS.
   bool HasDefaultNetworkProxyConfigured();
 
  private:
-  // Determines effective proxy config based on prefs from config tracker,
-  // |network| and if user is using shared proxies.  The effective config is
-  // stored in |current_ui_config_| but not activated on network stack, and
-  // hence, not picked up by observers.
-  void DetermineEffectiveConfig(const NetworkState& network);
-
   void OnPreferenceChanged(const std::string& pref_name);
 
   // GUID of network used for current_ui_config_.
   std::string current_ui_network_guid_;
-
-  // Proxy configuration for |current_ui_network_guid_|.
-  UIProxyConfig current_ui_config_;
 
   PrefService* profile_prefs_;  // unowned
   PrefChangeRegistrar profile_registrar_;
