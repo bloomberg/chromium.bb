@@ -119,6 +119,12 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
   return IsPossibleChangePasswordForm() && username_element.empty();
 }
 
+bool PasswordForm::HasPasswordElement() const {
+  return has_renderer_ids ? password_element_renderer_id !=
+                                FormFieldData::kNotSetFormControlRendererId
+                          : !password_element.empty();
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&

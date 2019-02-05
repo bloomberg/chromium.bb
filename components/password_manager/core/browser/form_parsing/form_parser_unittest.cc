@@ -352,7 +352,11 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_FALSE(parsed_form->preferred);
         EXPECT_FALSE(parsed_form->blacklisted_by_user);
         EXPECT_EQ(PasswordForm::TYPE_MANUAL, parsed_form->type);
+#if defined(OS_IOS)
+        EXPECT_FALSE(parsed_form->has_renderer_ids);
+#else
         EXPECT_TRUE(parsed_form->has_renderer_ids);
+#endif
         EXPECT_EQ(test_case.username_may_use_prefilled_placeholder,
                   parsed_form->username_may_use_prefilled_placeholder);
         EXPECT_EQ(test_case.submission_event, parsed_form->submission_event);
