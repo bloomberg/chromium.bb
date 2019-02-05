@@ -4,7 +4,6 @@
 
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
@@ -12,7 +11,7 @@ namespace resource_coordinator {
 
 ResourceCoordinatorParts::ResourceCoordinatorParts()
     : page_signal_receiver_(
-          resource_coordinator::PerformanceManager::GetInstance()
+          resource_coordinator::PageSignalReceiver::IsEnabled()
               ? std::make_unique<resource_coordinator::PageSignalReceiver>()
               : nullptr)
 #if !defined(OS_ANDROID)

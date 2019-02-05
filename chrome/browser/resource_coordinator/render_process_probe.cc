@@ -10,10 +10,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/service_manager_connection.h"
 
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
@@ -32,7 +32,7 @@ RenderProcessProbe* RenderProcessProbe::GetInstance() {
 // static
 bool RenderProcessProbe::IsEnabled() {
   // Check that service_manager is active and GRC is enabled.
-  return PerformanceManager::GetInstance() != nullptr;
+  return content::ServiceManagerConnection::GetForProcess() != nullptr;
 }
 
 RenderProcessProbeImpl::RenderProcessInfo::RenderProcessInfo() = default;
@@ -257,8 +257,12 @@ base::ProcessId RenderProcessProbeImpl::GetProcessId(
 SystemResourceCoordinator*
 RenderProcessProbeImpl::EnsureSystemResourceCoordinator() {
   if (!system_resource_coordinator_) {
-    system_resource_coordinator_ = std::make_unique<SystemResourceCoordinator>(
-        PerformanceManager::GetInstance());
+    content::ServiceManagerConnection* connection =
+        content::ServiceManagerConnection::GetForProcess();
+    if (connection)
+      system_resource_coordinator_ =
+          std::make_unique<SystemResourceCoordinator>(
+              connection->GetConnector());
   }
 
   return system_resource_coordinator_.get();

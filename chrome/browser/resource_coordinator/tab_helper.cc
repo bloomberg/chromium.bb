@@ -13,8 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/page_resource_coordinator.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/render_process_user_data.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -24,7 +22,10 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/cpp/page_resource_coordinator.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
@@ -35,13 +36,15 @@ namespace resource_coordinator {
 
 ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManager::GetInstance()) {
+    : content::WebContentsObserver(web_contents) {
   TabLoadTracker::Get()->StartTracking(web_contents);
-  if (performance_manager_) {
+
+  if (content::ServiceManagerConnection::GetForProcess()) {
+    connector_ =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
     page_resource_coordinator_ =
         std::make_unique<resource_coordinator::PageResourceCoordinator>(
-            performance_manager_);
+            connector_);
 
     // Make sure to set the visibility property when we create
     // |page_resource_coordinator_|.
@@ -97,11 +100,11 @@ void ResourceCoordinatorTabHelper::RenderFrameCreated(
   // This must not exist in the map yet.
   DCHECK(!base::ContainsKey(frames_, render_frame_host));
 
-  if (!performance_manager_)
+  if (!connector_)
     return;
 
   std::unique_ptr<FrameResourceCoordinator> frame =
-      std::make_unique<FrameResourceCoordinator>(performance_manager_);
+      std::make_unique<FrameResourceCoordinator>(connector_);
   content::RenderFrameHost* parent = render_frame_host->GetParent();
   if (parent) {
     DCHECK(base::ContainsKey(frames_, parent));
@@ -124,7 +127,7 @@ void ResourceCoordinatorTabHelper::RenderFrameCreated(
 
 void ResourceCoordinatorTabHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  if (!performance_manager_)
+  if (!connector_)
     return;
 
   // TODO(siggi): Ideally this would DCHECK that the deleted render frame host

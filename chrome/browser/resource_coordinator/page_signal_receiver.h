@@ -69,6 +69,8 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   PageSignalReceiver();
   ~PageSignalReceiver() override;
 
+  static bool IsEnabled();
+
   // mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(
       const PageNavigationIdentity& page_navigation_id) override;

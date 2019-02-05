@@ -12,16 +12,18 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/audio_service_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -460,9 +462,10 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   }
 
   // The callback keeps this object alive until the callback is invoked.
-  resource_coordinator::PerformanceManager* performance_manager =
-      resource_coordinator::PerformanceManager::GetInstance();
-  performance_manager->BindInterface(mojo::MakeRequest(&introspector_));
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           mojo::MakeRequest(&introspector_));
   auto callback2 =
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
   introspector_->GetProcessToURLMap(callback2);

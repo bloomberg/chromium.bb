@@ -4,10 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 
-#include <utility>
-
 #include "base/task/post_task.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
@@ -97,6 +94,9 @@ void NoopLocalSiteCharacteristicsDatabase::GetDatabaseSize(
 ChromeTestHarnessWithLocalDB::ChromeTestHarnessWithLocalDB() {
   scoped_feature_list_.InitAndEnableFeature(
       features::kSiteCharacteristicsDatabase);
+
+  LocalSiteCharacteristicsWebContentsObserver::
+      SkipObserverRegistrationForTesting();
 }
 
 ChromeTestHarnessWithLocalDB::~ChromeTestHarnessWithLocalDB() = default;
@@ -106,11 +106,7 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
   // ChromeRenderViewHostTestHarness::SetUp(), this will prevent the creation
   // of a non-mock version of a data store when browser_context() gets
   // initialized.
-  performance_manager_ = PerformanceManager::Create();
-
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
-
-  // TODO(siggi): Can this die now?
   content::ServiceManagerConnection::SetForProcess(
       content::ServiceManagerConnection::Create(
           mojo::MakeRequest(&service_),
@@ -121,8 +117,6 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
 }
 
 void ChromeTestHarnessWithLocalDB::TearDown() {
-  PerformanceManager::Destroy(std::move(performance_manager_));
-
   content::ServiceManagerConnection::DestroyForProcess();
   ChromeRenderViewHostTestHarness::TearDown();
 }
