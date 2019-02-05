@@ -46,18 +46,18 @@ namespace {
 const int kRetryIntervalSeconds = 5;
 
 // Registry key paths.
-const wchar_t* const kTcpipPath =
-    L"SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
-const wchar_t* const kTcpip6Path =
-    L"SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters";
-const wchar_t* const kDnscachePath =
-    L"SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters";
-const wchar_t* const kPolicyPath =
-    L"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient";
-const wchar_t* const kPrimaryDnsSuffixPath =
-    L"SOFTWARE\\Policies\\Microsoft\\System\\DNSClient";
-const wchar_t* const kNRPTPath =
-    L"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient\\DnsPolicyConfig";
+const base::char16 kTcpipPath[] =
+    STRING16_LITERAL("SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters");
+const base::char16 kTcpip6Path[] =
+    STRING16_LITERAL("SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters");
+const base::char16 kDnscachePath[] = STRING16_LITERAL(
+    "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters");
+const base::char16 kPolicyPath[] =
+    STRING16_LITERAL("SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient");
+const base::char16 kPrimaryDnsSuffixPath[] =
+    STRING16_LITERAL("SOFTWARE\\Policies\\Microsoft\\System\\DNSClient");
+const base::char16 kNRPTPath[] = STRING16_LITERAL(
+    "SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient\\DnsPolicyConfig");
 
 enum HostsParseWinResult {
   HOSTS_PARSE_WIN_OK = 0,
@@ -71,14 +71,14 @@ enum HostsParseWinResult {
 // Convenience for reading values using RegKey.
 class RegistryReader {
  public:
-  explicit RegistryReader(const wchar_t* key) {
+  explicit RegistryReader(const base::char16* key) {
     // Ignoring the result. |key_.Valid()| will catch failures.
     key_.Open(HKEY_LOCAL_MACHINE, key, KEY_QUERY_VALUE);
   }
 
   ~RegistryReader() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
-  bool ReadString(const wchar_t* name,
+  bool ReadString(const base::char16* name,
                   DnsSystemSettings::RegString* out) const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     out->set = false;
@@ -94,7 +94,7 @@ class RegistryReader {
     return (result == ERROR_FILE_NOT_FOUND);
   }
 
-  bool ReadDword(const wchar_t* name,
+  bool ReadDword(const base::char16* name,
                  DnsSystemSettings::RegDword* out) const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     out->set = false;
@@ -140,8 +140,10 @@ std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(
 
 bool ReadDevolutionSetting(const RegistryReader& reader,
                            DnsSystemSettings::DevolutionSetting* setting) {
-  return reader.ReadDword(L"UseDomainNameDevolution", &setting->enabled) &&
-         reader.ReadDword(L"DomainNameDevolutionLevel", &setting->level);
+  return reader.ReadDword(STRING16_LITERAL("UseDomainNameDevolution"),
+                          &setting->enabled) &&
+         reader.ReadDword(STRING16_LITERAL("DomainNameDevolutionLevel"),
+                          &setting->level);
 }
 
 // Reads DnsSystemSettings from IpHelper and registry.
@@ -160,15 +162,17 @@ ConfigParseWinResult ReadSystemSettings(DnsSystemSettings* settings) {
   RegistryReader policy_reader(kPolicyPath);
   RegistryReader primary_dns_suffix_reader(kPrimaryDnsSuffixPath);
 
-  if (!policy_reader.ReadString(L"SearchList",
+  if (!policy_reader.ReadString(STRING16_LITERAL("SearchList"),
                                 &settings->policy_search_list)) {
     return CONFIG_PARSE_WIN_READ_POLICY_SEARCHLIST;
   }
 
-  if (!tcpip_reader.ReadString(L"SearchList", &settings->tcpip_search_list))
+  if (!tcpip_reader.ReadString(STRING16_LITERAL("SearchList"),
+                               &settings->tcpip_search_list))
     return CONFIG_PARSE_WIN_READ_TCPIP_SEARCHLIST;
 
-  if (!tcpip_reader.ReadString(L"Domain", &settings->tcpip_domain))
+  if (!tcpip_reader.ReadString(STRING16_LITERAL("Domain"),
+                               &settings->tcpip_domain))
     return CONFIG_PARSE_WIN_READ_DOMAIN;
 
   if (!ReadDevolutionSetting(policy_reader, &settings->policy_devolution))
@@ -180,13 +184,14 @@ ConfigParseWinResult ReadSystemSettings(DnsSystemSettings* settings) {
   if (!ReadDevolutionSetting(tcpip_reader, &settings->tcpip_devolution))
     return CONFIG_PARSE_WIN_READ_TCPIP_DEVOLUTION;
 
-  if (!policy_reader.ReadDword(L"AppendToMultiLabelName",
+  if (!policy_reader.ReadDword(STRING16_LITERAL("AppendToMultiLabelName"),
                                &settings->append_to_multi_label_name)) {
     return CONFIG_PARSE_WIN_READ_APPEND_MULTILABEL;
   }
 
-  if (!primary_dns_suffix_reader.ReadString(L"PrimaryDnsSuffix",
-                                            &settings->primary_dns_suffix)) {
+  if (!primary_dns_suffix_reader.ReadString(
+          STRING16_LITERAL("PrimaryDnsSuffix"),
+          &settings->primary_dns_suffix)) {
     return CONFIG_PARSE_WIN_READ_PRIMARY_SUFFIX;
   }
 
@@ -208,10 +213,11 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
   hosts->insert(std::make_pair(DnsHostsKey("localhost", ADDRESS_FAMILY_IPV6),
                                loopback_ipv6));
 
-  WCHAR buffer[MAX_PATH];
+  base::char16 buffer[MAX_PATH];
   DWORD size = MAX_PATH;
   std::string localname;
-  if (!GetComputerNameExW(ComputerNameDnsHostname, buffer, &size) ||
+  if (!GetComputerNameExW(ComputerNameDnsHostname, base::wdata(buffer),
+                          &size) ||
       !ParseDomainASCII(buffer, &localname)) {
     return HOSTS_PARSE_WIN_COMPUTER_NAME_FAILED;
   }
@@ -270,7 +276,7 @@ class RegistryWatcher {
 
   ~RegistryWatcher() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
-  bool Watch(const wchar_t* key, const CallbackType& callback) {
+  bool Watch(const base::char16* key, const CallbackType& callback) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(!callback.is_null());
     DCHECK(callback_.is_null());
@@ -316,8 +322,8 @@ bool IsStatelessDiscoveryAddress(const IPAddress& address) {
 
 // Returns the path to the HOSTS file.
 base::FilePath GetHostsPath() {
-  TCHAR buffer[MAX_PATH];
-  UINT rc = GetSystemDirectory(buffer, MAX_PATH);
+  base::char16 buffer[MAX_PATH];
+  UINT rc = GetSystemDirectory(base::wdata(buffer), MAX_PATH);
   DCHECK(0 < rc && rc < MAX_PATH);
   return base::FilePath(buffer).Append(
       FILE_PATH_LITERAL("drivers\\etc\\hosts"));
@@ -475,8 +481,9 @@ bool ParseSearchList(const base::string16& value,
   // Although nslookup and network connection property tab ignore such
   // fragments ("a,b,,c" becomes ["a", "b", "c"]), our reference is getaddrinfo
   // (which sees ["a", "b"]). WMI queries also return a matching search list.
-  for (const base::StringPiece16& t : base::SplitStringPiece(
-           value, L",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (const base::StringPiece16& t :
+       base::SplitStringPiece(value, STRING16_LITERAL(","),
+                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     // Convert non-ASCII to punycode, although getaddrinfo does not properly
     // handle such suffixes.
     std::string parsed;
@@ -528,8 +535,10 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
     // obtained via DHCP (regkey: Tcpip\Parameters\Interfaces\{XXX}\DhcpDomain)
     // or specified by the user (regkey: Tcpip\Parameters\Domain).
     std::string dns_suffix;
-    if (ParseDomainASCII(adapter->DnsSuffix, &dns_suffix))
+    if (ParseDomainASCII(base::CastToStringPiece16(adapter->DnsSuffix),
+                         &dns_suffix)) {
       config->search.push_back(dns_suffix);
+    }
   }
 
   if (config->nameservers.empty())
