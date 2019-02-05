@@ -388,9 +388,12 @@ config("compiler") {
 
     ldflags += [
       "-Wl,-z,noexecstack",
-      "-Wl,-z,now",
       "-Wl,-z,relro",
     ]
+
+    if (!is_component_build) {
+      ldflags += [ "-Wl,-z,now" ]
+    }
 
     # Compiler instrumentation can introduce dependencies in DSOs to symbols in
     # the executable they are loaded into, so they are unresolved at link-time.
