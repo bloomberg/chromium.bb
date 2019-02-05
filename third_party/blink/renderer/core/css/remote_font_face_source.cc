@@ -83,7 +83,11 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
                                            FontDisplay display)
     : face_(css_font_face),
       font_selector_(font_selector),
-      display_(GetFontDisplayWithFeaturePolicyCheck(display, font_selector)),
+      // No need to report the violation here since the font is not loaded yet
+      display_(
+          GetFontDisplayWithFeaturePolicyCheck(display,
+                                               font_selector,
+                                               ReportOptions::kDoNotReport)),
       phase_(kNoLimitExceeded),
       is_intervention_triggered_(ShouldTriggerWebFontsIntervention()) {
   DCHECK(face_);
@@ -168,7 +172,8 @@ void RemoteFontFaceSource::SetDisplay(FontDisplay display) {
   // using the loaded font.
   if (IsLoaded())
     return;
-  display_ = GetFontDisplayWithFeaturePolicyCheck(display, font_selector_);
+  display_ = GetFontDisplayWithFeaturePolicyCheck(
+      display, font_selector_, ReportOptions::kReportOnFailure);
   UpdatePeriod();
 }
 
@@ -190,11 +195,13 @@ void RemoteFontFaceSource::UpdatePeriod() {
 
 FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
     FontDisplay display,
-    const FontSelector* font_selector) const {
+    const FontSelector* font_selector,
+    ReportOptions report) const {
   ExecutionContext* context = font_selector->GetExecutionContext();
-  if (display != kFontDisplayFallback && context && context->IsDocument() &&
+  if (display != kFontDisplayFallback && display != kFontDisplayOptional &&
+      context && context->IsDocument() &&
       !To<Document>(context)->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kFontDisplay)) {
+          mojom::FeaturePolicyFeature::kFontDisplay, report)) {
     return kFontDisplayOptional;
   }
   return display;
