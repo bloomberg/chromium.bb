@@ -7,19 +7,48 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
+
+constexpr base::Feature kWinOOPInspectModuleFeature = {
+    "WinOOPInspectModule", base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr int kConnectionErrorRetryCount = 10;
 
 StringMapping GetPathMapping() {
   return GetEnvironmentVariablesMapping({
       L"LOCALAPPDATA", L"ProgramFiles", L"ProgramData", L"USERPROFILE",
       L"SystemRoot", L"TEMP", L"TMP", L"CommonProgramFiles",
   });
+}
+
+// Returns a bound pointer to the UtilWin service.
+chrome::mojom::UtilWinPtr ConnectToUtilWinService(
+    base::OnceClosure connection_error_handler) {
+  chrome::mojom::UtilWinPtr util_win_ptr;
+
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(chrome::mojom::kUtilWinServiceName, &util_win_ptr);
+
+  util_win_ptr.set_connection_error_handler(
+      std::move(connection_error_handler));
+
+  return util_win_ptr;
+}
+
+void ReportConnectionError(bool value) {
+  base::UmaHistogramBoolean("Windows.InspectModule.ConnectionError", value);
 }
 
 }  // namespace
@@ -32,6 +61,7 @@ ModuleInspector::ModuleInspector(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       path_mapping_(GetPathMapping()),
+      connection_error_retry_count_(kConnectionErrorRetryCount),
       weak_ptr_factory_(this) {
   // Use AfterStartupTaskUtils to be notified when startup is finished.
   AfterStartupTaskUtils::PostTask(
@@ -85,6 +115,20 @@ void ModuleInspector::OnStartupFinished() {
     StartInspectingModule();
 }
 
+void ModuleInspector::OnUtilWinServiceConnectionError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ReportConnectionError(true);
+
+  // Reset the pointer to the service.
+  util_win_ptr_ = nullptr;
+
+  // Restart inspection for the current module, only if the retry limit wasn't
+  // reached.
+  if (connection_error_retry_count_--)
+    StartInspectingModule();
+}
+
 void ModuleInspector::StartInspectingModule() {
   DCHECK(is_after_startup_);
   DCHECK(!queue_.empty());
@@ -102,11 +146,26 @@ void ModuleInspector::StartInspectingModule() {
   // In practice, this is not an issue because the only caller of
   // IncreaseInspectionPriority() (chrome://conflicts) does not depend on the
   // inspection to finish synchronously and is not blocking anything else.
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
-      base::BindOnce(&InspectModule, module_key.module_path),
-      base::BindOnce(&ModuleInspector::OnInspectionFinished,
-                     weak_ptr_factory_.GetWeakPtr(), module_key));
+  if (base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature)) {
+    // Make sure the pointer is bound to the service first.
+    if (!util_win_ptr_) {
+      util_win_ptr_ = ConnectToUtilWinService(
+          base::BindOnce(&ModuleInspector::OnUtilWinServiceConnectionError,
+                         base::Unretained(this)));
+      ReportConnectionError(false);
+    }
+
+    util_win_ptr_->InspectModule(
+        module_key.module_path,
+        base::BindOnce(&ModuleInspector::OnInspectionFinished,
+                       weak_ptr_factory_.GetWeakPtr(), module_key));
+  } else {
+    base::PostTaskAndReplyWithResult(
+        task_runner_.get(), FROM_HERE,
+        base::BindOnce(&InspectModule, module_key.module_path),
+        base::BindOnce(&ModuleInspector::OnInspectionFinished,
+                       weak_ptr_factory_.GetWeakPtr(), module_key));
+  }
 }
 
 void ModuleInspector::OnInspectionFinished(
@@ -124,6 +183,13 @@ void ModuleInspector::OnInspectionFinished(
   queue_.pop();
 
   on_module_inspected_callback_.Run(module_key, std::move(inspection_result));
+
+  // Free the pointer to the UtilWin service to clean up the utility process
+  // when it is no longer needed. While this code is only ever needed in the
+  // case the WinOOPInspectModule feature is enabled, it's faster to check the
+  // value of the pointer than to check the feature status.
+  if (queue_.empty() && util_win_ptr_)
+    util_win_ptr_ = nullptr;
 
   // Continue the work.
   if (!queue_.empty())
