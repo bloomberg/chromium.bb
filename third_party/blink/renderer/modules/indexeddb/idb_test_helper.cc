@@ -37,9 +37,10 @@ std::unique_ptr<IDBValue> CreateNullIDBValueForTesting(v8::Isolate* isolate) {
 std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
                                                    bool create_wrapped_value) {
   uint32_t element_count = create_wrapped_value ? 16 : 2;
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Array> v8_array = v8::Array::New(isolate, element_count);
   for (uint32_t i = 0; i < element_count; ++i)
-    v8_array->Set(i, v8::True(isolate));
+    v8_array->Set(context, i, v8::True(isolate)).Check();
 
   NonThrowableExceptionState non_throwable_exception_state;
   IDBValueWrapper wrapper(isolate, v8_array,
