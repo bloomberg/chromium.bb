@@ -226,8 +226,8 @@ void FrameLoader::Init() {
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = KURL(g_empty_string);
-  provisional_document_loader_ = CreateDocumentLoader(
-      kWebNavigationTypeOther, std::move(navigation_params),
+  provisional_document_loader_ = Client()->CreateDocumentLoader(
+      frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
 
@@ -267,12 +267,8 @@ void FrameLoader::SetDefersLoading(bool defers) {
     frame_->GetNavigationScheduler().StartTimer();
 }
 
-bool FrameLoader::ShouldSerializeScrollAnchor() {
-  return RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled();
-}
-
 void FrameLoader::SaveScrollAnchor() {
-  if (!ShouldSerializeScrollAnchor())
+  if (!RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled())
     return;
 
   if (!document_loader_ || !document_loader_->GetHistoryItem() ||
@@ -542,10 +538,6 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
   loader = nullptr;
 }
 
-void FrameLoader::ClearInitialScrollState() {
-  document_loader_->GetInitialScrollState().was_scrolled_by_user = false;
-}
-
 void FrameLoader::LoadInSameDocument(
     const KURL& url,
     scoped_refptr<SerializedScriptValue> state_object,
@@ -584,7 +576,7 @@ void FrameLoader::LoadInSameDocument(
                                   kScrollRestorationAuto, frame_load_type,
                                   initiating_document);
 
-  ClearInitialScrollState();
+  document_loader_->GetInitialScrollState().was_scrolled_by_user = false;
 
   frame_->GetDocument()->CheckCompleted();
 
@@ -1034,8 +1026,9 @@ void FrameLoader::CommitNavigation(
 
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
-  provisional_document_loader_ = CreateDocumentLoader(
-      navigation_type, std::move(navigation_params), std::move(extra_data));
+  provisional_document_loader_ = Client()->CreateDocumentLoader(
+      frame_, navigation_type, std::move(navigation_params),
+      std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
   if (history_item)
@@ -1087,7 +1080,10 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
   if (!history_navigation) {
     document_loader_->SetNavigationType(
         DetermineNavigationType(frame_load_type, false, has_event));
-    if (ShouldTreatURLAsSameAsCurrent(url))
+    bool should_treat_url_as_same_as_current =
+        document_loader_->GetHistoryItem() &&
+        url == document_loader_->GetHistoryItem()->Url();
+    if (should_treat_url_as_same_as_current)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
@@ -1112,9 +1108,9 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
   navigation_params->frame_load_type = info.frame_load_type;
   navigation_params->is_client_redirect = info.is_client_redirect;
   navigation_params->navigation_timings.input_start = info.input_start;
-  provisional_document_loader_ =
-      CreateDocumentLoader(info.navigation_type, std::move(navigation_params),
-                           std::move(extra_data));
+  provisional_document_loader_ = Client()->CreateDocumentLoader(
+      frame_, info.navigation_type, std::move(navigation_params),
+      std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
@@ -1154,8 +1150,7 @@ void FrameLoader::StopAllLoaders() {
 }
 
 void FrameLoader::DidAccessInitialDocument() {
-  // We only need to notify the client for the main frame.
-  if (IsLoadingMainFrame()) {
+  if (frame_->IsMainFrame()) {
     // Forbid script execution to prevent re-entering V8, since this is called
     // from a binding security check.
     ScriptForbiddenScope forbid_scripts;
@@ -1268,10 +1263,6 @@ void FrameLoader::CommitProvisionalLoad() {
   }
 }
 
-bool FrameLoader::IsLoadingMainFrame() const {
-  return frame_->IsMainFrame();
-}
-
 void FrameLoader::RestoreScrollPositionAndViewState() {
   if (!frame_->GetPage() || !GetDocumentLoader() ||
       !GetDocumentLoader()->GetHistoryItem() || in_restore_scroll_) {
@@ -1332,7 +1323,7 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     // TODO(pnoland): attempt to restore the anchor in more places than this.
     // Anchor-based restore should allow for earlier restoration.
     bool did_restore =
-        ShouldSerializeScrollAnchor() &&
+        RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled() &&
         view->LayoutViewport()->RestoreScrollAnchor(
             {view_state->scroll_anchor_data_.selector_,
              LayoutPoint(view_state->scroll_anchor_data_.offset_.x,
@@ -1593,11 +1584,6 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
   return true;
 }
 
-bool FrameLoader::ShouldTreatURLAsSameAsCurrent(const KURL& url) const {
-  return document_loader_->GetHistoryItem() &&
-         url == document_loader_->GetHistoryItem()->Url();
-}
-
 void FrameLoader::DispatchDocumentElementAvailable() {
   ScriptForbiddenScope forbid_scripts;
   Client()->DocumentElementAvailable();
@@ -1764,7 +1750,7 @@ std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
   traced_value->BeginDictionary("frame");
   traced_value->SetString("id_ref", IdentifiersFactory::FrameId(frame_.Get()));
   traced_value->EndDictionary();
-  traced_value->SetBoolean("isLoadingMainFrame", IsLoadingMainFrame());
+  traced_value->SetBoolean("isLoadingMainFrame", frame_->IsMainFrame());
   traced_value->SetString("stateMachine", state_machine_.ToString());
   traced_value->SetString("provisionalDocumentLoaderURL",
                           provisional_document_loader_
@@ -1783,17 +1769,6 @@ inline void FrameLoader::TakeObjectSnapshot() const {
   }
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this,
                                       ToTracedValue());
-}
-
-DocumentLoader* FrameLoader::CreateDocumentLoader(
-    WebNavigationType navigation_type,
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  DocumentLoader* loader = Client()->CreateDocumentLoader(
-      frame_, navigation_type, std::move(navigation_params),
-      std::move(extra_data));
-  probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());
-  return loader;
 }
 
 STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationManual,

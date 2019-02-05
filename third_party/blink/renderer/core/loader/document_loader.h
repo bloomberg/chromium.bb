@@ -149,9 +149,6 @@ class CORE_EXPORT DocumentLoader
   bool ReplacesCurrentHistoryItem() const {
     return replaces_current_history_item_;
   }
-  void SetReplacesCurrentHistoryItem(bool replaces_current_history_item) {
-    replaces_current_history_item_ = replaces_current_history_item;
-  }
 
   bool IsCommittedButEmpty() const {
     return state_ >= kCommitted && !data_received_;
@@ -185,13 +182,11 @@ class CORE_EXPORT DocumentLoader
   void SetDefersLoading(bool defers);
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
-  const DocumentLoadTiming& GetTiming() const { return document_load_timing_; }
 
   ApplicationCacheHost* GetApplicationCacheHost() const {
     return application_cache_host_.Get();
   }
 
-  void ClearRedirectChain();
   void AppendRedirect(const KURL&);
 
   ClientHintsPreferences& GetClientHintsPreferences() {
@@ -208,7 +203,6 @@ class CORE_EXPORT DocumentLoader
   };
   InitialScrollState& GetInitialScrollState() { return initial_scroll_state_; }
 
-  void SetWasBlockedAfterCSP() { was_blocked_after_csp_ = true; }
   bool WasBlockedAfterCSP() { return was_blocked_after_csp_; }
 
   void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
@@ -225,8 +219,6 @@ class CORE_EXPORT DocumentLoader
   }
 
   void LoadFailed(const ResourceError&);
-
-  const AtomicString& RequiredCSP();
 
   virtual void Trace(blink::Visitor*);
 
@@ -265,11 +257,6 @@ class CORE_EXPORT DocumentLoader
   void ProvideDocumentToResourceFetcherProperties(Document&);
 
  protected:
-  static bool ShouldClearWindowName(
-      const LocalFrame&,
-      const SecurityOrigin* previous_security_origin,
-      const Document& new_document);
-
   bool had_transient_activation() const { return had_transient_activation_; }
 
   Vector<KURL> redirect_chain_;
@@ -325,8 +312,6 @@ class CORE_EXPORT DocumentLoader
   void HandleData(const char* data, size_t length);
 
   void LoadEmpty();
-
-  bool IsRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
   bool ShouldContinueForResponse() const;
   bool ShouldReportTimingInfoToParent();

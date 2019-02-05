@@ -61,7 +61,6 @@ class LocalFrame;
 class Frame;
 class LocalFrameClient;
 class ProgressTracker;
-class ResourceError;
 class ResourceRequest;
 class SerializedScriptValue;
 class TracedValue;
@@ -153,12 +152,6 @@ class CORE_EXPORT FrameLoader final {
     return provisional_document_loader_.Get();
   }
 
-  void LoadFailed(DocumentLoader*, const ResourceError&);
-
-  bool IsLoadingMainFrame() const;
-
-  bool ShouldTreatURLAsSameAsCurrent(const KURL&) const;
-
   void SetDefersLoading(bool);
 
   void DidExplicitOpen();
@@ -211,7 +204,6 @@ class CORE_EXPORT FrameLoader final {
                                        WebFrameLoadType,
                                        Document*);
 
-  bool ShouldSerializeScrollAnchor();
   void SaveScrollAnchor();
   void SaveScrollState();
   void RestoreScrollPositionAndViewState();
@@ -256,8 +248,6 @@ class CORE_EXPORT FrameLoader final {
       bool cancel_scheduled_navigations,
       bool is_starting_blank_navigation);
 
-  void ClearInitialScrollState();
-
   void LoadInSameDocument(const KURL&,
                           scoped_refptr<SerializedScriptValue> state_object,
                           WebFrameLoadType,
@@ -270,18 +260,11 @@ class CORE_EXPORT FrameLoader final {
                                          HistoryItem::ViewState*,
                                          HistoryScrollRestorationType);
 
-  void ScheduleCheckCompleted();
-
   void DetachDocumentLoader(Member<DocumentLoader>&,
                             bool flush_microtask_queue = false);
 
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
-
-  DocumentLoader* CreateDocumentLoader(
-      WebNavigationType,
-      std::unique_ptr<WebNavigationParams>,
-      std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   LocalFrameClient* Client() const;
 
