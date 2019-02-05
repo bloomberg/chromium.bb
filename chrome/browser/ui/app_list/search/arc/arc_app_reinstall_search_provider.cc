@@ -197,6 +197,7 @@ void ArcAppReinstallSearchProvider::UpdateResults() {
 
   for (const std::string& url : unused_icon_urls) {
     icon_urls_.erase(url);
+    loading_icon_urls_.erase(url);
   }
 
   // Now we are ready with new_results. do we actually need to replace things on
