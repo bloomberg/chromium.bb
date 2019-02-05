@@ -236,17 +236,15 @@ PrefProxyConfigTrackerImpl::GetEffectiveProxyConfig(
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(
-      proxy_config::prefs::kProxy,
-      std::make_unique<base::Value>(ProxyConfigDictionary::CreateSystem()));
+  registry->RegisterDictionaryPref(proxy_config::prefs::kProxy,
+                                   ProxyConfigDictionary::CreateSystem());
 }
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(
-      proxy_config::prefs::kProxy,
-      std::make_unique<base::Value>(ProxyConfigDictionary::CreateSystem()));
+  registry->RegisterDictionaryPref(proxy_config::prefs::kProxy,
+                                   ProxyConfigDictionary::CreateSystem());
   registry->RegisterBooleanPref(proxy_config::prefs::kUseSharedProxies, false);
 }
 
