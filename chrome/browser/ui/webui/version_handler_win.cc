@@ -12,9 +12,8 @@
 
 namespace {
 
-// rerurn marketing version of Windows OS
-// may return an empty string if values returned by base::win::OSinfo
-// are not defined below
+// Return the marketing version of Windows OS, this may return an empty string
+// if values returned by base::win::OSinfo are not defined below.
 std::string FullWindowsVersion() {
   std::string version;
   base::win::OSInfo* gi = base::win::OSInfo::GetInstance();
@@ -91,4 +90,9 @@ void VersionHandlerWindows::HandleRequestVersionInfo(
 void VersionHandlerWindows::OnVersion(const std::string& version) {
   base::Value arg(version);
   CallJavascriptFunction("returnOsVersion", arg);
+}
+
+// static
+std::string VersionHandlerWindows::GetFullWindowsVersionForTesting() {
+  return FullWindowsVersion();
 }

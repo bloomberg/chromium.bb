@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_VERSION_HANDLER_WIN_H_
 #define CHROME_BROWSER_UI_WEBUI_VERSION_HANDLER_WIN_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/version_handler.h"
@@ -20,6 +22,9 @@ class VersionHandlerWindows : public VersionHandler {
 
   // Callbacks from windows::VersionLoader.
   void OnVersion(const std::string& version);
+
+  // Expose the |FullWindowsVersion| defined in the .cc file for testing.
+  static std::string GetFullWindowsVersionForTesting();
 
  private:
   base::WeakPtrFactory<VersionHandlerWindows> weak_factory_;

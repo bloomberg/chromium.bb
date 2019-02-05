@@ -7,7 +7,7 @@
 #include "base/test/scoped_os_info_override_win.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
-#include "chrome/browser/ui/webui/version_handler_win.cc"
+#include "chrome/browser/ui/webui/version_handler_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WebUIWindowsVersion : public testing::Test {
@@ -37,33 +37,38 @@ TEST_F(WebUIWindowsVersion, Win10Pro) {
   // override base::win::OSInfo
   base::test::ScopedOSInfoOverride os(
       base::test::ScopedOSInfoOverride::Type::kWin10Pro);
-  EXPECT_EQ(FullWindowsVersion(), "10 OS Build 15063.555");
+  EXPECT_EQ(VersionHandlerWindows::GetFullWindowsVersionForTesting(),
+            "10 OS Build 15063.555");
 }
 
 TEST_F(WebUIWindowsVersion, WinServer2016) {
   ubr_key.WriteValue(L"UBR", 1555);
   base::test::ScopedOSInfoOverride os(
       base::test::ScopedOSInfoOverride::Type::kWinServer2016);
-  EXPECT_EQ(FullWindowsVersion(), "Server OS Build 17134.1555");
+  EXPECT_EQ(VersionHandlerWindows::GetFullWindowsVersionForTesting(),
+            "Server OS Build 17134.1555");
 }
 
 TEST_F(WebUIWindowsVersion, Win81Pro) {
   ubr_key.WriteValue(L"UBR", 0UL);
   base::test::ScopedOSInfoOverride os(
       base::test::ScopedOSInfoOverride::Type::kWin81Pro);
-  EXPECT_EQ(FullWindowsVersion(), "8.1 Build 9600");
+  EXPECT_EQ(VersionHandlerWindows::GetFullWindowsVersionForTesting(),
+            "8.1 Build 9600");
 }
 
 TEST_F(WebUIWindowsVersion, WinServer2012R2) {
   ubr_key.WriteValue(L"UBR", 0UL);
   base::test::ScopedOSInfoOverride os(
       base::test::ScopedOSInfoOverride::Type::kWinServer2012R2);
-  EXPECT_EQ(FullWindowsVersion(), "Server 2012 R2 Build 9600");
+  EXPECT_EQ(VersionHandlerWindows::GetFullWindowsVersionForTesting(),
+            "Server 2012 R2 Build 9600");
 }
 
 TEST_F(WebUIWindowsVersion, Win7ProSP1) {
   ubr_key.WriteValue(L"UBR", 0UL);
   base::test::ScopedOSInfoOverride os(
       base::test::ScopedOSInfoOverride::Type::kWin7ProSP1);
-  EXPECT_EQ(FullWindowsVersion(), "7 Service Pack 1 Build 7601");
+  EXPECT_EQ(VersionHandlerWindows::GetFullWindowsVersionForTesting(),
+            "7 Service Pack 1 Build 7601");
 }
