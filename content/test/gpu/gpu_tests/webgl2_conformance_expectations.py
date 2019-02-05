@@ -855,7 +855,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
-        ['mac', 'intel'], bug=731877)
+        ['sierra', 'intel'], bug=731877)
 
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['mac', 'intel'], bug=782317)
