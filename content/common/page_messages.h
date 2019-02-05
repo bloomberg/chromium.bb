@@ -19,9 +19,6 @@
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_ROUTED1(PageMsg_UpdateWindowScreenRect,
-                    gfx::Rect /* window_screen_rect */)
-
 // Informs the renderer that the page was hidden.
 IPC_MESSAGE_ROUTED0(PageMsg_WasHidden)
 

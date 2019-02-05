@@ -554,8 +554,6 @@ class CONTENT_EXPORT RenderWidget
 
   void SetMouseCapture(bool capture);
 
-  void SetWindowScreenRect(const gfx::Rect& window_screen_rect);
-
   bool IsSurfaceSynchronizationEnabled() const;
 
   void PageScaleFactorChanged(float page_scale_factor);
