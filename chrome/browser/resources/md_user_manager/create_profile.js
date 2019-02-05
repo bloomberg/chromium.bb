@@ -7,7 +7,6 @@
  * a profile, including choosing a name, and an avatar.
  */
 
-(function() {
 Polymer({
   is: 'create-profile',
 
@@ -248,4 +247,3 @@ Polymer({
     return createInProgress || !profileName || !nameInput.validate();
   },
 });
-}());

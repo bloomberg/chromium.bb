@@ -35,6 +35,10 @@
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <custom-style>
     <style is="custom-style" include="shared-styles">
+      html[dark] body {
+        background-color: var(--google-grey-900);
+      }
+
       user-manager-pages,
       #login-header-bar {
         bottom: 0;
@@ -84,6 +88,7 @@
 
       .pod {
         @apply --cr-card-elevation;
+        background-color: var(--cr-card-background-color);
         border-radius: var(--cr-card-border-radius);
         color: var(--cr-primary-text-color);
         cursor: default;
@@ -142,6 +147,14 @@
         width: 92px;
       }
 
+      html[dark] .pod .main-pane .name-container {
+        background-color: transparent;
+      }
+
+      html[dark] .name {
+        color: inherit;
+      }
+
       .pod .indicator-container {
         bottom: 10px;
         display: flex;
@@ -165,6 +178,10 @@
         display: none;
         height: 20px;
         width: 20px;
+      }
+
+      html[dark] .pod .indicator-container > .indicator {
+        background: var(--google-grey-refresh-500);
       }
 
       .pod.locked .locked-indicator {
@@ -269,9 +286,26 @@
         right: auto;
       }
 
+      html[dark] .action-box-area.active ~ .action-box-menu {
+        background-color: var(--cr-menu-background-color);
+        /* Adds 4% white on top of GG900. To/from are intentionally the same. */
+        background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                          rgba(255, 255, 255, .04));
+        box-shadow: var(--cr-menu-shadow);
+      }
+
+      html[dark] .action-box-menu-remove:focus,
+      html[dark] .action-box-menu-remove:hover {
+        background-color: var(--cr-menu-background-focus-color);
+      }
+
       .action-box-menu-title {
         color: inherit;
         padding: 16px 12px;
+      }
+
+      html[dark] .action-box-menu-title {
+        border-bottom: var(--cr-separator-line);
       }
 
       .action-box-menu-title-name,
@@ -288,10 +322,19 @@
       }
 
       .action-box-menu-remove {
+        --side-gap: 12px;
+        --vertical-gap: 8px;
         border-radius: var(--cr-card-border-radius);
         border-top: var(--user-manager-separator-line);
         line-height: 32px;
-        padding: 8px 12px;
+        padding: var(--vertical-gap) var(--side-gap);
+      }
+
+      html[dark] .action-box-menu-remove {
+        border-radius: 0;
+        border-top: none;
+        margin: var(--vertical-gap) 0;
+        padding: 0 var(--side-gap);
       }
 
       .action-box-remove-user-warning {
@@ -318,21 +361,24 @@
       }
 
       #user-manager-prompt-message {
-        background-image:
-            url(../../../../ui/webui/resources/images/business.svg);
-        background-position: 0 center;
-        background-repeat: no-repeat;
-        background-size: 19px;
+        align-items: center;
+        color: var(--cr-primary-text-color);
+        display: flex;
         font-size: 19px;
         margin-bottom: 45px;
-        padding-left: 30px;
         text-align: center;
       }
 
-      html[dir=rtl] #user-manager-prompt-message {
-        background-position: right center;
-        padding-left: 0;
-        padding-right: 30px;
+      #user-manager-prompt-message::before {
+        -webkit-mask-image:
+            url(../../../../ui/webui/resources/images/business.svg);
+        -webkit-mask-size: 19px;
+        background: currentcolor;
+        content: '';
+        display: inline-block;
+        height: 19px;
+        margin-inline-end: 11px;
+        width: 19px;
       }
 
       #user-manager-prompt-message:empty {

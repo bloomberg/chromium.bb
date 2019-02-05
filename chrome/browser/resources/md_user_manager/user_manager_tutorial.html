@@ -11,7 +11,7 @@
       .tutorial-slide {
         @apply --cr-card-elevation;
         -webkit-transition: opacity 200ms ease-in-out;
-        background-color: white;
+        background-color: var(--cr-card-background-color);
         border-radius: var(--cr-card-border-radius);
         bottom: 0;
         height: 408px;
@@ -99,12 +99,11 @@
 
       .arrow-down {
         border-bottom: 10px solid white;
-        border-left: 10px solid white;
-        border-right: 10px solid transparent;
+        border-left: 10px solid white;  /* csschecker-disable-line left-right */
+        border-right: 10px solid transparent;  /* csschecker-disable-line left-right */
         border-top: 10px solid transparent;
         bottom: -10px;
-        box-shadow: rgba(60, 64, 67, .4) -1px 1px 1px 0,
-            rgba(60, 64, 67, .15) -2px 2px 2px 0;
+        box-shadow: var(--cr-card-shadow);
         height: 0;
         position: absolute;
         right: 40px;
@@ -115,6 +114,12 @@
       :host-context([dir='rtl']) .arrow-down {
         left: 40px;
         right: auto;
+      }
+
+      :host-context([dark]) .arrow-down {
+        --gg900-blended-with-4percent-white: rgb(40, 41, 44);
+        border-bottom-color: var(--gg900-blended-with-4percent-white);
+        border-left-color: var(--gg900-blended-with-4percent-white);  /* csschecker-disable-line left-right */
       }
 
       #guests .arrow-down {
@@ -155,11 +160,19 @@
             url(chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE);
       }
 
+      :host-context([dark]) #notYou {
+        color: var(--cr-primary-text-color);
+      }
+
       #notYou #dismiss {
         cursor: pointer;
         position: absolute;
         right: 5px;
         top: 5px;
+      }
+
+      :host-context([dark]) #notYou #dismiss {
+        color: var(--google-grey-500);
       }
 
       #notYou #slide-add-user {
