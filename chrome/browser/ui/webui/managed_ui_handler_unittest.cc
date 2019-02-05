@@ -11,9 +11,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -23,8 +20,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/test_web_ui_data_source.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,16 +42,10 @@ class ManagedUIHandlerTest : public testing::Test {
     // Create a TestingProfile that uses our MockConfigurationPolicyProvider.
     policy_provider()->Init();
     policy::PolicyServiceImpl::Providers providers = {policy_provider()};
-
     TestingProfile::Builder builder;
     builder.SetPolicyService(
         std::make_unique<policy::PolicyServiceImpl>(std::move(providers)));
     profile_ = builder.Build();
-
-    identity_adaptor_ =
-        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
-    identity_adaptor_->identity_test_env()->MakePrimaryAccountAvailable(
-        "foobarbaz@gmail.com");
 
     // We use a random source_name here as calling Add() can replace existing
     // sources with the same name (which might destroy the memory addressed by
@@ -66,7 +55,7 @@ class ManagedUIHandlerTest : public testing::Test {
 
   void TearDown() override { policy_provider()->Shutdown(); }
 
-  TestingProfile* profile() { return profile_.get(); }
+  Profile* profile() { return profile_.get(); }
   policy::MockConfigurationPolicyProvider* policy_provider() {
     return &policy_provider_;
   }
@@ -99,8 +88,6 @@ class ManagedUIHandlerTest : public testing::Test {
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
   std::unique_ptr<TestingProfile> profile_;
 
-  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor> identity_adaptor_;
-
   content::TestWebUI web_ui_;
   std::unique_ptr<content::TestWebUIDataSource> source_;
 };
@@ -131,14 +118,3 @@ TEST_F(ManagedUIHandlerTest, ManagedUIBecomesEnabledByProfile) {
   // Source should auto-update.
   EXPECT_TRUE(IsSourceManaged());
 }
-
-#if defined(OS_CHROMEOS)
-TEST_F(ManagedUIHandlerTest, ManagedUIDisabledForChildAccount) {
-  profile_policy_connector()->OverrideIsManagedForTesting(true);
-  profile()->SetSupervisedUserId("supervised");
-
-  InitializeHandler();
-
-  EXPECT_FALSE(IsSourceManaged());
-}
-#endif
