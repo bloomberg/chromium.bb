@@ -764,13 +764,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
 }
 #endif
 
-// See http://crbug.com/147579
-#if defined(OS_WIN)
-#define MAYBE_PageUpDownKeys PageUpDownKeys
-#else
-#define MAYBE_PageUpDownKeys DISABLED_PageUpDownKeys
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_PageUpDownKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   static const KeyEventTestData kTestPageUp = {
     ui::VKEY_PRIOR, false, false, false, false,
     false, false, false, false, 2,
