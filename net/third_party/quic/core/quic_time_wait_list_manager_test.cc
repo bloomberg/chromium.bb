@@ -144,8 +144,6 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   void SetUp() override {
     EXPECT_CALL(writer_, IsWriteBlocked())
         .WillRepeatedly(ReturnPointee(&writer_is_blocked_));
-    EXPECT_CALL(writer_, IsWriteBlockedDataBuffered())
-        .WillRepeatedly(Return(false));
   }
 
   void AddConnectionId(QuicConnectionId connection_id,

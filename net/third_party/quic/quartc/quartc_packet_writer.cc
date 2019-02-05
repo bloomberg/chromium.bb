@@ -31,10 +31,6 @@ WriteResult QuartcPacketWriter::WritePacket(
   return WriteResult(WRITE_STATUS_OK, bytes_written);
 }
 
-bool QuartcPacketWriter::IsWriteBlockedDataBuffered() const {
-  return false;
-}
-
 bool QuartcPacketWriter::IsWriteBlocked() const {
   return !writable_;
 }

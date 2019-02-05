@@ -913,8 +913,6 @@ TEST_P(QuicSessionTestServer, OnCanWriteWriterBlocks) {
   MockPacketWriter* writer = static_cast<MockPacketWriter*>(
       QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, IsWriteBlocked()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*writer, IsWriteBlockedDataBuffered())
-      .WillRepeatedly(Return(true));
   EXPECT_CALL(*writer, WritePacket(_, _, _, _, _)).Times(0);
 
   TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();

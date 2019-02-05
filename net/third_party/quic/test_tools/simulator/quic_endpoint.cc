@@ -311,10 +311,6 @@ WriteResult QuicEndpoint::Writer::WritePacket(
   return WriteResult(WRITE_STATUS_OK, buf_len);
 }
 
-bool QuicEndpoint::Writer::IsWriteBlockedDataBuffered() const {
-  return false;
-}
-
 bool QuicEndpoint::Writer::IsWriteBlocked() const {
   return is_blocked_;
 }

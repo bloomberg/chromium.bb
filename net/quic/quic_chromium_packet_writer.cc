@@ -190,12 +190,6 @@ void QuicChromiumPacketWriter::RetryPacketAfterNoBuffers() {
     OnWriteComplete(result.error_code);
 }
 
-bool QuicChromiumPacketWriter::IsWriteBlockedDataBuffered() const {
-  // Chrome sockets' Write() methods buffer the data until the Write is
-  // permitted.
-  return true;
-}
-
 bool QuicChromiumPacketWriter::IsWriteBlocked() const {
   return (force_write_blocked_ || write_in_progress_);
 }

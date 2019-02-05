@@ -54,11 +54,6 @@ void QuicSimpleServerPacketWriter::OnWriteComplete(int rv) {
   dispatcher_->OnCanWrite();
 }
 
-bool QuicSimpleServerPacketWriter::IsWriteBlockedDataBuffered() const {
-  // UDPServerSocket::SendTo buffers the data until the Write is permitted.
-  return true;
-}
-
 bool QuicSimpleServerPacketWriter::IsWriteBlocked() const {
   return write_blocked_;
 }

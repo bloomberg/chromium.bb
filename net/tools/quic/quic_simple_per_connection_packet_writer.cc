@@ -35,10 +35,6 @@ quic::WriteResult QuicSimplePerConnectionPacketWriter::WritePacket(
                  weak_factory_.GetWeakPtr()));
 }
 
-bool QuicSimplePerConnectionPacketWriter::IsWriteBlockedDataBuffered() const {
-  return shared_writer_->IsWriteBlockedDataBuffered();
-}
-
 bool QuicSimplePerConnectionPacketWriter::IsWriteBlocked() const {
   return shared_writer_->IsWriteBlocked();
 }

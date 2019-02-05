@@ -30,8 +30,6 @@ class QuicBatchWriterBase : public QuicPacketWriter {
                           const QuicSocketAddress& peer_address,
                           PerPacketOptions* options) override;
 
-  bool IsWriteBlockedDataBuffered() const final { return false; }
-
   bool IsWriteBlocked() const final { return write_blocked_; }
 
   void SetWritable() final { write_blocked_ = false; }
