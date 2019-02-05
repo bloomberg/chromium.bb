@@ -61,7 +61,6 @@ TraceEventMetadataSource::~TraceEventMetadataSource() = default;
 void TraceEventMetadataSource::AddGeneratorFunction(
     MetadataGeneratorFunction generator) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
-  base::AutoLock lock(lock_);
   generator_functions_.push_back(generator);
 }
 
@@ -72,7 +71,6 @@ void TraceEventMetadataSource::GenerateMetadata(
   auto trace_packet = trace_writer->NewTracePacket();
   ChromeEventBundleHandle event_bundle(trace_packet->set_chrome_events());
 
-  base::AutoLock lock(lock_);
   for (auto& generator : generator_functions_) {
     std::unique_ptr<base::DictionaryValue> metadata_dict = generator.Run();
     if (!metadata_dict) {
@@ -103,22 +101,20 @@ void TraceEventMetadataSource::StartTracing(
     const mojom::DataSourceConfig& data_source_config) {
   // TODO(eseckler): Once we support streaming of trace data, it would make
   // sense to emit the metadata on startup, so the UI can display it right away.
-  producer_client_ = producer_client;
-  target_buffer_ = data_source_config.target_buffer;
+  trace_writer_ =
+      producer_client->CreateTraceWriter(data_source_config.target_buffer);
 }
 
 void TraceEventMetadataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
-  if (producer_client_) {
+  if (trace_writer_) {
     // Write metadata at the end of tracing to make it less likely that it is
     // overridden by other trace data in perfetto's ring buffer.
     origin_task_runner_->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TraceEventMetadataSource::GenerateMetadata,
-                       base::Unretained(this),
-                       producer_client_->CreateTraceWriter(target_buffer_)),
+                       base::Unretained(this), std::move(trace_writer_)),
         std::move(stop_complete_callback));
-    producer_client_ = nullptr;
   } else {
     std::move(stop_complete_callback).Run();
   }
