@@ -161,12 +161,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // differ.
   const NetworkState* DefaultNetwork() const;
 
-  // Returns the primary connected network of matching |type|, otherwise NULL.
+  // Returns the primary connected network matching |type|, otherwise null.
   const NetworkState* ConnectedNetworkByType(const NetworkTypePattern& type);
 
-  // Like ConnectedNetworkByType() but returns a connecting network or NULL.
-  const NetworkState* ConnectingNetworkByType(
-      const NetworkTypePattern& type) const;
+  // Returns the primary connecting network matching |type|, otherwise null.
+  const NetworkState* ConnectingNetworkByType(const NetworkTypePattern& type);
+
+  // Returns the primary active network of matching |type|, otherwise null.
+  // See also GetActiveNetworkListByType.
+  const NetworkState* ActiveNetworkByType(const NetworkTypePattern& type);
 
   // Like ConnectedNetworkByType() but returns any matching visible network or
   // NULL. Mostly useful for mobile networks where there is generally only one
@@ -199,6 +202,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
                             bool visible_only,
                             size_t limit,
                             NetworkStateList* list);
+
+  // Sets |list| to contain the active networks matching |type|. An 'active'
+  // network is connecting or connected, and the first connected active network
+  // is the primary or 'default' network providing connectivity (which may be a
+  // VPN, use NetworkTypePattern::NonVirtual() to ignore VPNs). See
+  // GetNetworkListByType for notes on |list| results.
+  void GetActiveNetworkListByType(const NetworkTypePattern& type,
+                                  NetworkStateList* list);
 
   // Finds and returns the NetworkState associated with |service_path| or NULL
   // if not found. If |configured_only| is true, only returns saved entries
@@ -452,6 +463,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest,
                            BlockedByPolicyOnlyManagedIfAvailable);
 
+  // Implementation for GetNetworkListByType and GetActiveNetworkListByType.
+  void GetNetworkListByTypeImpl(const NetworkTypePattern& type,
+                                bool configured_only,
+                                bool visible_only,
+                                bool active_only,
+                                size_t limit,
+                                NetworkStateList* list);
+
   // Sorts the network list. Called when all network updates have been received,
   // or when the network list is requested but the list is in an unsorted state.
   // Networks are sorted as follows, maintaining the existing relative ordering:
@@ -527,6 +546,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // Notifies observers when the default network or its properties change.
   void NotifyDefaultNetworkChanged();
 
+  // Notifies observers when the active state of any current or previously
+  // active network changes, or the active networks order changes.
+  bool ActiveNetworksChanged(const NetworkStateList& active_networks);
+  void NotifyIfActiveNetworksChanged();
+
   // Notifies observers about changes to |network|, including IPConfg.
   void NotifyNetworkPropertiesUpdated(const NetworkState* network);
 
@@ -599,6 +623,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // List of managed Tether network states, which exist separately from
   // |network_list_|.
   ManagedStateList tether_network_list_;
+
+  // List of active networks, used to limit ActiveNetworksChanged events.
+  class ActiveNetworkState;
+  std::vector<ActiveNetworkState> active_network_list_;
 
   // Set to true when the network list is sorted, cleared when network updates
   // arrive. Used to trigger sorting when needed.

@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
 #define ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -33,9 +35,8 @@ class TrayNetworkStateObserver
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void DeviceListChanged() override;
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
+                                 active_networks) override;
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
 
   // NetworkPortalDetector::Observer

@@ -72,17 +72,11 @@ std::string GetLogName(const ManagedState* state) {
 
 bool ShouldIncludeNetworkInList(const NetworkState* network_state,
                                 bool configured_only,
-                                bool visible_only,
-                                bool get_active) {
+                                bool visible_only) {
   if (configured_only && !network_state->IsInProfile())
     return false;
 
   if (visible_only && !network_state->visible())
-    return false;
-
-  bool is_network_active =
-      network_state->IsConnectedState() || network_state->IsConnectingState();
-  if (is_network_active != get_active)
     return false;
 
   if (network_state->type() == shill::kTypeWifi &&
@@ -97,6 +91,26 @@ bool ShouldIncludeNetworkInList(const NetworkState* network_state,
 }
 
 }  // namespace
+
+// Class for tracking properties that affect whether a NetworkState is active.
+class NetworkStateHandler::ActiveNetworkState {
+ public:
+  explicit ActiveNetworkState(const NetworkState* network)
+      : guid_(network->guid()),
+        connection_state_(network->connection_state()) {}
+
+  bool MatchesNetworkState(const NetworkState* network) {
+    return guid_ == network->guid() &&
+           connection_state_ == network->connection_state();
+  }
+
+ private:
+  // Unique network identifier.
+  const std::string guid_;
+  // Active networks have a connected or connecting |connection_state_|, see
+  // NetworkState::Is{Connected|Connecting}State.
+  const std::string connection_state_;
+};
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
     "ethernet,wifi,cellular";
@@ -357,79 +371,33 @@ const NetworkState* NetworkStateHandler::DefaultNetwork() const {
 
 const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
     const NetworkTypePattern& type) {
-  // Sort to ensure visible networks are listed first.
-  if (!network_list_sorted_)
-    SortNetworkList(false /* ensure_cellular */);
-
-  const NetworkState* connected_network = nullptr;
-  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
-    DCHECK(network);
-    if (!network->update_received())
-      continue;
-    if (!network->IsConnectedState())
-      break;  // Connected networks are listed first.
-    if (network->Matches(type)) {
-      connected_network = network;
-      break;
-    }
+  NetworkStateList active_networks;
+  GetActiveNetworkListByType(type, &active_networks);
+  for (auto* network : active_networks) {
+    if (network->IsConnectedState())
+      return network;
   }
-
-  // Ethernet networks are prioritized over Tether networks.
-  if (connected_network && connected_network->type() == shill::kTypeEthernet) {
-    return connected_network;
-  }
-
-  // Tether networks are prioritized over non-Ethernet networks.
-  if (type.MatchesPattern(NetworkTypePattern::Tether())) {
-    for (auto iter = tether_network_list_.begin();
-         iter != tether_network_list_.end(); ++iter) {
-      const NetworkState* network = (*iter)->AsNetworkState();
-      DCHECK(network);
-      if (network->IsConnectedState())
-        return network;
-    }
-  }
-
-  return connected_network;
+  return nullptr;
 }
 
 const NetworkState* NetworkStateHandler::ConnectingNetworkByType(
-    const NetworkTypePattern& type) const {
-  const NetworkState* connecting_network = nullptr;
-
-  // Active networks are always listed first by Shill so no need to sort.
-  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
-    DCHECK(network);
-    if (!network->update_received() || network->IsConnectedState())
-      continue;
-    if (!network->IsConnectingState())
-      break;  // Connected and connecting networks are listed first.
-    if (network->Matches(type)) {
-      connecting_network = network;
-      break;
-    }
+    const NetworkTypePattern& type) {
+  NetworkStateList active_networks;
+  GetActiveNetworkListByType(type, &active_networks);
+  for (auto* network : active_networks) {
+    if (network->IsConnectingState())
+      return network;
   }
+  return nullptr;
+}
 
-  // Ethernet networks are prioritized over Tether networks.
-  if (connecting_network &&
-      connecting_network->type() == shill::kTypeEthernet) {
-    return connecting_network;
-  }
-
-  // Tether networks are prioritized over non-Ethernet networks.
-  if (type.MatchesPattern(NetworkTypePattern::Tether())) {
-    for (auto iter = tether_network_list_.begin();
-         iter != tether_network_list_.end(); ++iter) {
-      const NetworkState* network = (*iter)->AsNetworkState();
-      DCHECK(network);
-      if (network->IsConnectingState())
-        return network;
-    }
-  }
-
-  return connecting_network;
+const NetworkState* NetworkStateHandler::ActiveNetworkByType(
+    const NetworkTypePattern& type) {
+  NetworkStateList active_networks;
+  GetActiveNetworkListByType(type, &active_networks);
+  if (active_networks.size() > 0)
+    return active_networks.front();
+  return nullptr;
 }
 
 const NetworkState* NetworkStateHandler::FirstNetworkByType(
@@ -509,6 +477,25 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
                                                bool visible_only,
                                                size_t limit,
                                                NetworkStateList* list) {
+  GetNetworkListByTypeImpl(type, configured_only, visible_only,
+                           false /* active_only */, limit, list);
+}
+
+void NetworkStateHandler::GetActiveNetworkListByType(
+    const NetworkTypePattern& type,
+    NetworkStateList* list) {
+  GetNetworkListByTypeImpl(type, false /* configured_only */,
+                           false /* visible_only */, true /* active_only */,
+                           0 /* no limit */, list);
+}
+
+void NetworkStateHandler::GetNetworkListByTypeImpl(
+    const NetworkTypePattern& type,
+    bool configured_only,
+    bool visible_only,
+    bool active_only,
+    size_t limit,
+    NetworkStateList* list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(list);
   list->clear();
@@ -526,40 +513,48 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
     AppendTetherNetworksToList(true /* get_active */, limit, list);
 
   // Second, add active non-Tether networks.
-  for (auto iter = network_list_.begin();
-       iter != network_list_.end() && list->size() < limit; ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
+  for (const auto& managed : network_list_) {
+    const NetworkState* network = managed.get()->AsNetworkState();
     DCHECK(network);
     if (!network->update_received() || !network->Matches(type))
       continue;
-    if (!ShouldIncludeNetworkInList(network, configured_only, visible_only,
-                                    true /* get_active */)) {
+    if (!network->IsConnectingOrConnected())
+      break;  // Shill lists active networks first.
+    if (!ShouldIncludeNetworkInList(network, configured_only, visible_only))
       continue;
-    }
+
     if (network->type() == shill::kTypeEthernet) {
       // Ethernet networks should always be in front.
       list->insert(list->begin(), network);
     } else {
       list->push_back(network);
     }
+    if (list->size() >= limit)
+      return;
   }
+
+  if (active_only)
+    return;
 
   // Third, add inactive Tether networks.
   if (type.MatchesPattern(NetworkTypePattern::Tether()))
     AppendTetherNetworksToList(false /* get_active */, limit, list);
+  if (list->size() >= limit)
+    return;
 
   // Fourth, add inactive non-Tether networks.
-  for (auto iter = network_list_.begin();
-       iter != network_list_.end() && list->size() < limit; ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
+  for (const auto& managed : network_list_) {
+    const NetworkState* network = managed.get()->AsNetworkState();
     DCHECK(network);
     if (!network->update_received() || !network->Matches(type))
       continue;
-    if (!ShouldIncludeNetworkInList(network, configured_only, visible_only,
-                                    false /* get_active */)) {
+    if (network->IsConnectingOrConnected())
       continue;
-    }
+    if (!ShouldIncludeNetworkInList(network, configured_only, visible_only))
+      continue;
     list->push_back(network);
+    if (list->size() >= limit)
+      return;
   }
 }
 
@@ -575,12 +570,12 @@ void NetworkStateHandler::AppendTetherNetworksToList(bool get_active,
        iter != tether_network_list_.end() && list->size() < limit; ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
-
+    if (network->IsConnectingOrConnected() != get_active)
+      continue;
     if (!ShouldIncludeNetworkInList(network, false /* configured_only */,
-                                    false /* visible_only */, get_active)) {
+                                    false /* visible_only */)) {
       continue;
     }
-
     list->push_back(network);
   }
 }
@@ -709,14 +704,17 @@ bool NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
   for (auto iter = tether_network_list_.begin();
        iter != tether_network_list_.end(); ++iter) {
     if (iter->get()->AsNetworkState()->guid() == guid) {
-      NetworkState* wifi_network = GetModifiableNetworkStateFromGuid(
-          iter->get()->AsNetworkState()->tether_guid());
+      NetworkState* tether_network = iter->get()->AsNetworkState();
+      bool was_active = tether_network->IsConnectingOrConnected();
+      NetworkState* wifi_network =
+          GetModifiableNetworkStateFromGuid(tether_network->tether_guid());
       if (wifi_network)
         wifi_network->set_tether_guid(std::string());
-
       tether_network_list_.erase(iter);
-      NotifyNetworkListChanged();
 
+      if (was_active)
+        NotifyIfActiveNetworksChanged();
+      NotifyNetworkListChanged();
       return true;
     }
   }
@@ -1394,6 +1392,8 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     NotifyNetworkPropertiesUpdated(network);
     if (network->path() == default_network_path_)
       NotifyDefaultNetworkChanged();
+    if (network->IsConnectingOrConnected())
+      NotifyIfActiveNetworksChanged();
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     DeviceState* device = GetModifiableDeviceState(path);
     if (!device)
@@ -1428,6 +1428,7 @@ void NetworkStateHandler::ManagedStateListChanged(
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     SortNetworkList(true /* ensure_cellular */);
     UpdateNetworkStats();
+    NotifyIfActiveNetworksChanged();
     NotifyNetworkListChanged();
     UpdateManagedWifiNetworkAvailable();
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
@@ -1803,6 +1804,7 @@ void NetworkStateHandler::NotifyNetworkConnectionStateChanged(
   for (auto& observer : observers_)
     observer.NetworkConnectionStateChanged(network);
   notifying_network_observers_ = false;
+  NotifyIfActiveNetworksChanged();
 }
 
 void NetworkStateHandler::NotifyDefaultNetworkChanged() {
@@ -1820,6 +1822,36 @@ void NetworkStateHandler::NotifyDefaultNetworkChanged() {
   notifying_network_observers_ = true;
   for (auto& observer : observers_)
     observer.DefaultNetworkChanged(default_network);
+  notifying_network_observers_ = false;
+}
+
+bool NetworkStateHandler::ActiveNetworksChanged(
+    const NetworkStateList& active_networks) {
+  if (active_networks.size() != active_network_list_.size())
+    return true;
+  for (size_t i = 0; i < active_network_list_.size(); ++i) {
+    if (!active_network_list_[i].MatchesNetworkState(active_networks[i]))
+      return true;
+  }
+  return false;
+}
+
+void NetworkStateHandler::NotifyIfActiveNetworksChanged() {
+  SCOPED_NET_LOG_IF_SLOW();
+  NET_LOG(EVENT) << "NOTIFY:ActiveNetworksChanged";
+  NetworkStateList active_networks;
+  GetActiveNetworkListByType(NetworkTypePattern::Default(), &active_networks);
+  if (!ActiveNetworksChanged(active_networks))
+    return;
+
+  active_network_list_.clear();
+  active_network_list_.reserve(active_networks.size());
+  for (const NetworkState* network : active_networks)
+    active_network_list_.emplace_back(network);
+
+  notifying_network_observers_ = true;
+  for (auto& observer : observers_)
+    observer.ActiveNetworksChanged(active_networks);
   notifying_network_observers_ = false;
 }
 

@@ -10,33 +10,29 @@ NetworkStateHandlerObserver::NetworkStateHandlerObserver() = default;
 
 NetworkStateHandlerObserver::~NetworkStateHandlerObserver() = default;
 
-void NetworkStateHandlerObserver::NetworkListChanged() {
-}
+void NetworkStateHandlerObserver::NetworkListChanged() {}
 
-void NetworkStateHandlerObserver::DeviceListChanged() {
-}
+void NetworkStateHandlerObserver::DeviceListChanged() {}
 
 void NetworkStateHandlerObserver::DefaultNetworkChanged(
-    const NetworkState* network) {
-}
+    const NetworkState* network) {}
 
 void NetworkStateHandlerObserver::NetworkConnectionStateChanged(
-    const NetworkState* network) {
-}
+    const NetworkState* network) {}
+
+void NetworkStateHandlerObserver::ActiveNetworksChanged(
+    const std::vector<const NetworkState*>& active_networks) {}
 
 void NetworkStateHandlerObserver::NetworkPropertiesUpdated(
-    const NetworkState* network) {
-}
+    const NetworkState* network) {}
 
 void NetworkStateHandlerObserver::DevicePropertiesUpdated(
-    const chromeos::DeviceState* device) {
-}
+    const chromeos::DeviceState* device) {}
 
 void NetworkStateHandlerObserver::ScanRequested(
     const NetworkTypePattern& type) {}
 
-void NetworkStateHandlerObserver::ScanCompleted(const DeviceState* device) {
-}
+void NetworkStateHandlerObserver::ScanCompleted(const DeviceState* device) {}
 
 void NetworkStateHandlerObserver::OnShuttingDown() {}
 
