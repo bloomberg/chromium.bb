@@ -5,12 +5,13 @@
 
 ## Overview
 
-Logging used to be done using Android's [android.util.Log]
-(https://developer.android.com/reference/android/util/Log.html).
+Logging used to be done using Android's
+[android.util.Log](https://developer.android.com/reference/android/util/Log.html).
 
-A wrapper on that is now available: org.chromium.base.Log. It is designed to
-write logs as belonging to logical groups going beyond single classes, and to
-make it easy to switch logging on or off for individual groups.
+A wrapper on that is now available:
+[org.chromium.base.Log](/base/android/java/src/org/chromium/base/Log.java). It
+is designed to write logs as belonging to logical groups going beyond single
+classes, and to make it easy to switch logging on or off for individual groups.
 
 Usage:
 
