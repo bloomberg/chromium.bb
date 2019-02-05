@@ -33,6 +33,10 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
       loader_factory_(std::move(loader_factory)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  // In the current implementation, dedicated workers use
+  // ServiceWorkerProviderHost w/ kForSharedWorker.
+  // TODO(nhiroki): Rename it to kForWorker for both dedicated workers and
+  // shared workers, or add kForDedicatedWorker (https://crbug.com/906991).
   DCHECK_EQ(service_worker_provider_host_->provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 }
@@ -54,10 +58,10 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
   // When NetworkService is not enabled, this function is called from the
   // renderer process, so use ReportBadMessage() instead of DCHECK().
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Handle only the main script (RESOURCE_TYPE_SHARED_WORKER). Import scripts
+    // Handle only the main script. Import scripts (RESOURCE_TYPE_SCRIPT)
     // should go to the network loader or controller.
-    // TODO(nhiroki): Support dedicated workers (https://crbug.com/906991).
-    if (resource_request.resource_type != RESOURCE_TYPE_SHARED_WORKER) {
+    if (resource_request.resource_type != RESOURCE_TYPE_WORKER &&
+        resource_request.resource_type != RESOURCE_TYPE_SHARED_WORKER) {
       mojo::ReportBadMessage(
           "WorkerScriptLoaderFactory should only get requests for worker "
           "scripts");
@@ -69,7 +73,9 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
       return;
     }
   }
-  DCHECK_EQ(RESOURCE_TYPE_SHARED_WORKER, resource_request.resource_type);
+  DCHECK(resource_request.resource_type == RESOURCE_TYPE_WORKER ||
+         resource_request.resource_type == RESOURCE_TYPE_SHARED_WORKER)
+      << resource_request.resource_type;
   DCHECK(!script_loader_);
 
   // Create a WorkerScriptLoader to load the script.

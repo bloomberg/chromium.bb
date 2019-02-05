@@ -58,9 +58,9 @@ void WorkerScriptFetchInitiator::Start(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(storage_partition);
-
-  // TODO(nhiroki): Support DedicatedWorker (https://crbug.com/906991).
-  DCHECK_EQ(RESOURCE_TYPE_SHARED_WORKER, resource_type);
+  DCHECK(resource_type == RESOURCE_TYPE_WORKER ||
+         resource_type == RESOURCE_TYPE_SHARED_WORKER)
+      << resource_type;
 
   bool constructor_uses_file_url =
       request_initiator.scheme() == url::kFileScheme;
@@ -173,6 +173,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
 void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
     network::ResourceRequest* resource_request,
     BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   // TODO(nhiroki): Return early when the request is neither HTTP nor HTTPS
