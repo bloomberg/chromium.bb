@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//services/media_session/public/mojom/media_session.mojom"
-public_headers = [ "//services/media_session/public/cpp/media_metadata.h" ]
+public_headers = [
+  "//services/media_session/public/cpp/media_image.h",
+  "//services/media_session/public/cpp/media_metadata.h",
+]
 traits_headers =
     [ "//services/media_session/public/cpp/media_session_mojom_traits.h" ]
 public_deps = [
@@ -13,7 +16,7 @@ deps = [
   "//ui/gfx/geometry/mojo:struct_traits",
 ]
 type_mappings = [
-  "media_session.mojom.MediaImage=media_session::MediaMetadata::MediaImage",
+  "media_session.mojom.MediaImage=media_session::MediaImage",
   "media_session.mojom.MediaMetadata=media_session::MediaMetadata",
 ]
 sources = [

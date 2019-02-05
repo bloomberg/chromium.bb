@@ -5,30 +5,30 @@
 #ifndef SERVICES_MEDIA_SESSION_PUBLIC_CPP_MEDIA_SESSION_MOJOM_TRAITS_H_
 #define SERVICES_MEDIA_SESSION_PUBLIC_CPP_MEDIA_SESSION_MOJOM_TRAITS_H_
 
+#include <vector>
+
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<media_session::mojom::MediaImageDataView,
-                    media_session::MediaMetadata::MediaImage> {
-  static const GURL& src(
-      const media_session::MediaMetadata::MediaImage& image) {
+                    media_session::MediaImage> {
+  static const GURL& src(const media_session::MediaImage& image) {
     return image.src;
   }
 
-  static const base::string16& type(
-      const media_session::MediaMetadata::MediaImage& image) {
+  static const base::string16& type(const media_session::MediaImage& image) {
     return image.type;
   }
 
   static const std::vector<gfx::Size>& sizes(
-      const media_session::MediaMetadata::MediaImage& image) {
+      const media_session::MediaImage& image) {
     return image.sizes;
   }
 
   static bool Read(media_session::mojom::MediaImageDataView data,
-                   media_session::MediaMetadata::MediaImage* out);
+                   media_session::MediaImage* out);
 };
 
 template <>
@@ -49,7 +49,7 @@ struct StructTraits<media_session::mojom::MediaMetadataDataView,
     return metadata.album;
   }
 
-  static const std::vector<media_session::MediaMetadata::MediaImage>& artwork(
+  static const std::vector<media_session::MediaImage>& artwork(
       const media_session::MediaMetadata& metadata) {
     return metadata.artwork;
   }

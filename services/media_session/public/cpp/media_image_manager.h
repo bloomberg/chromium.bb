@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "services/media_session/public/cpp/media_metadata.h"
+#include "services/media_session/public/cpp/media_image.h"
 
 namespace gfx {
 class Size;
@@ -53,15 +53,14 @@ class COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaImageManager {
 
   // Select the best image from the |images|. If an image could not be selected
   // then will return null.
-  base::Optional<MediaMetadata::MediaImage> SelectImage(
-      const std::vector<MediaMetadata::MediaImage>& images);
+  base::Optional<MediaImage> SelectImage(const std::vector<MediaImage>& images);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaImageManagerTest,
                            CheckExpectedImageExtensionHashes);
   FRIEND_TEST_ALL_PREFIXES(MediaImageManagerTest, CheckExpectedImageTypeHashes);
 
-  double GetImageScore(const MediaMetadata::MediaImage& image) const;
+  double GetImageScore(const MediaImage& image) const;
 
   double GetImageSizeScore(const gfx::Size& size) const;
 

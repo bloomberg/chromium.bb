@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 
 namespace content {
@@ -42,8 +43,7 @@ bool CheckMediaImageSrcSanity(const GURL& src) {
   return true;
 }
 
-bool CheckMediaImageSanity(
-    const media_session::MediaMetadata::MediaImage& image) {
+bool CheckMediaImageSanity(const media_session::MediaImage& image) {
   if (!CheckMediaImageSrcSanity(image.src))
     return false;
   if (image.type.size() > kMaxMediaImageTypeLength)

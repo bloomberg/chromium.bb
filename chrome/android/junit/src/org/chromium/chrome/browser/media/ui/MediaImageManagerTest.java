@@ -15,8 +15,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.services.media_session.MediaMetadata.MediaImage;
-
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
@@ -30,6 +28,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.services.media_session.MediaImage;
 
 import java.util.ArrayList;
 

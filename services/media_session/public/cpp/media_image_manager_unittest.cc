@@ -66,14 +66,14 @@ TEST_F(MediaImageManagerTest, CheckExpectedImageTypeHashes) {
 }
 
 TEST_F(MediaImageManagerTest, PickImageFromMimeType) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image1;
+  MediaImage image1;
   image1.type = base::ASCIIToUTF16("image/bmp");
   image1.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image1);
 
-  media_session::MediaMetadata::MediaImage image2;
+  MediaImage image2;
   image2.type = base::ASCIIToUTF16("image/png");
   image2.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image2);
@@ -82,19 +82,19 @@ TEST_F(MediaImageManagerTest, PickImageFromMimeType) {
 }
 
 TEST_F(MediaImageManagerTest, PickImageFromExtension) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image1;
+  MediaImage image1;
   image1.src = GURL("https://www.example.com/test.bmp");
   image1.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image1);
 
-  media_session::MediaMetadata::MediaImage image2;
+  MediaImage image2;
   image2.src = GURL("https://www.example.com/test.PNG");
   image2.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image2);
 
-  media_session::MediaMetadata::MediaImage image3;
+  MediaImage image3;
   image3.src = GURL("https://www.example.com/test");
   image3.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image3);
@@ -103,9 +103,9 @@ TEST_F(MediaImageManagerTest, PickImageFromExtension) {
 }
 
 TEST_F(MediaImageManagerTest, IgnoreImageTooSmall) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image;
+  MediaImage image;
   image.sizes.push_back(gfx::Size(1, 1));
   images.push_back(image);
 
@@ -113,14 +113,14 @@ TEST_F(MediaImageManagerTest, IgnoreImageTooSmall) {
 }
 
 TEST_F(MediaImageManagerTest, PickImageUseDefaultScoreIfNoSize) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image1;
+  MediaImage image1;
   image1.src = GURL("https://www.example.com/test.bmp");
   image1.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image1);
 
-  media_session::MediaMetadata::MediaImage image2;
+  MediaImage image2;
   image2.src = GURL("https://www.example.com/test.PNG");
   images.push_back(image2);
 
@@ -128,13 +128,13 @@ TEST_F(MediaImageManagerTest, PickImageUseDefaultScoreIfNoSize) {
 }
 
 TEST_F(MediaImageManagerTest, PickImageCloserToIdeal) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image1;
+  MediaImage image1;
   image1.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image1);
 
-  media_session::MediaMetadata::MediaImage image2;
+  MediaImage image2;
   image2.sizes.push_back(gfx::Size(kMinSize, kMinSize));
   images.push_back(image2);
 
@@ -142,13 +142,13 @@ TEST_F(MediaImageManagerTest, PickImageCloserToIdeal) {
 }
 
 TEST_F(MediaImageManagerTest, PickImageWithMultipleSizes) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image1;
+  MediaImage image1;
   image1.sizes.push_back(gfx::Size(kIdealSize - 5, kIdealSize - 5));
   images.push_back(image1);
 
-  media_session::MediaMetadata::MediaImage image2;
+  MediaImage image2;
   image2.sizes.push_back(gfx::Size(kMinSize, kMinSize));
   image2.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image2);
@@ -157,13 +157,13 @@ TEST_F(MediaImageManagerTest, PickImageWithMultipleSizes) {
 }
 
 TEST_F(MediaImageManagerTest, PickImageWithBetterAspectRatio) {
-  std::vector<MediaMetadata::MediaImage> images;
+  std::vector<MediaImage> images;
 
-  media_session::MediaMetadata::MediaImage image1;
+  MediaImage image1;
   image1.sizes.push_back(gfx::Size(kIdealSize, kIdealSize));
   images.push_back(image1);
 
-  media_session::MediaMetadata::MediaImage image2;
+  MediaImage image2;
   image2.sizes.push_back(gfx::Size(kIdealSize, kMinSize));
   images.push_back(image2);
 

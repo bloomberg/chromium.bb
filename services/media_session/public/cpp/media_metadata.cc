@@ -4,21 +4,9 @@
 
 #include "services/media_session/public/cpp/media_metadata.h"
 
-#include <algorithm>
-#include <iterator>
+#include "services/media_session/public/cpp/media_image.h"
 
 namespace media_session {
-
-MediaMetadata::MediaImage::MediaImage() = default;
-
-MediaMetadata::MediaImage::MediaImage(const MediaImage& other) = default;
-
-MediaMetadata::MediaImage::~MediaImage() = default;
-
-bool MediaMetadata::MediaImage::operator==(
-    const MediaMetadata::MediaImage& other) const {
-  return src == other.src && type == other.type && sizes == other.sizes;
-}
 
 MediaMetadata::MediaMetadata() = default;
 
