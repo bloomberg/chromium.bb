@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -220,17 +221,15 @@ ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
   if (!is_valid_)
     return ContentSettingsPattern();
 
-  // A pattern is invalid if canonicalization is not idempotent.
+#if !defined(NDEBUG)
+  // For debug builds, check that canonicalization is idempotent.
   PatternParts twice_canonicalized_parts(parts_);
-  if (!Canonicalize(&twice_canonicalized_parts))
-    return ContentSettingsPattern();
+  DCHECK(Canonicalize(&twice_canonicalized_parts));
+  DCHECK(ContentSettingsPattern(std::move(twice_canonicalized_parts), true) ==
+         ContentSettingsPattern(parts_, true));
+#endif
 
-  ContentSettingsPattern canonical_pattern(std::move(parts_), true);
-  ContentSettingsPattern doubly_canonical_pattern(
-      std::move(twice_canonicalized_parts), true);
-  if (canonical_pattern != doubly_canonical_pattern)
-    return ContentSettingsPattern();
-  return canonical_pattern;
+  return ContentSettingsPattern(std::move(parts_), true);
 }
 
 // static
@@ -250,7 +249,18 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
       net::CanonicalizeHost(parts->host, &host_info));
   if (host_info.IsIPAddress() && parts->has_domain_wildcard)
     return false;
-  canonicalized_host = net::TrimEndingDot(canonicalized_host);
+
+  // Omit a single ending dot as long as there is at least one non-dot character
+  // before it, which is in line with the behavior of net::TrimEndingDot; but
+  // consider two ending dots an invalid pattern, otherwise canonicalization of
+  // a canonical pattern would not be idempotent.
+  if (base::EndsWith(canonicalized_host, "..", base::CompareCase::SENSITIVE)) {
+    return false;
+  } else if (canonicalized_host.size() >= 2u &&
+             base::EndsWith(canonicalized_host, ".",
+                            base::CompareCase::SENSITIVE)) {
+    canonicalized_host.pop_back();
+  }
 
   if ((parts->host.find('*') == std::string::npos) &&
       !canonicalized_host.empty()) {

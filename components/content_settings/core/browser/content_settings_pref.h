@@ -23,10 +23,6 @@
 class PrefService;
 class PrefChangeRegistrar;
 
-namespace prefs {
-class DictionaryValueUpdate;
-}
-
 namespace content_settings {
 
 class RuleIterator;
@@ -90,9 +86,6 @@ class ContentSettingsPref {
                   const ResourceIdentifier& resource_identifier,
                   const base::Time last_modified,
                   const base::Value* value);
-
-  static void CanonicalizeContentSettingsExceptions(
-      prefs::DictionaryValueUpdate* all_settings_dictionary);
 
   // In the debug mode, asserts that |lock_| is not held by this thread. It's
   // ok if some other thread holds |lock_|, as long as it will eventually

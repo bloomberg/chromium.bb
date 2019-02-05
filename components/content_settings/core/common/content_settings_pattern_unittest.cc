@@ -223,9 +223,22 @@ TEST(ContentSettingsPatternTest, TrimEndingDotFromHost) {
                Pattern("www.example.com.").ToString().c_str());
 
   EXPECT_TRUE(Pattern("www.example.com.") == Pattern("www.example.com"));
+  EXPECT_TRUE(Pattern("www.example.com.") == Pattern("www.example.com."));
 
   EXPECT_TRUE(Pattern(".").IsValid());
   EXPECT_STREQ(".", Pattern(".").ToString().c_str());
+  EXPECT_TRUE(Pattern("http://.").Matches(GURL("http://.")));
+
+  EXPECT_TRUE(Pattern("a..b").IsValid());
+  EXPECT_STREQ("a..b", Pattern("a..b").ToString().c_str());
+  EXPECT_TRUE(Pattern("a..b").Matches(GURL("http://a..b")));
+
+  EXPECT_TRUE(Pattern("a..b.").IsValid());
+  EXPECT_STREQ("a..b", Pattern("a..b.").ToString().c_str());
+  EXPECT_TRUE(Pattern("a..b.").Matches(GURL("http://a..b.")));
+
+  EXPECT_FALSE(Pattern("..").IsValid());
+  EXPECT_FALSE(Pattern("a..").IsValid());
 }
 
 TEST(ContentSettingsPatternTest, FromString_WithNoWildcards) {
