@@ -99,7 +99,7 @@ strings = {
     'fontFamily': 'Roboto, sans-serif',
     'fontSize': '75%',
     'language': 'en',
-    'textdirection': 'ltr',
+    'textDirection': 'ltr',
     }
 grdp_files = [
     '../../../chrome/app/chromeos_strings.grdp',
@@ -118,9 +118,10 @@ for m in re.finditer(r'SET_STRING\(\"(.*?)\",\s+(\w+)\);', private_api_strings):
   strings[m.group(1)] = resource_bundle.get(m.group(2), m.group(2))
 
 
+# Substitute $i18n{} and $i18nRaw{} in template with strings from grdp files.
 def i18n(template):
   repl = lambda x: strings.get(x.group(1), x.group())
-  return re.sub(r'\$i18n\{(.*?)\}', repl, template)
+  return re.sub(r'\$i18n(?:Raw)?\{(.*?)\}', repl, template)
 
 # Substitute $i18n{}.
 # Update relative paths.
