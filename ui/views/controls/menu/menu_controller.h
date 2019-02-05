@@ -21,6 +21,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_event_handler.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -64,6 +65,7 @@ class MenuControllerUITest;
 // forwarded to the MenuController from SubmenuView and MenuHost.
 class VIEWS_EXPORT MenuController
     : public base::SupportsWeakPtr<MenuController>,
+      public gfx::AnimationDelegate,
       public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.
@@ -214,6 +216,13 @@ class VIEWS_EXPORT MenuController
   // Returns whether this menu can handle input events right now. This method
   // can return false while running animations.
   bool CanProcessInputEvents() const;
+
+  // Gets the animation used for menu item alerts. The returned pointer lives as
+  // long as the MenuController.
+  const gfx::Animation* GetAlertAnimation() const { return &alert_animation_; }
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   friend class internal::MenuRunnerImpl;
@@ -589,6 +598,10 @@ class VIEWS_EXPORT MenuController
   // commands instead of parts of the prefix.
   bool ShouldContinuePrefixSelection() const;
 
+  // Manage alerted MenuItemViews that we are animating.
+  void RegisterAlertedItem(MenuItemView* item);
+  void UnregisterAlertedItem(MenuItemView* item);
+
   // The active instance.
   static MenuController* active_instance_;
 
@@ -738,6 +751,12 @@ class VIEWS_EXPORT MenuController
 #endif
 
   std::unique_ptr<MenuPreTargetHandler> menu_pre_target_handler_;
+
+  // Animation used for alerted MenuItemViews. Started on demand.
+  gfx::ThrobAnimation alert_animation_;
+
+  // Currently showing alerted menu items. Updated when submenus open and close.
+  base::flat_set<MenuItemView*> alerted_items_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

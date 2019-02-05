@@ -90,6 +90,10 @@ const int kBubbleTipSizeTopBottom = 11;
 // been showing).
 const float kMaximumLengthMovedToActivate = 4.0f;
 
+// Time to complete a cycle of the menu item alert animation.
+constexpr base::TimeDelta kAlertAnimationThrobDuration =
+    base::TimeDelta::FromMilliseconds(1000);
+
 // Returns true if the mnemonic of |menu| matches key.
 bool MatchesMnemonic(MenuItemView* menu, base::char16 key) {
   return key != 0 && menu->GetMnemonic() == key;
@@ -1198,6 +1202,18 @@ void MenuController::OnMenuItemDestroying(MenuItemView* menu_item) {
   if (menu_closure_animation_ && menu_closure_animation_->item() == menu_item)
     menu_closure_animation_.reset();
 #endif
+  UnregisterAlertedItem(menu_item);
+}
+
+void MenuController::AnimationProgressed(const gfx::Animation* animation) {
+  DCHECK_EQ(animation, &alert_animation_);
+
+  // Schedule paints at each alerted menu item. The menu items pull the
+  // animation's current value in their OnPaint methods.
+  for (MenuItemView* item : alerted_items_) {
+    if (item->GetParentMenuItem()->SubmenuIsShowing())
+      item->SchedulePaint();
+  }
 }
 
 void MenuController::SetSelection(MenuItemView* menu_item,
@@ -1488,7 +1504,8 @@ MenuController::MenuController(bool for_drop,
                                internal::MenuControllerDelegate* delegate)
     : for_drop_(for_drop),
       active_mouse_view_tracker_(std::make_unique<ViewTracker>()),
-      delegate_(delegate) {
+      delegate_(delegate),
+      alert_animation_(this) {
   delegate_stack_.push_back(delegate_);
   active_instance_ = this;
 }
@@ -1840,9 +1857,7 @@ void MenuController::CommitPendingSelection() {
 
   // Hide the old menu.
   for (size_t i = paths_differ_at; i < current_path.size(); ++i) {
-    if (current_path[i]->HasSubmenu()) {
-      current_path[i]->GetSubmenu()->Hide();
-    }
+    CloseMenu(current_path[i]);
   }
 
   // Copy pending to state_, making sure to preserve the direction menus were
@@ -1905,6 +1920,10 @@ void MenuController::CloseMenu(MenuItemView* item) {
   DCHECK(item);
   if (!item->HasSubmenu())
     return;
+
+  for (int i = 0; i < item->GetSubmenu()->GetMenuItemCount(); ++i)
+    UnregisterAlertedItem(item->GetSubmenu()->GetMenuItemAt(i));
+
   item->GetSubmenu()->Hide();
 }
 
@@ -1941,6 +1960,15 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   state_.open_leading.push_back(resulting_direction);
   bool do_capture = (!did_capture_ && !for_drop_);
   showing_submenu_ = true;
+
+  // Register alerted MenuItemViews so we can animate them. We do this here to
+  // handle both newly-opened submenus and submenus that have changed.
+  for (int i = 0; i < item->GetSubmenu()->GetMenuItemCount(); ++i) {
+    MenuItemView* const subitem = item->GetSubmenu()->GetMenuItemAt(i);
+    if (subitem->is_alerted())
+      RegisterAlertedItem(subitem);
+  }
+
   if (show) {
     item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
 
@@ -2971,6 +2999,24 @@ bool MenuController::ShouldContinuePrefixSelection() const {
   if (!item->SubmenuIsShowing())
     item = item->GetParentMenuItem();
   return item->GetSubmenu()->GetPrefixSelector()->ShouldContinueSelection();
+}
+
+void MenuController::RegisterAlertedItem(MenuItemView* item) {
+  alerted_items_.insert(item);
+  // Start animation if necessary. We stop the animation once no alerted
+  // items are showing.
+  if (!alert_animation_.is_animating()) {
+    alert_animation_.SetThrobDuration(
+        kAlertAnimationThrobDuration.InMilliseconds());
+    alert_animation_.StartThrobbing(-1);
+  }
+}
+
+void MenuController::UnregisterAlertedItem(MenuItemView* item) {
+  alerted_items_.erase(item);
+  // Stop animation if necessary.
+  if (alerted_items_.empty())
+    alert_animation_.Stop();
 }
 
 bool MenuController::CanProcessInputEvents() const {
