@@ -73,12 +73,13 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
   // it.
   PTP_WORK work_ = nullptr;
 
-  // PriorityQueue from which all threads of this worker pool get work.
-  PriorityQueue priority_queue_;
+  SchedulerLock lock_;
 
-  // Indicates whether the pool has been started yet. This is only accessed
-  // under |priority_queue_|'s lock.
-  bool started_ = false;
+  // PriorityQueue from which all threads of this worker pool get work.
+  PriorityQueue priority_queue_ GUARDED_BY(lock_);
+
+  // Indicates whether the pool has been started yet.
+  bool started_ GUARDED_BY(lock_) = false;
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.
