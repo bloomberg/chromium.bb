@@ -337,9 +337,10 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
       buildbucket_client = self.buildbucket_client
     if builders_array is None:
       builders_array = self.builders_array
+    buildstore = FakeBuildStore(db)
 
     return builder_status_lib.SlaveBuilderStatus(
-        master_build_id, db, config, metadata, buildbucket_client,
+        master_build_id, buildstore, config, metadata, buildbucket_client,
         builders_array, dry_run)
 
   def testGetSlaveFailures(self):
@@ -581,6 +582,7 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
   def setUp(self):
     self.build_id = 0
     self.db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.db)
     self.site_config = config_lib.GetConfig()
     self.config = self.site_config['master-paladin']
     self.slave_config = self.site_config['eve-paladin']
@@ -592,11 +594,10 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     self.builders_array = [self.slave_1, self.slave_2]
 
   def CreateBuilderStatusesFetcher(
-      self, build_id=None, db=None, success=True, message=None, config=None,
+      self, build_id=None, success=True, message=None, config=None,
       metadata=None, buildbucket_client=None, builders_array=None,
       dry_run=True):
     build_id = build_id or self.build_id
-    db = db or self.db
     message = message or self.message
     config = config or self.config
     metadata = metadata or self.metadata
@@ -606,8 +607,8 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     self.PatchObject(buildbucket_lib, 'FetchCurrentSlaveBuilders',
                      return_value=builders_array)
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
-        build_id, db, success, message, config, metadata, buildbucket_client,
-        builders_array=builders_array, dry_run=dry_run)
+        build_id, self.buildstore, success, message, config, metadata,
+        buildbucket_client, builders_array=builders_array, dry_run=dry_run)
 
     return builder_statuses_fetcher
 

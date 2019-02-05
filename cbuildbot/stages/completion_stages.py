@@ -167,7 +167,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # the tree status.
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
         build_id,
-        db,
+        self.buildstore,
         self.success,
         self.message,
         self._run.config,

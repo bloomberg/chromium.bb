@@ -499,7 +499,7 @@ class TriageRelevantChanges(object):
     # TODO(nxia): Improve SlaveBuilderStatus to take buildbucket_info_dict
     # and cidb_status_dict as arguments to avoid extra queries.
     slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
-        self.master_build_id, self.db, self.config, self.metadata,
+        self.master_build_id, self.buildstore, self.config, self.metadata,
         self.buildbucket_client, self.builders_array, self.dry_run)
 
     for build_config, bb_info in self.buildbucket_info_dict.iteritems():

@@ -271,13 +271,14 @@ class SlaveBuilderStatus(object):
   fetches BuilderStatus information for important slaves.
   """
 
-  def __init__(self, master_build_id, db, config, metadata, buildbucket_client,
-               builders_array, dry_run, exclude_experimental=True):
+  def __init__(self, master_build_id, buildstore, config, metadata,
+               buildbucket_client, builders_array, dry_run,
+               exclude_experimental=True):
     """Create an instance of SlaveBuilderStatus for a given master build.
 
     Args:
       master_build_id: The build_id of the master build.
-      db: An instance of cidb.CIDBConnection to fetch data from CIDB.
+      buildstore: A BuildStore instance to make DB calls with.
       config: Instance of config_lib.BuildConfig. Config dict of this build.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 build.
@@ -289,7 +290,8 @@ class SlaveBuilderStatus(object):
         True.
     """
     self.master_build_id = master_build_id
-    self.db = db
+    self.buildstore = buildstore
+    self.db = buildstore.GetCIDBHandle()
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
@@ -323,8 +325,7 @@ class SlaveBuilderStatus(object):
 
     child_build_ids = [
         c['id']
-        for c in self.db.GetBuildStatusesWithBuildbucketIds(
-            slave_buildbucket_ids)]
+        for c in self.buildstore.GetBuildStatuses(slave_buildbucket_ids)]
     stage_failures = self.db.GetBuildsFailures(child_build_ids)
     stage_failures_by_build = cros_collections.GroupNamedtuplesByKey(
         stage_failures, 'build_config')
@@ -550,14 +551,14 @@ class SlaveBuilderStatus(object):
 class BuilderStatusesFetcher(object):
   """Class to fetch BuilderStatus of a build and its slave builds(if any)."""
 
-  def __init__(self, build_id, db, success, message, config, metadata,
+  def __init__(self, build_id, buildstore, success, message, config, metadata,
                buildbucket_client, builders_array=None,
                exclude_experimental=True, dry_run=True):
     """Initialize BuilderStatusesFetcher.
 
     Args:
       build_id: Build id of the build.
-      db: An instance of cidb.CIDBConnection.
+      buildstore: A BuildStore instance to make DB calls.
       success: Whether the build succeeded so far.
       message: The failure message (see return type of
         generic_stages.GetBuildFailureMessage) of the build.
@@ -573,7 +574,8 @@ class BuilderStatusesFetcher(object):
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
     self.build_id = build_id
-    self.db = db
+    self.buildstore = buildstore
+    self.db = buildstore.GetCIDBHandle()
     self.success = success
     self.message = message
     self.config = config
@@ -608,7 +610,7 @@ class BuilderStatusesFetcher(object):
       return {}
 
     slave_builder_statuses = SlaveBuilderStatus(
-        self.build_id, self.db, self.config, self.metadata,
+        self.build_id, self.buildstore, self.config, self.metadata,
         self.buildbucket_client, self.builders_array, self.dry_run,
         exclude_experimental=self.exclude_experimental)
 
