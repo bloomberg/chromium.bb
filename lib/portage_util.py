@@ -1813,7 +1813,7 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
   for full_package_name, ebuild_path in ret.iteritems():
     cpv = SplitCPV(full_package_name, strict=False)
     path_category, path_package_name, _ = SplitEbuildPath(ebuild_path)
-    if not (path_category == cpv.category and
+    if not ((cpv.category is None or path_category == cpv.category) and
             cpv.package.startswith(path_package_name)):
       mismatches.append(
           "%s doesn't match %s" % (ebuild_path, full_package_name))

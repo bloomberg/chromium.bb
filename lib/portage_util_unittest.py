@@ -1515,6 +1515,18 @@ class FindEbuildTest(cros_test_lib.RunCommandTestCase):
         {'misc/bar': '/chromeos-overlay/misc/bar/bar.ebuild',
          'misc/foo': '/chromeos-overlay/misc/foo/foo.ebuild'})
 
+  def testFindEbuildsForPackagesWithoutCategoryReturnResults(self):
+    equery_output = ('/chromeos-overlay/misc/foo/foo.ebuild\n'
+                     '/chromeos-overlay/misc/bar/bar.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'misc/foo', 'bar'],
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildsForPackages(['misc/foo', 'bar'],
+                                            sysroot='/build/nami'),
+        {'bar': '/chromeos-overlay/misc/bar/bar.ebuild',
+         'misc/foo': '/chromeos-overlay/misc/foo/foo.ebuild'})
+
   def testFindEbuildsForPackagesReturnResultsComplexPackages(self):
     ebuild_path = (
         '/portage-stable/sys-libs/timezone-data/timezone-data-2018i.ebuild')
