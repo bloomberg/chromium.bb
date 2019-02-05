@@ -21,10 +21,13 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_event_type.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/stream_socket.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_info.h"
 #include "url/url_canon.h"
 
 namespace net {
@@ -184,7 +187,8 @@ class HttpStreamParser::SeekableIOBuffer : public IOBuffer {
 // 2 CRLFs + max of 8 hex chars.
 const size_t HttpStreamParser::kChunkHeaderFooterSize = 12;
 
-HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
+HttpStreamParser::HttpStreamParser(StreamSocket* stream_socket,
+                                   bool connection_is_reused,
                                    const HttpRequestInfo* request,
                                    GrowableIOBuffer* read_buffer,
                                    const NetLogWithSource& net_log)
@@ -204,13 +208,12 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
       response_body_read_(0),
       user_read_buf_(nullptr),
       user_read_buf_len_(0),
-      connection_(connection),
+      stream_socket_(stream_socket),
+      connection_is_reused_(connection_is_reused),
       net_log_(net_log),
       sent_last_chunk_(false),
       upload_error_(OK),
       weak_ptr_factory_(this) {
-  CHECK(connection_) << "ClientSocketHandle passed to HttpStreamParser must "
-                        "not be NULL. See crbug.com/790776";
   io_callback_ = base::BindRepeating(&HttpStreamParser::OnIOComplete,
                                      weak_ptr_factory_.GetWeakPtr());
 }
@@ -239,7 +242,7 @@ int HttpStreamParser::SendRequest(
 
   // Put the peer's IP address and port into the response.
   IPEndPoint ip_endpoint;
-  int result = connection_->socket()->GetPeerAddress(&ip_endpoint);
+  int result = stream_socket_->GetPeerAddress(&ip_endpoint);
   if (result != OK)
     return result;
   response_->socket_address = HostPortPair::FromIPEndPoint(ip_endpoint);
@@ -345,12 +348,6 @@ int HttpStreamParser::ReadResponseHeaders(CompletionOnceCallback callback) {
     callback_ = std::move(callback);
 
   return result > 0 ? OK : result;
-}
-
-void HttpStreamParser::Close(bool not_reusable) {
-  if (not_reusable && connection_->socket())
-    connection_->socket()->Disconnect();
-  connection_->Reset();
 }
 
 int HttpStreamParser::ReadResponseBody(IOBuffer* buf,
@@ -464,7 +461,7 @@ int HttpStreamParser::DoSendHeaders() {
     response_->request_time = base::Time::Now();
 
   io_state_ = STATE_SEND_HEADERS_COMPLETE;
-  return connection_->socket()->Write(
+  return stream_socket_->Write(
       request_headers_.get(), bytes_remaining, io_callback_,
       NetworkTrafficAnnotationTag(traffic_annotation_));
 }
@@ -513,7 +510,7 @@ int HttpStreamParser::DoSendHeadersComplete(int result) {
 int HttpStreamParser::DoSendBody() {
   if (request_body_send_buf_->BytesRemaining() > 0) {
     io_state_ = STATE_SEND_BODY_COMPLETE;
-    return connection_->socket()->Write(
+    return stream_socket_->Write(
         request_body_send_buf_.get(), request_body_send_buf_->BytesRemaining(),
         io_callback_, NetworkTrafficAnnotationTag(traffic_annotation_));
   }
@@ -608,8 +605,8 @@ int HttpStreamParser::DoReadHeaders() {
   // See if the user is passing in an IOBuffer with a NULL |data_|.
   CHECK(read_buf_->data());
 
-  return connection_->socket()
-      ->Read(read_buf_.get(), read_buf_->RemainingCapacity(), io_callback_);
+  return stream_socket_->Read(read_buf_.get(), read_buf_->RemainingCapacity(),
+                              io_callback_);
 }
 
 int HttpStreamParser::DoReadHeadersComplete(int result) {
@@ -694,8 +691,8 @@ int HttpStreamParser::DoReadBody() {
     return 0;
 
   DCHECK_EQ(0, read_buf_->offset());
-  return connection_->socket()
-      ->Read(user_read_buf_.get(), user_read_buf_len_, io_callback_);
+  return stream_socket_->Read(user_read_buf_.get(), user_read_buf_len_,
+                              io_callback_);
 }
 
 int HttpStreamParser::DoReadBodyComplete(int result) {
@@ -815,7 +812,7 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
       // on the original connection close error, as rather than being an
       // empty HTTP/0.9 response it's much more likely the server closed the
       // socket before it received the request.
-      if (!connection_->is_reused())
+      if (!connection_is_reused_)
         return ERR_EMPTY_RESPONSE;
       return result;
     }
@@ -1103,16 +1100,6 @@ bool HttpStreamParser::IsMoreDataBuffered() const {
   return read_buf_->offset() > read_buf_unused_offset_;
 }
 
-bool HttpStreamParser::IsConnectionReused() const {
-  ClientSocketHandle::SocketReuseType reuse_type = connection_->reuse_type();
-  return connection_->is_reused() ||
-         reuse_type == ClientSocketHandle::UNUSED_IDLE;
-}
-
-void HttpStreamParser::SetConnectionReused() {
-  connection_->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
-}
-
 bool HttpStreamParser::CanReuseConnection() const {
   if (!CanFindEndOfResponse())
     return false;
@@ -1130,20 +1117,21 @@ bool HttpStreamParser::CanReuseConnection() const {
   if (IsResponseBodyComplete() && IsMoreDataBuffered())
     return false;
 
-  return connection_->socket() && connection_->socket()->IsConnected();
+  return stream_socket_->IsConnected();
 }
 
 void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {
-  if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
-    connection_->socket()->GetSSLInfo(ssl_info);
+  if (!request_->url.SchemeIsCryptographic() ||
+      !stream_socket_->GetSSLInfo(ssl_info)) {
+    ssl_info->Reset();
   }
 }
 
 void HttpStreamParser::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
-  if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
-    connection_->socket()->GetSSLCertRequestInfo(cert_request_info);
-  }
+  cert_request_info->Reset();
+  if (request_->url.SchemeIsCryptographic())
+    stream_socket_->GetSSLCertRequestInfo(cert_request_info);
 }
 
 int HttpStreamParser::EncodeChunk(const base::StringPiece& payload,

@@ -33,6 +33,8 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_info.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_basic_stream_adapters.h"
 #include "net/websockets/websocket_deflate_parameters.h"
@@ -278,8 +280,12 @@ int WebSocketBasicHandshakeStream::ReadResponseBody(
 void WebSocketBasicHandshakeStream::Close(bool not_reusable) {
   // This class ignores the value of |not_reusable| and never lets the socket be
   // re-used.
-  if (parser())
-    parser()->Close(true);
+  if (!parser())
+    return;
+  StreamSocket* socket = state_.connection()->socket();
+  if (socket)
+    socket->Disconnect();
+  state_.connection()->Reset();
 }
 
 bool WebSocketBasicHandshakeStream::IsResponseBodyComplete() const {
@@ -287,15 +293,16 @@ bool WebSocketBasicHandshakeStream::IsResponseBodyComplete() const {
 }
 
 bool WebSocketBasicHandshakeStream::IsConnectionReused() const {
-  return parser()->IsConnectionReused();
+  return state_.IsConnectionReused();
 }
 
 void WebSocketBasicHandshakeStream::SetConnectionReused() {
-  parser()->SetConnectionReused();
+  state_.connection()->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
 }
 
 bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
-  return parser() && parser()->CanReuseConnection();
+  return parser() && state_.connection()->socket() &&
+         parser()->CanReuseConnection();
 }
 
 int64_t WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {
@@ -318,11 +325,19 @@ bool WebSocketBasicHandshakeStream::GetLoadTimingInfo(
 }
 
 void WebSocketBasicHandshakeStream::GetSSLInfo(SSLInfo* ssl_info) {
+  if (!state_.connection()->socket()) {
+    ssl_info->Reset();
+    return;
+  }
   parser()->GetSSLInfo(ssl_info);
 }
 
 void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
+  if (!state_.connection()->socket()) {
+    cert_request_info->Reset();
+    return;
+  }
   parser()->GetSSLCertRequestInfo(cert_request_info);
 }
 

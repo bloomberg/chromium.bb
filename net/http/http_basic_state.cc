@@ -41,8 +41,9 @@ void HttpBasicState::Initialize(const HttpRequestInfo* request_info,
   url_ = request_info->url;
   traffic_annotation_ = request_info->traffic_annotation;
   request_method_ = request_info->method;
-  parser_.reset(new HttpStreamParser(
-      connection_.get(), request_info, read_buf_.get(), net_log));
+  parser_ = std::make_unique<HttpStreamParser>(
+      connection_->socket(), connection_->is_reused(), request_info,
+      read_buf_.get(), net_log);
   parser_->set_http_09_on_non_default_ports_enabled(
       http_09_on_non_default_ports_enabled_);
   can_send_early_ = can_send_early;
@@ -74,6 +75,11 @@ std::string HttpBasicState::GenerateRequestLine() const {
   request_line.append(kSuffix, kSuffixLen);
   DCHECK_EQ(expected_size, request_line.size());
   return request_line;
+}
+
+bool HttpBasicState::IsConnectionReused() const {
+  return connection_->is_reused() ||
+         connection_->reuse_type() == ClientSocketHandle::UNUSED_IDLE;
 }
 
 }  // namespace net

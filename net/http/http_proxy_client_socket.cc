@@ -406,8 +406,9 @@ int HttpProxyClientSocket::DoSendRequest() {
   }
 
   parser_buf_ = base::MakeRefCounted<GrowableIOBuffer>();
-  http_stream_parser_.reset(new HttpStreamParser(
-      transport_.get(), &request_, parser_buf_.get(), net_log_));
+  http_stream_parser_.reset(
+      new HttpStreamParser(transport_->socket(), transport_->is_reused(),
+                           &request_, parser_buf_.get(), net_log_));
   return http_stream_parser_->SendRequest(request_line_, request_headers_,
                                           traffic_annotation_, &response_,
                                           io_callback_);
