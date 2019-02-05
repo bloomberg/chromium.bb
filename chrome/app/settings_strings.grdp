@@ -3299,9 +3299,6 @@
         =1 {1 cookie}
         other {# cookies}}
   </message>
-  <message name="IDS_SETTINGS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
-    Description
-  </message>
   <message name="IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
     Origin
   </message>

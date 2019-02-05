@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,27 +22,20 @@ void MockBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
   callback_ = std::move(callback);
 }
 
-void MockBrowsingDataDatabaseHelper::DeleteDatabase(
-    const std::string& origin,
-    const std::string& name) {
-  std::string key = origin + ":" + name;
-  ASSERT_TRUE(base::ContainsKey(databases_, key));
-  last_deleted_origin_ = origin;
-  last_deleted_db_ = name;
-  databases_[key] = false;
+void MockBrowsingDataDatabaseHelper::DeleteDatabase(const url::Origin& origin) {
+  const std::string identifier = storage::GetIdentifierFromOrigin(origin);
+  ASSERT_TRUE(base::ContainsKey(databases_, identifier));
+  last_deleted_origin_ = identifier;
+  databases_[identifier] = false;
 }
 
 void MockBrowsingDataDatabaseHelper::AddDatabaseSamples() {
-  storage::DatabaseIdentifier id1 =
-      storage::DatabaseIdentifier::Parse("http_gdbhost1_1");
-  response_.push_back(BrowsingDataDatabaseHelper::DatabaseInfo(
-      id1, "db1", "description 1", 1, base::Time()));
-  databases_["http_gdbhost1_1:db1"] = true;
-  storage::DatabaseIdentifier id2 =
-      storage::DatabaseIdentifier::Parse("http_gdbhost2_2");
-  response_.push_back(BrowsingDataDatabaseHelper::DatabaseInfo(
-      id2, "db2", "description 2", 2, base::Time()));
-  databases_["http_gdbhost2_2:db2"] = true;
+  response_.push_back(content::StorageUsageInfo(
+      url::Origin::Create(GURL("http://gdbhost1:1")), 1, base::Time()));
+  databases_["http_gdbhost1_1"] = true;
+  response_.push_back(content::StorageUsageInfo(
+      url::Origin::Create(GURL("http://gdbhost2:2")), 2, base::Time()));
+  databases_["http_gdbhost2_2"] = true;
 }
 
 void MockBrowsingDataDatabaseHelper::Notify() {

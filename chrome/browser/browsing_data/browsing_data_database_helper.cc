@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -19,30 +21,15 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/common/database/database_identifier.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::StorageUsageInfo;
 using storage::DatabaseIdentifier;
-
-BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
-    const DatabaseIdentifier& identifier,
-    const std::string& database_name,
-    const std::string& description,
-    int64_t size,
-    base::Time last_modified)
-    : identifier(identifier),
-      database_name(database_name),
-      description(description),
-      size(size),
-      last_modified(last_modified) {}
-
-BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
-    const DatabaseInfo& other) = default;
-
-BrowsingDataDatabaseHelper::DatabaseInfo::~DatabaseInfo() {}
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
     : tracker_(BrowserContext::GetDefaultStoragePartition(profile)
@@ -59,37 +46,16 @@ void BrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
       tracker_->task_runner(), FROM_HERE,
       base::BindOnce(
           [](storage::DatabaseTracker* tracker) {
-            std::list<DatabaseInfo> result;
+            std::list<StorageUsageInfo> result;
             std::vector<storage::OriginInfo> origins_info;
             if (tracker->GetAllOriginsInfo(&origins_info)) {
-              for (const storage::OriginInfo& origin : origins_info) {
-                DatabaseIdentifier identifier =
-                    DatabaseIdentifier::Parse(origin.GetOriginIdentifier());
-                // Non-websafe state is not considered browsing data.
-                if (!BrowsingDataHelper::HasWebScheme(identifier.ToOrigin()))
+              for (const storage::OriginInfo& info : origins_info) {
+                url::Origin origin = storage::GetOriginFromIdentifier(
+                    info.GetOriginIdentifier());
+                if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
                   continue;
-                std::vector<base::string16> databases;
-                origin.GetAllDatabaseNames(&databases);
-                for (const base::string16& db : databases) {
-                  base::FilePath file_path = tracker->GetFullDBFilePath(
-                      origin.GetOriginIdentifier(), db);
-                  base::File::Info file_info;
-                  if (base::GetFileInfo(file_path, &file_info)) {
-                    result.push_back(DatabaseInfo(
-                        identifier, base::UTF16ToUTF8(db),
-                        base::UTF16ToUTF8(origin.GetDatabaseDescription(db)),
-                        file_info.size, file_info.last_modified));
-                  } else {
-                    // This is an incognito database, so the file is not
-                    // accessible. This browsing data record will not be
-                    // user-visible, but is enumerated by test code, so produce
-                    // a dummy record for testing.
-                    result.push_back(DatabaseInfo(
-                        identifier, base::UTF16ToUTF8(db),
-                        base::UTF16ToUTF8(origin.GetDatabaseDescription(db)), 0,
-                        base::Time()));
-                  }
-                }
+                result.emplace_back(origin, info.TotalSize(),
+                                    info.LastModified());
               }
             }
             return result;
@@ -98,30 +64,24 @@ void BrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
       std::move(callback));
 }
 
-void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
-                                                const std::string& name) {
+void BrowsingDataDatabaseHelper::DeleteDatabase(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                    &storage::DatabaseTracker::DeleteDatabase),
-                                tracker_, origin, base::UTF8ToUTF16(name),
-                                net::CompletionCallback()));
+      FROM_HERE,
+      base::BindOnce(
+          base::IgnoreResult(&storage::DatabaseTracker::DeleteDataForOrigin),
+          tracker_, origin, net::CompletionCallback()));
 }
 
 CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::PendingDatabaseInfo(
-    const GURL& origin,
-    const std::string& name,
-    const std::string& description)
-    : origin(origin),
-      name(name),
-      description(description) {
-}
+    const GURL& origin)
+    : origin(origin) {}
 
 CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::~PendingDatabaseInfo() {}
 
 bool CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::operator<(
     const PendingDatabaseInfo& other) const {
-  return std::tie(origin, name) < std::tie(other.origin, other.name);
+  return origin < other.origin;
 }
 
 CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
@@ -129,14 +89,11 @@ CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
     : BrowsingDataDatabaseHelper(profile) {
 }
 
-void CannedBrowsingDataDatabaseHelper::AddDatabase(
-    const GURL& origin,
-    const std::string& name,
-    const std::string& description) {
+void CannedBrowsingDataDatabaseHelper::AddDatabase(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!BrowsingDataHelper::HasWebScheme(origin))
     return;  // Non-websafe state is not considered browsing data.
-  pending_database_info_.insert(PendingDatabaseInfo(origin, name, description));
+  pending_database_info_.insert(PendingDatabaseInfo(origin));
 }
 
 void CannedBrowsingDataDatabaseHelper::Reset() {
@@ -163,13 +120,10 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::list<DatabaseInfo> result;
+  std::list<StorageUsageInfo> result;
   for (const PendingDatabaseInfo& info : pending_database_info_) {
-    DatabaseIdentifier identifier =
-        DatabaseIdentifier::CreateFromOrigin(info.origin);
-
-    result.push_back(
-        DatabaseInfo(identifier, info.name, info.description, 0, base::Time()));
+    result.push_back(content::StorageUsageInfo(url::Origin::Create(info.origin),
+                                               0, base::Time()));
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
@@ -177,18 +131,13 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
 }
 
 void CannedBrowsingDataDatabaseHelper::DeleteDatabase(
-    const std::string& origin_identifier,
-    const std::string& name) {
-  GURL origin =
-      storage::DatabaseIdentifier::Parse(origin_identifier).ToOrigin();
-  for (auto it = pending_database_info_.begin();
-       it != pending_database_info_.end(); ++it) {
-    if (it->origin == origin && it->name == name) {
-      pending_database_info_.erase(it);
-      break;
-    }
-  }
-  BrowsingDataDatabaseHelper::DeleteDatabase(origin_identifier, name);
+    const url::Origin& origin) {
+  GURL origin_url = origin.GetURL();
+  base::EraseIf(pending_database_info_,
+                [&origin_url](const PendingDatabaseInfo& info) {
+                  return info.origin == origin_url;
+                });
+  BrowsingDataDatabaseHelper::DeleteDatabase(origin);
 }
 
 CannedBrowsingDataDatabaseHelper::~CannedBrowsingDataDatabaseHelper() {}

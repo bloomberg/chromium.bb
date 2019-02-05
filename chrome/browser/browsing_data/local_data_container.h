@@ -43,7 +43,7 @@ class CanonicalCookie;
 namespace {
 
 typedef std::list<net::CanonicalCookie> CookieList;
-typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
+typedef std::list<content::StorageUsageInfo> DatabaseInfoList;
 typedef std::list<content::StorageUsageInfo> LocalStorageInfoList;
 typedef std::list<content::StorageUsageInfo> SessionStorageInfoList;
 typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;

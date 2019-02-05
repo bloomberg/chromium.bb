@@ -20,6 +20,10 @@
 #include "storage/common/database/database_identifier.h"
 #include "url/gurl.h"
 
+namespace content {
+struct StorageUsageInfo;
+}
+
 class Profile;
 
 // This class fetches database information in the FILE thread, and notifies
@@ -30,25 +34,8 @@ class Profile;
 class BrowsingDataDatabaseHelper
     : public base::RefCountedThreadSafe<BrowsingDataDatabaseHelper> {
  public:
-  // Contains detailed information about a web database.
-  struct DatabaseInfo {
-    DatabaseInfo(const storage::DatabaseIdentifier& identifier,
-                 const std::string& database_name,
-                 const std::string& description,
-                 int64_t size,
-                 base::Time last_modified);
-    DatabaseInfo(const DatabaseInfo& other);
-    ~DatabaseInfo();
-
-    storage::DatabaseIdentifier identifier;
-    std::string database_name;
-    std::string description;
-    int64_t size;
-    base::Time last_modified;
-  };
-
   using FetchCallback =
-      base::OnceCallback<void(const std::list<DatabaseInfo>&)>;
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
   explicit BrowsingDataDatabaseHelper(Profile* profile);
 
@@ -57,10 +44,9 @@ class BrowsingDataDatabaseHelper
   // This must be called only in the UI thread.
   virtual void StartFetching(FetchCallback callback);
 
-  // Requests a single database to be deleted. This must be called in the UI
-  // thread.
-  virtual void DeleteDatabase(const std::string& origin_identifier,
-                              const std::string& name);
+  // Deletes all databases associated with an origin. This must be called in the
+  // UI thread.
+  virtual void DeleteDatabase(const url::Origin& origin);
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataDatabaseHelper>;
@@ -77,27 +63,22 @@ class BrowsingDataDatabaseHelper
 // a parameter during construction.
 class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
  public:
+  // TODO(jsbell): Replace this struct with just url::Origin.
   struct PendingDatabaseInfo {
-    PendingDatabaseInfo(const GURL& origin,
-                        const std::string& name,
-                        const std::string& description);
+    explicit PendingDatabaseInfo(const GURL& origin);
     ~PendingDatabaseInfo();
 
     // The operator is needed to store |PendingDatabaseInfo| objects in a set.
     bool operator<(const PendingDatabaseInfo& other) const;
 
     GURL origin;
-    std::string name;
-    std::string description;
   };
 
   explicit CannedBrowsingDataDatabaseHelper(Profile* profile);
 
   // Add a database to the set of canned databases that is returned by this
   // helper.
-  void AddDatabase(const GURL& origin,
-                   const std::string& name,
-                   const std::string& description);
+  void AddDatabase(const GURL& origin);
 
   // Clear the list of canned databases.
   void Reset();
@@ -113,8 +94,7 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
 
   // BrowsingDataDatabaseHelper implementation.
   void StartFetching(FetchCallback callback) override;
-  void DeleteDatabase(const std::string& origin_identifier,
-                      const std::string& name) override;
+  void DeleteDatabase(const url::Origin& origin) override;
 
  private:
   ~CannedBrowsingDataDatabaseHelper() override;

@@ -49,7 +49,6 @@ const char kKeyDomain[] = "domain";
 const char kKeyPath[] = "path";
 const char kKeySendFor[] = "sendfor";
 const char kKeyAccessibleToScript[] = "accessibleToScript";
-const char kKeyDesc[] = "desc";
 const char kKeySize[] = "size";
 const char kKeyOrigin[] = "origin";
 const char kKeyManifest[] = "manifest";
@@ -127,16 +126,14 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE: {
       dict->SetString(kKeyType, "database");
 
-      const BrowsingDataDatabaseHelper::DatabaseInfo& database_info =
-          *node.GetDetailedInfo().database_info;
+      const content::StorageUsageInfo& usage_info =
+          *node.GetDetailedInfo().usage_info;
 
-      dict->SetString(kKeyName, database_info.database_name.empty() ?
-          l10n_util::GetStringUTF8(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
-          database_info.database_name);
-      dict->SetString(kKeyDesc, database_info.description);
-      dict->SetString(kKeySize, ui::FormatBytes(database_info.size));
-      dict->SetString(kKeyModified, base::UTF16ToUTF8(
-          base::TimeFormatFriendlyDateAndTime(database_info.last_modified)));
+      dict->SetString(kKeyOrigin, usage_info.origin.Serialize());
+      dict->SetString(kKeySize, ui::FormatBytes(usage_info.total_size_bytes));
+      dict->SetString(kKeyModified,
+                      base::UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+                          usage_info.last_modified)));
 
       break;
     }

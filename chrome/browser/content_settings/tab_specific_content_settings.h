@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -125,8 +126,6 @@ class TabSpecificContentSettings
   static void WebDatabaseAccessed(int render_process_id,
                                   int render_frame_id,
                                   const GURL& url,
-                                  const base::string16& name,
-                                  const base::string16& display_name,
                                   bool blocked_by_policy);
 
   // Called when a specific DOM storage area in the current page was
@@ -331,10 +330,7 @@ class TabSpecificContentSettings
                               const std::string& name,
                               const url::Origin& constructor_origin,
                               bool blocked_by_policy);
-  void OnWebDatabaseAccessed(const GURL& url,
-                             const base::string16& name,
-                             const base::string16& display_name,
-                             bool blocked_by_policy);
+  void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
