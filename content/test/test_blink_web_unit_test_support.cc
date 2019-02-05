@@ -13,6 +13,8 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/test/null_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -129,7 +131,8 @@ content::TestBlinkWebUnitTestSupport* g_test_platform = nullptr;
 
 namespace content {
 
-TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
+TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
+    TestBlinkWebUnitTestSupport::SchedulerType scheduler_type)
     : weak_factory_(this) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
@@ -147,7 +150,9 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
 
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
   std::unique_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
-  if (!base::ThreadTaskRunnerHandle::IsSet()) {
+  if (scheduler_type == SchedulerType::kMockScheduler) {
+    main_thread_scheduler_ =
+        blink::scheduler::CreateWebMainThreadSchedulerForTests();
     // Dummy task runner is initialized here because the blink::Initialize
     // creates IsolateHolder which needs the current task runner handle. There
     // should be no task posted to this task runner. The message loop is not
@@ -155,12 +160,17 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
     // of message loops, and their types are not known upfront. Some tests also
     // create their own thread bundles or message loops, and doing the same in
     // TestBlinkWebUnitTestSupport would introduce a conflict.
-    dummy_task_runner = base::MakeRefCounted<DummyTaskRunner>();
+    dummy_task_runner = base::MakeRefCounted<base::NullTaskRunner>();
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
+  } else {
+    DCHECK_EQ(scheduler_type, SchedulerType::kRealScheduler);
+    main_thread_scheduler_ =
+        blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
+            base::MessageLoop::CreateMessagePumpForType(
+                base::MessageLoop::TYPE_DEFAULT));
+    base::TaskScheduler::CreateAndStartWithDefaultParams("BlinkTestSupport");
   }
-  main_thread_scheduler_ =
-      blink::scheduler::CreateWebMainThreadSchedulerForTests();
 
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
