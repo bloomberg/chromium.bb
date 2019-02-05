@@ -448,7 +448,7 @@ KeyframeEffect* AnimationTimelinesTest::GetKeyframeEffectForElementId(
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);
   return element_animations
-             ? &*element_animations->keyframe_effects_list().begin()
+             ? element_animations->FirstKeyframeEffectForTesting()
              : nullptr;
 }
 
@@ -457,7 +457,7 @@ KeyframeEffect* AnimationTimelinesTest::GetImplKeyframeEffectForLayerId(
   const scoped_refptr<ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForElementId(element_id);
   return element_animations
-             ? &*element_animations->keyframe_effects_list().begin()
+             ? element_animations->FirstKeyframeEffectForTesting()
              : nullptr;
 }
 

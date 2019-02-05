@@ -19,10 +19,6 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
 
-namespace gfx {
-class BoxF;
-}
-
 namespace cc {
 
 class AnimationHost;
@@ -63,11 +59,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void AddKeyframeEffect(KeyframeEffect* keyframe_effect);
   void RemoveKeyframeEffect(KeyframeEffect* keyframe_effect);
   bool IsEmpty() const;
-
-  typedef base::ObserverList<KeyframeEffect>::Unchecked KeyframeEffectsList;
-  const KeyframeEffectsList& keyframe_effects_list() const {
-    return keyframe_effects_list_;
-  }
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
@@ -117,9 +108,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
     has_element_in_pending_list_ = has_element_in_pending_list;
   }
 
-  bool TransformAnimationBoundsForBox(const gfx::BoxF& box,
-                                      gfx::BoxF* bounds) const;
-
   bool HasOnlyTranslationTransforms(ElementListType list_type) const;
 
   bool AnimationsPreserveAxisAlignment() const;
@@ -137,8 +125,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   bool ScrollOffsetAnimationWasInterrupted() const;
 
   void SetNeedsPushProperties();
-  bool needs_push_properties() const { return needs_push_properties_; }
-
   void UpdateClientAnimationState();
 
   void NotifyClientFloatAnimated(float opacity,
@@ -172,6 +158,10 @@ class CC_ANIMATION_EXPORT ElementAnimations
   // this is required to let BGPT ship (see http://crbug.com/912574).
   PropertyToElementIdMap GetPropertyToElementIdMap() const;
 
+  unsigned int CountKeyframesForTesting() const;
+  KeyframeEffect* FirstKeyframeEffectForTesting() const;
+  bool HasKeyframeEffectForTesting(const KeyframeEffect* keyframe) const;
+
  private:
   friend class base::RefCounted<ElementAnimations>;
 
@@ -200,7 +190,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
   bool KeyframeModelAffectsActiveElements(KeyframeModel* keyframe_model) const;
   bool KeyframeModelAffectsPendingElements(KeyframeModel* keyframe_model) const;
 
-  KeyframeEffectsList keyframe_effects_list_;
+  base::ObserverList<KeyframeEffect>::Unchecked keyframe_effects_list_;
   AnimationHost* animation_host_;
   ElementId element_id_;
 

@@ -519,6 +519,24 @@ PropertyToElementIdMap ElementAnimations::GetPropertyToElementIdMap() const {
   return PropertyToElementIdMap(std::move(entries));
 }
 
+unsigned int ElementAnimations::CountKeyframesForTesting() const {
+  unsigned int count = 0;
+  for (auto it = keyframe_effects_list_.begin();
+       it != keyframe_effects_list_.end(); it++)
+    count++;
+  return count;
+}
+
+KeyframeEffect* ElementAnimations::FirstKeyframeEffectForTesting() const {
+  DCHECK(keyframe_effects_list_.might_have_observers());
+  return &*keyframe_effects_list_.begin();
+}
+
+bool ElementAnimations::HasKeyframeEffectForTesting(
+    const KeyframeEffect* keyframe) const {
+  return keyframe_effects_list_.HasObserver(keyframe);
+}
+
 bool ElementAnimations::KeyframeModelAffectsActiveElements(
     KeyframeModel* keyframe_model) const {
   // When we force a keyframe_model update due to a notification, we do not have
