@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCRIPT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCRIPT_CONTROLLER_H_
 
+#include <memory>
+
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace v8 {
@@ -42,9 +44,8 @@ namespace blink {
 class WebScriptController {
  public:
   // Registers a v8 extension to be available on webpages. Will only affect
-  // v8 contexts initialized after this call. Takes ownership of the
-  // v8::Extension object passed.
-  BLINK_EXPORT static void RegisterExtension(v8::Extension*);
+  // v8 contexts initialized after this call.
+  BLINK_EXPORT static void RegisterExtension(std::unique_ptr<v8::Extension>);
 
  private:
   WebScriptController() = delete;

@@ -27,8 +27,7 @@ class TestV8ExtensionConfiguration {
   static v8::ExtensionConfiguration* GetConfiguration();
 
  private:
-  std::unique_ptr<v8::Extension> safe_builtins_;
-  std::vector<const char*> v8_extension_names_;
+  const char* v8_extension_name_;
   std::unique_ptr<v8::ExtensionConfiguration> v8_extension_configuration_;
 
   DISALLOW_COPY_AND_ASSIGN(TestV8ExtensionConfiguration);

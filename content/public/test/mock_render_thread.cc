@@ -4,6 +4,8 @@
 
 #include "content/public/test/mock_render_thread.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -197,8 +199,9 @@ MockRenderThread::HostAllocateSharedMemoryBuffer(size_t buffer_size) {
   return std::unique_ptr<base::SharedMemory>(shared_buf.release());
 }
 
-void MockRenderThread::RegisterExtension(v8::Extension* extension) {
-  blink::WebScriptController::RegisterExtension(extension);
+void MockRenderThread::RegisterExtension(
+    std::unique_ptr<v8::Extension> extension) {
+  blink::WebScriptController::RegisterExtension(std::move(extension));
 }
 
 int MockRenderThread::PostTaskToAllWebWorkers(const base::Closure& closure) {
