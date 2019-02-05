@@ -115,7 +115,7 @@ TEST_P(BackgroundTabNavigationThrottleTest, Instantiate) {
   EXPECT_EQ(expect_instantiation, throttle != nullptr);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InstantiateThrottle,
     BackgroundTabNavigationThrottleTest,
     ::testing::Values(std::make_tuple(EXPECT_INSTANTIATION,
