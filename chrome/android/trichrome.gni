@@ -31,6 +31,10 @@ trichrome_jinja_variables = [
   "trichrome_certdigest=$trichrome_certdigest",
 ]
 
+if (!android_64bit_browser) {
+  trichrome_jinja_variables += [ "use32bitAbi=android:use32bitAbi=\"true\"" ]
+}
+
 template("trichrome_library_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker,

@@ -305,13 +305,14 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         shared_library_for_unwind_asset = "monochrome${_suffix}"
       }
     } else {
-      # Include a placeholder library to ensure that Chrome runs with
-      # the correct bitness (same as the placeholder).
-      if (android_64bit_target_cpu && !android_64bit_browser) {
-        # We don't want to be 64-bit, only include a placeholder for secondary.
+      # Include placeholder libraries to make Chrome multiarch in the same way
+      # as Monochrome, even though Chrome only runs with one of the two
+      # bitnesses. This allows the "32-bit" and "64-bit" versions of Chrome to
+      # depend on their respective versions of the shared library APK even
+      # though they're functionally the same.
+      native_lib_placeholders = [ "libdummy.so" ]
+      if (android_64bit_target_cpu && build_apk_secondary_abi) {
         secondary_native_lib_placeholders = [ "libdummy.so" ]
-      } else {
-        native_lib_placeholders = [ "libdummy.so" ]
       }
     }
 
