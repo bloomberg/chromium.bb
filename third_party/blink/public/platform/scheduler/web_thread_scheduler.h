@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "v8/include/v8.h"
@@ -27,7 +28,6 @@ class BlameContext;
 
 namespace blink {
 class Thread;
-class WebInputEvent;
 }  // namespace blink
 
 namespace viz {
@@ -126,6 +126,17 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   virtual void DidHandleInputEventOnCompositorThread(
       const WebInputEvent& web_input_event,
       InputEventState event_state);
+
+  // Tells the scheduler that an input event of the given type is about to be
+  // posted to the main thread. Must be followed later by a call to
+  // WillHandleInputEventOnMainThread. Called by the compositor thread.
+  virtual void WillPostInputEventToMainThread(
+      WebInputEvent::Type web_input_event_type);
+
+  // Tells the scheduler the input event of the given type is about to be
+  // handled. Called on the main thread.
+  virtual void WillHandleInputEventOnMainThread(
+      WebInputEvent::Type web_input_event_type);
 
   // Tells the scheduler that the system processed an input event. Must be
   // called from the main thread.

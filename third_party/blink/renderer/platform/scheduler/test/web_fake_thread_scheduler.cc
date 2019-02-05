@@ -59,6 +59,12 @@ void WebFakeThreadScheduler::DidHandleInputEventOnCompositorThread(
     const blink::WebInputEvent& web_input_event,
     InputEventState event_state) {}
 
+void WebFakeThreadScheduler::WillPostInputEventToMainThread(
+    WebInputEvent::Type web_input_event_type) {}
+
+void WebFakeThreadScheduler::WillHandleInputEventOnMainThread(
+    WebInputEvent::Type web_input_event_type) {}
+
 void WebFakeThreadScheduler::DidHandleInputEventOnMainThread(
     const blink::WebInputEvent& web_input_event,
     WebInputEventResult result) {}

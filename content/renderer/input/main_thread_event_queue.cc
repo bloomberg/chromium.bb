@@ -366,7 +366,7 @@ void MainThreadEventQueue::QueueClosure(base::OnceClosure closure) {
   std::unique_ptr<QueuedClosure> item(new QueuedClosure(std::move(closure)));
   {
     base::AutoLock lock(shared_state_lock_);
-    shared_state_.events_.Queue(std::move(item));
+    shared_state_.events_.Enqueue(std::move(item));
     needs_post_task = !shared_state_.sent_post_task_;
     shared_state_.sent_post_task_ = true;
   }
@@ -533,19 +533,34 @@ void MainThreadEventQueue::QueueEvent(
   bool is_raf_aligned = IsRafAlignedEvent(event);
   bool needs_main_frame = false;
   bool needs_post_task = false;
+
+  // Record the input event's type prior to enqueueing so that the scheduler
+  // can be notified of its dispatch (if the event is not coalesced).
+  bool is_input_event = event->IsWebInputEvent();
+  WebInputEvent::Type input_event_type = WebInputEvent::kUndefined;
+  if (is_input_event) {
+    auto* queued_input_event =
+        static_cast<const QueuedWebInputEvent*>(event.get());
+    input_event_type = queued_input_event->event().GetType();
+  }
+
   {
     base::AutoLock lock(shared_state_lock_);
-    size_t size_before = shared_state_.events_.size();
-    shared_state_.events_.Queue(std::move(event));
-    size_t size_after = shared_state_.events_.size();
 
-    if (size_before != size_after) {
+    if (shared_state_.events_.Enqueue(std::move(event)) ==
+        MainThreadEventQueueTaskList::EnqueueResult::kEnqueued) {
       if (!is_raf_aligned) {
         needs_post_task = !shared_state_.sent_post_task_;
         shared_state_.sent_post_task_ = true;
       } else {
         needs_main_frame = !shared_state_.sent_main_frame_request_;
         shared_state_.sent_main_frame_request_ = true;
+      }
+
+      // Notify the scheduler that we'll enqueue a task to the main thread.
+      if (is_input_event && main_thread_scheduler_) {
+        main_thread_scheduler_->WillPostInputEventToMainThread(
+            input_event_type);
       }
     }
   }
@@ -602,6 +617,10 @@ bool MainThreadEventQueue::HandleEventOnMainThread(
     const blink::WebCoalescedInputEvent& event,
     const ui::LatencyInfo& latency,
     HandledEventCallback handled_callback) {
+  // Notify the scheduler that the main thread is about to execute handlers.
+  if (auto* scheduler = main_thread_scheduler_)
+    scheduler->WillHandleInputEventOnMainThread(event.Event().GetType());
+
   bool handled = false;
   if (client_) {
     handled =

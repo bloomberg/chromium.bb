@@ -1180,6 +1180,20 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
   GetCompositorThreadOnly().last_input_type = type;
 }
 
+void MainThreadSchedulerImpl::WillPostInputEventToMainThread(
+    WebInputEvent::Type web_input_event_type) {
+  base::AutoLock lock(any_thread_lock_);
+  any_thread().pending_input_monitor.OnEnqueue(web_input_event_type);
+}
+
+void MainThreadSchedulerImpl::WillHandleInputEventOnMainThread(
+    WebInputEvent::Type web_input_event_type) {
+  helper_.CheckOnValidThread();
+
+  base::AutoLock lock(any_thread_lock_);
+  any_thread().pending_input_monitor.OnDequeue(web_input_event_type);
+}
+
 void MainThreadSchedulerImpl::DidHandleInputEventOnMainThread(
     const WebInputEvent& web_input_event,
     WebInputEventResult result) {
@@ -2172,6 +2186,11 @@ MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
   return WebScopedVirtualTimePauser(this, duration,
                                     WebString(WTF::String(name)));
+}
+
+PendingUserInputInfo MainThreadSchedulerImpl::GetPendingUserInputInfo() const {
+  base::AutoLock lock(any_thread_lock_);
+  return any_thread().pending_input_monitor.Info();
 }
 
 void MainThreadSchedulerImpl::RunIdleTask(Thread::IdleTask task,

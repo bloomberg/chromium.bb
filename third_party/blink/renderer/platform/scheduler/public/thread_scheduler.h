@@ -11,7 +11,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
@@ -110,6 +112,10 @@ class PLATFORM_EXPORT ThreadScheduler {
       base::MessageLoop::TaskObserver* task_observer) = 0;
   virtual void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) = 0;
+
+  virtual scheduler::PendingUserInputInfo GetPendingUserInputInfo() const {
+    return scheduler::PendingUserInputInfo();
+  }
 
   // Test helpers.
 
