@@ -228,7 +228,8 @@ constexpr ModelTypeSet UserTypes() {
 
 // User types, which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
-  return ModelTypeSet(DEVICE_INFO, USER_CONSENTS);
+  return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SUPERVISED_USER_SETTINGS,
+                      SUPERVISED_USER_WHITELISTS);
 }
 
 // These are the user-selectable data types.
@@ -248,7 +249,8 @@ constexpr bool IsUserSelectableType(ModelType model_type) {
 // This is the subset of UserTypes() that have priority over other types.  These
 // types are synced before other user types and are never encrypted.
 constexpr ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES);
+  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real
@@ -278,20 +280,6 @@ constexpr ModelTypeSet ControlTypes() {
 // See comment above for more information on what makes these types special.
 constexpr bool IsControlType(ModelType model_type) {
   return ControlTypes().Has(model_type);
-}
-
-// Core types are those data types used by sync's core functionality (i.e. not
-// user data types). These types are always enabled, and include ControlTypes().
-//
-// The set of all core types.
-constexpr ModelTypeSet CoreTypes() {
-  return ModelTypeSet(NIGORI, EXPERIMENTS, SUPERVISED_USER_SETTINGS,
-                      SYNCED_NOTIFICATIONS, SYNCED_NOTIFICATION_APP_INFO,
-                      SUPERVISED_USER_WHITELISTS);
-}
-// Those core types that have high priority (includes ControlTypes()).
-constexpr ModelTypeSet PriorityCoreTypes() {
-  return ModelTypeSet(NIGORI, EXPERIMENTS, SUPERVISED_USER_SETTINGS);
 }
 
 // Types that may commit data, but should never be included in a GetUpdates.
