@@ -211,6 +211,28 @@ MockFeedback.prototype = {
   },
 
   /**
+   * Adds expectations for spoken utterances with specified language.
+   * @param {string} language The expected output language for utterances.
+   * @param {...(string)} rest One or more utterances to add as expectations.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectSpeechWithLanguage: function(language, ...rest) {
+    assertFalse(this.replaying_);
+    Array.prototype.forEach.call(rest, function(text) {
+      this.pendingActions_.push({
+        perform: function() {
+          return !!MockFeedback.matchAndConsume_(
+              text, {lang: language}, this.pendingUtterances_);
+        }.bind(this),
+        toString: function() {
+          return 'Speak \'' + text + '\' with language ' + language;
+        }
+      });
+    }.bind(this));
+    return this;
+  },
+
+  /**
    * Adds an expectation that the next spoken utterances do *not* match
    * the given arguments.
    *
@@ -365,8 +387,12 @@ MockFeedback.prototype = {
         endCallback && endCallback();
       };
     }
-    this.pendingUtterances_.push(
-        {text: textString, queueMode: queueMode, callback: callback});
+    this.pendingUtterances_.push({
+      text: textString,
+      queueMode: queueMode,
+      lang: properties ? properties['lang'] : undefined,
+      callback: callback
+    });
     this.process_();
   },
 
