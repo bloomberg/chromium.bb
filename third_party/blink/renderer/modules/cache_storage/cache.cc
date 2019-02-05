@@ -438,15 +438,17 @@ class Cache::CodeCacheHandleCallbackForPut final
     } else {
       // Schedule an idle task to generate code cache later.
       ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
-      auto* thread_scheduler =
-          global_scope->GetScheduler()->GetWorkerThreadScheduler();
-      DCHECK(thread_scheduler);
-      int task_id = global_scope->WillStartTask();
-      thread_scheduler->IdleTaskRunner()->PostIdleTask(
-          FROM_HERE, WTF::Bind(&Cache::CodeCacheHandleCallbackForPut::
-                                   GenerateCodeCacheOnIdleTask,
-                               WrapPersistent(this), task_id,
-                               WrapPersistent(array_buffer), response_time));
+      if (global_scope) {
+        auto* thread_scheduler =
+            global_scope->GetScheduler()->GetWorkerThreadScheduler();
+        DCHECK(thread_scheduler);
+        int task_id = global_scope->WillStartTask();
+        thread_scheduler->IdleTaskRunner()->PostIdleTask(
+            FROM_HERE, WTF::Bind(&Cache::CodeCacheHandleCallbackForPut::
+                                     GenerateCodeCacheOnIdleTask,
+                                 WrapPersistent(this), task_id,
+                                 WrapPersistent(array_buffer), response_time));
+      }
     }
 
     barrier_callback_->OnSuccess(index_, std::move(batch_operation));
@@ -467,10 +469,12 @@ class Cache::CodeCacheHandleCallbackForPut final
 
  private:
   ServiceWorkerGlobalScope* GetServiceWorkerGlobalScope() {
+    ExecutionContext* context = ExecutionContext::From(script_state_);
+    if (!context || context->IsContextDestroyed())
+      return nullptr;
     // Currently |this| is only created for triggering V8 code caching after
     // Cache#put() is used by a service worker so |script_state_| should be
     // ServiceWorkerGlobalScope.
-    ExecutionContext* context = ExecutionContext::From(script_state_);
     auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context);
     DCHECK(global_scope);
     return global_scope;
@@ -497,6 +501,9 @@ class Cache::CodeCacheHandleCallbackForPut final
                                    base::Time response_time,
                                    base::TimeTicks) {
     ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
+    if (!global_scope)
+      return;
+
     scoped_refptr<CachedMetadata> cached_metadata =
         GenerateFullCodeCache(array_buffer);
     if (!cached_metadata) {
