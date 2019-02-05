@@ -38,9 +38,9 @@
 
 using blink::WebRuntimeFeatures;
 
-namespace content {
+namespace {
 
-static void SetRuntimeFeatureDefaultsForPlatform() {
+void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
   // Android does not have support for PagePopup
   WebRuntimeFeatures::EnablePagePopup(false);
@@ -99,18 +99,9 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #endif
 }
 
-void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
-    const base::CommandLine& command_line) {
-  bool enable_experimental_web_platform_features =
-      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-  if (enable_experimental_web_platform_features)
-    WebRuntimeFeatures::EnableExperimentalFeatures(true);
-
-  SetRuntimeFeatureDefaultsForPlatform();
-
-  // Begin individual features.
-  // Do not add individual features above this line.
-
+void SetIndividualRuntimeFeatures(
+    const base::CommandLine& command_line,
+    bool enable_experimental_web_platform_features) {
   WebRuntimeFeatures::EnableOriginTrials(
       base::FeatureList::IsEnabled(features::kOriginTrials));
 
@@ -220,6 +211,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnablePrintBrowser))
     WebRuntimeFeatures::EnablePrintBrowser(true);
 
+  // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
+  // since the feature should have been enabled when it is set to experimental
   if (command_line.HasSwitch(switches::kEnableNetworkInformationDownlinkMax) ||
       enable_experimental_web_platform_features) {
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
@@ -257,6 +250,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableRemotePlaybackAPI))
     WebRuntimeFeatures::EnableRemotePlaybackAPI(false);
 
+  // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
+  // since the feature should have been enabled when it is set to experimental
   WebRuntimeFeatures::EnableSecMetadata(
       base::FeatureList::IsEnabled(features::kSecMetadata) ||
       enable_experimental_web_platform_features);
@@ -381,6 +376,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth));
 
+  // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
+  // since the feature should have been enabled when it is set to experimental
   WebRuntimeFeatures::EnableWebAuthGetTransports(
       base::FeatureList::IsEnabled(features::kWebAuthGetTransports) ||
       enable_experimental_web_platform_features);
@@ -484,14 +481,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableForbidSyncXHRInPageDismissal(true);
   }
 
-  // End individual features.
-  // Do not add individual features below this line.
-
-  if (command_line.HasSwitch(
-          switches::kDisableOriginTrialControlledBlinkFeatures)) {
-    WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
-  }
-
   WebRuntimeFeatures::EnableAutoplayIgnoresWebAudio(
       base::FeatureList::IsEnabled(media::kAutoplayIgnoreWebAudio));
 
@@ -499,17 +488,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableMediaControlsExpandGesture(
       base::FeatureList::IsEnabled(media::kMediaControlsExpandGesture));
 #endif
-
-  // Enable explicitly enabled features, and then disable explicitly disabled
-  // ones.
-  for (const std::string& feature :
-       FeaturesFromSwitch(command_line, switches::kEnableBlinkFeatures)) {
-    WebRuntimeFeatures::EnableFeatureFromString(feature, true);
-  }
-  for (const std::string& feature :
-       FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
-    WebRuntimeFeatures::EnableFeatureFromString(feature, false);
-  }
 
   WebRuntimeFeatures::EnablePortals(
       base::FeatureList::IsEnabled(blink::features::kPortals));
@@ -523,6 +501,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
       base::FeatureList::IsEnabled(features::kNoHoverAfterLayoutChange));
 
+  // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
+  // since the feature should have been enabled when it is set to experimental
   WebRuntimeFeatures::EnableJankTracking(
       base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
           enable_experimental_web_platform_features,
@@ -538,6 +518,43 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableGetDisplayMedia(
       base::FeatureList::IsEnabled(blink::features::kRTCGetDisplayMedia));
+}
+
+}  // namespace
+
+namespace content {
+
+void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
+    const base::CommandLine& command_line) {
+  // Set experimental features
+  bool enable_experimental_web_platform_features =
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  if (enable_experimental_web_platform_features)
+    WebRuntimeFeatures::EnableExperimentalFeatures(true);
+
+  SetRuntimeFeatureDefaultsForPlatform();
+
+  // Set origin trial features
+  if (command_line.HasSwitch(
+          switches::kDisableOriginTrialControlledBlinkFeatures)) {
+    WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
+  }
+
+  // TODO(yashard): Remove |enable_experimental_web_platform_features|
+  // flag since no individual feature should need it
+  SetIndividualRuntimeFeatures(command_line,
+                               enable_experimental_web_platform_features);
+
+  // Enable explicitly enabled features, and then disable explicitly disabled
+  // ones.
+  for (const std::string& feature :
+       FeaturesFromSwitch(command_line, switches::kEnableBlinkFeatures)) {
+    WebRuntimeFeatures::EnableFeatureFromString(feature, true);
+  }
+  for (const std::string& feature :
+       FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
+    WebRuntimeFeatures::EnableFeatureFromString(feature, false);
+  }
 }
 
 }  // namespace content
