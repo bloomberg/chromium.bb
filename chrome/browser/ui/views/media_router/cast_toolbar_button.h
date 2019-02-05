@@ -72,6 +72,8 @@ class CastToolbarButton : public ToolbarButton,
 
   MediaRouterActionController* GetActionController() const;
 
+  SkColor GetIconColor(const gfx::VectorIcon* icon_id) const;
+
   Browser* const browser_;
   Profile* const profile_;
 

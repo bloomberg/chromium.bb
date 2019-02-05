@@ -140,9 +140,10 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
         sink.state == UIMediaSinkState::CONNECTED);
   } else if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
+    const SkColor icon_color = icon_view->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
     icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
-                                         kPrimaryIconSize,
-                                         gfx::kChromeIconGrey));
+                                         kPrimaryIconSize, icon_color));
     icon_view->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     return icon_view;

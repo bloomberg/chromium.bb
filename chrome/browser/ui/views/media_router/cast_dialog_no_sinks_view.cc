@@ -25,6 +25,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/throbber.h"
@@ -83,10 +84,11 @@ views::View* CastDialogNoSinksView::CreateHelpIconView() {
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STATUS_NO_DEVICES_FOUND);
   auto help_icon = std::make_unique<views::ImageButton>(this);
   views::ImageButton* help_icon_ptr = help_icon.get();
-  help_icon->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(::vector_icons::kHelpOutlineIcon, kPrimaryIconSize,
-                            gfx::kChromeIconGrey));
+  const SkColor icon_color = help_icon->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
+  help_icon->SetImage(views::Button::STATE_NORMAL,
+                      gfx::CreateVectorIcon(::vector_icons::kHelpOutlineIcon,
+                                            kPrimaryIconSize, icon_color));
   help_icon->SetFocusForPlatform();
   help_icon->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
