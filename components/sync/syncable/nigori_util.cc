@@ -263,7 +263,8 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
   nigori->set_encrypt_app_settings(encrypted_types.Has(APP_SETTINGS));
   nigori->set_encrypt_extension_settings(
       encrypted_types.Has(EXTENSION_SETTINGS));
-  nigori->set_encrypt_app_notifications(encrypted_types.Has(APP_NOTIFICATIONS));
+  nigori->set_encrypt_app_notifications(
+      encrypted_types.Has(DEPRECATED_APP_NOTIFICATIONS));
   nigori->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
   nigori->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
   nigori->set_encrypt_favicon_tracking(encrypted_types.Has(FAVICON_TRACKING));
@@ -311,7 +312,7 @@ ModelTypeSet GetEncryptedTypesFromNigori(
   if (nigori.encrypt_extension_settings())
     encrypted_types.Put(EXTENSION_SETTINGS);
   if (nigori.encrypt_app_notifications())
-    encrypted_types.Put(APP_NOTIFICATIONS);
+    encrypted_types.Put(DEPRECATED_APP_NOTIFICATIONS);
   if (nigori.encrypt_dictionary())
     encrypted_types.Put(DICTIONARY);
   if (nigori.encrypt_favicon_images())
