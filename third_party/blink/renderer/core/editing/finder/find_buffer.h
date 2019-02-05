@@ -22,7 +22,7 @@ class CORE_EXPORT FindBuffer {
   STACK_ALLOCATED();
 
  public:
-  FindBuffer(const EphemeralRangeInFlatTree& range);
+  explicit FindBuffer(const EphemeralRangeInFlatTree& range);
 
   static EphemeralRangeInFlatTree FindMatchInRange(
       const EphemeralRangeInFlatTree& range,
