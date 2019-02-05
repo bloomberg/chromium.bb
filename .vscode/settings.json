@@ -15,4 +15,5 @@
         "python.unitTest.pyTestEnabled": false,
         "python.unitTest.nosetestsEnabled": false,
         "python.unitTest.unittestEnabled": true,
+        "python.sortImports.args": ["--settings-path=${workspaceFolder}/.vscode/",],
 }
