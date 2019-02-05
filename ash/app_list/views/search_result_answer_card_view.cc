@@ -169,6 +169,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
     base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
 
+    server_request_start_time_ = base::TimeTicks::Now();
     contents_->Navigate(*new_result->query_url());
   }
 
@@ -243,8 +244,9 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
     SetAccessibleName(base::UTF8ToUTF16(title));
 
-    // TODO(https://crbug.com/894893): Consider where, how to record some
-    // SearchAnswer metrics regarding navigation results and timing.
+    UMA_HISTOGRAM_TIMES(
+        "Apps.AppList.AnswerCardSearchProvider.SearchAnswerNavigationTime",
+        base::TimeTicks::Now() - server_request_start_time_);
 
     is_current_navigation_valid_answer_card_ = true;
     answer_card_url_ = url;
@@ -267,6 +269,10 @@ class SearchResultAnswerCardView::AnswerCardResultView
     }
     SetPreferredSize(content_view->GetPreferredSize());
     container_->Update();
+
+    UMA_HISTOGRAM_TIMES(
+        "Apps.AppList.AnswerCardSearchProvider.SearchAnswerLoadingTime",
+        base::TimeTicks::Now() - server_request_start_time_);
   }
 
   void DidAutoResizeView(const gfx::Size& new_size) override {
@@ -300,6 +306,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
   // Tracks the last time this view was made visible, if still visible.
   base::Optional<base::Time> last_shown_time_;
+
+  base::TimeTicks server_request_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardResultView);
 };

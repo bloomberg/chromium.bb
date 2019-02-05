@@ -73,9 +73,17 @@ class AppSearchProvider : public SearchProvider {
       const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
   void UpdateQueriedResults();
 
+  // Records the app search provider's latency when user initiates a search or
+  // gets the zero state suggestions.
+  // If |is_queried_search| is true, record query latency; otherwise, record
+  // zero state recommendation latency.
+  void MaybeRecordQueryLatencyHistogram(bool is_queried_search);
+
   Profile* profile_;
   AppListControllerDelegate* const list_controller_;
   base::string16 query_;
+  base::TimeTicks query_start_time_;
+  bool record_query_uma_ = false;
   Apps apps_;
   AppListModelUpdater* const model_updater_;
   base::Clock* clock_;

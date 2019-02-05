@@ -21,6 +21,7 @@
 #include "base/callback_list.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -641,6 +642,9 @@ AppSearchProvider::~AppSearchProvider() {}
 
 void AppSearchProvider::Start(const base::string16& query) {
   query_ = query;
+  query_start_time_ = base::TimeTicks::Now();
+  // We only need to record app search latency for queries started by user.
+  record_query_uma_ = true;
   const bool show_recommendations = query.empty();
   // Refresh list of apps to ensure we have the latest launch time information.
   // This will also cause the results to update.
@@ -732,6 +736,8 @@ void AppSearchProvider::UpdateRecommendedResults(
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
 
+  MaybeRecordQueryLatencyHistogram(false /* empty query */);
+
   SwapResults(&new_results);
   update_results_factory_.InvalidateWeakPtrs();
 }
@@ -768,8 +774,27 @@ void AppSearchProvider::UpdateQueriedResults() {
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
 
+  MaybeRecordQueryLatencyHistogram(true /* queried search */);
+
   SwapResults(&new_results);
   update_results_factory_.InvalidateWeakPtrs();
+}
+
+void AppSearchProvider::MaybeRecordQueryLatencyHistogram(
+    bool is_queried_search) {
+  // Record the query latency only if search provider is queried by user
+  // initiating a search or getting zero state suggestions.
+  if (!record_query_uma_)
+    return;
+
+  if (is_queried_search) {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.AppSearchProvider.QueryTime",
+                        base::TimeTicks::Now() - query_start_time_);
+  } else {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.AppSearchProvider.ZeroStateLatency",
+                        base::TimeTicks::Now() - query_start_time_);
+  }
+  record_query_uma_ = false;
 }
 
 void AppSearchProvider::UpdateResults() {
