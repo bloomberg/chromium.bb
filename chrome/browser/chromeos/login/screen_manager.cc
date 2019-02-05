@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screen_manager.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
@@ -28,6 +30,17 @@ BaseScreen* ScreenManager::GetScreen(OobeScreen screen) {
 
 bool ScreenManager::HasScreen(OobeScreen screen) {
   return screens_.count(screen) > 0;
+}
+
+void ScreenManager::SetScreenForTesting(std::unique_ptr<BaseScreen> value) {
+  // Capture screen id to avoid using `value` after moving it; = is not a
+  // sequence point.
+  auto id = value->screen_id();
+  screens_[id] = std::move(value);
+}
+
+void ScreenManager::DeleteScreenForTesting(OobeScreen screen) {
+  screens_[screen] = nullptr;
 }
 
 }  // namespace chromeos
