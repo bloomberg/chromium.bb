@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/numerics/checked_math.h"
 #include "components/safe_browsing/password_protection/visual_utils.h"
 
 #include "base/logging.h"
@@ -18,55 +17,11 @@ namespace visual_utils {
 
 namespace {
 
-// Constants used in getting the luminance of a Rec 2020 RGB value.
-// Drawn from:
-// https://en.wikipedia.org/wiki/Rec._2020#RGB_and_luma-chroma_formats
-const uint32_t kWeightRed = 263;
-const uint32_t kWeightGreen = 678;
-const uint32_t kWeightBlue = 59;
-
 // WARNING: The following parameters are highly privacy and performance
 // sensitive. These should not be changed without thorough review.
 const int kPHashDownsampleWidth = 288;
 const int kPHashDownsampleHeight = 288;
 const int kPHashBlockSize = 6;
-
-// Returns the median value of the list.
-uint8_t GetMedian(const std::vector<uint8_t>& samples) {
-  std::vector<uint8_t> samples_copy = samples;
-  std::vector<uint8_t>::iterator middle =
-      samples_copy.begin() + (samples_copy.size() / 2);
-  std::nth_element(samples_copy.begin(), middle, samples_copy.end());
-  return *middle;
-}
-
-// Encode the luminances as a bitstring, with a "1" bit if the luminance is
-// above the cutoff, and a "0" if it's below.
-void EncodeHash(const std::vector<uint8_t>& luminances,
-                uint8_t cutoff_luminance,
-                std::string* output) {
-  int current_bits = 0;
-  uint8_t current_byte = 0;
-  *output = "";
-
-  for (uint8_t luminance : luminances) {
-    current_bits++;
-    current_byte <<= 1;
-    if (luminance >= cutoff_luminance)
-      current_byte |= 1;
-
-    if (current_bits == 8) {
-      *output += static_cast<char>(current_byte);
-      current_bits = 0;
-      current_byte = 0;
-    }
-  }
-
-  if (current_bits != 0) {
-    current_byte <<= (8 - current_bits);
-    *output += static_cast<char>(current_byte);
-  }
-}
 
 }  // namespace
 
@@ -173,45 +128,6 @@ bool GetBlurredImage(const SkBitmap& image,
     *blurred_image->mutable_data() += static_cast<char>((rgba[i] >> 16) & 0xff);
   }
 
-  return true;
-}
-
-// Computes the final PHash value for the BlurredImage. For each pixel in the
-// blurred image, we compute its luminance. Then we create a bitstring, where
-// each pixel gives a "1" if the luminance is at least the median, and a "0"
-// otherwise.
-bool GetPHash(const VisualFeatures::BlurredImage& blurred_image,
-              std::string* phash) {
-  DCHECK_LE(blurred_image.width(), kPHashDownsampleWidth);
-  DCHECK_LE(blurred_image.height(), kPHashDownsampleHeight);
-
-  int width = blurred_image.width();
-  int height = blurred_image.height();
-
-  base::CheckedNumeric<int> expected_size =
-      base::CheckMul(3u, base::CheckMul(width, height));
-  if (!expected_size.IsValid())
-    return false;
-  if (blurred_image.data().size() != expected_size.ValueOrDie())
-    return false;
-
-  std::vector<uint8_t> luminances;
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      int current_offset = 3 * width * y + 3 * x;
-      uint8_t r = blurred_image.data()[current_offset];
-      uint8_t g = blurred_image.data()[current_offset + 1];
-      uint8_t b = blurred_image.data()[current_offset + 2];
-
-      uint8_t luminance =
-          (kWeightRed * r + kWeightGreen * g + kWeightBlue * b) /
-          (kWeightRed + kWeightGreen + kWeightBlue);
-      luminances.push_back(luminance);
-    }
-  }
-
-  uint8_t cutoff_luminance = GetMedian(luminances);
-  EncodeHash(luminances, cutoff_luminance, phash);
   return true;
 }
 
