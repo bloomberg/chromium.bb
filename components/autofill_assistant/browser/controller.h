@@ -133,6 +133,7 @@ class Controller : public ScriptExecutorDelegate,
   const Details* GetDetails() const override;
   std::string GetDebugContext() override;
   Metrics::DropOutReason GetDropOutReason() const override;
+  void GetTouchableArea(std::vector<RectF>* area) const override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;

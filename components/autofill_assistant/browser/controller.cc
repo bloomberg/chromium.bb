@@ -478,6 +478,11 @@ Metrics::DropOutReason Controller::GetDropOutReason() const {
   return stop_reason_;
 }
 
+void Controller::GetTouchableArea(std::vector<RectF>* area) const {
+  if (touchable_element_area_)
+    touchable_element_area_->GetArea(area);
+}
+
 void Controller::OnNoRunnableScriptsAnymore() {
   if (script_tracker()->running())
     return;
@@ -624,7 +629,7 @@ ElementArea* Controller::touchable_element_area() {
   if (!touchable_element_area_) {
     touchable_element_area_ = std::make_unique<ElementArea>(this);
     touchable_element_area_->SetOnUpdate(base::BindRepeating(
-        &UiController::SetTouchableArea,
+        &UiController::OnTouchableAreaChanged,
         // Unretained is safe, since touchable_element_area_ is guaranteed to be
         // deleted before the UI controller.
         base::Unretained(GetUiController())));

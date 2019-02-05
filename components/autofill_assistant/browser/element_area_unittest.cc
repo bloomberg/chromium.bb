@@ -89,7 +89,7 @@ class ElementAreaTest : public testing::Test, public ScriptExecutorDelegate {
     element_area_.SetFromProto(area);
   }
 
-  void OnUpdate(const std::vector<RectF>& area) { highlighted_area_ = area; }
+  void OnUpdate(const std::vector<RectF>& area) { reported_area_ = area; }
 
   // scoped_task_environment_ must be first to guarantee other field
   // creation run in that environment.
@@ -98,18 +98,26 @@ class ElementAreaTest : public testing::Test, public ScriptExecutorDelegate {
   MockWebController mock_web_controller_;
   std::map<std::string, std::string> parameters_;
   ElementArea element_area_;
-  std::vector<RectF> highlighted_area_;
+  std::vector<RectF> reported_area_;
 };
 
 TEST_F(ElementAreaTest, Empty) {
   EXPECT_TRUE(element_area_.IsEmpty());
-  EXPECT_THAT(highlighted_area_, IsEmpty());
+  EXPECT_THAT(reported_area_, IsEmpty());
+
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, IsEmpty());
 }
 
 TEST_F(ElementAreaTest, ElementNotFound) {
   SetElement("#not_found");
   EXPECT_TRUE(element_area_.IsEmpty());
-  EXPECT_THAT(highlighted_area_, IsEmpty());
+  EXPECT_THAT(reported_area_, IsEmpty());
+
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, IsEmpty());
 }
 
 TEST_F(ElementAreaTest, OneRectangle) {
@@ -119,7 +127,20 @@ TEST_F(ElementAreaTest, OneRectangle) {
 
   SetElement("#found");
   EXPECT_FALSE(element_area_.IsEmpty());
-  EXPECT_THAT(highlighted_area_,
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles,
+              ElementsAre(MatchingRectF(0.25f, 0.25f, 0.75f, 0.75f)));
+}
+
+TEST_F(ElementAreaTest, CallOnUpdate) {
+  EXPECT_CALL(mock_web_controller_,
+              OnGetElementPosition(Eq(Selector({"#found"})), _))
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.25f, 0.25f, 0.75f, 0.75f)));
+
+  SetElement("#found");
+  EXPECT_FALSE(element_area_.IsEmpty());
+  EXPECT_THAT(reported_area_,
               ElementsAre(MatchingRectF(0.25f, 0.25f, 0.75f, 0.75f)));
 }
 
@@ -137,9 +158,10 @@ TEST_F(ElementAreaTest, TwoRectangles) {
   element_area_.SetFromProto(area_proto);
 
   EXPECT_FALSE(element_area_.IsEmpty());
-  EXPECT_THAT(highlighted_area_,
-              ElementsAre(MatchingRectF(0.0f, 0.0f, 0.25f, 0.25f),
-                          MatchingRectF(0.25f, 0.25f, 1.0f, 1.0f)));
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.0f, 0.0f, 0.25f, 0.25f),
+                                      MatchingRectF(0.25f, 0.25f, 1.0f, 1.0f)));
 }
 
 TEST_F(ElementAreaTest, OneRectangleTwoElements) {
@@ -157,8 +179,9 @@ TEST_F(ElementAreaTest, OneRectangleTwoElements) {
   element_area_.SetFromProto(area_proto);
 
   EXPECT_FALSE(element_area_.IsEmpty());
-  EXPECT_THAT(highlighted_area_,
-              ElementsAre(MatchingRectF(0.1f, 0.2f, 0.6f, 0.5f)));
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.1f, 0.2f, 0.6f, 0.5f)));
 }
 
 TEST_F(ElementAreaTest, DoNotReportIncompleteRectangles) {
@@ -180,7 +203,11 @@ TEST_F(ElementAreaTest, DoNotReportIncompleteRectangles) {
 
   EXPECT_TRUE(element_area_.HasElements());
   EXPECT_FALSE(element_area_.IsEmpty());
-  EXPECT_THAT(highlighted_area_, IsEmpty());
+  EXPECT_THAT(reported_area_, IsEmpty());
+
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.1f, 0.3f, 0.2f, 0.4f)));
 }
 
 TEST_F(ElementAreaTest, OneRectangleFourElements) {
@@ -205,11 +232,12 @@ TEST_F(ElementAreaTest, OneRectangleFourElements) {
   rectangle_proto->add_elements()->add_selectors("#element4");
   element_area_.SetFromProto(area_proto);
 
-  EXPECT_THAT(highlighted_area_,
-              ElementsAre(MatchingRectF(0.0f, 0.0f, 1.0f, 1.0f)));
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.0f, 0.0f, 1.0f, 1.0f)));
 }
 
-TEST_F(ElementAreaTest, OneRectangleMissingElements) {
+TEST_F(ElementAreaTest, OneRectangleMissingElementsReported) {
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(Eq(Selector({"#element1"})), _))
       .WillOnce(RunOnceCallback<1>(true, RectF(0.1f, 0.1f, 0.2f, 0.2f)));
@@ -223,7 +251,11 @@ TEST_F(ElementAreaTest, OneRectangleMissingElements) {
   rectangle_proto->add_elements()->add_selectors("#element2");
   element_area_.SetFromProto(area_proto);
 
-  EXPECT_THAT(highlighted_area_,
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.1f, 0.1f, 0.2f, 0.2f)));
+
+  EXPECT_THAT(reported_area_,
               ElementsAre(MatchingRectF(0.1f, 0.1f, 0.2f, 0.2f)));
 }
 
@@ -242,8 +274,9 @@ TEST_F(ElementAreaTest, FullWidthRectangle) {
   rectangle_proto->set_full_width(true);
   element_area_.SetFromProto(area_proto);
 
-  EXPECT_THAT(highlighted_area_,
-              ElementsAre(MatchingRectF(0.0f, 0.3f, 1.0f, 0.8f)));
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.0f, 0.3f, 1.0f, 0.8f)));
 }
 
 TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
@@ -255,12 +288,18 @@ TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
 
   SetElement("#element");
 
-  EXPECT_THAT(highlighted_area_,
+  EXPECT_THAT(reported_area_,
               ElementsAre(MatchingRectF(0.0f, 0.25f, 1.0f, 0.5f)));
 
   element_area_.UpdatePositions();
 
-  EXPECT_THAT(highlighted_area_,
+  // Updated area is available
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.0f, 0.5f, 1.0f, 0.75f)));
+
+  // Updated area is reported
+  EXPECT_THAT(reported_area_,
               ElementsAre(MatchingRectF(0.0f, 0.5f, 1.0f, 0.75f)));
 }
 
@@ -273,13 +312,19 @@ TEST_F(ElementAreaTest, ElementMovesWithTime) {
 
   SetElement("#element");
 
-  EXPECT_THAT(highlighted_area_,
+  EXPECT_THAT(reported_area_,
               ElementsAre(MatchingRectF(0.0f, 0.25f, 1.0f, 0.5f)));
 
   scoped_task_environment_.FastForwardBy(
       base::TimeDelta::FromMilliseconds(100));
 
-  EXPECT_THAT(highlighted_area_,
+  // Updated area is available
+  std::vector<RectF> rectangles;
+  element_area_.GetArea(&rectangles);
+  EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0.0f, 0.5f, 1.0f, 0.75f)));
+
+  // Updated area is reported
+  EXPECT_THAT(reported_area_,
               ElementsAre(MatchingRectF(0.0f, 0.5f, 1.0f, 0.75f)));
 }
 }  // namespace
