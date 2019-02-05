@@ -41,7 +41,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/base/escape.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
@@ -231,15 +233,18 @@ ConnectionStatusType GetDriveConnectionStatus(Profile* profile) {
   auto* drive_integration_service = GetIntegrationServiceByProfile(profile);
   if (!drive_integration_service)
     return DRIVE_DISCONNECTED_NOSERVICE;
-  if (net::NetworkChangeNotifier::IsOffline())
+  auto* network_connection_tracker = content::GetNetworkConnectionTracker();
+  if (network_connection_tracker->IsOffline())
     return DRIVE_DISCONNECTED_NONETWORK;
   auto* drive_service = drive_integration_service->drive_service();
   if (drive_service && !drive_service->CanSendRequest())
     return DRIVE_DISCONNECTED_NOTREADY;
 
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  network_connection_tracker->GetConnectionType(&connection_type,
+                                                base::DoNothing());
   const bool is_connection_cellular =
-      net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType());
+      network::NetworkConnectionTracker::IsConnectionCellular(connection_type);
   const bool disable_sync_over_celluar =
       profile->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular);
 
