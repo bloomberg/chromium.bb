@@ -443,6 +443,12 @@ void IdentityManager::OnSetAccountsInCookieCompleted(
   }
 }
 
+void IdentityManager::OnGaiaCookieDeletedByUserAction() {
+  for (auto& observer : observer_list_) {
+    observer.OnAccountsCookieDeletedByUserAction();
+  }
+}
+
 void IdentityManager::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,

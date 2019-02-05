@@ -148,6 +148,10 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnSetAccountsInCookieCompleted(
         const GoogleServiceAuthError& error) {}
 
+    // Called when the Gaia cookie has been deleted explicitly by a user
+    // action, e.g. from the settings or by an extension.
+    virtual void OnAccountsCookieDeletedByUserAction() {}
+
     // Called before a batch of refresh token state changes is started.
     virtual void OnStartBatchOfRefreshTokenStateChanges() {}
 
@@ -482,6 +486,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       const GoogleServiceAuthError& error) override;
   void OnSetAccountsInCookieCompleted(
       const GoogleServiceAuthError& error) override;
+  void OnGaiaCookieDeletedByUserAction() override;
 
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(
