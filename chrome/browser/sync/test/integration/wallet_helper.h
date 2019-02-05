@@ -24,6 +24,7 @@ struct PaymentsCustomerData;
 
 namespace sync_pb {
 class SyncEntity;
+class ModelTypeState;
 }
 
 namespace wallet_helper {
@@ -71,6 +72,8 @@ void GetServerCardsMetadata(
 void GetServerAddressesMetadata(
     int profile,
     std::map<std::string, autofill::AutofillMetadata>* addresses_metadata);
+
+sync_pb::ModelTypeState GetWalletDataModelTypeState(int profile);
 
 void UnmaskServerCard(int profile,
                       const autofill::CreditCard& credit_card,

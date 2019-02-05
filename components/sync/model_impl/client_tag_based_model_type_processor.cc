@@ -969,16 +969,17 @@ bool ClientTagBasedModelTypeProcessor::ValidateUpdate(
 
     return false;
   } else if (!HasClearAllDirective(model_type_state) &&
-             !bridge_->SupportsIncrementalUpdates()) {
-    // We receive empty updates (without clear all directive) from the server to
-    // indicate nothing changed. We can just ignore these updates for bridges
-    // that don't support incremental updates.
-    if (!updates.empty()) {
-      ReportError(ModelError(FROM_HERE,
-                             "Received an update without version watermark for "
-                             "bridge that does not support incremental "
-                             "updates"));
-    }
+             !bridge_->SupportsIncrementalUpdates() && !updates.empty()) {
+    // We receive an update without clear all directive from the server to
+    // indicate no data has changed. This contradicts with the list of updates
+    // being non-empty, the bridge cannot handle it and we need to fail here.
+    // (If the last condition does not hold true and the list of updates is
+    // empty, we still need to pass the empty update to the bridge because the
+    // progress marker might have changed.)
+    ReportError(ModelError(FROM_HERE,
+                           "Received a non-empty update without version "
+                           "watermark for bridge that does not support "
+                           "incremental updates"));
     return false;
   }
   return true;

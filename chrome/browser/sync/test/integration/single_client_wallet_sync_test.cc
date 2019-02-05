@@ -50,6 +50,7 @@ using wallet_helper::GetAccountWebDataService;
 using wallet_helper::GetDefaultCreditCard;
 using wallet_helper::GetPersonalDataManager;
 using wallet_helper::GetProfileWebDataService;
+using wallet_helper::GetWalletDataModelTypeState;
 using wallet_helper::kDefaultBillingAddressID;
 using wallet_helper::kDefaultCardID;
 using wallet_helper::kDefaultCustomerID;
@@ -606,6 +607,49 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // No histograms for initial sync, nor for an empty update.
   ExpectNoHistogramsForCardsDiff();
   ExpectNoHistogramsForAddressesDiff();
+}
+
+class SingleClientWalletSyncTestWithDataUss
+    : public UssWalletSwitchToggler,
+      public SingleClientWalletSyncTest {
+ public:
+  SingleClientWalletSyncTestWithDataUss() {
+    InitWithFeatures(
+        /*enabled_features=*/{switches::kSyncUSSAutofillWalletData},
+        /*disabled_features=*/{});
+  }
+};
+
+// Check on top of
+// SingleClientWalletSyncTestWithDefaultFeatures.EmptyUpdatesAreIgnored that the
+// new progress marker is stored for empty updates. This is a regression test
+// for crbug.com/924447 (and restricts to USS because the bug cannot exist for
+// Directory and because the USS implementation is launching).
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDataUss,
+                       EmptyUpdatesUpdateProgressMarker) {
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  sync_pb::ModelTypeState state_before = GetWalletDataModelTypeState(0);
+
+  // Do not change anything on the server so that the update forced below is an
+  // empty one.
+
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
+
+  sync_pb::ModelTypeState state_after = GetWalletDataModelTypeState(0);
+  EXPECT_NE(state_before.progress_marker().token(),
+            state_after.progress_marker().token());
 }
 
 // If the server sends the same cards and addresses again, they should not
@@ -1388,6 +1432,13 @@ INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientWalletSyncTestWithDefaultFeatures,
                          ::testing::Values(std::make_pair(false, false),
                                            std::make_pair(true, false),
+                                           std::make_pair(true, true)));
+
+// TODO(jkrcal): Merge this with SingleClientWalletSyncTestWithDefaultFeatures
+// once wallet data USS is launched. https://crbug.com/853688.
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientWalletSyncTestWithDataUss,
+                         ::testing::Values(std::make_pair(true, false),
                                            std::make_pair(true, true)));
 
 // Depends on SyncUSSWalletData, cannot set the first param to false.
