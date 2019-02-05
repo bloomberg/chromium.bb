@@ -1021,7 +1021,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     const PaintLayer* compositing_container,
     const IntPoint& snapped_offset_from_composited_ancestor,
     Vector<GraphicsLayerPaintInfo>& layers,
-    LayoutPoint* offset_from_transformed_ancestor,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   if (!squashing_layer_)
     return;
@@ -1143,11 +1142,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 
-  *offset_from_transformed_ancestor =
-      compositing_container_offset_from_transformed_ancestor;
-  offset_from_transformed_ancestor->Move(
-      squash_layer_origin_in_compositing_container_space);
-
   for (wtf_size_t i = 0; i < layers.size(); ++i) {
     LocalClipRectForSquashedLayer(owning_layer_, layers, layers[i]);
   }
@@ -1210,7 +1204,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateSquashingLayerGeometry(
       graphics_layer_parent_location, compositing_container,
       snapped_offset_from_composited_ancestor, squashed_layers_,
-      &squashing_layer_offset_from_transformed_ancestor_,
       layers_needing_paint_invalidation);
 
   UpdateChildTransformLayerGeometry();

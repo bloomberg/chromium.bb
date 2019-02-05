@@ -2632,17 +2632,10 @@ TEST_F(CompositedLayerMappingTest, SquashingScroll) {
   auto* squashed =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
-  EXPECT_EQ(
-      LayoutPoint(),
-      squashed->GroupedMapping()->SquashingOffsetFromTransformedAncestor());
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
                                                    kUserScroll);
   UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(
-      LayoutPoint(),
-      squashed->GroupedMapping()->SquashingOffsetFromTransformedAncestor());
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
