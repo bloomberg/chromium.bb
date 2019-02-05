@@ -450,12 +450,6 @@ class WTF_EXPORT StringImpl {
         .ValueOrDie();
   }
 
-  template <>
-  size_t AllocationSize<LChar>(wtf_size_t length) {
-    static_assert(sizeof(LChar) == 1, "sizeof(LChar) should be 1.");
-    return base::CheckAdd(sizeof(StringImpl), length).ValueOrDie();
-  }
-
   scoped_refptr<StringImpl> Replace(UChar pattern,
                                     const LChar* replacement,
                                     wtf_size_t replacement_length);
@@ -511,6 +505,14 @@ ALWAYS_INLINE const LChar* StringImpl::GetCharacters<LChar>() const {
 template <>
 ALWAYS_INLINE const UChar* StringImpl::GetCharacters<UChar>() const {
   return Characters16();
+}
+
+// The following template specialization can be moved to the class declaration
+// once we officially switch to C++17 (we need C++ DR727 to be implemented).
+template <>
+ALWAYS_INLINE size_t StringImpl::AllocationSize<LChar>(wtf_size_t length) {
+  static_assert(sizeof(LChar) == 1, "sizeof(LChar) should be 1.");
+  return base::CheckAdd(sizeof(StringImpl), length).ValueOrDie();
 }
 
 WTF_EXPORT bool Equal(const StringImpl*, const StringImpl*);
