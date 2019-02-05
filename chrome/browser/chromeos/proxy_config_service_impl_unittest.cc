@@ -26,7 +26,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -50,8 +49,16 @@ namespace chromeos {
 
 namespace {
 
+enum class Mode {
+  kDirect,
+  kAutoDetect,
+  kPac,
+  kSingleProxy,
+  kPerSchemeProxy,
+};
+
 struct Input {
-  UIProxyConfig::Mode mode;
+  Mode mode;
   std::string pac_url;
   std::string server;
   std::string bypass_rules;
@@ -59,9 +66,6 @@ struct Input {
 
 // Builds an identifier for each test in an array.
 #define TEST_DESC(desc) base::StringPrintf("at line %d <%s>", __LINE__, desc)
-
-// Shortcuts to declare enums within chromeos's ProxyConfig.
-#define MK_MODE(mode) UIProxyConfig::MODE_##mode
 
 // Inspired from net/proxy_resolution/proxy_config_service_linux_unittest.cc.
 const struct TestParams {
@@ -75,150 +79,169 @@ const struct TestParams {
   GURL pac_url;
   net::ProxyRulesExpectation proxy_rules;
 } tests[] = {
-  {  // 0
-    TEST_DESC("No proxying"),
+    {
+        // 0
+        TEST_DESC("No proxying"),
 
-    { // Input.
-      MK_MODE(DIRECT),  // mode
+        {
+            // Input.
+            Mode::kDirect,  // mode
+        },
+
+        // Expected result.
+        false,                                // auto_detect
+        GURL(),                               // pac_url
+        net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Empty(),     // proxy_rules
-  },
+    {
+        // 1
+        TEST_DESC("Auto detect"),
 
-  {  // 1
-    TEST_DESC("Auto detect"),
+        {
+            // Input.
+            Mode::kAutoDetect,  // mode
+        },
 
-    { // Input.
-      MK_MODE(AUTO_DETECT),  // mode
+        // Expected result.
+        true,                                 // auto_detect
+        GURL(),                               // pac_url
+        net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
-    // Expected result.
-    true,                                    // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Empty(),     // proxy_rules
-  },
+    {
+        // 2
+        TEST_DESC("Valid PAC URL"),
 
-  {  // 2
-    TEST_DESC("Valid PAC URL"),
+        {
+            // Input.
+            Mode::kPac,              // mode
+            "http://wpad/wpad.dat",  // pac_url
+        },
 
-    { // Input.
-      MK_MODE(PAC_SCRIPT),     // mode
-      "http://wpad/wpad.dat",  // pac_url
+        // Expected result.
+        false,                                // auto_detect
+        GURL("http://wpad/wpad.dat"),         // pac_url
+        net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
-    // Expected result.
-    false,                                   // auto_detect
-    GURL("http://wpad/wpad.dat"),            // pac_url
-    net::ProxyRulesExpectation::Empty(),     // proxy_rules
-  },
+    {
+        // 3
+        TEST_DESC("Invalid PAC URL"),
 
-  {  // 3
-    TEST_DESC("Invalid PAC URL"),
+        {
+            // Input.
+            Mode::kPac,  // mode
+            "wpad.dat",  // pac_url
+        },
 
-    { // Input.
-      MK_MODE(PAC_SCRIPT),  // mode
-      "wpad.dat",           // pac_url
+        // Expected result.
+        false,                                // auto_detect
+        GURL(),                               // pac_url
+        net::ProxyRulesExpectation::Empty(),  // proxy_rules
     },
 
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Empty(),     // proxy_rules
-  },
+    {
+        // 4
+        TEST_DESC("Single-host in proxy list"),
 
-  {  // 4
-    TEST_DESC("Single-host in proxy list"),
+        {
+            // Input.
+            Mode::kSingleProxy,  // mode
+            "",                  // pac_url
+            "www.google.com",    // server
+        },
 
-    { // Input.
-      MK_MODE(SINGLE_PROXY),  // mode
-      "",                     // pac_url
-      "www.google.com",       // server
+        // Expected result.
+        false,                               // auto_detect
+        GURL(),                              // pac_url
+        net::ProxyRulesExpectation::Single(  // proxy_rules
+            "www.google.com:80",             // single proxy
+            "<local>"),                      // bypass rules
     },
 
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "www.google.com:80",                 // single proxy
-        "<local>"),                          // bypass rules
-  },
+    {
+        // 5
+        TEST_DESC("Single-host, different port"),
 
-  {  // 5
-    TEST_DESC("Single-host, different port"),
+        {
+            // Input.
+            Mode::kSingleProxy,   // mode
+            "",                   // pac_url
+            "www.google.com:99",  // server
+        },
 
-    { // Input.
-      MK_MODE(SINGLE_PROXY),  // mode
-      "",                     // pac_url
-      "www.google.com:99",    // server
+        // Expected result.
+        false,                               // auto_detect
+        GURL(),                              // pac_url
+        net::ProxyRulesExpectation::Single(  // proxy_rules
+            "www.google.com:99",             // single
+            "<local>"),                      // bypass rules
     },
 
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "www.google.com:99",                 // single
-        "<local>"),                          // bypass rules
-  },
+    {
+        // 6
+        TEST_DESC("Tolerate a scheme"),
 
-  {  // 6
-    TEST_DESC("Tolerate a scheme"),
+        {
+            // Input.
+            Mode::kSingleProxy,          // mode
+            "",                          // pac_url
+            "http://www.google.com:99",  // server
+        },
 
-    { // Input.
-      MK_MODE(SINGLE_PROXY),       // mode
-      "",                          // pac_url
-      "http://www.google.com:99",  // server
+        // Expected result.
+        false,                               // auto_detect
+        GURL(),                              // pac_url
+        net::ProxyRulesExpectation::Single(  // proxy_rules
+            "www.google.com:99",             // single proxy
+            "<local>"),                      // bypass rules
     },
 
-    // Expected result.
-    false,                                   // auto_detect
-    GURL(),                                  // pac_url
-    net::ProxyRulesExpectation::Single(      // proxy_rules
-        "www.google.com:99",                 // single proxy
-        "<local>"),                          // bypass rules
-  },
+    {
+        // 7
+        TEST_DESC("Per-scheme proxy rules"),
 
-  {  // 7
-    TEST_DESC("Per-scheme proxy rules"),
+        {
+            // Input.
+            Mode::kPerSchemeProxy,  // mode
+            "",                     // pac_url
+            "http=www.google.com:80;https=https://www.foo.com:110;"
+            "ftp=ftp.foo.com:121;socks=socks5://socks.com:888",  // server
+        },
 
-    { // Input.
-      MK_MODE(PROXY_PER_SCHEME),  // mode
-      "",                         // pac_url
-      "http=www.google.com:80;https=https://www.foo.com:110;"
-      "ftp=ftp.foo.com:121;socks=socks5://socks.com:888",  // server
+        // Expected result.
+        false,                                           // auto_detect
+        GURL(),                                          // pac_url
+        net::ProxyRulesExpectation::PerSchemeWithSocks(  // proxy_rules
+            "www.google.com:80",                         // http
+            "https://www.foo.com:110",                   // https
+            "ftp.foo.com:121",                           // ftp
+            "socks5://socks.com:888",                    // fallback proxy
+            "<local>"),                                  // bypass rules
     },
 
-    // Expected result.
-    false,                          // auto_detect
-    GURL(),                         // pac_url
-    net::ProxyRulesExpectation::PerSchemeWithSocks(  // proxy_rules
-        "www.google.com:80",        // http
-        "https://www.foo.com:110",  // https
-        "ftp.foo.com:121",          // ftp
-        "socks5://socks.com:888",   // fallback proxy
-        "<local>"),                 // bypass rules
-  },
+    {
+        // 8
+        TEST_DESC("Bypass rules"),
 
-  {  // 8
-    TEST_DESC("Bypass rules"),
+        {
+            // Input.
+            Mode::kSingleProxy,  // mode
+            "",                  // pac_url
+            "www.google.com",    // server
+            "*.google.com, *foo.com:99, 1.2.3.4:22, 127.0.0.1/8",
+            // bypass_rules
+        },
 
-    { // Input.
-      MK_MODE(SINGLE_PROXY),      // mode
-      "",                         // pac_url
-      "www.google.com",           // server
-      "*.google.com, *foo.com:99, 1.2.3.4:22, 127.0.0.1/8",  // bypass_rules
+        // Expected result.
+        false,                               // auto_detect
+        GURL(),                              // pac_url
+        net::ProxyRulesExpectation::Single(  // proxy_rules
+            "www.google.com:80",             // single proxy
+                                             // bypass_rules
+            "<local>,*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),
     },
-
-    // Expected result.
-    false,                          // auto_detect
-    GURL(),                         // pac_url
-    net::ProxyRulesExpectation::Single(  // proxy_rules
-        "www.google.com:80",             // single proxy
-        // bypass_rules
-        "<local>,*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),
-  },
 };  // tests
 
 const char kEthernetPolicy[] =
@@ -320,14 +343,14 @@ class ProxyConfigServiceImplTest : public testing::Test {
 
   base::Value InitConfigWithTestInput(const Input& input) {
     switch (input.mode) {
-      case MK_MODE(DIRECT):
+      case Mode::kDirect:
         return ProxyConfigDictionary::CreateDirect();
-      case MK_MODE(AUTO_DETECT):
+      case Mode::kAutoDetect:
         return ProxyConfigDictionary::CreateAutoDetect();
-      case MK_MODE(PAC_SCRIPT):
+      case Mode::kPac:
         return ProxyConfigDictionary::CreatePacScript(input.pac_url, false);
-      case MK_MODE(SINGLE_PROXY):
-      case MK_MODE(PROXY_PER_SCHEME):
+      case Mode::kSingleProxy:
+      case Mode::kPerSchemeProxy:
         return ProxyConfigDictionary::CreateFixedServers(input.server,
                                                          input.bypass_rules);
     }
