@@ -152,8 +152,6 @@ static_library("browser") {
     "signin_status_metrics_provider_base.h",
     "signin_status_metrics_provider_delegate.cc",
     "signin_status_metrics_provider_delegate.h",
-    "signin_tracker.cc",
-    "signin_tracker.h",
     "webdata/token_service_table.cc",
     "webdata/token_service_table.h",
     "webdata/token_web_data.cc",
@@ -275,7 +273,6 @@ source_set("unit_tests") {
     "signin_manager_unittest.cc",
     "signin_metrics_unittest.cc",
     "signin_status_metrics_provider_unittest.cc",
-    "signin_tracker_unittest.cc",
     "ubertoken_fetcher_impl_unittest.cc",
     "webdata/token_service_table_unittest.cc",
   ]

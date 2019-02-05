@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -44,6 +46,8 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -80,6 +84,30 @@
 #endif  // defined(OS_WIN)
 
 namespace {
+
+// Specific implementation of DiceTurnSyncOnHelper::Delegate for forced signin
+// flows. Some confirmation prompts are skipped.
+class ForcedSigninDiceTurnSyncOnHelperDelegate
+    : public DiceTurnSyncOnHelperDelegateImpl {
+ public:
+  explicit ForcedSigninDiceTurnSyncOnHelperDelegate(Browser* browser)
+      : DiceTurnSyncOnHelperDelegateImpl(browser) {}
+
+ private:
+  void ShowMergeSyncDataConfirmation(
+      const std::string& previous_email,
+      const std::string& new_email,
+      DiceTurnSyncOnHelper::SigninChoiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void ShowEnterpriseAccountConfirmation(
+      const std::string& email,
+      DiceTurnSyncOnHelper::SigninChoiceCallback callback) override {
+    std::move(callback).Run(
+        DiceTurnSyncOnHelper ::SigninChoice::SIGNIN_CHOICE_CONTINUE);
+  }
+};
 
 #if defined(OS_WIN)
 
@@ -215,14 +243,15 @@ bool ShouldShowAccountManagement(const GURL& url, bool is_mirror_enabled) {
   return false;
 }
 
-// Callback for OneClickSigninSyncStarter.
+// Callback for DiceTurnOnSyncHelper.
 void OnSyncSetupComplete(Profile* profile,
                          base::WeakPtr<InlineLoginHandlerImpl> handler,
                          const std::string& username,
-                         const std::string& password,
-                         OneClickSigninSyncStarter::SyncSetupResult result) {
-  if (result == OneClickSigninSyncStarter::SYNC_SETUP_SUCCESS &&
-      !password.empty()) {
+                         const std::string& password) {
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  bool has_primary_account = identity_manager->HasPrimaryAccount();
+  if (has_primary_account && !password.empty()) {
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(profile,
                                             ServiceAccessType::EXPLICIT_ACCESS);
@@ -235,8 +264,15 @@ void OnSyncSetupComplete(Profile* profile,
       LocalAuth::SetLocalAuthCredentials(profile, password);
   }
 
-  if (handler)
-    handler->SyncStarterCallback(result);
+  if (handler) {
+    handler->SyncStarterCallback(has_primary_account);
+  } else if (signin_util::IsForceSigninEnabled() && !has_primary_account) {
+    BrowserList::CloseAllBrowsersWithProfile(
+        profile, base::Bind(&LockProfileAndShowUserManager),
+        // Cannot be called because skip_beforeunload is true.
+        BrowserList::CloseCallback(),
+        /*skip_beforeunload=*/true);
+  }
 }
 
 }  // namespace
@@ -384,8 +420,6 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
     LogSigninReason(reason);
   } else {
-    if (HandleCrossAccountError(result.refresh_token))
-      return;
     if (confirm_untrusted_signin_) {
       // Display a confirmation dialog to the user.
       base::RecordAction(
@@ -398,8 +432,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
                          base::Unretained(this), result.refresh_token));
       return;
     }
-    CreateSyncStarter(browser, current_url_, result.refresh_token,
-                      OneClickSigninSyncStarter::CURRENT_PROFILE);
+    CreateSyncStarter(browser, current_url_, result.refresh_token);
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 }
@@ -409,15 +442,13 @@ void InlineSigninHelper::UntrustedSigninConfirmed(
     bool confirmed) {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   if (confirmed) {
-    CreateSyncStarter(nullptr, current_url_, refresh_token,
-                      OneClickSigninSyncStarter::CURRENT_PROFILE);
+    CreateSyncStarter(nullptr, current_url_, refresh_token);
     return;
   }
 
   base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
   if (handler_) {
-    handler_->SyncStarterCallback(
-        OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+    handler_->SyncStarterCallback(false);
   } else if (signin_util::IsForceSigninEnabled()) {
     BrowserList::CloseAllBrowsersWithProfile(
         profile_, base::Bind(&LockProfileAndShowUserManager),
@@ -427,76 +458,41 @@ void InlineSigninHelper::UntrustedSigninConfirmed(
   }
 }
 
-void InlineSigninHelper::CreateSyncStarter(
-    Browser* browser,
-    const GURL& current_url,
-    const std::string& refresh_token,
-    OneClickSigninSyncStarter::ProfileMode profile_mode) {
-  // OneClickSigninSyncStarter will delete itself once the job is done.
-  new OneClickSigninSyncStarter(
-      profile_, browser, gaia_id_, email_, password_, refresh_token,
-      signin::GetAccessPointForEmbeddedPromoURL(current_url),
-      signin::GetSigninReasonForEmbeddedPromoURL(current_url), profile_mode,
-      base::Bind(&OnSyncSetupComplete, profile_, handler_, email_, password_));
-}
-
-bool InlineSigninHelper::HandleCrossAccountError(
-    const std::string& refresh_token) {
-  // With force sign in enabled, cross account
-  // sign in will be rejected in the early stage so there is no need to show the
-  // warning page here.
-  if (signin_util::IsForceSigninEnabled())
-    return false;
-
-  std::string last_email =
-      profile_->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
-
-  // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
-  if (!IsCrossAccountError(profile_, email_, gaia_id_))
-    return false;
-
-  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  SigninEmailConfirmationDialog::AskForConfirmation(
-      web_contents, profile_, last_email, email_,
-      base::Bind(&InlineSigninHelper::ConfirmEmailAction,
-                 base::Unretained(this), web_contents, refresh_token));
-  return true;
-}
-
-void InlineSigninHelper::ConfirmEmailAction(
-    content::WebContents* web_contents,
-    const std::string& refresh_token,
-    SigninEmailConfirmationDialog::Action action) {
-  // There is no need to show the untrusted signin prompt, because the
-  // SigninEmailConfirmationDialog already displays the account that is being
-  // signed in.
-  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
-  switch (action) {
-    case SigninEmailConfirmationDialog::CREATE_NEW_USER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
-      CreateSyncStarter(browser, current_url_, refresh_token,
-                        OneClickSigninSyncStarter::NEW_PROFILE);
-      break;
-    case SigninEmailConfirmationDialog::START_SYNC:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
-      CreateSyncStarter(browser, current_url_, refresh_token,
-                        OneClickSigninSyncStarter::CURRENT_PROFILE);
-      break;
-    case SigninEmailConfirmationDialog::CLOSE:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
-      if (handler_) {
-        handler_->SyncStarterCallback(
-            OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-      }
-      break;
+void InlineSigninHelper::CreateSyncStarter(Browser* browser,
+                                           const GURL& current_url,
+                                           const std::string& refresh_token) {
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  if (identity_manager->HasPrimaryAccount()) {
+    // Already signed in, nothing to do.
+    if (handler_)
+      handler_->SyncStarterCallback(true);
+    return;
   }
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+
+  if (!browser)
+    browser = chrome::OpenEmptyWindow(profile_);
+
+  std::string account_id =
+      identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+          gaia_id_, email_, refresh_token,
+          /*is_under_advanced_protection=*/false,
+          signin_metrics::SourceForRefreshTokenOperation::
+              kInlineLoginHandler_Signin);
+
+  std::unique_ptr<DiceTurnSyncOnHelper::Delegate> delegate =
+      signin_util::IsForceSigninEnabled()
+          ? std::make_unique<ForcedSigninDiceTurnSyncOnHelperDelegate>(browser)
+          : std::make_unique<DiceTurnSyncOnHelperDelegateImpl>(browser);
+
+  new DiceTurnSyncOnHelper(
+      profile_, signin::GetAccessPointForEmbeddedPromoURL(current_url),
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url), account_id,
+      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT,
+      std::move(delegate),
+      base::BindOnce(&OnSyncSetupComplete, profile_, handler_, email_,
+                     password_));
 }
 
 void InlineSigninHelper::OnClientOAuthFailure(
@@ -634,7 +630,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
 
   if (skip_for_now) {
     signin::SetUserSkippedPromo(Profile::FromWebUI(web_ui()));
-    SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+    SyncStarterCallback(false);
     return;
   }
 
@@ -886,7 +882,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
     SendLSTFetchResultsMessage(error_value);
     return;
   }
-  SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+  SyncStarterCallback(false);
   Browser* browser = GetDesktopBrowser();
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -914,8 +910,7 @@ Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
   return browser;
 }
 
-void InlineLoginHandlerImpl::SyncStarterCallback(
-    OneClickSigninSyncStarter::SyncSetupResult result) {
+void InlineLoginHandlerImpl::SyncStarterCallback(bool sync_setup_success) {
   content::WebContents* contents = web_ui()->GetWebContents();
 
   if (contents->GetController().GetPendingEntry()) {
@@ -930,7 +925,7 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
       signin::GetAccessPointForEmbeddedPromoURL(current_url);
   bool auto_close = signin::IsAutoCloseEnabledInEmbeddedURL(current_url);
 
-  if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE) {
+  if (!sync_setup_success) {
     RedirectToNtpOrAppsPage(contents, access_point);
   } else if (auto_close) {
     bool show_account_management = ShouldShowAccountManagement(

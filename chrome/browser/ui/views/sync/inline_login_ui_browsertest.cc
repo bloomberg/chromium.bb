@@ -166,11 +166,8 @@ class MockInlineSigninHelper : public InlineSigninHelper {
 
   MOCK_METHOD1(OnClientOAuthSuccess, void(const ClientOAuthResult& result));
   MOCK_METHOD1(OnClientOAuthFailure, void(const GoogleServiceAuthError& error));
-  MOCK_METHOD4(CreateSyncStarter,
-               void(Browser*,
-                    const GURL&,
-                    const std::string&,
-                    OneClickSigninSyncStarter::ProfileMode));
+  MOCK_METHOD3(CreateSyncStarter,
+               void(Browser*, const GURL&, const std::string&));
 
   GaiaAuthFetcher* GetGaiaAuthFetcher() { return GetGaiaAuthFetcherForTest(); }
 
@@ -219,11 +216,8 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
       bool confirm_untrusted_signin,
       bool is_force_sign_in_with_usermanager);
 
-  MOCK_METHOD4(CreateSyncStarter,
-               void(Browser*,
-                    const GURL&,
-                    const std::string&,
-                    OneClickSigninSyncStarter::ProfileMode));
+  MOCK_METHOD3(CreateSyncStarter,
+               void(Browser*, const GURL&, const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSyncStarterInlineSigninHelper);
@@ -567,9 +561,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           std::string(),
           false,  // confirm untrusted signin
           false);
-  EXPECT_CALL(*helper,
-              CreateSyncStarter(_, _, "refresh_token",
-                                OneClickSigninSyncStarter::CURRENT_PROFILE));
+  EXPECT_CALL(*helper, CreateSyncStarter(_, _, "refresh_token"));
 
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(g_browser_process->profile_manager()
@@ -606,9 +598,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           std::string(),
           false,  // confirm untrusted signin
           false);
-  EXPECT_CALL(*helper,
-              CreateSyncStarter(_, _, "refresh_token",
-                                OneClickSigninSyncStarter::CURRENT_PROFILE));
+  EXPECT_CALL(*helper, CreateSyncStarter(_, _, "refresh_token"));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
   base::RunLoop().RunUntilIdle();
@@ -659,9 +649,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           std::string(),
           true,  // confirm untrusted signin
           false);
-  EXPECT_CALL(*helper,
-              CreateSyncStarter(_, _, "refresh_token",
-                                OneClickSigninSyncStarter::CURRENT_PROFILE));
+  EXPECT_CALL(*helper, CreateSyncStarter(_, _, "refresh_token"));
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
   EXPECT_TRUE(OneClickSigninDialogView::IsShowing());
   views::DialogDelegateView* dialog_delegate =
@@ -693,9 +681,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 
   // Even though "choose what to sync" is false, the source of the URL is
   // settings, which means the user wants to CONFIGURE_SYNC_FIRST.
-  EXPECT_CALL(*helper,
-              CreateSyncStarter(_, _, "refresh_token",
-                                OneClickSigninSyncStarter::CURRENT_PROFILE));
+  EXPECT_CALL(*helper, CreateSyncStarter(_, _, "refresh_token"));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
   base::RunLoop().RunUntilIdle();
@@ -758,9 +744,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           handler, test_shared_loader_factory(), browser()->profile(), url,
           "foo@gmail.com", "gaiaid-12345", "password", "auth_code",
           std::string(), false, true);
-  EXPECT_CALL(*helper,
-              CreateSyncStarter(_, _, "refresh_token",
-                                OneClickSigninSyncStarter::CURRENT_PROFILE));
+  EXPECT_CALL(*helper, CreateSyncStarter(_, _, "refresh_token"));
 
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(g_browser_process->profile_manager()

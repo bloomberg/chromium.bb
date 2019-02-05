@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "components/os_crypt/os_crypt.h"
@@ -67,7 +67,8 @@ void FinishImportCredentialsFromProvider(const std::string& account_id,
         signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT,
         signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, account_id,
         DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
-        std::move(*GetDiceTurnSyncOnHelperDelegateForTestingStorage()));
+        std::move(*GetDiceTurnSyncOnHelperDelegateForTestingStorage()),
+        base::DoNothing());
   } else {
     if (!browser)
       browser = chrome::FindLastActiveWithProfile(profile);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -138,7 +140,8 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
     signin_metrics::Reason signin_reason,
     const std::string& account_id,
     SigninAbortedMode signin_aborted_mode,
-    std::unique_ptr<Delegate> delegate)
+    std::unique_ptr<Delegate> delegate,
+    base::OnceClosure callback)
     : delegate_(std::move(delegate)),
       profile_(profile),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
@@ -147,6 +150,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       signin_reason_(signin_reason),
       signin_aborted_mode_(signin_aborted_mode),
       account_info_(GetAccountInfo(identity_manager_, account_id)),
+      scoped_callback_runner_(std::move(callback)),
       shutdown_subscription_(
           DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
               ->Get(profile)
@@ -157,9 +161,6 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
   DCHECK(!identity_manager_->HasPrimaryAccount());
-
-  // Force sign-in uses the modal sign-in flow.
-  DCHECK(!signin_util::IsForceSigninEnabled());
 
   if (account_info_.gaia.empty() || account_info_.email.empty()) {
     LOG(ERROR) << "Cannot turn Sync On for invalid account.";
@@ -210,7 +211,8 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
           signin_reason,
           account_id,
           signin_aborted_mode,
-          std::make_unique<DiceTurnSyncOnHelperDelegateImpl>(browser)) {}
+          std::make_unique<DiceTurnSyncOnHelperDelegateImpl>(browser),
+          base::OnceClosure()) {}
 
 DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {
 }

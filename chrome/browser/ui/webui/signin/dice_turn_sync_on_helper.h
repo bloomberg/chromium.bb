@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
@@ -92,15 +93,18 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
 
   // Create a helper that turns sync on for an account that is already present
   // in the token service.
+  // |callback| is called at the end of the flow (i.e. after the user closes the
+  // sync confirmation dialog).
   DiceTurnSyncOnHelper(Profile* profile,
                        signin_metrics::AccessPoint signin_access_point,
                        signin_metrics::PromoAction signin_promo_action,
                        signin_metrics::Reason signin_reason,
                        const std::string& account_id,
                        SigninAbortedMode signin_aborted_mode,
-                       std::unique_ptr<Delegate> delegate);
+                       std::unique_ptr<Delegate> delegate,
+                       base::OnceClosure callback);
 
-  // Convenience constructor using the default delegate.
+  // Convenience constructor using the default delegate and empty callback.
   DiceTurnSyncOnHelper(Profile* profile,
                        Browser* browser,
                        signin_metrics::AccessPoint signin_access_point,
@@ -210,6 +214,9 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   // a new profile for an enterprise user or not.
   std::string dm_token_;
   std::string client_id_;
+
+  // Called when this object is deleted.
+  base::ScopedClosureRunner scoped_callback_runner_;
 
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
