@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
-import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.v4.text.TextUtilsCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,8 +14,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.TextView.BufferType;
 
 import org.chromium.chrome.R;
@@ -25,6 +25,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.Locale;
 /**
  * Prompt that asks users to confirm user's name before saving card to Google.
  */
@@ -129,15 +130,29 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogProper
         if (mNameFixFlowTooltipPopup != null) return;
 
         mNameFixFlowTooltipPopup = new PopupWindow(mContext);
-        int textWidth = mDialogView.getWidth() - ViewCompat.getPaddingEnd(mNameFixFlowTooltipIcon)
-                - MarginLayoutParamsCompat.getMarginEnd(
-                        (LinearLayout.LayoutParams) mNameFixFlowTooltipIcon.getLayoutParams());
         Runnable dismissAction = () -> {
             mNameFixFlowTooltipPopup = null;
         };
+        boolean isLeftToRight = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault())
+                == ViewCompat.LAYOUT_DIRECTION_LTR;
         AutofillUiUtils.showTooltip(mContext, mNameFixFlowTooltipPopup,
-                R.string.autofill_save_card_prompt_cardholder_name_tooltip, textWidth,
-                mUserNameInput, dismissAction);
+                R.string.autofill_save_card_prompt_cardholder_name_tooltip,
+                new AutofillUiUtils.OffsetProvider() {
+                    @Override
+                    public int getXOffset(TextView textView) {
+                        int xOffset =
+                                mNameFixFlowTooltipIcon.getLeft() - textView.getMeasuredWidth();
+                        return Math.max(0, xOffset);
+                    }
+
+                    @Override
+                    public int getYOffset(TextView textView) {
+                        return 0;
+                    }
+                },
+                // If the layout is right to left then anchor on the edit text field else anchor on
+                // the tooltip icon, which would be on the left.
+                isLeftToRight ? mUserNameInput : mNameFixFlowTooltipIcon, dismissAction);
     }
 
     @Override

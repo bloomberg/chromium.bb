@@ -214,7 +214,7 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
     Save card?
   </message>
-  <message name="IDS_AUTOFILL_NAME_FIX_FLOW_PROMPT_SAVE_CARD" desc="Text to show for the Autofill save credit card prompt card holder name fix flow button.">
+  <message name="IDS_AUTOFILL_NAME_FIX_FLOW_PROMPT_SAVE_CARD" desc="Text to show for the Autofill save credit card prompt card holder name fix flow button." formatter_data="android_java">
     Save card
   </message>
   <if expr="is_linux and not chromeos">
