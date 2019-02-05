@@ -17,6 +17,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -1046,7 +1047,11 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   // Watch for changes on the device state to calculate the child's active time.
   power_manager_->AddObserver(this);
-  session_manager_->AddObserver(this);
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
+    chromeos::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
+  } else {
+    session_manager_->AddObserver(this);
+  }
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -1089,7 +1094,11 @@ DeviceStatusCollector::DeviceStatusCollector(
 
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
-  session_manager_->RemoveObserver(this);
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
+    chromeos::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
+  } else {
+    session_manager_->RemoveObserver(this);
+  }
 }
 
 // static
@@ -1250,8 +1259,20 @@ void DeviceStatusCollector::OnSessionStateChanged() {
       session_manager::SessionState::ACTIVE;
 }
 
+void DeviceStatusCollector::OnUsageTimeStateChange(
+    chromeos::UsageTimeStateNotifier::UsageTimeState state) {
+  UpdateChildUsageTime();
+  last_state_active_ =
+      state == chromeos::UsageTimeStateNotifier::UsageTimeState::ACTIVE;
+}
+
 void DeviceStatusCollector::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& state) {
+  // This logic are going to be done by OnUsageTimeStateChange method if
+  // UsageTimeStateNotifier feature is enabled.
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
+    return;
+
   UpdateChildUsageTime();
   // It is active if screen is on and if the session is also active.
   last_state_active_ =
@@ -1261,12 +1282,22 @@ void DeviceStatusCollector::ScreenIdleStateChanged(
 
 void DeviceStatusCollector::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
+  // This logic are going to be done by OnUsageTimeStateChange method if
+  // UsageTimeStateNotifier feature is enabled.
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
+    return;
+
   UpdateChildUsageTime();
   // Device is going to be suspeded, so it won't be active.
   last_state_active_ = false;
 }
 
 void DeviceStatusCollector::SuspendDone(const base::TimeDelta& sleep_duration) {
+  // This logic are going to be done by OnUsageTimeStateChange method if
+  // UsageTimeStateNotifier feature is enabled.
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
+    return;
+
   UpdateChildUsageTime();
   // Device is returning from suspension, so it is considered active if the
   // session is also active.

@@ -24,6 +24,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -112,6 +113,7 @@ class SampledData {
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
 class DeviceStatusCollector : public session_manager::SessionManagerObserver,
+                              public chromeos::UsageTimeStateNotifier::Observer,
                               public chromeos::PowerManagerClient::Observer {
  public:
   using VolumeInfoFetcher = base::Callback<
@@ -239,6 +241,10 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // chromeos::UsageTimeStateNotifier::Observer:
+  void OnUsageTimeStateChange(
+      chromeos::UsageTimeStateNotifier::UsageTimeState state) override;
 
   // power_manager::PowerManagerClient::Observer:
   void ScreenIdleStateChanged(
