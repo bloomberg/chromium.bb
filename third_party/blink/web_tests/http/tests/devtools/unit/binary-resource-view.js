@@ -17,10 +17,6 @@
   TestRunner.addResult(await (factory.createHexView()._lazyContent()));
   TestRunner.addResult('');
 
-  TestRunner.addResult('HexViewerView:');
-  TestRunner.addResult(await (factory.createHexViewerView()._lazyContent()));
-  TestRunner.addResult('');
-
   TestRunner.addResult('Utf8View:');
   TestRunner.addResult(await (factory.createUtf8View()._lazyContent()));
   TestRunner.addResult('');
