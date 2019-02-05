@@ -28,6 +28,11 @@ namespace android_sms {
 const char kNewAppId[] = "newAppId";
 const char kOldAppId[] = "oldAppId";
 
+GURL GetAndroidMessagesURLOld(bool use_install_url = false) {
+  // For this test, consider the staging server to be the "old" URL.
+  return GetAndroidMessagesURL(use_install_url, PwaDomain::kStaging);
+}
+
 class TestObserver : public AndroidSmsAppManager::Observer {
  public:
   TestObserver() = default;

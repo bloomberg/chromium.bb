@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -30,6 +31,7 @@ namespace chromeos {
 namespace android_sms {
 
 class AndroidSmsAppSetupController;
+enum class PwaDomain;
 
 // TODO(https://crbug.com/874605): Consider retrying failed installation
 // attempts. Currently, we make one attempt to install the app when
@@ -69,11 +71,13 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
   void SetUpAndLaunchAndroidSmsApp() override;
   void TearDownAndroidSmsApp() override;
 
-  base::Optional<GURL> GetCurrentAppInstallUrl();
+  base::Optional<PwaDomain> GetInstalledPwaDomain();
   void CompleteAsyncInitialization();
   void NotifyInstalledAppUrlChangedIfNecessary();
-  void OnSetUpNewAppResult(bool success);
-  void OnRemoveOldAppResult(bool success);
+  void OnSetUpNewAppResult(const base::Optional<PwaDomain>& migrating_from,
+                           bool success);
+  void OnRemoveOldAppResult(const base::Optional<PwaDomain>& migrating_from,
+                            bool success);
   void HandleAppSetupFinished();
 
   void SetPwaDelegateForTesting(std::unique_ptr<PwaDelegate> test_pwa_delegate);

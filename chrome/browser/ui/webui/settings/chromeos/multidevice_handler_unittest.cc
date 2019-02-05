@@ -406,14 +406,17 @@ TEST_F(MultideviceHandlerTest, GetAndroidSmsInfo) {
 
   // Now, update the installed URL. This should have resulted in another call.
   fake_android_sms_app_manager()->SetInstalledAppUrl(
-      android_sms::GetAndroidMessagesURLOld(true));
+      android_sms::GetAndroidMessagesURL(true /* use_install_url */,
+                                         android_sms::PwaDomain::kStaging));
   const content::TestWebUI::CallData& call_data_2 =
       CallDataAtIndex(call_data_count_before_call + 4);
   EXPECT_EQ("cr.webUIListenerCallback", call_data_2.function_name());
   EXPECT_EQ("settings.onAndroidSmsInfoChange", call_data_2.arg1()->GetString());
   CallGetAndroidSmsInfo(
       true /* enabled */,
-      android_sms::GetAndroidMessagesURLOld(true) /* expected_url */);
+      android_sms::GetAndroidMessagesURL(
+          true /* use_install_url */,
+          android_sms::PwaDomain::kStaging) /* expected_url */);
 }
 
 }  // namespace settings
