@@ -7,11 +7,10 @@
 
 namespace cc {
 
-// TODO(xidachen): Rename this to PaintWorkletTaskImpl.
-class PaintWorkletImageCacheImpl : public TileTask {
+class PaintWorkletTaskImpl : public TileTask {
  public:
-  PaintWorkletImageCacheImpl(PaintWorkletImageCache* cache,
-                             const PaintImage& paint_image)
+  PaintWorkletTaskImpl(PaintWorkletImageCache* cache,
+                       const PaintImage& paint_image)
       : TileTask(true), cache_(cache), paint_image_(paint_image) {}
 
   // Overridden from Task:
@@ -21,13 +20,13 @@ class PaintWorkletImageCacheImpl : public TileTask {
   void OnTaskCompleted() override {}
 
  protected:
-  ~PaintWorkletImageCacheImpl() override = default;
+  ~PaintWorkletTaskImpl() override = default;
 
  private:
   PaintWorkletImageCache* cache_;
   PaintImage paint_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaintWorkletImageCacheImpl);
+  DISALLOW_COPY_AND_ASSIGN(PaintWorkletTaskImpl);
 };
 
 PaintWorkletImageCache::PaintWorkletImageCache() {}
@@ -41,8 +40,7 @@ void PaintWorkletImageCache::SetPaintWorkletLayerPainter(
 
 scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
     const DrawImage& image) {
-  return base::MakeRefCounted<PaintWorkletImageCacheImpl>(this,
-                                                          image.paint_image());
+  return base::MakeRefCounted<PaintWorkletTaskImpl>(this, image.paint_image());
 }
 
 // TODO(xidachen): dispatch the work to a worklet thread, invoke JS callback.
