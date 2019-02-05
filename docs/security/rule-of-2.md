@@ -98,7 +98,11 @@ source" meets all of these criteria:
 
 You can 'defang' a potentially-malicious input by transforming it into a
 _normal_ or _minimal_ form, usually by first transforming it into a format with
-a simpler grammar (such as [Farbfeld](https://tools.suckless.org/farbfeld/)).
+a simpler grammar. We say that all data, file, and wire formats are defined by a
+_grammar_, even if that grammar is implicit or only partially-specified (as is
+so often the case). A file format with a particularly simple grammar is
+[Farbfeld](https://tools.suckless.org/farbfeld/) (see the table at the top).
+It's rare to find such a simple grammar, however.
 
 For example, consider the PNG image format, which is complex and whose [C
 implementation has suffered from memory corruption bugs in the
@@ -116,6 +120,14 @@ safely, without memory corruption.
 
 The trick of this technique lies in finding a sufficiently-trivial grammar, and
 committing to its limitations.
+
+Another good approach is to define a Mojo message type for the information you
+want, extract that information from a complex input object in a sandboxed
+process, and then send the information to a higher-privileged process in a Mojo
+message using the message type. That way, the higher-privileged process need
+only process objects adhering to a well-defined, generally low-complexity
+grammar. This is a big part of why [we like for Mojo messages to use structured
+types](mojo.md#Use-structured-types).
 
 ### Safe Languages
 
