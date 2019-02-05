@@ -178,8 +178,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   SchedulerWorker::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const SchedulerWorker* worker) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
-  void DidRunTask() override;
-  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
+  void DidRunTask(scoped_refptr<Sequence> sequence) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(SchedulerWorker* worker) override;
 
@@ -690,7 +689,8 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   return sequence;
 }
 
-void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
+void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
+    scoped_refptr<Sequence> sequence) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
   DCHECK(read_worker().may_block_start_time.is_null());
@@ -701,6 +701,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
   DCHECK(!TS_UNCHECKED_READ(incremented_max_tasks_since_blocked_));
 #endif
 
+  // Bookkeeping.
   worker_only().is_running_task = false;
 
   if (read_worker().is_running_best_effort_task) {
@@ -711,22 +712,27 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
 
   ++worker_only().num_tasks_since_last_wait;
   ++worker_only().num_tasks_since_last_detach;
-}
 
-void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::ReEnqueueSequence(
-    scoped_refptr<Sequence> sequence) {
-  auto sequence_and_transaction =
-      SequenceAndTransaction::FromSequence(std::move(sequence));
+  if (!sequence)
+    return;
 
-  SchedulerWorkerPool* destination_pool =
+  // A transaction to the Sequence to reenqueue.
+  SequenceAndTransaction sequence_to_reenqueue_and_transaction(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
+
+  // Decide in which pool the Sequence in
+  // |sequence_to_reenqueue_and_transaction| should be reenqueued.
+  SchedulerWorkerPool* const destination_pool =
       outer_->delegate_->GetWorkerPoolForTraits(
-          sequence_and_transaction.transaction.traits());
+          sequence_to_reenqueue_and_transaction.transaction.traits());
 
+  // Reenqueue the Sequence.
   if (outer_ == destination_pool) {
-    outer_->PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
+    outer_->PushSequenceToPriorityQueue(
+        std::move(sequence_to_reenqueue_and_transaction));
   } else {
     destination_pool->ReEnqueueSequenceChangingPool(
-        std::move(sequence_and_transaction));
+        std::move(sequence_to_reenqueue_and_transaction));
   }
 }
 

@@ -63,11 +63,8 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
-  void DidRunTask() override {
+  void DidRunTask(scoped_refptr<Sequence> sequence) override {
     ADD_FAILURE() << "Unexpected call to DidRunTask()";
-  }
-  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-    ADD_FAILURE() << "Unexpected call to ReEnqueueSequence()";
   }
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
 
@@ -76,7 +73,7 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
 };
 
 // The test parameter is the number of Tasks per Sequence returned by GetWork().
-class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
+class TaskSchedulerWorkerTest : public testing::TestWithParam<int> {
  protected:
   TaskSchedulerWorkerTest()
       : num_get_work_cv_(lock_.CreateConditionVariable()) {}
@@ -99,7 +96,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     worker_ = nullptr;
   }
 
-  size_t TasksPerSequence() const { return GetParam(); }
+  int TasksPerSequence() const { return GetParam(); }
 
   // Wait until GetWork() has been called |num_get_work| times.
   void WaitForNumGetWork(size_t num_get_work) {
@@ -129,9 +126,9 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     return created_sequences_;
   }
 
-  std::vector<scoped_refptr<Sequence>> EnqueuedSequences() {
+  std::vector<scoped_refptr<Sequence>> DidRunTaskSequences() {
     AutoSchedulerLock auto_lock(lock_);
-    return re_enqueued_sequences_;
+    return did_run_task_sequences_;
   }
 
   scoped_refptr<SchedulerWorker> worker_;
@@ -182,7 +179,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
       // Create a Sequence with TasksPerSequence() Tasks.
       scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(TaskTraits());
       Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-      for (size_t i = 0; i < outer_->TasksPerSequence(); ++i) {
+      for (int i = 0; i < outer_->TasksPerSequence(); ++i) {
         Task task(FROM_HERE,
                   BindOnce(&TaskSchedulerWorkerTest::RunTaskCallback,
                            Unretained(outer_)),
@@ -205,34 +202,38 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
       return sequence;
     }
 
-    void DidRunTask() override {
-      AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
-      EXPECT_TRUE(expect_did_run_task_);
-      expect_did_run_task_ = false;
-    }
-
-    // This override verifies that |sequence| contains the expected number of
-    // Tasks and adds it to |enqueued_sequences_|. Unlike a normal
-    // EnqueueSequence implementation, it doesn't reinsert |sequence| into a
-    // queue for further execution.
-    void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-      EXPECT_FALSE(IsCallToDidRunTaskExpected());
-      EXPECT_GT(outer_->TasksPerSequence(), 1U);
-
-      // Verify that |sequence| contains TasksPerSequence() - 1 Tasks.
-      for (size_t i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
-        Sequence::Transaction sequence_transaction(
-            sequence->BeginTransaction());
-        EXPECT_TRUE(sequence_transaction.TakeTask());
-        EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
-                  sequence_transaction.Pop());
+    // This override verifies that |sequence| has the expected number of Tasks
+    // and adds it to |did_run_task_sequences_|. Unlike a normal DidRunTask()
+    // implementation, it doesn't add |sequence| to a queue for further
+    // execution.
+    void DidRunTask(scoped_refptr<Sequence> sequence) override {
+      {
+        AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+        EXPECT_TRUE(expect_did_run_task_);
+        expect_did_run_task_ = false;
       }
 
-      // Add |sequence| to |re_enqueued_sequences_|.
-      AutoSchedulerLock auto_lock(outer_->lock_);
-      outer_->re_enqueued_sequences_.push_back(std::move(sequence));
-      EXPECT_LE(outer_->re_enqueued_sequences_.size(),
-                outer_->created_sequences_.size());
+      // If TasksPerSequence() is 1, |sequence| should be nullptr. Otherwise,
+      // |sequence| should contain TasksPerSequence() - 1 Tasks.
+      if (outer_->TasksPerSequence() == 1) {
+        EXPECT_FALSE(sequence);
+      } else {
+        EXPECT_TRUE(sequence);
+
+        // Verify the number of Tasks in |sequence|.
+        auto sequence_transaction(sequence->BeginTransaction());
+        for (int i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
+          EXPECT_TRUE(sequence_transaction.TakeTask());
+          EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
+                    sequence_transaction.Pop());
+        }
+
+        // Add |sequence| to |did_run_task_sequences_|.
+        AutoSchedulerLock auto_lock(outer_->lock_);
+        outer_->did_run_task_sequences_.push_back(std::move(sequence));
+        EXPECT_LE(outer_->did_run_task_sequences_.size(),
+                  outer_->created_sequences_.size());
+      }
     }
 
    private:
@@ -289,8 +290,8 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
   // Sequences created by GetWork().
   std::vector<scoped_refptr<Sequence>> created_sequences_;
 
-  // Sequences passed to EnqueueSequence().
-  std::vector<scoped_refptr<Sequence>> re_enqueued_sequences_;
+  // Sequences passed to DidRunTask().
+  std::vector<scoped_refptr<Sequence>> did_run_task_sequences_;
 
   // Number of times that RunTaskCallback() has been called.
   size_t num_run_tasks_ = 0;
@@ -325,11 +326,11 @@ TEST_P(TaskSchedulerWorkerTest, ContinuousWork) {
 
   // If Sequences returned by GetWork() contain more than one Task, they aren't
   // empty after the worker pops Tasks from them and thus should be returned to
-  // EnqueueSequence().
+  // DidRunTask().
   if (TasksPerSequence() > 1)
-    EXPECT_EQ(CreatedSequences(), EnqueuedSequences());
+    EXPECT_EQ(CreatedSequences(), DidRunTaskSequences());
   else
-    EXPECT_TRUE(EnqueuedSequences().empty());
+    EXPECT_TRUE(DidRunTaskSequences().empty());
 }
 
 // Verify that when GetWork() alternates between returning a Sequence and
@@ -356,11 +357,11 @@ TEST_P(TaskSchedulerWorkerTest, IntermittentWork) {
 
     // If Sequences returned by GetWork() contain more than one Task, they
     // aren't empty after the worker pops Tasks from them and thus should be
-    // returned to EnqueueSequence().
+    // returned to DidRunTask().
     if (TasksPerSequence() > 1)
-      EXPECT_EQ(CreatedSequences(), EnqueuedSequences());
+      EXPECT_EQ(CreatedSequences(), DidRunTaskSequences());
     else
-      EXPECT_TRUE(EnqueuedSequences().empty());
+      EXPECT_TRUE(DidRunTaskSequences().empty());
   }
 }
 
@@ -465,7 +466,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
     return sequence;
   }
 
-  void DidRunTask() override {}
+  void DidRunTask(scoped_refptr<Sequence>) override {}
 
   void OnMainExit(SchedulerWorker* worker) override {
     controls_->exited_.Signal();

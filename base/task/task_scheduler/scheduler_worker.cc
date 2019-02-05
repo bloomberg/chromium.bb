@@ -340,11 +340,7 @@ void SchedulerWorker::RunWorker() {
     sequence =
         task_tracker_->RunAndPopNextTask(std::move(sequence), delegate_.get());
 
-    delegate_->DidRunTask();
-
-    // Re-enqueue |sequence| if allowed by RunNextTask().
-    if (sequence)
-      delegate_->ReEnqueueSequence(std::move(sequence));
+    delegate_->DidRunTask(std::move(sequence));
 
     // Calling WakeUp() guarantees that this SchedulerWorker will run Tasks from
     // Sequences returned by the GetWork() method of |delegate_| until it
