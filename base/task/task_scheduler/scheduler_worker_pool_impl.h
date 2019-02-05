@@ -101,8 +101,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
-  void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction,
-                         bool is_changing_pools) override;
+  void ReEnqueueSequenceChangingPool(
+      SequenceAndTransaction sequence_and_transaction) override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;

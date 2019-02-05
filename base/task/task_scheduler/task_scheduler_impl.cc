@@ -217,7 +217,7 @@ int TaskSchedulerImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
   // This method does not support getting the maximum number of BEST_EFFORT
   // tasks that can run concurrently in a pool.
   DCHECK_NE(traits.priority(), TaskPriority::BEST_EFFORT);
-  return GetWorkerPoolForTraits(traits)
+  return GetWorkerPoolImplForTraits(traits)
       ->GetMaxConcurrentNonBlockedTasksDeprecated();
 }
 
@@ -253,18 +253,6 @@ void TaskSchedulerImpl::JoinForTesting() {
 
 void TaskSchedulerImpl::SetExecutionFenceEnabled(bool execution_fence_enabled) {
   task_tracker_->SetExecutionFenceEnabled(execution_fence_enabled);
-}
-
-void TaskSchedulerImpl::ReEnqueueSequence(
-    SequenceAndTransaction sequence_and_transaction) {
-  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(
-      sequence_and_transaction.transaction.traits());
-  SchedulerWorkerPool* const destination_worker_pool =
-      GetWorkerPoolForTraits(new_traits);
-  const bool is_changing_pools =
-      !destination_worker_pool->IsBoundToCurrentThread();
-  destination_worker_pool->ReEnqueueSequence(
-      std::move(sequence_and_transaction), is_changing_pools);
 }
 
 bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
@@ -305,7 +293,7 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
 
 bool TaskSchedulerImpl::IsRunningPoolWithTraits(
     const TaskTraits& traits) const {
-  return GetWorkerPoolForTraits(traits)->IsBoundToCurrentThread();
+  return GetWorkerPoolImplForTraits(traits)->IsBoundToCurrentThread();
 }
 
 void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
@@ -314,10 +302,10 @@ void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
       SequenceAndTransaction::FromSequence(std::move(sequence));
 
   SchedulerWorkerPoolImpl* const current_worker_pool =
-      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
+      GetWorkerPoolImplForTraits(sequence_and_transaction.transaction.traits());
   sequence_and_transaction.transaction.UpdatePriority(priority);
   SchedulerWorkerPoolImpl* const new_worker_pool =
-      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
+      GetWorkerPoolImplForTraits(sequence_and_transaction.transaction.traits());
 
   if (new_worker_pool == current_worker_pool) {
     // |sequence|'s position needs to be updated within its current pool.
@@ -329,24 +317,24 @@ void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
         current_worker_pool->RemoveSequence(sequence_and_transaction.sequence);
     if (sequence_was_found) {
       DCHECK(sequence_and_transaction.sequence);
-      // |sequence| was removed from |current_worker_pool| and is being
-      // reenqueued into |new_worker_pool|, a different pool; set argument
-      // |is_changing_pools| to true to notify |new_worker_pool| that
-      // |sequence| came from a different pool.
-      const bool is_changing_pools = true;
-      new_worker_pool->ReEnqueueSequence(std::move(sequence_and_transaction),
-                                         is_changing_pools);
+      new_worker_pool->ReEnqueueSequenceChangingPool(
+          std::move(sequence_and_transaction));
     }
   }
 }
 
-SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(
+SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolImplForTraits(
     const TaskTraits& traits) {
   if (traits.priority() == TaskPriority::BEST_EFFORT &&
       background_pool_.has_value()) {
     return &background_pool_.value();
   }
   return &foreground_pool_.value();
+}
+
+SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
+    const TaskTraits& traits) {
+  return GetWorkerPoolImplForTraits(traits);
 }
 
 TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(

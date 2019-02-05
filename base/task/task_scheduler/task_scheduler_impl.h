@@ -100,10 +100,14 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
 
  private:
   // Returns the worker pool that runs Tasks with |traits|.
-  SchedulerWorkerPoolImpl* GetWorkerPoolForTraits(const TaskTraits& traits);
-  const SchedulerWorkerPoolImpl* GetWorkerPoolForTraits(
+  // TODO(fdoray): Move all methods used by TaskSchedulerImpl to the
+  // SchedulerWorkerPool interface and remove the SchedulerWorkerPool*Impl*
+  // accessors.
+  SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(const TaskTraits& traits);
+  const SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(
       const TaskTraits& traits) const {
-    return const_cast<TaskSchedulerImpl*>(this)->GetWorkerPoolForTraits(traits);
+    return const_cast<TaskSchedulerImpl*>(this)->GetWorkerPoolImplForTraits(
+        traits);
   }
 
   // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
@@ -113,8 +117,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   void ReportHeartbeatMetrics() const;
 
   // SchedulerWorkerPool::Delegate:
-  void ReEnqueueSequence(
-      SequenceAndTransaction sequence_and_transaction) override;
+  SchedulerWorkerPool* GetWorkerPoolForTraits(
+      const TaskTraits& traits) override;
 
   // SchedulerTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,

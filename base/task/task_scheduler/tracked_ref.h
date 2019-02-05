@@ -103,6 +103,10 @@ class TrackedRef {
 
   explicit operator bool() const { return ptr_ != nullptr; }
 
+  bool operator==(const void* compared_ptr) const {
+    return ptr_ == compared_ptr;
+  }
+
  private:
   friend class TrackedRefFactory<T>;
 

@@ -27,10 +27,9 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
 
     // Invoked when the Sequence in |sequence_and_transaction| is non-empty
     // after the SchedulerWorkerPool has run a task from it. The implementation
-    // must enqueue the Sequence in the appropriate priority queue, depending
-    // on the Sequence's traits.
-    virtual void ReEnqueueSequence(
-        SequenceAndTransaction sequence_and_transaction) = 0;
+    // must return the pool in which the Sequence should be reenqueued.
+    virtual SchedulerWorkerPool* GetWorkerPoolForTraits(
+        const TaskTraits& traits) = 0;
   };
 
   ~SchedulerWorkerPool() override;
@@ -62,12 +61,10 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // task during JoinForTesting(). This can only be called once.
   virtual void JoinForTesting() = 0;
 
-  // Enqueues the Sequence in |sequence_and_transaction| in the worker pool's
-  // priority queue, then wakes up a worker if |is_changing_pools|, i.e. if the
-  // Sequence came from a different worker pool.
-  virtual void ReEnqueueSequence(
-      SequenceAndTransaction sequence_and_transaction,
-      bool is_changing_pools) = 0;
+  // Enqueues the Sequence in |sequence_and_transaction| which was previously in
+  // a different worker pool into this worker pool's priority queue.
+  virtual void ReEnqueueSequenceChangingPool(
+      SequenceAndTransaction sequence_and_transaction) = 0;
 
   // Called when the Sequence in |sequence_and_transaction| can be scheduled.
   // It is expected that TaskTracker::RunNextTask() will be called with
