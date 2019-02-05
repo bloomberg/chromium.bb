@@ -268,12 +268,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
                             bool /* result */,
                             std::string /* proxy list */)
 
-// Tells the browser that a specific Appcache manifest in the current page
-// was accessed.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
-                    GURL /* manifest url */,
-                    bool /* blocked by policy */)
-
 // Used to go to the session history entry at the given offset (ie, -1 will
 // return the "back" item).
 IPC_MESSAGE_ROUTED2(ViewHostMsg_GoToEntryAtOffset,

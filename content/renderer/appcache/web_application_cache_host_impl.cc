@@ -61,7 +61,8 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     WebApplicationCacheHostClient* client,
     blink::mojom::AppCacheBackend* backend,
-    int appcache_host_id)
+    int appcache_host_id,
+    int render_frame_id)
     : client_(client),
       backend_(backend),
       status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED),
@@ -79,7 +80,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
   }
   DCHECK(host_id_ != blink::mojom::kAppCacheNoHostId);
 
-  backend_->RegisterHost(host_id_);
+  backend_->RegisterHost(host_id_, render_frame_id);
 }
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {

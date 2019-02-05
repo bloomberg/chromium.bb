@@ -52,8 +52,6 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
                   blink::mojom::ConsoleMessageLevel log_level,
                   const std::string& message) override {}
 
-  void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
-
   void SetSubresourceFactory(
       int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
@@ -89,7 +87,11 @@ class TestAppCacheHost : public AppCacheHost {
   TestAppCacheHost(int host_id,
                    blink::mojom::AppCacheFrontend* frontend,
                    AppCacheServiceImpl* service)
-      : AppCacheHost(host_id, /* process_id = */ 456, frontend, service),
+      : AppCacheHost(host_id,
+                     /*process_id=*/456,
+                     /*render_frame_id=*/789,
+                     frontend,
+                     service),
         update_completed_(false) {}
 
   void OnUpdateComplete(AppCacheGroup* group) override {
@@ -180,10 +182,10 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCacheGroup* group =
       new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111);
 
-  AppCacheHost host1(/* host_id = */ 1, /* process_id = */ 1, &frontend,
-                     &service);
-  AppCacheHost host2(/* host_id = */ 2, /* process_id = */ 2, &frontend,
-                     &service);
+  AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                     &frontend, &service);
+  AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
+                     &frontend, &service);
 
   base::Time now = base::Time::Now();
 

@@ -95,8 +95,6 @@ class AppCacheRequestHandlerTest
                     blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override {}
 
-    void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
-
     void SetSubresourceFactory(
         int32_t host_id,
         network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
@@ -258,7 +256,8 @@ class AppCacheRequestHandlerTest
                                                           kMockProcessId);
     backend_impl_->set_frontend_for_testing(mock_frontend_.get());
     const int kHostId = 1;
-    backend_impl_->RegisterHost(kHostId);
+    const int kRenderFrameId = 2;
+    backend_impl_->RegisterHost(kHostId, kRenderFrameId);
     host_ = backend_impl_->GetHost(kHostId);
     job_factory_.reset(new MockURLRequestJobFactory());
     empty_context_->set_job_factory(job_factory_.get());

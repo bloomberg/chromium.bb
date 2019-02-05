@@ -38,7 +38,6 @@ class MockAppCacheFrontend : public blink::mojom::AppCacheFrontend {
   void LogMessage(int32_t host_id,
                   blink::mojom::ConsoleMessageLevel log_level,
                   const std::string& message) override {}
-  void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
   void SetSubresourceFactory(
       int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
@@ -59,10 +58,10 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
       new AppCacheGroup(service.storage(), GURL("http://blah/manifest"), 111));
   group->AddCache(cache.get());
 
-  AppCacheHost host1(/* host_id = */ 1, /* process_id = */ 1, &frontend,
-                     &service);
-  AppCacheHost host2(/* host_id = */ 2, /* process_id = */ 2, &frontend,
-                     &service);
+  AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                     &frontend, &service);
+  AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
+                     &frontend, &service);
 
   host1.AssociateCompleteCache(cache.get());
   host2.AssociateCompleteCache(cache.get());

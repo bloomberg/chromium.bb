@@ -1563,7 +1563,6 @@ class AppCacheStorageImplTest : public testing::Test {
     void LogMessage(int32_t host_id,
                     blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override {}
-    void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
     void SetSubresourceFactory(
         int32_t host_id,
         network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
@@ -1681,6 +1680,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void Continue_Reinitialize(ReinitTestCase test_case) {
     const int kMockProcessId = 1;
+    const int kMockRenderFrameId = MSG_ROUTING_NONE;
     backend_ =
         std::make_unique<AppCacheBackendImpl>(service_.get(), kMockProcessId);
     backend_->set_frontend_for_testing(&frontend_);
@@ -1696,7 +1696,7 @@ class AppCacheStorageImplTest : public testing::Test {
         test_case == CORRUPT_SQL_ON_INSTALL) {
       // Try to create a new appcache, the resulting update job will
       // eventually fail when it gets to disk cache initialization.
-      backend_->RegisterHost(1);
+      backend_->RegisterHost(1, kMockRenderFrameId);
       AppCacheHost* host1 = backend_->GetHost(1);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
       host1->SetFirstPartyUrlForTesting(kEmptyPageUrl);
@@ -1707,7 +1707,7 @@ class AppCacheStorageImplTest : public testing::Test {
       // Try to access the existing cache manifest.
       // The URLRequestJob  will eventually fail when it gets to disk
       // cache initialization.
-      backend_->RegisterHost(2);
+      backend_->RegisterHost(2, kMockRenderFrameId);
       AppCacheHost* host2 = backend_->GetHost(2);
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");

@@ -155,7 +155,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
     switch (command.command_case()) {
       case fuzzing::proto::Command::kRegisterHost: {
         int32_t host_id = command.register_host().host_id();
-        host->RegisterHost(host_id);
+        host->RegisterHost(host_id, MSG_ROUTING_NONE);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {

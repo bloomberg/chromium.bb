@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -27,7 +26,10 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     blink::mojom::AppCacheBackend* backend,
     int appcache_host_id,
     int frame_routing_id)
-    : WebApplicationCacheHostImpl(client, backend, appcache_host_id),
+    : WebApplicationCacheHostImpl(client,
+                                  backend,
+                                  appcache_host_id,
+                                  frame_routing_id),
       routing_id_(render_view->GetRoutingID()),
       frame_routing_id_(frame_routing_id) {}
 
@@ -50,21 +52,6 @@ void RendererWebApplicationCacheHostImpl::OnLogMessage(
   frame->ToWebLocalFrame()->AddMessageToConsole(WebConsoleMessage(
       static_cast<blink::mojom::ConsoleMessageLevel>(log_level),
       blink::WebString::FromUTF8(message.c_str())));
-}
-
-void RendererWebApplicationCacheHostImpl::OnContentBlocked(
-    const GURL& manifest_url) {
-  RenderThreadImpl::current()->Send(new ViewHostMsg_AppCacheAccessed(
-      routing_id_, manifest_url, true));
-}
-
-void RendererWebApplicationCacheHostImpl::OnCacheSelected(
-    const blink::mojom::AppCacheInfo& info) {
-  if (!info.manifest_url.is_empty()) {
-    RenderThreadImpl::current()->Send(new ViewHostMsg_AppCacheAccessed(
-        routing_id_, info.manifest_url, false));
-  }
-  WebApplicationCacheHostImpl::OnCacheSelected(info);
 }
 
 void RendererWebApplicationCacheHostImpl::SetSubresourceFactory(

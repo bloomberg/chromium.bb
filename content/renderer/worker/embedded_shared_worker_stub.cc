@@ -60,7 +60,8 @@ class SharedWorkerWebApplicationCacheHostImpl
                                     RenderThreadImpl::current()
                                         ->appcache_frontend_impl()
                                         ->backend_proxy(),
-                                    appcache_host_id) {}
+                                    appcache_host_id,
+                                    MSG_ROUTING_NONE) {}
 
   // Main resource loading is different for workers. The main resource is
   // loaded by the worker using WorkerClassicScriptLoader.

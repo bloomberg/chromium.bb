@@ -31,13 +31,13 @@ AppCacheBackendImpl::~AppCacheBackendImpl() {
   service_->UnregisterBackend(this);
 }
 
-void AppCacheBackendImpl::RegisterHost(int32_t id) {
+void AppCacheBackendImpl::RegisterHost(int32_t id, int32_t render_frame_id) {
   // The AppCacheHost could have been precreated in which case we want to
   // register it with the backend here.
   std::unique_ptr<AppCacheHost> host =
       AppCacheNavigationHandleCore::GetPrecreatedHost(id);
   if (host) {
-    RegisterPrecreatedHost(std::move(host));
+    RegisterPrecreatedHost(std::move(host), render_frame_id);
     return;
   }
 
@@ -46,8 +46,8 @@ void AppCacheBackendImpl::RegisterHost(int32_t id) {
     return;
   }
 
-  hosts_[id] =
-      std::make_unique<AppCacheHost>(id, process_id(), frontend_, service_);
+  hosts_[id] = std::make_unique<AppCacheHost>(id, process_id(), render_frame_id,
+                                              frontend_, service_);
 }
 
 void AppCacheBackendImpl::UnregisterHost(int32_t id) {
@@ -155,20 +155,22 @@ void AppCacheBackendImpl::GetResourceList(int32_t host_id,
 }
 
 void AppCacheBackendImpl::RegisterPrecreatedHost(
-    std::unique_ptr<AppCacheHost> host) {
+    std::unique_ptr<AppCacheHost> host,
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(host.get());
   DCHECK(hosts_.find(host->host_id()) == hosts_.end());
   // Switch the frontend proxy so that the host can make IPC calls from
   // here on.
-  host->set_frontend(frontend_);
+  host->set_frontend(frontend_, render_frame_id);
   hosts_[host->host_id()] = std::move(host);
 }
 
-void AppCacheBackendImpl::RegisterHostForTesting(int32_t id) {
-  hosts_[id] =
-      std::make_unique<AppCacheHost>(id, process_id(), frontend_, service_);
+void AppCacheBackendImpl::RegisterHostForTesting(int32_t id,
+                                                 int32_t render_frame_id) {
+  hosts_[id] = std::make_unique<AppCacheHost>(id, process_id(), render_frame_id,
+                                              frontend_, service_);
 }
 
 }  // namespace content

@@ -54,8 +54,9 @@ AppCacheNavigationHandleCore::~AppCacheNavigationHandleCore() {
 void AppCacheNavigationHandleCore::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(precreated_host_.get() == nullptr);
-  precreated_host_.reset(new AppCacheHost(appcache_host_id_, process_id_, this,
-                                          GetAppCacheService()));
+  precreated_host_ = std::make_unique<AppCacheHost>(
+      appcache_host_id_, process_id_, MSG_ROUTING_NONE, this,
+      GetAppCacheService());
 
   DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
          g_appcache_handle_map.Get().end());
@@ -127,12 +128,6 @@ void AppCacheNavigationHandleCore::LogMessage(
     int host_id,
     blink::mojom::ConsoleMessageLevel log_level,
     const std::string& message) {
-  // Should never be called.
-  DCHECK(false);
-}
-
-void AppCacheNavigationHandleCore::ContentBlocked(int host_id,
-                                                  const GURL& manifest_url) {
   // Should never be called.
   DCHECK(false);
 }

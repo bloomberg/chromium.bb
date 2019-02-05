@@ -15,8 +15,12 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_group.h"
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_renderer_host.h"
+#include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/url_request/url_request.h"
@@ -32,21 +36,31 @@ namespace content {
 namespace {
 
 constexpr int kHostIdForTest = 123;
-constexpr int kProcessIdForTest = 456;
 
 }  // namespace
 
 class AppCacheHostTest : public testing::Test {
  public:
-  AppCacheHostTest() {
+  AppCacheHostTest()
+      : web_contents_(TestWebContents::Create(&browser_context_, nullptr)),
+        kProcessIdForTest(web_contents_->GetMainFrame()->GetProcess()->GetID()),
+        kRenderFrameIdForTest(web_contents_->GetMainFrame()->GetRoutingID()),
+        mock_frontend_(web_contents_.get()) {
     get_status_callback_ = base::BindRepeating(
         &AppCacheHostTest::GetStatusCallback, base::Unretained(this));
+    AppCacheRequestHandler::SetRunningInTests(true);
   }
 
-  class MockFrontend : public blink::mojom::AppCacheFrontend {
+  ~AppCacheHostTest() override {
+    AppCacheRequestHandler::SetRunningInTests(false);
+  }
+
+  class MockFrontend : public blink::mojom::AppCacheFrontend,
+                       public WebContentsObserver {
    public:
-    MockFrontend()
-        : last_host_id_(-222),
+    MockFrontend(WebContents* web_contents)
+        : WebContentsObserver(web_contents),
+          last_host_id_(-222),
           last_cache_id_(-222),
           last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
           last_status_changed_(
@@ -89,13 +103,17 @@ class AppCacheHostTest : public testing::Test {
                     blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override {}
 
-    void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {
-      content_blocked_ = true;
-    }
-
     void SetSubresourceFactory(
         int32_t host_id,
         network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
+
+    // WebContentsObserver:
+    void AppCacheAccessed(const GURL& manifest_url,
+                          bool blocked_by_policy) override {
+      appcache_accessed_ = true;
+      if (blocked_by_policy)
+        content_blocked_ = true;
+    }
 
     int32_t last_host_id_;
     int64_t last_cache_id_;
@@ -103,6 +121,7 @@ class AppCacheHostTest : public testing::Test {
     blink::mojom::AppCacheStatus last_status_changed_;
     blink::mojom::AppCacheEventID last_event_id_;
     bool content_blocked_;
+    bool appcache_accessed_ = false;
   };
 
   class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
@@ -156,7 +175,13 @@ class AppCacheHostTest : public testing::Test {
 
   void SwapCacheCallback(bool result) { last_swap_result_ = result; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle scoped_task_environment_;
+  RenderViewHostTestEnabler rvh_enabler_;
+  TestBrowserContext browser_context_;
+  std::unique_ptr<TestWebContents> web_contents_;
+
+  const int kProcessIdForTest;
+  const int kRenderFrameIdForTest;
 
   // Mock classes for the 'host' to work with
   MockAppCacheService service_;
@@ -172,8 +197,8 @@ class AppCacheHostTest : public testing::Test {
 
 TEST_F(AppCacheHostTest, Basic) {
   // Construct a host and test what state it appears to be in.
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
   EXPECT_EQ(kHostIdForTest, host.host_id());
   EXPECT_EQ(kProcessIdForTest, host.process_id());
   EXPECT_EQ(&service_, host.service());
@@ -213,8 +238,8 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   {
-    AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                      &service_);
+    AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                      &mock_frontend_, &service_);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      GURL());
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
@@ -250,8 +275,8 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
   cache->AddEntry(kDocumentURL, AppCacheEntry(AppCacheEntry::EXPLICIT));
 
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
   host.MarkAsForeignEntry(kDocumentURL, kCacheId);
 
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
@@ -285,8 +310,8 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
       base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
 
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
   host.NotifyMainResourceIsNamespaceEntry(kFallbackURL);
   host.MarkAsForeignEntry(GURL("http://origin/missing_document"), kCacheId);
 
@@ -307,8 +332,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   mock_frontend_.last_status_ =
       blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
   EXPECT_FALSE(host.is_selection_pending());
 
   const int kMockCacheId = 333;
@@ -340,8 +365,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 }
 
 TEST_F(AppCacheHostTest, FailedGroupLoad) {
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
 
   const GURL kMockManifestUrl("http://foo.bar/baz");
 
@@ -372,8 +397,8 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 }
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {
-  AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                    &service_);
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
   host.SetSwappableCache(nullptr);
   EXPECT_FALSE(host.swappable_cache_.get());
 
@@ -471,13 +496,14 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   mock_frontend_.last_event_id_ =
       blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
   mock_frontend_.content_blocked_ = false;
+  mock_frontend_.appcache_accessed_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
-    AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                      &service_);
+    AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                      &mock_frontend_, &service_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      kManifestUrl);
@@ -495,6 +521,10 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
     EXPECT_FALSE(mock_frontend_.content_blocked_);
 
     EXPECT_TRUE(host.is_selection_pending());
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(mock_frontend_.content_blocked_);
+    EXPECT_TRUE(mock_frontend_.appcache_accessed_);
   }
   EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kOrigin));
   service_.set_quota_manager_proxy(nullptr);
@@ -516,13 +546,14 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   mock_frontend_.last_event_id_ =
       blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
   mock_frontend_.content_blocked_ = false;
+  mock_frontend_.appcache_accessed_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
-    AppCacheHost host(kHostIdForTest, kProcessIdForTest, &mock_frontend_,
-                      &service_);
+    AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                      &mock_frontend_, &service_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      kManifestUrl);
@@ -537,7 +568,6 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     // Also, an error event was raised
     EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT,
               mock_frontend_.last_event_id_);
-    EXPECT_TRUE(mock_frontend_.content_blocked_);
 
     // Otherwise, see that it respond as if there is no cache selected.
     EXPECT_EQ(kHostIdForTest, host.host_id());
@@ -546,6 +576,10 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     EXPECT_EQ(nullptr, host.associated_cache());
     EXPECT_FALSE(host.is_selection_pending());
     EXPECT_TRUE(host.preferred_manifest_url().is_empty());
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(mock_frontend_.content_blocked_);
+    EXPECT_TRUE(mock_frontend_.appcache_accessed_);
   }
   EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kOrigin));
   service_.set_quota_manager_proxy(nullptr);
@@ -556,7 +590,7 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
 
   AppCacheBackendImpl backend(&service_, kProcessIdForTest);
   backend.set_frontend_for_testing(&mock_frontend_);
-  backend.RegisterHostForTesting(kHostIdForTest);
+  backend.RegisterHostForTesting(kHostIdForTest, kRenderFrameIdForTest);
 
   blink::mojom::AppCacheBackendPtr backend_ptr;
   mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(

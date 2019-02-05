@@ -82,6 +82,7 @@ class CONTENT_EXPORT AppCacheHost
 
   AppCacheHost(int host_id,
                int process_id,
+               int render_frame_id,
                blink::mojom::AppCacheFrontend* frontend,
                AppCacheServiceImpl* service);
   ~AppCacheHost() override;
@@ -191,8 +192,10 @@ class CONTENT_EXPORT AppCacheHost
   // The AppCacheHost instance is created with a dummy AppCacheFrontend
   // pointer when the navigation starts. We need to switch it to the
   // actual frontend when the navigation commits.
-  void set_frontend(blink::mojom::AppCacheFrontend* frontend) {
+  void set_frontend(blink::mojom::AppCacheFrontend* frontend,
+                    int render_frame_id) {
     frontend_ = frontend;
+    render_frame_id_ = render_frame_id;
   }
 
   AppCache* associated_cache() const { return associated_cache_.get(); }
@@ -224,6 +227,8 @@ class CONTENT_EXPORT AppCacheHost
   // the AppCache.
   void SetAppCacheSubresourceFactory(
       AppCacheSubresourceURLFactory* subresource_factory);
+
+  void OnContentBlocked(const GURL& manifest_url);
 
  private:
   friend class content::AppCacheStorageImplTest;
@@ -258,6 +263,8 @@ class CONTENT_EXPORT AppCacheHost
   bool is_for_dedicated_worker() const {
     return parent_host_id_ != blink::mojom::kAppCacheNoHostId;
   }
+
+  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked);
 
   // Returns the parent context's host instance. This is only valid
   // to call when this instance is_for_dedicated_worker.
@@ -329,6 +336,7 @@ class CONTENT_EXPORT AppCacheHost
 
   // The frontend proxy to deliver notifications to the child process.
   blink::mojom::AppCacheFrontend* frontend_;
+  int render_frame_id_;
 
   // Our central service object.
   AppCacheServiceImpl* service_;
