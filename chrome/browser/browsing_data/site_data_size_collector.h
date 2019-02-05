@@ -22,22 +22,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/storage_partition.h"
 
-namespace {
-
-typedef std::list<net::CanonicalCookie> CookieList;
-typedef std::list<content::StorageUsageInfo> DatabaseInfoList;
-typedef std::list<content::StorageUsageInfo> LocalStorageInfoList;
-typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
-typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
-    FileSystemInfoList;
-typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
-typedef std::list<content::StorageUsageInfo> CacheStorageUsageInfoList;
-typedef std::vector<std::string> FlashLSODomainList;
-
-}  // namespace
-
 class SiteDataSizeCollector {
  public:
+  using CookieList = std::list<net::CanonicalCookie>;
+  using DatabaseInfoList = std::list<content::StorageUsageInfo>;
+  using LocalStorageInfoList = std::list<content::StorageUsageInfo>;
+  using IndexedDBInfoList = std::list<content::StorageUsageInfo>;
+  using FileSystemInfoList =
+      std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
+  using ServiceWorkerUsageInfoList = std::list<content::StorageUsageInfo>;
+  using CacheStorageUsageInfoList = std::list<content::StorageUsageInfo>;
+  using FlashLSODomainList = std::vector<std::string>;
+
   SiteDataSizeCollector(const base::FilePath& default_storage_partition_path,
                         BrowsingDataCookieHelper* cookie_helper,
                         BrowsingDataDatabaseHelper* database_helper,

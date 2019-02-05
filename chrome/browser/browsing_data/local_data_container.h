@@ -39,29 +39,6 @@ namespace net {
 class CanonicalCookie;
 }
 
-// Friendly typedefs for the multiple types of lists used in the model.
-namespace {
-
-typedef std::list<net::CanonicalCookie> CookieList;
-typedef std::list<content::StorageUsageInfo> DatabaseInfoList;
-typedef std::list<content::StorageUsageInfo> LocalStorageInfoList;
-typedef std::list<content::StorageUsageInfo> SessionStorageInfoList;
-typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
-typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
-    FileSystemInfoList;
-typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
-typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
-typedef std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>
-    SharedWorkerInfoList;
-typedef std::list<content::StorageUsageInfo> CacheStorageUsageInfoList;
-typedef std::map<url::Origin, std::list<blink::mojom::AppCacheInfo>>
-    AppCacheInfoMap;
-typedef std::vector<std::string> FlashLSODomainList;
-typedef std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>
-    MediaLicenseInfoList;
-
-}  // namespace
-
 // LocalDataContainer ---------------------------------------------------------
 // This class is a wrapper around all the BrowsingData*Helper classes. Because
 // isolated applications have separate storage, we need different helper
@@ -70,6 +47,25 @@ typedef std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>
 // the empty string, as no app can have an empty id.
 class LocalDataContainer {
  public:
+  // Friendly typedefs for the multiple types of lists used in the model.
+  using CookieList = std::list<net::CanonicalCookie>;
+  using DatabaseInfoList = std::list<content::StorageUsageInfo>;
+  using LocalStorageInfoList = std::list<content::StorageUsageInfo>;
+  using SessionStorageInfoList = std::list<content::StorageUsageInfo>;
+  using IndexedDBInfoList = std::list<content::StorageUsageInfo>;
+  using FileSystemInfoList =
+      std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
+  using QuotaInfoList = std::list<BrowsingDataQuotaHelper::QuotaInfo>;
+  using ServiceWorkerUsageInfoList = std::list<content::StorageUsageInfo>;
+  using SharedWorkerInfoList =
+      std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>;
+  using CacheStorageUsageInfoList = std::list<content::StorageUsageInfo>;
+  using AppCacheInfoMap =
+      std::map<url::Origin, std::list<blink::mojom::AppCacheInfo>>;
+  using FlashLSODomainList = std::vector<std::string>;
+  using MediaLicenseInfoList =
+      std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>;
+
   LocalDataContainer(
       scoped_refptr<BrowsingDataCookieHelper> cookie_helper,
       scoped_refptr<BrowsingDataDatabaseHelper> database_helper,
