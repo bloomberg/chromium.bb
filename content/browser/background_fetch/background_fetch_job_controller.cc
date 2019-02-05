@@ -217,9 +217,10 @@ void BackgroundFetchJobController::DidCompleteRequest(
 
   request->SetResult(std::move(result));
 
-  if (request->can_populate_body())
-    complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
-  active_request_downloaded_bytes_ -= request->GetFileSize();
+  if (request->can_populate_body()) {
+    complete_requests_downloaded_bytes_cache_ += request->GetResponseSize();
+    active_request_downloaded_bytes_ -= request->GetResponseSize();
+  }
 
   complete_requests_uploaded_bytes_cache_ += request->request_body_size();
   active_request_uploaded_bytes_ -= request->request_body_size();

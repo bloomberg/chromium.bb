@@ -48,15 +48,13 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
 BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
     BrowserContext* browser_context,
     StoragePartition* storage_partition,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    bool mock_fill_response)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : BackgroundFetchDataManager(browser_context,
                                  service_worker_context,
                                  /* cache_storage_context= */ nullptr,
                                  /* quota_manager_proxy= */ nullptr),
       browser_context_(browser_context),
-      storage_partition_(storage_partition),
-      mock_fill_response_(mock_fill_response) {}
+      storage_partition_(storage_partition) {}
 
 void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   blob_storage_context_ = ChromeBlobStorageContext::GetFor(browser_context_);
