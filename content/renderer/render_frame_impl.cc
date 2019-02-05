@@ -184,6 +184,7 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -3292,6 +3293,16 @@ void RenderFrameImpl::CommitNavigationInternal(
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
          !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
+
+  // TODO(yoichio): This is temporary switch to have chrome WebUI
+  // use the old web APIs.
+  // After completion of the migration, we should remove this.
+  // See crbug.com/924871 for detail.
+  if (common_params.url.SchemeIs(content::kChromeUIScheme)) {
+    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
+    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
+    blink::WebRuntimeFeatures::EnableHTMLImports(true);
+  }
 
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
                            std::move(subresource_overrides),
