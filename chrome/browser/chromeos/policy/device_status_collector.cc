@@ -1094,15 +1094,13 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes);
 }
 
 // static
 void DeviceStatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
-  registry->RegisterDictionaryPref(prefs::kUserActivityTimes,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(prefs::kUserActivityTimes);
   registry->RegisterTimePref(prefs::kLastChildScreenTimeReset, Time());
   registry->RegisterTimePref(prefs::kLastChildScreenTimeSaved, Time());
   registry->RegisterIntegerPref(prefs::kChildScreenTimeMilliseconds, 0);
