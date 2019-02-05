@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -147,8 +148,8 @@ FloatRect FindInPageRectFromRange(const EphemeralRange& range) {
   if (!baseLayoutObject)
     return FloatRect();
 
-  return FindInPageRectFromAbsoluteRect(
-      LayoutObject::AbsoluteBoundingBoxRectForRange(range), baseLayoutObject);
+  return FindInPageRectFromAbsoluteRect(ComputeTextFloatRect(range),
+                                        baseLayoutObject);
 }
 
 }  // namespace blink
