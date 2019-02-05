@@ -656,29 +656,32 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 
   std::vector<ReturnedResource> to_return;
+  // Reserve enough space to avoid re-allocating, so we can keep item pointers
+  // for later using.
   to_return.reserve(unused.size());
   std::vector<ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;
-  std::vector<size_t> to_return_indices_unverified;
+  std::vector<sk_sp<SkImage>> external_used_sk_images;
+  std::vector<ReturnedResource*> external_used_resources;
+  if (external_use_client_) {
+    external_used_sk_images.reserve(unused.size());
+    external_used_resources.reserve(unused.size());
+  }
 
   GLES2Interface* gl = ContextGL();
-
   for (ResourceId local_id : unused) {
     auto it = resources_.find(local_id);
     CHECK(it != resources_.end());
     ChildResource& resource = it->second;
 
-    // TODO(https://crbug.com/922592): Batch deletion for reduced overhead.
+    bool is_external_used_resource = false;
     auto sk_image_it = resource_sk_images_.find(local_id);
     if (sk_image_it != resource_sk_images_.end()) {
-      sk_sp<SkImage> found(std::move(sk_image_it->second));
-      resource_sk_images_.erase(sk_image_it);
-
       if (external_use_client_) {
-        gpu::SyncToken token =
-            external_use_client_->QueueReleasePromiseSkImage(std::move(found));
-        resource.UpdateSyncToken(token);
+        external_used_sk_images.push_back(std::move(sk_image_it->second));
+        is_external_used_resource = true;
       }
+      resource_sk_images_.erase(sk_image_it);
     }
 
     ResourceId child_id = resource.transferable.id;
@@ -719,23 +722,20 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       resource.SetLocallyUsed();
     }
 
-    ReturnedResource returned;
-    returned.id = child_id;
-    returned.sync_token = resource.sync_token();
-    returned.count = resource.imported_count;
-    returned.lost = is_lost;
-    to_return.push_back(returned);
+    to_return.emplace_back(child_id, resource.sync_token(),
+                           resource.imported_count, is_lost);
+    auto& returned = to_return.back();
 
     if (resource.is_gpu_resource_type() && child_info->needs_sync_tokens) {
       if (resource.needs_sync_token()) {
-        need_synchronization_resources.push_back(&to_return.back());
+        need_synchronization_resources.push_back(&returned);
       } else if (returned.sync_token.HasData() &&
                  !returned.sync_token.verified_flush()) {
-        // Before returning any sync tokens, they must be verified. Store an
-        // index into |to_return| instead of a pointer as vectors may realloc
-        // and move their data.
-        to_return_indices_unverified.push_back(to_return.size() - 1);
+        unverified_sync_tokens.push_back(returned.sync_token.GetData());
       }
+
+      if (is_external_used_resource)
+        external_used_resources.push_back(&returned);
     }
 
     child_info->child_to_parent_map.erase(child_id);
@@ -745,12 +745,6 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 #endif
     DeleteResourceInternal(it, style);
   }
-
-  if (external_use_client_)
-    external_use_client_->FlushQueuedReleases();
-
-  for (size_t i : to_return_indices_unverified)
-    unverified_sync_tokens.push_back(to_return[i].sync_token.GetData());
 
   gpu::SyncToken new_sync_token;
   if (!need_synchronization_resources.empty()) {
@@ -770,6 +764,13 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   // Set sync token after verification.
   for (ReturnedResource* returned : need_synchronization_resources)
     returned->sync_token = new_sync_token;
+
+  if (external_use_client_ && !external_used_sk_images.empty()) {
+    auto sync_token = external_use_client_->ReleasePromiseSkImages(
+        std::move(external_used_sk_images));
+    for (auto* to_return : external_used_resources)
+      to_return->sync_token = sync_token;
+  }
 
   if (!to_return.empty())
     child_info->return_callback.Run(to_return);

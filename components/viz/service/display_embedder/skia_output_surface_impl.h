@@ -105,8 +105,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  gpu::SyncToken QueueReleasePromiseSkImage(sk_sp<SkImage>&& image) override;
-  void FlushQueuedReleases() override;
+  gpu::SyncToken ReleasePromiseSkImages(
+      std::vector<sk_sp<SkImage>> image) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
@@ -190,8 +190,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // Observers for context lost.
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
-
-  std::vector<sk_sp<SkImage>> images_pending_release_;
 
   THREAD_CHECKER(thread_checker_);
 
