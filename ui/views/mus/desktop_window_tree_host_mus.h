@@ -173,6 +173,11 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void OnViewBoundsChanged(views::View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
+  // Sets kTopViewInset to the default value as a heuristic to assist with
+  // reducing the number of bounds changes during window creation or
+  // entering/exiting fullscreen.
+  void SetTopViewInsetToDefault();
+
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* content_window();
 

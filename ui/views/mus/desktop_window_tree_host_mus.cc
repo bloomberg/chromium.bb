@@ -52,14 +52,6 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     if (MusClient::Get()->use_remote_accessibility_host())
       GetViewAccessibility().OverrideIsIgnored(true);
 
-    // Initialize kTopViewInset to a default value. Further updates will come
-    // from Ash. This is necessary so that during app window creation,
-    // GetWindowBoundsForClientBounds() can calculate correctly.
-    const auto& values = WindowManagerFrameValues::instance();
-    widget->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
-                                           widget->IsMaximized()
-                                               ? values.maximized_insets.top()
-                                               : values.normal_insets.top());
     observed_.Add(window());
   }
   ~ClientSideNonClientFrameView() override {}
@@ -829,6 +821,10 @@ NonClientFrameView* DesktopWindowTreeHostMus::CreateNonClientFrameView() {
   if (!ShouldSendClientAreaToServer())
     return nullptr;
 
+  // Initialize kTopViewInset to a default value. Further updates will come
+  // from Ash. This is necessary so that during app window creation,
+  // GetWindowBoundsForClientBounds() can calculate correctly.
+  SetTopViewInsetToDefault();
   return new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
 }
 
@@ -863,6 +859,7 @@ void DesktopWindowTreeHostMus::SetFullscreen(bool fullscreen) {
                           new gfx::Rect(GetWindowBoundsInScreen()));
     SetBoundsInDIP(GetDisplay().bounds());
   } else {
+    SetTopViewInsetToDefault();
     SetBoundsInDIP(restore_bounds);
   }
 }
@@ -1040,6 +1037,13 @@ void DesktopWindowTreeHostMus::OnViewBoundsChanged(View* observed_view) {
 
 void DesktopWindowTreeHostMus::OnViewIsDeleting(View* observed_view) {
   observed_client_view_.Remove(observed_view);
+}
+
+void DesktopWindowTreeHostMus::SetTopViewInsetToDefault() {
+  const auto& values = WindowManagerFrameValues::instance();
+  window()->SetProperty(aura::client::kTopViewInset,
+                        IsMaximized() ? values.maximized_insets.top()
+                                      : values.normal_insets.top());
 }
 
 aura::Window* DesktopWindowTreeHostMus::content_window() {
