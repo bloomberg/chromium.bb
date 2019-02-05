@@ -96,10 +96,6 @@ class WebViewClient {
   // Called when PageImportanceSignals for the WebView is updated.
   virtual void PageImportanceSignalsChanged() {}
 
-  // Called to get the position of the root window containing the widget
-  // in screen coordinates.
-  virtual WebRect RootWindowRect() { return WebRect(); }
-
   // Dialogs -------------------------------------------------------------
 
   // Ask users to choose date/time for the specified parameters. When a user

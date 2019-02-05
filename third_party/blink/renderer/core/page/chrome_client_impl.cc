@@ -176,29 +176,18 @@ void ChromeClientImpl::ChromeDestroyed() {
 void ChromeClientImpl::SetWindowRect(const IntRect& r, LocalFrame& frame) {
   DCHECK_EQ(&frame, web_view_->MainFrameImpl()->GetFrame());
   WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(&frame)->FrameWidgetImpl()->Client();
+      WebLocalFrameImpl::FromFrame(frame)->FrameWidgetImpl()->Client();
   client->SetWindowRect(r);
 }
 
-IntRect ChromeClientImpl::RootWindowRect() {
-  WebRect rect;
-  if (web_view_->Client()) {
-    rect = web_view_->Client()->RootWindowRect();
-  } else {
-    // These numbers will be fairly wrong. The window's x/y coordinates will
-    // be the top left corner of the screen and the size will be the content
-    // size instead of the window size.
-    rect.width = web_view_->MainFrameWidget()->Size().width;
-    rect.height = web_view_->MainFrameWidget()->Size().height;
-  }
-  return IntRect(rect);
-}
-
-IntRect ChromeClientImpl::PageRect() {
-  // We hide the details of the window's border thickness from the web page by
-  // simple re-using the window position here.  So, from the point-of-view of
-  // the web page, the window has no border.
-  return RootWindowRect();
+IntRect ChromeClientImpl::RootWindowRect(LocalFrame& frame) {
+  // The WindowRect() for each WebWidgetClient will be the same rect of the top
+  // level window. Since there is not always a WebWidgetClient attached to the
+  // WebView, we ask the WebWidget associated with the |frame|'s local root.
+  LocalFrame& local_root = frame.LocalFrameRoot();
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(local_root)->FrameWidgetImpl()->Client();
+  return IntRect(client->WindowRect());
 }
 
 void ChromeClientImpl::Focus(LocalFrame* calling_frame) {
@@ -311,7 +300,7 @@ bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
     LocalFrame& local_frame,
     const String& url) {
   WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(&local_frame.LocalFrameRoot());
+      WebLocalFrameImpl::FromFrame(local_frame.LocalFrameRoot());
   return webframe && webframe->Client() &&
          webframe->Client()->ShouldReportDetailedMessageForSource(url);
 }
@@ -407,7 +396,7 @@ void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
 
 void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
   LocalFrame& frame = frame_view->GetFrame();
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   DCHECK(web_frame);
   // If the frame is still being created, it might not yet have a WebWidget.
   // TODO(dcheng): Is this the right thing to do? Is there a way to avoid having
@@ -430,7 +419,7 @@ IntRect ChromeClientImpl::ViewportToScreen(
   LocalFrame& frame = frame_view->GetFrame();
 
   WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(&frame)->LocalRootFrameWidget()->Client();
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
 
   // TODO(dcheng): Is this null check needed?
   if (client) {
@@ -532,7 +521,7 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
 void ChromeClientImpl::SetToolTip(LocalFrame& frame,
                                   const String& tooltip_text,
                                   TextDirection dir) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   if (!tooltip_text.IsEmpty()) {
     web_frame->LocalRootFrameWidget()->Client()->SetToolTipText(
         tooltip_text, ToWebTextDirection(dir));

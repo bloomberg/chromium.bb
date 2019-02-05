@@ -438,10 +438,10 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
 
 void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
   auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  gfx::Rect window_rect(render_view_impl->RootWindowRect().x,
-                        render_view_impl->RootWindowRect().y, new_size.width,
-                        new_size.height);
   RenderWidget* render_widget = render_view_impl->GetWidget();
+  gfx::Rect window_rect(render_widget->WindowRect().x,
+                        render_widget->WindowRect().y, new_size.width,
+                        new_size.height);
   render_widget->SetWindowRectSynchronouslyForTesting(window_rect);
 }
 
