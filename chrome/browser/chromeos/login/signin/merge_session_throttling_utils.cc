@@ -18,8 +18,9 @@
 #include "components/google/core/common/google_util.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -182,7 +183,7 @@ bool ShouldDelayRequestForWebContents(content::WebContents* web_contents) {
 bool ShouldDelayUrl(const GURL& url) {
   // If we are loading google properties while merge session is in progress,
   // we will show delayed loading page instead.
-  return !net::NetworkChangeNotifier::IsOffline() &&
+  return !content::GetNetworkConnectionTracker()->IsOffline() &&
          !AreAllSessionMergedAlready() &&
          google_util::IsGoogleHostname(url.host_piece(),
                                        google_util::ALLOW_SUBDOMAIN);
