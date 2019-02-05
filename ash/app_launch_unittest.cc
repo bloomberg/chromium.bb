@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/quick_launch/manifest.h"
+#include "ash/components/quick_launch/public/cpp/manifest.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/public/cpp/manifest.h"
 #include "ash/public/cpp/test_manifest.h"
@@ -35,7 +35,7 @@ class AppLaunchTest : public testing::Test {
       : test_service_manager_(
             {service_manager::Manifest(GetManifest())
                  .Amend(GetManifestOverlayForTesting()),
-             quick_launch_app::GetManifest(),
+             quick_launch::GetManifest(),
              service_manager::ManifestBuilder()
                  .WithServiceName(kTestServiceName)
                  .RequireCapability(mojom::kServiceName, "")

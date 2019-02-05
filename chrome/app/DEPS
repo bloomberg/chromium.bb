@@ -44,6 +44,8 @@ include_rules = [
 
 specific_include_rules = {
   "chrome_content_browser_overlay_manifest\.cc": [
+    "+ash/components/shortcut_viewer/public",
+    "+ash/components/tap_visualizer/public",
     "+chrome/services/app_service",
     "+chromeos/assistant",
     "+chromeos/services/assistant",
@@ -78,9 +80,9 @@ specific_include_rules = {
     "+third_party/blink/public/mojom",
   ],
   "chrome_packaged_service_manifests\.cc": [
-    "+ash/components/quick_launch",
-    "+ash/components/shortcut_viewer",
-    "+ash/components/tap_visualizer",
+    "+ash/components/quick_launch/public",
+    "+ash/components/shortcut_viewer/public",
+    "+ash/components/tap_visualizer/public",
     "+chrome/services/cups_ipp_parser",
     "+chrome/services/file_util",
     "+chrome/services/isolated_xr_device",

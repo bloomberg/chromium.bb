@@ -1,5 +1,6 @@
 include_rules = [
   "+mash/public",
   "+services/catalog/public",
+  "+services/ws/public",
   "+url",
 ]

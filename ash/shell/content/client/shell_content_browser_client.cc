@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "ash/ash_service.h"
-#include "ash/components/quick_launch/manifest.h"
+#include "ash/components/quick_launch/public/cpp/manifest.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
-#include "ash/components/shortcut_viewer/manifest.h"
+#include "ash/components/shortcut_viewer/public/cpp/manifest.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
-#include "ash/components/tap_visualizer/manifest.h"
+#include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/public/cpp/manifest.h"
 #include "ash/public/cpp/test_manifest.h"
@@ -50,9 +50,9 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
       service_manager::ManifestBuilder()
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
           .RequireCapability(shortcut_viewer::mojom::kServiceName,
-                             "shortcut_viewer")
+                             shortcut_viewer::mojom::kToggleUiCapability)
           .RequireCapability(tap_visualizer::mojom::kServiceName,
-                             "tap_visualizer")
+                             tap_visualizer::mojom::kShowUiCapability)
           .Build()};
   return *manifest;
 }
@@ -62,9 +62,9 @@ const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
       service_manager::ManifestBuilder()
           .PackageService(service_manager::Manifest(ash::GetManifest())
                               .Amend(ash::GetManifestOverlayForTesting()))
-          .PackageService(quick_launch_app::GetManifest())
-          .PackageService(shortcut_viewer_app::GetManifest())
-          .PackageService(tap_visualizer_app::GetManifest())
+          .PackageService(quick_launch::GetManifest())
+          .PackageService(shortcut_viewer::GetManifest())
+          .PackageService(tap_visualizer::GetManifest())
           .PackageService(test_ime_driver::GetManifest())
           .Build()};
   return *manifest;

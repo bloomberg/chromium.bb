@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "tap_renderer.cc",
@@ -29,11 +27,6 @@ source_set("lib") {
     "//ui/views/mus:for_mojo_application",
     "//ui/views/mus:resources",
   ]
-}
-
-service_manifest("manifest") {
-  name = "tap_visualizer_app"
-  source = "manifest.json"
 }
 
 source_set("unit_tests") {
