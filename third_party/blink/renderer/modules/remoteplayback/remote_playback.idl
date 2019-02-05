@@ -21,7 +21,7 @@ callback RemotePlaybackAvailabilityCallback = void(boolean available);
     attribute EventHandler onconnect;
     attribute EventHandler ondisconnect;
 
-    [CallWith=ScriptState] Promise<long> watchAvailability(RemotePlaybackAvailabilityCallback callback);
+    [Measure, CallWith=ScriptState] Promise<long> watchAvailability(RemotePlaybackAvailabilityCallback callback);
     [CallWith=ScriptState] Promise<void> cancelWatchAvailability(optional long id);
-    [CallWith=ScriptState] Promise<void> prompt();
+    [Measure, CallWith=ScriptState] Promise<void> prompt();
 };
