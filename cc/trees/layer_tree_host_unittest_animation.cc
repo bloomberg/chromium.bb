@@ -925,9 +925,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
         GetImplAnimationHost(&host_impl)
             ->GetElementAnimationsForElementId(layer->element_id());
     DCHECK(element_animations);
-    DCHECK(element_animations->keyframe_effects_list().might_have_observers());
     KeyframeEffect* keyframe_effect =
-        &*element_animations->keyframe_effects_list().begin();
+        &*element_animations->FirstKeyframeEffectForTesting();
     DCHECK(keyframe_effect);
     return *keyframe_effect;
   }
