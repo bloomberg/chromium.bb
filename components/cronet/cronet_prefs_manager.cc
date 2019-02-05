@@ -240,8 +240,7 @@ CronetPrefsManager::CronetPrefsManager(
   PrefServiceFactory factory;
   factory.set_user_prefs(json_pref_store_);
   scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
-  registry->RegisterDictionaryPref(kHttpServerPropertiesPref,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(kHttpServerPropertiesPref);
 
   if (enable_network_quality_estimator) {
     // Use lossy prefs to limit the overhead of reading/writing the prefs.
