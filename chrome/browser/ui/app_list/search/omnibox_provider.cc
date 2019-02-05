@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,6 +58,8 @@ void OmniboxProvider::Start(const base::string16& query) {
   } else {
     is_zero_state_input_ = false;
   }
+
+  query_start_time_ = base::TimeTicks::Now();
   controller_->Start(input);
 }
 
@@ -74,7 +77,17 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
 }
 
 void OmniboxProvider::OnResultChanged(bool default_match_changed) {
+  // Record the query latency.
+  RecordQueryLatencyHistogram();
+
   PopulateFromACResult(controller_->result());
+}
+
+void OmniboxProvider::RecordQueryLatencyHistogram() {
+  UMA_HISTOGRAM_TIMES(is_zero_state_input_
+                          ? "Apps.AppList.OmniboxProvider.ZeroStateLatency"
+                          : "Apps.AppList.OmniboxProvider.QueryTime",
+                      base::TimeTicks::Now() - query_start_time_);
 }
 
 }  // namespace app_list
