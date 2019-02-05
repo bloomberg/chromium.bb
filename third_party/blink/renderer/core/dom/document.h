@@ -863,10 +863,12 @@ class CORE_EXPORT Document : public ContainerNode,
     kAnimationEndListener = 1 << 6,
     kAnimationStartListener = 1 << 7,
     kAnimationIterationListener = 1 << 8,
-    kTransitionEndListener = 1 << 9,
-    kScrollListener = 1 << 10,
-    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 11
-    // 4 bits remaining
+    kTransitionRunListener = 1 << 9,
+    kTransitionStartListener = 1 << 10,
+    kTransitionEndListener = 1 << 11,
+    kScrollListener = 1 << 12,
+    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 13
+    // 2 bits remaining
   };
 
   bool HasListenerType(ListenerType listener_type) const {
