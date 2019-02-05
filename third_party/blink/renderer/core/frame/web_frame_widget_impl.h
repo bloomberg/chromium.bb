@@ -107,7 +107,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
-  void WillCloseLayerTreeView() override;
   void SetRemoteViewportIntersection(const WebRect&, bool) override;
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
@@ -211,7 +210,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   std::unique_ptr<CompositorAnimationHost> animation_host_;
   base::TimeTicks raf_aligned_input_start_time_;
   bool is_accelerated_compositing_active_;
-  bool layer_tree_view_closed_;
 
   bool suppress_next_keypress_event_;
 

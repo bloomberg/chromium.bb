@@ -1270,6 +1270,15 @@ Frame* WebViewImpl::FocusedCoreFrame() const {
 // WebWidget ------------------------------------------------------------------
 
 void WebViewImpl::Close() {
+  if (layer_tree_view_)
+    GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+
+  SetRootLayer(nullptr);
+  animation_host_ = nullptr;
+
+  mutator_dispatcher_ = nullptr;
+  layer_tree_view_ = nullptr;
+
   DCHECK(AllInstances().Contains(this));
   AllInstances().erase(this);
 
@@ -1934,17 +1943,6 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
 
 bool WebViewImpl::IsAcceleratedCompositingActive() const {
   return !!root_layer_;
-}
-
-void WebViewImpl::WillCloseLayerTreeView() {
-  if (layer_tree_view_)
-    GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
-
-  SetRootLayer(nullptr);
-  animation_host_ = nullptr;
-
-  mutator_dispatcher_ = nullptr;
-  layer_tree_view_ = nullptr;
 }
 
 void WebViewImpl::DidAcquirePointerLock() {
