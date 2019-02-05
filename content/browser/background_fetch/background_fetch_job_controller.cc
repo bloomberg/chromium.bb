@@ -121,9 +121,11 @@ void BackgroundFetchJobController::InitializeRequestStatus(
       complete_requests_uploaded_bytes_cache_, options_->download_total,
       upload_total_, std::move(active_guids), start_paused);
 
+  for (auto& active_request : active_fetch_requests)
+    active_request_map_[active_request->download_guid()] = active_request;
+
   delegate_proxy_->CreateDownloadJob(weak_ptr_factory_.GetWeakPtr(),
-                                     std::move(fetch_description),
-                                     std::move(active_fetch_requests));
+                                     std::move(fetch_description));
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {
@@ -155,23 +157,35 @@ void BackgroundFetchJobController::StartRequest(
     return;
   }
 
+  active_request_map_[request->download_guid()] = request;
   delegate_proxy_->StartRequest(registration_id().unique_id(),
-                                registration_id().origin(), request);
+                                registration_id().origin(), request.get());
 }
 
 void BackgroundFetchJobController::DidStartRequest(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request) {
+    const std::string& guid,
+    std::unique_ptr<BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(active_request_map_.count(guid));
+  const auto& request = active_request_map_[guid];
+  DCHECK(request);
+
+  request->PopulateWithResponse(std::move(response));
+
   // TODO(crbug.com/884672): Stop the fetch if the cross origin filter fails.
   BackgroundFetchCrossOriginFilter filter(registration_id_.origin(), *request);
   request->set_can_populate_body(filter.CanPopulateBody());
 }
 
-void BackgroundFetchJobController::DidUpdateRequest(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request,
-    uint64_t bytes_uploaded,
-    uint64_t bytes_downloaded) {
+void BackgroundFetchJobController::DidUpdateRequest(const std::string& guid,
+                                                    uint64_t bytes_uploaded,
+                                                    uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(active_request_map_.count(guid));
+  const auto& request = active_request_map_[guid];
+  DCHECK(request);
 
   // Don't send download updates so the size is not leaked.
   // Upload updates are fine since that information is already available.
@@ -193,8 +207,15 @@ void BackgroundFetchJobController::DidUpdateRequest(
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request) {
+    const std::string& guid,
+    std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(active_request_map_.count(guid));
+  const auto& request = active_request_map_[guid];
+  DCHECK(request);
+
+  request->SetResult(std::move(result));
 
   if (request->can_populate_body())
     complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
@@ -324,8 +345,12 @@ void BackgroundFetchJobController::NotifyDownloadComplete(
 }
 
 void BackgroundFetchJobController::GetUploadData(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request,
+    const std::string& guid,
     BackgroundFetchDelegate::GetUploadDataCallback callback) {
+  DCHECK(active_request_map_.count(guid));
+  const auto& request = active_request_map_[guid];
+  DCHECK(request);
+
   data_manager_->GetRequestBlob(
       registration_id(), request,
       base::BindOnce(&BackgroundFetchJobController::DidGetUploadData,

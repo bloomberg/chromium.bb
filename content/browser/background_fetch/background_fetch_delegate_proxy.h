@@ -38,19 +38,20 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
    public:
     // Called when the given |request| has started fetching.
     virtual void DidStartRequest(
-        const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
+        const std::string& guid,
+        std::unique_ptr<BackgroundFetchResponse> response) = 0;
 
-    // Called when the given |request| has an update, meaning that a total of
-    // |bytes_uploaded| of the request were uploaded, and a total of
+    // Called when the request with the given |guid| has an update, meaning that
+    // a total of |bytes_uploaded| of the request were uploaded, and a total of
     // |bytes_downloaded| are now available for the response.
-    virtual void DidUpdateRequest(
-        const scoped_refptr<BackgroundFetchRequestInfo>& request,
-        uint64_t bytes_uploaded,
-        uint64_t bytes_downloaded) = 0;
+    virtual void DidUpdateRequest(const std::string& guid,
+                                  uint64_t bytes_uploaded,
+                                  uint64_t bytes_downloaded) = 0;
 
-    // Called when the given |request| has been completed.
+    // Called when the request with the given |guid| has been completed.
     virtual void DidCompleteRequest(
-        const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
+        const std::string& guid,
+        std::unique_ptr<BackgroundFetchResult> result) = 0;
 
     // Called when the delegate aborts a Background Fetch registration.
     virtual void AbortFromDelegate(
@@ -59,10 +60,10 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     // Called by the delegate when the Download Service is requesting the
     // upload data.
     virtual void GetUploadData(
-        const scoped_refptr<BackgroundFetchRequestInfo>& request,
+        const std::string& guid,
         BackgroundFetchDelegate::GetUploadDataCallback callback) = 0;
 
-    virtual ~Controller() {}
+    virtual ~Controller() = default;
   };
 
   explicit BackgroundFetchDelegateProxy(BrowserContext* browser_context);
@@ -71,8 +72,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
 
   // Set BackgroundFetchClick event dispatcher callback, which is a method on
   // the background fetch context.
-  void SetClickEventDispatcher(
-      const DispatchClickEventCallback click_event_callback);
+  void SetClickEventDispatcher(DispatchClickEventCallback click_event_callback);
 
   // Gets size of the icon to display with the Background Fetch UI.
   void GetIconDisplaySize(
@@ -86,32 +86,25 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
 
   // Creates a new download grouping described by |fetch_description|. Further
   // downloads started by StartRequest will also use
-  // |fetch_description.job_unique_id| so that a notification can be updated
+  // |fetch_description->job_unique_id| so that a notification can be updated
   // with the current status. If the download was already started in a previous
-  // browser session, then |fetch_description.current_guids| should contain the
+  // browser session, then |fetch_description->current_guids| should contain the
   // GUIDs of in progress downloads, while completed downloads are recorded in
-  // |fetch_description.completed_parts|. The size of the completed parts is
-  // recorded in |fetch_description.completed_parts_size| and total download
-  // size is stored in |fetch_description.total_parts_size|.
-  // |active_fetch_requests| contains the BackgroundFetchRequestInfos
-  // needed to correctly resume an ongoing fetch.
+  // |fetch_description->completed_requests|.
   // Should only be called from the Controller (on the IO thread).
   void CreateDownloadJob(
       base::WeakPtr<Controller> controller,
-      std::unique_ptr<BackgroundFetchDescription> fetch_description,
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-          active_fetch_requests);
+      std::unique_ptr<BackgroundFetchDescription> fetch_description);
 
   // Requests that the download manager start fetching |request|.
   // Should only be called from the Controller (on the IO
   // thread).
   void StartRequest(const std::string& job_unique_id,
                     const url::Origin& origin,
-                    scoped_refptr<BackgroundFetchRequestInfo> request);
+                    const scoped_refptr<BackgroundFetchRequestInfo>& request);
 
   // Updates the representation of this registration in the user interface to
-  // match the given |title| or |icon|. |update_ui_callback| should be called
-  // after all the relevant UI information has been processed.
+  // match the given |title| or |icon|.
   // Called from the Controller (on the IO thread).
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
@@ -169,28 +162,12 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;
 
-  struct JobDetails {
-    JobDetails(base::WeakPtr<Controller> controller,
-               std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-                   active_fetch_requests);
-    JobDetails(JobDetails&& details);
-    ~JobDetails();
+  // Map from unique job ids to the controller.
+  std::map<std::string, base::WeakPtr<Controller>> controller_map_;
 
-    base::WeakPtr<Controller> controller;
-
-    // Map from DownloadService GUIDs to their corresponding request.
-    base::flat_map<std::string, scoped_refptr<BackgroundFetchRequestInfo>>
-        current_request_map;
-
-    blink::mojom::BackgroundFetchService::UpdateUICallback update_ui_callback;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(JobDetails);
-  };
-
-  // Map from unique job ids to a JobDetails containing the outstanding download
-  // GUIDs and the controller that started the download.
-  std::map<std::string, JobDetails> job_details_map_;
+  // The callback to run after the UI information has been updated.
+  std::map<std::string, blink::mojom::BackgroundFetchService::UpdateUICallback>
+      update_ui_callback_map_;
 
   DispatchClickEventCallback click_event_dispatcher_callback_;
   base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_;
