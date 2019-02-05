@@ -99,5 +99,9 @@ const base::Feature kPreviewsDisallowedOnReloads{
 const base::Feature kHTTPSServerPreviewsUsingURLLoader{
     "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Uses 'Lite Mode' strings instead of 'Data Saver'.
+const base::Feature kDataSaverLiteModeRebranding{
+    "DataSaverLiteModeRebranding", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

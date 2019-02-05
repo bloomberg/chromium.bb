@@ -5,6 +5,7 @@
 
 <org.chromium.chrome.browser.preferences.datareduction.DataReductionMainMenuItem
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/data_reduction_menu_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -23,13 +24,14 @@
         android:paddingBottom="12dp"
         style="@style/AppMenuItem" >
 
+        <!-- ContentDescription is set in Java code. -->
         <ImageView
+            tools:ignore="ContentDescription"
             android:id="@+id/chart_icon"
             android:src="@drawable/data_reduction_main_menu_icon"
             android:layout_width="@dimen/data_reduction_main_menu_icon_width"
             android:layout_height="match_parent"
-            android:layout_gravity="start|center_vertical"
-            android:contentDescription="@string/data_reduction_title" />
+            android:layout_gravity="start|center_vertical" />
 
         <LinearLayout
             android:layout_width="wrap_content"

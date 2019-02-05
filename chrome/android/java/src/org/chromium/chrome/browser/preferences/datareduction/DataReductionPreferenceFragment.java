@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 /**
  * Settings fragment that allows the user to configure Data Saver.
  */
-public class DataReductionPreferences extends PreferenceFragment {
+public class DataReductionPreferenceFragment extends PreferenceFragment {
     public static final String FROM_MAIN_MENU = "FromMainMenu";
 
     public static final String PREF_DATA_REDUCTION_SWITCH = "data_reduction_switch";
@@ -48,9 +48,9 @@ public class DataReductionPreferences extends PreferenceFragment {
         super.onCreate(savedInstanceState);
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
-        getActivity().setTitle(R.string.data_reduction_title);
-        boolean isEnabled =
-                DataReductionProxySettings.getInstance().isDataReductionProxyEnabled();
+        getActivity().setTitle(DataReductionBrandingResourceProvider.getDataSaverBrandedString(
+                R.string.data_reduction_title));
+        boolean isEnabled = DataReductionProxySettings.getInstance().isDataReductionProxyEnabled();
         mIsEnabled = !isEnabled;
         mWasEnabledAtCreation = isEnabled;
         updatePreferences(isEnabled);
@@ -75,9 +75,8 @@ public class DataReductionPreferences extends PreferenceFragment {
 
         int statusChange;
         if (mFromPromo) {
-            statusChange = mIsEnabled
-                    ? DataReductionProxyUma.ACTION_SNACKBAR_LINK_CLICKED
-                    : DataReductionProxyUma.ACTION_SNACKBAR_LINK_CLICKED_DISABLED;
+            statusChange = mIsEnabled ? DataReductionProxyUma.ACTION_SNACKBAR_LINK_CLICKED
+                                      : DataReductionProxyUma.ACTION_SNACKBAR_LINK_CLICKED_DISABLED;
         } else if (mFromMainMenu) {
             if (mWasEnabledAtCreation) {
                 statusChange = mIsEnabled ? DataReductionProxyUma.ACTION_MAIN_MENU_ON_TO_ON
@@ -95,13 +94,11 @@ public class DataReductionPreferences extends PreferenceFragment {
                                           : DataReductionProxyUma.ACTION_INFOBAR_OFF_TO_OFF;
             }
         } else if (mWasEnabledAtCreation) {
-            statusChange = mIsEnabled
-                    ? DataReductionProxyUma.ACTION_ON_TO_ON
-                    : DataReductionProxyUma.ACTION_ON_TO_OFF;
+            statusChange = mIsEnabled ? DataReductionProxyUma.ACTION_ON_TO_ON
+                                      : DataReductionProxyUma.ACTION_ON_TO_OFF;
         } else {
-            statusChange = mIsEnabled
-                    ? DataReductionProxyUma.ACTION_OFF_TO_ON
-                    : DataReductionProxyUma.ACTION_OFF_TO_OFF;
+            statusChange = mIsEnabled ? DataReductionProxyUma.ACTION_OFF_TO_ON
+                                      : DataReductionProxyUma.ACTION_OFF_TO_OFF;
         }
         DataReductionProxyUma.dataReductionProxyUIAction(statusChange);
     }
@@ -109,8 +106,8 @@ public class DataReductionPreferences extends PreferenceFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
-        MenuItem help = menu.add(
-                Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
+        MenuItem help =
+                menu.add(Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
         help.setIcon(VectorDrawableCompat.create(
                 getResources(), R.drawable.ic_help_and_feedback, getActivity().getTheme()));
     }
@@ -137,7 +134,9 @@ public class DataReductionPreferences extends PreferenceFragment {
         if (isEnabled) {
             PreferenceUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
         } else {
-            PreferenceUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences_off);
+            PreferenceUtils.addPreferencesFromResource(this,
+                    DataReductionBrandingResourceProvider.getPreferencesOffXml(
+                            R.xml.data_reduction_preferences_off));
         }
         mIsEnabled = isEnabled;
     }
@@ -147,10 +146,12 @@ public class DataReductionPreferences extends PreferenceFragment {
      */
     public static String generateSummary(Resources resources) {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-            String percent = DataReductionProxySettings.getInstance()
-                    .getContentLengthPercentSavings();
+            String percent =
+                    DataReductionProxySettings.getInstance().getContentLengthPercentSavings();
             return resources.getString(
-                    R.string.data_reduction_menu_item_summary, percent);
+                    DataReductionBrandingResourceProvider.getDataSaverBrandedString(
+                            R.string.data_reduction_menu_item_summary),
+                    percent);
         } else {
             return (String) resources.getText(R.string.text_off);
         }
@@ -168,7 +169,7 @@ public class DataReductionPreferences extends PreferenceFragment {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                         dataReductionSwitch.getContext(), (boolean) newValue);
-                DataReductionPreferences.this.updatePreferences((boolean) newValue);
+                DataReductionPreferenceFragment.this.updatePreferences((boolean) newValue);
                 return true;
             }
         });
