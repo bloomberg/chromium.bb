@@ -96,7 +96,7 @@ TaskGroup::TaskGroup(
 #endif  // defined(OS_CHROMEOS)
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
-      platform_independent_cpu_usage_(0.0),
+      platform_independent_cpu_usage_(std::numeric_limits<double>::quiet_NaN()),
       swapped_mem_bytes_(-1),
       memory_footprint_(-1),
       gpu_memory_(-1),
