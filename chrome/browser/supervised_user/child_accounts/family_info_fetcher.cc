@@ -18,6 +18,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -125,6 +126,10 @@ void FamilyInfoFetcher::StartGetFamilyMembers() {
 }
 
 void FamilyInfoFetcher::StartFetching() {
+  // TODO(treib): we should stop listening to OnRefreshTokensLoaded which is
+  // unreliable for clients, as there is no way to know whether it has already
+  // happened or not, potentially leading to neverending waits. Note that this
+  // directly affects FamilyInfoFetcherTest.NoRefreshToken.
   if (identity_manager_->HasAccountWithRefreshToken(primary_account_id_)) {
     StartFetchingAccessToken();
   } else {
@@ -134,13 +139,13 @@ void FamilyInfoFetcher::StartFetching() {
 }
 
 void FamilyInfoFetcher::StartFetchingAccessToken() {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kScope);
-  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
-      primary_account_id_, "family_info_fetcher", scopes,
-      base::BindOnce(&FamilyInfoFetcher::OnAccessTokenFetchCompleteForAccount,
-                     base::Unretained(this), primary_account_id_),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+  OAuth2TokenService::ScopeSet scopes{kScope};
+  access_token_fetcher_ =
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          "family_info_fetcher", identity_manager_, scopes,
+          base::BindOnce(&FamilyInfoFetcher::OnAccessTokenFetchComplete,
+                         base::Unretained(this)),
+          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void FamilyInfoFetcher::OnRefreshTokenUpdatedForAccount(
@@ -164,8 +169,7 @@ void FamilyInfoFetcher::OnRefreshTokensLoaded() {
   consumer_->OnFailure(TOKEN_ERROR);
 }
 
-void FamilyInfoFetcher::OnAccessTokenFetchCompleteForAccount(
-    std::string account_id,
+void FamilyInfoFetcher::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
     identity::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
