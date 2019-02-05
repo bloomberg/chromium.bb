@@ -12,6 +12,7 @@
     <style include="settings-shared"></style>
     <div class="settings-box first">
       <div>
+        $i18n{crostiniSharedPathsInstructionsLocate}
         $i18n{crostiniSharedPathsInstructionsAdd}
         <span id="crostiniInstructionsRemove"
             hidden="[[!sharedPaths_.length]]">
@@ -19,14 +20,21 @@
         </span>
       </div>
     </div>
-    <template is="dom-repeat" items="[[sharedPaths_]]">
-      <div class="settings-box">
-        <div class="start">[[item.pathDisplayText]]</div>
-        <paper-icon-button-light class="icon-clear">
-          <button on-click="onRemoveSharedPathTap_"></button>
-        </paper-icon-button-light>
-      </div>
-    </template>
+    <div class="settings-box continuation">
+      <h2 class="start">$i18n{crostiniSharedPathsListHeading}</h2>
+    </div>
+    <div class="list-frame vertical-list">
+      <template is="dom-repeat" items="[[sharedPaths_]]">
+        <div class="list-item">
+          <div class="start">[[item.pathDisplayText]]</div>
+          <paper-icon-button-light class="icon-clear">
+            <button on-click="onRemoveSharedPathTap_"
+                    title="$i18n{crostiniSharedPathsRemoveSharing}">
+            </button>
+          </paper-icon-button-light>
+        </div>
+      </template>
+    </div>
   </template>
   <script src="crostini_shared_paths.js"></script>
 </dom-module>
