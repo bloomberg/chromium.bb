@@ -8,14 +8,14 @@
 #include <memory>
 #include <set>
 
-#include "base/scoped_observer.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/mus/focus_synchronizer_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/mus/mus_client_observer.h"
-#include "ui/views/view_observer.h"
 #include "ui/views/mus/mus_export.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/widget.h"
 

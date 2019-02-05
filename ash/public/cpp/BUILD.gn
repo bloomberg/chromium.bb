@@ -235,6 +235,7 @@ source_set("unit_tests") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "immersive/immersive_fullscreen_controller_test_api.cc",
     "immersive/immersive_fullscreen_controller_test_api.h",
@@ -247,6 +248,7 @@ source_set("test_support") {
     "//base",
     "//services/service_manager/public/cpp",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/gfx",
     "//ui/keyboard:mojom",
     "//ui/views",

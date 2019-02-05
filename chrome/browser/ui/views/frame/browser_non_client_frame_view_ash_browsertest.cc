@@ -82,7 +82,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/event_injector.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/class_property.h"
@@ -267,15 +266,6 @@ class ImmersiveModeTester : public ImmersiveModeController::Observer {
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeTester);
 };
 
-// Update mouse location of aura::Env by injecting a mouse move event.
-// EventInjector is used so that the Window Service side code under mash sees
-// the updated mouse location as well.
-void UpdateMouseLocation(aura::Window* window, const gfx::Point& location) {
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
-                       ui::EventTimeForNow(), ui::EF_NONE, 0);
-  aura::EventInjector().Inject(window->GetHost(), &event);
-}
-
 }  // namespace
 
 using views::Widget;
@@ -447,10 +437,6 @@ class ImmersiveModeBrowserViewTest
   // TopChromeMdParamTest<InProcessBrowserTest>:
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
-
-    // Move mouse cursor beyond immersive UI to avoid affecting tests.
-    UpdateMouseLocation(browser()->window()->GetNativeWindow(),
-                        gfx::Point(0, 100));
 
     BrowserView::SetDisableRevealerDelayForTesting(true);
 
