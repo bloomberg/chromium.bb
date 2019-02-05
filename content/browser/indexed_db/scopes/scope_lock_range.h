@@ -4,8 +4,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPE_LOCK_RANGE_H_
 #define CONTENT_BROWSER_INDEXED_DB_SCOPES_SCOPE_LOCK_RANGE_H_
 
+#include <stdint.h>
 #include <iosfwd>
-#include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "content/common/content_export.h"
@@ -21,6 +22,8 @@ struct CONTENT_EXPORT ScopeLockRange {
   ~ScopeLockRange() = default;
   std::string begin;
   std::string end;
+
+  bool IsValid() const { return begin < end; }
 };
 
 // Logging support.

@@ -37,11 +37,10 @@ class CONTENT_EXPORT ScopesLockManager {
 
   // Acquires locks for the given requests. Lock levels are treated as
   // completely independent domains. The lock levels start at zero.
-  // Returns false if any of the lock ranges were invalid or an invarient was
+  // Returns false if any of the lock ranges were invalid or an invariant was
   // broken.
   struct CONTENT_EXPORT ScopeLockRequest {
     ScopeLockRequest(int level, ScopeLockRange range, LockType type);
-    ~ScopeLockRequest() = default;
     int level;
     ScopeLockRange range;
     LockType type;

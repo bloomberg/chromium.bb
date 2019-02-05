@@ -112,9 +112,9 @@ const constexpr int kDatabaseRangeLockLevel = 0;
 const constexpr int kObjectStoreRangeLockLevel = 1;
 const constexpr int kIndexedDBLockLevelCount = 2;
 
-ScopeLockRange GetDatabaseLockRange(int64_t database_id);
-ScopeLockRange GetObjectStoreLockRange(int64_t database_id,
-                                       int64_t object_store_id);
+CONTENT_EXPORT ScopeLockRange GetDatabaseLockRange(int64_t database_id);
+CONTENT_EXPORT ScopeLockRange GetObjectStoreLockRange(int64_t database_id,
+                                                      int64_t object_store_id);
 
 // TODO(dmurph): Modify all decoding methods to return something more sensible,
 // as it is not obvious that they modify the input slice to remove the decoded
