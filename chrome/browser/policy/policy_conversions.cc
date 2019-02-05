@@ -242,8 +242,12 @@ void GetChromePolicyValues(content::BrowserContext* context,
 #if defined(OS_CHROMEOS)
 void GetDeviceLocalAccountPolicies(bool convert_values, Value* values) {
   // DeviceLocalAccount policies are not available for not affiliated users
-  if (!user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated())
+  if (!user_manager::UserManager::IsInitialized() ||
+      !user_manager::UserManager::Get()->GetPrimaryUser() ||
+      !user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated()) {
     return;
+  }
+
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DCHECK(connector);  // always not-null
