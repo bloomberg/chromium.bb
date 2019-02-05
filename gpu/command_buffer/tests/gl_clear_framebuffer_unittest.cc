@@ -295,7 +295,6 @@ class ES3ClearBufferTest : public testing::Test {
   }
 
   void TearDown() override {
-    GLTestHelper::CheckGLError("no errors", __LINE__);
     gl_.Destroy();
   }
 
@@ -303,11 +302,15 @@ class ES3ClearBufferTest : public testing::Test {
 };
 
 TEST_F(ES3ClearBufferTest, ClearBuffersuiv) {
+  if (ShouldSkipTest())
+    return;
+
   // This is a regression test for https://crbug.com/908749
   GLuint value[1] = {0u};
   glClearBufferuiv(GL_STENCIL, 0, value);
   // The above call should not crash in ASAN build.
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
+  GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
 }  // namespace gpu
