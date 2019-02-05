@@ -122,9 +122,10 @@ class CORE_EXPORT ChromeClient
   // The specified rectangle is adjusted for the minimum window size and the
   // screen, then setWindowRect with the adjusted rectangle is called.
   void SetWindowRectWithAdjustment(const IntRect&, LocalFrame&);
-  virtual IntRect RootWindowRect() = 0;
 
-  virtual IntRect PageRect() = 0;
+  // This gives the rect of the top level window that the given LocalFrame is a
+  // part of.
+  virtual IntRect RootWindowRect(LocalFrame&) = 0;
 
   virtual void Focus(LocalFrame*) = 0;
 

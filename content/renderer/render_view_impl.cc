@@ -2049,10 +2049,6 @@ void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
   GetWidget()->DidAutoResize(newSize);
 }
 
-blink::WebRect RenderViewImpl::RootWindowRect() {
-  return WidgetClient()->WindowRect();
-}
-
 void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
   //                 we won't have to test for user gesture anymore and we can

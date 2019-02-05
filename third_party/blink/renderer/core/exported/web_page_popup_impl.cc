@@ -89,7 +89,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
  private:
   void CloseWindowSoon() override { popup_->ClosePopup(); }
 
-  IntRect RootWindowRect() override { return popup_->WindowRectInScreen(); }
+  IntRect RootWindowRect(LocalFrame&) override {
+    // There is only one frame/widget in a WebPagePopup, so we can ignore the
+    // param.
+    return popup_->WindowRectInScreen();
+  }
 
   IntRect ViewportToScreen(const IntRect& rect,
                            const LocalFrameView*) const override {
@@ -580,7 +584,7 @@ void WebPagePopupImpl::CompositeAndReadbackAsync(
 }
 
 WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
-  WebRect root_window_rect = web_view_->Client()->RootWindowRect();
+  WebRect root_window_rect = WindowRectInScreen();
   WebRect window_rect = WindowRectInScreen();
   return WebPoint(window_rect.x - root_window_rect.x,
                   window_rect.y - root_window_rect.y);

@@ -60,8 +60,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // ChromeClient methods:
   void ChromeDestroyed() override;
   void SetWindowRect(const IntRect&, LocalFrame&) override;
-  IntRect RootWindowRect() override;
-  IntRect PageRect() override;
+  IntRect RootWindowRect(LocalFrame&) override;
   void Focus(LocalFrame*) override;
   bool CanTakeFocus(WebFocusType) override;
   void TakeFocus(WebFocusType) override;

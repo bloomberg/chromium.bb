@@ -775,34 +775,36 @@ int LocalDOMWindow::outerHeight() const {
   if (!GetFrame())
     return 0;
 
-  Page* page = GetFrame()->GetPage();
+  LocalFrame* frame = GetFrame();
+  Page* page = frame->GetPage();
   if (!page)
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
-        lroundf(chrome_client.RootWindowRect().Height() *
+        lroundf(chrome_client.RootWindowRect(*frame).Height() *
                 chrome_client.GetScreenInfo().device_scale_factor));
   }
-  return chrome_client.RootWindowRect().Height();
+  return chrome_client.RootWindowRect(*frame).Height();
 }
 
 int LocalDOMWindow::outerWidth() const {
   if (!GetFrame())
     return 0;
 
-  Page* page = GetFrame()->GetPage();
+  LocalFrame* frame = GetFrame();
+  Page* page = frame->GetPage();
   if (!page)
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
-        lroundf(chrome_client.RootWindowRect().Width() *
+        lroundf(chrome_client.RootWindowRect(*frame).Width() *
                 chrome_client.GetScreenInfo().device_scale_factor));
   }
-  return chrome_client.RootWindowRect().Width();
+  return chrome_client.RootWindowRect(*frame).Width();
 }
 
 IntSize LocalDOMWindow::GetViewportSize() const {
@@ -850,37 +852,39 @@ int LocalDOMWindow::innerWidth() const {
 }
 
 int LocalDOMWindow::screenX() const {
-  if (!GetFrame())
+  LocalFrame* frame = GetFrame();
+  if (!frame)
     return 0;
 
-  Page* page = GetFrame()->GetPage();
+  Page* page = frame->GetPage();
   if (!page)
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
-        lroundf(chrome_client.RootWindowRect().X() *
+        lroundf(chrome_client.RootWindowRect(*frame).X() *
                 chrome_client.GetScreenInfo().device_scale_factor));
   }
-  return chrome_client.RootWindowRect().X();
+  return chrome_client.RootWindowRect(*frame).X();
 }
 
 int LocalDOMWindow::screenY() const {
-  if (!GetFrame())
+  LocalFrame* frame = GetFrame();
+  if (!frame)
     return 0;
 
-  Page* page = GetFrame()->GetPage();
+  Page* page = frame->GetPage();
   if (!page)
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     return static_cast<int>(
-        lroundf(chrome_client.RootWindowRect().Y() *
+        lroundf(chrome_client.RootWindowRect(*frame).Y() *
                 chrome_client.GetScreenInfo().device_scale_factor));
   }
-  return chrome_client.RootWindowRect().Y();
+  return chrome_client.RootWindowRect(*frame).Y();
 }
 
 double LocalDOMWindow::scrollX() const {
@@ -1108,58 +1112,62 @@ void LocalDOMWindow::moveBy(int x, int y) const {
   if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
-  Page* page = GetFrame()->GetPage();
+  LocalFrame* frame = GetFrame();
+  Page* page = frame->GetPage();
   if (!page)
     return;
 
-  IntRect window_rect = page->GetChromeClient().RootWindowRect();
+  IntRect window_rect = page->GetChromeClient().RootWindowRect(*frame);
   window_rect.SaturatedMove(x, y);
   // Security check (the spec talks about UniversalBrowserWrite to disable this
   // check...)
-  page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, *GetFrame());
+  page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, *frame);
 }
 
 void LocalDOMWindow::moveTo(int x, int y) const {
   if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
-  Page* page = GetFrame()->GetPage();
+  LocalFrame* frame = GetFrame();
+  Page* page = frame->GetPage();
   if (!page)
     return;
 
-  IntRect window_rect = page->GetChromeClient().RootWindowRect();
+  IntRect window_rect = page->GetChromeClient().RootWindowRect(*frame);
   window_rect.SetLocation(IntPoint(x, y));
   // Security check (the spec talks about UniversalBrowserWrite to disable this
   // check...)
-  page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, *GetFrame());
+  page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, *frame);
 }
 
 void LocalDOMWindow::resizeBy(int x, int y) const {
   if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
-  Page* page = GetFrame()->GetPage();
+  LocalFrame* frame = GetFrame();
+  Page* page = frame->GetPage();
   if (!page)
     return;
 
-  IntRect fr = page->GetChromeClient().RootWindowRect();
+  IntRect fr = page->GetChromeClient().RootWindowRect(*frame);
   IntSize dest = fr.Size() + IntSize(x, y);
   IntRect update(fr.Location(), dest);
-  page->GetChromeClient().SetWindowRectWithAdjustment(update, *GetFrame());
+  page->GetChromeClient().SetWindowRectWithAdjustment(update, *frame);
 }
 
 void LocalDOMWindow::resizeTo(int width, int height) const {
   if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
-  Page* page = GetFrame()->GetPage();
+  LocalFrame* frame = GetFrame();
+  Page* page = frame->GetPage();
   if (!page)
     return;
 
-  IntRect fr = page->GetChromeClient().RootWindowRect();
+  IntRect fr = page->GetChromeClient().RootWindowRect(*frame);
   IntSize dest = IntSize(width, height);
   IntRect update(fr.Location(), dest);
-  page->GetChromeClient().SetWindowRectWithAdjustment(update, *GetFrame());
+  page->GetChromeClient().SetWindowRectWithAdjustment(update, *frame);
 }
 
 int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
