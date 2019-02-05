@@ -238,8 +238,10 @@ OverlayWindowViews::~OverlayWindowViews() = default;
 gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   gfx::Rect work_area =
       display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(
-              controller_->GetInitiatorWebContents()->GetTopLevelNativeWindow())
+          ->GetDisplayNearestWindow(IsVisible()
+                                        ? GetNativeWindow()
+                                        : controller_->GetInitiatorWebContents()
+                                              ->GetTopLevelNativeWindow())
           .work_area();
 
   // Upper bound size of the window is 50% of the display width and height.
@@ -610,7 +612,7 @@ void OverlayWindowViews::Hide() {
 }
 
 bool OverlayWindowViews::IsVisible() const {
-  return views::Widget::IsVisible();
+  return is_initialized_ ? views::Widget::IsVisible() : false;
 }
 
 bool OverlayWindowViews::IsAlwaysOnTop() const {
