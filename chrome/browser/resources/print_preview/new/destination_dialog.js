@@ -46,7 +46,6 @@ Polymer({
     /** @private {!Array<!print_preview.Destination>} */
     destinations_: {
       type: Array,
-      notify: true,
       value: [],
     },
 
@@ -158,8 +157,7 @@ Polymer({
     }
 
     this.updateList(
-        'destinations_',
-        destination => destination.origin + '/' + destination.id,
+        'destinations_', destination => destination.key,
         this.destinationStore.destinations(this.activeUser));
 
     this.loadingDestinations_ =
@@ -366,6 +364,7 @@ Polymer({
     const account = select.value;
     if (account) {
       this.showCloudPrintPromo = false;
+      this.destinations_ = [];
       this.fire('account-change', account);
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);

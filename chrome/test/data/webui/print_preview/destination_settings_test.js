@@ -33,6 +33,9 @@ cr.define('destination_settings_test', function() {
     /** @type {!Array<!print_preview.Destination>} */
     let destinations = [];
 
+    /** @type {string} */
+    const defaultUser = 'foo@chromium.org';
+
     /** @override */
     suiteSetup(function() {
       print_preview_test_utils.setupTestListenerElement();
@@ -51,8 +54,7 @@ cr.define('destination_settings_test', function() {
       nativeLayer.setLocalDestinations(localDestinations);
       cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
       cloudPrintInterface.setPrinter(
-          print_preview.Destination.GooglePromotedId.DOCS,
-          print_preview_test_utils.getGoogleDriveDestination());
+          print_preview_test_utils.getGoogleDriveDestination(defaultUser));
 
       destinationSettings =
           document.createElement('print-preview-destination-settings');
@@ -176,10 +178,12 @@ cr.define('destination_settings_test', function() {
 
     /** Simulates a user signing in to Chrome. */
     function signIn() {
-      destinationSettings.activeUser = 'foo@chromium.org';
-      destinationSettings.users = ['foo@chromium.org'];
+      destinationSettings.activeUser = defaultUser;
+      destinationSettings.users = [defaultUser];
       destinationSettings.cloudPrintState =
           print_preview.CloudPrintState.SIGNED_IN;
+      destinationSettings.destinationStore.setActiveUser(defaultUser);
+      destinationSettings.destinationStore.onDestinationsReload();
       Polymer.dom.flush();
     }
 
@@ -300,7 +304,7 @@ cr.define('destination_settings_test', function() {
       recentDestinations.splice(
           1, 1,
           print_preview.makeRecentDestination(
-              print_preview_test_utils.getGoogleDriveDestination()));
+              print_preview_test_utils.getGoogleDriveDestination(defaultUser)));
       initialize();
       assertFalse(destinationSettings.$.destinationSelect.disabled);
 
@@ -381,7 +385,7 @@ cr.define('destination_settings_test', function() {
       recentDestinations.splice(
           1, 1,
           print_preview.makeRecentDestination(
-              print_preview_test_utils.getGoogleDriveDestination()));
+              print_preview_test_utils.getGoogleDriveDestination(defaultUser)));
       initialize();
       const dropdown = destinationSettings.$.destinationSelect;
       assertFalse(dropdown.disabled);

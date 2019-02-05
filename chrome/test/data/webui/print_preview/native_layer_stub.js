@@ -19,6 +19,7 @@ cr.define('print_preview', function() {
         'saveAppState',
         'setupPrinter',
         'showSystemDialog',
+        'signIn',
       ]);
 
       /**
@@ -189,6 +190,12 @@ cr.define('print_preview', function() {
     /** @override */
     saveAppState(appState) {
       this.methodCalled('saveAppState', appState);
+    }
+
+    /** @override */
+    signIn(addAccount) {
+      this.methodCalled('signIn', addAccount);
+      return Promise.resolve();
     }
 
     /**

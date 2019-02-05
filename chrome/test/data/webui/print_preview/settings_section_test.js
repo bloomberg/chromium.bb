@@ -262,7 +262,9 @@ cr.define('settings_sections_tests', function() {
       // capability, but sets the value as true by default.
       const colorElement = page.$$('print-preview-color-settings');
       page.set(
-          'destination_', print_preview_test_utils.getGoogleDriveDestination());
+          'destination_',
+          print_preview_test_utils.getGoogleDriveDestination(
+              'foo@chromium.org'));
       const capabilities =
           print_preview_test_utils
               .getCddTemplate(print_preview.Destination.GooglePromotedId.DOCS)

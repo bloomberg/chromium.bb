@@ -315,15 +315,18 @@ cr.define('print_preview_test_utils', function() {
         testListenerElement.addWebUIListener.bind(testListenerElement));
   }
 
-  /** @return {!print_preview.Destination} The Google Drive destination. */
-  function getGoogleDriveDestination() {
+  /**
+   * @param {string} account The user account the destination should be
+   *     associated with.
+   * @return {!print_preview.Destination} The Google Drive destination.
+   */
+  function getGoogleDriveDestination(account) {
     return new print_preview.Destination(
         print_preview.Destination.GooglePromotedId.DOCS,
         print_preview.DestinationType.GOOGLE,
         print_preview.DestinationOrigin.COOKIES,
         print_preview.Destination.GooglePromotedId.DOCS,
-        print_preview.DestinationConnectionStatus.ONLINE,
-        {account: 'foo@chromium.org'});
+        print_preview.DestinationConnectionStatus.ONLINE, {account: account});
   }
 
   /** @return {!print_preview.Destination} The Save as PDF destination. */
