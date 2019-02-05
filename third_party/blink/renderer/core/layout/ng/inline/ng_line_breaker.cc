@@ -629,9 +629,9 @@ bool NGLineBreaker::HandleTextForFastMinContent(
   const String& text = Text();
   float min_width = 0;
   unsigned last_end_offset = 0;
-  while (true) {
-    unsigned end_offset =
-        break_iterator_.NextBreakOpportunity(start_offset + 1);
+  while (start_offset < item.EndOffset()) {
+    unsigned end_offset = break_iterator_.NextBreakOpportunity(
+        start_offset + 1, item.EndOffset());
     if (end_offset >= item.EndOffset())
       break;
 

@@ -498,6 +498,24 @@ TEST_P(NGTrailingSpaceWidthTest, TrailingSpaceWidth) {
             LayoutUnit(10) * data.trailing_space_width);
 }
 
+TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Ahem;
+      white-space: pre-wrap;
+    }
+    </style>
+    <div id=container>12345 6789 </div>
+  )HTML");
+
+  auto size = node.ComputeMinMaxSize(WritingMode::kHorizontalTb, {});
+  EXPECT_EQ(size.min_size, LayoutUnit(60));
+  EXPECT_EQ(size.max_size, LayoutUnit(110));
+}
+
 #undef MAYBE_OverflowAtomicInline
 }  // namespace
 }  // namespace blink
