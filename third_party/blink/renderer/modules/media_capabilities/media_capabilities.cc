@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "media/base/mime_util.h"
+#include "media/base/supported_types.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_client.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
@@ -18,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_encoding_info_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
@@ -36,6 +39,35 @@ constexpr const char* kApplicationMimeTypePrefix = "application/";
 constexpr const char* kAudioMimeTypePrefix = "audio/";
 constexpr const char* kVideoMimeTypePrefix = "video/";
 constexpr const char* kCodecsMimeTypeParam = "codecs";
+
+// Returns whether the AudioConfiguration is supported.
+// Sends console warnings if the codec string was badly formatted.
+bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
+                                   String* console_warning) {
+  media::AudioCodec audio_codec = media::kUnknownAudioCodec;
+  bool is_audio_codec_ambiguous = true;
+
+  if (!media::ParseAudioCodecString(audio_config.mime_type.Ascii(),
+                                    audio_config.codec.Ascii(),
+                                    &is_audio_codec_ambiguous, &audio_codec)) {
+    console_warning->append(("Failed to parse audio contentType: " +
+                             audio_config.mime_type.Ascii() +
+                             "; codecs=" + audio_config.codec.Ascii())
+                                .c_str());
+
+    return false;
+  }
+
+  if (is_audio_codec_ambiguous) {
+    console_warning->append(("Invalid (ambiguous) audio codec string: " +
+                             audio_config.codec.Ascii())
+                                .c_str());
+
+    return false;
+  }
+
+  return media::IsSupportedAudioType({audio_codec});
+}
 
 // Computes the effective framerate value based on the framerate field passed to
 // the VideoConfiguration. It will return the parsed string as a double or
@@ -314,10 +346,10 @@ ScriptPromise MediaCapabilities::decodingInfo(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  String error;
-  if (!IsValidMediaDecodingConfiguration(configuration, &error)) {
+  String message;
+  if (!IsValidMediaDecodingConfiguration(configuration, &message)) {
     resolver->Reject(
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(), error));
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(), message));
     return promise;
   }
 
@@ -356,8 +388,46 @@ ScriptPromise MediaCapabilities::decodingInfo(
     }
   }
 
+  WebMediaDecodingConfiguration web_config =
+      ToWebMediaConfiguration(configuration);
+
+  DCHECK(message.IsEmpty());
+  bool audio_supported = true;
+
+  if (configuration->hasAudio()) {
+    audio_supported = IsAudioConfigurationSupported(
+        *web_config.audio_configuration, &message);
+  }
+
+  // No need to check video capabilities if video not included in configuration
+  // or when audio is already known to be unsupported.
+  // NOTE: at the moment, it is excluding MSE audio streams as they need to
+  // still be checked at the //media level.
+  if (!audio_supported ||
+      (!configuration->hasVideo() &&
+       web_config.type != MediaConfigurationType::kMediaSource)) {
+    // The call to IsAudioConfiguraationSupported may have returned a console
+    // message to print. It would only happen when |audio_supported| is false.
+    if (!message.IsEmpty()) {
+      if (ExecutionContext* execution_context =
+              ExecutionContext::From(script_state)) {
+        execution_context->AddWarningMessage(ConsoleLogger::Source::kOther,
+                                             message);
+      }
+    }
+
+    Persistent<MediaCapabilitiesDecodingInfo> info(
+        MediaCapabilitiesDecodingInfo::Create());
+    info->setSupported(audio_supported);
+    info->setSmooth(audio_supported);
+    info->setPowerEfficient(audio_supported);
+
+    resolver->Resolve(std::move(info));
+    return promise;
+  }
+
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
-      ToWebMediaConfiguration(configuration),
+      web_config,
       std::make_unique<MediaCapabilitiesDecodingInfoCallbacks>(resolver));
 
   return promise;

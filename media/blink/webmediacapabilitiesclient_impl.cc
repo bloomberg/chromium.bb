@@ -38,31 +38,6 @@ void BindToHistoryService(mojom::VideoDecodePerfHistoryPtr* history_ptr) {
                            mojo::MakeRequest(history_ptr));
 }
 
-bool CheckAudioSupport(const blink::WebAudioConfiguration& audio_config) {
-  bool audio_supported = false;
-  AudioCodec audio_codec = kUnknownAudioCodec;
-  bool is_audio_codec_ambiguous = true;
-
-  if (!ParseAudioCodecString(audio_config.mime_type.Ascii(),
-                             audio_config.codec.Ascii(),
-                             &is_audio_codec_ambiguous, &audio_codec)) {
-    // TODO(chcunningham): Replace this and other DVLOGs here with MEDIA_LOG.
-    // MediaCapabilities may need its own tab in chrome://media-internals.
-    DVLOG(2) << __func__ << " Failed to parse audio contentType: "
-             << audio_config.mime_type.Ascii()
-             << "; codecs=" << audio_config.codec.Ascii();
-    audio_supported = false;
-  } else if (is_audio_codec_ambiguous) {
-    DVLOG(2) << __func__ << " Invalid (ambiguous) audio codec string:"
-             << audio_config.codec.Ascii();
-    audio_supported = false;
-  } else {
-    audio_supported = IsSupportedAudioType({audio_codec});
-  }
-
-  return audio_supported;
-}
-
 bool CheckVideoSupport(const blink::WebVideoConfiguration& video_config,
                        VideoCodecProfile* out_video_profile) {
   bool video_supported = false;
@@ -178,24 +153,14 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
     return;
   }
 
-  bool audio_supported = true;
-  if (configuration.audio_configuration)
-    audio_supported =
-        CheckAudioSupport(configuration.audio_configuration.value());
-
-  // No need to check video capabilities if video not included in configuration
-  // or when audio is already known to be unsupported.
-  if (!audio_supported || !configuration.video_configuration) {
-    // Supported audio-only configurations are always considered smooth and
-    // power efficient.
-    info->supported = info->smooth = info->power_efficient = audio_supported;
+  // Audio-only checks should stop here.
+  // TODO: remove when MSE checks more to Blink.
+  if (!configuration.video_configuration) {
+    info->supported = info->smooth = info->power_efficient = true;
     callbacks->OnSuccess(std::move(info));
     return;
   }
 
-  // Audio is supported and video configuration is provided in the query; all
-  // that remains is to check video support and performance.
-  DCHECK(audio_supported);
   DCHECK(configuration.video_configuration);
   const blink::WebVideoConfiguration& video_config =
       configuration.video_configuration.value();
