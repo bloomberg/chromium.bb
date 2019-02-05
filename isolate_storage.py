@@ -72,8 +72,7 @@ class ServerRef(object):
     if self.namespace.startswith('sha512-'):
       self._hash_algo = hashlib.sha512
       self._hash_algo_name = 'sha-512'
-    self._is_with_compression = self.namespace.endswith(
-        ('-gzip', '-deflate', '-flate'))
+    self._is_with_compression = self.namespace.endswith(('-gzip', '-deflate'))
 
   @property
   def url(self):
