@@ -35,8 +35,11 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
   void TearDown() override;
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
-  const Video* const video_;
+  const Video* video_ = nullptr;
+  bool enable_validator_ = true;
+  bool output_frames_ = false;
 
+ private:
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
 

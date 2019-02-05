@@ -19,6 +19,20 @@ namespace media {
 namespace test {
 
 namespace {
+// Video decoder tests usage message.
+constexpr const char* usage_msg =
+    "usage: video_decode_accelerator_tests [--help] [--disable_validator]\n"
+    "                                      [--output_frames] [<video>]\n";
+// Video decoder tests help message.
+constexpr const char* help_msg =
+    "Run the video decode accelerator tests on the specified video. If no\n"
+    "video is specified the default \"test-25fps.h264\" video will be used.\n"
+    "\nThe following arguments are supported:\n"
+    "  --disable_validator  disable frame validation, useful on old\n"
+    "                       platforms that don't support import mode.\n"
+    "  --output_frames      write all decoded video frames to the\n"
+    "                       \"video_frames\" folder.\n"
+    "  --help               display this help and exit.\n";
 
 media::test::VideoPlayerTestEnvironment* g_env;
 
@@ -28,19 +42,24 @@ class VideoDecoderTest : public ::testing::Test {
   std::unique_ptr<VideoPlayer> CreateVideoPlayer(
       const Video* video,
       const VideoDecoderClientConfig& config = VideoDecoderClientConfig()) {
+    LOG_ASSERT(video);
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
     // Validate decoded video frames.
-    frame_processors.push_back(
-        media::test::VideoFrameValidator::Create(video->FrameChecksums()));
+    if (g_env->output_frames_) {
+      frame_processors.push_back(
+          media::test::VideoFrameValidator::Create(video->FrameChecksums()));
+    }
 
     // Write decoded video frames to the 'video_frames/<test_name/>' folder.
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
-    base::FilePath output_folder =
-        base::FilePath("video_frames")
-            .Append(base::FilePath(test_info->name()));
-    frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
+    if (g_env->enable_validator_) {
+      const ::testing::TestInfo* const test_info =
+          ::testing::UnitTest::GetInstance()->current_test_info();
+      base::FilePath output_folder =
+          base::FilePath("video_frames")
+              .Append(base::FilePath(test_info->name()));
+      frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
+    }
 
     return VideoPlayer::Create(video, FrameRendererDummy::Create(),
                                std::move(frame_processors), config);
@@ -238,8 +257,18 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
 }  // namespace media
 
 int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  // Print the help message if requested. This needs to be done before
+  // initializing gtest, to overwrite the default gtest help message.
+  LOG_ASSERT(cmd_line);
+  if (cmd_line->HasSwitch("help")) {
+    std::cout << media::test::usage_msg << media::test::help_msg;
+    return 0;
+  }
+
+  testing::InitGoogleTest(&argc, argv);
 
   // Using shared memory requires mojo to be initialized (crbug.com/849207).
   mojo::core::Init();
@@ -252,12 +281,41 @@ int main(int argc, char** argv) {
   // Set the default test data path.
   media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
-  // Set up our test environment
-  const media::test::Video* video =
-      &media::test::kDefaultTestVideoCollection[0];
+  // Check if a video was specified on the command line.
+  std::unique_ptr<media::test::Video> video;
+  base::CommandLine::StringVector args = cmd_line->GetArgs();
+  if (args.size() >= 1) {
+    video = std::make_unique<media::test::Video>(base::FilePath(args[0]));
+    if (!video->Load()) {
+      LOG(ERROR) << "Failed to load " << args[0];
+      return 0;
+    }
+  }
+
+  // Set up our test environment.
   media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
       testing::AddGlobalTestEnvironment(
-          new media::test::VideoPlayerTestEnvironment(video)));
+          new media::test::VideoPlayerTestEnvironment(
+              video ? video.get()
+                    : &media::test::kDefaultTestVideoCollection[0])));
+
+  // Parse command line arguments.
+  base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
+       it != switches.end(); ++it) {
+    if (it->first == "disable_validator") {
+      media::test::g_env->enable_validator_ = false;
+    } else if (it->first == "output_frames") {
+      media::test::g_env->output_frames_ = true;
+    } else if (it->first.find("gtest_") == 0 || it->first == "v" ||
+               it->first == "vmodule") {
+      // Ignore
+    } else {
+      std::cout << "unknown option: --" << it->first << "\n"
+                << media::test::usage_msg;
+      return 0;
+    }
+  }
 
   return RUN_ALL_TESTS();
 }
