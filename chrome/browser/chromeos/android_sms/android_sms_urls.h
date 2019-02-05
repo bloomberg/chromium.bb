@@ -5,26 +5,33 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_URLS_H_
 #define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_ANDROID_SMS_URLS_H_
 
+#include <ostream>
+
 #include "url/gurl.h"
 
 namespace chromeos {
 
 namespace android_sms {
 
-// Returns URL to Android Messages for Web page used by AndroidSmsService.
-// If |use_install_url| is true, the URL used only for installation and
-// uninstallation of the PWA is returned; otherwise, the URL for the service
-// worker is returned.
-GURL GetAndroidMessagesURL(bool use_install_url = false);
+enum class PwaDomain {
+  kProdAndroid,  // Production, android.com domain.
+  kProdGoogle,   // Production, google.com domain.
+  kStaging,      // Staging server.
+};
+std::ostream& operator<<(std::ostream& stream, const PwaDomain& pwa_domain);
 
-// Returns the old URL used for Android Messages. In this context, the "old" URL
-// refers to the URL used before the last change to the
-// kUseMessagesGoogleComDomain flag. See go/awm-cros-domain for details.
-// TODO(https://crbug.com/917855): Remove this function when migration is
-// complete.  If |use_install_url| is true, the URL used only for installation
-// and uninstallation of the PWA is returned; otherwise, the URL for the service
-// worker is returned.
-GURL GetAndroidMessagesURLOld(bool use_install_url = false);
+// Returns the preferred domain to be used for the Android Messages PWA given
+// the currently-enabled flags. In this context, "preferred" refers to the
+// domain which is used assuming that a PWA can be successfully installed at
+// the associated URL (note that installation fails while offline).
+PwaDomain GetPreferredPwaDomain();
+
+// Returns the URL to be used for the Android Messages PWA at a given domain. If
+// |use_install_url| is true, the returned URL is used for installation/
+// uninstallation of the PWA; otherwise, the returned URL is used for
+// ServiceWorker-related tasks (e.g., installing cookies).
+GURL GetAndroidMessagesURL(bool use_install_url = false,
+                           PwaDomain pwa_domain = GetPreferredPwaDomain());
 
 }  // namespace android_sms
 

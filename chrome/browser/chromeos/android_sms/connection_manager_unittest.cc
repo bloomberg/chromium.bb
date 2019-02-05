@@ -25,6 +25,12 @@ namespace {
 const int64_t kDummyVersionId = 123l;
 const int64_t kDummyVersionId2 = 456l;
 
+GURL GetAndroidMessagesURLOld() {
+  // For this test, consider the staging server to be the "old" URL.
+  return GetAndroidMessagesURL(false /* use_install_url */,
+                               PwaDomain::kStaging);
+}
+
 }  // namespace
 
 class ConnectionManagerTest : public testing::Test {
