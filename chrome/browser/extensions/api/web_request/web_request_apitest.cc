@@ -1680,8 +1680,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, InitiatorAccessRequired) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestApiClearsBindingOnFirstListener) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+  // Skip if network service is disabled since the proxy is not used. Also skip
+  // if the proxy is forced since the bindings will never be cleared in that
+  // case.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::FeatureList::IsEnabled(
+          extensions_features::kForceWebRequestProxyForTest)) {
     return;
+  }
 
   auto loader_factory = CreateURLLoaderFactory();
   bool has_connection_error = false;

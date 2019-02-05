@@ -560,6 +560,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       return;
   }
 
+  auth_credentials_ = base::nullopt;
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            std::move(completion));
 }

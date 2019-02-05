@@ -122,7 +122,7 @@ class NavigationLoaderInterceptorBrowserContainer
 base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
     g_interceptor = LAZY_INSTANCE_INITIALIZER;
 
-// Only used on the UI thread.
+// Only used on the IO thread.
 base::LazyInstance<NavigationURLLoaderImpl::URLLoaderFactoryInterceptor>::Leaky
     g_loader_factory_interceptor = LAZY_INSTANCE_INITIALIZER;
 
@@ -398,13 +398,9 @@ CreateNetworkFactoryInfoWithHeaderClient(
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
-  auto factory_request = mojo::MakeRequest(&factory_info);
-
-  if (g_loader_factory_interceptor.Get())
-    g_loader_factory_interceptor.Get().Run(&factory_request);
 
   partition->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(factory_request), std::move(params));
+      mojo::MakeRequest(&factory_info), std::move(params));
   return std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
       std::move(factory_info));
 }
@@ -635,7 +631,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
-      int frame_tree_node_id) {
+      int frame_tree_node_id,
+      bool needs_loader_factory_interceptor) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!started_);
@@ -654,6 +651,16 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK(network_loader_factory_info);
     network_loader_factory_ = network::SharedURLLoaderFactory::Create(
         std::move(network_loader_factory_info));
+    if (needs_loader_factory_interceptor &&
+        g_loader_factory_interceptor.Get()) {
+      network::mojom::URLLoaderFactoryPtr factory;
+      auto request = mojo::MakeRequest(&factory);
+      g_loader_factory_interceptor.Get().Run(&request);
+      network_loader_factory_->Clone(std::move(request));
+      network_loader_factory_ =
+          base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+              std::move(factory));
+    }
 
     if (resource_request_->request_body) {
       GetBodyBlobDataHandles(resource_request_->request_body.get(),
@@ -1728,9 +1735,11 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   for (auto& iter : non_network_url_loader_factories_)
     known_schemes.insert(iter.first);
 
+  bool needs_loader_factory_interceptor = false;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> network_factory_info =
       partition->url_loader_factory_getter()->GetNetworkFactoryInfo();
   if (header_client) {
+    needs_loader_factory_interceptor = true;
     network_factory_info = CreateNetworkFactoryInfoWithHeaderClient(
         std::move(header_client), partition);
   }
@@ -1751,7 +1760,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
                      appcache_handle_core,
                      std::move(signed_exchange_prefetch_metric_recorder),
                      std::move(request_info), std::move(navigation_ui_data),
-                     std::move(factory_for_webui), frame_tree_node_id));
+                     std::move(factory_for_webui), frame_tree_node_id,
+                     needs_loader_factory_interceptor));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
@@ -1823,8 +1833,8 @@ void NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
 
 void NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
     const URLLoaderFactoryInterceptor& interceptor) {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   g_loader_factory_interceptor.Get() = interceptor;
 }

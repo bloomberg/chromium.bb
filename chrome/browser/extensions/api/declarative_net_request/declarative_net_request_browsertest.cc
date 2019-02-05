@@ -1288,9 +1288,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
 
   // NOTE: When the Network Service is enabled, the RulesetMatcher will not see
   // network requests if no rulesets are active.
-  EXPECT_TRUE(
-      base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      script_monitor.GetAndResetRequestSeen(false));
+  bool expect_request_seen =
+      !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::FeatureList::IsEnabled(
+          extensions_features::kForceWebRequestProxyForTest);
+  EXPECT_EQ(expect_request_seen, script_monitor.GetAndResetRequestSeen(false));
 
   // Another request to |url| should not cause a network request for
   // script.js since it will be served by the renderer's in-memory
@@ -1324,9 +1326,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-  EXPECT_TRUE(
-      base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      script_monitor.GetAndResetRequestSeen(false));
+  EXPECT_EQ(expect_request_seen, script_monitor.GetAndResetRequestSeen(false));
 }
 
 // Tests that proxy requests aren't intercepted. See https://crbug.com/794674.

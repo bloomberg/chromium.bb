@@ -2075,6 +2075,18 @@
       },
       {
         "args": [
+          "--enable-features=NetworkService,ForceWebRequestProxyForTest"
+        ],
+        "name": "network_service_web_request_proxy_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30,
+          "shards": 15
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--enable-features=NetworkService"
         ],
         "name": "network_service_components_browsertests",
@@ -2173,6 +2185,17 @@
           "--enable-features=NetworkService,NetworkServiceInProcess"
         ],
         "name": "network_service_in_process_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 15
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService,ForceWebRequestProxyForTest"
+        ],
+        "name": "network_service_web_request_proxy_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 15
