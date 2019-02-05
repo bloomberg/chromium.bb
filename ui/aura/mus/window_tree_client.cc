@@ -229,12 +229,6 @@ WindowMus* WindowTreeClient::GetWindowByServerId(ws::Id id) {
   return it != windows_.end() ? it->second : nullptr;
 }
 
-void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
-  DCHECK(tree_);
-  DCHECK(window);
-  tree_->SetCanFocus(WindowMus::Get(window)->server_id(), can_focus);
-}
-
 void WindowTreeClient::SetCursor(WindowMus* window,
                                  const ui::Cursor& old_cursor,
                                  const ui::Cursor& new_cursor) {

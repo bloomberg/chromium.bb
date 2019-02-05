@@ -156,11 +156,6 @@ bool WindowTreeTestHelper::SetFocus(aura::Window* window) {
   return window_tree_->SetFocusImpl(ClientWindowIdForWindow(window));
 }
 
-void WindowTreeTestHelper::SetCanFocus(aura::Window* window, bool can_focus) {
-  window_tree_->SetCanFocus(window_tree_->TransportIdForWindow(window),
-                            can_focus);
-}
-
 void WindowTreeTestHelper::SetCursor(aura::Window* window, ui::Cursor cursor) {
   window_tree_->SetCursorImpl(ClientWindowIdForWindow(window), cursor);
 }

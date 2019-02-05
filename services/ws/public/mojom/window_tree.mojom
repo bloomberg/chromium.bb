@@ -290,13 +290,10 @@ interface WindowTree {
 
   // Sets focus to the specified window, use 0 to clear focus. For a window to
   // get focus the following has to happen: the window is drawn, the window has
-  // been marked as focusable (see SetCanFocus()) and the window is in a
-  // container the WindowManager has identified as allowing activation
-  // (see WindowManagerClient::AddActivationParent()).
+  // been marked as focusable and the window is in a container the WindowManager
+  // has identified as allowing activation (see
+  // WindowManagerClient::AddActivationParent()).
   SetFocus(uint32 change_id, uint64 window_id);
-
-  // Marks the specified window as being able to receive focus.
-  SetCanFocus(uint64 window_id, bool can_focus);
 
   // Sets the cursor when the pointer is inside |window_id|.
   SetCursor(uint32 change_id, uint64 window_id, ui.mojom.Cursor cursor);

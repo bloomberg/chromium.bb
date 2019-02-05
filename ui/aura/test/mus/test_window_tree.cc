@@ -332,8 +332,6 @@ void TestWindowTree::SetFocus(uint32_t change_id, ws::Id window_id) {
   OnChangeReceived(change_id, WindowTreeChangeType::FOCUS);
 }
 
-void TestWindowTree::SetCanFocus(ws::Id window_id, bool can_focus) {}
-
 void TestWindowTree::SetEventTargetingPolicy(
     ws::Id window_id,
     ws::mojom::EventTargetingPolicy policy) {}

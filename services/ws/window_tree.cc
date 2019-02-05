@@ -1887,11 +1887,6 @@ void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {
       change_id, SetFocusImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
-  focus_handler_.SetCanFocus(GetWindowByTransportId(transport_window_id),
-                             can_focus);
-}
-
 void WindowTree::SetCursor(uint32_t change_id,
                            Id transport_window_id,
                            ui::Cursor cursor) {
