@@ -647,9 +647,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', 'android-webview-instrumentation'], bug=352645)
+    # Also flaky on nexus9 non-webview (bug=834933) but can't specify both.
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['android', 'android-webview-instrumentation'], bug=352645)
+        ['android'], bug=352645)
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_byte.html',
         ['android', 'android-webview-instrumentation'], bug=352645)
