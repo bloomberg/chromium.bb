@@ -8,6 +8,7 @@
 
 #include "base/test/type_id_test_support_a.h"
 #include "base/test/type_id_test_support_b.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -70,7 +71,12 @@ TEST(TypeId, IdenticalTypesFromDifferentCompilationUnitsMatch) {
             TypeIdTestSupportB::GetTypeIdForUniquePtrInt());
 }
 
+// TODO(crbug.com/928806): Failing consistently on Android.
+#if defined(OS_ANDROID)
+TEST(TypeId, DISABLED_IdenticalTypesFromComponentAndStaticLibrary) {
+#else
 TEST(TypeId, IdenticalTypesFromComponentAndStaticLibrary) {
+#endif
   // Code generated for the test itself is statically linked. Make sure it works
   // with components
   TypeId static_linked_type = TypeId::From<std::unique_ptr<int>>();
