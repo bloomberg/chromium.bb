@@ -702,7 +702,11 @@ bool DisplayLockContext::ElementSupportsDisplayLocking() const {
 
   // Otherwise, fallback on just checking style.
   auto* style = element_->GetComputedStyle();
-  return style && style->ContainsStyle() && style->ContainsLayout();
+  // Note that if for whatever reason we don't have computed style, then
+  // optimistically assume that we have containment.
+  // TODO(vmpstr): Perhaps we need to add render=lockable which will ensure
+  // containment.
+  return !style || (style->ContainsStyle() && style->ContainsLayout());
 }
 
 // Scoped objects implementation
