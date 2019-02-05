@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 #define UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -129,6 +130,7 @@ class VIEWS_EXPORT FocusSearch {
       bool can_go_down,
       AnchoredDialogPolicy can_go_into_anchored_dialog,
       int skip_group_id,
+      base::flat_set<View*>* seen_views,
       FocusTraversable** focus_traversable,
       View** focus_traversable_view);
 
@@ -140,6 +142,7 @@ class VIEWS_EXPORT FocusSearch {
       bool can_go_down,
       AnchoredDialogPolicy can_go_into_anchored_dialog,
       int skip_group_id,
+      base::flat_set<View*>* seen_views,
       FocusTraversable** focus_traversable,
       View** focus_traversable_view);
 
