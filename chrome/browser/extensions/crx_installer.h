@@ -251,8 +251,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
  private:
   friend class ::ExtensionServiceTest;
+  friend class BookmarkAppInstallFinalizerTest;
   friend class ExtensionUpdaterTest;
-  friend class BookmarkAppInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
                std::unique_ptr<ExtensionInstallPrompt> client,

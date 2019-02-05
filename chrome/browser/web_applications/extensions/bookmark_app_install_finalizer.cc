@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 
 #include <utility>
 
@@ -17,26 +17,27 @@
 
 namespace extensions {
 
-BookmarkAppInstaller::BookmarkAppInstaller(Profile* profile)
+BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
     : crx_installer_(CrxInstaller::CreateSilent(
           ExtensionSystem::Get(profile)->extension_service())) {}
 
-BookmarkAppInstaller::~BookmarkAppInstaller() = default;
+BookmarkAppInstallFinalizer::~BookmarkAppInstallFinalizer() = default;
 
-void BookmarkAppInstaller::Install(const WebApplicationInfo& web_app_info,
-                                   ResultCallback callback) {
+void BookmarkAppInstallFinalizer::Install(
+    const WebApplicationInfo& web_app_info,
+    ResultCallback callback) {
   crx_installer_->set_installer_callback(base::BindOnce(
-      &BookmarkAppInstaller::OnInstall, weak_ptr_factory_.GetWeakPtr(),
+      &BookmarkAppInstallFinalizer::OnInstall, weak_ptr_factory_.GetWeakPtr(),
       std::move(callback), web_app_info.app_url));
   crx_installer_->InstallWebApp(web_app_info);
 }
 
-void BookmarkAppInstaller::SetCrxInstallerForTesting(
+void BookmarkAppInstallFinalizer::SetCrxInstallerForTesting(
     scoped_refptr<CrxInstaller> crx_installer) {
   crx_installer_ = crx_installer;
 }
 
-void BookmarkAppInstaller::OnInstall(
+void BookmarkAppInstallFinalizer::OnInstall(
     ResultCallback callback,
     const GURL& app_url,
     const base::Optional<CrxInstallError>& error) {

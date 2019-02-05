@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALLER_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALLER_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -22,16 +22,15 @@ namespace extensions {
 class CrxInstaller;
 class CrxInstallError;
 
-// Class used by BookmarkAppInstallationTask to actually install the Bookmark
-// App in the system.
-class BookmarkAppInstaller {
+// Class used to actually install the Bookmark App in the system.
+class BookmarkAppInstallFinalizer {
  public:
   using ResultCallback = base::OnceCallback<void(const ExtensionId&)>;
 
-  // Constructs a BookmarkAppInstaller that will install the Bookmark App in
-  // |profile|.
-  explicit BookmarkAppInstaller(Profile* profile);
-  virtual ~BookmarkAppInstaller();
+  // Constructs a BookmarkAppInstallFinalizer that will install the Bookmark App
+  // in |profile|.
+  explicit BookmarkAppInstallFinalizer(Profile* profile);
+  virtual ~BookmarkAppInstallFinalizer();
 
   // TODO(crbug.com/864904): This should take more options e.g. what container
   // to launch the app in, should the app sync, etc.
@@ -49,11 +48,11 @@ class BookmarkAppInstaller {
 
   // We need a WeakPtr because CrxInstaller is refcounted and it can run its
   // callback after this class has been destroyed.
-  base::WeakPtrFactory<BookmarkAppInstaller> weak_ptr_factory_{this};
+  base::WeakPtrFactory<BookmarkAppInstallFinalizer> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstaller);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallFinalizer);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALLER_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 
 #include <memory>
 #include <utility>
@@ -29,7 +29,7 @@ const char kWebAppTitle[] = "Foo Title";
 
 }  // namespace
 
-class BookmarkAppInstallerTest : public ChromeRenderViewHostTestHarness {
+class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
  public:
   // Subclass that runs a closure when an extension is unpacked successfully.
   // Useful for tests that want to trigger their own succeess/failure events.
@@ -39,8 +39,7 @@ class BookmarkAppInstallerTest : public ChromeRenderViewHostTestHarness {
         : CrxInstaller(
               ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr(),
               nullptr,
-              nullptr) {
-    }
+              nullptr) {}
 
     void OnUnpackSuccess(
         const base::FilePath& temp_dir,
@@ -69,12 +68,12 @@ class BookmarkAppInstallerTest : public ChromeRenderViewHostTestHarness {
     DISALLOW_COPY_AND_ASSIGN(FakeCrxInstaller);
   };
 
-  BookmarkAppInstallerTest() = default;
-  ~BookmarkAppInstallerTest() override = default;
+  BookmarkAppInstallFinalizerTest() = default;
+  ~BookmarkAppInstallFinalizerTest() override = default;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    // CrxInstaller in BookmarkAppInstaller needs an ExtensionService, so
+    // CrxInstaller in BookmarkAppInstallFinalizer needs an ExtensionService, so
     // create one for the profile.
     TestExtensionSystem* test_system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
@@ -95,11 +94,11 @@ class BookmarkAppInstallerTest : public ChromeRenderViewHostTestHarness {
  private:
   base::Optional<bool> app_installed_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallerTest);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallFinalizerTest);
 };
 
-TEST_F(BookmarkAppInstallerTest, BasicInstallSucceeds) {
-  BookmarkAppInstaller installer(profile());
+TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
+  BookmarkAppInstallFinalizer installer(profile());
 
   WebApplicationInfo info;
   info.app_url = GURL(kWebAppUrl);
@@ -107,16 +106,16 @@ TEST_F(BookmarkAppInstallerTest, BasicInstallSucceeds) {
 
   base::RunLoop run_loop;
   installer.Install(
-      info, base::BindOnce(&BookmarkAppInstallerTest::InstallCallback,
+      info, base::BindOnce(&BookmarkAppInstallFinalizerTest::InstallCallback,
                            base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(app_installed());
 }
 
-TEST_F(BookmarkAppInstallerTest, BasicInstallFails) {
-  BookmarkAppInstaller installer(profile());
+TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
+  BookmarkAppInstallFinalizer installer(profile());
   auto fake_crx_installer =
-      base::MakeRefCounted<BookmarkAppInstallerTest::FakeCrxInstaller>(
+      base::MakeRefCounted<BookmarkAppInstallFinalizerTest::FakeCrxInstaller>(
           profile());
   installer.SetCrxInstallerForTesting(fake_crx_installer);
 
@@ -126,7 +125,7 @@ TEST_F(BookmarkAppInstallerTest, BasicInstallFails) {
   info.app_url = GURL(kWebAppUrl);
   info.title = base::ASCIIToUTF16(kWebAppTitle);
   installer.Install(
-      info, base::BindOnce(&BookmarkAppInstallerTest::InstallCallback,
+      info, base::BindOnce(&BookmarkAppInstallFinalizerTest::InstallCallback,
                            base::Unretained(this), run_loop.QuitClosure()));
 
   fake_crx_installer->WaitForInstallToTrigger();
