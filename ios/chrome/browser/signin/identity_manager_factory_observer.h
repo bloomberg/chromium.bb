@@ -6,16 +6,17 @@
 #define IOS_CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 
 namespace identity {
 class IdentityManager;
 }
 
 // Observer for IdentityManagerFactory.
-class IdentityManagerFactoryObserver {
+class IdentityManagerFactoryObserver : public base::CheckedObserver {
  public:
   IdentityManagerFactoryObserver() {}
-  virtual ~IdentityManagerFactoryObserver() {}
+  ~IdentityManagerFactoryObserver() override {}
 
   // Called when an IdentityManager instance is created.
   virtual void IdentityManagerCreated(identity::IdentityManager* manager) {}

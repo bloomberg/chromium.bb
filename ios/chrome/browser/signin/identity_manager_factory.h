@@ -44,7 +44,9 @@ class IdentityManagerFactory : public BrowserStateKeyedServiceFactory {
   ~IdentityManagerFactory() override;
 
   // List of observers. Checks that list is empty on destruction.
-  mutable base::ObserverList<IdentityManagerFactoryObserver, true>::Unchecked
+  base::ObserverList<IdentityManagerFactoryObserver,
+                     /*check_empty=*/true,
+                     /*allow_reentrancy=*/false>
       observer_list_;
 
   // BrowserStateKeyedServiceFactory:
