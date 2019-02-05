@@ -226,7 +226,11 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
 }
 
 void SignedExchangeLoader::OnComplete(
-    const network::URLLoaderCompletionStatus& status) {}
+    const network::URLLoaderCompletionStatus& status) {
+  DCHECK(!encoded_data_length_);
+  encoded_data_length_ = status.encoded_data_length;
+  NotifyClientOnCompleteIfReady();
+}
 
 void SignedExchangeLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
@@ -347,10 +351,23 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
 }
 
 void SignedExchangeLoader::FinishReadingBody(int result) {
-  // TODO(https://crbug.com/803774): Fill the data length information too.
+  DCHECK(!decoded_body_read_result_);
+  decoded_body_read_result_ = result;
+  NotifyClientOnCompleteIfReady();
+}
+
+void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
+  // If |encoded_data_length_| or |decoded_body_read_result_| is unavailable, do
+  // nothing and rely on the subsequent call to notify client.
+  if (!encoded_data_length_ || !decoded_body_read_result_)
+    return;
+
+  // TODO(https://crbug.com/803774): Fill the data length information (
+  // encoded_body_length, decoded_body_length) too.
   network::URLLoaderCompletionStatus status;
-  status.error_code = result;
+  status.error_code = *decoded_body_read_result_;
   status.completion_time = base::TimeTicks::Now();
+  status.encoded_data_length = *encoded_data_length_;
 
   if (ssl_info_) {
     DCHECK((url_loader_options_ &
