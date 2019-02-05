@@ -49,6 +49,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -1393,16 +1394,23 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // OOPIFs; see https://crbug.com/711006.
   //
   // TODO(alexmos): Remove this check after fixing https://crbug.com/787576.
-  if (!frame_tree_node_->IsMainFrame()) {
-    RenderFrameHostImpl* parent =
-        frame_tree_node_->parent()->current_frame_host();
-    bool dest_url_requires_dedicated_process =
-        SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-            browser_context, parent->GetSiteInstance()->GetIsolationContext(),
-            dest_url);
-    if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
-        !dest_url_requires_dedicated_process) {
-      return SiteInstanceDescriptor(parent->GetSiteInstance());
+  //
+  // Also if kProcessSharingWithStrictSiteInstances is enabled, don't lump the
+  // subframe into the same SiteInstance as the parent. These separate
+  // SiteInstances can get assigned to the same process later.
+  if (!base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances)) {
+    if (!frame_tree_node_->IsMainFrame()) {
+      RenderFrameHostImpl* parent =
+          frame_tree_node_->parent()->current_frame_host();
+      bool dest_url_requires_dedicated_process =
+          SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+              browser_context, parent->GetSiteInstance()->GetIsolationContext(),
+              dest_url);
+      if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
+          !dest_url_requires_dedicated_process) {
+        return SiteInstanceDescriptor(parent->GetSiteInstance());
+      }
     }
   }
 
@@ -1483,6 +1491,14 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
     // keep the same SiteInstance for correctness of synchronous scripting.
     return false;
   }
+
+  // Attempting a transfer with kProcessSharingWithStrictSiteInstances allows
+  // us to "swap" from the renderer's perspective and create the full OOPIF
+  // plumbing, even if this subframe is eventually assigned to the same process
+  // as its cross-site parent.
+  if (base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances))
+    return true;
 
   // The sites differ. If either one requires a dedicated process,
   // then a transfer is needed.

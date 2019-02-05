@@ -348,6 +348,12 @@ const base::Feature kPepper3DImageChromium {
 #endif
 };
 
+// Whether cross-site frames should get their own SiteInstance even when
+// strict site isolation is disabled. These SiteInstances will still be
+// grouped into a shared default process based on BrowsingInstance.
+const base::Feature kProcessSharingWithStrictSiteInstances{
+    "ProcessSharingWithStrictSiteInstances", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Purge+Throttle on platforms except Android and MacOS.
 // (Android) Purge+Throttle depends on TabManager, but TabManager doesn't
 // support Android. Enable after Android is supported.

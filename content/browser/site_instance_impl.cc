@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_ui_controller_factory.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -102,6 +103,33 @@ const IsolationContext& SiteInstanceImpl::GetIsolationContext() {
   return browsing_instance_->isolation_context();
 }
 
+RenderProcessHost* SiteInstanceImpl::GetDefaultProcessIfUsable() {
+  if (!base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances)) {
+    return nullptr;
+  }
+  if (RequiresDedicatedProcess())
+    return nullptr;
+  return browsing_instance_->default_process();
+}
+
+void SiteInstanceImpl::MaybeSetBrowsingInstanceDefaultProcess() {
+  if (!base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances)) {
+    return;
+  }
+  // Wait until this SiteInstance both has a site and a process
+  // assigned, so that we can be sure that RequiresDedicatedProcess()
+  // is accurate and we actually have a process to set.
+  if (!process_ || !has_site_ || RequiresDedicatedProcess())
+    return;
+  if (browsing_instance_->default_process()) {
+    DCHECK_EQ(process_, browsing_instance_->default_process());
+    return;
+  }
+  browsing_instance_->SetDefaultProcess(process_);
+}
+
 // static
 BrowsingInstanceId SiteInstanceImpl::NextBrowsingInstanceId() {
   return BrowsingInstance::NextBrowsingInstanceId();
@@ -151,6 +179,8 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
 
     CHECK(process_);
     process_->AddObserver(this);
+
+    MaybeSetBrowsingInstanceDefaultProcess();
 
     // If we are using process-per-site, we need to register this process
     // for the current site so that we can find it again.  (If no site is set
@@ -223,6 +253,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
       RenderProcessHostImpl::RegisterSoleProcessHostForSite(browser_context,
                                                             process_, this);
     }
+    MaybeSetBrowsingInstanceDefaultProcess();
   }
 }
 

@@ -1898,4 +1898,238 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, BroadcastChannelOriginEnforcement) {
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
+class IsolatedOriginTestWithStrictSiteInstances : public IsolatedOriginTest {
+ public:
+  IsolatedOriginTestWithStrictSiteInstances() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kProcessSharingWithStrictSiteInstances);
+  }
+  ~IsolatedOriginTestWithStrictSiteInstances() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolatedOriginTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableSiteIsolation);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginTestWithStrictSiteInstances);
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
+                       NonIsolatedFramesCanShareDefaultProcess) {
+  GURL top_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
+  ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(top_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), top_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+
+  GURL bar_url(embedded_test_server()->GetURL("www.bar.com", "/title3.html"));
+  ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(bar_url)));
+  {
+    TestFrameNavigationObserver observer(child1);
+    NavigationHandleObserver handle_observer(web_contents(), bar_url);
+    EXPECT_TRUE(
+        ExecuteScript(child1, "location.href = '" + bar_url.spec() + "';"));
+    observer.Wait();
+  }
+
+  GURL baz_url(embedded_test_server()->GetURL("www.baz.com", "/title3.html"));
+  ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(baz_url)));
+  {
+    TestFrameNavigationObserver observer(child2);
+    NavigationHandleObserver handle_observer(web_contents(), baz_url);
+    EXPECT_TRUE(
+        ExecuteScript(child2, "location.href = '" + baz_url.spec() + "';"));
+    observer.Wait();
+  }
+
+  // All 3 frames are from different sites, so each should have its own
+  // SiteInstance.
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child1->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child2->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(child1->current_frame_host()->GetSiteInstance(),
+            child2->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+
+  // But none are isolated, so all should share the default process for their
+  // BrowsingInstance.
+  RenderProcessHost* host = root->current_frame_host()->GetProcess();
+  EXPECT_EQ(host, child1->current_frame_host()->GetProcess());
+  EXPECT_EQ(host, child2->current_frame_host()->GetProcess());
+  EXPECT_EQ(ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK,
+            ChildProcessSecurityPolicyImpl::GetInstance()->CheckOriginLock(
+                host->GetID(), GURL()));
+}
+
+// Creates a non-isolated main frame with an isolated child and non-isolated
+// grandchild. With strict site isolation disabled and
+// kProcessSharingWithStrictSiteInstances enabled, the main frame and the
+// grandchild should be in the same process even though they have different
+// SiteInstances.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
+                       IsolatedChildWithNonIsolatedGrandchild) {
+  GURL top_url(
+      embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
+  ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(top_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), top_url));
+
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com",
+                                                   "/page_with_iframe.html"));
+  ASSERT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_url);
+  EXPECT_EQ(child->current_url(), isolated_url);
+
+  // Verify that the child frame is an OOPIF with a different SiteInstance.
+  EXPECT_NE(web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()->IsCrossProcessSubframe());
+  EXPECT_EQ(GURL("http://isolated.foo.com/"),
+            child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+
+  // Verify that the isolated frame's subframe (which starts out at a relative
+  // path) is kept in the isolated parent's SiteInstance.
+  FrameTreeNode* grandchild = child->child_at(0);
+  EXPECT_EQ(child->current_frame_host()->GetSiteInstance(),
+            grandchild->current_frame_host()->GetSiteInstance());
+
+  // Navigating the grandchild to www.bar.com should put it into the top
+  // frame's process, but not its SiteInstance.
+  GURL non_isolated_url(
+      embedded_test_server()->GetURL("www.bar.com", "/title3.html"));
+  ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(non_isolated_url)));
+  TestFrameNavigationObserver observer(grandchild);
+  EXPECT_TRUE(ExecuteScript(
+      grandchild, "location.href = '" + non_isolated_url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(non_isolated_url, grandchild->current_url());
+
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            grandchild->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(child->current_frame_host()->GetSiteInstance(),
+            grandchild->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            grandchild->current_frame_host()->GetProcess());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://isolated.foo.com/\n"
+      "      C = http://bar.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+}
+
+// Navigate a frame into and out of an isolated origin. This should not
+// confuse BrowsingInstance into holding onto a stale default_process_.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
+                       SubframeNavigatesOutofIsolationThenToIsolation) {
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com",
+                                                   "/page_with_iframe.html"));
+  ASSERT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_FALSE(child->current_frame_host()->IsCrossProcessSubframe());
+
+  GURL non_isolated_url(
+      embedded_test_server()->GetURL("www.foo.com", "/title3.html"));
+  ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(non_isolated_url)));
+  NavigateIframeToURL(web_contents(), "test_iframe", non_isolated_url);
+  EXPECT_EQ(child->current_url(), non_isolated_url);
+
+  // Verify that the child frame is an OOPIF with a different SiteInstance.
+  EXPECT_NE(web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // Navigating the child to the isolated origin again.
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_url);
+  EXPECT_EQ(child->current_url(), isolated_url);
+  EXPECT_EQ(web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // And navigate out of the isolated origin one last time.
+  NavigateIframeToURL(web_contents(), "test_iframe", non_isolated_url);
+  EXPECT_EQ(child->current_url(), non_isolated_url);
+  EXPECT_NE(web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://isolated.foo.com/\n"
+      "      B = http://foo.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+}
+
+// Ensure a popup and its opener can go in the same process, even though
+// they have different SiteInstances with kProcessSharingWithStrictSiteInstances
+// enabled.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
+                       NonIsolatedPopup) {
+  GURL foo_url(
+      embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Open a blank popup.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(root, "window.w = window.open();"));
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Have the opener navigate the popup to a non-isolated origin.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("www.bar.com", "/title1.html"));
+  {
+    TestNavigationManager manager(new_shell->web_contents(), isolated_url);
+    EXPECT_TRUE(ExecuteScript(
+        root, "window.w.location.href = '" + isolated_url.spec() + "';"));
+    manager.WaitForNavigationFinished();
+  }
+
+  // The popup and the opener should not share a SiteInstance, but should
+  // end up in the same process.
+  EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetSiteInstance(),
+            root->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://bar.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "Where A = http://bar.com/\n"
+      "      B = http://foo.com/",
+      FrameTreeVisualizer().DepictFrameTree(
+          static_cast<WebContentsImpl*>(new_shell->web_contents())
+              ->GetFrameTree()
+              ->root()));
+}
+
 }  // namespace content

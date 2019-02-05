@@ -23,8 +23,23 @@ BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
     : browser_context_(browser_context),
       isolation_context_(
           BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++)),
-      active_contents_count_(0u) {
+      active_contents_count_(0u),
+      default_process_(nullptr) {
   DCHECK(browser_context);
+}
+
+void BrowsingInstance::RenderProcessHostDestroyed(RenderProcessHost* host) {
+  DCHECK_EQ(default_process_, host);
+  // Only clear the default process if the RenderProcessHost object goes away,
+  // not if the renderer process goes away while the RenderProcessHost remains.
+  default_process_->RemoveObserver(this);
+  default_process_ = nullptr;
+}
+
+void BrowsingInstance::SetDefaultProcess(RenderProcessHost* default_process) {
+  DCHECK(!default_process_);
+  default_process_ = default_process;
+  default_process_->AddObserver(this);
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
@@ -96,6 +111,8 @@ BrowsingInstance::~BrowsingInstance() {
   // us are gone.
   DCHECK(site_instance_map_.empty());
   DCHECK_EQ(0u, active_contents_count_);
+  if (default_process_)
+    default_process_->RemoveObserver(this);
 }
 
 }  // namespace content
