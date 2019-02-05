@@ -81,12 +81,13 @@ TEST_F(ScopedUserPrefUpdateTest, NeverTouchAnything) {
 }
 
 TEST_F(ScopedUserPrefUpdateTest, UpdatingListPrefWithDefaults) {
-  auto defaults = std::make_unique<base::ListValue>();
-  defaults->GetList().emplace_back("firstvalue");
-  defaults->GetList().emplace_back("secondvalue");
+  base::Value::ListStorage defaults;
+  defaults.emplace_back("firstvalue");
+  defaults.emplace_back("secondvalue");
 
   std::string pref_name = "mypref";
-  prefs_.registry()->RegisterListPref(pref_name, std::move(defaults));
+  prefs_.registry()->RegisterListPref(pref_name,
+                                      base::Value(std::move(defaults)));
   EXPECT_EQ(2u, prefs_.GetList(pref_name)->GetList().size());
 
   ListPrefUpdate update(&prefs_, pref_name);
