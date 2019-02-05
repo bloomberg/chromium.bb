@@ -511,4 +511,9 @@ void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
       accounts_are_fresh);
 }
 
+void IdentityTestEnvironment::
+    EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks() {
+  account_fetcher_service_->EnableNetworkFetchesForTest();
+}
+
 }  // namespace identity

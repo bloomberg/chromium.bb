@@ -257,6 +257,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // need to be updated.
   void SetFreshnessOfAccountsInGaiaCookie(bool accounts_are_fresh);
 
+  // Enable interaction with AccountFetcherService in testing context.
+  void EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
+
  private:
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;
