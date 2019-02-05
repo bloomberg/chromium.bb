@@ -96,7 +96,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-  // Resource* is null if and only if this is a navigation response.
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceRequest&,
                                   const ResourceResponse&,
@@ -207,10 +206,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool ShouldSendClientHint(mojom::WebClientHintsType,
                             const ClientHintsPreferences&,
                             const WebEnabledClientHints&) const;
-  // Checks if the origin requested persisting the client hints, and notifies
-  // the |WebContentSettingsClient| with the list of client hints and the
-  // persistence duration.
-  void ParseAndPersistClientHints(const ResourceResponse&);
   void SetFirstPartyCookie(ResourceRequest&);
 
   // Returns true if execution of scripts from the url are allowed. Compared to

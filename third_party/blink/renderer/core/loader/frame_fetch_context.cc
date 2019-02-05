@@ -81,7 +81,6 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
-#include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -123,26 +122,6 @@ const base::Feature kAllowClientHintsToThirdParty{
 const base::Feature kAllowClientHintsToThirdParty{
     "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-
-void MaybeRecordCTPolicyComplianceUseCounter(
-    LocalFrame* frame,
-    bool is_main_resource,
-    ResourceResponse::CTPolicyCompliance compliance,
-    DocumentLoader* loader) {
-  if (compliance != ResourceResponse::kCTPolicyDoesNotComply)
-    return;
-  // Exclude main-frame navigation requests; those are tracked elsewhere.
-  if (!frame->Tree().Parent() && is_main_resource)
-    return;
-  if (loader) {
-    loader->GetUseCounter().Count(
-        frame->Tree().Parent()
-            ? WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe
-            : WebFeature::
-                  kCertificateTransparencyNonCompliantSubresourceInMainFrame,
-        frame);
-  }
-}
 
 // Determines FetchCacheMode for |frame|. This FetchCacheMode should be a base
 // policy to consider one of each resource belonging to the frame, and should
@@ -486,17 +465,18 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   if (GetResourceFetcherProperties().IsDetached())
     return;
 
-  // Note: resource is null if and only if this is a navigation response.
-  bool is_main_resource = !resource;
-
-  if (GetSubresourceFilter() && resource &&
-      resource->GetResourceRequest().IsAdResource()) {
+  if (GetSubresourceFilter() && resource->GetResourceRequest().IsAdResource())
     GetSubresourceFilter()->ReportAdRequestId(response.RequestId());
-  }
 
-  MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), is_main_resource,
-                                          response.GetCTPolicyCompliance(),
-                                          MasterDocumentLoader());
+  if (response.GetCTPolicyCompliance() ==
+      ResourceResponse::kCTPolicyDoesNotComply) {
+    CountUsage(
+        GetFrame()->IsMainFrame()
+            ? WebFeature::
+                  kCertificateTransparencyNonCompliantSubresourceInMainFrame
+            : WebFeature::
+                  kCertificateTransparencyNonCompliantResourceInSubframe);
+  }
 
   if (response_type == ResourceResponseType::kFromMemoryCache) {
     GetLocalFrameClient()->DispatchDidLoadResourceFromMemoryCache(
@@ -510,29 +490,11 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
   MixedContentChecker::CheckMixedPrivatePublic(GetFrame(),
                                                response.RemoteIPAddress());
+
   PreloadHelper::CanLoadResources resource_loading_policy =
       response_type == ResourceResponseType::kFromMemoryCache
           ? PreloadHelper::kDoNotLoadResources
           : PreloadHelper::kLoadResourcesAndPreconnect;
-  if (GetDocumentLoader() &&
-      GetDocumentLoader() == GetDocumentLoader()
-                                 ->GetFrame()
-                                 ->Loader()
-                                 .GetProvisionalDocumentLoader()) {
-    // When response is received with a provisional docloader, the resource
-    // haven't committed yet, and we cannot load resources, only preconnect.
-    resource_loading_policy = PreloadHelper::kDoNotLoadResources;
-  }
-
-  // The accept-ch-lifetime header is honored only on the navigation responses.
-  // Further, the navigation response should be from a top level frame (i.e.,
-  // main frame) or the origin of the response should match the origin of the
-  // top level frame.
-  if (is_main_resource && (GetResourceFetcherProperties().IsMainFrame() ||
-                           IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
-    ParseAndPersistClientHints(response);
-  }
-
   PreloadHelper::LoadLinksFromHeader(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
       *GetFrame(), frame_or_imported_document_->GetDocument(),
@@ -547,20 +509,13 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacySymantecCert()) {
-    if (!is_main_resource) {
-      // Main resources are counted in DocumentLoader.
-      UseCounter::Count(GetFrame(),
-                        WebFeature::kLegacySymantecCertInSubresource);
-    }
+    UseCounter::Count(GetFrame(), WebFeature::kLegacySymantecCertInSubresource);
     GetLocalFrameClient()->ReportLegacySymantecCert(
         response.CurrentRequestUrl(), false /* did_fail */);
   }
 
   if (response.IsLegacyTLSVersion()) {
-    if (!is_main_resource) {
-      // Main resources are counted in DocumentLoader.
-      UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
-    }
+    UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
     GetLocalFrameClient()->ReportLegacyTLSVersion(response.CurrentRequestUrl());
   }
 
@@ -1156,42 +1111,6 @@ bool FrameFetchContext::ShouldSendClientHint(
     const WebEnabledClientHints& enabled_hints) const {
   return GetClientHintsPreferences().ShouldSend(type) ||
          hints_preferences.ShouldSend(type) || enabled_hints.IsEnabled(type);
-}
-
-void FrameFetchContext::ParseAndPersistClientHints(
-    const ResourceResponse& response) {
-  FrameClientHintsPreferencesContext hints_context(GetFrame());
-
-  GetDocumentLoader()
-      ->GetClientHintsPreferences()
-      .UpdateFromAcceptClientHintsLifetimeHeader(
-          response.HttpHeaderField(http_names::kAcceptCHLifetime),
-          response.CurrentRequestUrl(), &hints_context);
-
-  GetDocumentLoader()
-      ->GetClientHintsPreferences()
-      .UpdateFromAcceptClientHintsHeader(
-          response.HttpHeaderField(http_names::kAcceptCH),
-          response.CurrentRequestUrl(), &hints_context);
-
-  // Notify content settings client of persistent client hints.
-  TimeDelta persist_duration =
-      GetDocumentLoader()->GetClientHintsPreferences().GetPersistDuration();
-  if (persist_duration.InSeconds() <= 0)
-    return;
-
-  WebEnabledClientHints enabled_client_hints = GetDocumentLoader()
-                                                   ->GetClientHintsPreferences()
-                                                   .GetWebEnabledClientHints();
-  if (!AllowScriptFromSourceWithoutNotifying(response.CurrentRequestUrl())) {
-    // Do not persist client hint preferences if the JavaScript is disabled.
-    return;
-  }
-
-  if (auto* settings_client = GetContentSettingsClient()) {
-    settings_client->PersistClientHints(enabled_client_hints, persist_duration,
-                                        response.CurrentRequestUrl());
-  }
 }
 
 FetchContext* FrameFetchContext::Detach() {
