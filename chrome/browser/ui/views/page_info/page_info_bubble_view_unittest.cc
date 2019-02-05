@@ -543,7 +543,7 @@ TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
 
   // Check the number of cookies shown is correct.
   base::string16 expected = l10n_util::GetPluralStringFUTF16(
-      IDS_PAGE_INFO_NUM_COOKIES,
+      IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED,
       first_party_cookies.allowed + third_party_cookies.allowed);
   size_t index = api_->GetCookiesLinkText().find(expected);
   EXPECT_NE(std::string::npos, index);
