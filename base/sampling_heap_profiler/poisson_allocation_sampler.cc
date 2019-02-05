@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <utility>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/partition_alloc_buildflags.h"
@@ -30,8 +30,6 @@
 namespace base {
 
 using allocator::AllocatorDispatch;
-using subtle::Atomic32;
-using subtle::AtomicWord;
 
 namespace {
 
@@ -133,16 +131,16 @@ TLSKey g_sampling_interval_initialized_tls;
 bool g_deterministic;
 
 // A positive value if profiling is running, otherwise it's zero.
-Atomic32 g_running;
+std::atomic_int g_running;
 
 // Pointer to the current |LockFreeAddressHashSet|.
-AtomicWord g_sampled_addresses_set;
+std::atomic<LockFreeAddressHashSet*> g_sampled_addresses_set;
 
 // Sampling interval parameter, the mean value for intervals between samples.
-AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
+std::atomic_size_t g_sampling_interval{kDefaultSamplingIntervalBytes};
 
 void (*g_hooks_install_callback)();
-Atomic32 g_hooks_installed;
+std::atomic_bool g_hooks_installed;
 
 void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
   ReentryGuard guard;
@@ -337,9 +335,7 @@ PoissonAllocationSampler::PoissonAllocationSampler() {
   instance_ = this;
   Init();
   auto sampled_addresses = std::make_unique<LockFreeAddressHashSet>(64);
-  subtle::NoBarrier_Store(
-      &g_sampled_addresses_set,
-      reinterpret_cast<AtomicWord>(sampled_addresses.get()));
+  g_sampled_addresses_set = sampled_addresses.get();
   sampled_addresses_stack_.push_back(std::move(sampled_addresses));
 }
 
@@ -376,9 +372,8 @@ bool PoissonAllocationSampler::InstallAllocatorHooks() {
   PartitionAllocHooks::SetFreeHook(&PartitionFreeHook);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
-  int32_t hooks_install_callback_has_been_set =
-      subtle::Acquire_CompareAndSwap(&g_hooks_installed, 0, 1);
-  if (hooks_install_callback_has_been_set)
+  bool expected = false;
+  if (!g_hooks_installed.compare_exchange_strong(expected, true))
     g_hooks_install_callback();
 
   return true;
@@ -390,26 +385,24 @@ void PoissonAllocationSampler::SetHooksInstallCallback(
   CHECK(!g_hooks_install_callback && hooks_install_callback);
   g_hooks_install_callback = hooks_install_callback;
 
-  int32_t profiler_has_already_been_initialized =
-      subtle::Release_CompareAndSwap(&g_hooks_installed, 0, 1);
-  if (profiler_has_already_been_initialized)
+  bool expected = false;
+  if (!g_hooks_installed.compare_exchange_strong(expected, true))
     g_hooks_install_callback();
 }
 
 void PoissonAllocationSampler::Start() {
   InstallAllocatorHooksOnce();
-  subtle::Barrier_AtomicIncrement(&g_running, 1);
+  ++g_running;
 }
 
 void PoissonAllocationSampler::Stop() {
-  AtomicWord count = subtle::Barrier_AtomicIncrement(&g_running, -1);
+  int count = --g_running;
   CHECK_GE(count, 0);
 }
 
 void PoissonAllocationSampler::SetSamplingInterval(size_t sampling_interval) {
   // TODO(alph): Reset the sample being collected if running.
-  subtle::Release_Store(&g_sampling_interval,
-                        static_cast<AtomicWord>(sampling_interval));
+  g_sampling_interval = sampling_interval;
 }
 
 // static
@@ -442,7 +435,7 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
                                            size_t size,
                                            AllocatorType type,
                                            const char* context) {
-  if (UNLIKELY(!subtle::NoBarrier_Load(&g_running)))
+  if (UNLIKELY(!g_running.load(std::memory_order_relaxed)))
     return;
   intptr_t accumulated_bytes = TLSGetValue(g_accumulated_bytes_tls) + size;
   if (LIKELY(accumulated_bytes < 0))
@@ -460,7 +453,7 @@ void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
   if (UNLIKELY(!address))
     return;
 
-  size_t mean_interval = subtle::NoBarrier_Load(&g_sampling_interval);
+  size_t mean_interval = g_sampling_interval.load(std::memory_order_relaxed);
   size_t samples = accumulated_bytes / mean_interval;
   accumulated_bytes %= mean_interval;
 
@@ -532,8 +525,7 @@ void PoissonAllocationSampler::BalanceAddressesHashSet() {
       std::make_unique<LockFreeAddressHashSet>(current_set.buckets_count() * 2);
   new_set->Copy(current_set);
   // Atomically switch all the new readers to the new set.
-  subtle::Release_Store(&g_sampled_addresses_set,
-                        reinterpret_cast<AtomicWord>(new_set.get()));
+  g_sampled_addresses_set = new_set.get();
   // We still have to keep all the old maps alive to resolve the theoretical
   // race with readers in |RecordFree| that have already obtained the map,
   // but haven't yet managed to access it.
@@ -542,8 +534,7 @@ void PoissonAllocationSampler::BalanceAddressesHashSet() {
 
 // static
 LockFreeAddressHashSet& PoissonAllocationSampler::sampled_addresses_set() {
-  return *reinterpret_cast<LockFreeAddressHashSet*>(
-      subtle::NoBarrier_Load(&g_sampled_addresses_set));
+  return *g_sampled_addresses_set.load(std::memory_order_relaxed);
 }
 
 // static
