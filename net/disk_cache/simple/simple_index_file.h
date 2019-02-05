@@ -18,6 +18,7 @@
 #include "base/pickle.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
+#include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_index.h"
 
 namespace base {
@@ -81,8 +82,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     friend class V7IndexMetadataForTest;
     friend class V8IndexMetadataForTest;
 
-    uint64_t magic_number_;
-    uint32_t version_;
+    uint64_t magic_number_ = kSimpleIndexMagicNumber;
+    uint32_t version_ = kSimpleVersion;
     SimpleIndex::IndexWriteToDiskReason reason_;
     uint64_t entry_count_;
     uint64_t cache_size_;  // Total cache storage size in bytes.

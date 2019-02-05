@@ -485,8 +485,8 @@ class SimpleSynchronousEntry {
   const bool had_index_;
   std::string key_;
 
-  bool have_open_files_;
-  bool initialized_;
+  bool have_open_files_ = false;
+  bool initialized_ = false;
 
   // Normally false. This is set to true when an entry is opened without
   // checking the file headers. Any subsequent read will perform the check
@@ -507,7 +507,7 @@ class SimpleSynchronousEntry {
   // EOF record and stream 0 when the entry was actually opened.  This
   // may be different from the trailer_prefetch_size_ hint and is
   // propagated back to the index in order to optimize the next open.
-  int32_t computed_trailer_prefetch_size_;
+  int32_t computed_trailer_prefetch_size_ = -1;
 
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.
@@ -516,7 +516,7 @@ class SimpleSynchronousEntry {
   typedef std::map<int64_t, SparseRange> SparseRangeOffsetMap;
   typedef SparseRangeOffsetMap::iterator SparseRangeIterator;
   SparseRangeOffsetMap sparse_ranges_;
-  bool sparse_file_open_;
+  bool sparse_file_open_ = false;
 
   // Offset of the end of the sparse file (where the next sparse range will be
   // written).

@@ -18,7 +18,7 @@
 namespace disk_cache {
 
 SimpleFileTracker::SimpleFileTracker(int file_limit)
-    : file_limit_(file_limit), open_files_(0) {}
+    : file_limit_(file_limit) {}
 
 SimpleFileTracker::~SimpleFileTracker() {
   DCHECK(lru_.empty());
@@ -305,8 +305,7 @@ void SimpleFileTracker::EnsureInFrontOfLRU(TrackedFiles* owners_files) {
   DCHECK_EQ(*owners_files->position_in_lru, owners_files);
 }
 
-SimpleFileTracker::FileHandle::FileHandle()
-    : file_tracker_(nullptr), entry_(nullptr), file_(nullptr) {}
+SimpleFileTracker::FileHandle::FileHandle() = default;
 
 SimpleFileTracker::FileHandle::FileHandle(SimpleFileTracker* file_tracker,
                                           const SimpleSynchronousEntry* entry,
