@@ -274,18 +274,18 @@ class NET_EXPORT_PRIVATE SimpleIndex
   EntrySet entries_set_;
 
   const net::CacheType cache_type_;
-  uint64_t cache_size_;  // Total cache storage size in bytes.
-  uint64_t max_size_;
-  uint64_t high_watermark_;
-  uint64_t low_watermark_;
-  bool eviction_in_progress_;
+  uint64_t cache_size_ = 0;  // Total cache storage size in bytes.
+  uint64_t max_size_ = 0;
+  uint64_t high_watermark_ = 0;
+  uint64_t low_watermark_ = 0;
+  bool eviction_in_progress_ = false;
   base::TimeTicks eviction_start_time_;
 
   // This stores all the entry_hash of entries that are removed during
   // initialization.
   std::unordered_set<uint64_t> removed_entries_;
-  bool initialized_;
-  IndexInitMethod init_method_;
+  bool initialized_ = false;
+  IndexInitMethod init_method_ = INITIALIZE_METHOD_MAX;
 
   std::unique_ptr<SimpleIndexFile> index_file_;
 
@@ -309,7 +309,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Set to true when the app is on the background. When the app is in the
   // background we can write the index much more frequently, to insure fresh
   // index on next startup.
-  bool app_on_background_;
+  bool app_on_background_ = false;
 };
 
 }  // namespace disk_cache

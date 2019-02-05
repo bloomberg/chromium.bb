@@ -63,26 +63,25 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
                base::File* file);
 
     // All the pointer fields are nullptr in the default/moved away from form.
-    SimpleFileTracker* file_tracker_;
-    const SimpleSynchronousEntry* entry_;
+    SimpleFileTracker* file_tracker_ = nullptr;
+    const SimpleSynchronousEntry* entry_ = nullptr;
     SimpleFileTracker::SubFile subfile_;
-    base::File* file_;
+    base::File* file_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(FileHandle);
   };
 
   struct EntryFileKey {
-    EntryFileKey() : entry_hash(0), doom_generation(0) {}
-    explicit EntryFileKey(uint64_t hash)
-        : entry_hash(hash), doom_generation(0) {}
+    EntryFileKey() {}
+    explicit EntryFileKey(uint64_t hash) : entry_hash(hash) {}
 
-    uint64_t entry_hash;
+    uint64_t entry_hash = 0;
 
     // 0 means this a non-doomed, active entry, for its backend that will be
     // checked on OpenEntry(key) where hash(key) = entry_hash.  Other values of
     // |doom_generation| are used to generate distinct file names for entries
     // that have been Doom()ed, either by explicit API call by the client or
     // internal operation (eviction, collisions, etc.)
-    uint64_t doom_generation;
+    uint64_t doom_generation = 0;
   };
 
   // The default limit here is half of what's available on our target OS where
@@ -218,7 +217,7 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
   // conservatively, considering SimpleCache's parallelism is bounded by a low
   // number of threads, and getting it exact would require re-acquiring the
   // lock after closing the file.
-  int open_files_;
+  int open_files_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFileTracker);
 };

@@ -1117,12 +1117,8 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(net::CacheType cache_type,
       entry_file_key_(entry_hash),
       had_index_(had_index),
       key_(key),
-      have_open_files_(false),
-      initialized_(false),
       file_tracker_(file_tracker),
-      trailer_prefetch_size_(trailer_prefetch_size),
-      computed_trailer_prefetch_size_(-1),
-      sparse_file_open_(false) {
+      trailer_prefetch_size_(trailer_prefetch_size) {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i)
     empty_file_omitted_[i] = false;
 }
