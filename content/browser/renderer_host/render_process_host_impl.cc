@@ -2531,6 +2531,7 @@ bool RenderProcessHostImpl::IsKeepAliveRefCountDisabled() {
 }
 
 void RenderProcessHostImpl::PurgeAndSuspend() {
+  TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::PurgeAndSuspend");
   GetRendererInterface()->ProcessPurgeAndSuspend();
 }
 
