@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 
 using autofill::AutofillMetadata;
 using autofill::AutofillProfile;
@@ -199,6 +200,16 @@ void GetServerAddressesMetadataOnDBSequence(
       ->GetServerAddressesMetadata(addresses_metadata);
 }
 
+void GetWalletDataModelTypeStateOnDBSequence(
+    AutofillWebDataService* wds,
+    sync_pb::ModelTypeState* model_type_state) {
+  DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
+  syncer::MetadataBatch metadata_batch;
+  AutofillTable::FromWebDatabase(wds->GetDatabase())
+      ->GetAllSyncMetadata(syncer::AUTOFILL_WALLET_DATA, &metadata_batch);
+  *model_type_state = metadata_batch.GetModelTypeState();
+}
+
 }  // namespace
 
 namespace wallet_helper {
@@ -284,6 +295,16 @@ void GetServerAddressesMetadata(
       base::BindOnce(&GetServerAddressesMetadataOnDBSequence,
                      base::Unretained(wds.get()), addresses_metadata));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+}
+
+sync_pb::ModelTypeState GetWalletDataModelTypeState(int profile) {
+  sync_pb::ModelTypeState result;
+  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
+  wds->GetDBTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&GetWalletDataModelTypeStateOnDBSequence,
+                                base::Unretained(wds.get()), &result));
+  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+  return result;
 }
 
 void UnmaskServerCard(int profile,

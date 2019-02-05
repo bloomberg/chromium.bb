@@ -60,6 +60,9 @@ class MockModelTypeWorker : public CommitQueue {
   void VerifyPendingCommits(
       const std::vector<std::vector<std::string>>& tag_hashes);
 
+  // Updates the model type state to be used in all future updates from server.
+  void UpdateModelTypeState(const sync_pb::ModelTypeState& model_type_state);
+
   // Trigger an update from the server. See GenerateUpdateData for parameter
   // descriptions. |version_offset| defaults to 1 and |ekn| defaults to the
   // current encryption key name the worker has.

@@ -106,6 +106,11 @@ void MockModelTypeWorker::VerifyPendingCommits(
   }
 }
 
+void MockModelTypeWorker::UpdateModelTypeState(
+    const sync_pb::ModelTypeState& model_type_state) {
+  model_type_state_ = model_type_state;
+}
+
 void MockModelTypeWorker::UpdateFromServer() {
   processor_->OnUpdateReceived(model_type_state_, UpdateResponseDataList());
 }
