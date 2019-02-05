@@ -36,8 +36,6 @@ class SystemWebAppManager {
  private:
   void StartAppInstallation();
 
-  Profile* profile_;
-
   // Used to install, uninstall, and update apps. Should outlive this class.
   PendingAppManager* pending_app_manager_;
 
