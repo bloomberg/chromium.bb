@@ -159,7 +159,8 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_path_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Test.sqlite3"));
     base::DeleteFile(file_path_, false);
-    CreateDirectory();
+    ASSERT_EQ(OPENED_NEW, CreateDirectory());
+    ASSERT_TRUE(dir()->good());
   }
 
   void TearDown() override {
@@ -171,22 +172,22 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
   }
 
   // Creates a new directory.  Deletes the old directory, if it exists.
-  void CreateDirectory() {
+  DirOpenResult CreateDirectory() {
     std::unique_ptr<TestDirectory> test_directory = TestDirectory::Create(
         encryptor(),
         MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
         kDirectoryName, file_path_);
     test_directory_ = test_directory.get();
     dir() = std::move(test_directory);
-    ASSERT_TRUE(dir().get());
-    ASSERT_EQ(OPENED, dir()->Open(kDirectoryName, directory_change_delegate(),
-                                  NullTransactionObserver()));
-    ASSERT_TRUE(dir()->good());
+    DCHECK(dir());
+    return dir()->Open(kDirectoryName, directory_change_delegate(),
+                       NullTransactionObserver());
   }
 
   void SaveAndReloadDir() {
     dir()->SaveChanges();
-    CreateDirectory();
+    ASSERT_EQ(OPENED_EXISTING, CreateDirectory());
+    ASSERT_TRUE(dir()->good());
   }
 
   void StartFailingSaveChanges() { test_directory_->StartFailingSaveChanges(); }
@@ -354,8 +355,9 @@ TEST_F(OnDiskSyncableDirectoryTest,
       base::Closure(), nullptr, nullptr);
 
   ASSERT_TRUE(dir().get());
-  ASSERT_EQ(OPENED, dir()->Open(kDirectoryName, directory_change_delegate(),
-                                NullTransactionObserver()));
+  ASSERT_EQ(OPENED_EXISTING,
+            dir()->Open(kDirectoryName, directory_change_delegate(),
+                        NullTransactionObserver()));
   ASSERT_TRUE(dir()->good());
 
   {
@@ -566,7 +568,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
         nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
-    ASSERT_EQ(result, OPENED);
+    ASSERT_EQ(result, OPENED_NEW);
   }
 
   // Destroying the directory should have released the backing database file.

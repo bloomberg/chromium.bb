@@ -127,7 +127,10 @@ class DirectoryBackingStore {
   bool OpenInMemory();
 
   // Initialize database tables. Return true on success, false on error.
-  bool InitializeTables();
+  // |did_start_new| must not be null and allows callers to know whether a
+  // previously existing directory was opened or a new empty one had to be
+  // initialized.
+  bool InitializeTables(bool* did_start_new);
 
   // Load helpers for entries and attributes. Return true on success, false on
   // error.

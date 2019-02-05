@@ -429,7 +429,9 @@ bool DirectoryBackingStore::OpenInMemory() {
   return db_->OpenInMemory();
 }
 
-bool DirectoryBackingStore::InitializeTables() {
+bool DirectoryBackingStore::InitializeTables(bool* did_start_new) {
+  *did_start_new = false;
+
   if (!UpdatePageSizeIfNecessary())
     return false;
 
@@ -442,6 +444,8 @@ bool DirectoryBackingStore::InitializeTables() {
     DropAllTables();
     if (!CreateTables())
       return false;
+
+    *did_start_new = true;
   }
 
   int version_on_disk = GetVersion();

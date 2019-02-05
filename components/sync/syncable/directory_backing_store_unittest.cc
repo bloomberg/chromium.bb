@@ -66,8 +66,9 @@ class MigrationTest : public testing::TestWithParam<int> {
     JournalIndex delete_journals;
     MetahandleSet metahandles_to_purge;
     Directory::KernelLoadInfo kernel_load_info;
-    return dbs->Load(&tmp_handles_map, &delete_journals, &metahandles_to_purge,
-                     &kernel_load_info) == OPENED;
+    DirOpenResult result = dbs->Load(&tmp_handles_map, &delete_journals,
+                                     &metahandles_to_purge, &kernel_load_info);
+    return result == OPENED_NEW || result == OPENED_EXISTING;
   }
 
   void SetUpCorruptedRootDatabase(sql::Database* connection);
@@ -3959,8 +3960,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   {
     OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
-    ASSERT_EQ(OPENED, dbs.Load(&handles_map, &delete_journals,
-                               &metahandles_to_purge, &dir_info));
+    ASSERT_EQ(OPENED_EXISTING, dbs.Load(&handles_map, &delete_journals,
+                                        &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
       dbs.DeleteEntries(DirectoryBackingStore::METAS_TABLE,
                         metahandles_to_purge);
@@ -4399,7 +4400,7 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
 
   DirOpenResult open_result = dbs.Load(
       &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);
-  EXPECT_EQ(open_result, OPENED);
+  EXPECT_EQ(open_result, OPENED_EXISTING);
 
   // Set up database's page size to 4096
   EXPECT_TRUE(dbs.db_->Execute("PRAGMA page_size=4096;"));

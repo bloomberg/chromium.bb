@@ -33,7 +33,7 @@ void TestDirectorySetterUpper::SetUp() {
       std::make_unique<syncable::InMemoryDirectoryBackingStore>(name_),
       MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
       &encryption_handler_, encryption_handler_.cryptographer());
-  ASSERT_EQ(syncable::OPENED,
+  ASSERT_EQ(syncable::OPENED_NEW,
             directory_->Open(name_, &delegate_, transaction_observer));
 }
 
@@ -49,7 +49,7 @@ void TestDirectorySetterUpper::SetUpWith(
       std::move(directory_store), MakeWeakHandle(handler_.GetWeakPtr()),
       base::Closure(), &encryption_handler_,
       encryption_handler_.cryptographer());
-  ASSERT_EQ(syncable::OPENED,
+  ASSERT_EQ(syncable::OPENED_EXISTING,
             directory_->Open(name_, &delegate_, transaction_observer));
 }
 

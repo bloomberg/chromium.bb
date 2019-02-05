@@ -219,8 +219,8 @@ class SyncManagerImpl
   bool VisiblePropertiesDiffer(const syncable::EntryKernelMutation& mutation,
                                Cryptographer* cryptographer) const;
 
-  // Open the directory named with |username|.
-  bool OpenDirectory(const std::string& username);
+  // Opens the directory.
+  bool OpenDirectory(const InitArgs* args);
 
   void RequestNudgeForDataTypes(const base::Location& nudge_location,
                                 ModelTypeSet type);

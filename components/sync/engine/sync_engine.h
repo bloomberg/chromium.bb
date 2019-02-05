@@ -81,6 +81,7 @@ class SyncEngine : public ModelTypeConfigurer {
 
     // Non-authoritative values from prefs, to be compared with the Directory's
     // counterparts.
+    // TODO(crbug.com/923285): Consider making these the authoritative data.
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;

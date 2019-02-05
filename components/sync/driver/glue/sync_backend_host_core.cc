@@ -68,59 +68,6 @@ void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   }
 }
 
-// Relevant for UMA, do not change.
-enum class StringConsistency {
-  kBothEqual = 0,
-  kOnlyLhsEmpty = 1,
-  kOnlyRhsEmpty = 2,
-  kBothNonEmptyAndDifferent = 3,
-  kMaxValue = kBothNonEmptyAndDifferent
-};
-
-StringConsistency CompareStringsForConsistency(const std::string& lhs,
-                                               const std::string& rhs) {
-  if (lhs == rhs) {
-    return StringConsistency::kBothEqual;
-  }
-  if (lhs.empty()) {
-    return StringConsistency::kOnlyLhsEmpty;
-  }
-  if (rhs.empty()) {
-    return StringConsistency::kOnlyRhsEmpty;
-  }
-  return StringConsistency::kBothNonEmptyAndDifferent;
-}
-
-constexpr int GetStringConsistencyUmaBucket(
-    StringConsistency cache_guid_consistency,
-    StringConsistency birthday_consistency) {
-  return static_cast<int>(cache_guid_consistency) *
-             (static_cast<int>(StringConsistency::kMaxValue) + 1) +
-         static_cast<int>(birthday_consistency);
-}
-
-// Logs information to UMA to understand whether prefs are populated with
-// information identical to the Directory's value, for the fields that are
-// stored in both. We mostly care about cache GUID and store birthday.
-void RecordConsistencyBetweenDirectoryAndPrefs(
-    const syncable::Directory* directory,
-    const SyncEngine::InitParams& params) {
-  DCHECK(directory);
-
-  const StringConsistency cache_guid_consistency =
-      CompareStringsForConsistency(params.cache_guid, directory->cache_guid());
-  const StringConsistency birthday_consistency = CompareStringsForConsistency(
-      params.birthday, directory->store_birthday());
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Sync.DirectoryVsPrefsConsistency",
-      GetStringConsistencyUmaBucket(cache_guid_consistency,
-                                    birthday_consistency),
-      GetStringConsistencyUmaBucket(StringConsistency::kMaxValue,
-                                    StringConsistency::kMaxValue) +
-          1);
-}
-
 }  // namespace
 
 SyncBackendHostCore::SyncBackendHostCore(
@@ -404,15 +351,12 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   args.saved_nigori_state = std::move(params.saved_nigori_state);
   args.short_poll_interval = params.short_poll_interval;
   args.long_poll_interval = params.long_poll_interval;
+  args.cache_guid = params.cache_guid;
+  args.birthday = params.birthday;
+  args.bag_of_chips = params.bag_of_chips;
   sync_manager_->Init(&args);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "SyncDirectory", base::ThreadTaskRunnerHandle::Get());
-
-  const UserShare* user_share = sync_manager_->GetUserShare();
-  if (user_share) {  // Null in some tests.
-    RecordConsistencyBetweenDirectoryAndPrefs(user_share->directory.get(),
-                                              params);
-  }
 }
 
 void SyncBackendHostCore::DoUpdateCredentials(

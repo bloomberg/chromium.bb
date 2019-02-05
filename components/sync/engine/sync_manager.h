@@ -250,6 +250,13 @@ class SyncManager {
     // Define the polling intervals. Must not be zero.
     base::TimeDelta short_poll_interval;
     base::TimeDelta long_poll_interval;
+
+    // Non-authoritative values from prefs, to be compared with the Directory's
+    // counterparts.
+    // TODO(crbug.com/923285): Consider making these the authoritative data.
+    std::string cache_guid;
+    std::string birthday;
+    std::string bag_of_chips;
   };
 
   // The state of sync the feature. If the user turned on sync explicitly, it

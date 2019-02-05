@@ -10,7 +10,8 @@ namespace syncable {
 
 enum DirOpenResult {
   NOT_INITIALIZED,
-  OPENED,                     // success.
+  OPENED_NEW,                 // success (created from scratch).
+  OPENED_EXISTING,            // success (previously existing).
   FAILED_NEWER_VERSION,       // DB version is too new.
   FAILED_MAKE_REPOSITORY,     // Couldn't create subdir.
   FAILED_OPEN_DATABASE,       // sqlite_open() failed.
