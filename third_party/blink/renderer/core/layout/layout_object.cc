@@ -3267,6 +3267,12 @@ void LayoutObject::InsertedIntoTree() {
       layer->DirtyVisibleContentStatus();
   }
 
+  if (IsInLayoutNGInlineFormattingContext()) {
+    // In case of |this| layout object is moved, to avoid paint fragments in old
+    // tree live longer than |this|, we reset associated paint fragment list.
+    SetFirstInlineFragment(nullptr);
+  }
+
   if (Parent()->ChildrenInline())
     Parent()->DirtyLinesFromChangedChild(this);
 
