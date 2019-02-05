@@ -154,6 +154,7 @@ if (is_chromeos) {
   static_library("video_player_test_environment") {
     testonly = true
     sources = [
+      "video_player/video_player_test_environment.cc",
       "video_player/video_player_test_environment.h",
     ]
     data = [
