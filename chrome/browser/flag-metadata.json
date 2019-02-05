@@ -174,16 +174,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ash-enable-notification-expansion-animation",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "ash-enable-notification-scroll-bar",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ash-enable-overview-rounded-corners",
     "owners": [ "sammiequon" ],
     "expiry_milestone": 78

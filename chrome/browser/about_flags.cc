@@ -1487,10 +1487,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
-    {"ash-enable-notification-scroll-bar",
-     flag_descriptions::kEnableNotificationScrollBarName,
-     flag_descriptions::kEnableNotificationScrollBarDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNotificationScrollBar)},
     {"allow-touchpad-three-finger-click",
      flag_descriptions::kAllowTouchpadThreeFingerClickName,
      flag_descriptions::kAllowTouchpadThreeFingerClickDescription, kOsCrOS,
@@ -4139,15 +4135,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
      flag_descriptions::kSendTabToSelfDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
-
-#if defined(OS_CHROMEOS)
-    {"ash-enable-notification-expansion-animation",
-     flag_descriptions::kEnableNotificationExpansionAnimationName,
-     flag_descriptions::kEnableNotificationExpansionAnimationDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNotificationExpansionAnimation)},
-
-#endif  // defined(OS_CHROMEOS)
 
     {"enable-data-reduction-proxy-with-network-service",
      flag_descriptions::kEnableDataReductionProxyNetworkServiceName,
