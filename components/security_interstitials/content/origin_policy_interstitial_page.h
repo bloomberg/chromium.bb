@@ -12,6 +12,7 @@
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/origin_policy_error_reason.h"
 
 #include "url/gurl.h"
 
@@ -27,7 +28,8 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
   OriginPolicyInterstitialPage(
       content::WebContents* web_contents,
       const GURL& request_url,
-      std::unique_ptr<SecurityInterstitialControllerClient> controller);
+      std::unique_ptr<SecurityInterstitialControllerClient> controller,
+      content::OriginPolicyErrorReason error_reason);
 
   ~OriginPolicyInterstitialPage() override;
 
@@ -40,6 +42,9 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
  protected:
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(base::DictionaryValue*) override;
+
+ private:
+  content::OriginPolicyErrorReason error_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyInterstitialPage);
 };

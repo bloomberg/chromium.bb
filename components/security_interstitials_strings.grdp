@@ -405,10 +405,22 @@
     desc="The text for the Origin Policy Error Interstitial button that contains additional information.">
     Advanced
   </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information.">
+  <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy could not be loaded.">
     The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
     a security policy will be applied to all requests to it. But it has now
-    delivered a missing or invalid policy, which prevents the browser from
+    failed to deliver a policy, which prevents the browser from fulfilling
+    your request for <ph name="SITE">$1</ph>.
+  </message>
+  <message name="IDS_ORIGIN_POLICY_EXPLANATION_SHOULD_NOT_REDIRECT" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy request was met with a 'redirect' response.">
+    The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
+    a security policy will be applied to all requests to it. But instead of
+    delivering a policy it has redirected the browser elsewhere, which prevents
+    the browser from fulfilling your request for <ph name="SITE">$1</ph>.
+  </message>
+  <message name="IDS_ORIGIN_POLICY_EXPLANATION_OTHER" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for cases other than redirect or load error.">
+    The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
+    a security policy will be applied to all requests to it. But it has now
+    delivered an invalid policy, which prevents the browser from
     fulfilling your request for <ph name="SITE">$1</ph>.
   </message>
   <message name="IDS_ORIGIN_POLICY_FINAL_PARAGRAPH"

@@ -32,7 +32,7 @@ std::unique_ptr<SecurityInterstitialPage> GetErrorPageImpl(
           nullptr, /* pref service: can be null */
           "", GURL());
   return std::make_unique<security_interstitials::OriginPolicyInterstitialPage>(
-      web_contents, url, std::move(controller));
+      web_contents, url, std::move(controller), error_reason);
 }
 
 }  // namespace
