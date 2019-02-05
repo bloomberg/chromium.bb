@@ -148,7 +148,7 @@ public class PrefetchBackgroundTaskUnitTest {
                              + additionalDelaySeconds),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
         assertEquals(true, scheduledTask.isPersisted());
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, scheduledTask.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, scheduledTask.getRequiredNetworkType());
     }
 
     /**
@@ -167,7 +167,7 @@ public class PrefetchBackgroundTaskUnitTest {
         assertEquals(TimeUnit.SECONDS.toMillis(additionalDelaySeconds),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
         assertEquals(true, scheduledTask.isPersisted());
-        assertEquals(TaskInfo.NETWORK_TYPE_ANY, scheduledTask.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.ANY, scheduledTask.getRequiredNetworkType());
     }
 
     @Test

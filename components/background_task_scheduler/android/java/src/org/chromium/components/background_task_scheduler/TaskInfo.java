@@ -113,28 +113,28 @@ public class TaskInfo {
         }
     }
 
+    @IntDef({NetworkType.NONE, NetworkType.ANY, NetworkType.UNMETERED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({NETWORK_TYPE_NONE, NETWORK_TYPE_ANY, NETWORK_TYPE_UNMETERED})
-    public @interface NetworkType {}
-
-    /**
-     * This task has no requirements for network connectivity. Default.
-     *
-     * @see NetworkType
-     */
-    public static final int NETWORK_TYPE_NONE = 0;
-    /**
-     * This task requires network connectivity.
-     *
-     * @see NetworkType
-     */
-    public static final int NETWORK_TYPE_ANY = 1;
-    /**
-     * This task requires network connectivity that is unmetered.
-     *
-     * @see NetworkType
-     */
-    public static final int NETWORK_TYPE_UNMETERED = 2;
+    public @interface NetworkType {
+        /**
+         * This task has no requirements for network connectivity. Default.
+         *
+         * @see NetworkType
+         */
+        int NONE = 0;
+        /**
+         * This task requires network connectivity.
+         *
+         * @see NetworkType
+         */
+        int ANY = 1;
+        /**
+         * This task requires network connectivity that is unmetered.
+         *
+         * @see NetworkType
+         */
+        int UNMETERED = 2;
+    }
 
     /**
      * The task ID should be unique across all tasks. A list of such unique IDs exists in

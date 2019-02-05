@@ -151,7 +151,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
         assertEquals(TimeUnit.HOURS.toMillis(ExploreSitesBackgroundTask.DEFAULT_DELAY_HOURS),
                 scheduledTask.getPeriodicInfo().getIntervalMs());
         assertEquals(true, scheduledTask.isPersisted());
-        assertEquals(TaskInfo.NETWORK_TYPE_ANY, scheduledTask.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.ANY, scheduledTask.getRequiredNetworkType());
     }
 
     @Test
@@ -189,7 +189,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
                 TaskInfo.createPeriodicTask(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
                                 TimeUnit.HOURS.toMillis(1))
-                        .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_ANY)
+                        .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
                         .setIsPersisted(true)
                         .setUpdateCurrent(false);
         mFakeTaskScheduler.schedule(

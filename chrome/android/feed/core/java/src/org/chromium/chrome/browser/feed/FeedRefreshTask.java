@@ -44,7 +44,7 @@ public class FeedRefreshTask extends NativeBackgroundTask {
                                             FeedRefreshTask.class, intervalMs, flexWindowSizeMs)
                                     .setIsPersisted(true)
                                     .setUpdateCurrent(true)
-                                    .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_ANY)
+                                    .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
                                     .build();
         scheduler.schedule(ContextUtils.getApplicationContext(), taskInfo);
     }

@@ -179,7 +179,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID, WebApkUpdateTask.class,
                                 TimeUnit.HOURS.toMillis(1), TimeUnit.HOURS.toMillis(23))
-                        .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED)
+                        .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
                         .setUpdateCurrent(true)
                         .setIsPersisted(true)
                         .setRequiresCharging(true)

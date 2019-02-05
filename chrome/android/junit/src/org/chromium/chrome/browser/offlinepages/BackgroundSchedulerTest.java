@@ -78,7 +78,7 @@ public class BackgroundSchedulerTest {
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
 
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, info.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, info.getRequiredNetworkType());
         assertTrue(info.requiresCharging());
 
         assertTrue(info.shouldUpdateCurrent());
@@ -98,7 +98,7 @@ public class BackgroundSchedulerTest {
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
 
-        assertEquals(TaskInfo.NETWORK_TYPE_ANY, info.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.ANY, info.getRequiredNetworkType());
         assertFalse(info.requiresCharging());
 
         assertTrue(info.shouldUpdateCurrent());
@@ -119,7 +119,7 @@ public class BackgroundSchedulerTest {
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
 
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, info.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, info.getRequiredNetworkType());
         assertTrue(info.requiresCharging());
 
         assertFalse(info.shouldUpdateCurrent());

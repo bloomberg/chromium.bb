@@ -57,8 +57,8 @@ public class DownloadResumptionScheduler {
 
         if (scheduleAutoResumption) {
             @NetworkType
-            int networkType = allowMeteredConnection ? TaskInfo.NETWORK_TYPE_ANY
-                                                     : TaskInfo.NETWORK_TYPE_UNMETERED;
+            int networkType = allowMeteredConnection ? TaskInfo.NetworkType.ANY
+                                                     : TaskInfo.NetworkType.UNMETERED;
 
             TaskInfo task = TaskInfo.createOneOffTask(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID,
                                             DownloadResumptionBackgroundTask.class,
