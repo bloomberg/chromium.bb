@@ -172,10 +172,6 @@ MemoryInfo* WindowPerformance::memory() const {
                                 : MemoryInfo::Precision::Bucketized);
 }
 
-bool WindowPerformance::shouldYield() const {
-  return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
-}
-
 PerformanceNavigationTiming*
 WindowPerformance::CreateNavigationTimingInstance() {
   if (!GetFrame())

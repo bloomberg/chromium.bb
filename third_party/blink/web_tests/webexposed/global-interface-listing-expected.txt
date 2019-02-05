@@ -5227,7 +5227,6 @@ interface Performance : EventTarget
     getter onelementtimingbufferfull
     getter oneventtimingbufferfull
     getter onresourcetimingbufferfull
-    getter shouldYield
     getter timeOrigin
     getter timing
     method clearElementTimings
