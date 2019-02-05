@@ -21,16 +21,14 @@ namespace syncer {
 
 namespace {
 // Groups of prefs that always have the same value as a "master" pref.
-// For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
+// For example, the APPS group has {APP_LIST, APP_SETTINGS}
 // (as well as APPS, but that is implied), so
-//   pref_groups_[APPS] =       { APP_NOTIFICATIONS,
-//                                          APP_SETTINGS }
+//   pref_groups_[APPS] =       { APP_LIST, APP_SETTINGS }
 //   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
 // etc.
 using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
 PrefGroupsMap ComputePrefGroups() {
   PrefGroupsMap pref_groups;
-  pref_groups[APPS].Put(APP_NOTIFICATIONS);
   pref_groups[APPS].Put(APP_SETTINGS);
   pref_groups[APPS].Put(APP_LIST);
   pref_groups[APPS].Put(ARC_PACKAGE);
@@ -380,10 +378,10 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
     case SEARCH_ENGINES:
     case APP_SETTINGS:
     case EXTENSION_SETTINGS:
-    case APP_NOTIFICATIONS:
+    case DEPRECATED_APP_NOTIFICATIONS:
     case HISTORY_DELETE_DIRECTIVES:
-    case SYNCED_NOTIFICATIONS:
-    case SYNCED_NOTIFICATION_APP_INFO:
+    case DEPRECATED_SYNCED_NOTIFICATIONS:
+    case DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:
     case DICTIONARY:
     case FAVICON_IMAGES:
     case FAVICON_TRACKING:

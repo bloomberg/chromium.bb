@@ -257,7 +257,6 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     }
     if (type == APPS) {
       expected_preferred_types.Put(APP_LIST);
-      expected_preferred_types.Put(APP_NOTIFICATIONS);
       expected_preferred_types.Put(APP_SETTINGS);
       expected_preferred_types.Put(ARC_PACKAGE);
     }

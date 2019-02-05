@@ -251,30 +251,31 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
 }
 
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
-  DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
-  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker(),
-                                 &emitter);
+  DirectoryTypeDebugInfoEmitter emitter(DEPRECATED_SYNCED_NOTIFICATIONS,
+                                        &type_observers_);
+  DirectoryUpdateHandler handler(dir(), DEPRECATED_SYNCED_NOTIFICATIONS,
+                                 ui_worker(), &emitter);
   StatusController status;
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   progress.set_token("token");
   progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
 
   sync_pb::DataTypeContext context;
   context.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   context.set_context("context");
   context.set_version(1);
 
   std::unique_ptr<sync_pb::SyncEntity> e1 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
 
   std::unique_ptr<sync_pb::SyncEntity> e2 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   e2->set_version(kDefaultVersion + 100);
 
   // Add to the applicable updates list.
@@ -290,7 +291,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   handler.ApplyUpdates(&status);
 
   // Verify none is deleted because they are unapplied during GC.
-  EXPECT_TRUE(TypeRootExists(SYNCED_NOTIFICATIONS));
+  EXPECT_TRUE(TypeRootExists(DEPRECATED_SYNCED_NOTIFICATIONS));
   EXPECT_TRUE(EntryExists(e1->id_string()));
   EXPECT_TRUE(EntryExists(e2->id_string()));
 
@@ -309,32 +310,33 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
 // Create 2 entries, one is 15-days-old, another is 5-days-old. Check if sync
 // will delete 15-days-old entry when server set expired age is 10 days.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByAge) {
-  DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
-  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker(),
-                                 &emitter);
+  DirectoryTypeDebugInfoEmitter emitter(DEPRECATED_SYNCED_NOTIFICATIONS,
+                                        &type_observers_);
+  DirectoryUpdateHandler handler(dir(), DEPRECATED_SYNCED_NOTIFICATIONS,
+                                 ui_worker(), &emitter);
   StatusController status;
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   progress.set_token("token");
   progress.mutable_gc_directive()->set_age_watermark_in_days(20);
 
   sync_pb::DataTypeContext context;
   context.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   context.set_context("context");
   context.set_version(1);
 
   std::unique_ptr<sync_pb::SyncEntity> e1 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   e1->set_mtime(
       TimeToProtoTime(base::Time::Now() - base::TimeDelta::FromDays(15)));
 
   std::unique_ptr<sync_pb::SyncEntity> e2 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   e2->set_mtime(
       TimeToProtoTime(base::Time::Now() - base::TimeDelta::FromDays(5)));
 
@@ -351,7 +353,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByAge) {
   handler.ApplyUpdates(&status);
 
   // Verify none is deleted because they are unapplied during GC.
-  EXPECT_TRUE(TypeRootExists(SYNCED_NOTIFICATIONS));
+  EXPECT_TRUE(TypeRootExists(DEPRECATED_SYNCED_NOTIFICATIONS));
   EXPECT_TRUE(EntryExists(e1->id_string()));
   EXPECT_TRUE(EntryExists(e2->id_string()));
 
@@ -372,38 +374,39 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByAge) {
 // 5-days-old. Check if sync will delete 15-days-old entry when server set
 // max_number_of_items is 2.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByItemLimit) {
-  DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
-  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker(),
-                                 &emitter);
+  DirectoryTypeDebugInfoEmitter emitter(DEPRECATED_SYNCED_NOTIFICATIONS,
+                                        &type_observers_);
+  DirectoryUpdateHandler handler(dir(), DEPRECATED_SYNCED_NOTIFICATIONS,
+                                 ui_worker(), &emitter);
   StatusController status;
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   progress.set_token("token");
   progress.mutable_gc_directive()->set_max_number_of_items(3);
 
   sync_pb::DataTypeContext context;
   context.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   context.set_context("context");
   context.set_version(1);
 
   std::unique_ptr<sync_pb::SyncEntity> e1 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   e1->set_mtime(
       TimeToProtoTime(base::Time::Now() - base::TimeDelta::FromDays(15)));
 
   std::unique_ptr<sync_pb::SyncEntity> e2 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   e2->set_mtime(
       TimeToProtoTime(base::Time::Now() - base::TimeDelta::FromDays(5)));
 
   std::unique_ptr<sync_pb::SyncEntity> e3 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e3")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   e3->set_mtime(
       TimeToProtoTime(base::Time::Now() - base::TimeDelta::FromDays(10)));
 
@@ -421,7 +424,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByItemLimit) {
   handler.ApplyUpdates(&status);
 
   // Verify none is deleted because they are unapplied during GC.
-  EXPECT_TRUE(TypeRootExists(SYNCED_NOTIFICATIONS));
+  EXPECT_TRUE(TypeRootExists(DEPRECATED_SYNCED_NOTIFICATIONS));
   EXPECT_TRUE(EntryExists(e1->id_string()));
   EXPECT_TRUE(EntryExists(e2->id_string()));
 
@@ -439,15 +442,17 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByItemLimit) {
 }
 
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
-  DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
-  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker(),
-                                 &emitter);
+  DirectoryTypeDebugInfoEmitter emitter(DEPRECATED_SYNCED_NOTIFICATIONS,
+                                        &type_observers_);
+  DirectoryUpdateHandler handler(dir(), DEPRECATED_SYNCED_NOTIFICATIONS,
+                                 ui_worker(), &emitter);
   StatusController status;
-  int field_number = GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS);
+  int field_number =
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS);
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+      GetSpecificsFieldNumberFromModelType(DEPRECATED_SYNCED_NOTIFICATIONS));
   progress.set_token("token");
 
   sync_pb::DataTypeContext old_context;
@@ -457,7 +462,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
 
   std::unique_ptr<sync_pb::SyncEntity> e1 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
 
   SyncEntityList updates;
   updates.push_back(e1.get());
@@ -470,15 +475,15 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   handler.ApplyUpdates(&status);
 
   // The PREFERENCES root should be auto-created.
-  EXPECT_TRUE(TypeRootExists(SYNCED_NOTIFICATIONS));
+  EXPECT_TRUE(TypeRootExists(DEPRECATED_SYNCED_NOTIFICATIONS));
 
   EXPECT_TRUE(EntryExists(e1->id_string()));
 
   {
     sync_pb::DataTypeContext dir_context;
     syncable::ReadTransaction trans(FROM_HERE, dir());
-    trans.directory()->GetDataTypeContext(&trans, SYNCED_NOTIFICATIONS,
-                                          &dir_context);
+    trans.directory()->GetDataTypeContext(
+        &trans, DEPRECATED_SYNCED_NOTIFICATIONS, &dir_context);
     EXPECT_EQ(old_context.SerializeAsString(), dir_context.SerializeAsString());
   }
 
@@ -489,7 +494,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
 
   std::unique_ptr<sync_pb::SyncEntity> e2 =
       CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")), "",
-                   SYNCED_NOTIFICATIONS);
+                   DEPRECATED_SYNCED_NOTIFICATIONS);
   updates.clear();
   updates.push_back(e2.get());
 
@@ -506,8 +511,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   {
     sync_pb::DataTypeContext dir_context;
     syncable::ReadTransaction trans(FROM_HERE, dir());
-    trans.directory()->GetDataTypeContext(&trans, SYNCED_NOTIFICATIONS,
-                                          &dir_context);
+    trans.directory()->GetDataTypeContext(
+        &trans, DEPRECATED_SYNCED_NOTIFICATIONS, &dir_context);
     EXPECT_EQ(old_context.SerializeAsString(), dir_context.SerializeAsString());
   }
 }

@@ -94,16 +94,16 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {EXTENSION_SETTINGS, "EXTENSION_SETTING", "extension_settings",
      "Extension settings",
      sync_pb::EntitySpecifics::kExtensionSettingFieldNumber, 14},
-    {APP_NOTIFICATIONS, "APP_NOTIFICATION", "app_notifications",
+    {DEPRECATED_APP_NOTIFICATIONS, "APP_NOTIFICATION", "app_notifications",
      "App Notifications", sync_pb::EntitySpecifics::kAppNotificationFieldNumber,
      15},
     {HISTORY_DELETE_DIRECTIVES, "HISTORY_DELETE_DIRECTIVE",
      "history_delete_directives", "History Delete Directives",
      sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber, 16},
-    {SYNCED_NOTIFICATIONS, "SYNCED_NOTIFICATION", "synced_notifications",
-     "Synced Notifications",
+    {DEPRECATED_SYNCED_NOTIFICATIONS, "SYNCED_NOTIFICATION",
+     "synced_notifications", "Synced Notifications",
      sync_pb::EntitySpecifics::kSyncedNotificationFieldNumber, 20},
-    {SYNCED_NOTIFICATION_APP_INFO, "SYNCED_NOTIFICATION_APP_INFO",
+    {DEPRECATED_SYNCED_NOTIFICATION_APP_INFO, "SYNCED_NOTIFICATION_APP_INFO",
      "synced_notification_app_info", "Synced Notification App Info",
      sync_pb::EntitySpecifics::kSyncedNotificationAppInfoFieldNumber, 31},
     {DICTIONARY, "DICTIONARY", "dictionary", "Dictionary",
@@ -126,8 +126,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, "MANAGED_USER_SHARED_SETTING",
      "managed_user_shared_settings", "Managed User Shared Settings",
      sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber, 30},
-    {DEPRECATED_ARTICLES, "ARTICLE", "deprecated_articles",
-     "Deprecated Articles", sync_pb::EntitySpecifics::kArticleFieldNumber, 28},
+    {DEPRECATED_ARTICLES, "ARTICLE", "articles", "Articles",
+     sync_pb::EntitySpecifics::kArticleFieldNumber, 28},
     {APP_LIST, "APP_LIST", "app_list", "App List",
      sync_pb::EntitySpecifics::kAppListFieldNumber, 29},
     {DEPRECATED_WIFI_CREDENTIALS, "WIFI_CREDENTIAL", "wifi_credentials",
@@ -222,16 +222,16 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case EXTENSION_SETTINGS:
       specifics->mutable_extension_setting();
       break;
-    case APP_NOTIFICATIONS:
+    case DEPRECATED_APP_NOTIFICATIONS:
       specifics->mutable_app_notification();
       break;
     case HISTORY_DELETE_DIRECTIVES:
       specifics->mutable_history_delete_directive();
       break;
-    case SYNCED_NOTIFICATIONS:
+    case DEPRECATED_SYNCED_NOTIFICATIONS:
       specifics->mutable_synced_notification();
       break;
-    case SYNCED_NOTIFICATION_APP_INFO:
+    case DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:
       specifics->mutable_synced_notification_app_info();
       break;
     case DICTIONARY:
@@ -389,13 +389,13 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_extension_setting())
     return EXTENSION_SETTINGS;
   if (specifics.has_app_notification())
-    return APP_NOTIFICATIONS;
+    return DEPRECATED_APP_NOTIFICATIONS;
   if (specifics.has_history_delete_directive())
     return HISTORY_DELETE_DIRECTIVES;
   if (specifics.has_synced_notification())
-    return SYNCED_NOTIFICATIONS;
+    return DEPRECATED_SYNCED_NOTIFICATIONS;
   if (specifics.has_synced_notification_app_info())
-    return SYNCED_NOTIFICATION_APP_INFO;
+    return DEPRECATED_SYNCED_NOTIFICATION_APP_INFO;
   if (specifics.has_dictionary())
     return DICTIONARY;
   if (specifics.has_favicon_image())
@@ -465,10 +465,10 @@ ModelTypeSet EncryptableUserTypes() {
   // We never encrypt history delete directives.
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Synced notifications are not encrypted since the server must see changes.
-  encryptable_user_types.Remove(SYNCED_NOTIFICATIONS);
+  encryptable_user_types.Remove(DEPRECATED_SYNCED_NOTIFICATIONS);
   // Synced Notification App Info does not have private data, so it is not
   // encrypted.
-  encryptable_user_types.Remove(SYNCED_NOTIFICATION_APP_INFO);
+  encryptable_user_types.Remove(DEPRECATED_SYNCED_NOTIFICATION_APP_INFO);
   // Device info data is not encrypted because it might be synced before
   // encryption is ready.
   encryptable_user_types.Remove(DEVICE_INFO);
