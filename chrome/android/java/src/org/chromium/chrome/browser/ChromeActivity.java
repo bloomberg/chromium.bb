@@ -1495,6 +1495,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             mComponent.resolveContextualSuggestionsCoordinator();
         }
+
+        // TODO(yusufo) : Move the condition here to FeatureUtils and the resolution to a
+        //  ChromeTabbedActivity specific place.
+        if (!isTablet() && !SysUtils.isLowEndDevice()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)) {
+            mComponent.resolveTabGridCoordinator();
+        }
     }
 
     /**
