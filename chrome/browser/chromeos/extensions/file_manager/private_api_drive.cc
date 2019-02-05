@@ -43,12 +43,13 @@
 #include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "net/base/network_change_notifier.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -1129,7 +1130,7 @@ bool FileManagerPrivateSearchDriveFunction::RunAsync() {
   }
 
   operation_start_ = base::TimeTicks::Now();
-  is_offline_ = net::NetworkChangeNotifier::IsOffline();
+  is_offline_ = content::GetNetworkConnectionTracker()->IsOffline();
 
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(GetProfile());
