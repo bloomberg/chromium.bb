@@ -66,7 +66,9 @@ bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
   return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
 }
 
-constexpr static int kDefaultBufferSize = 64 * 1024;
+// The buffer size of DataPipe which is used to send the body to the renderer.
+// Use the same size as regular resource loading.
+constexpr static int kDefaultBufferSize = 512 * 1024;
 
 SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
