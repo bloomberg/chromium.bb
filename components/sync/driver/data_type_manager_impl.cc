@@ -81,7 +81,7 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
   if (context.reason == CONFIGURE_REASON_CATCH_UP)
     catch_up_in_progress_ = true;
 
-  desired_types.PutAll(CoreTypes());
+  desired_types.PutAll(ControlTypes());
 
   ModelTypeSet allowed_types = ControlTypes();
   // Add types with controllers.
@@ -343,7 +343,7 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
 
 ModelTypeSet DataTypeManagerImpl::GetPriorityTypes() const {
   ModelTypeSet high_priority_types;
-  high_priority_types.PutAll(PriorityCoreTypes());
+  high_priority_types.PutAll(ControlTypes());
   high_priority_types.PutAll(PriorityUserTypes());
   return high_priority_types;
 }
