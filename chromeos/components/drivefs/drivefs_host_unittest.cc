@@ -28,10 +28,10 @@
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "net/base/mock_network_change_notifier.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_manager.mojom-test-utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -263,7 +263,9 @@ ACTION_P(RunQuitClosure, quit) {
 class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
  public:
   DriveFsHostTest()
-      : mock_identity_manager_(&clock_),
+      : network_connection_tracker_(
+            network::TestNetworkConnectionTracker::CreateInstance()),
+        mock_identity_manager_(&clock_),
         bootstrap_binding_(this),
         binding_(&mock_drivefs_) {
     clock_.SetNow(base::Time::Now());
@@ -284,8 +286,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     host_ = std::make_unique<DriveFsHost>(
-        profile_path_, host_delegate_.get(), host_delegate_.get(), &clock_,
-        disk_manager_.get(), std::move(timer));
+        profile_path_, host_delegate_.get(), host_delegate_.get(),
+        network_connection_tracker_.get(), &clock_, disk_manager_.get(),
+        std::move(timer));
   }
 
   void TearDown() override {
@@ -406,6 +409,8 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   base::test::ScopedTaskEnvironment task_environment_;
   AccountId account_id_;
   std::unique_ptr<chromeos::disks::MockDiskMountManager> disk_manager_;
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      network_connection_tracker_;
   base::SimpleTestClock clock_;
   MockIdentityManager mock_identity_manager_;
   service_manager::TestConnectorFactory connector_factory_;
@@ -413,7 +418,6 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
-  net::test::MockNetworkChangeNotifier network_;
 
   mojo::Binding<mojom::DriveFsBootstrap> bootstrap_binding_;
   MockDriveFs mock_drivefs_;
@@ -687,8 +691,9 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
         connector_factory_.CreateConnector(), account);
     host_ = std::make_unique<DriveFsHost>(
-        profile_path_, host_delegate_.get(), host_delegate_.get(), &clock_,
-        disk_manager_.get(), std::make_unique<base::MockOneShotTimer>());
+        profile_path_, host_delegate_.get(), host_delegate_.get(),
+        network_connection_tracker_.get(), &clock_, disk_manager_.get(),
+        std::make_unique<base::MockOneShotTimer>());
     EXPECT_FALSE(host_->Mount());
     EXPECT_FALSE(host_->IsMounted());
   }

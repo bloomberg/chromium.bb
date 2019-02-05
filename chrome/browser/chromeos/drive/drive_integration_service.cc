@@ -519,6 +519,7 @@ class DriveIntegrationService::DriveFsHolder
         drivefs_host_(profile_->GetPath(),
                       this,
                       this,
+                      content::GetNetworkConnectionTracker(),
                       base::DefaultClock::GetInstance(),
                       chromeos::disks::DiskMountManager::GetInstance(),
                       std::make_unique<base::OneShotTimer>()) {}

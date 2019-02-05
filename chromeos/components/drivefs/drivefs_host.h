@@ -31,6 +31,10 @@ class DiskMountManager;
 }
 }  // namespace chromeos
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace drivefs {
 
 class DriveFsBootstrapListener;
@@ -78,6 +82,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
   DriveFsHost(const base::FilePath& profile_path,
               Delegate* delegate,
               MountObserver* mount_observer,
+              network::NetworkConnectionTracker* network_connection_tracker,
               const base::Clock* clock,
               chromeos::disks::DiskMountManager* disk_mount_manager,
               std::unique_ptr<base::OneShotTimer> timer);
@@ -120,6 +125,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
   Delegate* const delegate_;
   MountObserver* const mount_observer_;
+  network::NetworkConnectionTracker* const network_connection_tracker_;
   const base::Clock* const clock_;
   chromeos::disks::DiskMountManager* const disk_mount_manager_;
   std::unique_ptr<base::OneShotTimer> timer_;

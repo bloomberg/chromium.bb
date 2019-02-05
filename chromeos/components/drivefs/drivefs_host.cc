@@ -19,8 +19,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "net/base/network_change_notifier.h"
 #include "services/identity/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -47,8 +47,7 @@ class DriveFsHost::MountState
       public drive::DriveNotificationObserver {
  public:
   explicit MountState(DriveFsHost* host)
-      : host_(host),
-        weak_ptr_factory_(this) {
+      : host_(host), weak_ptr_factory_(this) {
     host_->disk_mount_manager_->AddObserver(this);
 
     auto access_token = host_->account_token_delegate_->TakeCachedAccessToken();
@@ -74,8 +73,9 @@ class DriveFsHost::MountState
         FROM_HERE, kMountTimeout,
         base::BindOnce(&MountState::OnTimedOut, base::Unretained(this)));
 
-    search_ =
-        std::make_unique<DriveFsSearch>(GetDriveFsInterface(), host_->clock_);
+    search_ = std::make_unique<DriveFsSearch>(
+        GetDriveFsInterface(), host_->network_connection_tracker_,
+        host_->clock_);
   }
 
   ~MountState() override {
@@ -299,15 +299,18 @@ class DriveFsHost::MountState
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
 
-DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
-                         DriveFsHost::Delegate* delegate,
-                         DriveFsHost::MountObserver* mount_observer,
-                         const base::Clock* clock,
-                         chromeos::disks::DiskMountManager* disk_mount_manager,
-                         std::unique_ptr<base::OneShotTimer> timer)
+DriveFsHost::DriveFsHost(
+    const base::FilePath& profile_path,
+    DriveFsHost::Delegate* delegate,
+    DriveFsHost::MountObserver* mount_observer,
+    network::NetworkConnectionTracker* network_connection_tracker,
+    const base::Clock* clock,
+    chromeos::disks::DiskMountManager* disk_mount_manager,
+    std::unique_ptr<base::OneShotTimer> timer)
     : profile_path_(profile_path),
       delegate_(delegate),
       mount_observer_(mount_observer),
+      network_connection_tracker_(network_connection_tracker),
       clock_(clock),
       disk_mount_manager_(disk_mount_manager),
       timer_(std::move(timer)),
@@ -315,6 +318,7 @@ DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
           std::make_unique<DriveFsAuth>(clock, profile_path, delegate)) {
   DCHECK(delegate_);
   DCHECK(mount_observer_);
+  DCHECK(network_connection_tracker_);
   DCHECK(clock_);
 }
 
