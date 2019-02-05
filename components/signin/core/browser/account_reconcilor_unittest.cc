@@ -26,9 +26,9 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -237,7 +237,7 @@ struct Cookie {
 };
 
 // Converts CookieParams to ListedAccounts.
-gaia::ListedAccount ListedAccounfFromCookieParams(
+gaia::ListedAccount ListedAccountFromCookieParams(
     const signin::CookieParams& params,
     const std::string& account_id) {
   gaia::ListedAccount listed_account;
@@ -1982,7 +1982,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
 
   // Add extra cookie change notification. Reconcilor should ignore it.
   gaia::ListedAccount listed_account =
-      ListedAccounfFromCookieParams(cookie_params, account_id);
+      ListedAccountFromCookieParams(cookie_params, account_id);
   reconcilor->OnGaiaAccountsInCookieUpdated(
       {listed_account}, {}, GoogleServiceAuthError::AuthErrorNone());
 

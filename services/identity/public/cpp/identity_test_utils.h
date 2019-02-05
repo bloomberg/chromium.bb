@@ -14,7 +14,6 @@ namespace network {
 class TestURLLoaderFactory;
 }
 
-class FakeGaiaCookieManagerService;
 class GoogleServiceAuthError;
 
 // Test-related utilities that don't fit in either IdentityTestEnvironment or
@@ -128,13 +127,6 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
 // NOTE: See disclaimer at top of file re: direct usage.
 void SetCookieAccounts(IdentityManager* identity_manager,
                        network::TestURLLoaderFactory* test_url_loader_factory,
-                       const std::vector<CookieParams>& cookie_accounts);
-
-// Same as above, but takes a FakeGaiaCookieManagerService.
-// TODO(https://crbug.com/1379770): Delete this overload once FakeGCMS has been
-// eliminated.
-void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
-                       IdentityManager* identity_manager,
                        const std::vector<CookieParams>& cookie_accounts);
 
 // Updates the info for |account_info.account_id|, which must be a known

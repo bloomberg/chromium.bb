@@ -14,6 +14,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,9 +67,7 @@ class OneGoogleBarServiceTest : public testing::Test {
     identity_env_.SetCookieAccounts({{account_info.email, account_info.gaia}});
   }
 
-  void SignOut() {
-    identity_env_.SetCookieAccounts({});
-  }
+  void SignOut() { identity_env_.SetCookieAccounts({}); }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
