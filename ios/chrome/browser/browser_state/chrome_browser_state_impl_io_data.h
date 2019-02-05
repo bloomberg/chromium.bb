@@ -101,7 +101,6 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
 
     // All of these parameters are intended to be read on the IO thread.
     base::FilePath cookie_path;
-    base::FilePath channel_id_path;
     base::FilePath cache_path;
     int cache_max_size;
   };

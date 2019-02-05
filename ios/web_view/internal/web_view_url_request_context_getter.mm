@@ -20,7 +20,6 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
@@ -31,8 +30,6 @@
 #include "net/log/net_log.h"
 #include "net/proxy_resolution/proxy_config_service_ios.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -115,18 +112,6 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
-    // Setup channel id store.
-    base::FilePath channel_id_path;
-    base::PathService::Get(base::DIR_APP_DATA, &channel_id_path);
-    channel_id_path =
-        channel_id_path.Append("ChromeWebView").Append("Channel ID");
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
-        new net::SQLiteChannelIDStore(
-            channel_id_path,
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
-    storage_->set_channel_id_service(std::make_unique<net::ChannelIDService>(
-        new net::DefaultChannelIDStore(channel_id_db.get())));
     storage_->set_http_server_properties(
         std::unique_ptr<net::HttpServerProperties>(
             new net::HttpServerPropertiesImpl()));
@@ -145,8 +130,6 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->transport_security_state();
     network_session_context.cert_transparency_verifier =
         url_request_context_->cert_transparency_verifier();
-    network_session_context.channel_id_service =
-        url_request_context_->channel_id_service();
     network_session_context.net_log = url_request_context_->net_log();
     network_session_context.proxy_resolution_service =
         url_request_context_->proxy_resolution_service();

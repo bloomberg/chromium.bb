@@ -74,8 +74,8 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
             .release()));
 
     getter_ = base::MakeRefCounted<android_webview::AwURLRequestContextGetter>(
-        temp_dir_.GetPath(), temp_dir_.GetPath().AppendASCII("ChannelID"),
-        std::move(config_service_android), pref_service_.get(), &net_log_);
+        temp_dir_.GetPath(), std::move(config_service_android),
+        pref_service_.get(), &net_log_);
 
     // AwURLRequestContextGetter implicitly depends on having protocol handlers
     // provided for url::kBlobScheme, url::kFileSystemScheme, and
