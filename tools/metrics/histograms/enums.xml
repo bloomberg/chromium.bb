@@ -21501,6 +21501,9 @@ Called by update_net_error_codes.py.-->
   <int value="2776" label="CustomCursorIntersectsViewport"/>
   <int value="2777" label="ClientHintsLang"/>
   <int value="2778" label="LinkRelPreloadImageSrcset"/>
+  <int value="2779" label="V8HTMLMediaElement_Remote_AttributeGetter"/>
+  <int value="2780" label="V8RemotePlayback_WatchAvailability_Method"/>
+  <int value="2781" label="V8RemotePlayback_Prompt_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

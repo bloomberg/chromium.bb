@@ -2216,6 +2216,9 @@ enum WebFeature {
   kCustomCursorIntersectsViewport = 2776,
   kClientHintsLang = 2777,
   kLinkRelPreloadImageSrcset = 2778,
+  kV8HTMLMediaElement_Remote_AttributeGetter = 2779,
+  kV8RemotePlayback_WatchAvailability_Method = 2780,
+  kV8RemotePlayback_Prompt_Method = 2781,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
