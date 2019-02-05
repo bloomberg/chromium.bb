@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -34,8 +35,18 @@ bool IsNonAtomicInline(const Node& node) {
 }
 
 Position CreatePositionForOffsetMapping(const Node& node, unsigned dom_offset) {
-  if (node.IsTextNode())
-    return Position(&node, dom_offset);
+  if (node.IsTextNode()) {
+    // 'text-transform' may make the rendered text length longer than the
+    // original text node, in which case we clamp the offset to avoid crashing.
+    // TODO(crbug.com/750990): Support 'text-transform' to remove this hack.
+#if DCHECK_IS_ON()
+    // Ensures that the clamping hack kicks in only with text-transform.
+    if (node.ComputedStyleRef().TextTransform() == ETextTransform::kNone)
+      DCHECK_LE(dom_offset, ToText(node).length());
+#endif
+    const unsigned clamped_offset = std::min(dom_offset, ToText(node).length());
+    return Position(&node, clamped_offset);
+  }
   // For non-text-anchored position, the offset must be either 0 or 1.
   DCHECK_LE(dom_offset, 1u);
   return dom_offset ? Position::AfterNode(node) : Position::BeforeNode(node);
