@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/conflicts/module_info_win.h"
+#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -53,6 +54,9 @@ class ModuleInspector {
   // queued modules.
   void OnStartupFinished();
 
+  // Handles a connection error to the UtilWin service.
+  void OnUtilWinServiceConnectionError();
+
   // Starts inspecting the module at the front of the queue.
   void StartInspectingModule();
 
@@ -72,6 +76,11 @@ class ModuleInspector {
   // inspection tasks in order to not negatively impact startup performance.
   bool is_after_startup_;
 
+  // A pointer to the UtilWin service. Only used if the WinOOPInspectModule
+  // feature is enabled. It is created when inspection is ongoing, and freed
+  // when no longer needed.
+  chrome::mojom::UtilWinPtr util_win_ptr_;
+
   // The task runner where module inspections takes place. It originally starts
   // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
@@ -81,6 +90,11 @@ class ModuleInspector {
   // localization and where people keep their files.
   // e.g. c:\windows vs d:\windows
   StringMapping path_mapping_;
+
+  // The number of time this class will try to restart the UtilWin service if a
+  // connection error occurs. This is to prevent the degenerate case where the
+  // service always fails to start and the restart cycle happens infinitely.
+  int connection_error_retry_count_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
