@@ -349,10 +349,8 @@ void Preferences::RegisterProfilePrefs(
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   registry->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
-  registry->RegisterListPref(prefs::kLanguageAllowedInputMethods,
-                             std::make_unique<base::ListValue>());
-  registry->RegisterListPref(prefs::kAllowedLanguages,
-                             std::make_unique<base::ListValue>());
+  registry->RegisterListPref(prefs::kLanguageAllowedInputMethods);
+  registry->RegisterListPref(prefs::kAllowedLanguages);
   registry->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                                kFallbackInputMethodLocale);
   registry->RegisterStringPref(prefs::kLanguagePreloadEngines,
