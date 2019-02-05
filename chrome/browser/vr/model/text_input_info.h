@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_VR_MODEL_TEXT_INPUT_INFO_H_
 #define CHROME_BROWSER_VR_MODEL_TEXT_INPUT_INFO_H_
 
-#include <vector>
+#include <string>
 
 #include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/text_edit_action.h"
 #include "chrome/browser/vr/vr_base_export.h"
 
