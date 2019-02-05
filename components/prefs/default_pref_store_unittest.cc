@@ -52,18 +52,15 @@ TEST(DefaultPrefStoreTest, NotifyPrefValueChanged) {
   std::string kPrefKey("pref_key");
 
   // Setting a default value shouldn't send a change notification.
-  pref_store->SetDefaultValue(kPrefKey,
-                              std::unique_ptr<Value>(new Value("foo")));
+  pref_store->SetDefaultValue(kPrefKey, Value("foo"));
   EXPECT_EQ(0, observer.change_count());
 
   // Replacing the default value should send a change notification...
-  pref_store->ReplaceDefaultValue(kPrefKey,
-                                  std::unique_ptr<Value>(new Value("bar")));
+  pref_store->ReplaceDefaultValue(kPrefKey, Value("bar"));
   EXPECT_EQ(1, observer.change_count());
 
   // But only if the value actually changed.
-  pref_store->ReplaceDefaultValue(kPrefKey,
-                                  std::unique_ptr<Value>(new Value("bar")));
+  pref_store->ReplaceDefaultValue(kPrefKey, Value("bar"));
   EXPECT_EQ(1, observer.change_count());
 }
 

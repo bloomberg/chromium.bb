@@ -14,10 +14,6 @@
 #include "base/macros.h"
 #include "components/prefs/pref_registry_simple.h"
 
-namespace base {
-class Value;
-}
-
 // TODO(tfarina): Change this namespace to pref_registry.
 namespace user_prefs {
 
@@ -89,7 +85,6 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
 
   // PrefRegistrySimple overrides.
   void OnPrefRegistered(const std::string& path,
-                        base::Value* default_value,
                         uint32_t flags) override;
 
   SyncableRegistrationCallback callback_;
