@@ -13,15 +13,22 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+
+namespace content {
+class StoragePartition;
+}
 
 namespace network {
 class SharedURLLoaderFactory;
 }
+
+class Browser;
 
 // Implementation for the inline login WebUI handler on desktop Chrome. Once
 // CrOS migrates to the same webview approach as desktop Chrome, much of the
@@ -40,7 +47,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   }
 
   Browser* GetDesktopBrowser();
-  void SyncStarterCallback(OneClickSigninSyncStarter::SyncSetupResult result);
+  void SyncStarterCallback(bool sync_setup_success);
   // Closes the current tab and shows the account management view of the avatar
   // bubble if |show_account_management| is true.
   void CloseTab(bool show_account_management);
@@ -134,7 +141,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
 // sync after InlineLoginHandlerImpl has acquired the auth tokens from GAIA.
 // This is a separate class from InlineLoginHandlerImpl because the full signin
 // process is asynchronous and can outlive the signin UI.
-// InlineLoginHandlerImpl is destryed once the UI is closed.
+// InlineLoginHandlerImpl is destroyed once the UI is closed.
 class InlineSigninHelper : public GaiaAuthConsumer {
  public:
   InlineSigninHelper(
@@ -156,18 +163,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   GaiaAuthFetcher* GetGaiaAuthFetcherForTest() { return &gaia_auth_fetcher_; }
 
  private:
-  // Handles cross account sign in error. If the supplied |email| does not match
-  // the last signed in email of the current profile, then Chrome will show a
-  // confirmation dialog before starting sync. It returns true if there is a
-  // cross account error, and false otherwise.
-  bool HandleCrossAccountError(const std::string& refresh_token);
-
-  // Callback used with ConfirmEmailDialogDelegate.
-  void ConfirmEmailAction(
-      content::WebContents* web_contents,
-      const std::string& refresh_token,
-      SigninEmailConfirmationDialog::Action action);
-
   // Overridden from GaiaAuthConsumer.
   void OnClientOAuthSuccess(const ClientOAuthResult& result) override;
   void OnClientOAuthFailure(const GoogleServiceAuthError& error)
@@ -184,11 +179,9 @@ class InlineSigninHelper : public GaiaAuthConsumer {
 
   // Creates the sync starter.  Virtual for tests. Call to exchange oauth code
   // for tokens.
-  virtual void CreateSyncStarter(
-      Browser* browser,
-      const GURL& current_url,
-      const std::string& refresh_token,
-      OneClickSigninSyncStarter::ProfileMode profile_mode);
+  virtual void CreateSyncStarter(Browser* browser,
+                                 const GURL& current_url,
+                                 const std::string& refresh_token);
 
   GaiaAuthFetcher gaia_auth_fetcher_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;

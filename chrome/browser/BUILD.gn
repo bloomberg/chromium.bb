@@ -1491,8 +1491,6 @@ jumbo_split_static_library("browser") {
     "signin/signin_promo_util.h",
     "signin/signin_status_metrics_provider_chromeos.cc",
     "signin/signin_status_metrics_provider_chromeos.h",
-    "signin/signin_tracker_factory.cc",
-    "signin/signin_tracker_factory.h",
     "signin/signin_util.cc",
     "signin/signin_util.h",
     "site_details.cc",

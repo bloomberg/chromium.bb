@@ -255,7 +255,8 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
       DiceTurnSyncOnHelper::SigninAbortedMode mode) {
     return new DiceTurnSyncOnHelper(
         profile(), kAccessPoint, kSigninPromoAction, kSigninReason, account_id_,
-        mode, std::make_unique<TestDiceTurnSyncOnHelperDelegate>(this));
+        mode, std::make_unique<TestDiceTurnSyncOnHelperDelegate>(this),
+        base::DoNothing());
   }
 
   void UseEnterpriseAccount() {
