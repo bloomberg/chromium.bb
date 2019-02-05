@@ -30,12 +30,11 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {string} id The ID of the printer.
      * @param {!print_preview.Destination} printer The destination to return
      *     when the printer is requested.
      */
-    setPrinter(id, printer) {
-      this.cloudPrintersMap_.set(id, printer);
+    setPrinter(printer) {
+      this.cloudPrintersMap_.set(printer.key, printer);
     }
 
     /**
@@ -43,10 +42,14 @@ cr.define('print_preview', function() {
      * printers that have been set so far using setPrinter().
      * @override
      */
-    search() {
+    search(account) {
       this.searchInProgress_ = true;
       const printers = [];
-      this.cloudPrintersMap_.forEach((value) => printers.push(value));
+      this.cloudPrintersMap_.forEach((value) => {
+        if (value.account === account) {
+          printers.push(value);
+        }
+      });
 
       const searchDoneEvent =
           new CustomEvent(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE, {
@@ -54,7 +57,7 @@ cr.define('print_preview', function() {
               origin: print_preview.DestinationOrigin.COOKIES,
               printers: printers,
               isRecent: true,
-              user: 'foo@chromium.org',
+              user: account,
               searchDone: true,
             }
           });
@@ -71,7 +74,8 @@ cr.define('print_preview', function() {
      * @override
      */
     printer(printerId, origin, account) {
-      const printer = this.cloudPrintersMap_.get(printerId);
+      const printer = this.cloudPrintersMap_.get(
+          print_preview.createDestinationKey(printerId, origin, account));
       if (!!printer) {
         printer.capabilities =
             print_preview_test_utils.getCddTemplate(printerId);

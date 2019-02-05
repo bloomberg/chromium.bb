@@ -103,9 +103,7 @@ cr.define('invalid_settings_browsertest', function() {
       page.activeUser = 'foo@chromium.org';
       page.users = [page.activeUser];
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
-      printers.forEach(printer => {
-        cloudPrintInterface.setPrinter(printer.id, printer);
-      });
+      printers.forEach(printer => cloudPrintInterface.setPrinter(printer));
     }
 
     // Test that error message is displayed when plugin doesn't exist.
