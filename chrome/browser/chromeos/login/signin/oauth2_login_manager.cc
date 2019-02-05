@@ -13,13 +13,12 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
@@ -28,7 +27,7 @@ OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
     : user_profile_(user_profile),
       restore_strategy_(RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
       state_(SESSION_RESTORE_NOT_STARTED) {
-  GetTokenService()->AddObserver(this);
+  GetIdentityManager()->AddObserver(this);
 
   // For telemetry, we mark session restore completed to avoid warnings from
   // MergeSessionThrottle.
@@ -80,20 +79,20 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 }
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
-  ProfileOAuth2TokenService* token_service = GetTokenService();
-  const std::string primary_account_id = GetPrimaryAccountId();
-  if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
+  identity::IdentityManager* identity_manager = GetIdentityManager();
+  if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
     VLOG(1) << "OAuth2 refresh token is already loaded.";
     VerifySessionCookies();
   } else {
     VLOG(1) << "Waiting for OAuth2 refresh token being loaded from database.";
 
+    AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
     // Flag user with unknown token status in case there are no saved tokens
     // and OnRefreshTokenAvailable is not called. Flagging it here would
     // cause user to go through Gaia in next login to obtain a new refresh
     // token.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmail(primary_account_id),
+        AccountId::FromUserEmail(account_info.email),
         user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
   }
 }
@@ -111,9 +110,9 @@ bool OAuth2LoginManager::ShouldBlockTabLoading() const {
   return SessionRestoreIsRunning();
 }
 
-void OAuth2LoginManager::OnRefreshTokenAvailable(
-    const std::string& user_email) {
-  VLOG(1) << "OnRefreshTokenAvailable";
+void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info) {
+  VLOG(1) << "OnRefreshTokenUpdatedForAccount";
 
   if (state_ == SESSION_RESTORE_NOT_STARTED)
     return;
@@ -128,41 +127,45 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     return;
   }
   // Only restore session cookies for the primary account in the profile.
-  if (GetPrimaryAccountId() == user_email) {
+  if (GetPrimaryAccountId() == account_info.account_id) {
     // The refresh token has changed, so stop any ongoing actions that were
     // based on the old refresh token.
     Stop();
 
     // Token is loaded. Undo the flagging before token loading.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmail(user_email),
+        AccountId::FromUserEmail(account_info.email),
         user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
     VerifySessionCookies();
   }
 }
 
-ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
-  return ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_);
+identity::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
+  return IdentityManagerFactory::GetForProfile(user_profile_);
 }
 
 std::string OAuth2LoginManager::GetPrimaryAccountId() {
   const std::string primary_account_id =
-      IdentityManagerFactory::GetForProfile(user_profile_)
-          ->GetPrimaryAccountId();
+      GetIdentityManager()->GetPrimaryAccountId();
   LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
   return primary_account_id;
 }
 
 void OAuth2LoginManager::StoreOAuth2Token() {
-  UpdateCredentials(GetPrimaryAccountId());
-}
-
-void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
-  DCHECK(!account_id.empty());
+  identity::IdentityManager* identity_manager = GetIdentityManager();
+  DCHECK(identity_manager->HasPrimaryAccount());
   DCHECK(!refresh_token_.empty());
-  // |account_id| is assumed to be already canonicalized if it's an email.
-  GetTokenService()->UpdateCredentials(account_id, refresh_token_);
+
+  // On ChromeOS, the primary account is set via
+  // IdentityManager::SetPrimaryAccountSynchronously(), which seeds the account
+  // info with AccountTrackerService. Hence, the primary account info will be
+  // available at this point.
+  AccountInfo primary_account_info = identity_manager->GetPrimaryAccountInfo();
+  identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+      primary_account_info.gaia, primary_account_info.email, refresh_token_,
+      primary_account_info.is_under_advanced_protection,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   for (auto& observer : observer_list_)
     observer.OnNewRefreshTokenAvaiable(user_profile_);
@@ -172,8 +175,7 @@ void OAuth2LoginManager::VerifySessionCookies() {
   DCHECK(!login_verifier_.get());
   login_verifier_.reset(new OAuth2LoginVerifier(
       this, GaiaCookieManagerServiceFactory::GetForProfile(user_profile_),
-      IdentityManagerFactory::GetForProfile(user_profile_),
-      GetPrimaryAccountId(), oauthlogin_access_token_));
+      GetIdentityManager(), GetPrimaryAccountId(), oauthlogin_access_token_));
 
   if (restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
     login_verifier_->VerifyUserCookies();
@@ -189,7 +191,7 @@ void OAuth2LoginManager::RestoreSessionCookies() {
 }
 
 void OAuth2LoginManager::Shutdown() {
-  GetTokenService()->RemoveObserver(this);
+  GetIdentityManager()->RemoveObserver(this);
   login_verifier_.reset();
 }
 
