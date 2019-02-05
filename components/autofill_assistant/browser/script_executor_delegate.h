@@ -6,8 +6,11 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_EXECUTOR_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/state.h"
 
@@ -51,6 +54,8 @@ class ScriptExecutorDelegate {
   virtual std::string GetStatusMessage() const = 0;
   virtual void SetDetails(const Details& details) = 0;
   virtual void ClearDetails() = 0;
+  virtual void SetProgress(int progress) = 0;
+  virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {

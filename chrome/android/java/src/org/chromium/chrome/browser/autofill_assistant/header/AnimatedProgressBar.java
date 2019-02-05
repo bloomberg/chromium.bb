@@ -49,35 +49,37 @@ class AnimatedProgressBar {
     }
 
     /**
-     * Set the progress to {@code progress} if it is higher than the current progress, or do nothing
-     * if it is not (hence it is OK to call this method with the same value multiple times).
+     * Set the progress to {@code progress}. The transition to the new progress value is
+     * animated.
      */
-    public void maybeIncreaseProgress(int progress) {
-        if (progress > mLastProgress) {
-            ValueAnimator progressAnimation = ValueAnimator.ofInt(mLastProgress, progress);
-            progressAnimation.setDuration(PROGRESS_BAR_SPEED_MS * (progress - mLastProgress) / 100);
-            progressAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
-            progressAnimation.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mPendingIncreaseAnimations.isEmpty()) {
-                        mIsRunningProgressAnimation = false;
-                    } else {
-                        mIsRunningProgressAnimation = true;
-                        mPendingIncreaseAnimations.poll().start();
-                    }
+    public void setProgress(int progress) {
+        if (progress == mLastProgress) {
+            return;
+        }
+        ValueAnimator progressAnimation = ValueAnimator.ofInt(mLastProgress, progress);
+        progressAnimation.setDuration(
+                PROGRESS_BAR_SPEED_MS * Math.abs(progress - mLastProgress) / 100);
+        progressAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
+        progressAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mPendingIncreaseAnimations.isEmpty()) {
+                    mIsRunningProgressAnimation = false;
+                } else {
+                    mIsRunningProgressAnimation = true;
+                    mPendingIncreaseAnimations.poll().start();
                 }
-            });
-            progressAnimation.addUpdateListener(
-                    animation -> mProgressBar.setProgress((int) animation.getAnimatedValue()));
-            mLastProgress = progress;
-
-            if (mIsRunningProgressAnimation) {
-                mPendingIncreaseAnimations.offer(progressAnimation);
-            } else {
-                mIsRunningProgressAnimation = true;
-                progressAnimation.start();
             }
+        });
+        progressAnimation.addUpdateListener(
+                animation -> mProgressBar.setProgress((int) animation.getAnimatedValue()));
+        mLastProgress = progress;
+
+        if (mIsRunningProgressAnimation) {
+            mPendingIncreaseAnimations.offer(progressAnimation);
+        } else {
+            mIsRunningProgressAnimation = true;
+            progressAnimation.start();
         }
     }
 

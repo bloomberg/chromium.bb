@@ -515,9 +515,6 @@ message UploadDomProto {
 
 // Shows the progress bar.
 message ShowProgressBarProto {
-  // Specifies whether the progress is done and should be removed.
-  optional bool done = 2;
-
   // Message to show on the progress bar while loading.
   optional string message = 3;
 

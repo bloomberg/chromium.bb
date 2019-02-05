@@ -52,7 +52,7 @@ class AssistantHeaderViewBinder
             view.mCloseButton.setVisibility(
                     model.get(AssistantHeaderModel.CLOSE_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
-            view.mProgressBar.maybeIncreaseProgress(model.get(AssistantHeaderModel.PROGRESS));
+            view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
         } else if (AssistantHeaderModel.PROGRESS_PULSING == propertyKey) {
             if (model.get(AssistantHeaderModel.PROGRESS_PULSING)) {
                 view.mProgressBar.enablePulsing();

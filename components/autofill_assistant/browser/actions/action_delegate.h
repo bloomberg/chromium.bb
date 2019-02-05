@@ -197,10 +197,7 @@ class ActionDelegate {
   virtual void SetDetails(const Details& details) = 0;
 
   // Show the progress bar and set it at |progress|%.
-  virtual void ShowProgressBar(int progress) = 0;
-
-  // Hide the progress bar.
-  virtual void HideProgressBar() = 0;
+  virtual void SetProgress(int progress) = 0;
 
  protected:
   ActionDelegate() = default;

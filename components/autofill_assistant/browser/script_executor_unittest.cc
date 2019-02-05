@@ -11,6 +11,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/mock_ui_controller.h"
@@ -44,16 +45,19 @@ using ::testing::StrictMock;
 const char* kScriptPath = "script_path";
 
 class ScriptExecutorTest : public testing::Test,
-                           public ScriptExecutorDelegate,
                            public ScriptExecutor::Listener {
  public:
   void SetUp() override {
+    delegate_.SetService(&mock_service_);
+    delegate_.SetUiController(&mock_ui_controller_);
+    delegate_.SetWebController(&mock_web_controller_);
+
     executor_ = std::make_unique<ScriptExecutor>(
         kScriptPath,
         /* global_payload= */ "initial global payload",
         /* script_payload= */ "initial payload",
         /* listener= */ this, &scripts_state_, &ordered_interrupts_,
-        /* delegate= */ this);
+        /* delegate= */ &delegate_);
     url_ = GURL("http://example.com/");
 
     // In this test, "tell" actions always succeed and "click" actions always
@@ -72,39 +76,6 @@ class ScriptExecutorTest : public testing::Test,
   ScriptExecutorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
-
-  // Implements ScriptExecutorDelegate
-  Service* GetService() override { return &mock_service_; }
-
-  UiController* GetUiController() override { return &mock_ui_controller_; }
-
-  WebController* GetWebController() override { return &mock_web_controller_; }
-
-  ClientMemory* GetClientMemory() override { return &memory_; }
-
-  void SetTouchableElementArea(const ElementAreaProto& area) {}
-
-  void SetStatusMessage(const std::string& status_message) {
-    status_message_ = status_message;
-  }
-
-  std::string GetStatusMessage() const override { return status_message_; }
-
-  void ClearDetails() override { cleared_details_ = true; }
-
-  void SetDetails(const Details& details) override {}
-
-  void EnterState(AutofillAssistantState state) {}
-
-  const std::map<std::string, std::string>& GetParameters() override {
-    return parameters_;
-  }
-
-  autofill::PersonalDataManager* GetPersonalDataManager() override {
-    return nullptr;
-  }
-
-  content::WebContents* GetWebContents() override { return nullptr; }
 
   // Implements ScriptExecutor::Listener
   void OnServerPayloadChanged(const std::string& global_payload,
@@ -175,8 +146,8 @@ class ScriptExecutorTest : public testing::Test,
   // scoped_task_environment_ must be first to guarantee other field
   // creation run in that environment.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  FakeScriptExecutorDelegate delegate_;
   Script script_;
-  ClientMemory memory_;
   StrictMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
   NiceMock<MockUiController> mock_ui_controller_;
@@ -191,12 +162,9 @@ class ScriptExecutorTest : public testing::Test,
   std::vector<std::unique_ptr<Script>> scripts_update_;
   int scripts_update_count_ = 0;
   std::unique_ptr<ScriptExecutor> executor_;
-  std::map<std::string, std::string> parameters_;
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
   GURL url_;
-  std::string status_message_;
-  bool cleared_details_ = false;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {
@@ -210,8 +178,9 @@ TEST_F(ScriptExecutorTest, GetActionsFails) {
 }
 
 TEST_F(ScriptExecutorTest, ForwardParameters) {
-  parameters_["param1"] = "value1";
-  parameters_["param2"] = "value2";
+  auto* parameters = delegate_.GetMutableParameters();
+  (*parameters)["param1"] = "value1";
+  (*parameters)["param2"] = "value2";
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq(kScriptPath), _,
                            AllOf(Contains(Pair("param1", "value1")),
@@ -405,8 +374,10 @@ TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
       .WillOnce(RunOnceCallback<3>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
+
+  delegate_.SetDetails(Details());  // empty, but not null
   executor_->Run(executor_callback_.Get());
-  EXPECT_TRUE(cleared_details_);
+  EXPECT_EQ(nullptr, delegate_.GetDetails());
 }
 
 TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
@@ -424,9 +395,9 @@ TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
+  delegate_.SetDetails(Details());  // empty, but not null
   executor_->Run(executor_callback_.Get());
-
-  EXPECT_FALSE(cleared_details_);
+  EXPECT_NE(nullptr, delegate_.GetDetails());
 }
 
 TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
@@ -438,9 +409,9 @@ TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
       .WillOnce(RunOnceCallback<3>(false, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
-
+  delegate_.SetDetails(Details());  // empty, but not null
   executor_->Run(executor_callback_.Get());
-  EXPECT_TRUE(cleared_details_);
+  EXPECT_EQ(nullptr, delegate_.GetDetails());
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptStateWhileRunning) {
@@ -917,9 +888,9 @@ TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  status_message_ = "pre-run status";
+  delegate_.SetStatusMessage("pre-run status");
   executor_->Run(executor_callback_.Get());
-  EXPECT_EQ("pre-interrupt status", status_message_);
+  EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
 }
 
 TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
@@ -938,9 +909,9 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  status_message_ = "pre-run status";
+  delegate_.SetStatusMessage("pre-run status");
   executor_->Run(executor_callback_.Get());
-  EXPECT_EQ("pre-interrupt status", status_message_);
+  EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
 }
 
 }  // namespace

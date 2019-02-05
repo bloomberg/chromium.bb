@@ -26,8 +26,7 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason));
   MOCK_METHOD0(Close, void());
-  MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
-  MOCK_METHOD0(ClearChips, void());
+  MOCK_METHOD1(OnChipsChanged, void(const std::vector<Chip>& chips));
   MOCK_METHOD3(
       GetPaymentInformation,
       void(payments::mojom::PaymentOptionsPtr payment_options,
@@ -35,11 +34,9 @@ class MockUiController : public UiController {
                callback,
            const std::vector<std::string>& supported_basic_card_networks));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
-  MOCK_METHOD1(ShowProgressBar, void(int progress));
-  MOCK_METHOD0(HideProgressBar, void());
+  MOCK_METHOD1(OnProgressChanged, void(int progress));
   MOCK_METHOD1(OnTouchableAreaChanged, void(const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(Terminate, bool());
-  MOCK_METHOD0(ExpandBottomSheet, void());
   MOCK_CONST_METHOD0(GetDropOutReason, Metrics::DropOutReason());
 };
 

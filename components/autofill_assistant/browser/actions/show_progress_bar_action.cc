@@ -24,14 +24,17 @@ ShowProgressBarAction::~ShowProgressBarAction() {}
 void ShowProgressBarAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  if (proto_.show_progress_bar().done()) {
-    delegate->HideProgressBar();
-  } else {
-    int progress =
-        std::min(100, std::max(0, proto_.show_progress_bar().progress()));
-    delegate->SetStatusMessage(proto_.show_progress_bar().message());
-    delegate->ShowProgressBar(progress);
+  if (proto_.show_progress_bar().progress() == 0) {
+    // Old script might still contain a ShowProgressBar action that clears the
+    // progress. Ignore these.
+    return;
   }
+  if (!proto_.show_progress_bar().message().empty()) {
+    delegate->SetStatusMessage(proto_.show_progress_bar().message());
+  }
+  int progress =
+      std::min(100, std::max(0, proto_.show_progress_bar().progress()));
+  delegate->SetProgress(progress);
 
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));

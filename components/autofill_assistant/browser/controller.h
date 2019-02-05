@@ -79,8 +79,22 @@ class Controller : public ScriptExecutorDelegate,
   std::string GetStatusMessage() const override;
   void SetDetails(const Details& details) override;
   void ClearDetails() override;
+  void SetProgress(int progress) override;
+  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void EnterState(AutofillAssistantState state) override;
   bool IsCookieExperimentEnabled() const;
+
+  // Overrides autofill_assistant::UiDelegate:
+  AutofillAssistantState GetState() override;
+  void UpdateTouchableArea() override;
+  void OnUserInteractionInsideTouchableArea() override;
+  const Details* GetDetails() const override;
+  int GetProgress() const override;
+  const std::vector<Chip>& GetChips() const override;
+  void SelectChip(int chip_index) override;
+  std::string GetDebugContext() override;
+  Metrics::DropOutReason GetDropOutReason() const override;
+  void GetTouchableArea(std::vector<RectF>* area) const override;
 
  private:
   friend ControllerTest;
@@ -125,15 +139,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Called when a script is selected.
   void OnScriptSelected(const std::string& script_path);
-
-  // Overrides autofill_assistant::UiDelegate:
-  AutofillAssistantState GetState() override;
-  void UpdateTouchableArea() override;
-  void OnUserInteractionInsideTouchableArea() override;
-  const Details* GetDetails() const override;
-  std::string GetDebugContext() override;
-  Metrics::DropOutReason GetDropOutReason() const override;
-  void GetTouchableArea(std::vector<RectF>* area) const override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;
@@ -199,6 +204,12 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current details, may be null.
   std::unique_ptr<Details> details_;
+
+  // Current progress.
+  int progress_ = 0;
+
+  // Current set of chips. May be null, but never empty.
+  std::unique_ptr<std::vector<Chip>> chips_;
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;
