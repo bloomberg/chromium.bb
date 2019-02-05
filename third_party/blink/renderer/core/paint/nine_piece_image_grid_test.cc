@@ -136,6 +136,45 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_ScaleDownBorder) {
     else
       EXPECT_TRUE(draw_info.destination.Size().IsEmpty());
   }
+
+  // Like above, but also make sure to get a scale-down factor that requires
+  // rounding to pick the larger value on one of the edges. (A 1:3, 2:3 split.)
+  BorderImageLength top_left(10);
+  BorderImageLength bottom_right(20);
+  nine_piece.SetBorderSlices(
+      BorderImageLengthBox(top_left, bottom_right, bottom_right, top_left));
+  grid = NinePieceImageGrid(nine_piece, image_size, border_image_area,
+                            border_widths);
+  NinePieceImageGrid::NinePieceDrawInfo draw_info =
+      grid.GetNinePieceDrawInfo(kTopLeftPiece, 1);
+  EXPECT_EQ(draw_info.destination.Size(), FloatSize(33, 33));
+  draw_info = grid.GetNinePieceDrawInfo(kTopRightPiece, 1);
+  EXPECT_EQ(draw_info.destination.Size(), FloatSize(67, 33));
+  draw_info = grid.GetNinePieceDrawInfo(kBottomLeftPiece, 1);
+  EXPECT_EQ(draw_info.destination.Size(), FloatSize(33, 67));
+  draw_info = grid.GetNinePieceDrawInfo(kBottomRightPiece, 1);
+  EXPECT_EQ(draw_info.destination.Size(), FloatSize(67, 67));
+
+  // Set border slices that overlap in one dimension but not in the other, and
+  // where the resulting width in the non-overlapping dimension will round to a
+  // larger width.
+  BorderImageLength top_bottom(10);
+  BorderImageLength left_right(Length(11, kFixed));
+  nine_piece.SetBorderSlices(
+      BorderImageLengthBox(top_bottom, left_right, top_bottom, left_right));
+  grid = NinePieceImageGrid(nine_piece, image_size, border_image_area,
+                            border_widths);
+  NinePieceImageGrid::NinePieceDrawInfo tl_info =
+      grid.GetNinePieceDrawInfo(kTopLeftPiece, 1);
+  EXPECT_EQ(tl_info.destination.Size(), FloatSize(6, 50));
+  // The top-right, bottom-left and bottom-right pieces are the same size as
+  // the top-left piece.
+  draw_info = grid.GetNinePieceDrawInfo(kTopRightPiece, 1);
+  EXPECT_EQ(tl_info.destination.Size(), draw_info.destination.Size());
+  draw_info = grid.GetNinePieceDrawInfo(kBottomLeftPiece, 1);
+  EXPECT_EQ(tl_info.destination.Size(), draw_info.destination.Size());
+  draw_info = grid.GetNinePieceDrawInfo(kBottomRightPiece, 1);
+  EXPECT_EQ(tl_info.destination.Size(), draw_info.destination.Size());
 }
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {

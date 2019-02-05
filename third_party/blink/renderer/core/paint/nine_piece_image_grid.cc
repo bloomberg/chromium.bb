@@ -26,12 +26,31 @@ static int ComputeEdgeSlice(const Length& slice, int maximum) {
                        ValueForLength(slice, LayoutUnit(maximum)).Round());
 }
 
+// Scale the width of the |start| and |end| edges using |scale_factor|.
+// Always round the width of |start|. Based on available space (|box_extent|),
+// the width of |end| is either rounded or floored. This should keep abutting
+// edges flush, while not producing potentially "uneven" widths for a
+// non-overlapping case.
+static void ScaleEdgeWidths(NinePieceImageGrid::Edge& start,
+                            NinePieceImageGrid::Edge& end,
+                            int box_extent,
+                            float scale_factor) {
+  LayoutUnit start_width(start.width);
+  start_width *= scale_factor;
+  LayoutUnit end_width(end.width);
+  end_width *= scale_factor;
+  start.width = start_width.Round();
+  int remaining = box_extent - start.width;
+  int rounded_end = end_width.Round();
+  end.width = rounded_end > remaining ? end_width.Floor() : rounded_end;
+}
+
 NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
                                        IntSize image_size,
                                        IntRect border_image_area,
                                        const IntRectOutsets& border_widths,
                                        bool include_left_edge,
-                                       bool include_rigt_edge)
+                                       bool include_right_edge)
     : border_image_area_(border_image_area),
       image_size_(image_size),
       horizontal_tile_rule_(nine_piece_image.HorizontalRule()),
@@ -46,10 +65,12 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
   left_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Left(),
                                  image_size.Width());
 
+  // TODO(fs): Compute edge widths to LayoutUnit, and then only round to
+  // integer at the end - after (potential) compensation for overlapping edges.
   top_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Top(),
                                 border_widths.Top(), top_.slice,
                                 border_image_area.Height());
-  right_.width = include_rigt_edge
+  right_.width = include_right_edge
                      ? ComputeEdgeWidth(nine_piece_image.BorderSlices().Right(),
                                         border_widths.Right(), right_.slice,
                                         border_image_area.Width())
@@ -73,10 +94,10 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
       std::min((float)border_image_area.Width() / border_side_width,
                (float)border_image_area.Height() / border_side_height);
   if (border_side_scale_factor < 1) {
-    top_.width *= border_side_scale_factor;
-    right_.width *= border_side_scale_factor;
-    bottom_.width *= border_side_scale_factor;
-    left_.width *= border_side_scale_factor;
+    ScaleEdgeWidths(top_, bottom_, border_image_area.Height(),
+                    border_side_scale_factor);
+    ScaleEdgeWidths(left_, right_, border_image_area.Width(),
+                    border_side_scale_factor);
   }
 }
 
