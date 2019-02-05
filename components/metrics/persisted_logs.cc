@@ -152,7 +152,17 @@ void PersistedLogs::DiscardStagedLog() {
 }
 
 void PersistedLogs::PersistUnsentLogs() const {
+  // TODO(crbug.com/859477): The hypothesis is that a large part of crashes in
+  // base::ValueInternalCleanup() are caused by a not yet initialized local
+  // state.
+  CHECK_NE(PrefService::PrefInitializationStatus::INITIALIZATION_STATUS_WAITING,
+           local_state_->GetInitializationStatus());
+  CHECK_NE(PrefService::PrefInitializationStatus::INITIALIZATION_STATUS_ERROR,
+           local_state_->GetInitializationStatus());
   ListPrefUpdate update(local_state_, pref_name_);
+  // TODO(crbug.com/859477): Verify that the preference has been properly
+  // registered.
+  CHECK(update.Get());
   WriteLogsToPrefList(update.Get());
 }
 
