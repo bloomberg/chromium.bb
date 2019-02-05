@@ -124,8 +124,10 @@ void LinkHighlightImpl::AttachLinkHighlightToCompositingLayer(
       node_->GetLayoutObject() != &paint_invalidation_container) {
     is_scrolling_graphics_layer_ = true;
   }
-  if (!new_graphics_layer)
+  if (!new_graphics_layer) {
+    ClearGraphicsLayerLinkHighlightPointer();
     return;
+  }
 
   if (current_graphics_layer_ != new_graphics_layer) {
     if (current_graphics_layer_)
