@@ -12,9 +12,9 @@ namespace mojo {
 
 // static
 bool StructTraits<media_session::mojom::MediaImageDataView,
-                  media_session::MediaMetadata::MediaImage>::
+                  media_session::MediaImage>::
     Read(media_session::mojom::MediaImageDataView data,
-         media_session::MediaMetadata::MediaImage* out) {
+         media_session::MediaImage* out) {
   if (!data.ReadSrc(&out->src))
     return false;
   if (!data.ReadType(&out->type))

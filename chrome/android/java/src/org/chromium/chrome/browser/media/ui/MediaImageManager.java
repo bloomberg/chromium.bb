@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.media.ui;
 
-import static org.chromium.services.media_session.MediaMetadata.MediaImage;
-
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.text.TextUtils;
@@ -14,6 +12,7 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.services.media_session.MediaImage;
 
 import java.util.HashMap;
 import java.util.Iterator;

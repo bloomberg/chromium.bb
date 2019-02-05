@@ -44,9 +44,9 @@ MediaImageManager::MediaImageManager(int min_size, int ideal_size)
 
 MediaImageManager::~MediaImageManager() = default;
 
-base::Optional<MediaMetadata::MediaImage> MediaImageManager::SelectImage(
-    const std::vector<MediaMetadata::MediaImage>& images) {
-  base::Optional<MediaMetadata::MediaImage> selected;
+base::Optional<MediaImage> MediaImageManager::SelectImage(
+    const std::vector<MediaImage>& images) {
+  base::Optional<MediaImage> selected;
 
   double best_score = 0;
   for (auto& image : images) {
@@ -60,8 +60,7 @@ base::Optional<MediaMetadata::MediaImage> MediaImageManager::SelectImage(
   return selected;
 }
 
-double MediaImageManager::GetImageScore(
-    const MediaMetadata::MediaImage& image) const {
+double MediaImageManager::GetImageScore(const MediaImage& image) const {
   double best_size_score = 0;
 
   if (image.sizes.empty()) {

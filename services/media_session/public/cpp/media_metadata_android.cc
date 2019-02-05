@@ -4,30 +4,14 @@
 
 #include "services/media_session/public/cpp/media_metadata.h"
 
-#include <string>
-#include <vector>
-
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "jni/MediaMetadata_jni.h"
+#include "services/media_session/public/cpp/media_image.h"
 
 using base::android::ScopedJavaLocalRef;
 
 namespace media_session {
-
-namespace {
-
-std::vector<int> GetFlattenedSizeArray(const std::vector<gfx::Size>& sizes) {
-  std::vector<int> flattened_array;
-  flattened_array.reserve(2 * sizes.size());
-  for (const auto& size : sizes) {
-    flattened_array.push_back(size.width());
-    flattened_array.push_back(size.height());
-  }
-  return flattened_array;
-}
-
-}  // anonymous namespace
 
 base::android::ScopedJavaLocalRef<jobject> MediaMetadata::CreateJavaObject(
     JNIEnv* env) const {
@@ -42,16 +26,8 @@ base::android::ScopedJavaLocalRef<jobject> MediaMetadata::CreateJavaObject(
       Java_MediaMetadata_create(env, j_title, j_artist, j_album);
 
   for (const auto& image : artwork) {
-    std::string src = image.src.spec();
-    ScopedJavaLocalRef<jstring> j_src(
-        base::android::ConvertUTF8ToJavaString(env, src));
-    ScopedJavaLocalRef<jstring> j_type(
-        base::android::ConvertUTF16ToJavaString(env, image.type));
-    ScopedJavaLocalRef<jintArray> j_sizes(
-        base::android::ToJavaIntArray(env, GetFlattenedSizeArray(image.sizes)));
-
-    Java_MediaMetadata_createAndAddMediaImage(env, j_metadata, j_src, j_type,
-                                              j_sizes);
+    ScopedJavaLocalRef<jobject> j_image = image.CreateJavaObject(env);
+    Java_MediaMetadata_addImage(env, j_metadata, j_image);
   }
 
   return j_metadata;
