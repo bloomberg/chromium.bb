@@ -1657,7 +1657,24 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   // URL, since MediaPlayer doesn't support data:// URLs, fail playback now.
   const bool found_hls = status == PipelineStatus::DEMUXER_ERROR_DETECTED_HLS;
   if (found_hls && mb_data_source_) {
-    demuxer_found_hls_ = found_hls;
+    UMA_HISTOGRAM_BOOLEAN("Media.WebMediaPlayerImpl.HLS.IsCorsCrossOrigin",
+                          mb_data_source_->IsCorsCrossOrigin());
+    // Note: Does not consider the full redirect chain. Redirecting through
+    // another origin will set WouldTaintOrigin() though, assuming that the
+    // crossorigin attribute is not set.
+    bool frame_url_is_cryptographic = url::Origin(frame_->GetSecurityOrigin())
+                                          .GetURL()
+                                          .SchemeIsCryptographic();
+    bool manifest_url_is_cryptographic =
+        loaded_url_.SchemeIsCryptographic() &&
+        mb_data_source_->GetUrlAfterRedirects().SchemeIsCryptographic();
+    UMA_HISTOGRAM_BOOLEAN(
+        "Media.WebMediaPlayerImpl.HLS.IsMixedContent",
+        frame_url_is_cryptographic && !manifest_url_is_cryptographic);
+    UMA_HISTOGRAM_BOOLEAN("Media.WebMediaPlayerImpl.HLS.WouldTaintOrigin",
+                          WouldTaintOrigin());
+    // Note: Affects WouldTaintOrigin().
+    demuxer_found_hls_ = true;
 
     renderer_factory_selector_->SetUseMediaPlayer(true);
 
