@@ -217,17 +217,6 @@ template("internal_jumbo_target") {
         include_dirs = invoker.include_dirs
       }
       include_dirs += [ root_build_dir ]
-
-      # For the "gn analyze" step to work, gn needs to know about the
-      # original source files. They can't be in |sources| because then
-      # they will be compiled, so they have to be somewhere else where
-      # gn analyze looks. Let's go with the |data| variable.
-      variables_to_not_forward += [ "data" ]
-      data = []
-      if (defined(invoker.data)) {
-        data += invoker.data
-      }
-      data += invoker_sources - excluded_sources
     }
     forward_variables_from(invoker, "*", variables_to_not_forward)
   }
