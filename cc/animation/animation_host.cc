@@ -326,10 +326,9 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
   // Mutator may depend on scroll offset as its time input e.g., when there is
   // a worklet animation attached to a scroll timeline.
   // This ordering ensures we use the latest scroll offset as the input to the
-  // mutator even if there are active scroll animations. Furthermore ticking
-  // worklet animations at the end gaurantees that mutator output takes effect
-  // in the same impl frame that it was mutated.
-
+  // mutator even if there are active scroll animations.
+  // The ticking of worklet animations is deferred until draw to ensure that
+  // mutator output takes effect in the same impl frame that it was mutated.
   if (!NeedsTickAnimations())
     return false;
 
@@ -348,14 +347,11 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
   // to an active timeline has changed. http://crbug.com/767210
   TickMutator(monotonic_time, scroll_tree, is_active_tree);
 
-  // TODO(crbug.com/834452): This works because at the moment the above call is
-  // synchronous. We will need a different approach once it becomes asynchronous
-  // but until then this simple ordering is sufficient.
-  TickAnimationsIf(ticking_animations_, monotonic_time,
-                   [](const Animation& animation) {
-                     return animation.IsWorkletAnimation();
-                   });
-  return true;
+  for (const auto& it : ticking_animations_) {
+    if (!it->IsWorkletAnimation())
+      return true;
+  }
+  return false;
 }
 
 void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
@@ -363,6 +359,13 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
   TickMutator(monotonic_time, scroll_tree, true /* is_active_tree */);
+}
+
+void AnimationHost::TickWorkletAnimations(base::TimeTicks monotonic_time) {
+  TickAnimationsIf(ticking_animations_, monotonic_time,
+                   [](const Animation& animation) {
+                     return animation.IsWorkletAnimation();
+                   });
 }
 
 std::unique_ptr<MutatorInputState> AnimationHost::CollectWorkletAnimationsState(

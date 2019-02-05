@@ -278,6 +278,15 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates the active tree's visible tiles are ready to be drawn.
   void NotifyReadyToDraw();
 
+  enum class AnimationWorkletState { PROCESSING, IDLE };
+  enum class TreeType { ACTIVE, PENDING };
+
+  // Indicates if currently processing animation worklets for the active or
+  // pending tree. This is used to determine if the draw deadline should be
+  // extended or activation delayed.
+  void NotifyAnimationWorkletStateChange(AnimationWorkletState state,
+                                         TreeType tree);
+
   void SetNeedsImplSideInvalidation(bool needs_first_draw_on_activation);
 
   bool has_pending_tree() const { return has_pending_tree_; }
@@ -427,6 +436,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool next_invalidation_needs_first_draw_on_activation_ = false;
   bool should_defer_invalidation_for_fast_main_frame_ = true;
   bool begin_frame_is_animate_only_ = false;
+  bool processing_animation_worklets_for_active_tree_ = false;
+  bool processing_animation_worklets_for_pending_tree_ = false;
 
   // Set to true if the main thread fails to respond with a commit or abort the
   // main frame before the draw deadline on the previous impl frame.
