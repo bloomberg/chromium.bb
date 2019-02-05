@@ -21,6 +21,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace policy {
 
@@ -242,7 +243,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   for (unsigned int i = 1; i <= 8; ++i) {
     expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .GetMutable(kHomepageLocation)
-        ->AddError(kPolicyConfictDiffValue);
+        ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   }
   EXPECT_TRUE(bundle->Equals(expected_bundle));
 }

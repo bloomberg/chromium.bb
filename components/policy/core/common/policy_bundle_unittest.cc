@@ -12,6 +12,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -192,12 +193,16 @@ TEST(PolicyBundleTest, MergeFrom) {
   PolicyMap expected;
   expected.Set(kPolicyClashing0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
-  expected.GetMutable(kPolicyClashing0)->AddError(kPolicyConfictDiffValue);
-  expected.GetMutable(kPolicyClashing0)->AddError(kPolicyConfictDiffValue);
+  expected.GetMutable(kPolicyClashing0)
+      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected.GetMutable(kPolicyClashing0)
+      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected.Set(kPolicyClashing1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(1), nullptr);
-  expected.GetMutable(kPolicyClashing1)->AddError(kPolicyConfictSameValue);
-  expected.GetMutable(kPolicyClashing1)->AddError(kPolicyConfictDiffValue);
+  expected.GetMutable(kPolicyClashing1)
+      ->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
+  expected.GetMutable(kPolicyClashing1)
+      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected.Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
   expected.Set(kPolicy1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
