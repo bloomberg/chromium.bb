@@ -199,10 +199,13 @@ void OverviewItem::SlideWindowIn() {
   // |transform_window_|'s |minimized_widget| is non null because this only gets
   // called if we see the home launcher on enter (all windows are minimized).
   DCHECK(transform_window_.minimized_widget());
-  // The |item_widget_| will be shown when animation ends.
+  // The |item_widget_| and mask and shadow will be shown when animation ends.
+  // Update the mask after starting the animation since starting the animation
+  // lets the controller know we are in starting animation.
   FadeInWidgetAndMaybeSlideOnEnter(transform_window_.minimized_widget(),
                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
                                    /*slide=*/true);
+  UpdateMaskAndShadow();
 }
 
 void OverviewItem::UpdateYPositionAndOpacity(
