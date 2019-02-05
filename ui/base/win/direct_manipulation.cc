@@ -114,8 +114,6 @@ bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
 
   event_handler_ =
       Microsoft::WRL::Make<DirectManipulationHandler>(this, event_target);
-  if (!SUCCEEDED(hr))
-    return false;
 
   // We got Direct Manipulation transform from
   // IDirectManipulationViewportEventHandler.
@@ -131,10 +129,15 @@ bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
   if (!SUCCEEDED(hr))
     return false;
 
-  manager_->Activate(window_);
+  hr = manager_->Activate(window_);
+  if (!SUCCEEDED(hr))
+    return false;
 
   hr = viewport_->Enable();
-  update_manager_->Update(nullptr);
+  if (!SUCCEEDED(hr))
+    return false;
+
+  hr = update_manager_->Update(nullptr);
   if (!SUCCEEDED(hr))
     return false;
 
