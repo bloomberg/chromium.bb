@@ -225,8 +225,6 @@ static_library("internals_test_support") {
   sources = [
     "fake_account_fetcher_service.cc",
     "fake_account_fetcher_service.h",
-    "fake_gaia_cookie_manager_service.cc",
-    "fake_gaia_cookie_manager_service.h",
     "fake_profile_oauth2_token_service.cc",
     "fake_profile_oauth2_token_service.h",
     "fake_signin_manager.cc",

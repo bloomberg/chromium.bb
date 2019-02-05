@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -327,30 +327,6 @@ void SetCookieAccounts(IdentityManager* identity_manager,
 
   GaiaCookieManagerService* cookie_manager =
       identity_manager->GetGaiaCookieManagerService();
-  cookie_manager->set_list_accounts_stale_for_testing(true);
-  cookie_manager->ListAccounts(nullptr, nullptr);
-
-  run_loop.Run();
-}
-
-void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
-                       IdentityManager* identity_manager,
-                       const std::vector<CookieParams>& cookie_accounts) {
-  // Convert |cookie_accounts| to the format FakeGaiaCookieManagerService wants.
-  std::vector<signin::CookieParams> gaia_cookie_accounts;
-  for (const CookieParams& params : cookie_accounts) {
-    gaia_cookie_accounts.push_back({params.email, params.gaia_id,
-                                    /*valid=*/true, /*signed_out=*/false,
-                                    /*verified=*/true});
-  }
-
-  base::RunLoop run_loop;
-  OneShotIdentityManagerObserver cookie_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED);
-
-  cookie_manager->SetListAccountsResponseWithParams(gaia_cookie_accounts);
-
   cookie_manager->set_list_accounts_stale_for_testing(true);
   cookie_manager->ListAccounts(nullptr, nullptr);
 

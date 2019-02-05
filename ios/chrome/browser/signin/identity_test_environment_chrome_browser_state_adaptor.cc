@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
-#include "ios/chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -68,8 +67,6 @@ std::unique_ptr<KeyedService> BuildFakeAccountFetcherService(
 TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
   return {{ios::AccountFetcherServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeAccountFetcherService)},
-          {ios::GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
           {ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeOAuth2TokenService)},
           {ios::SigninManagerFactory::GetInstance(),
