@@ -815,6 +815,24 @@ need to be translated for each locale.-->
       <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
         Clear searchbox text
       </message>
+      <message name="IDS_SHELF_ALIGNMENT_BOTTOM" desc="Accessibility announcement notifying users that the shelf is now placed at the bottom of the screen">
+        Shelf on bottom
+      </message>
+      <message name="IDS_SHELF_ALIGNMENT_LEFT" desc="Accessibility announcement notifying users that the shelf is now placed on the left of the screen">
+        Shelf on left
+      </message>
+      <message name="IDS_SHELF_ALIGNMENT_RIGHT" desc="Accessibility announcement notifying users that the shelf is now placed on the right of the screen">
+        Shelf on right
+      </message>
+      <message name="IDS_SHELF_STATE_ALWAYS_SHOWN" desc="Accessibility announcement notifying users that the shelf is now always being shown">
+        Shelf always shown
+      </message>
+      <message name="IDS_SHELF_STATE_ALWAYS_HIDDEN" desc="Accessibility announcement notifying users that the shelf is now always being hidden">
+        Shelf always hidden
+      </message>
+      <message name="IDS_SHELF_STATE_AUTO_HIDE" desc="Accessibility announcement notifying users that the shelf will now hide itself automatically">
+        Shelf auto hidden
+      </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
         Remove this suggestion?
       </message>
