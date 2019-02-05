@@ -28,6 +28,8 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.metrics.RecordHistogram;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -97,6 +99,7 @@ public abstract class ChildProcessService extends Service {
     @IntDef({SplitApkWorkaroundResult.NOT_RUN, SplitApkWorkaroundResult.NO_ENTRIES,
             SplitApkWorkaroundResult.ONE_ENTRY, SplitApkWorkaroundResult.MULTIPLE_ENTRIES,
             SplitApkWorkaroundResult.TOPLEVEL_EXCEPTION, SplitApkWorkaroundResult.LOOP_EXCEPTION})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface SplitApkWorkaroundResult {
         int NOT_RUN = 0;
         int NO_ENTRIES = 1;
@@ -105,7 +108,7 @@ public abstract class ChildProcessService extends Service {
         int TOPLEVEL_EXCEPTION = 4;
         int LOOP_EXCEPTION = 5;
         // Keep this one at the end and increment appropriately when adding new results.
-        int SPLIT_APK_WORKAROUND_RESULT_COUNT = 6;
+        int NUM_ENTRIES = 6;
     }
 
     private static @SplitApkWorkaroundResult int sSplitApkWorkaroundResult =
@@ -271,8 +274,7 @@ public abstract class ChildProcessService extends Service {
                     if (ContextUtils.isIsolatedProcess()) {
                         RecordHistogram.recordEnumeratedHistogram(
                                 "Android.WebView.SplitApkWorkaroundResult",
-                                sSplitApkWorkaroundResult,
-                                SplitApkWorkaroundResult.SPLIT_APK_WORKAROUND_RESULT_COUNT);
+                                sSplitApkWorkaroundResult, SplitApkWorkaroundResult.NUM_ENTRIES);
                     }
                     if (mActivitySemaphore.tryAcquire()) {
                         mDelegate.runMain();
