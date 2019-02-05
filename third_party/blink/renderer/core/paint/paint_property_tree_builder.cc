@@ -850,14 +850,15 @@ bool FragmentPaintPropertyTreeBuilder::EffectCanUseCurrentClipAsOutputClip()
   const auto* layer = ToLayoutBoxModelObject(object_).Layer();
   // Out-of-flow descendants not contained by this object may escape clips.
   if (layer->HasNonContainedAbsolutePositionDescendant() &&
-      object_.ContainerForAbsolutePosition()
+      &object_.ContainerForAbsolutePosition()
               ->FirstFragment()
               .PostOverflowClip() != context_.current.clip)
     return false;
   if (layer->HasFixedPositionDescendant() &&
       !object_.CanContainFixedPositionObjects() &&
-      object_.ContainerForFixedPosition()->FirstFragment().PostOverflowClip() !=
-          context_.current.clip)
+      &object_.ContainerForFixedPosition()
+              ->FirstFragment()
+              .PostOverflowClip() != context_.current.clip)
     return false;
 
   // Some descendants under a pagination container (e.g. composited objects
@@ -1321,9 +1322,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
     return;
 
   if (object_.HasLayer() || properties_) {
+    DCHECK(context_.current.transform);
+    DCHECK(context_.current.clip);
+    DCHECK(context_.current_effect);
     PropertyTreeState local_border_box =
-        PropertyTreeState(context_.current.transform, context_.current.clip,
-                          context_.current_effect);
+        PropertyTreeState(*context_.current.transform, *context_.current.clip,
+                          *context_.current_effect);
 
     if (!fragment_data_.HasLocalBorderBoxProperties() ||
         local_border_box != fragment_data_.LocalBorderBoxProperties())
@@ -1874,7 +1878,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
       if (NeedsPaintPropertyUpdate()) {
         OnUpdate(properties_->UpdateCssClipFixedPosition(
             *context_.fixed_position.clip,
-            ClipPaintPropertyNode::State{css_clip->LocalTransformSpace(),
+            ClipPaintPropertyNode::State{&css_clip->LocalTransformSpace(),
                                          css_clip->ClipRect()}));
       }
       if (properties_->CssClipFixedPosition())
@@ -2402,10 +2406,10 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
         // output clip of the object's effect, we can't skip fragment clip if
         // between this object and the container there is any effect that has
         // an output clip. TODO(crbug.com/803649): Fix this workaround.
-        const auto* clip_container_effect =
+        const auto& clip_container_effect =
             clip_container.FirstFragment().PostIsolationEffect();
         for (const auto* effect = context_.fragments[0].current_effect;
-             effect != clip_container_effect; effect = effect->Parent()) {
+             effect != &clip_container_effect; effect = effect->Parent()) {
           if (effect->OutputClip())
             return;
         }
@@ -2770,8 +2774,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
           logical_top_in_containing_flow_thread) {
         // Found a matching fragment in an ancestor container. Use the
         // container's content clip as the clip state.
-        DCHECK(fragment->PostOverflowClip());
-        context.current.clip = fragment->PostOverflowClip();
+        context.current.clip = &fragment->PostOverflowClip();
         return context;
       }
     }

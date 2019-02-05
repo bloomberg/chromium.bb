@@ -462,11 +462,11 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
 
   auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_properties = DefaultPaintChunkProperties();
-  container1_properties.SetEffect(container1_effect.get());
+  container1_properties.SetEffect(*container1_effect);
 
   auto container2_effect = CreateOpacityEffect(e0(), 0.5);
   auto container2_properties = DefaultPaintChunkProperties();
-  container2_properties.SetEffect(container2_effect.get());
+  container2_properties.SetEffect(*container2_effect);
 
   GetPaintController().UpdateCurrentPaintChunkProperties(
       PaintChunk::Id(container1, kBackgroundType), container1_properties);

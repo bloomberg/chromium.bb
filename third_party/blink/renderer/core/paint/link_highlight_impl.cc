@@ -506,7 +506,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     DCHECK(fragment->PaintProperties());
     DCHECK(fragment->PaintProperties()->LinkHighlightEffect());
     property_tree_state.SetEffect(
-        fragment->PaintProperties()->LinkHighlightEffect());
+        *fragment->PaintProperties()->LinkHighlightEffect());
     RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight, layer,
                        property_tree_state);
   }

@@ -21,7 +21,7 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
   if (const auto* properties =
           layout_svg_text_.FirstFragment().PaintProperties()) {
     if (const auto* transform = properties->Transform())
-      block_info.TransformCullRect(transform);
+      block_info.TransformCullRect(*transform);
   }
   ScopedSVGTransformState transform_state(
       block_info, layout_svg_text_,

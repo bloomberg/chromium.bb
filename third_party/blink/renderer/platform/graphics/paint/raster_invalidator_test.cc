@@ -268,10 +268,10 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeRounded) {
   FloatRoundedRect::Radii radii(FloatSize(1, 2), FloatSize(2, 3),
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
-  auto clip0 = CreateClip(c0(), &t0(), clip_rect);
-  auto clip2 = CreateClip(*clip0, &t0(), clip_rect);
+  auto clip0 = CreateClip(c0(), t0(), clip_rect);
+  auto clip2 = CreateClip(*clip0, t0(), clip_rect);
 
-  PropertyTreeState layer_state(&t0(), clip0.get(), &e0());
+  PropertyTreeState layer_state(t0(), *clip0, e0());
   auto artifact = TestPaintArtifact()
                       .Chunk(0)
                       .Properties(layer_state)
@@ -288,10 +288,10 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeRounded) {
   invalidator.SetTracksRasterInvalidations(true);
   FloatRoundedRect new_clip_rect(FloatRect(-2000, -2000, 4000, 4000), radii);
   clip0->Update(*clip0->Parent(),
-                ClipPaintPropertyNode::State{clip0->LocalTransformSpace(),
+                ClipPaintPropertyNode::State{&clip0->LocalTransformSpace(),
                                              new_clip_rect});
   clip2->Update(*clip2->Parent(),
-                ClipPaintPropertyNode::State{clip2->LocalTransformSpace(),
+                ClipPaintPropertyNode::State{&clip2->LocalTransformSpace(),
                                              new_clip_rect});
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -328,8 +328,8 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeRounded) {
 TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   RasterInvalidator invalidator(kNoopRasterInvalidation);
   FloatRoundedRect clip_rect(-1000, -1000, 2000, 2000);
-  auto clip0 = CreateClip(c0(), &t0(), clip_rect);
-  auto clip1 = CreateClip(*clip0, &t0(), clip_rect);
+  auto clip0 = CreateClip(c0(), t0(), clip_rect);
+  auto clip1 = CreateClip(*clip0, t0(), clip_rect);
 
   PropertyTreeState layer_state = PropertyTreeState::Root();
   auto artifact = TestPaintArtifact()
@@ -349,7 +349,7 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   invalidator.SetTracksRasterInvalidations(true);
   FloatRoundedRect new_clip_rect1(-2000, -2000, 4000, 4000);
   clip1->Update(*clip1->Parent(),
-                ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
+                ClipPaintPropertyNode::State{&clip1->LocalTransformSpace(),
                                              new_clip_rect1});
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -359,7 +359,7 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   // Change clip1 to smaller.
   FloatRoundedRect new_clip_rect2(-500, -500, 1000, 1000);
   clip1->Update(*clip1->Parent(),
-                ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
+                ClipPaintPropertyNode::State{&clip1->LocalTransformSpace(),
                                              new_clip_rect2});
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -380,7 +380,7 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   // Change clip1 bigger at one side.
   FloatRoundedRect new_clip_rect3(-500, -500, 2000, 1000);
   clip1->Update(*clip1->Parent(),
-                ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
+                ClipPaintPropertyNode::State{&clip1->LocalTransformSpace(),
                                              new_clip_rect3});
 
   invalidator.SetTracksRasterInvalidations(true);
@@ -403,9 +403,9 @@ TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChange) {
   FloatRoundedRect::Radii radii(FloatSize(1, 2), FloatSize(2, 3),
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
-  auto c1 = CreateClip(c0(), t1.get(), clip_rect);
+  auto c1 = CreateClip(c0(), *t1, clip_rect);
 
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState layer_state = DefaultPropertyTreeState();
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, *c1, e0()).Build();
 
@@ -441,9 +441,9 @@ TEST_P(RasterInvalidatorTest, ClipLocalTransformSpaceChangeNoInvalidation) {
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
   // This set is different from ClipLocalTransformSpaceChange.
-  auto c1 = CreateClip(c0(), t2.get(), clip_rect);
+  auto c1 = CreateClip(c0(), *t2, clip_rect);
 
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState layer_state = DefaultPropertyTreeState();
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, *c1, e0()).Build();
 
@@ -471,7 +471,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
   auto transform1 =
       CreateTransform(*transform0, TransformationMatrix().Translate(-50, -60));
 
-  PropertyTreeState layer_state(layer_transform.get(), &c0(), &e0());
+  PropertyTreeState layer_state(*layer_transform, c0(), e0());
   auto artifact = TestPaintArtifact()
                       .Chunk(0)
                       .Properties(*transform0, c0(), e0())
@@ -498,7 +498,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
   // scrolled from its original location.
   auto new_layer_transform = CreateTransform(
       *layer_transform, TransformationMatrix().Translate(-100, -200));
-  layer_state = PropertyTreeState(new_layer_transform.get(), &c0(), &e0());
+  layer_state = PropertyTreeState(*new_layer_transform, c0(), e0());
   transform0->Update(*new_layer_transform,
                      TransformPaintPropertyNode::State{transform0->Matrix()});
 
@@ -509,7 +509,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
   // Removing transform nodes above the layer state should not cause raster
   // invalidation in the layer.
   layer_state = DefaultPropertyTreeState();
-  transform0->Update(*layer_state.Transform(),
+  transform0->Update(layer_state.Transform(),
                      TransformPaintPropertyNode::State{transform0->Matrix()});
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -520,7 +520,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyChange) {
   // and transform1 unchanged for chunk 2. We should invalidate only chunk 0
   // for changed paint property.
   transform0->Update(
-      *layer_state.Transform(),
+      layer_state.Transform(),
       TransformPaintPropertyNode::State{
           TransformationMatrix(transform0->Matrix()).Translate(20, 30)});
   transform1->Update(
@@ -550,7 +550,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChange) {
   auto chunk_transform = CreateTransform(
       *layer_transform, TransformationMatrix().Translate(10, 20));
 
-  PropertyTreeState layer_state(layer_transform.get(), &c0(), &e0());
+  PropertyTreeState layer_state(*layer_transform, c0(), e0());
   auto artifact = TestPaintArtifact()
                       .Chunk(0)
                       .Properties(*chunk_transform, c0(), e0())
@@ -561,7 +561,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChange) {
 
   // Change chunk_transform by tiny difference, which should be ignored.
   invalidator.SetTracksRasterInvalidations(true);
-  chunk_transform->Update(*layer_state.Transform(),
+  chunk_transform->Update(layer_state.Transform(),
                           TransformPaintPropertyNode::State{
                               TransformationMatrix(chunk_transform->Matrix())
                                   .Translate(0.0000001, -0.0000001)
@@ -576,7 +576,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChange) {
   // accumulation is large enough.
   bool invalidated = false;
   for (int i = 0; i < 100 && !invalidated; i++) {
-    chunk_transform->Update(*layer_state.Transform(),
+    chunk_transform->Update(layer_state.Transform(),
                             TransformPaintPropertyNode::State{
                                 TransformationMatrix(chunk_transform->Matrix())
                                     .Translate(0.0000001, -0.0000001)
@@ -597,7 +597,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
       CreateTransform(*layer_transform, TransformationMatrix().Scale(1e-6));
   FloatRect chunk_bounds(0, 0, 10000000, 10000000);
 
-  PropertyTreeState layer_state(layer_transform.get(), &c0(), &e0());
+  PropertyTreeState layer_state(*layer_transform, c0(), e0());
   auto artifact = TestPaintArtifact()
                       .Chunk(0)
                       .Properties(*chunk_transform, c0(), e0())
@@ -610,7 +610,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
   // Scale change from 1e-6 to 2e-6 should be treated as significant.
   invalidator.SetTracksRasterInvalidations(true);
   chunk_transform->Update(
-      *layer_state.Transform(),
+      layer_state.Transform(),
       TransformPaintPropertyNode::State{TransformationMatrix().Scale(2e-6)});
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -620,7 +620,7 @@ TEST_P(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
 
   // Scale change from 2e-6 to 2e-6 + 1e-15 should be ignored.
   invalidator.SetTracksRasterInvalidations(true);
-  chunk_transform->Update(*layer_state.Transform(),
+  chunk_transform->Update(layer_state.Transform(),
                           TransformPaintPropertyNode::State{
                               TransformationMatrix().Scale(2e-6 + 1e-15)});
 
@@ -637,9 +637,9 @@ TEST_P(RasterInvalidatorTest, EffectLocalTransformSpaceChange) {
   auto t2 = CreateTransform(*t1, TransformationMatrix());
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(20);
-  auto e1 = CreateFilterEffect(e0(), t1.get(), &c0(), filter);
+  auto e1 = CreateFilterEffect(e0(), *t1, &c0(), filter);
 
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState layer_state = DefaultPropertyTreeState();
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, c0(), *e1).Build();
 
@@ -676,9 +676,9 @@ TEST_P(RasterInvalidatorTest, EffectLocalTransformSpaceChangeNoInvalidation) {
   // This setup is different from EffectLocalTransformSpaceChange.
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(20);
-  auto e1 = CreateFilterEffect(e0(), t2.get(), &c0(), filter);
+  auto e1 = CreateFilterEffect(e0(), *t2, &c0(), filter);
 
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState layer_state = DefaultPropertyTreeState();
   auto artifact =
       TestPaintArtifact().Chunk(0).Properties(*t2, c0(), *e1).Build();
 
@@ -703,12 +703,12 @@ TEST_P(RasterInvalidatorTest, AliasEffectParentChanges) {
   CompositorFilterOperations filter;
   filter.AppendOpacityFilter(0.5);
   // Create an effect and an alias for that effect.
-  auto e1 = CreateFilterEffect(e0(), &t0(), &c0(), filter);
+  auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter);
   auto alias_effect = EffectPaintPropertyNode::CreateAlias(*e1);
 
   // The artifact has a chunk pointing to the alias.
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
-  PropertyTreeState chunk_state(&t0(), &c0(), alias_effect.get());
+  PropertyTreeState layer_state = DefaultPropertyTreeState();
+  PropertyTreeState chunk_state(t0(), c0(), *alias_effect);
   auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -735,13 +735,13 @@ TEST_P(RasterInvalidatorTest, NestedAliasEffectParentChanges) {
   CompositorFilterOperations filter;
   filter.AppendOpacityFilter(0.5);
   // Create an effect and an alias for that effect.
-  auto e1 = CreateFilterEffect(e0(), &t0(), &c0(), filter);
+  auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter);
   auto alias_effect_1 = EffectPaintPropertyNode::CreateAlias(*e1);
   auto alias_effect_2 = EffectPaintPropertyNode::CreateAlias(*alias_effect_1);
 
   // The artifact has a chunk pointing to the nested alias.
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
-  PropertyTreeState chunk_state(&t0(), &c0(), alias_effect_2.get());
+  PropertyTreeState layer_state = DefaultPropertyTreeState();
+  PropertyTreeState chunk_state(t0(), c0(), *alias_effect_2);
   auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
@@ -772,11 +772,11 @@ TEST_P(RasterInvalidatorTest, EffectWithAliasTransformWhoseParentChanges) {
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(0);
   // Create an effect and an alias for that effect.
-  auto e1 = CreateFilterEffect(e0(), alias_transform.get(), &c0(), filter);
+  auto e1 = CreateFilterEffect(e0(), *alias_transform, &c0(), filter);
 
   // The artifact has a chunk pointing to the alias.
-  PropertyTreeState layer_state(&t0(), &c0(), &e0());
-  PropertyTreeState chunk_state(&t0(), &c0(), e1.get());
+  PropertyTreeState layer_state = PropertyTreeState::Root();
+  PropertyTreeState chunk_state(t0(), c0(), *e1);
   auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
 
   invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);

@@ -45,29 +45,27 @@ class PaintPropertyNodeTest : public testing::Test {
 
     clip.root = &ClipPaintPropertyNode::Root();
     clip.ancestor =
-        CreateClip(*clip.root, transform.ancestor.get(), FloatRoundedRect());
+        CreateClip(*clip.root, *transform.ancestor, FloatRoundedRect());
     clip.child1 =
-        CreateClip(*clip.ancestor, transform.child1.get(), FloatRoundedRect());
+        CreateClip(*clip.ancestor, *transform.child1, FloatRoundedRect());
     clip.child2 =
-        CreateClip(*clip.ancestor, transform.child2.get(), FloatRoundedRect());
-    clip.grandchild1 = CreateClip(*clip.child1, transform.grandchild1.get(),
-                                  FloatRoundedRect());
-    clip.grandchild2 = CreateClip(*clip.child2, transform.grandchild2.get(),
-                                  FloatRoundedRect());
+        CreateClip(*clip.ancestor, *transform.child2, FloatRoundedRect());
+    clip.grandchild1 =
+        CreateClip(*clip.child1, *transform.grandchild1, FloatRoundedRect());
+    clip.grandchild2 =
+        CreateClip(*clip.child2, *transform.grandchild2, FloatRoundedRect());
 
     effect.root = &EffectPaintPropertyNode::Root();
-    effect.ancestor = CreateOpacityEffect(
-        *effect.root, transform.ancestor.get(), clip.ancestor.get(), 0.5);
-    effect.child1 = CreateOpacityEffect(
-        *effect.ancestor, transform.child1.get(), clip.child1.get(), 0.5);
-    effect.child2 = CreateOpacityEffect(
-        *effect.ancestor, transform.child2.get(), clip.child2.get(), 0.5);
-    effect.grandchild1 =
-        CreateOpacityEffect(*effect.child1, transform.grandchild1.get(),
-                            clip.grandchild1.get(), 0.5);
-    effect.grandchild2 =
-        CreateOpacityEffect(*effect.child2, transform.grandchild2.get(),
-                            clip.grandchild2.get(), 0.5);
+    effect.ancestor = CreateOpacityEffect(*effect.root, *transform.ancestor,
+                                          clip.ancestor.get(), 0.5);
+    effect.child1 = CreateOpacityEffect(*effect.ancestor, *transform.child1,
+                                        clip.child1.get(), 0.5);
+    effect.child2 = CreateOpacityEffect(*effect.ancestor, *transform.child2,
+                                        clip.child2.get(), 0.5);
+    effect.grandchild1 = CreateOpacityEffect(
+        *effect.child1, *transform.grandchild1, clip.grandchild1.get(), 0.5);
+    effect.grandchild2 = CreateOpacityEffect(
+        *effect.child2, *transform.grandchild2, clip.grandchild2.get(), 0.5);
   }
 
   template <typename NodeType>
@@ -113,8 +111,7 @@ class PaintPropertyNodeTest : public testing::Test {
   Tree<EffectPaintPropertyNode> effect;
 };
 
-#define STATE(node) \
-  PropertyTreeState(&*transform.node, &*clip.node, &*effect.node)
+#define STATE(node) PropertyTreeState(*transform.node, *clip.node, *effect.node)
 
 TEST_F(PaintPropertyNodeTest, LowestCommonAncestor) {
   EXPECT_EQ(transform.ancestor,

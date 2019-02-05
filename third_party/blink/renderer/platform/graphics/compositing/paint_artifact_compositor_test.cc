@@ -56,7 +56,7 @@ gfx::Transform Translation(SkMScalar x, SkMScalar y) {
 }
 
 void SetTransform(PaintChunk& chunk,
-                  const TransformPaintPropertyNode* transform) {
+                  const TransformPaintPropertyNode& transform) {
   auto properties = chunk.properties.GetPropertyTreeState();
   properties.SetTransform(transform);
   chunk.properties = RefCountedPropertyTreeState(properties);
@@ -656,7 +656,7 @@ TEST_P(PaintArtifactCompositorTest, SortingContextID) {
 }
 
 TEST_P(PaintArtifactCompositorTest, OneClip) {
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 300, 200));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 300, 200));
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip, e0())
@@ -680,8 +680,7 @@ TEST_P(PaintArtifactCompositorTest, OneClip) {
 }
 
 TEST_P(PaintArtifactCompositorTest, OneClipWithAlias) {
-  auto real_clip =
-      CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 300, 200));
+  auto real_clip = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 300, 200));
   auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
 
   TestPaintArtifact artifact;
@@ -706,9 +705,9 @@ TEST_P(PaintArtifactCompositorTest, OneClipWithAlias) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NestedClips) {
-  auto clip1 = CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 700, 700),
+  auto clip1 = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 700, 700),
                           CompositingReason::kOverflowScrollingTouch);
-  auto clip2 = CreateClip(*clip1, &t0(), FloatRoundedRect(200, 200, 700, 700),
+  auto clip2 = CreateClip(*clip1, t0(), FloatRoundedRect(200, 200, 700, 700),
                           CompositingReason::kOverflowScrollingTouch);
 
   TestPaintArtifact artifact;
@@ -764,12 +763,11 @@ TEST_P(PaintArtifactCompositorTest, NestedClips) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NestedClipsWithAlias) {
-  auto real_clip1 =
-      CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 700, 700),
-                 CompositingReason::kOverflowScrollingTouch);
+  auto real_clip1 = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 700, 700),
+                               CompositingReason::kOverflowScrollingTouch);
   auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
   auto real_clip2 =
-      CreateClip(*clip1, &t0(), FloatRoundedRect(200, 200, 700, 700),
+      CreateClip(*clip1, t0(), FloatRoundedRect(200, 200, 700, 700),
                  CompositingReason::kOverflowScrollingTouch);
   auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
 
@@ -828,7 +826,7 @@ TEST_P(PaintArtifactCompositorTest, NestedClipsWithAlias) {
 TEST_P(PaintArtifactCompositorTest, DeeplyNestedClips) {
   Vector<scoped_refptr<ClipPaintPropertyNode>> clips;
   for (unsigned i = 1; i <= 10; i++) {
-    clips.push_back(CreateClip(clips.IsEmpty() ? c0() : *clips.back(), &t0(),
+    clips.push_back(CreateClip(clips.IsEmpty() ? c0() : *clips.back(), t0(),
                                FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i)));
   }
 
@@ -860,13 +858,13 @@ TEST_P(PaintArtifactCompositorTest, DeeplyNestedClips) {
 
 TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
   auto real_common_clip =
-      CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 800, 600));
+      CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 800, 600));
   auto common_clip = ClipPaintPropertyNode::CreateAlias(*real_common_clip);
   auto real_clip1 =
-      CreateClip(*common_clip, &t0(), FloatRoundedRect(0, 0, 400, 600));
+      CreateClip(*common_clip, t0(), FloatRoundedRect(0, 0, 400, 600));
   auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
   auto real_clip2 =
-      CreateClip(*common_clip, &t0(), FloatRoundedRect(400, 0, 400, 600));
+      CreateClip(*common_clip, t0(), FloatRoundedRect(400, 0, 400, 600));
   auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
 
   TestPaintArtifact artifact;
@@ -1184,7 +1182,7 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollNodes) {
 }
 
 TEST_P(PaintArtifactCompositorTest, ScrollHitTestLayerOrder) {
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 100, 100));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 100, 100));
 
   CompositorElementId scroll_element_id = ScrollElementId(2);
   auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
@@ -1224,14 +1222,14 @@ TEST_P(PaintArtifactCompositorTest, ScrollHitTestLayerOrder) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NestedScrollableLayerOrder) {
-  auto clip_1 = CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 100, 100));
+  auto clip_1 = CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 100, 100));
   CompositorElementId scroll_1_element_id = ScrollElementId(1);
   auto scroll_1 = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
                                kNotScrollingOnMain, scroll_1_element_id);
   auto scroll_translation_1 = CreateScrollTranslation(
       t0(), 7, 9, *scroll_1, CompositingReason::kWillChangeCompositingHint);
 
-  auto clip_2 = CreateClip(*clip_1, scroll_translation_1.get(),
+  auto clip_2 = CreateClip(*clip_1, *scroll_translation_1,
                            FloatRoundedRect(0, 0, 50, 50));
   CompositorElementId scroll_2_element_id = ScrollElementId(2);
   auto scroll_2 = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState2(),
@@ -1351,7 +1349,7 @@ TEST_P(PaintArtifactCompositorTest, MergeSimpleChunks) {
 }
 
 TEST_P(PaintArtifactCompositorTest, MergeClip) {
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 20, 50, 60));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1546,11 +1544,10 @@ TEST_P(PaintArtifactCompositorTest, MergeNestedWithAlias) {
                       FloatPoint3D(100, 100, 0));
   auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
   auto real_clip =
-      CreateClip(c0(), transform.get(), FloatRoundedRect(10, 20, 50, 60));
+      CreateClip(c0(), *transform, FloatRoundedRect(10, 20, 50, 60));
   auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
   float opacity = 2.0 / 255.0;
-  auto real_effect =
-      CreateOpacityEffect(e0(), transform.get(), clip.get(), opacity);
+  auto real_effect = CreateOpacityEffect(e0(), *transform, clip.get(), opacity);
   auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
 
   TestPaintArtifact test_artifact;
@@ -1590,8 +1587,7 @@ TEST_P(PaintArtifactCompositorTest, ClipPushedUp) {
   auto transform2 =
       CreateTransform(*transform, TransformationMatrix().Translate(20, 25),
                       FloatPoint3D(100, 100, 0));
-  auto clip =
-      CreateClip(c0(), transform2.get(), FloatRoundedRect(10, 20, 50, 60));
+  auto clip = CreateClip(c0(), *transform2, FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1637,7 +1633,7 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_EffectPushedUp) {
                       FloatPoint3D(100, 100, 0));
 
   float opacity = 2.0 / 255.0;
-  auto effect = CreateOpacityEffect(e0(), transform2.get(), &c0(), opacity);
+  auto effect = CreateOpacityEffect(e0(), *transform2, &c0(), opacity);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1678,12 +1674,10 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_EffectAndClipPushedUp) {
   auto transform2 =
       CreateTransform(*transform, TransformationMatrix().Translate(20, 25),
                       FloatPoint3D(100, 100, 0));
-  auto clip =
-      CreateClip(c0(), transform.get(), FloatRoundedRect(10, 20, 50, 60));
+  auto clip = CreateClip(c0(), *transform, FloatRoundedRect(10, 20, 50, 60));
 
   float opacity = 2.0 / 255.0;
-  auto effect =
-      CreateOpacityEffect(e0(), transform2.get(), clip.get(), opacity);
+  auto effect = CreateOpacityEffect(e0(), *transform2, clip.get(), opacity);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1716,9 +1710,9 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_EffectAndClipPushedUp) {
 TEST_P(PaintArtifactCompositorTest, ClipAndEffectNoTransform) {
   // Tests merging of an element which has a clip and effect in the root
   // transform space.
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 20, 50, 60));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 20, 50, 60));
   float opacity = 2.0 / 255.0;
-  auto effect = CreateOpacityEffect(e0(), &t0(), clip.get(), opacity);
+  auto effect = CreateOpacityEffect(e0(), t0(), clip.get(), opacity);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1749,8 +1743,8 @@ TEST_P(PaintArtifactCompositorTest, ClipAndEffectNoTransform) {
 TEST_P(PaintArtifactCompositorTest, TwoClips) {
   // Tests merging of an element which has two clips in the root
   // transform space.
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(20, 30, 10, 20));
-  auto clip2 = CreateClip(*clip, &t0(), FloatRoundedRect(10, 20, 50, 60));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(20, 30, 10, 20));
+  auto clip2 = CreateClip(*clip, t0(), FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1782,7 +1776,7 @@ TEST_P(PaintArtifactCompositorTest, TwoTransformsClipBetween) {
   auto transform =
       CreateTransform(t0(), TransformationMatrix().Translate(20, 25),
                       FloatPoint3D(100, 100, 0));
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 50, 60));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 50, 60));
   auto transform2 =
       CreateTransform(*transform, TransformationMatrix().Translate(20, 25),
                       FloatPoint3D(100, 100, 0));
@@ -1846,7 +1840,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
   auto transform = CreateTransform(
       t0(), TransformationMatrix().Translate(99, 0), FloatPoint3D(100, 100, 0));
   {
-    SetTransform(paint_chunk2, transform.get());
+    SetTransform(paint_chunk2, *transform);
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1855,7 +1849,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
       CreateTransform(t0(), TransformationMatrix().Translate(100, 0),
                       FloatPoint3D(100, 100, 0));
   {
-    SetTransform(paint_chunk2, transform2.get());
+    SetTransform(paint_chunk2, *transform2);
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1910,7 +1904,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
 
   PaintChunk chunk2 = DefaultChunk();
   chunk2.properties = chunk1.properties;
-  SetTransform(chunk2, transform.get());
+  SetTransform(chunk2, *transform);
   chunk2.bounds = FloatRect(0, 0, 50, 60);
   pending_layer.Merge(PendingLayer(chunk2, 1, false));
 
@@ -2052,7 +2046,7 @@ TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
   auto transform = CreateTransform(t0(), TransformationMatrix().Rotate(90),
                                    FloatPoint3D(100, 100, 0),
                                    CompositingReason::k3DTransform);
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 300, 200));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 300, 200));
   auto effect = CreateOpacityEffect(e0(), 0.5);
 
   TestPaintArtifact test_artifact;
@@ -2094,7 +2088,7 @@ TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
 TEST_P(PaintArtifactCompositorTest, DecompositeClip) {
   // A clipped paint chunk that gets merged into a previous layer should
   // only contribute clipped bounds to the layer bound.
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(75, 75, 100, 100));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(75, 75, 100, 100));
 
   TestPaintArtifact artifact;
   artifact.Chunk().RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
@@ -2506,7 +2500,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
-  auto c1 = CreateClip(c0(), &t0(), rrect,
+  auto c1 = CreateClip(c0(), t0(), rrect,
                        CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2555,8 +2549,8 @@ TEST_P(PaintArtifactCompositorTest,
        SynthesizedClipIndirectlyCompositedClipPath) {
   // This tests the case that a clip node needs to be synthesized due to
   // applying clip path to a composited effect.
-  auto c1 = CreateClipPathClip(c0(), &t0(), FloatRoundedRect(50, 50, 300, 200));
-  auto e1 = CreateOpacityEffect(e0(), &t0(), c1.get(), 1,
+  auto c1 = CreateClipPathClip(c0(), t0(), FloatRoundedRect(50, 50, 300, 200));
+  auto e1 = CreateOpacityEffect(e0(), t0(), c1.get(), 1,
                                 CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2615,7 +2609,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
-  auto c1 = CreateClip(c0(), &t0(), rrect,
+  auto c1 = CreateClip(c0(), t0(), rrect,
                        CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2684,7 +2678,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
-  auto c1 = CreateClip(c0(), &t0(), rrect,
+  auto c1 = CreateClip(c0(), t0(), rrect,
                        CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2773,9 +2767,9 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
-  auto c1 = CreateClip(c0(), &t0(), rrect,
+  auto c1 = CreateClip(c0(), t0(), rrect,
                        CompositingReason::kWillChangeCompositingHint);
-  auto e1 = CreateOpacityEffect(e0(), &t0(), c1.get(), 1,
+  auto e1 = CreateOpacityEffect(e0(), t0(), c1.get(), 1,
                                 CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
@@ -2843,7 +2837,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
-  auto c1 = CreateClip(c0(), &t0(), rrect,
+  auto c1 = CreateClip(c0(), t0(), rrect,
                        CompositingReason::kWillChangeCompositingHint);
 
   CompositorFilterOperations non_trivial_filter;
@@ -2948,7 +2942,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
-  auto c1 = CreateClip(c0(), &t0(), rrect,
+  auto c1 = CreateClip(c0(), t0(), rrect,
                        CompositingReason::kWillChangeCompositingHint);
 
   EffectPaintPropertyNode::State e1_state;
@@ -3139,8 +3133,8 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque2) {
 TEST_P(PaintArtifactCompositorTest, DecompositeEffectWithNoOutputClip) {
   // This test verifies effect nodes with no output clip correctly decomposites
   // if there is no compositing reasons.
-  auto clip1 = CreateClip(c0(), &t0(), FloatRoundedRect(75, 75, 100, 100));
-  auto effect1 = CreateOpacityEffect(e0(), &t0(), nullptr, 0.5);
+  auto clip1 = CreateClip(c0(), t0(), FloatRoundedRect(75, 75, 100, 100));
+  auto effect1 = CreateOpacityEffect(e0(), t0(), nullptr, 0.5);
 
   TestPaintArtifact artifact;
   artifact.Chunk().RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
@@ -3158,10 +3152,10 @@ TEST_P(PaintArtifactCompositorTest, DecompositeEffectWithNoOutputClip) {
 TEST_P(PaintArtifactCompositorTest, CompositedEffectWithNoOutputClip) {
   // This test verifies effect nodes with no output clip but has compositing
   // reason correctly squash children chunks and assign clip node.
-  auto clip1 = CreateClip(c0(), &t0(), FloatRoundedRect(75, 75, 100, 100));
+  auto clip1 = CreateClip(c0(), t0(), FloatRoundedRect(75, 75, 100, 100));
 
   auto effect1 =
-      CreateOpacityEffect(e0(), &t0(), nullptr, 0.5, CompositingReason::kAll);
+      CreateOpacityEffect(e0(), t0(), nullptr, 0.5, CompositingReason::kAll);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect1)
@@ -3185,7 +3179,7 @@ TEST_P(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
                                       &task_graph_runner_);
 
   // The layer's painting is initially not clipped.
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 20, 300, 400));
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 20, 300, 400));
   TestPaintArtifact artifact1;
   artifact1.Chunk(t0(), *clip, e0())
       .RectDrawing(FloatRect(50, 50, 200, 200), Color::kBlack);
@@ -3379,7 +3373,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
 
 TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedClip) {
   auto rotate = CreateTransform(t0(), TransformationMatrix().Rotate(45));
-  auto clip = CreateClip(c0(), rotate.get(), FloatRoundedRect(50, 50, 50, 50));
+  auto clip = CreateClip(c0(), *rotate, FloatRoundedRect(50, 50, 50, 50));
   auto opacity = CreateOpacityEffect(
       e0(), 0.5f, CompositingReason::kActiveOpacityAnimation);
 
@@ -3407,17 +3401,15 @@ TEST_P(PaintArtifactCompositorTest,
   auto rotate2 =
       CreateTransform(*rotate1, TransformationMatrix().Rotate(-45),
                       FloatPoint3D(), CompositingReason::k3DTransform);
-  auto clip = CreateClip(c0(), rotate2.get(), FloatRoundedRect(50, 50, 50, 50));
-  auto opacity =
-      CreateOpacityEffect(e0(), rotate1.get(), &c0(), 0.5f,
-                          CompositingReason::kActiveOpacityAnimation);
+  auto clip = CreateClip(c0(), *rotate2, FloatRoundedRect(50, 50, 50, 50));
+  auto opacity = CreateOpacityEffect(
+      e0(), *rotate1, &c0(), 0.5f, CompositingReason::kActiveOpacityAnimation);
 
   // This assert ensures the test actually tests the situation. If it fails
   // due to floating-point errors, we should choose other transformation values
   // to make it succeed.
-  ASSERT_TRUE(
-      GeometryMapper::SourceToDestinationProjection(&t0(), rotate2.get())
-          .Preserves2dAxisAlignment());
+  ASSERT_TRUE(GeometryMapper::SourceToDestinationProjection(t0(), *rotate2)
+                  .Preserves2dAxisAlignment());
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *opacity)

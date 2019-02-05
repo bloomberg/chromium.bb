@@ -51,7 +51,7 @@ class ScopedPaintState {
     const auto* properties = fragment_to_paint_->PaintProperties();
     if (properties && properties->PaintOffsetTranslation()) {
       AdjustForPaintOffsetTranslation(object,
-                                      properties->PaintOffsetTranslation());
+                                      *properties->PaintOffsetTranslation());
     }
   }
 
@@ -107,7 +107,7 @@ class ScopedPaintState {
  private:
   void AdjustForPaintOffsetTranslation(
       const LayoutObject&,
-      const TransformPaintPropertyNode* paint_offset_translation);
+      const TransformPaintPropertyNode& paint_offset_translation);
 
   void FinishPaintOffsetTranslationAsDrawing();
 

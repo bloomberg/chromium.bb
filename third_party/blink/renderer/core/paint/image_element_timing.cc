@@ -77,11 +77,11 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
 
   // Compute the visible part of the image rect.
   LayoutRect image_visual_rect = layout_image->FirstFragment().VisualRect();
-  const auto* local_transform = painting_layer->GetLayoutObject()
+  const auto& local_transform = painting_layer->GetLayoutObject()
                                     .FirstFragment()
                                     .LocalBorderBoxProperties()
                                     .Transform();
-  const auto* ancestor_transform = painting_layer->GetLayoutObject()
+  const auto& ancestor_transform = painting_layer->GetLayoutObject()
                                        .View()
                                        ->FirstFragment()
                                        .LocalBorderBoxProperties()

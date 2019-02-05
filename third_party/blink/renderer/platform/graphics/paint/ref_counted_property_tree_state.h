@@ -16,26 +16,24 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState {
 
  public:
   RefCountedPropertyTreeState(const PropertyTreeState& property_tree_state)
-      : transform_(property_tree_state.Transform()),
-        clip_(property_tree_state.Clip()),
-        effect_(property_tree_state.Effect()) {}
+      : transform_(&property_tree_state.Transform()),
+        clip_(&property_tree_state.Clip()),
+        effect_(&property_tree_state.Effect()) {}
 
   bool HasDirectCompositingReasons() const;
 
-  const TransformPaintPropertyNode* Transform() const {
-    return transform_.get();
-  }
-  const ClipPaintPropertyNode* Clip() const { return clip_.get(); }
-  const EffectPaintPropertyNode* Effect() const { return effect_.get(); }
+  const TransformPaintPropertyNode& Transform() const { return *transform_; }
+  const ClipPaintPropertyNode& Clip() const { return *clip_; }
+  const EffectPaintPropertyNode& Effect() const { return *effect_; }
 
   PropertyTreeState GetPropertyTreeState() const {
-    return PropertyTreeState(transform_.get(), clip_.get(), effect_.get());
+    return PropertyTreeState(Transform(), Clip(), Effect());
   }
 
   void ClearChangedToRoot() const {
-    Transform()->ClearChangedToRoot();
-    Clip()->ClearChangedToRoot();
-    Effect()->ClearChangedToRoot();
+    Transform().ClearChangedToRoot();
+    Clip().ClearChangedToRoot();
+    Effect().ClearChangedToRoot();
   }
 
   String ToString() const { return GetPropertyTreeState().ToString(); }
@@ -52,8 +50,13 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState {
 
 inline bool operator==(const RefCountedPropertyTreeState& a,
                        const RefCountedPropertyTreeState& b) {
-  return a.Transform() == b.Transform() && a.Clip() == b.Clip() &&
-         a.Effect() == b.Effect();
+  return &a.Transform() == &b.Transform() && &a.Clip() == &b.Clip() &&
+         &a.Effect() == &b.Effect();
+}
+
+inline bool operator!=(const RefCountedPropertyTreeState& a,
+                       const RefCountedPropertyTreeState& b) {
+  return !(a == b);
 }
 
 }  // namespace blink

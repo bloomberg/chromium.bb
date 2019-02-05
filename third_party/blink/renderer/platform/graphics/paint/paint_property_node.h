@@ -56,7 +56,7 @@ PLATFORM_EXPORT const TransformPaintPropertyNode& LowestCommonAncestorInternal(
 
 template <typename NodeType>
 const NodeType* SafeUnalias(const NodeType* node) {
-  return node ? node->Unalias() : nullptr;
+  return node ? &node->Unalias() : nullptr;
 }
 
 template <typename NodeType>
@@ -88,11 +88,11 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   bool IsParentAlias() const { return is_parent_alias_; }
   // Returns the first node up the parent chain that is not an alias; return the
   // root node if every node is an alias.
-  const NodeType* Unalias() const {
+  const NodeType& Unalias() const {
     const auto* node = static_cast<const NodeType*>(this);
     while (node->Parent() && node->IsParentAlias())
       node = node->Parent();
-    return node;
+    return *node;
   }
 
   String ToString() const {
@@ -176,36 +176,35 @@ class PropertyTreePrinter {
     return string_builder.ToString();
   }
 
-  String PathAsString(const NodeType* last_node) {
-    for (const auto* n = last_node; n; n = n->Parent())
+  String PathAsString(const NodeType& last_node) {
+    for (const auto* n = &last_node; n; n = n->Parent())
       AddNode(n);
     return NodesAsTreeString();
   }
 
  private:
   void BuildTreeString(StringBuilder& string_builder,
-                       const NodeType* node,
+                       const NodeType& node,
                        unsigned indent) {
-    DCHECK(node);
     for (unsigned i = 0; i < indent; i++)
       string_builder.Append(' ');
-    string_builder.Append(node->ToString());
+    string_builder.Append(node.ToString());
     string_builder.Append("\n");
 
     for (const auto* child_node : nodes_) {
-      if (child_node->Parent() == node)
-        BuildTreeString(string_builder, child_node, indent + 2);
+      if (child_node->Parent() == &node)
+        BuildTreeString(string_builder, *child_node, indent + 2);
     }
   }
 
-  const NodeType* RootNode() {
+  const NodeType& RootNode() {
     const auto* node = nodes_.back();
     while (!node->IsRoot())
       node = node->Parent();
     if (node->DebugName().IsEmpty())
       const_cast<NodeType*>(node)->SetDebugName("root");
     nodes_.insert(node);
-    return node;
+    return *node;
   }
 
   LinkedHashSet<const NodeType*> nodes_;
@@ -214,7 +213,7 @@ class PropertyTreePrinter {
 template <typename NodeType>
 String PaintPropertyNode<NodeType>::ToTreeString() const {
   return PropertyTreePrinter<NodeType>().PathAsString(
-      static_cast<const NodeType*>(this));
+      *static_cast<const NodeType*>(this));
 }
 
 #endif  // DCHECK_IS_ON()

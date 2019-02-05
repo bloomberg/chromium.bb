@@ -51,7 +51,7 @@ TEST_F(FragmentDataTest, PreEffectClipProperties) {
   EXPECT_TRUE(properties->CssClip());
   EXPECT_EQ(properties->ClipPathClip(), properties->CssClip()->Parent());
   EXPECT_EQ(properties->ClipPathClip()->Parent(),
-            target->FirstFragment().PreEffectProperties().Clip());
+            &target->FirstFragment().PreEffectProperties().Clip());
 }
 
 }  // namespace blink

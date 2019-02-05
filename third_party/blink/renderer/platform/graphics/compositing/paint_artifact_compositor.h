@@ -197,7 +197,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                             const EffectPaintPropertyNode&,
                             Vector<PaintChunk>::const_iterator& chunk_cursor);
   static bool MightOverlap(const PendingLayer&, const PendingLayer&);
-  static bool CanDecompositeEffect(const EffectPaintPropertyNode*,
+  static bool CanDecompositeEffect(const EffectPaintPropertyNode&,
                                    const PendingLayer&);
 
   // Builds a leaf layer that represents a single paint chunk.
@@ -239,7 +239,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const PaintChunk&);
 
   cc::Layer* CreateOrReuseSynthesizedClipLayer(
-      const ClipPaintPropertyNode*,
+      const ClipPaintPropertyNode&,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;
 

@@ -12,15 +12,14 @@ namespace blink {
 
 void ScopedPaintState::AdjustForPaintOffsetTranslation(
     const LayoutObject& object,
-    const TransformPaintPropertyNode* paint_offset_translation) {
+    const TransformPaintPropertyNode& paint_offset_translation) {
   if (input_paint_info_.context.InDrawingRecorder()) {
     // If we are recording drawings, we should issue the translation as a raw
     // paint operation instead of paint chunk properties. One case is that we
     // are painting table row background behind a cell having paint offset
     // translation.
     input_paint_info_.context.Save();
-    FloatSize translation =
-        paint_offset_translation->Matrix().To2DTranslation();
+    FloatSize translation = paint_offset_translation.Matrix().To2DTranslation();
     input_paint_info_.context.Translate(translation.Width(),
                                         translation.Height());
     paint_offset_translation_as_drawing_ = true;
@@ -79,7 +78,7 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
     return;
 
   adjusted_paint_info_.emplace(input_paint_info_);
-  adjusted_paint_info_->TransformCullRect(scroll_translation);
+  adjusted_paint_info_->TransformCullRect(*scroll_translation);
 }
 
 }  // namespace blink

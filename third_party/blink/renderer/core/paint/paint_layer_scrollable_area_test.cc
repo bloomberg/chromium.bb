@@ -1019,7 +1019,7 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   EXPECT_EQ(FloatSize(0, 0), sticky->FirstFragment()
                                  .LocalBorderBoxProperties()
                                  .Transform()
-                                 ->Matrix()
+                                 .Matrix()
                                  .To2DTranslation());
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kUserScroll);
@@ -1028,7 +1028,7 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
                                   .LocalBorderBoxProperties()
                                   .Transform()
-                                  ->Matrix()
+                                  .Matrix()
                                   .To2DTranslation());
 }
 

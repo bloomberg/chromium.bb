@@ -200,16 +200,16 @@ class CORE_EXPORT FragmentData {
     DCHECK(properties->MaskClip());
     DCHECK(properties->ClipPath());
     return PropertyTreeState(properties->MaskClip()->LocalTransformSpace(),
-                             properties->MaskClip(), properties->ClipPath());
+                             *properties->MaskClip(), *properties->ClipPath());
   }
 
-  const TransformPaintPropertyNode* PreTransform() const;
-  const TransformPaintPropertyNode* PostScrollTranslation() const;
-  const ClipPaintPropertyNode* PreClip() const;
-  const ClipPaintPropertyNode* PostOverflowClip() const;
-  const EffectPaintPropertyNode* PreEffect() const;
-  const EffectPaintPropertyNode* PreFilter() const;
-  const EffectPaintPropertyNode* PostIsolationEffect() const;
+  const TransformPaintPropertyNode& PreTransform() const;
+  const TransformPaintPropertyNode& PostScrollTranslation() const;
+  const ClipPaintPropertyNode& PreClip() const;
+  const ClipPaintPropertyNode& PostOverflowClip() const;
+  const EffectPaintPropertyNode& PreEffect() const;
+  const EffectPaintPropertyNode& PreFilter() const;
+  const EffectPaintPropertyNode& PostIsolationEffect() const;
 
   // Map a rect from |this|'s local border box space to |fragment|'s local
   // border box space. Both fragments must have local border box properties.

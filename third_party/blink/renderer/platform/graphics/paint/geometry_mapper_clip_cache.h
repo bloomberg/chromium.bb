@@ -39,7 +39,10 @@ class PLATFORM_EXPORT GeometryMapperClipCache {
                      OverlayScrollbarClipBehavior clip_behavior_arg)
         : ancestor_clip(ancestor_clip_arg),
           ancestor_transform(ancestor_transform_arg),
-          clip_behavior(clip_behavior_arg) {}
+          clip_behavior(clip_behavior_arg) {
+      DCHECK(ancestor_clip);
+      DCHECK(ancestor_transform);
+    }
   };
 
   // Returns the clip visual rect  of the owning

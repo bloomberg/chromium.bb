@@ -48,7 +48,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   } else if (const auto* properties =
                  layout_svg_container_.FirstFragment().PaintProperties()) {
     if (const auto* transform = properties->Transform())
-      paint_info_before_filtering.TransformCullRect(transform);
+      paint_info_before_filtering.TransformCullRect(*transform);
   }
 
   ScopedSVGTransformState transform_state(
@@ -69,7 +69,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
         if (properties && properties->OverflowClip()) {
           scoped_paint_chunk_properties.emplace(
               paint_info.context.GetPaintController(),
-              properties->OverflowClip(), layout_svg_container_,
+              *properties->OverflowClip(), layout_svg_container_,
               paint_info.DisplayItemTypeForClipping());
         }
     }

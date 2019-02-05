@@ -142,7 +142,7 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
 
   if (inner_viewport_container_layer_) {
     inner_viewport_container_layer_->SetLayerState(
-        PropertyTreeState(transform_parent, clip_parent, effect_parent),
+        PropertyTreeState(*transform_parent, *clip_parent, *effect_parent),
         IntPoint());
   }
 
@@ -177,8 +177,7 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
 
   if (page_scale_layer_) {
     page_scale_layer_->SetLayerState(
-        PropertyTreeState(scale_transform_node_.get(), clip_parent,
-                          effect_parent),
+        PropertyTreeState(*scale_transform_node_, *clip_parent, *effect_parent),
         IntPoint());
   }
 
@@ -225,8 +224,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
 
   if (inner_viewport_scroll_layer_) {
     inner_viewport_scroll_layer_->SetLayerState(
-        PropertyTreeState(translation_transform_node_.get(), clip_parent,
-                          effect_parent),
+        PropertyTreeState(*translation_transform_node_, *clip_parent,
+                          *effect_parent),
         IntPoint());
   }
 
@@ -246,8 +245,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     }
 
     overlay_scrollbar_horizontal_->SetLayerState(
-        PropertyTreeState(transform_parent, context.current.clip,
-                          horizontal_scrollbar_effect_node_.get()),
+        PropertyTreeState(*transform_parent, *context.current.clip,
+                          *horizontal_scrollbar_effect_node_),
         ScrollbarOffset(ScrollbarOrientation::kHorizontalScrollbar));
   }
 
@@ -266,8 +265,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     }
 
     overlay_scrollbar_vertical_->SetLayerState(
-        PropertyTreeState(transform_parent, context.current.clip,
-                          vertical_scrollbar_effect_node_.get()),
+        PropertyTreeState(*transform_parent, *context.current.clip,
+                          *vertical_scrollbar_effect_node_),
         ScrollbarOffset(ScrollbarOrientation::kVerticalScrollbar));
   }
 }
