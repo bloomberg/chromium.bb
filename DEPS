@@ -91,6 +91,11 @@ vars = {
   'checkout_traffic_annotation_tools': 'checkout_configuration != "small"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
 
+  # By default, do not check out WebKit for iOS, as it is not needed unless
+  # running against ToT WebKit rather than system WebKit. This can be overridden
+  # e.g. with custom_vars.
+  'checkout_ios_webkit': False,
+
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_board': '',
@@ -419,6 +424,11 @@ deps = {
   'src/ios/third_party/ochamcrest/src': {
       'url': Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + '92d9c14d13bb864255e65c09383564653896916b',
       'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/webkit/src': {
+      'url': 'https://chromium.googlesource.com/external/Webkit',
+      'condition': 'checkout_ios and checkout_ios_webkit'
   },
 
   'src/media/cdm/api':
