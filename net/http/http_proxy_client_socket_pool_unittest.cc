@@ -102,10 +102,7 @@ class HttpProxyClientSocketPoolTest
                          session_deps_.ssl_config_service.get(),
                          nullptr /* socket_performance_watcher_factory */,
                          nullptr /* network_quality_estimator */,
-                         nullptr /* net_log */,
-                         &transport_socket_pool_,
-                         nullptr /* socks_pool */,
-                         nullptr /* http_proxy_pool */),
+                         nullptr /* net_log */),
         field_trial_list_(nullptr),
         pool_(
             std::make_unique<HttpProxyClientSocketPool>(kMaxSockets,

@@ -77,22 +77,25 @@ class NET_EXPORT_PRIVATE SSLSocketParams
 
 // SSLConnectJob establishes a connection, through a proxy if needed, and then
 // handles the SSL handshake. It returns an SSLClientSocket on success.
-class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob {
+class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
+                                         public ConnectJob::Delegate {
  public:
   // Note: the SSLConnectJob does not own |messenger| so it must outlive the
   // job.
   SSLConnectJob(RequestPriority priority,
                 const CommonConnectJobParams& common_connect_job_params,
                 const scoped_refptr<SSLSocketParams>& params,
-                TransportClientSocketPool* transport_pool,
                 TransportClientSocketPool* socks_pool,
                 HttpProxyClientSocketPool* http_proxy_pool,
-                Delegate* delegate);
+                ConnectJob::Delegate* delegate);
   ~SSLConnectJob() override;
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
+
+  // ConnectJob::Delegate methods.
+  void OnConnectJobComplete(int result, ConnectJob* job) override;
 
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
@@ -141,12 +144,13 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob {
   void ChangePriorityInternal(RequestPriority priority) override;
 
   scoped_refptr<SSLSocketParams> params_;
-  TransportClientSocketPool* const transport_pool_;
   TransportClientSocketPool* const socks_pool_;
   HttpProxyClientSocketPool* const http_proxy_pool_;
 
   State next_state_;
   CompletionRepeatingCallback callback_;
+  std::unique_ptr<ConnectJob> nested_connect_job_;
+  std::unique_ptr<StreamSocket> nested_socket_;
   std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
   std::unique_ptr<SSLClientSocket> ssl_socket_;
 

@@ -71,8 +71,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
 
   TransportClientSocketPool* GetTransportSocketPool() override;
 
-  TransportClientSocketPool* GetSSLSocketPool() override;
-
   TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& proxy_server) override;
 
@@ -117,7 +115,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   // Note: this ordering is important.
 
   std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
-  std::unique_ptr<TransportClientSocketPool> ssl_socket_pool_;
 
   // Currently only contains socket pools for SOCKS proxies (With SSL over SOCKS
   // connections layered on top of it, and appearing in
@@ -126,7 +123,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   TransportSocketPoolMap proxy_socket_pools_;
 
   TransportSocketPoolMap transport_socket_pools_for_http_proxies_;
-  TransportSocketPoolMap transport_socket_pools_for_https_proxies_;
   TransportSocketPoolMap ssl_socket_pools_for_https_proxies_;
   HTTPProxySocketPoolMap http_proxy_socket_pools_;
   TransportSocketPoolMap ssl_socket_pools_for_proxies_;

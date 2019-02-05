@@ -18,11 +18,6 @@ void MockClientSocketPoolManager::SetTransportSocketPool(
   transport_socket_pool_.reset(pool);
 }
 
-void MockClientSocketPoolManager::SetSSLSocketPool(
-    TransportClientSocketPool* pool) {
-  ssl_socket_pool_.reset(pool);
-}
-
 void MockClientSocketPoolManager::SetSocketPoolForProxy(
     const ProxyServer& proxy_server,
     std::unique_ptr<TransportClientSocketPool> pool) {
@@ -53,10 +48,6 @@ void MockClientSocketPoolManager::CloseIdleSockets() {
 TransportClientSocketPool*
 MockClientSocketPoolManager::GetTransportSocketPool() {
   return transport_socket_pool_.get();
-}
-
-TransportClientSocketPool* MockClientSocketPoolManager::GetSSLSocketPool() {
-  return ssl_socket_pool_.get();
 }
 
 TransportClientSocketPool*

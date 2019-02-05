@@ -199,7 +199,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
         ssl_config_for_origin, privacy_mode);
     TransportClientSocketPool* ssl_pool = nullptr;
     if (proxy_info.is_direct()) {
-      ssl_pool = session->GetSSLSocketPool(socket_pool_type);
+      ssl_pool = session->GetTransportSocketPool(socket_pool_type);
     } else {
       ssl_pool = session->GetSocketPoolForSSLWithProxy(
           socket_pool_type, proxy_info.proxy_server());

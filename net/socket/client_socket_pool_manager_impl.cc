@@ -102,24 +102,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                                        ssl_config_service,
                                        socket_performance_watcher_factory_,
                                        network_quality_estimator,
-                                       net_log)),
-      ssl_socket_pool_(
-          new TransportClientSocketPool(max_sockets_per_pool(pool_type),
-                                        max_sockets_per_group(pool_type),
-                                        socket_factory_,
-                                        host_resolver,
-                                        cert_verifier,
-                                        channel_id_service,
-                                        transport_security_state,
-                                        cert_transparency_verifier,
-                                        ct_policy_enforcer,
-                                        ssl_client_session_cache,
-                                        ssl_session_cache_shard_,
-                                        ssl_config_service,
-                                        socket_performance_watcher_factory_,
-                                        network_quality_estimator,
-                                        net_log,
-                                        transport_socket_pool_.get())) {
+                                       net_log)) {
   CertDatabase::GetInstance()->AddObserver(this);
 }
 
@@ -144,10 +127,6 @@ void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
     it.second->FlushWithError(error);
   }
 
-  for (const auto& it : transport_socket_pools_for_https_proxies_) {
-    it.second->FlushWithError(error);
-  }
-
   for (const auto& it : transport_socket_pools_for_http_proxies_) {
     it.second->FlushWithError(error);
   }
@@ -156,7 +135,6 @@ void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
     it.second->FlushWithError(error);
   }
 
-  ssl_socket_pool_->FlushWithError(error);
   transport_socket_pool_->FlushWithError(error);
 }
 
@@ -175,10 +153,6 @@ void ClientSocketPoolManagerImpl::CloseIdleSockets() {
     it.second->CloseIdleSockets();
   }
 
-  for (const auto& it : transport_socket_pools_for_https_proxies_) {
-    it.second->CloseIdleSockets();
-  }
-
   for (const auto& it : transport_socket_pools_for_http_proxies_) {
     it.second->CloseIdleSockets();
   }
@@ -187,17 +161,12 @@ void ClientSocketPoolManagerImpl::CloseIdleSockets() {
     it.second->CloseIdleSockets();
   }
 
-  ssl_socket_pool_->CloseIdleSockets();
   transport_socket_pool_->CloseIdleSockets();
 }
 
 TransportClientSocketPool*
 ClientSocketPoolManagerImpl::GetTransportSocketPool() {
   return transport_socket_pool_.get();
-}
-
-TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSSLSocketPool() {
-  return ssl_socket_pool_.get();
 }
 
 TransportClientSocketPool*
@@ -239,16 +208,12 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
   if (it != http_proxy_socket_pools_.end()) {
     DCHECK(base::ContainsKey(transport_socket_pools_for_http_proxies_,
                              http_proxy));
-    DCHECK(base::ContainsKey(transport_socket_pools_for_https_proxies_,
-                             http_proxy));
     DCHECK(base::ContainsKey(ssl_socket_pools_for_https_proxies_, http_proxy));
     return it->second.get();
   }
 
   DCHECK(
       !base::ContainsKey(transport_socket_pools_for_http_proxies_, http_proxy));
-  DCHECK(!base::ContainsKey(transport_socket_pools_for_https_proxies_,
-                            http_proxy));
   DCHECK(!base::ContainsKey(ssl_socket_pools_for_https_proxies_, http_proxy));
 
   int sockets_per_proxy_server = max_sockets_per_proxy_server(pool_type_);
@@ -268,19 +233,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
               net_log_)));
   DCHECK(tcp_http_ret.second);
 
-  std::pair<TransportSocketPoolMap::iterator, bool> tcp_https_ret =
-      transport_socket_pools_for_https_proxies_.insert(std::make_pair(
-          http_proxy,
-          std::make_unique<TransportClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group, socket_factory_,
-              host_resolver_, cert_verifier_, channel_id_service_,
-              transport_security_state_, cert_transparency_verifier_,
-              ct_policy_enforcer_, ssl_client_session_cache_,
-              ssl_session_cache_shard_, ssl_config_service_,
-              socket_performance_watcher_factory_, network_quality_estimator_,
-              net_log_)));
-  DCHECK(tcp_https_ret.second);
-
   std::pair<TransportSocketPoolMap::iterator, bool> ssl_https_ret =
       ssl_socket_pools_for_https_proxies_.insert(std::make_pair(
           http_proxy,
@@ -291,9 +243,9 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
               ct_policy_enforcer_, ssl_client_session_cache_,
               ssl_session_cache_shard_, ssl_config_service_,
               socket_performance_watcher_factory_, network_quality_estimator_,
-              net_log_, tcp_https_ret.first->second.get() /* https proxy */,
-              nullptr /* no socks proxy */, nullptr /* no http proxy */)));
-  DCHECK(tcp_https_ret.second);
+              net_log_, nullptr /* no socks proxy */,
+              nullptr /* no http proxy */)));
+  DCHECK(ssl_https_ret.second);
 
   std::pair<HTTPProxySocketPoolMap::iterator, bool> ret =
       http_proxy_socket_pools_.insert(std::make_pair(
@@ -328,7 +280,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
               ct_policy_enforcer_, ssl_client_session_cache_,
               ssl_session_cache_shard_, ssl_config_service_,
               socket_performance_watcher_factory_, network_quality_estimator_,
-              net_log_, nullptr, /* no tcp pool, we always go through a proxy */
+              net_log_,
               proxy_server.is_socks() ? GetSocketPoolForSOCKSProxy(proxy_server)
                                       : nullptr,
               proxy_server.is_http_like()
@@ -343,12 +295,6 @@ ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   list->Append(transport_socket_pool_->GetInfoAsValue("transport_socket_pool",
                                                 "transport_socket_pool",
-                                                false));
-  // Third parameter is false because |ssl_socket_pool_| uses
-  // |transport_socket_pool_| internally, and do not want to add it a second
-  // time.
-  list->Append(ssl_socket_pool_->GetInfoAsValue("ssl_socket_pool",
-                                                "ssl_socket_pool",
                                                 false));
   AddSocketPoolsToList(list.get(), http_proxy_socket_pools_,
                        "http_proxy_socket_pool", true);
@@ -369,7 +315,8 @@ void ClientSocketPoolManagerImpl::OnCertDBChanged() {
 void ClientSocketPoolManagerImpl::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_dump_absolute_name) const {
-  return ssl_socket_pool_->DumpMemoryStats(pmd, parent_dump_absolute_name);
+  return transport_socket_pool_->DumpMemoryStats(pmd,
+                                                 parent_dump_absolute_name);
 }
 
 }  // namespace net
