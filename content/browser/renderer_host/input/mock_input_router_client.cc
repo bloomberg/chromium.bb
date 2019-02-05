@@ -86,6 +86,10 @@ bool MockInputRouterClient::IsWheelScrollInProgress() {
   return is_wheel_scroll_in_progress_;
 }
 
+bool MockInputRouterClient::IsAutoscrollInProgress() {
+  return false;
+}
+
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {
   bool filter_input_event_called = filter_input_event_called_;
   filter_input_event_called_ = false;

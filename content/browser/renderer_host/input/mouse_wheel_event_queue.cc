@@ -110,6 +110,15 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
     return false;
   }
 
+  // When the cursor has entered the autoscroll mode but no mouse move has
+  // arrived yet, We should still ignore wheel scrolling even though no GSB with
+  // autoscroll source has been sent yet.
+  if (client_->IsAutoscrollInProgress()) {
+    TRACE_EVENT_INSTANT0("input", "In Autoscrolling mode",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
   return true;
 }
 

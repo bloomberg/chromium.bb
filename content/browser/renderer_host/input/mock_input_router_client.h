@@ -40,6 +40,7 @@ class MockInputRouterClient : public InputRouterClient,
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override;
   bool IsWheelScrollInProgress() override;
+  bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override {}
 
   bool GetAndResetFilterEventCalled();

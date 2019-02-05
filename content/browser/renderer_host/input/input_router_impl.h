@@ -156,6 +156,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override;
   bool IsWheelScrollInProgress() override;
+  bool IsAutoscrollInProgress() override;
 
   // TouchpadPinchEventQueueClient
   void SendMouseWheelEventForPinchImmediately(
