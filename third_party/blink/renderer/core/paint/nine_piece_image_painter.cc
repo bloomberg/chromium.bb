@@ -135,19 +135,16 @@ void PaintPieces(GraphicsContext& context,
         FloatSize tile_scale_factor(h_tile.scale_factor, v_tile.scale_factor);
         FloatPoint tile_phase(draw_info.destination.X() - h_tile.phase,
                               draw_info.destination.Y() - v_tile.phase);
+        FloatSize tile_spacing(h_tile.spacing, v_tile.spacing);
 
         // TODO(cavalcantii): see crbug.com/662507.
+        base::Optional<ScopedInterpolationQuality> interpolation_quality_scope;
         if (draw_info.tile_rule.horizontal == kRoundImageRule ||
-            draw_info.tile_rule.vertical == kRoundImageRule) {
-          ScopedInterpolationQuality interpolation_quality_scope(
-              context, kInterpolationLow);
-          context.DrawImageTiled(image, draw_info.destination, draw_info.source,
-                                 tile_scale_factor, tile_phase, FloatSize());
-        } else {
-          FloatSize tile_spacing(h_tile.spacing, v_tile.spacing);
-          context.DrawImageTiled(image, draw_info.destination, draw_info.source,
-                                 tile_scale_factor, tile_phase, tile_spacing);
-        }
+            draw_info.tile_rule.vertical == kRoundImageRule)
+          interpolation_quality_scope.emplace(context, kInterpolationLow);
+
+        context.DrawImageTiled(image, draw_info.destination, draw_info.source,
+                               tile_scale_factor, tile_phase, tile_spacing);
       }
     }
   }
