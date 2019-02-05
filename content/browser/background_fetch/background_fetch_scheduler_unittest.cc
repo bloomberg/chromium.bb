@@ -52,14 +52,15 @@ class FakeController : public BackgroundFetchJobController {
   ~FakeController() override = default;
 
   void DidCompleteRequest(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request) override {
+      const std::string& guid,
+      std::unique_ptr<BackgroundFetchResult> result) override {
     // Record the completed request. Store everything after the origin and the
     // slash, to be able to directly compare with the provided requests.
     controller_sequence_list_->push_back(
-        request->fetch_request()->url.path().substr(1));
+        result->response->url_chain[0].path().substr(1));
 
     // Continue normally.
-    BackgroundFetchJobController::DidCompleteRequest(request);
+    BackgroundFetchJobController::DidCompleteRequest(guid, std::move(result));
   }
 
  private:

@@ -90,17 +90,18 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // BackgroundFetchDelegateProxy::Controller implementation:
   void DidStartRequest(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
-  void DidUpdateRequest(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request,
-      uint64_t bytes_uploaded,
-      uint64_t bytes_downloaded) override;
+      const std::string& guid,
+      std::unique_ptr<BackgroundFetchResponse> response) override;
+  void DidUpdateRequest(const std::string& guid,
+                        uint64_t bytes_uploaded,
+                        uint64_t bytes_downloaded) override;
   void DidCompleteRequest(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
+      const std::string& guid,
+      std::unique_ptr<BackgroundFetchResult> result) override;
   void AbortFromDelegate(
       blink::mojom::BackgroundFetchFailureReason failure_reason) override;
   void GetUploadData(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request,
+      const std::string& guid,
       BackgroundFetchDelegate::GetUploadDataCallback callback) override;
 
   // Aborts the fetch. |callback| will run with the result of marking the
@@ -149,6 +150,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Proxy for interacting with the BackgroundFetchDelegate across thread
   // boundaries. It is owned by the BackgroundFetchContext.
   BackgroundFetchDelegateProxy* delegate_proxy_;
+
+  // A map from the download GUID to the active request.
+  std::map<std::string, scoped_refptr<BackgroundFetchRequestInfo>>
+      active_request_map_;
 
   // The registration ID of the fetch this controller represents.
   BackgroundFetchRegistrationId registration_id_;
