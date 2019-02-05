@@ -1231,10 +1231,10 @@ void ShowSupervisedUserDeprecationNotification(Profile* profile,
               Profile* profile = ProfileHelper::Get()->GetProfileByUser(
                   user_manager->GetPrimaryUser());
 
-              NavigateParams params(profile,
-                                    GURL("https://support.google.com/chrome/"
-                                         "?p=ui_supervised_user"),
-                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+              NavigateParams params(
+                  profile,
+                  GURL("https://support.google.com/chromebook/?p=new_account"),
+                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
               params.disposition = WindowOpenDisposition::NEW_WINDOW;
               Navigate(&params);
             }
