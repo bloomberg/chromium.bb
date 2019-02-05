@@ -39,11 +39,10 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
 #if defined(OS_CHROMEOS)
   TestingPrefServiceSimple pref_service_;
   // Uses default pref voices.
-  std::unique_ptr<base::DictionaryValue> lang_to_voices =
-      std::make_unique<base::DictionaryValue>();
-  lang_to_voices->SetKey(
+  base::Value lang_to_voices(base::Value::Type::DICTIONARY);
+  lang_to_voices.SetKey(
       "es", base::Value("{\"name\":\"Voice7\",\"extension\":\"id7\"}"));
-  lang_to_voices->SetKey(
+  lang_to_voices.SetKey(
       "noLanguage", base::Value("{\"name\":\"Android\",\"extension\":\"\"}"));
   pref_service_.registry()->RegisterDictionaryPref(
       prefs::kTextToSpeechLangToVoiceName, std::move(lang_to_voices));
