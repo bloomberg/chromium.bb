@@ -97,10 +97,13 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
   v8::MicrotasksScope microtasks(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  v8::Local<v8::Value> function_property = context->Global()->Get(
-      v8::String::NewFromUtf8(isolate, "runTest",
-                              v8::NewStringType::kInternalized)
-          .ToLocalChecked());
+  v8::Local<v8::Value> function_property =
+      context->Global()
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate, "runTest",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked();
   EXPECT_FALSE(function_property.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
     return false;
@@ -111,14 +114,20 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
       v8::Local<v8::Function>::Cast(function_property);
 
   v8::Local<v8::Array> params = v8::Array::New(isolate);
-  params->Set(0, v8::String::NewFromUtf8(isolate, test_fixture.data(),
-                                         v8::NewStringType::kNormal,
-                                         test_fixture.size())
-                     .ToLocalChecked());
-  params->Set(
-      1, v8::String::NewFromUtf8(isolate, test_name.data(),
-                                 v8::NewStringType::kNormal, test_name.size())
-             .ToLocalChecked());
+  params
+      ->Set(context, 0,
+            v8::String::NewFromUtf8(isolate, test_fixture.data(),
+                                    v8::NewStringType::kNormal,
+                                    test_fixture.size())
+                .ToLocalChecked())
+      .Check();
+  params
+      ->Set(
+          context, 1,
+          v8::String::NewFromUtf8(isolate, test_name.data(),
+                                  v8::NewStringType::kNormal, test_name.size())
+              .ToLocalChecked())
+      .Check();
   v8::Local<v8::Value> args[] = {
       v8::Boolean::New(isolate, false),
       v8::String::NewFromUtf8(isolate, "RUN_TEST_F", v8::NewStringType::kNormal)
@@ -224,7 +233,7 @@ void V8UnitTest::SetUp() {
                                       v8::NewStringType::kInternalized)
                   .ToLocalChecked(),
               console->NewInstance(context).ToLocalChecked())
-        .ToChecked();
+        .Check();
   }
 }
 
@@ -234,14 +243,16 @@ void V8UnitTest::SetGlobalStringVar(const std::string& var_name,
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
-  context->Global()->Set(
-      v8::String::NewFromUtf8(isolate, var_name.c_str(),
-                              v8::NewStringType::kInternalized,
-                              var_name.length())
-          .ToLocalChecked(),
-      v8::String::NewFromUtf8(isolate, value.c_str(),
-                              v8::NewStringType::kNormal, value.length())
-          .ToLocalChecked());
+  context->Global()
+      ->Set(context,
+            v8::String::NewFromUtf8(isolate, var_name.c_str(),
+                                    v8::NewStringType::kInternalized,
+                                    var_name.length())
+                .ToLocalChecked(),
+            v8::String::NewFromUtf8(isolate, value.c_str(),
+                                    v8::NewStringType::kNormal, value.length())
+                .ToLocalChecked())
+      .Check();
 }
 
 void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
@@ -306,10 +317,13 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
   v8::MicrotasksScope microtasks(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  v8::Local<v8::Value> function_property = context->Global()->Get(
-      v8::String::NewFromUtf8(isolate, function_name.c_str(),
-                              v8::NewStringType::kInternalized)
-          .ToLocalChecked());
+  v8::Local<v8::Value> function_property =
+      context->Global()
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate, function_name.c_str(),
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked();
   ASSERT_FALSE(function_property.IsEmpty());
   ASSERT_TRUE(function_property->IsFunction());
   v8::Local<v8::Function> function =
@@ -354,9 +368,12 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   EXPECT_EQ(2U, test_result->Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  g_test_result_ok = test_result->Get(0)->BooleanValue(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  g_test_result_ok =
+      test_result->Get(context, 0).ToLocalChecked()->BooleanValue(isolate);
   if (!g_test_result_ok) {
-    v8::String::Utf8Value message(isolate, test_result->Get(1));
+    v8::String::Utf8Value message(
+        isolate, test_result->Get(context, 1).ToLocalChecked());
     LOG(ERROR) << *message;
   }
 }
