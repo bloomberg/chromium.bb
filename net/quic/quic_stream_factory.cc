@@ -411,7 +411,7 @@ class QuicStreamFactory::Job {
       QuicChromiumClientSession* session = session_;
       session_ = nullptr;
       session->CloseSessionOnErrorLater(
-          ERR_ABORTED, quic::QUIC_CONNECTION_CANCELLED,
+          ERR_ABORTED, quic::QUIC_STALE_CONNECTION_CANCELLED,
           quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     }
   }

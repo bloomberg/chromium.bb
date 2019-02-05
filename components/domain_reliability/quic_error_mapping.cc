@@ -304,12 +304,13 @@ const struct QuicErrorMapping {
      "quic.stream.id.in.stream_id_blocked.frame"},
     {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
     {quic::QUIC_HTTP_DECODER_ERROR, "quic.http.decoder.error"},
+    {quic::QUIC_STALE_CONNECTION_CANCELLED, "quic.stale.connection.cancelled"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};
 
 // Must be updated any time a quic::QuicErrorCode is deprecated in
-// net/quic/core/quic_packets.h.
+// net/third_party/quic/core/quic_error_codes.h.
 const int kDeprecatedQuicErrorCount = 5;
 const int kActiveQuicErrorCount =
     quic::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
