@@ -25,6 +25,8 @@
 
 namespace {
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
 // Measures the size (bytes) and time to load (sec) of a native library.
 // |library_relative_dir| is the relative path based on DIR_MODULE.
 void MeasureSizeAndTimeToLoadNativeLibrary(
@@ -59,8 +61,6 @@ void MeasureSizeAndTimeToLoadNativeLibrary(
                          "ms",
                          true);
 }
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
                                  const std::string& cdm_name) {
