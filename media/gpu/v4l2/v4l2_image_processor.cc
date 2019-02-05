@@ -9,6 +9,7 @@
 #include <sys/eventfd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -42,13 +43,6 @@
   } while (0)
 
 namespace media {
-
-V4L2ImageProcessor::InputRecord::InputRecord() : at_device(false) {}
-
-V4L2ImageProcessor::InputRecord::InputRecord(
-    const V4L2ImageProcessor::InputRecord&) = default;
-
-V4L2ImageProcessor::InputRecord::~InputRecord() {}
 
 V4L2ImageProcessor::OutputRecord::OutputRecord() : at_device(false) {}
 
@@ -85,9 +79,6 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
       device_poll_thread_("V4L2ImageProcessorDevicePollThread"),
-      input_streamon_(false),
-      input_buffer_queued_count_(0),
-      output_streamon_(false),
       output_buffer_queued_count_(0),
       num_buffers_(num_buffers),
       error_cb_(error_cb) {}
@@ -446,7 +437,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   EnqueueOutput(job_record.get());
-  input_queue_.emplace(std::move(job_record));
+  input_job_queue_.emplace(std::move(job_record));
   EnqueueInput();
 }
 
@@ -484,7 +475,7 @@ void V4L2ImageProcessor::Destroy() {
 bool V4L2ImageProcessor::CreateInputBuffers() {
   VLOGF(2);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
+  DCHECK_EQ(input_queue_, nullptr);
 
   struct v4l2_control control;
   memset(&control, 0, sizeof(control));
@@ -527,23 +518,19 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
   }
 
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = num_buffers_;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  reqbufs.memory = input_memory_type_;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
-  if (reqbufs.count != num_buffers_) {
-    VLOGF(1) << "Failed to allocate input buffers. reqbufs.count="
-             << reqbufs.count << ", num_buffers=" << num_buffers_;
+  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+  if (!input_queue_)
+    return false;
+
+  if (input_queue_->AllocateBuffers(num_buffers_, input_memory_type_) == 0u)
+    return false;
+
+  if (input_queue_->AllocatedBuffersCount() != num_buffers_) {
+    VLOGF(1) << "Failed to allocate the required number of input buffers. "
+             << "Requested " << num_buffers_ << ", got "
+             << input_queue_->AllocatedBuffersCount() << ".";
     return false;
   }
-
-  DCHECK(input_buffer_map_.empty());
-  input_buffer_map_.resize(reqbufs.count);
-
-  for (size_t i = 0; i < input_buffer_map_.size(); ++i)
-    free_input_buffers_.push_back(i);
 
   return true;
 }
@@ -551,7 +538,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   VLOGF(2);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!output_streamon_);
+  DCHECK_EQ(output_queue_, nullptr);
 
   struct v4l2_rect visible_rect;
   visible_rect.left = 0;
@@ -559,6 +546,10 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   visible_rect.width = base::checked_cast<__u32>(output_visible_size_.width());
   visible_rect.height =
     base::checked_cast<__u32>(output_visible_size_.height());
+
+  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+  if (!output_queue_)
+    return false;
 
   struct v4l2_selection selection_arg;
   memset(&selection_arg, 0, sizeof(selection_arg));
@@ -574,20 +565,18 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
   }
 
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = num_buffers_;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  reqbufs.memory = output_memory_type_;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
-  if (reqbufs.count != num_buffers_) {
-    VLOGF(1) << "Failed to allocate output buffers. reqbufs.count="
-             << reqbufs.count << ", num_buffers=" << num_buffers_;
+  if (output_queue_->AllocateBuffers(num_buffers_, output_memory_type_) == 0)
+    return false;
+
+  if (output_queue_->AllocatedBuffersCount() != num_buffers_) {
+    VLOGF(1) << "Failed to allocate output buffers. Allocated number="
+             << output_queue_->AllocatedBuffersCount()
+             << ", Requested number=" << num_buffers_;
     return false;
   }
 
   DCHECK(output_buffer_map_.empty());
-  output_buffer_map_.resize(reqbufs.count);
+  output_buffer_map_.resize(output_queue_->AllocatedBuffersCount());
 
   // Get the DMA-BUF FDs for MMAP buffers
   if (output_memory_type_ == V4L2_MEMORY_MMAP) {
@@ -608,32 +597,17 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 void V4L2ImageProcessor::DestroyInputBuffers() {
   VLOGF(2);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
 
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  reqbufs.memory = input_memory_type_;
-  IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
-
-  input_buffer_map_.clear();
-  free_input_buffers_.clear();
+  input_queue_->DeallocateBuffers();
 }
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
   VLOGF(2);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!output_streamon_);
 
   output_buffer_map_.clear();
 
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  reqbufs.memory = output_memory_type_;
-  IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
+  output_queue_->DeallocateBuffers();
 }
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
@@ -672,31 +646,32 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
     return;
   }
 
-  bool poll_device =
-      (input_buffer_queued_count_ > 0 || output_buffer_queued_count_ > 0);
+  bool poll_device = (input_queue_->QueuedBuffersCount() > 0 ||
+                      output_buffer_queued_count_ > 0);
 
   device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DevicePollTask,
                                 base::Unretained(this), poll_device));
 
-  DVLOGF(3) << __func__ << ": buffer counts: INPUT[" << input_queue_.size()
-            << "] => DEVICE[" << free_input_buffers_.size() << "+"
-            << input_buffer_queued_count_ << "/" << input_buffer_map_.size()
-            << "->" << output_buffer_map_.size() - output_buffer_queued_count_
-            << "+" << output_buffer_queued_count_ << "/"
-            << output_buffer_map_.size() << "]";
+  DVLOGF(3) << __func__ << ": buffer counts: INPUT[" << input_job_queue_.size()
+            << "] => DEVICE[" << input_queue_->FreeBuffersCount() << "+"
+            << input_queue_->QueuedBuffersCount() << "/"
+            << input_queue_->AllocatedBuffersCount() << "->"
+            << output_buffer_map_.size() - output_buffer_queued_count_ << "+"
+            << output_buffer_queued_count_ << "/" << output_buffer_map_.size()
+            << "]";
 }
 
 void V4L2ImageProcessor::EnqueueInput() {
   DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
-  const int old_inputs_queued = input_buffer_queued_count_;
-  while (!input_queue_.empty() && !free_input_buffers_.empty()) {
+  const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
+  while (!input_job_queue_.empty() && input_queue_->FreeBuffersCount() > 0) {
     if (!EnqueueInputRecord())
       return;
   }
-  if (old_inputs_queued == 0 && input_buffer_queued_count_ != 0) {
+  if (old_inputs_queued == 0 && input_queue_->QueuedBuffersCount() != 0) {
     // We started up a previously empty queue.
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt()) {
@@ -704,11 +679,8 @@ void V4L2ImageProcessor::EnqueueInput() {
       return;
     }
     // VIDIOC_STREAMON if we haven't yet.
-    if (!input_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-      input_streamon_ = true;
-    }
+    if (!input_queue_->Streamon())
+      return;
   }
 }
 
@@ -728,50 +700,37 @@ void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
       return;
     }
     // Start VIDIOC_STREAMON if we haven't yet.
-    if (!output_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-      output_streamon_ = true;
-    }
+    if (!output_queue_->Streamon())
+      return;
   }
 }
 
 void V4L2ImageProcessor::Dequeue() {
   DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(input_queue_->IsStreaming());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
   // and recycle to the free list.
   struct v4l2_buffer dqbuf;
   struct v4l2_plane planes[VIDEO_MAX_PLANES];
-  while (input_buffer_queued_count_ > 0) {
-    DCHECK(input_streamon_);
-    memset(&dqbuf, 0, sizeof(dqbuf));
-    memset(&planes, 0, sizeof(planes));
-    dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    dqbuf.memory = input_memory_type_;
-    dqbuf.m.planes = planes;
-    dqbuf.length = input_layout_.num_buffers();
-    if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
-      if (errno == EAGAIN) {
-        // EAGAIN if we're just out of buffers to dequeue.
-        break;
-      }
-      VPLOGF(1) << "ioctl() failed: VIDIOC_DQBUF";
+  while (input_queue_->QueuedBuffersCount() > 0) {
+    bool res;
+    V4L2ReadableBufferRef buffer;
+    std::tie(res, buffer) = input_queue_->DequeueBuffer();
+    if (!res) {
       NotifyError();
       return;
     }
-    InputRecord& input_record = input_buffer_map_[dqbuf.index];
-    DCHECK(input_record.at_device);
-    input_record.at_device = false;
-    input_record.frame = NULL;
-    free_input_buffers_.push_back(dqbuf.index);
-    input_buffer_queued_count_--;
+    if (!buffer) {
+      // No error occurred, we are just out of buffers to dequeue.
+      break;
+    }
   }
   // Dequeue completed output (VIDEO_CAPTURE) buffers, recycle to the free list.
   // Return the finished buffer to the client via the job ready callback.
   while (output_buffer_queued_count_ > 0) {
-    DCHECK(output_streamon_);
+    DCHECK(output_queue_->IsStreaming());
     memset(&dqbuf, 0, sizeof(dqbuf));
     memset(&planes, 0, sizeof(planes));
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -805,66 +764,41 @@ void V4L2ImageProcessor::Dequeue() {
 
 bool V4L2ImageProcessor::EnqueueInputRecord() {
   DVLOGF(4);
-  DCHECK(!input_queue_.empty());
-  DCHECK(!free_input_buffers_.empty());
+  DCHECK(!input_job_queue_.empty());
+  DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
 
   // Enqueue an input (VIDEO_OUTPUT) buffer for an input video frame.
-  std::unique_ptr<JobRecord> job_record = std::move(input_queue_.front());
-  input_queue_.pop();
-  const int index = free_input_buffers_.back();
-  InputRecord& input_record = input_buffer_map_[index];
-  DCHECK(!input_record.at_device);
-  input_record.frame = job_record->input_frame;
-  struct v4l2_buffer qbuf;
-  struct v4l2_plane qbuf_planes[VIDEO_MAX_PLANES];
-  memset(&qbuf, 0, sizeof(qbuf));
-  memset(qbuf_planes, 0, sizeof(qbuf_planes));
-  qbuf.index = index;
-  qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  qbuf.memory = input_memory_type_;
-  qbuf.m.planes = qbuf_planes;
-  qbuf.length = input_layout_.num_buffers();
+  std::unique_ptr<JobRecord> job_record = std::move(input_job_queue_.front());
+  input_job_queue_.pop();
+  V4L2WritableBufferRef buffer(input_queue_->GetFreeBuffer());
+  DCHECK(buffer.IsValid());
 
-  std::vector<int> fds;
-  if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
-    auto& scoped_fds = input_record.frame->DmabufFds();
-    if (scoped_fds.size() != input_layout_.num_buffers()) {
-      VLOGF(1) << "Invalid number of planes in the frame";
-      return false;
-    }
-    for (auto& fd : scoped_fds)
-      fds.push_back(fd.get());
-  }
+  std::vector<void*> user_ptrs;
   for (size_t i = 0; i < input_layout_.num_buffers(); ++i) {
-    qbuf.m.planes[i].bytesused =
-        VideoFrame::PlaneSize(input_record.frame->format(), i,
-                              input_layout_.coded_size())
-            .GetArea();
-    qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
-    switch (input_memory_type_) {
-      case V4L2_MEMORY_USERPTR:
-        qbuf.m.planes[i].m.userptr =
-            reinterpret_cast<unsigned long>(input_record.frame->data(i));
-        break;
-      case V4L2_MEMORY_DMABUF:
-        qbuf.m.planes[i].m.fd = fds[i];
-        break;
-      default:
-        NOTREACHED();
-        return false;
-    }
+    int bytes_used = VideoFrame::PlaneSize(job_record->input_frame->format(), i,
+                                           input_layout_.coded_size())
+                         .GetArea();
+    buffer.SetPlaneBytesUsed(i, bytes_used);
+    if (buffer.Memory() == V4L2_MEMORY_USERPTR)
+      user_ptrs.push_back(job_record->input_frame->data(i));
   }
-  DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
-  input_record.at_device = true;
 
+  switch (input_memory_type_) {
+    case V4L2_MEMORY_USERPTR:
+      std::move(buffer).QueueUserPtr(user_ptrs);
+      break;
+    case V4L2_MEMORY_DMABUF:
+      std::move(buffer).QueueDMABuf(job_record->input_frame->DmabufFds());
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
   DVLOGF(4) << "enqueued frame ts="
             << job_record->input_frame->timestamp().InMilliseconds()
             << " to device.";
 
   running_jobs_.emplace(std::move(job_record));
-  free_input_buffers_.pop_back();
-  input_buffer_queued_count_++;
 
   return true;
 }
@@ -956,33 +890,18 @@ void V4L2ImageProcessor::StopDevicePoll() {
     return;
   }
 
-  if (input_streamon_) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
-  }
-  input_streamon_ = false;
+  if (!input_queue_->Streamoff())
+    return;
 
-  if (output_streamon_) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
-  }
-  output_streamon_ = false;
+  if (!output_queue_->Streamoff())
+    return;
 
   // Reset all our accounting info.
-  while (!input_queue_.empty())
-    input_queue_.pop();
+  while (!input_job_queue_.empty())
+    input_job_queue_.pop();
 
   while (!running_jobs_.empty())
     running_jobs_.pop();
-
-  free_input_buffers_.clear();
-  for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
-    InputRecord& input_record = input_buffer_map_[i];
-    input_record.at_device = false;
-    input_record.frame = NULL;
-    free_input_buffers_.push_back(i);
-  }
-  input_buffer_queued_count_ = 0;
 
   for (auto& output_buffer : output_buffer_map_)
     output_buffer.at_device = false;
