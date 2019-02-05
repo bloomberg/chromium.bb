@@ -76,9 +76,9 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   void ExposeInterfacesToFrame(
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
           registry) override;
-  std::unique_ptr<LoginDelegate> CreateLoginDelegate(
+  scoped_refptr<LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
-      content::WebContents* web_contents,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       const content::GlobalRequestID& request_id,
       bool is_main_frame,
       const GURL& url,

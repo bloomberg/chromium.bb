@@ -465,9 +465,9 @@ void ShellContentBrowserClient::OpenURL(
                    ->web_contents());
 }
 
-std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
+scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
-    content::WebContents* web_contents,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& url,

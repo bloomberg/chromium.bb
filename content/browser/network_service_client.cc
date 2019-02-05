@@ -168,8 +168,100 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 };
 
-// LoginHandlerDelegate manages HTTP auth. It is self-owning and deletes itself
-// when the credentials are resolved or the AuthChallengeResponder is cancelled.
+// LoginHandlerDelegateIO handles HTTP auth on the IO thread.
+//
+// TODO(https://crbug.com/908926): This can be folded into LoginHandlerDelegate
+// with the thread-hops simplified once CreateLoginDelegate is moved to the UI
+// thread.
+class LoginHandlerDelegateIO {
+ public:
+  LoginHandlerDelegateIO(
+      LoginAuthRequiredCallback callback,
+      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      bool is_request_for_main_frame,
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const GURL& url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      bool first_auth_attempt)
+      : callback_(std::move(callback)),
+        auth_info_(auth_info),
+        request_id_(process_id, request_id),
+        routing_id_(routing_id),
+        is_request_for_main_frame_(is_request_for_main_frame),
+        url_(url),
+        response_headers_(std::move(response_headers)),
+        first_auth_attempt_(first_auth_attempt),
+        web_contents_getter_(web_contents_getter),
+        weak_factory_(this) {
+    // This object may be created on any thread, but it must be destroyed and
+    // otherwise accessed on the IO thread.
+  }
+
+  ~LoginHandlerDelegateIO() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (login_delegate_)
+      login_delegate_->OnRequestCancelled();
+  }
+
+  void Start() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DevToolsURLLoaderInterceptor::HandleAuthRequest(
+        request_id_.child_id, routing_id_, request_id_.request_id, auth_info_,
+        base::BindOnce(&LoginHandlerDelegateIO::ContinueAfterInterceptor,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void ContinueAfterInterceptor(
+      bool use_fallback,
+      const base::Optional<net::AuthCredentials>& auth_credentials) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(!(use_fallback && auth_credentials.has_value()));
+    if (!use_fallback) {
+      RunAuthCredentials(auth_credentials);
+      return;
+    }
+
+    // WeakPtr is not strictly necessary here due to OnRequestCancelled.
+    login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
+        auth_info_.get(), web_contents_getter_, request_id_,
+        is_request_for_main_frame_, url_, response_headers_,
+        first_auth_attempt_,
+        base::BindOnce(&LoginHandlerDelegateIO::RunAuthCredentials,
+                       weak_factory_.GetWeakPtr()));
+    if (!login_delegate_) {
+      RunAuthCredentials(base::nullopt);
+      return;
+    }
+  }
+
+  void RunAuthCredentials(
+      const base::Optional<net::AuthCredentials>& auth_credentials) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    std::move(callback_).Run(auth_credentials);
+    // There is no need to call OnRequestCancelled in the destructor.
+    login_delegate_ = nullptr;
+  }
+
+  LoginAuthRequiredCallback callback_;
+  scoped_refptr<net::AuthChallengeInfo> auth_info_;
+  const content::GlobalRequestID request_id_;
+  const uint32_t routing_id_;
+  bool is_request_for_main_frame_;
+  GURL url_;
+  const scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  bool first_auth_attempt_;
+  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  scoped_refptr<LoginDelegate> login_delegate_;
+  base::WeakPtrFactory<LoginHandlerDelegateIO> weak_factory_;
+};
+
+// LoginHanderDelegate manages LoginHandlerDelegateIO from the UI thread. It is
+// self-owning and deletes itself when the credentials are resolved or the
+// AuthChallengeResponder is cancelled.
 class LoginHandlerDelegate {
  public:
   LoginHandlerDelegate(
@@ -184,28 +276,22 @@ class LoginHandlerDelegate {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt)
       : auth_challenge_responder_(std::move(auth_challenge_responder)),
-        auth_info_(auth_info),
-        request_id_(process_id, request_id),
-        routing_id_(routing_id),
-        is_request_for_main_frame_(is_request_for_main_frame),
-        url_(url),
-        response_headers_(std::move(response_headers)),
-        first_auth_attempt_(first_auth_attempt),
-        web_contents_getter_(web_contents_getter),
         weak_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     auth_challenge_responder_.set_connection_error_handler(base::BindOnce(
         &LoginHandlerDelegate::OnRequestCancelled, base::Unretained(this)));
 
-    auto continue_after_inteceptor_io =
-        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorIO,
-                       weak_factory_.GetWeakPtr());
+    login_handler_io_.reset(new LoginHandlerDelegateIO(
+        base::BindOnce(&LoginHandlerDelegate::OnAuthCredentialsIO,
+                       weak_factory_.GetWeakPtr()),
+        std::move(web_contents_getter), std::move(auth_info),
+        is_request_for_main_frame, process_id, routing_id, request_id, url,
+        std::move(response_headers), first_auth_attempt));
+
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&DevToolsURLLoaderInterceptor::HandleAuthRequest,
-                       request_id_.child_id, routing_id_,
-                       request_id_.request_id, auth_info_,
-                       std::move(continue_after_inteceptor_io)));
+        base::BindOnce(&LoginHandlerDelegateIO::Start,
+                       base::Unretained(login_handler_io_.get())));
   }
 
  private:
@@ -216,43 +302,14 @@ class LoginHandlerDelegate {
     delete this;
   }
 
-  static void ContinueAfterInterceptorIO(
-      base::WeakPtr<LoginHandlerDelegate> self_weak,
-      bool use_fallback,
+  static void OnAuthCredentialsIO(
+      base::WeakPtr<LoginHandlerDelegate> handler,
       const base::Optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorUI,
-                       std::move(self_weak), use_fallback, auth_credentials));
-  }
-
-  void ContinueAfterInterceptorUI(
-      bool use_fallback,
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(!(use_fallback && auth_credentials.has_value()));
-    if (!use_fallback) {
-      OnAuthCredentials(auth_credentials);
-      return;
-    }
-
-    WebContents* web_contents = web_contents_getter_.Run();
-    if (!web_contents) {
-      OnAuthCredentials(base::nullopt);
-      return;
-    }
-
-    // WeakPtr is not strictly necessary here due to OnRequestCancelled.
-    login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
-        auth_info_.get(), web_contents, request_id_, is_request_for_main_frame_,
-        url_, response_headers_, first_auth_attempt_,
-        base::BindOnce(&LoginHandlerDelegate::OnAuthCredentials,
-                       weak_factory_.GetWeakPtr()));
-    if (!login_delegate_) {
-      OnAuthCredentials(base::nullopt);
-      return;
-    }
+        base::BindOnce(&LoginHandlerDelegate::OnAuthCredentials, handler,
+                       auth_credentials));
   }
 
   void OnAuthCredentials(
@@ -263,15 +320,8 @@ class LoginHandlerDelegate {
   }
 
   network::mojom::AuthChallengeResponderPtr auth_challenge_responder_;
-  scoped_refptr<net::AuthChallengeInfo> auth_info_;
-  const content::GlobalRequestID request_id_;
-  const uint32_t routing_id_;
-  bool is_request_for_main_frame_;
-  GURL url_;
-  const scoped_refptr<net::HttpResponseHeaders> response_headers_;
-  bool first_auth_attempt_;
-  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
-  std::unique_ptr<LoginDelegate> login_delegate_;
+  std::unique_ptr<LoginHandlerDelegateIO, BrowserThread::DeleteOnIOThread>
+      login_handler_io_;
   base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_;
 };
 

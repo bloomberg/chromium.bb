@@ -276,7 +276,8 @@ ResourceLoader::~ResourceLoader() {
     }
   }
 
-  login_delegate_.reset();
+  if (login_delegate_.get())
+    login_delegate_->OnRequestCancelled();
   ssl_client_auth_handler_.reset();
 
   // Run ResourceHandler destructor before we tear-down the rest of our state
@@ -418,10 +419,10 @@ void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
   // Create a login dialog on the UI thread to get authentication data, or pull
   // from cache and continue on the IO thread.
 
-  DCHECK(!login_delegate_)
+  DCHECK(!login_delegate_.get())
       << "OnAuthRequired called with login_delegate pending";
   login_delegate_ = delegate_->CreateLoginDelegate(this, auth_info);
-  if (!login_delegate_)
+  if (!login_delegate_.get())
     request_->CancelAuth();
 }
 
@@ -659,7 +660,10 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   // IO_PENDING?
   bool was_pending = request_->is_pending();
 
-  login_delegate_.reset();
+  if (login_delegate_.get()) {
+    login_delegate_->OnRequestCancelled();
+    login_delegate_ = nullptr;
+  }
   ssl_client_auth_handler_.reset();
 
   if (!started_request_) {

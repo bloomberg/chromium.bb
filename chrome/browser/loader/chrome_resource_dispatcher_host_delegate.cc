@@ -107,6 +107,7 @@
 #endif
 
 using content::BrowserThread;
+using content::LoginDelegate;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 using content::ResourceType;
