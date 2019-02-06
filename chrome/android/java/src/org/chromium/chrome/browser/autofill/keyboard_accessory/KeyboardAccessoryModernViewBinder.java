@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TabLayoutBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -27,9 +29,11 @@ class KeyboardAccessoryModernViewBinder {
         switch (viewType) {
             case BarItem.Type.SUGGESTION:
                 return new BarItemChipViewHolder(parent);
-            case BarItem.Type.TAB_SWITCHER:
+            case BarItem.Type.TAB_LAYOUT:
                 return new TabItemViewHolder(parent);
-            case BarItem.Type.ACTION_BUTTON: // Intentional fallthrough. Use legacy handling.
+            case BarItem.Type.ACTION_BUTTON:
+                return new KeyboardAccessoryViewBinder.BarItemTextViewHolder(
+                        parent, R.layout.keyboard_accessory_action_modern);
             case BarItem.Type.COUNT: // Intentional fallthrough. Use legacy handling.
                 break;
         }
@@ -38,7 +42,7 @@ class KeyboardAccessoryModernViewBinder {
 
     static class BarItemChipViewHolder extends BarItemViewHolder<AutofillBarItem, ChipView> {
         BarItemChipViewHolder(ViewGroup parent) {
-            super(parent, R.layout.keyboard_accessory_suggestion_modern);
+            super(parent, R.layout.keyboard_accessory_suggestion);
         }
 
         @Override
@@ -56,15 +60,25 @@ class KeyboardAccessoryModernViewBinder {
     }
 
     static class TabItemViewHolder
-            extends BarItemViewHolder<BarItem, KeyboardAccessoryTabLayoutView> {
+            extends BarItemViewHolder<TabLayoutBarItem, KeyboardAccessoryTabLayoutView> {
+        private TabLayoutBarItem mTabItem;
         private KeyboardAccessoryTabLayoutView mTabLayout;
 
         TabItemViewHolder(ViewGroup parent) {
-            super(parent, R.layout.keyboard_accessory_suggestion);
+            super(parent, R.layout.keyboard_accessory_tabs);
         }
 
         @Override
-        protected void bind(BarItem item, KeyboardAccessoryTabLayoutView view) {}
+        protected void bind(TabLayoutBarItem tabItem, KeyboardAccessoryTabLayoutView tabLayout) {
+            mTabItem = tabItem;
+            mTabLayout = tabLayout;
+            tabItem.notifyAboutViewCreation(tabLayout);
+        }
+
+        @Override
+        protected void recycle() {
+            mTabItem.notifyAboutViewDestruction(mTabLayout);
+        }
     }
 
     public static void bind(
@@ -76,6 +90,8 @@ class KeyboardAccessoryModernViewBinder {
             modernView.setKeyboardToggleVisibility(model.get(KEYBOARD_TOGGLE_VISIBLE));
         } else if (propertyKey == SHOW_KEYBOARD_CALLBACK) {
             modernView.setShowKeyboardCallback(model.get(SHOW_KEYBOARD_CALLBACK));
+        } else if (propertyKey == TAB_LAYOUT_ITEM) {
+            // No binding required.
         } else {
             assert wasBound : "Every possible property update needs to be handled!";
         }

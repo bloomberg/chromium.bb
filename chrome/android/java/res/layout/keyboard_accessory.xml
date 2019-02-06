@@ -35,7 +35,8 @@
         android:orientation="horizontal"
         android:background="@color/modern_grey_100">
 
-        <include layout="@layout/keyboard_accessory_tabs"/>
+        <include layout="@layout/keyboard_accessory_tabs"
+            android:id="@+id/tabs"/>
 
         <View style="@style/VerticalDivider" />
 

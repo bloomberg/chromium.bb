@@ -5,7 +5,6 @@
 
 <org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/keyboard_accessory"
     android:layout_gravity="start|bottom"
@@ -40,12 +39,11 @@
         <ImageView
             android:id="@+id/show_keyboard"
             android:layout_width="wrap_content"
-            android:layout_weight="0"
             android:layout_height="match_parent"
             android:paddingStart="@dimen/keyboard_accessory_bar_item_padding"
             android:paddingEnd="@dimen/keyboard_accessory_bar_item_padding"
-            android:paddingTop="@dimen/keyboard_accessory_padding"
-            android:paddingBottom="@dimen/keyboard_accessory_padding"
+            android:paddingTop="@dimen/keyboard_accessory_image_top_padding"
+            android:paddingBottom="@dimen/keyboard_accessory_image_top_padding"
             android:clickable="true"
             android:focusable="true"
             android:contentDescription="@string/keyboard_accessory_sheet_hide"
@@ -53,23 +51,9 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/bar_items_view"
-            android:layout_weight="1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-        <View
-            android:id="@+id/tabs_items_spacer"
-            android:layout_weight="1"
             android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:background="@null" />
-
-        <View
-            android:id="@+id/tabs_items_divider"
-            android:layout_weight="0"
-            style="@style/VerticalDivider" />
-
-        <include layout="@layout/keyboard_accessory_tabs" />
+            android:clipToPadding="false"/>
     </LinearLayout>
 
 </org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernView>

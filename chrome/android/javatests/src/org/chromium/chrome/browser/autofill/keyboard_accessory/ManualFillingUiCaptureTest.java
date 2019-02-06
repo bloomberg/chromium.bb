@@ -5,12 +5,11 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItem;
+import static android.support.test.espresso.contrib.RecyclerViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-
-import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createTestCredentials;
@@ -18,11 +17,8 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFill
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
-import android.support.annotation.Nullable;
-import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -40,7 +36,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -87,8 +83,7 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
-                .perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswords");
@@ -116,8 +111,7 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
-                .perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsRTL");
@@ -145,9 +139,11 @@ public class ManualFillingUiCaptureTest {
         mScreenShooter.shoot("AccessoryBarV2");
 
         mHelper.sendCredentials(createTestCredentials());
+        whenDisplayed(withId(R.id.bar_items_view))
+                .perform(scrollTo(isAssignableFrom(KeyboardAccessoryTabLayoutView.class)),
+                        actionOnItem(isAssignableFrom(KeyboardAccessoryTabLayoutView.class),
+                                selectTabAtPosition(0)));
 
-        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
-                .perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2");
@@ -176,8 +172,11 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
-                .perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.bar_items_view))
+                .perform(scrollTo(isAssignableFrom(KeyboardAccessoryTabLayoutView.class)),
+                        actionOnItem(isAssignableFrom(KeyboardAccessoryTabLayoutView.class),
+                                selectTabAtPosition(0)));
+
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2RTL");
@@ -188,28 +187,23 @@ public class ManualFillingUiCaptureTest {
         mScreenShooter.shoot("AccessorySheetPasswordsV2ScrolledRTL");
     }
 
-    private void waitUntilFilled(View view, @Nullable NoMatchingViewException noViewFound) {
-        if (noViewFound != null) throw noViewFound;
-        assert view instanceof RecyclerView;
-        final RecyclerView recyclerView = (RecyclerView) view;
-        CriteriaHelper.pollUiThread(() -> {
-            if (recyclerView.getChildCount() <= 0) return false;
-            View firstChild = recyclerView.getChildAt(0);
-            return firstChild.isShown() && !firstChild.isDirty() && !firstChild.isLayoutRequested();
-        });
-    }
-
     private void waitForUnrelatedChromeUi() throws InterruptedException {
         Thread.sleep(scaleTimeout(50)); // Reduces flakiness due to delayed events.
     }
 
     private void waitForActionsInAccessory() {
         whenDisplayed(withId(R.id.bar_items_view));
-        onView(withId(R.id.bar_items_view)).check(this::waitUntilFilled);
+        onView(withId(R.id.bar_items_view)).check((view, noViewFound) -> {
+            if (noViewFound != null) throw noViewFound;
+            RecyclerViewTestUtils.waitForStableRecyclerView((RecyclerView) view);
+        });
     }
 
     private void waitForSuggestionsInSheet() {
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
-        onView(withParent(withId(R.id.keyboard_accessory_sheet))).check(this::waitUntilFilled);
+        onView(withParent(withId(R.id.keyboard_accessory_sheet))).check((view, noViewFound) -> {
+            if (noViewFound != null) throw noViewFound;
+            RecyclerViewTestUtils.waitForStableRecyclerView((RecyclerView) view);
+        });
     }
 }

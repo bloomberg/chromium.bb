@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
@@ -195,6 +196,7 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
+    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
     public void testHidingSheetBringsBackKeyboard() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
@@ -228,12 +230,13 @@ public class ManualFillingIntegrationTest {
 
         // Focus the field to bring up the autofill popup. We force a accessory here because the
         // autofill popup doesn't trigger on password fields.
-        mHelper.clickEmailField(true);
+        mHelper.clickEmailField();
         mHelper.waitForKeyboard();
 
         DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
 
         assertThat(popup.isShowing(), is(true));
+        mHelper.requestShowKeyboardAccessory(); // Override hiding requested by bridge.
 
         // Click the tab to show the sheet and hide keyboard and popup.
         whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
@@ -257,7 +260,7 @@ public class ManualFillingIntegrationTest {
         whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)));
 
         // Clicking the email field hides the accessory again.
-        mHelper.clickEmailField(false);
+        mHelper.clickEmailField();
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
     }
 
@@ -374,7 +377,7 @@ public class ManualFillingIntegrationTest {
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
 
         // Clicking another field hides the accessory, but the InfoBar should remain invisible.
-        mHelper.clickEmailField(false);
+        mHelper.clickEmailField();
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
 
         // Close the keyboard to bring back the InfoBar.
@@ -422,8 +425,7 @@ public class ManualFillingIntegrationTest {
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
 
         // Reopen the keyboard, then close it.
-        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
-                .perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.show_keyboard)).perform(click());
         mHelper.waitForKeyboard();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getKeyboardDelegate().hideKeyboard(
@@ -468,7 +470,7 @@ public class ManualFillingIntegrationTest {
         onView(withText(kSnackbarText)).check(matches(isCompletelyDisplayed()));
 
         // Click into the email field to dismiss the keyboard accessory.
-        mHelper.clickEmailField(false);
+        mHelper.clickEmailField();
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
         onView(withText(kSnackbarText)).check(matches(isCompletelyDisplayed()));
     }

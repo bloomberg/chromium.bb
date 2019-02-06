@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAc
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 
 import android.os.Build;
@@ -35,7 +36,7 @@ class KeyboardAccessoryViewBinder {
                 return new BarItemTextViewHolder(parent, R.layout.keyboard_accessory_action);
             case BarItem.Type.SUGGESTION:
                 return new BarItemTextViewHolder(parent, R.layout.keyboard_accessory_chip);
-            case BarItem.Type.TAB_SWITCHER: // Intentional fallthrough. Not supported.
+            case BarItem.Type.TAB_LAYOUT: // Intentional fallthrough. Not supported.
             case BarItem.Type.COUNT:
                 assert false : "Type " + viewType + " is not a valid accessory bar action!";
         }
@@ -107,6 +108,8 @@ class KeyboardAccessoryViewBinder {
         } else if (propertyKey == SHOW_KEYBOARD_CALLBACK) {
             // No binding required.
         } else if (propertyKey == KEYBOARD_TOGGLE_VISIBLE) {
+            // No binding required.
+        } else if (propertyKey == TAB_LAYOUT_ITEM) {
             // No binding required.
         } else {
             return false;

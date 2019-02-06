@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAc
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 
 import android.support.annotation.Nullable;
@@ -118,16 +119,19 @@ public class KeyboardAccessoryCoordinator {
      */
     public KeyboardAccessoryCoordinator(VisibilityDelegate visibilityDelegate,
             ViewProvider<KeyboardAccessoryView> viewProvider) {
-        PropertyModel model = new PropertyModel
-                                      .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX,
-                                              KEYBOARD_TOGGLE_VISIBLE, SHOW_KEYBOARD_CALLBACK)
-                                      .with(BAR_ITEMS, new ListModel<>())
-                                      .with(VISIBLE, false)
-                                      .with(KEYBOARD_TOGGLE_VISIBLE, false)
-                                      .build();
+        PropertyModel model =
+                new PropertyModel
+                        .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX, TAB_LAYOUT_ITEM,
+                                KEYBOARD_TOGGLE_VISIBLE, SHOW_KEYBOARD_CALLBACK)
+                        .with(BAR_ITEMS, new ListModel<>())
+                        .with(VISIBLE, false)
+                        .with(KEYBOARD_TOGGLE_VISIBLE, false)
+                        .build();
         mMediator = new KeyboardAccessoryMediator(
-                model, visibilityDelegate, mTabLayout.getTabSwitchingDelegate());
-        viewProvider.whenLoaded(barView -> mTabLayout.assignNewView(barView.getTabLayout()));
+                model, visibilityDelegate, mTabLayout.getTabSwitchingDelegate(), mTabLayout);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            viewProvider.whenLoaded(barView -> mTabLayout.assignNewView(barView.getTabLayout()));
+        }
 
         mTabLayout.setTabObserver(mMediator);
         PropertyModelChangeProcessor

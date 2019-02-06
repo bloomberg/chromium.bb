@@ -177,12 +177,12 @@ public class ManualFillingControllerTest {
         Map<Tab, ManualFillingMediator.AccessoryState> model = mediator.getModelForTesting();
         assertThat(model.size(), is(0));
 
-        // Emulate adding a tab. Expect the model to have another entry.
+        // Emulate adding a browser tab. Expect the model to have another entry.
         Tab firstTab = addTab(mediator, 1111, null);
         assertThat(model.size(), is(1));
         assertThat(model.get(firstTab), notNullValue());
 
-        // Emulate adding a second tab. Expect the model to have another entry.
+        // Emulate adding a second browser tab. Expect the model to have another entry.
         Tab secondTab = addTab(mediator, 2222, firstTab);
         assertThat(model.size(), is(2));
         assertThat(model.get(secondTab), notNullValue());
@@ -235,7 +235,7 @@ public class ManualFillingControllerTest {
         mController.registerActionProvider(firstTabProvider);
         firstTabProvider.notifyObservers(new Action[] {
                 new Action("Generate Password", GENERATE_PASSWORD_AUTOMATIC, p -> {})});
-        mMockItemListObserver.onItemRangeInserted(keyboardActions, 0, 1);
+        mMockItemListObserver.onItemRangeInserted(keyboardActions, 0, 2);
         assertThat(getFirstKeyboardActionTitle(), is("Generate Password"));
 
         // Simulate creating a second tab:
@@ -243,7 +243,7 @@ public class ManualFillingControllerTest {
         mController.registerActionProvider(secondTabProvider);
         secondTabProvider.notifyObservers(new Action[0]);
         mMockItemListObserver.onItemRangeRemoved(keyboardActions, 0, 1);
-        assertThat(keyboardActions.size(), is(0)); // No actions on this tab.
+        assertThat(keyboardActions.size(), is(1)); // tab switcher is only item on this browser tab.
 
         // Simulate switching back to the first tab:
         switchTab(mediator, /*from=*/secondTab, /*to=*/firstTab);
@@ -253,7 +253,7 @@ public class ManualFillingControllerTest {
         // And back to the second:
         switchTab(mediator, /*from=*/firstTab, /*to=*/secondTab);
         mMockItemListObserver.onItemRangeRemoved(keyboardActions, 0, 1);
-        assertThat(keyboardActions.size(), is(0)); // Still no actions on this tab.
+        assertThat(keyboardActions.size(), is(1)); // tab switcher is only item on this browser tab.
     }
 
     @Test
@@ -342,7 +342,7 @@ public class ManualFillingControllerTest {
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that never provided actions.
         mController.registerActionProvider(new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC));
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
 
         // Create a new tab with an action:
         Tab secondTab = addTab(mediator, 1111, tab);
@@ -350,10 +350,10 @@ public class ManualFillingControllerTest {
         mController.registerActionProvider(provider);
         provider.notifyObservers(new Action[] {
                 new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(2));
 
         switchTab(mediator, secondTab, tab);
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
     }
 
     @Test
@@ -368,27 +368,27 @@ public class ManualFillingControllerTest {
         PropertyProvider<Action[]> delayedProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(delayedProvider);
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(0));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
 
         // Create and switch to a new tab:
         Tab secondTab = addTab(mediator, 1111, tab);
         PropertyProvider<Action[]> provider = new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
 
-        // And provide data to the active tab.
+        // And provide data to the active browser tab.
         provider.notifyObservers(new Action[] {
                 new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
-        // Now, have the delayed provider provide data for the backgrounded tab.
+        // Now, have the delayed provider provide data for the backgrounded browser tab.
         delayedProvider.notifyObservers(
                 new Action[] {new Action("Delayed", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
 
         // The current tab should not be influenced by the delayed provider.
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(2));
         assertThat(getFirstKeyboardActionTitle(), is("Test Action"));
 
         // Switching tabs back should only show the action that was received in the background.
         switchTab(mediator, secondTab, tab);
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(2));
         assertThat(getFirstKeyboardActionTitle(), is("Delayed"));
     }
 
@@ -428,7 +428,7 @@ public class ManualFillingControllerTest {
         // The current tab should be valid.
         assertThat(getTabLayout().getModelForTesting().get(TABS).size(), is(1));
         assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(2));
         assertThat(getFirstKeyboardActionTitle(), is("2BKept"));
 
         // Request destruction of the first Tab:
@@ -437,7 +437,7 @@ public class ManualFillingControllerTest {
         // The current tab should not be influenced by the destruction.
         assertThat(getTabLayout().getModelForTesting().get(TABS).size(), is(1));
         assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(1));
-        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(1));
+        assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size(), is(2));
         assertThat(getFirstKeyboardActionTitle(), is("2BKept"));
 
         // The other tabs data should be gone.
@@ -536,7 +536,7 @@ public class ManualFillingControllerTest {
     /**
      * Creates a tab and calls the observer events as if it was just created and switched to.
      * @param mediator The {@link ManualFillingMediator} whose observers should be triggered.
-     * @param id The id of the new tab.
+     * @param id The id of the new browser tab.
      * @param lastTab A previous mocked {@link Tab} to be hidden. Needs |getId()|. May be null.
      * @return Returns a mock of the newly added {@link Tab}. Provides |getId()|.
      */
@@ -651,12 +651,16 @@ public class ManualFillingControllerTest {
     }
 
     private String getFirstKeyboardActionTitle() {
+        int firstNonTabSwitcherAction = 1;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            firstNonTabSwitcherAction = 0;
+        }
         return mController.getMediatorForTesting()
                 .getKeyboardAccessory()
                 .getMediatorForTesting()
                 .getModelForTesting()
                 .get(KeyboardAccessoryProperties.BAR_ITEMS)
-                .get(0)
+                .get(firstNonTabSwitcherAction)
                 .getAction()
                 .getCaption();
     }

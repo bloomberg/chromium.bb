@@ -76,15 +76,19 @@ public class KeyboardAccessoryControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
-        HashMap<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, true);
-        ChromeFeatureList.setTestFeatures(features);
+        setAutofillFeature(false);
 
         when(mMockView.getTabLayout()).thenReturn(mMockTabSwitcherView);
         mCoordinator = new KeyboardAccessoryCoordinator(
                 mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
+    }
+
+    private void setAutofillFeature(boolean enabled) {
+        HashMap<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, enabled);
+        ChromeFeatureList.setTestFeatures(features);
     }
 
     @Test
@@ -112,6 +116,9 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
+        // Set a default tab to prevent visibility changes to trigger now:
+        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {
+                new KeyboardAccessoryData.Tab(null, null, 0, AccessoryTabType.PASSWORDS, null)});
         mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
 
         PropertyProvider<Action[]> testProvider =
@@ -140,6 +147,46 @@ public class KeyboardAccessoryControllerTest {
 
         // There should be no notification if no actions are reported repeatedly.
         testProvider.notifyObservers(new Action[] {});
+        verifyNoMoreInteractions(mMockActionListObserver);
+    }
+
+    @Test
+    public void testModelNotifiesAboutActionsChangedByProviderForRedesign() {
+        setAutofillFeature(true);
+        // Set a default tab to prevent visibility changes to trigger now:
+        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {
+                new KeyboardAccessoryData.Tab(null, null, 0, AccessoryTabType.PASSWORDS, null)});
+        mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
+
+        PropertyProvider<Action[]> testProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        mCoordinator.registerActionProvider(testProvider);
+
+        // If the coordinator receives an initial action, the model should report an insertion.
+        mCoordinator.requestShowing();
+
+        Action testAction = new Action(null, 0, null);
+        testProvider.notifyObservers(new Action[] {testAction});
+        verify(mMockActionListObserver).onItemRangeInserted(mModel.get(BAR_ITEMS), 0, 2);
+        assertThat(mModel.get(BAR_ITEMS).size(), is(2)); // Plus tab switcher.
+        assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(equalTo(testAction)));
+
+        // If the coordinator receives a new set of actions, the model should report a change.
+        testProvider.notifyObservers(new Action[] {testAction});
+        verify(mMockActionListObserver).onItemRangeChanged(mModel.get(BAR_ITEMS), 0, 2, null);
+        assertThat(mModel.get(BAR_ITEMS).size(), is(2)); // Plus tab switcher.
+        assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(equalTo(testAction)));
+
+        // If the coordinator receives an empty set of actions, the model should report a deletion.
+        testProvider.notifyObservers(new Action[] {});
+        // First call of onItemRangeChanged(mModel.get(BAR_ITEMS), 0, 1, null);
+        verify(mMockActionListObserver).onItemRangeRemoved(mModel.get(BAR_ITEMS), 1, 1);
+        assertThat(mModel.get(BAR_ITEMS).size(), is(1)); // Only the tab switcher.
+
+        // There should be no notification if no actions are reported repeatedly.
+        testProvider.notifyObservers(new Action[] {});
+        verify(mMockActionListObserver, times(2))
+                .onItemRangeChanged(mModel.get(BAR_ITEMS), 0, 1, null);
         verifyNoMoreInteractions(mMockActionListObserver);
     }
 
@@ -240,7 +287,7 @@ public class KeyboardAccessoryControllerTest {
                 new AutofillSuggestion[] {suggestion1, suggestion2});
         generationProvider.notifyObservers(new Action[] {generationAction});
 
-        // Autofill suggestions should always come last, independent of when they were added.
+        // Autofill suggestions should always come last before mandatory tab switcher.
         assertThat(mModel.get(BAR_ITEMS).size(), is(3));
         assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(generationAction));
         assertThat(mModel.get(BAR_ITEMS).get(1), instanceOf(AutofillBarItem.class));
@@ -249,6 +296,31 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.get(BAR_ITEMS).get(2), instanceOf(AutofillBarItem.class));
         AutofillBarItem autofillBarItem2 = (AutofillBarItem) mModel.get(BAR_ITEMS).get(2);
         assertThat(autofillBarItem2.getSuggestion(), is(suggestion2));
+    }
+
+    @Test
+    public void testMovesTabSwitcherToEndForRedesign() {
+        setAutofillFeature(true);
+        KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
+                new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+
+        mCoordinator.registerActionProvider(generationProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
+
+        Action suggestion1 = new Action("FirstSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
+        Action suggestion2 = new Action("SecondSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
+        Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
+        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion1, suggestion2});
+        generationProvider.notifyObservers(new Action[] {generationAction});
+
+        // Autofill suggestions should always come last, independent of when they were added.
+        assertThat(mModel.get(BAR_ITEMS).size(), is(4)); // Additional tab switcher
+        assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(generationAction));
+        assertThat(mModel.get(BAR_ITEMS).get(1).getAction(), is(suggestion1));
+        assertThat(mModel.get(BAR_ITEMS).get(2).getAction(), is(suggestion2));
+        assertThat(mModel.get(BAR_ITEMS).get(3).getViewType(), is(BarItem.Type.TAB_LAYOUT));
     }
 
     @Test
@@ -322,8 +394,8 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding an action contributes to the actions bucket. Tabs and total are logged again.
         mCoordinator.close(); // Hide, so it's brought up again.
-        mModel.get(BAR_ITEMS).add(
-                new BarItem(BarItem.Type.ACTION_BUTTON, new Action(null, 0, null)));
+        mModel.get(BAR_ITEMS).add(new BarItem(
+                BarItem.Type.ACTION_BUTTON, new Action(null, GENERATE_PASSWORD_AUTOMATIC, null)));
         mCoordinator.requestShowing();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
@@ -363,16 +435,16 @@ public class KeyboardAccessoryControllerTest {
                            KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN),
                 is(0));
 
-        // First showing contains actions only.
+        // First showing contains tabs only.
         mCoordinator.addTab(mTestTab);
         mCoordinator.requestShowing();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
-        // Adding a tabs doesn't change the total impression count but the specific bucket.
-        mModel.get(BAR_ITEMS).add(
-                new BarItem(BarItem.Type.ACTION_BUTTON, new Action(null, 0, null)));
+        // New actions are recorded in specific buckets but don't affect the general ANY_CONTENTS.
+        mModel.get(BAR_ITEMS).add(new BarItem(
+                BarItem.Type.ACTION_BUTTON, new Action(null, GENERATE_PASSWORD_AUTOMATIC, null)));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
@@ -401,22 +473,22 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.requestShowing();
 
         // Adding an action fills the bar impression bucket and the actions set once.
-        mModel.get(BAR_ITEMS).set(new BarItem[] {
-                new BarItem(BarItem.Type.ACTION_BUTTON,
-                        new Action("One", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null)),
-                new BarItem(BarItem.Type.ACTION_BUTTON,
-                        new Action("Two", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null))});
-        assertThat(getActionImpressionCount(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC), is(1));
+        mModel.get(BAR_ITEMS).set(
+                new BarItem[] {new BarItem(BarItem.Type.ACTION_BUTTON,
+                                       new Action("One", GENERATE_PASSWORD_AUTOMATIC, null)),
+                        new BarItem(BarItem.Type.ACTION_BUTTON,
+                                new Action("Two", GENERATE_PASSWORD_AUTOMATIC, null))});
+        assertThat(getActionImpressionCount(GENERATE_PASSWORD_AUTOMATIC), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
 
         // Adding another action leaves bar impressions unchanged but affects the actions bucket.
-        mModel.get(BAR_ITEMS).set(new BarItem[] {
-                new BarItem(BarItem.Type.ACTION_BUTTON,
-                        new Action("Uno", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null)),
-                new BarItem(BarItem.Type.ACTION_BUTTON,
-                        new Action("Dos", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null))});
+        mModel.get(BAR_ITEMS).set(
+                new BarItem[] {new BarItem(BarItem.Type.ACTION_BUTTON,
+                                       new Action("Uno", GENERATE_PASSWORD_AUTOMATIC, null)),
+                        new BarItem(BarItem.Type.ACTION_BUTTON,
+                                new Action("Dos", GENERATE_PASSWORD_AUTOMATIC, null))});
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
-        assertThat(getActionImpressionCount(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC), is(2));
+        assertThat(getActionImpressionCount(GENERATE_PASSWORD_AUTOMATIC), is(2));
     }
 
     private int getActionImpressionCount(@AccessoryAction int bucket) {

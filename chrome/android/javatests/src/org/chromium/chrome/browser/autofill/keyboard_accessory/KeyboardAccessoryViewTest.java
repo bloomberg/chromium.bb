@@ -22,6 +22,8 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryA
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -46,6 +48,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TabLayoutBarItem;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -79,12 +82,23 @@ public class KeyboardAccessoryViewTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel = new PropertyModel
-                             .Builder(BAR_ITEMS, VISIBLE, KEYBOARD_TOGGLE_VISIBLE, BOTTOM_OFFSET_PX)
-                             .with(BAR_ITEMS, new ListModel<>())
-                             .with(VISIBLE, false)
-                             .with(KEYBOARD_TOGGLE_VISIBLE, false)
-                             .build();
+            mModel =
+                    new PropertyModel
+                            .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX, TAB_LAYOUT_ITEM,
+                                    KEYBOARD_TOGGLE_VISIBLE, SHOW_KEYBOARD_CALLBACK)
+                            .with(BAR_ITEMS, new ListModel<>())
+                            .with(VISIBLE, false)
+                            .with(KEYBOARD_TOGGLE_VISIBLE, false)
+                            .with(TAB_LAYOUT_ITEM,
+                                    new TabLayoutBarItem(new TabLayoutBarItem.TabLayoutCallbacks() {
+                                        @Override
+                                        public void onTabLayoutBound(
+                                                KeyboardAccessoryTabLayoutView tabs) {}
+                                        @Override
+                                        public void onTabLayoutUnbound(
+                                                KeyboardAccessoryTabLayoutView tabs) {}
+                                    }))
+                            .build();
             ViewStub viewStub =
                     mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);
 
