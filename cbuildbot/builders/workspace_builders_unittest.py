@@ -13,7 +13,7 @@ import os
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import workspace_builders
-from chromite.cbuildbot.stages import firmware_stages
+from chromite.cbuildbot.stages import branch_archive_stages
 from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
@@ -196,7 +196,7 @@ class BuildspecBuilderTest(cros_test_lib.MockTempDirTestCase):
         mock.call(workspace_stages.WorkspaceBuildPackagesStage,
                   build_root=self.workspace,
                   board='board'),
-        mock.call(firmware_stages.FirmwareArchiveStage,
+        mock.call(branch_archive_stages.FirmwareArchiveStage,
                   build_root=self.workspace,
                   board='board'),
     ])
@@ -220,7 +220,7 @@ class BuildspecBuilderTest(cros_test_lib.MockTempDirTestCase):
         mock.call(workspace_stages.WorkspaceBuildPackagesStage,
                   build_root=self.workspace,
                   board='board'),
-        mock.call(firmware_stages.FirmwareArchiveStage,
+        mock.call(branch_archive_stages.FirmwareArchiveStage,
                   build_root=self.workspace,
                   board='board'),
     ])
@@ -247,7 +247,7 @@ class BuildspecBuilderTest(cros_test_lib.MockTempDirTestCase):
         mock.call(workspace_stages.WorkspaceBuildPackagesStage,
                   build_root=self.workspace,
                   board='boardA'),
-        mock.call(firmware_stages.FirmwareArchiveStage,
+        mock.call(branch_archive_stages.FirmwareArchiveStage,
                   build_root=self.workspace,
                   board='boardA'),
         # Board B
@@ -257,7 +257,7 @@ class BuildspecBuilderTest(cros_test_lib.MockTempDirTestCase):
         mock.call(workspace_stages.WorkspaceBuildPackagesStage,
                   build_root=self.workspace,
                   board='boardB'),
-        mock.call(firmware_stages.FirmwareArchiveStage,
+        mock.call(branch_archive_stages.FirmwareArchiveStage,
                   build_root=self.workspace,
                   board='boardB'),
     ])

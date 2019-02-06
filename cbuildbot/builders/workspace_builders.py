@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 from chromite.cbuildbot.builders import generic_builders
-from chromite.cbuildbot.stages import firmware_stages
+from chromite.cbuildbot.stages import branch_archive_stages
 from chromite.cbuildbot.stages import workspace_stages
 
 
@@ -74,7 +74,7 @@ class FirmwareBranchBuilder(BuildSpecBuilder):
                      build_root=self._run.options.workspace,
                      board=board)
 
-      self._RunStage(firmware_stages.FirmwareArchiveStage,
+      self._RunStage(branch_archive_stages.FirmwareArchiveStage,
                      build_root=self._run.options.workspace,
                      board=board)
 
