@@ -276,7 +276,7 @@ void CrossProcessFrameConnector::ForwardAckedTouchpadZoomEvent(
   root_view->GestureEventAck(root_event, ack_result);
 }
 
-void CrossProcessFrameConnector::BubbleScrollEvent(
+bool CrossProcessFrameConnector::BubbleScrollEvent(
     const blink::WebGestureEvent& event) {
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
          event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
@@ -284,7 +284,7 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   auto* parent_view = GetParentRenderWidgetHostView();
 
   if (!parent_view)
-    return;
+    return false;
 
   auto* event_router = parent_view->host()->delegate()->GetInputEventRouter();
 
@@ -300,7 +300,8 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   // action of the parent frame to Auto so that this gesture event is allowed.
   parent_view->host()->input_router()->ForceSetTouchActionAuto();
 
-  event_router->BubbleScrollEvent(parent_view, view_, resent_gesture_event);
+  return event_router->BubbleScrollEvent(parent_view, view_,
+                                         resent_gesture_event);
 }
 
 bool CrossProcessFrameConnector::HasFocus() {

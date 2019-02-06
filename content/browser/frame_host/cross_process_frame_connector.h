@@ -99,7 +99,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       viz::EventSource source = viz::EventSource::ANY) override;
   void ForwardAckedTouchpadZoomEvent(const blink::WebGestureEvent& event,
                                      InputEventAckState ack_result) override;
-  void BubbleScrollEvent(const blink::WebGestureEvent& event) override;
+  bool BubbleScrollEvent(const blink::WebGestureEvent& event) override;
   bool HasFocus() override;
   void FocusRootView() override;
   bool LockMouse() override;

@@ -1471,6 +1471,180 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   root_scroll_begin_observer.Wait();
 }
 
+namespace {
+
+// Waits until an event of the given type has been sent to the given
+// RenderWidgetHost.
+class OutgoingEventWaiter : public RenderWidgetHost::InputEventObserver {
+ public:
+  explicit OutgoingEventWaiter(RenderWidgetHostImpl* rwh,
+                               blink::WebInputEvent::Type type)
+      : rwh_(rwh->GetWeakPtr()), type_(type) {
+    rwh->AddInputEventObserver(this);
+  }
+
+  ~OutgoingEventWaiter() override {
+    if (rwh_)
+      rwh_->RemoveInputEventObserver(this);
+  }
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    if (event.GetType() == type_) {
+      seen_event_ = true;
+      if (quit_closure_)
+        std::move(quit_closure_).Run();
+    }
+  }
+
+  void Wait() {
+    if (!seen_event_) {
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+  }
+
+ private:
+  base::WeakPtr<RenderWidgetHostImpl> rwh_;
+  const blink::WebInputEvent::Type type_;
+  bool seen_event_ = false;
+  base::OnceClosure quit_closure_;
+};
+
+// Fails the test if an event of the given type is sent to the given
+// RenderWidgetHost.
+class BadInputEventObserver : public RenderWidgetHost::InputEventObserver {
+ public:
+  explicit BadInputEventObserver(RenderWidgetHostImpl* rwh,
+                                 blink::WebInputEvent::Type type)
+      : rwh_(rwh->GetWeakPtr()), type_(type) {
+    rwh->AddInputEventObserver(this);
+  }
+
+  ~BadInputEventObserver() override {
+    if (rwh_)
+      rwh_->RemoveInputEventObserver(this);
+  }
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    EXPECT_NE(type_, event.GetType())
+        << "Unexpected " << blink::WebInputEvent::GetName(event.GetType());
+  }
+
+ private:
+  base::WeakPtr<RenderWidgetHostImpl> rwh_;
+  const blink::WebInputEvent::Type type_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       ScrollBubblingTargetWithUnrelatedGesture) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* parent_iframe_node = root->child_at(0);
+  ASSERT_EQ(1U, parent_iframe_node->child_count());
+
+  GURL nested_frame_url(embedded_test_server()->GetURL(
+      "baz.com", "/page_with_touch_start_janking_main_thread.html"));
+  NavigateFrameToURL(parent_iframe_node->child_at(0), nested_frame_url);
+
+  RenderWidgetHostViewBase* root_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewChildFrame* rwhv_parent =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          parent_iframe_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+  RenderWidgetHostViewChildFrame* rwhv_nested =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          parent_iframe_node->child_at(0)
+              ->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  WaitForHitTestDataOrChildSurfaceReady(
+      parent_iframe_node->child_at(0)->current_frame_host());
+
+  OutgoingEventWaiter outgoing_touch_end_waiter(
+      static_cast<RenderWidgetHostImpl*>(rwhv_nested->GetRenderWidgetHost()),
+      blink::WebInputEvent::kTouchEnd);
+  InputEventAckWaiter scroll_end_at_parent(
+      rwhv_parent->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollEnd);
+  BadInputEventObserver no_scroll_bubbling_to_root(
+      static_cast<RenderWidgetHostImpl*>(root_rwhv->GetRenderWidgetHost()),
+      blink::WebInputEvent::kGestureScrollBegin);
+
+  MainThreadFrameObserver synchronize_threads(
+      rwhv_nested->GetRenderWidgetHost());
+  synchronize_threads.Wait();
+
+#if defined(USE_AURA)
+  // Allow the scroll gesture through under mash.
+  base::Optional<SystemEventRewriter::ScopedAllow> maybe_scoped_allow_events;
+  if (features::IsSingleProcessMash()) {
+    maybe_scoped_allow_events.emplace(&event_rewriter_);
+  }
+#endif
+
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  const gfx::PointF location_in_widget(25, 25);
+  const gfx::PointF location_in_root =
+      rwhv_nested->TransformPointToRootCoordSpaceF(location_in_widget);
+  params.anchor = location_in_root;
+  params.distances.push_back(gfx::Vector2d(0, 100));
+  params.prevent_fling = false;
+  RenderWidgetHostImpl* root_widget_host =
+      static_cast<RenderWidgetHostImpl*>(root_rwhv->GetRenderWidgetHost());
+  auto dont_care_on_complete =
+      base::BindOnce([](SyntheticGesture::Result result) {});
+  root_widget_host->QueueSyntheticGesture(
+      std::make_unique<SyntheticSmoothScrollGesture>(params),
+      std::move(dont_care_on_complete));
+
+  outgoing_touch_end_waiter.Wait();
+
+  // We are now waiting for the touch events to be acked from the nested OOPIF
+  // which will result in a scroll gesture that will bubble from the nested
+  // frame. Meanwhile, we start a new gesture in the main frame.
+
+  const gfx::PointF point_in_root(1, 1);
+  blink::WebTouchEvent touch_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  touch_event.touches_length = 1;
+  touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+  SetWebEventPositions(&touch_event.touches[0], point_in_root, root_rwhv);
+  touch_event.unique_touch_event_id = 1;
+  InputEventAckWaiter root_touch_waiter(root_rwhv->GetRenderWidgetHost(),
+                                        blink::WebInputEvent::kTouchStart);
+  router->RouteTouchEvent(root_rwhv, &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  root_touch_waiter.Wait();
+
+  blink::WebGestureEvent gesture_event(
+      blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchscreen);
+  gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
+  router->RouteGestureEvent(root_rwhv, &gesture_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+  scroll_end_at_parent.Wait();
+  // By this point, the parent frame attempted to bubble scroll to the main
+  // frame. |no_scroll_bubbling_to_root| checks that the bubbling stopped at
+  // the parent.
+}
+
 class SitePerProcessEmulatedTouchBrowserTest
     : public SitePerProcessHitTestBrowserTest {
  public:

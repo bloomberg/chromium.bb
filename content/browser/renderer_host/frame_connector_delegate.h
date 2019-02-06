@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "cc/input/touch_action.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
@@ -152,9 +153,13 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const blink::WebGestureEvent& event,
       InputEventAckState ack_result) {}
 
-  // Gesture events with unused scroll deltas must be bubbled to ancestors
-  // who may consume the delta.
-  virtual void BubbleScrollEvent(const blink::WebGestureEvent& event) {}
+  // A gesture scroll sequence that is not consumed by a child must be bubbled
+  // to ancestors who may consume it.
+  // Returns false if the scroll event could not be bubbled. The caller must
+  // not attempt to bubble the rest of the scroll sequence in this case.
+  // Otherwise, returns true.
+  virtual bool BubbleScrollEvent(const blink::WebGestureEvent& event)
+      WARN_UNUSED_RESULT;
 
   // Determines whether the root RenderWidgetHostView (and thus the current
   // page) has focus.

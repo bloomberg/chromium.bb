@@ -559,9 +559,11 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
       (event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
        event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
        event.GetType() == blink::WebInputEvent::kGestureScrollEnd)) {
-    frame_connector_->BubbleScrollEvent(event);
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
+    const bool can_continue = frame_connector_->BubbleScrollEvent(event);
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+        !can_continue) {
       is_scroll_sequence_bubbling_ = false;
+    }
   }
 }
 

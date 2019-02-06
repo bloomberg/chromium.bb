@@ -996,7 +996,7 @@ blink::WebGestureEvent GestureEventInTarget(
 
 }  // namespace
 
-void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
+bool RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     RenderWidgetHostViewBase* target_view,
     RenderWidgetHostViewChildFrame* resending_view,
     const blink::WebGestureEvent& event) {
@@ -1013,13 +1013,17 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // If target_view has unrelated gesture events in progress, do
     // not proceed. This could cause confusion between independent
     // scrolls.
-    // TODO(mcnee): If we are unable to bubble this gesture sequence, we
-    // should inform the child view, so that it does not go on to send us
-    // the updates. See https://crbug.com/828422
     if (target_view == touchscreen_gesture_target_.target ||
         target_view == touchpad_gesture_target_ ||
         target_view == touch_target_.target) {
-      return;
+      return false;
+    }
+
+    // A view is trying to bubble a separate scroll sequence while we have
+    // ongoing bubbling.
+    if (bubbling_gesture_scroll_target_ &&
+        bubbling_gesture_scroll_target_ != resending_view) {
+      return false;
     }
 
     // This accounts for bubbling through nested OOPIFs. A gesture scroll
@@ -1037,18 +1041,22 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
 
     bubbling_gesture_scroll_target_ = target_view;
     bubbling_gesture_scroll_source_device_ = event.SourceDevice();
+    DCHECK(IsAncestorView(bubbling_gesture_scroll_origin_,
+                          bubbling_gesture_scroll_target_));
   } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
     if (!bubbling_gesture_scroll_target_) {
-      // The GestureScrollBegin event is not bubbled, don't bubble the rest of
-      // the scroll events.
-      return;
+      // Drop any acked events that come in after bubbling has ended.
+      // TODO(mcnee): If we inform |bubbling_gesture_scroll_origin_| and the
+      // intermediate views of the end of bubbling, we could presumably DCHECK
+      // that we have a target.
+      return false;
     }
 
     // Don't bubble the GSE events that are generated and sent to intermediate
     // bubbling targets.
     if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
         resending_view != bubbling_gesture_scroll_origin_) {
-      return;
+      return true;
     }
   }
 
@@ -1062,7 +1070,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   if (resending_view == bubbling_gesture_scroll_target_) {
     ReportBubblingScrollToSameView(event, resending_view);
     CancelScrollBubbling();
-    return;
+    return false;
   }
 
   bubbling_gesture_scroll_target_->ProcessGestureEvent(
@@ -1075,6 +1083,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     bubbling_gesture_scroll_source_device_ =
         blink::kWebGestureDeviceUninitialized;
   }
+  return true;
 }
 
 void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
@@ -1173,23 +1182,9 @@ void RenderWidgetHostInputEventRouter::CancelScrollBubblingIfConflicting(
   if (!bubbling_gesture_scroll_target_ || !bubbling_gesture_scroll_origin_)
     return;
 
-  const RenderWidgetHostViewBase* first_bubbling_scroll_target =
-      bubbling_gesture_scroll_origin_->GetParentView();
-  // TODO(mcnee): This seems wrong. We should not be sending an independent
-  // gesture sequence to any of |bubbling_gesture_scroll_origin_|'s ancestors
-  // up to and including |bubbling_gesture_scroll_target_|.
-  // See https://crbug.com/828422
-  if (target == bubbling_gesture_scroll_target_) {
-    // TODO(mcnee): We shouldn't send the scroll end if we're not actually
-    // cancelling.
-    SendGestureScrollEnd(bubbling_gesture_scroll_target_,
-                         bubbling_gesture_scroll_source_device_);
-    if (bubbling_gesture_scroll_target_ == first_bubbling_scroll_target) {
-      bubbling_gesture_scroll_origin_ = nullptr;
-      bubbling_gesture_scroll_target_ = nullptr;
-      bubbling_gesture_scroll_source_device_ =
-          blink::kWebGestureDeviceUninitialized;
-    }
+  if (IsAncestorView(bubbling_gesture_scroll_origin_, target,
+                     bubbling_gesture_scroll_target_)) {
+    CancelScrollBubbling();
   }
 }
 
