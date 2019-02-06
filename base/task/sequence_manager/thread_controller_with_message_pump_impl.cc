@@ -82,6 +82,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
     std::unique_ptr<MessagePump> message_pump) {
   associated_thread_->BindToCurrentThread();
   pump_ = std::move(message_pump);
+  work_id_provider_ = WorkIdProvider::GetForCurrentThread();
   RunLoop::RegisterDelegateForCurrentThread(this);
   scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
       base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
@@ -216,6 +217,10 @@ ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
   return associated_thread_;
 }
 
+void ThreadControllerWithMessagePumpImpl::BeforeDoInternalWork() {
+  work_id_provider_->IncrementWorkId();
+}
+
 MessagePump::Delegate::NextWorkInfo
 ThreadControllerWithMessagePumpImpl::DoSomeWork() {
   main_thread_only().immediate_do_work_posted = false;
@@ -327,6 +332,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     // Execute the task and assume the worst: it is probably not reentrant.
     main_thread_only().task_execution_allowed = false;
 
+    work_id_provider_->IncrementWorkId();
     TRACE_TASK_EXECUTION("ThreadController::Task", *task);
     // Trace-parsing tools (Lighthouse, etc) consume this event to determine
     // long tasks. See https://crbug.com/874982
@@ -360,6 +366,7 @@ bool ThreadControllerWithMessagePumpImpl::InTopLevelDoWork() const {
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
+  work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)
   bool need_high_res_mode =
       main_thread_only().task_source->HasPendingHighResolutionTasks();
