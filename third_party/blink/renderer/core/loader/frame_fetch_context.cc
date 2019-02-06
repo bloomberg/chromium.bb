@@ -275,6 +275,17 @@ KURL FrameFetchContext::GetSiteForCookies() const {
   return document->SiteForCookies();
 }
 
+scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
+    const {
+  if (GetResourceFetcherProperties().IsDetached())
+    return frozen_state_->top_frame_origin;
+
+  Document* document = frame_or_imported_document_->GetDocument();
+  if (!document)
+    document = GetFrame()->GetDocument();
+  return document->TopFrameOrigin();
+}
+
 SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
   if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
@@ -871,17 +882,6 @@ bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
       .GetSecurityContext()
       ->GetSecurityOrigin()
       ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
-}
-
-scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
-    const {
-  if (GetResourceFetcherProperties().IsDetached())
-    return frozen_state_->top_frame_origin;
-
-  Document* document = frame_or_imported_document_->GetDocument();
-  if (!document)
-    document = GetFrame()->GetDocument();
-  return document->TopFrameOrigin();
 }
 
 bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {

@@ -51,6 +51,10 @@ class MockBaseFetchContext final : public BaseFetchContext {
 
   // BaseFetchContext overrides:
   KURL GetSiteForCookies() const override { return KURL(); }
+  scoped_refptr<const blink::SecurityOrigin> GetTopFrameOrigin()
+      const override {
+    return SecurityOrigin::CreateUniqueOpaque();
+  }
   bool AllowScriptFromSource(const KURL&) const override { return false; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()

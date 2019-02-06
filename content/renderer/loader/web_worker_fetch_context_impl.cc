@@ -287,6 +287,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;
   new_context->appcache_host_id_ = appcache_host_id_;
+  new_context->top_frame_origin_ = top_frame_origin_;
 
   child_preference_watchers_.AddPtr(std::move(preference_watcher));
 
@@ -414,6 +415,14 @@ blink::WebURL WebWorkerFetchContextImpl::SiteForCookies() const {
   return site_for_cookies_;
 }
 
+base::Optional<blink::WebSecurityOrigin>
+WebWorkerFetchContextImpl::TopFrameOrigin() const {
+  // TODO(jkarlin): set_top_frame_origin is only called for dedicated workers.
+  // Determine the top-frame-origin of a shared worker as well. See
+  // https://crbug.com/918868.
+  return top_frame_origin_;
+}
+
 void WebWorkerFetchContextImpl::DidRunContentWithCertificateErrors() {
   Send(new FrameHostMsg_DidRunContentWithCertificateErrors(ancestor_frame_id_));
 }
@@ -473,6 +482,11 @@ void WebWorkerFetchContextImpl::set_frame_request_blocker(
 void WebWorkerFetchContextImpl::set_site_for_cookies(
     const blink::WebURL& site_for_cookies) {
   site_for_cookies_ = site_for_cookies;
+}
+
+void WebWorkerFetchContextImpl::set_top_frame_origin(
+    const blink::WebSecurityOrigin& top_frame_origin) {
+  top_frame_origin_ = top_frame_origin;
 }
 
 void WebWorkerFetchContextImpl::set_is_secure_context(bool flag) {

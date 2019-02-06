@@ -91,6 +91,7 @@ class WebDocument : public WebNode {
   // cookie blocking.
   BLINK_EXPORT WebURL SiteForCookies() const;
 
+  BLINK_EXPORT WebSecurityOrigin TopFrameOrigin() const;
   BLINK_EXPORT WebElement DocumentElement() const;
   BLINK_EXPORT WebElement Body() const;
   BLINK_EXPORT WebElement Head();

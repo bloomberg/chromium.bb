@@ -168,6 +168,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // BaseFetchContext overrides:
   KURL GetSiteForCookies() const override;
+  scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
       const override;
@@ -219,9 +220,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // Returns true if the origin of |url| is same as the origin of the top level
   // frame's main resource.
   bool IsFirstPartyOrigin(const KURL& url) const;
-
-  // Returns the origin of the top frame in the document.
-  scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const;
 
   CoreProbeSink* Probe() const;
 

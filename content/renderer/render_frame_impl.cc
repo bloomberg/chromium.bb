@@ -3814,6 +3814,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);
   worker_fetch_context->set_site_for_cookies(
       frame_->GetDocument().SiteForCookies());
+  worker_fetch_context->set_top_frame_origin(
+      frame_->GetDocument().TopFrameOrigin());
   worker_fetch_context->set_is_secure_context(
       frame_->GetDocument().IsSecureContext());
   worker_fetch_context->set_origin_url(

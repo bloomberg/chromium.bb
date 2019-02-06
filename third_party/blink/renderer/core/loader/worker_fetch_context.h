@@ -35,6 +35,8 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   // BaseFetchContext implementation:
   KURL GetSiteForCookies() const override;
+  scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const override;
+
   SubresourceFilter* GetSubresourceFilter() const override;
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
       const override;

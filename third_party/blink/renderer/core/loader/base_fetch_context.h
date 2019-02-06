@@ -47,6 +47,10 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   void Trace(blink::Visitor*) override;
 
   virtual KURL GetSiteForCookies() const = 0;
+
+  // Returns the origin of the top frame in the document.
+  virtual scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const = 0;
+
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
   virtual PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
       const = 0;
