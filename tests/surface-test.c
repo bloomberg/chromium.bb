@@ -57,7 +57,7 @@ surface_transform(void *data)
 	weston_view_to_global_float(view, 50, 40, &x, &y);
 	assert(x == 200 && y == 340);
 
-	wl_display_terminate(compositor->wl_display);
+	weston_compositor_exit(compositor);
 }
 
 WL_EXPORT int

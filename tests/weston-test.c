@@ -72,7 +72,7 @@ test_client_sigchld(struct weston_process *process, int status)
 	/* In case the child aborted or segfaulted... */
 	assert(status == 0);
 
-	wl_display_terminate(test->compositor->wl_display);
+	weston_compositor_exit(test->compositor);
 }
 
 static void

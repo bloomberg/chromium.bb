@@ -76,7 +76,7 @@ surface_to_from_global(void *data)
 	weston_view_from_global(view, 5, 10, &ix, &iy);
 	assert(ix == 0 && iy == 0);
 
-	wl_display_terminate(compositor->wl_display);
+	weston_compositor_exit(compositor);
 }
 
 WL_EXPORT int
