@@ -4375,5 +4375,15 @@
     "pref_mappings": [
       { "pref": "browser_switcher.enabled" }
     ]
+  },
+
+  "BrowserSwitcherKeepLastChromeTab": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {
+      "BrowserSwitcherKeepLastChromeTab": false
+    },
+    "pref_mappings": [
+      { "pref": "browser_switcher.keep_last_tab" }
+    ]
   }
 }

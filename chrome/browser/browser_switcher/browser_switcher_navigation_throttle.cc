@@ -16,6 +16,9 @@
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,6 +29,21 @@
 namespace browser_switcher {
 
 namespace {
+
+// Returns true if there's only 1 tab left open in this profile. Incognito
+// window tabs count as the same profile.
+bool IsLastTab(const Profile* profile) {
+  profile = profile->GetOriginalProfile();
+  int tab_count = 0;
+  for (const Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->GetOriginalProfile() != profile)
+      continue;
+    tab_count += browser->tab_strip_model()->count();
+    if (tab_count > 1)
+      return false;
+  }
+  return true;
+}
 
 bool MaybeLaunchAlternativeBrowser(
     content::WebContents* web_contents,
@@ -64,9 +82,15 @@ bool MaybeLaunchAlternativeBrowser(
     UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
   }
   if (success) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&content::WebContents::ClosePage,
-                                  base::Unretained(web_contents)));
+    const Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    if (service->prefs().KeepLastTab() && IsLastTab(profile)) {
+      // TODO(nicolaso): Show the NTP after cancelling the navigation.
+    } else {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&content::WebContents::ClosePage,
+                                    base::Unretained(web_contents)));
+    }
     return true;
   }
 

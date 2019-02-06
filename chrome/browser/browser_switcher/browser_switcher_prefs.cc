@@ -50,6 +50,7 @@ void BrowserSwitcherPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kEnabled, false);
   registry->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
   registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
+  registry->RegisterBooleanPref(prefs::kKeepLastTab, true);
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
   registry->RegisterStringPref(prefs::kExternalSitelistUrl, "");
@@ -70,6 +71,10 @@ const std::string& BrowserSwitcherPrefs::GetAlternativeBrowserPath() const {
 const std::vector<std::string>&
 BrowserSwitcherPrefs::GetAlternativeBrowserParameters() const {
   return alt_browser_params_;
+}
+
+bool BrowserSwitcherPrefs::KeepLastTab() const {
+  return prefs_->GetBoolean(prefs::kKeepLastTab);
 }
 
 const RuleSet& BrowserSwitcherPrefs::GetRules() const {
@@ -161,6 +166,9 @@ const char kAlternativeBrowserPath[] =
 const char kAlternativeBrowserParameters[] =
     "browser_switcher.alternative_browser_parameters";
 
+// If true, always keep at least one tab open after switching.
+const char kKeepLastTab[] = "browser_switcher.keep_last_tab";
+
 // List of host domain names to be opened in an alternative browser.
 const char kUrlList[] = "browser_switcher.url_list";
 
@@ -177,9 +185,6 @@ const char kUseIeSitelist[] = "browser_switcher.use_ie_sitelist";
 
 // Disable browser_switcher unless this is set to true.
 const char kEnabled[] = "browser_switcher.enabled";
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-}
 
 }  // namespace prefs
 }  // namespace browser_switcher
