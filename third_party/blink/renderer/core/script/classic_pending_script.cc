@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -263,6 +265,13 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
                                        options_, cross_origin);
   }
 
+  TRACE_EVENT_WITH_FLOW1(
+      TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+      "ClassicPendingScript::NotifyFinished", this, TRACE_EVENT_FLAG_FLOW_OUT,
+      "data",
+      inspector_parse_script_event::Data(GetResource()->Identifier(),
+                                         GetResource()->Url().GetString()));
+
   bool error_occurred = GetResource()->ErrorOccurred() || integrity_failure_;
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
 }
@@ -359,6 +368,11 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   }
   RecordStreamingHistogram(GetSchedulingType(), streamer_ready,
                            not_streamed_reason);
+
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                         "ClassicPendingScript::GetSource", this,
+                         TRACE_EVENT_FLAG_FLOW_IN, "not_streamed_reason",
+                         not_streamed_reason);
 
   ScriptSourceCode source_code(streamer_ready ? streamer : nullptr, resource,
                                not_streamed_reason);

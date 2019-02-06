@@ -47,6 +47,9 @@ class SourceStreamDataQueue {
   }
 
   void Produce(const uint8_t* data, size_t length) {
+    TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                           "v8.streamingCompile.sendData", this,
+                           TRACE_EVENT_FLAG_FLOW_OUT, "length", length);
     MutexLocker locker(mutex_);
     DCHECK(!finished_);
     data_.push_back(std::make_pair(data, length));
@@ -54,6 +57,9 @@ class SourceStreamDataQueue {
   }
 
   void Finish() {
+    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                           "v8.streamingCompile.finishData", this,
+                           TRACE_EVENT_FLAG_FLOW_OUT);
     MutexLocker locker(mutex_);
     finished_ = true;
     have_data_.Signal();
@@ -61,8 +67,14 @@ class SourceStreamDataQueue {
 
   void Consume(const uint8_t** data, size_t* length) {
     MutexLocker locker(mutex_);
-    while (!TryGetData(data, length))
+    while (!TryGetData(data, length)) {
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                   "v8.streamingCompile.waitForData");
       have_data_.Wait();
+      TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                             "v8.streamingCompile.receivedData", this,
+                             TRACE_EVENT_FLAG_FLOW_IN, "length", *length);
+    }
   }
 
  private:
@@ -312,8 +324,10 @@ namespace {
 void RunScriptStreamingTask(
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
     ScriptStreamer* streamer) {
-  TRACE_EVENT1(
-      "v8,devtools.timeline", "v8.parseOnBackground", "data",
+  TRACE_EVENT_WITH_FLOW1(
+      "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+      "v8.parseOnBackground", streamer,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "data",
       inspector_parse_script_event::Data(streamer->ScriptResourceIdentifier(),
                                          streamer->ScriptURLString()));
   // Running the task can and will block: SourceStream::GetSomeData will get
@@ -414,6 +428,12 @@ void ScriptStreamer::NotifyAppendData() {
       source_.reset();
       return;
     }
+
+    TRACE_EVENT_WITH_FLOW1(
+        TRACE_DISABLED_BY_DEFAULT("v8.compile"), "v8.streamingCompile.start",
+        this, TRACE_EVENT_FLAG_FLOW_OUT, "data",
+        inspector_parse_script_event::Data(this->ScriptResourceIdentifier(),
+                                           this->ScriptURLString()));
 
     if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
       // Script streaming tasks are high priority, as they can block the parser,
@@ -522,6 +542,13 @@ void ScriptStreamer::Trace(blink::Visitor* visitor) {
 }
 
 void ScriptStreamer::StreamingComplete() {
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("v8.compile"), "v8.streamingCompile.complete",
+      this, TRACE_EVENT_FLAG_FLOW_IN, "streaming_suppressed",
+      streaming_suppressed_, "data",
+      inspector_parse_script_event::Data(this->ScriptResourceIdentifier(),
+                                         this->ScriptURLString()));
+
   // The background task is completed; do the necessary ramp-down in the main
   // thread.
   DCHECK(IsMainThread());

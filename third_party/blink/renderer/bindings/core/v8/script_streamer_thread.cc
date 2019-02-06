@@ -71,6 +71,11 @@ void ScriptStreamerThread::RunScriptStreamingTask(
       "v8,devtools.timeline", "v8.parseOnBackground", "data",
       inspector_parse_script_event::Data(streamer->ScriptResourceIdentifier(),
                                          streamer->ScriptURLString()));
+  TRACE_EVENT_WITH_FLOW1(
+      TRACE_DISABLED_BY_DEFAULT("v8.compile"), "v8.streamingCompile.run",
+      streamer, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "data",
+      inspector_parse_script_event::Data(streamer->ScriptResourceIdentifier(),
+                                         streamer->ScriptURLString()));
   // Running the task can and will block: SourceStream::GetSomeData will get
   // called and it will block and wait for data from the network.
   task->Run();
