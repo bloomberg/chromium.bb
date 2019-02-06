@@ -28,6 +28,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/firstpass.h"
+#include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/temporal_filter.h"
 #include "av1/encoder/tpl_model.h"
 
@@ -250,7 +251,7 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
     const int bwdref_to_show =
         cpi->new_bwdref_update_rule ? BWDREF_FRAME : ALTREF2_FRAME;
     // Other parameters related to OVERLAY_UPDATE will be taken care of
-    // in av1_rc_get_second_pass_params(cpi)
+    // in av1_get_second_pass_params(cpi)
     cm->show_existing_frame = 1;
     cpi->existing_fb_idx_to_show =
         (frame_update_type == OVERLAY_UPDATE)
@@ -809,7 +810,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (oxcf->pass == 2 && (!cm->show_existing_frame || is_overlay)) {
     // GF_GROUP needs updating for arf overlays as well as non-show-existing
-    av1_rc_get_second_pass_params(cpi, &frame_params);
+    av1_get_second_pass_params(cpi, &frame_params);
     frame_update_type =
         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index];
   }

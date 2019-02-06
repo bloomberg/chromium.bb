@@ -42,6 +42,8 @@ typedef struct {
 } FIRSTPASS_MB_STATS;
 #endif
 
+#define DOUBLE_DIVIDE_CHECK(x) ((x) < 0 ? (x)-0.000001 : (x) + 0.000001)
+
 // Length of the bi-predictive frame group (BFG)
 // NOTE: Currently each BFG contains one backward ref (BWF) frame plus a certain
 //       number of bi-predictive frames.
@@ -172,18 +174,14 @@ typedef struct {
 
 struct AV1_COMP;
 struct EncodeFrameParams;
+struct AV1EncoderConfig;
 
 void av1_init_first_pass(struct AV1_COMP *cpi);
 void av1_rc_get_first_pass_params(struct AV1_COMP *cpi);
 void av1_first_pass(struct AV1_COMP *cpi, const int64_t ts_duration);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
-void av1_init_second_pass(struct AV1_COMP *cpi);
-void av1_rc_get_second_pass_params(
-    struct AV1_COMP *cpi, struct EncodeFrameParams *const frame_params);
-
-// Post encode update of the rate control parameters for 2-pass
-void av1_twopass_postencode_update(struct AV1_COMP *cpi);
+void av1_twopass_zero_stats(FIRSTPASS_STATS *section);
 
 static INLINE int get_number_of_extra_arfs(int interval, int arf_pending,
                                            int max_pyr_height) {

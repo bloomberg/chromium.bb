@@ -30,6 +30,7 @@
 
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encode_strategy.h"
+#include "av1/encoder/gop_structure.h"
 #include "av1/encoder/random.h"
 #include "av1/encoder/ratectrl.h"
 
@@ -251,7 +252,7 @@ int av1_rc_get_default_min_gf_interval(int width, int height,
 int av1_rc_get_default_max_gf_interval(double framerate, int min_gf_interval,
                                        int max_pyr_height) {
   int interval = AOMMIN(MAX_GF_INTERVAL, (int)(framerate * 0.75));
-  interval = AOMMAX(av1_rc_get_fixed_gf_length(max_pyr_height), interval);
+  interval = AOMMAX(get_fixed_gf_length(max_pyr_height), interval);
   return AOMMAX(interval, min_gf_interval);
 }
 

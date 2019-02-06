@@ -176,8 +176,6 @@ int av1_rc_get_default_min_gf_interval(int width, int height, double framerate);
 int av1_rc_get_default_max_gf_interval(double framerate, int min_frame_rate,
                                        int max_pyr_height);
 
-int av1_rc_get_fixed_gf_length(int max_pyr_height);
-
 // Generally at the high level, the following flow is expected
 // to be enforced for rate control:
 // First call per frame, one of:
