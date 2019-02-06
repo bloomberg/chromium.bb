@@ -92,9 +92,7 @@ NSString* const kWebContentTouchBarId = @"web-content";
 
 // Whether a keyboard event has been reserved by OSX.
 BOOL EventIsReservedBySystem(NSEvent* event) {
-  content::SystemHotkeyHelperMac* helper =
-      content::SystemHotkeyHelperMac::GetInstance();
-  return helper->map()->IsEventReserved(event);
+  return content::GetSystemHotkeyMap()->IsEventReserved(event);
 }
 
 // TODO(suzhe): Upstream this function.
