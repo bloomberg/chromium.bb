@@ -645,6 +645,8 @@ void AuthenticatorImpl::MakeCredential(
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
   if (OriginIsCryptoTokenExtension(caller_origin_)) {
+    // Cryptotoken requests should be proxied without UI.
+    request_delegate_->DisableUI();
     // As Cryptotoken validates the origin, accept the relying party id as the
     // origin from requests originating from Cryptotoken. The origin is provided
     // in Cryptotoken requests as the relying party name, which should be used
@@ -729,6 +731,9 @@ void AuthenticatorImpl::GetAssertion(
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
   if (OriginIsCryptoTokenExtension(caller_origin_)) {
+    // Cryptotoken requests should be proxied without UI.
+    request_delegate_->DisableUI();
+
     // As Cryptotoken validates the origin, accept the relying party id as the
     // origin from requests originating from Cryptotoken.
     client_data_json_ = SerializeCollectedClientDataToJson(
@@ -881,14 +886,9 @@ void AuthenticatorImpl::OnRegisterResponse(
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
-      DCHECK(request_delegate_);
-      request_delegate_->DidFailWithInterestingReason(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kKeyAlreadyRegistered);
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
-          Focus::kDoCheck);
+
+      HandleBlockingError(
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1038,15 +1038,8 @@ void AuthenticatorImpl::OnSignResponse(
 
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
-      // No authenticators contained the credential.
-      DCHECK(request_delegate_);
-      request_delegate_->DidFailWithInterestingReason(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kKeyNotRegistered);
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
-          nullptr);
+      HandleBlockingError(
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1085,21 +1078,51 @@ void AuthenticatorImpl::OnSignResponse(
   NOTREACHED();
 }
 
-void AuthenticatorImpl::FailWithNotAllowedErrorAndCleanup() {
+// If WebAuthnUi is enabled, this error blocks until after receiving user
+// acknowledgement. Otherwise, the error is returned right away.
+void AuthenticatorImpl::HandleBlockingError(
+    blink::mojom::AuthenticatorStatus status) {
+  AuthenticatorRequestClientDelegate::InterestingFailureReason reason =
+      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout;
+  switch (status) {
+    case blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
+      reason = AuthenticatorRequestClientDelegate::InterestingFailureReason::
+          kKeyAlreadyRegistered;
+      break;
+    case blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR:
+      reason = AuthenticatorRequestClientDelegate::InterestingFailureReason::
+          kTimeout;
+      break;
+    case blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
+      reason = AuthenticatorRequestClientDelegate::InterestingFailureReason::
+          kKeyNotRegistered;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  error_awaiting_user_acknowledgement_ = status;
+  DCHECK(request_delegate_);
+  if (!request_delegate_->DoesBlockRequestOnFailure(reason)) {
+    FailWithErrorAndCleanup();
+  }
+}  // namespace content
+
+void AuthenticatorImpl::FailWithErrorAndCleanup() {
   DCHECK(make_credential_response_callback_ ||
          get_assertion_response_callback_);
   if (make_credential_response_callback_) {
-    InvokeCallbackAndCleanup(
-        std::move(make_credential_response_callback_),
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-        Focus::kDontCheck);
+    InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
+                             error_awaiting_user_acknowledgement_, nullptr,
+                             Focus::kDontCheck);
   } else if (get_assertion_response_callback_) {
-    InvokeCallbackAndCleanup(
-        std::move(get_assertion_response_callback_),
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+    InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
+                             error_awaiting_user_acknowledgement_, nullptr);
   }
 }
 
+// TODO(crbug.com/814418): Add web tests to verify timeouts are
+// indistinguishable from NOT_ALLOWED_ERROR cases.
 void AuthenticatorImpl::OnTimeout() {
   DCHECK(request_delegate_);
   if (awaiting_attestation_response_) {
@@ -1108,12 +1131,7 @@ void AuthenticatorImpl::OnTimeout() {
     awaiting_attestation_response_ = false;
   }
 
-  request_delegate_->DidFailWithInterestingReason(
-      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
-
-  // TODO(crbug.com/814418): Add web tests to verify timeouts are
-  // indistinguishable from NOT_ALLOWED_ERROR cases.
-  FailWithNotAllowedErrorAndCleanup();
+  HandleBlockingError(blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
 void AuthenticatorImpl::Cancel() {
@@ -1121,7 +1139,7 @@ void AuthenticatorImpl::Cancel() {
   if (!make_credential_response_callback_ && !get_assertion_response_callback_)
     return;
 
-  FailWithNotAllowedErrorAndCleanup();
+  FailWithErrorAndCleanup();
 }
 
 void AuthenticatorImpl::InvokeCallbackAndCleanup(
@@ -1162,6 +1180,8 @@ void AuthenticatorImpl::Cleanup() {
   client_data_json_.clear();
   app_id_.reset();
   attestation_requested_ = false;
+  error_awaiting_user_acknowledgement_ =
+      blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 }
 
 BrowserContext* AuthenticatorImpl::browser_context() const {

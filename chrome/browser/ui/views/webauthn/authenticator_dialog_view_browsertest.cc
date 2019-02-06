@@ -104,7 +104,7 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
 
     auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
     dialog_model->SetCurrentStep(
-        AuthenticatorRequestDialogModel::Step::kPostMortemTimedOut);
+        AuthenticatorRequestDialogModel::Step::kTimedOut);
     auto dialog = std::make_unique<AuthenticatorRequestDialogView>(
         web_contents, std::move(dialog_model));
 
