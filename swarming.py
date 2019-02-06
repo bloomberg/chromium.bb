@@ -1734,8 +1734,7 @@ def CMDreproduce(parser, args):
       # leak.
       policies = local_caching.CachePolicies(0, 0, 0, 0)
       cache = local_caching.DiskContentAddressedCache(
-          unicode(os.path.abspath(options.cache)), policies,
-          server_ref.hash_algo, False)
+          unicode(os.path.abspath(options.cache)), policies, False)
       bundle = isolateserver.fetch_isolated(
           properties['inputs_ref']['isolated'], storage, cache, workdir, False)
       command = bundle.command

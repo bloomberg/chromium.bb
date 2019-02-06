@@ -157,7 +157,7 @@ class IsolateTest(IsolateBase):
       'path_variables': {},
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
-    saved_state = isolate.SavedState.load(values, self.cwd)
+    saved_state = isolate.SavedState.load(values, 'sha-1', self.cwd)
     self.assertEqual(expected, saved_state.flatten())
 
   def test_savedstate_load(self):
@@ -187,7 +187,7 @@ class IsolateTest(IsolateBase):
       'path_variables': {},
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
-    saved_state = isolate.SavedState.load(values, self.cwd)
+    saved_state = isolate.SavedState.load(values, 'sha-1', self.cwd)
     self.assertEqual(expected, saved_state.flatten())
 
   def test_variable_arg(self):
@@ -271,7 +271,8 @@ class IsolateTest(IsolateBase):
       'read_only': 0,
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    complete_state = isolate.CompleteState(None, isolate.SavedState(self.cwd))
+    complete_state = isolate.CompleteState(
+        None, isolate.SavedState('sha-1', self.cwd))
     complete_state.load_isolate(
         unicode(self.cwd), unicode(isolate_file), {}, {}, {}, None, False,
         False)
@@ -998,7 +999,8 @@ class IsolateLoad(IsolateBase):
           os.mkdir(base)
         open(f, 'wb').close()
 
-      c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
+      c = isolate.CompleteState(
+          isolated, isolate.SavedState('sha-1', isolated_dir))
       config = {
         'OS': config_os,
       }
@@ -1187,7 +1189,8 @@ class IsolateLoad(IsolateBase):
         logging.warn(f)
         open(f, 'wb').close()
 
-      c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
+      c = isolate.CompleteState(
+          isolated, isolate.SavedState('sha-1', isolated_dir))
       config = {
         'OS': config_os,
       }
@@ -1261,7 +1264,7 @@ class IsolateCommand(IsolateBase):
     """Creates a minimalist CompleteState instance without an .isolated
     reference.
     """
-    out = isolate.CompleteState(None, isolate.SavedState(self.cwd))
+    out = isolate.CompleteState(None, isolate.SavedState('sha-1', self.cwd))
     out.saved_state.isolate_file = u'blah.isolate'
     out.saved_state.relative_cwd = u''
     out.saved_state.root_dir = ROOT_DIR

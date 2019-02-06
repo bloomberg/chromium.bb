@@ -396,20 +396,18 @@ class DiskContentAddressedCache(ContentAddressedCache):
   """
   STATE_FILE = u'state.json'
 
-  def __init__(self, cache_dir, policies, hash_algo, trim, time_fn=None):
+  def __init__(self, cache_dir, policies, trim, time_fn=None):
     """
     Arguments:
       cache_dir: directory where to place the cache.
       policies: CachePolicies instance, cache retention policies.
-      algo: hashing algorithm used.
       trim: if True to enforce |policies| right away.
-        It can be done later by calling trim() explicitly.
+          It can be done later by calling trim() explicitly.
     """
     # All protected methods (starting with '_') except _path should be called
     # with self._lock held.
     super(DiskContentAddressedCache, self).__init__(cache_dir)
     self.policies = policies
-    self.hash_algo = hash_algo
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
     # Items in a LRU lookup dict(digest: size).
     self._lru = lru.LRUDict()

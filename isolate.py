@@ -309,10 +309,11 @@ class SavedState(Flattenable):
   # files.
   EXPECTED_VERSION = isolated_format.ISOLATED_FILE_VERSION + '.2'
 
-  def __init__(self, isolated_basedir):
+  def __init__(self, algo_name, isolated_basedir):
     """Creates an empty SavedState.
 
     Arguments:
+      algo_name: name of the algorithm used, 'sha-1', 'sha-256' or 'sha-512'.
       isolated_basedir: the directory where the .isolated and .isolated.state
           files are saved.
     """
@@ -323,8 +324,9 @@ class SavedState(Flattenable):
 
     # The default algorithm used.
     self.OS = sys.platform
-    self.algo_name = 'sha-1'
-    self.algo = isolated_format.SUPPORTED_ALGOS[self.algo_name]
+    self.algo_name = algo_name
+    assert algo_name in isolated_format.SUPPORTED_ALGOS, algo_name
+    self.algo = isolated_format.SUPPORTED_ALGOS[algo_name]
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
@@ -412,13 +414,13 @@ class SavedState(Flattenable):
 
   # Arguments number differs from overridden method
   @classmethod
-  def load(cls, data, isolated_basedir):  # pylint: disable=W0221
+  def load(cls, data, algo_name, isolated_basedir):  # pylint: disable=W0221
     """Special case loading to disallow different OS.
 
     It is not possible to load a .isolated.state files from a different OS, this
     file is saved in OS-specific format.
     """
-    out = super(SavedState, cls).load(data, isolated_basedir)
+    out = super(SavedState, cls).load(data, algo_name, isolated_basedir)
     if data.get('OS') != sys.platform:
       raise isolated_format.IsolatedError('Unexpected OS %s', data.get('OS'))
 
@@ -426,6 +428,10 @@ class SavedState(Flattenable):
     algo = data.get('algo')
     if not algo in isolated_format.SUPPORTED_ALGOS:
       raise isolated_format.IsolatedError('Unknown algo \'%s\'' % out.algo)
+    if algo_name != algo:
+      # pylint: disable=no-member
+      raise isolated_format.IsolatedError(
+          'Unexpected algo \'%s\', expected %s' % (out.algo, algo_name))
     out.algo = isolated_format.SUPPORTED_ALGOS[algo]
 
     # Refuse the load non-exact version, even minor difference. This is unlike
@@ -482,14 +488,13 @@ class CompleteState(object):
     self.saved_state = saved_state
 
   @classmethod
-  def load_files(cls, isolated_filepath):
+  def load_files(cls, algo_name, isolated_filepath):
     """Loads state from disk."""
     assert os.path.isabs(isolated_filepath), isolated_filepath
     isolated_basedir = os.path.dirname(isolated_filepath)
-    return cls(
-        isolated_filepath,
-        SavedState.load_file(
-            isolatedfile_to_state(isolated_filepath), isolated_basedir))
+    s = SavedState.load_file(
+        isolatedfile_to_state(isolated_filepath), algo_name, isolated_basedir)
+    return cls(isolated_filepath, s)
 
   def load_isolate(
       self, cwd, isolate_file, path_variables, config_variables,
@@ -657,15 +662,18 @@ def load_complete_state(options, cwd, subdir, skip_update):
   assert not options.isolate or os.path.isabs(options.isolate)
   assert not options.isolated or os.path.isabs(options.isolated)
   cwd = file_path.get_native_path_case(unicode(cwd))
+  # maruel: This is incorrect but it's not worth fixing.
+  namespace = getattr(options, 'namespace', 'default')
+  algo_name = isolate_storage.ServerRef('', namespace).hash_algo_name
   if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated.state".
     # Note: this call doesn't load the .isolate file.
-    complete_state = CompleteState.load_files(options.isolated)
+    complete_state = CompleteState.load_files(algo_name, options.isolated)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'. There is no directory containing a .isolated file so
     # specify the current working directory as a valid directory.
-    complete_state = CompleteState(None, SavedState(os.getcwd()))
+    complete_state = CompleteState(None, SavedState(algo_name, os.getcwd()))
 
   if not options.isolate:
     if not complete_state.saved_state.isolate_file:
@@ -689,7 +697,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
             isolatedfile_to_state(options.isolated))
         complete_state = CompleteState(
             options.isolated,
-            SavedState(complete_state.saved_state.isolated_basedir))
+            SavedState(algo_name, complete_state.saved_state.isolated_basedir))
 
   if not skip_update:
     # Then load the .isolate and expands directories.

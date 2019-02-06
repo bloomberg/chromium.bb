@@ -270,7 +270,7 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
 
   def get_cache(self, policies):
     return local_caching.DiskContentAddressedCache(
-        os.path.join(self.tempdir, 'cache'), policies, self._algo, trim=True)
+        os.path.join(self.tempdir, 'cache'), policies, trim=True)
 
   def test_write_policies_free_disk(self):
     cache = self.get_cache(_get_policies(min_free_space=1000))
@@ -854,8 +854,7 @@ class FnTest(TestCase):
     short_names = self._prepare_named_cache(named_cache)
 
     isolated_cache = local_caching.DiskContentAddressedCache(
-        tempfile.mkdtemp(dir=self.tempdir, prefix='ic'), policies, self._algo,
-        trim=False)
+        tempfile.mkdtemp(dir=self.tempdir, prefix='ic'), policies, trim=False)
     self._prepare_isolated_cache(isolated_cache)
     self.assertEqual(now, self._now)
 
