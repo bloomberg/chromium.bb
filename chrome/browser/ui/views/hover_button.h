@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_HOVER_BUTTON_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -44,13 +45,18 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
 
   // Creates a HoverButton with custom subviews. |icon_view| replaces the
   // LabelButton icon, and titles appear on separate rows. An empty |subtitle|
-  // will vertically center |title|. |secondary_icon_view|, when set, is shown
+  // will vertically center |title|. |secondary_view|, when set, is shown
   // on the opposite side of the button from |icon_view|.
+  // When |resize_row_for_secondary_icon| is false, the button tries to
+  // accommodate the view's preferred size by reducing the top and bottom
+  // insets appropriately up to a value of 0.
   HoverButton(views::ButtonListener* button_listener,
               std::unique_ptr<views::View> icon_view,
               const base::string16& title,
               const base::string16& subtitle,
-              std::unique_ptr<views::View> secondary_icon_view = nullptr);
+              std::unique_ptr<views::View> secondary_view = nullptr,
+              bool resize_row_for_secondary_view = true,
+              bool secondary_view_can_process_events = false);
 
   ~HoverButton() override;
 
@@ -59,6 +65,7 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   void SetBorder(std::unique_ptr<views::Border> b) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool IsTriggerableEventType(const ui::Event& event) override;
+  gfx::Insets GetInsets() const override;
 
   // Updates the title text, and applies the secondary style to the text
   // specified by |range|. If |range| is invalid, no style is applied. This
@@ -114,11 +121,14 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   views::StyledLabel* title_;
   views::Label* subtitle_;
   views::View* icon_view_;
-  views::View* secondary_icon_view_;
+  views::View* secondary_view_;
 
   // The horizontal space the padding and icon take up. Used for calculating the
   // available space for |title_|, if it exists.
   int taken_width_ = 0;
+
+  // Custom insets, when secondary_view_ is larger than the rest of the row.
+  base::Optional<gfx::Insets> insets_;
 
   // Whether this |HoverButton|'s accessible name and tooltip should be computed
   // from the |title_| and |subtitle_| text.

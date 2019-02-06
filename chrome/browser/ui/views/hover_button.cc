@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/hover_button.h"
 
+#include <algorithm>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -69,7 +71,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       title_(nullptr),
       subtitle_(nullptr),
       icon_view_(nullptr),
-      secondary_icon_view_(nullptr),
+      secondary_view_(nullptr),
       listener_(button_listener) {
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -92,7 +94,9 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                          std::unique_ptr<views::View> icon_view,
                          const base::string16& title,
                          const base::string16& subtitle,
-                         std::unique_ptr<views::View> secondary_icon_view)
+                         std::unique_ptr<views::View> secondary_view,
+                         bool resize_row_for_secondary_view,
+                         bool secondary_view_can_process_events)
     : HoverButton(button_listener, base::string16()) {
   label()->SetHandlesTooltips(false);
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
@@ -172,19 +176,31 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   title_wrapper->set_can_process_events_within_subtree(false);
   grid_layout->AddView(title_wrapper);
 
-  secondary_icon_view_ = secondary_icon_view.get();
-  if (secondary_icon_view) {
+  if (secondary_view) {
     columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                        views::GridLayout::kFixedSize,
                        views::GridLayout::USE_PREF, 0, 0);
-    // Make sure hovering over |secondary_icon_view| also hovers the
-    // |HoverButton|.
-    secondary_icon_view->set_can_process_events_within_subtree(false);
-    // |secondary_icon_view| needs a layer otherwise it's obscured by the layer
+    secondary_view_ = secondary_view.get();
+    secondary_view->set_can_process_events_within_subtree(
+        secondary_view_can_process_events);
+    // |secondary_view| needs a layer otherwise it's obscured by the layer
     // used in drawing ink drops.
-    secondary_icon_view->SetPaintToLayer();
-    secondary_icon_view->layer()->SetFillsBoundsOpaquely(false);
-    grid_layout->AddView(secondary_icon_view.release(), 1, num_labels);
+    secondary_view->SetPaintToLayer();
+    secondary_view->layer()->SetFillsBoundsOpaquely(false);
+    grid_layout->AddView(secondary_view.release(), 1, num_labels);
+
+    if (!resize_row_for_secondary_view) {
+      insets_ = views::MenuButton::GetInsets();
+      auto secondary_ctl_size = secondary_view_->GetPreferredSize();
+      if (secondary_ctl_size.height() > row_height) {
+        // Secondary view is larger. Reduce the insets.
+        int reduced_inset = (secondary_ctl_size.height() - row_height) / 2;
+        insets_.value().set_top(
+            std::max(insets_.value().top() - reduced_inset, 0));
+        insets_.value().set_bottom(
+            std::max(insets_.value().bottom() - reduced_inset, 0));
+      }
+    }
   }
 
   if (!subtitle.empty()) {
@@ -237,6 +253,12 @@ bool HoverButton::IsTriggerableEventType(const ui::Event& event) {
   }
 
   return MenuButton::IsTriggerableEventType(event);
+}
+
+gfx::Insets HoverButton::GetInsets() const {
+  if (insets_)
+    return insets_.value();
+  return views::MenuButton::GetInsets();
 }
 
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
@@ -312,14 +334,14 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return nullptr;
 
-  // Let the secondary icon handle it if it has a tooltip.
-  if (secondary_icon_view_) {
-    gfx::Point point_in_icon_coords(point);
-    ConvertPointToTarget(this, secondary_icon_view_, &point_in_icon_coords);
+  // Let the secondary control handle it if it has a tooltip.
+  if (secondary_view_) {
+    gfx::Point point_in_secondary_view(point);
+    ConvertPointToTarget(this, secondary_view_, &point_in_secondary_view);
     base::string16 tooltip;
-    if (secondary_icon_view_->HitTestPoint(point_in_icon_coords) &&
-        secondary_icon_view_->GetTooltipText(point_in_icon_coords, &tooltip)) {
-      return secondary_icon_view_;
+    if (secondary_view_->HitTestPoint(point_in_secondary_view) &&
+        secondary_view_->GetTooltipText(point_in_secondary_view, &tooltip)) {
+      return secondary_view_;
     }
   }
 

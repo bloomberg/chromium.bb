@@ -81,6 +81,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
     VIEW_ID_PAGE_INFO_BUTTON_END_VR,
+    VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION,
   };
 
   // Creates the appropriate page info bubble for the given |url|.

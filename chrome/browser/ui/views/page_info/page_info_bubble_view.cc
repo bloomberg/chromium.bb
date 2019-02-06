@@ -587,6 +587,9 @@ void PageInfoBubbleView::ButtonPressed(views::Button* button,
         VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER:
       HandleMoreInfoRequest(button);
       break;
+    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION:
+      // Ignore clicks on the "VR is presenting" row.
+      break;
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_END_VR:
       GetWidget()->Close();
 #if BUILDFLAG(ENABLE_VR)
@@ -823,25 +826,28 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
   if (!info.is_vr_presentation_in_headset)
     return;
 
-  // TODO(crbug/925150): Fix this layout.
-  const int kColumnSetId = 0;
-  views::GridLayout* layout = page_feature_info_view_->SetLayoutManager(
-      std::make_unique<views::GridLayout>(page_feature_info_view_));
-  LayoutPermissionsLikeUiRow(layout, false, kColumnSetId);
+  auto* layout = page_feature_info_view_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
 
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   auto icon = std::make_unique<NonAccessibleImageView>();
   icon->SetImage(PageInfoUI::GetVrSettingsIcon(GetRelatedTextColor()));
-  layout->AddView(icon.release());
-  layout->AddView(new views::Label(
+
+  std::unique_ptr<views::MdTextButton> exit_button(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT)));
+  exit_button->set_id(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
+  exit_button->SetProminent(true);
+
+  auto button = std::make_unique<HoverButton>(
+      this, std::move(icon),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_PRESENTING_TEXT),
-      views::style::CONTEXT_LABEL));
-  views::MdTextButton* button = views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT));
-  button->SetProminent(true);
-  button->set_id(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
-  layout->AddView(button);
-  layout->Layout(page_feature_info_view_);
+      base::string16(), std::move(exit_button),
+      false,  // Try not to change the row height while adding secondary view
+      true);  // Secondary view can handle events.
+  button->set_id(VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION);
+
+  page_feature_info_view_->AddChildView(button.release());
 
   Layout();
   SizeToContents();
