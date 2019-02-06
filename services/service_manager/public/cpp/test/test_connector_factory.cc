@@ -46,6 +46,7 @@ class ProxiedServiceConnector : public mojom::Connector {
   void BindInterface(const ServiceFilter& service_filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
+                     mojom::BindInterfacePriority priority,
                      BindInterfaceCallback callback) override {
     auto* proxy = GetServiceProxy(service_filter.service_name());
     if (!proxy && factory_->ignore_unknown_service_requests()) {

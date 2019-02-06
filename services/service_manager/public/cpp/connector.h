@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -143,6 +144,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
                      mojo::InterfaceRequest<Interface> request,
                      BindInterfaceCallback callback = {}) {
     BindInterface(filter, Interface::Name_, request.PassMessagePipe(),
+                  mojom::BindInterfacePriority::kImportant,
                   std::move(callback));
   }
 
@@ -166,10 +168,28 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
                          std::move(request));
   }
 
+  template <typename Interface>
+  void BindInterface(const std::string& service_name,
+                     mojo::InterfaceRequest<Interface> request,
+                     mojom::BindInterfacePriority priority) {
+    return BindInterface(ServiceFilter::ByName(service_name), Interface::Name_,
+                         request.PassMessagePipe(), priority, nullptr);
+  }
+
   void BindInterface(const ServiceFilter& filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
-                     BindInterfaceCallback callback = {});
+                     BindInterfaceCallback callback = {}) {
+    BindInterface(filter, interface_name, std::move(interface_pipe),
+                  mojom::BindInterfacePriority::kImportant,
+                  std::move(callback));
+  }
+
+  void BindInterface(const ServiceFilter& filter,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     mojom::BindInterfacePriority priority,
+                     BindInterfaceCallback callback);
 
   // Creates a new instance of this class which may be passed to another thread.
   // The returned object may be passed across sequences until any of its public
