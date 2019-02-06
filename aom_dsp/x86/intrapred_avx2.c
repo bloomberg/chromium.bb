@@ -3034,9 +3034,9 @@ static AOM_FORCE_INLINE void dr_prediction_z1_4xN_internal_avx2(
   __m256i diff, c3f;
   __m128i a_mbase_x;
 
-  a16 = _mm256_set1_epi32(16);
+  a16 = _mm256_set1_epi16(16);
   a_mbase_x = _mm_set1_epi8(above[max_base_x]);
-  c3f = _mm256_set1_epi32(0x3f);
+  c3f = _mm256_set1_epi16(0x3f);
 
   x = dx;
   for (int r = 0; r < N; r++) {
@@ -3054,31 +3054,32 @@ static AOM_FORCE_INLINE void dr_prediction_z1_4xN_internal_avx2(
     if (base_max_diff > 4) base_max_diff = 4;
     a0_128 = _mm_loadu_si128((__m128i *)(above + base));
     a1_128 = _mm_srli_si128(a0_128, 1);
-    a0 = _mm256_cvtepu8_epi32(a0_128);
-    a1 = _mm256_cvtepu8_epi32(a1_128);
 
     if (upsample_above) {
-      a0 = _mm256_permutevar8x32_epi32(
-          a0, _mm256_set_epi32(7, 5, 3, 1, 6, 4, 2, 0));
-      a1 = _mm256_castsi128_si256(_mm256_extracti128_si256(a0, 1));
-      shift = _mm256_srli_epi32(
+      a0_128 = _mm_shuffle_epi8(
+          a0_128,
+          _mm_setr_epi8(0, 2, 4, 6, 1, 3, 5, 7, 8, 10, 12, 14, 9, 11, 13, 15));
+      a1_128 = _mm_srli_si128(a0_128, 4);
+
+      shift = _mm256_srli_epi16(
           _mm256_and_si256(
-              _mm256_slli_epi32(_mm256_set1_epi32(x), upsample_above), c3f),
+              _mm256_slli_epi16(_mm256_set1_epi16(x), upsample_above), c3f),
           1);
     } else {
-      shift = _mm256_srli_epi32(_mm256_and_si256(_mm256_set1_epi32(x), c3f), 1);
+      shift = _mm256_srli_epi16(_mm256_and_si256(_mm256_set1_epi16(x), c3f), 1);
     }
+    a0 = _mm256_cvtepu8_epi16(a0_128);
+    a1 = _mm256_cvtepu8_epi16(a1_128);
 
-    diff = _mm256_sub_epi32(a1, a0);   // a[x+1] - a[x]
-    a32 = _mm256_slli_epi32(a0, 5);    // a[x] * 32
-    a32 = _mm256_add_epi32(a32, a16);  // a[x] * 32 + 16
+    diff = _mm256_sub_epi16(a1, a0);   // a[x+1] - a[x]
+    a32 = _mm256_slli_epi16(a0, 5);    // a[x] * 32
+    a32 = _mm256_add_epi16(a32, a16);  // a[x] * 32 + 16
 
-    b = _mm256_mullo_epi32(diff, shift);
-    res = _mm256_add_epi32(a32, b);
-    res = _mm256_srli_epi32(res, 5);
+    b = _mm256_mullo_epi16(diff, shift);
+    res = _mm256_add_epi16(a32, b);
+    res = _mm256_srli_epi16(res, 5);
 
     res1 = _mm256_castsi256_si128(res);
-    res1 = _mm_packus_epi32(res1, res1);
     res1 = _mm_packus_epi16(res1, res1);
 
     dst[r] =
