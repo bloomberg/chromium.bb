@@ -15,8 +15,6 @@ from telemetry.internal import story_runner
 from telemetry.value import none_values
 from telemetry.value.list_of_scalar_values import StandardDeviation
 
-from tracing.value import convert_chart_json
-
 def _ListSubtraction(diff_list, control_list):
   """Subtract |control_list|'s elements from the corresponding elements in
   |diff_list|, and store the results in |diff_list|.
@@ -159,12 +157,10 @@ class LoadingDesktopNetworkService(loading.LoadingDesktop):
   def Run(self, finder_options):
     """We shouldn't be overriding this according to
     telemetry.benchmark.Benchmark"""
-    assert 'histograms' in finder_options.output_formats, (
-      'loading.desktop.network_service requires --output-format=histograms.')
-
-    # feed the story_runner with 'chartjson' output formats.
-    finder_options.output_formats = ['chartjson']
-
+    assert 'chartjson' in finder_options.output_formats, (
+      'loading.desktop.network_service requires --output-format=chartjson. '
+      'Please contact owner to rewrite the benchmark if chartjson is going '
+      'away.')
     assert finder_options.output_dir
     output_dir = finder_options.output_dir
     temp_file_path = os.path.join(output_dir, 'results-chart.json')
@@ -202,16 +198,6 @@ class LoadingDesktopNetworkService(loading.LoadingDesktop):
       with open(temp_file_path, 'w') as f:
         json.dump(enabled_chart_json, f, indent=2, separators=(',', ': '))
         f.write('\n')
-      logging.info('Converting chartjsons to histograms')
-      histogram_result = convert_chart_json.ConvertChartJson(temp_file_path)
-      if histogram_result.returncode != 0:
-        logging.error('Error converting chart json to Histograms:\n' +
-            histogram_result.stdout)
-        return 1
-
-      with open(temp_file_path, 'w') as f:
-        f.write(histogram_result.stdout)
-
     return 0
 
   def SetExtraBrowserOptions(self, options):
