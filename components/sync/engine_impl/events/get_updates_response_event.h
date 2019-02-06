@@ -28,15 +28,15 @@ class GetUpdatesResponseEvent : public ProtocolEvent {
                           SyncerError error);
 
   ~GetUpdatesResponseEvent() override;
+  std::unique_ptr<ProtocolEvent> Clone() const override;
 
+ private:
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
   std::string GetDetails() const override;
   std::unique_ptr<base::DictionaryValue> GetProtoMessage(
       bool include_specifics) const override;
-  std::unique_ptr<ProtocolEvent> Clone() const override;
 
- private:
   const base::Time timestamp_;
   const sync_pb::ClientToServerResponse response_;
   const SyncerError error_;

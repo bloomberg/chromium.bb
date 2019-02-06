@@ -24,6 +24,11 @@ CommitRequestEvent::CommitRequestEvent(
 
 CommitRequestEvent::~CommitRequestEvent() {}
 
+std::unique_ptr<ProtocolEvent> CommitRequestEvent::Clone() const {
+  return std::make_unique<CommitRequestEvent>(timestamp_, num_items_,
+                                              contributing_types_, request_);
+}
+
 base::Time CommitRequestEvent::GetTimestamp() const {
   return timestamp_;
 }
@@ -42,13 +47,7 @@ std::string CommitRequestEvent::GetDetails() const {
 
 std::unique_ptr<base::DictionaryValue> CommitRequestEvent::GetProtoMessage(
     bool include_specifics) const {
-  return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, include_specifics));
-}
-
-std::unique_ptr<ProtocolEvent> CommitRequestEvent::Clone() const {
-  return std::unique_ptr<ProtocolEvent>(new CommitRequestEvent(
-      timestamp_, num_items_, contributing_types_, request_));
+  return ClientToServerMessageToValue(request_, include_specifics);
 }
 
 }  // namespace syncer

@@ -25,23 +25,21 @@ class NormalGetUpdatesRequestEvent : public ProtocolEvent {
   NormalGetUpdatesRequestEvent(base::Time timestamp,
                                const NudgeTracker& nudge_tracker,
                                const sync_pb::ClientToServerMessage& request);
-
-  ~NormalGetUpdatesRequestEvent() override;
-
-  base::Time GetTimestamp() const override;
-  std::string GetType() const override;
-  std::string GetDetails() const override;
-  std::unique_ptr<base::DictionaryValue> GetProtoMessage(
-      bool include_specifics) const override;
-  std::unique_ptr<ProtocolEvent> Clone() const override;
-
- private:
   NormalGetUpdatesRequestEvent(base::Time timestamp,
                                ModelTypeSet nudged_types,
                                ModelTypeSet notified_types,
                                ModelTypeSet refresh_requested_types,
                                bool is_retry,
                                sync_pb::ClientToServerMessage request);
+  ~NormalGetUpdatesRequestEvent() override;
+  std::unique_ptr<ProtocolEvent> Clone() const override;
+
+ private:
+  base::Time GetTimestamp() const override;
+  std::string GetType() const override;
+  std::string GetDetails() const override;
+  std::unique_ptr<base::DictionaryValue> GetProtoMessage(
+      bool include_specifics) const override;
 
   const base::Time timestamp_;
 

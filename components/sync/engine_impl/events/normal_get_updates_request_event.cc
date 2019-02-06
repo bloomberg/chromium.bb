@@ -14,12 +14,32 @@ NormalGetUpdatesRequestEvent::NormalGetUpdatesRequestEvent(
     base::Time timestamp,
     const NudgeTracker& nudge_tracker,
     const sync_pb::ClientToServerMessage& request)
+    : NormalGetUpdatesRequestEvent(timestamp,
+                                   nudge_tracker.GetNudgedTypes(),
+                                   nudge_tracker.GetNotifiedTypes(),
+                                   nudge_tracker.GetRefreshRequestedTypes(),
+                                   nudge_tracker.IsRetryRequired(),
+                                   request) {}
+
+NormalGetUpdatesRequestEvent::NormalGetUpdatesRequestEvent(
+    base::Time timestamp,
+    ModelTypeSet nudged_types,
+    ModelTypeSet notified_types,
+    ModelTypeSet refresh_requested_types,
+    bool is_retry,
+    sync_pb::ClientToServerMessage request)
     : timestamp_(timestamp),
-      nudged_types_(nudge_tracker.GetNudgedTypes()),
-      notified_types_(nudge_tracker.GetNotifiedTypes()),
-      refresh_requested_types_(nudge_tracker.GetRefreshRequestedTypes()),
-      is_retry_(nudge_tracker.IsRetryRequired()),
+      nudged_types_(nudged_types),
+      notified_types_(notified_types),
+      refresh_requested_types_(refresh_requested_types),
+      is_retry_(is_retry),
       request_(request) {}
+
+std::unique_ptr<ProtocolEvent> NormalGetUpdatesRequestEvent::Clone() const {
+  return std::make_unique<NormalGetUpdatesRequestEvent>(
+      timestamp_, nudged_types_, notified_types_, refresh_requested_types_,
+      is_retry_, request_);
+}
 
 NormalGetUpdatesRequestEvent::~NormalGetUpdatesRequestEvent() {}
 
@@ -67,28 +87,7 @@ std::string NormalGetUpdatesRequestEvent::GetDetails() const {
 
 std::unique_ptr<base::DictionaryValue>
 NormalGetUpdatesRequestEvent::GetProtoMessage(bool include_specifics) const {
-  return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, include_specifics));
+  return ClientToServerMessageToValue(request_, include_specifics);
 }
-
-std::unique_ptr<ProtocolEvent> NormalGetUpdatesRequestEvent::Clone() const {
-  return std::unique_ptr<ProtocolEvent>(new NormalGetUpdatesRequestEvent(
-      timestamp_, nudged_types_, notified_types_, refresh_requested_types_,
-      is_retry_, request_));
-}
-
-NormalGetUpdatesRequestEvent::NormalGetUpdatesRequestEvent(
-    base::Time timestamp,
-    ModelTypeSet nudged_types,
-    ModelTypeSet notified_types,
-    ModelTypeSet refresh_requested_types,
-    bool is_retry,
-    sync_pb::ClientToServerMessage request)
-    : timestamp_(timestamp),
-      nudged_types_(nudged_types),
-      notified_types_(notified_types),
-      refresh_requested_types_(refresh_requested_types),
-      is_retry_(is_retry),
-      request_(request) {}
 
 }  // namespace syncer

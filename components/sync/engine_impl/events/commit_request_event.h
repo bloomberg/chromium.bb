@@ -27,17 +27,15 @@ class CommitRequestEvent : public ProtocolEvent {
                      const sync_pb::ClientToServerMessage& request);
   ~CommitRequestEvent() override;
 
+  std::unique_ptr<ProtocolEvent> Clone() const override;
+
+ private:
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
   std::string GetDetails() const override;
   std::unique_ptr<base::DictionaryValue> GetProtoMessage(
       bool include_specifics) const override;
-  std::unique_ptr<ProtocolEvent> Clone() const override;
 
-  static std::unique_ptr<base::DictionaryValue> ToValue(
-      const ProtocolEvent& event);
-
- private:
   const base::Time timestamp_;
   const size_t num_items_;
   const ModelTypeSet contributing_types_;

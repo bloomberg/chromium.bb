@@ -32,6 +32,17 @@ class ProtocolEvent {
   ProtocolEvent();
   virtual ~ProtocolEvent();
 
+  // Need a virtual copy constructor to copy this object across threads.
+  virtual std::unique_ptr<ProtocolEvent> Clone() const = 0;
+
+  // Assembles the data exposed through the ProtocolEvent's interface into a
+  // single DictionaryValue.
+  std::unique_ptr<base::DictionaryValue> ToValue(bool include_specifics) const;
+
+  // Returns the time when the request was sent or received.
+  base::Time GetTimestampForTesting() const;
+
+ private:
   // Returns the time when the request was sent or received.
   virtual base::Time GetTimestamp() const = 0;
 
@@ -46,15 +57,6 @@ class ProtocolEvent {
   // this event.
   virtual std::unique_ptr<base::DictionaryValue> GetProtoMessage(
       bool include_specifics) const = 0;
-
-  // Need a virtual copy contructor to copy this object across threads.
-  virtual std::unique_ptr<ProtocolEvent> Clone() const = 0;
-
-  // A static function that assembles the data exposed through the
-  // ProtocolEvent's interface into a single DictionaryValue.
-  static std::unique_ptr<base::DictionaryValue> ToValue(
-      const ProtocolEvent& event,
-      bool include_specifics);
 };
 
 }  // namespace syncer

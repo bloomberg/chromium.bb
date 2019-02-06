@@ -16,6 +16,10 @@ ClearServerDataRequestEvent::ClearServerDataRequestEvent(
 
 ClearServerDataRequestEvent::~ClearServerDataRequestEvent() {}
 
+std::unique_ptr<ProtocolEvent> ClearServerDataRequestEvent::Clone() const {
+  return std::make_unique<ClearServerDataRequestEvent>(timestamp_, request_);
+}
+
 base::Time ClearServerDataRequestEvent::GetTimestamp() const {
   return timestamp_;
 }
@@ -30,13 +34,7 @@ std::string ClearServerDataRequestEvent::GetDetails() const {
 
 std::unique_ptr<base::DictionaryValue>
 ClearServerDataRequestEvent::GetProtoMessage(bool include_specifics) const {
-  return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, include_specifics));
-}
-
-std::unique_ptr<ProtocolEvent> ClearServerDataRequestEvent::Clone() const {
-  return std::unique_ptr<ProtocolEvent>(
-      new ClearServerDataRequestEvent(timestamp_, request_));
+  return ClientToServerMessageToValue(request_, include_specifics);
 }
 
 }  // namespace syncer
