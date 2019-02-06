@@ -25,7 +25,7 @@
 .hidden abi_test_trampoline
 .align	16
 abi_test_trampoline:
-.Labi_test_trampoline_begin:
+.Labi_test_trampoline_seh_begin:
 .cfi_startproc	
 
 
@@ -38,27 +38,27 @@ abi_test_trampoline:
 
 	subq	$120,%rsp
 .cfi_adjust_cfa_offset	120
-.Labi_test_trampoline_prolog_alloc:
+.Labi_test_trampoline_seh_prolog_alloc:
 	movq	%r8,48(%rsp)
 	movq	%rbx,64(%rsp)
 .cfi_offset	rbx, -64
-.Labi_test_trampoline_prolog_rbx:
+.Labi_test_trampoline_seh_prolog_rbx:
 	movq	%rbp,72(%rsp)
 .cfi_offset	rbp, -56
-.Labi_test_trampoline_prolog_rbp:
+.Labi_test_trampoline_seh_prolog_rbp:
 	movq	%r12,80(%rsp)
 .cfi_offset	r12, -48
-.Labi_test_trampoline_prolog_r12:
+.Labi_test_trampoline_seh_prolog_r12:
 	movq	%r13,88(%rsp)
 .cfi_offset	r13, -40
-.Labi_test_trampoline_prolog_r13:
+.Labi_test_trampoline_seh_prolog_r13:
 	movq	%r14,96(%rsp)
 .cfi_offset	r14, -32
-.Labi_test_trampoline_prolog_r14:
+.Labi_test_trampoline_seh_prolog_r14:
 	movq	%r15,104(%rsp)
 .cfi_offset	r15, -24
-.Labi_test_trampoline_prolog_r15:
-.Labi_test_trampoline_prolog_end:
+.Labi_test_trampoline_seh_prolog_r15:
+.Labi_test_trampoline_seh_prolog_end:
 	movq	0(%rsi),%rbx
 	movq	8(%rsi),%rbp
 	movq	16(%rsi),%r12
@@ -182,7 +182,7 @@ abi_test_unwind_stop:
 
 	.byte	0xf3,0xc3
 .cfi_endproc	
-.Labi_test_trampoline_end:
+.Labi_test_trampoline_seh_end:
 .size	abi_test_trampoline,.-abi_test_trampoline
 .type	abi_test_clobber_rax, @function
 .globl	abi_test_clobber_rax
@@ -441,13 +441,20 @@ abi_test_clobber_xmm15:
 .align	16
 abi_test_bad_unwind_wrong_register:
 .cfi_startproc	
+.Labi_test_bad_unwind_wrong_register_seh_begin:
 	pushq	%r12
 .cfi_adjust_cfa_offset	8
 .cfi_offset	%r13,-16
+.Labi_test_bad_unwind_wrong_register_seh_push_r13:
+
+
+
+	nop
 	popq	%r12
 .cfi_adjust_cfa_offset	-8
 .cfi_restore	%r12
 	.byte	0xf3,0xc3
+.Labi_test_bad_unwind_wrong_register_seh_end:
 .cfi_endproc	
 .size	abi_test_bad_unwind_wrong_register,.-abi_test_bad_unwind_wrong_register
 
@@ -460,15 +467,18 @@ abi_test_bad_unwind_wrong_register:
 .align	16
 abi_test_bad_unwind_temporary:
 .cfi_startproc	
+.Labi_test_bad_unwind_temporary_seh_begin:
 	pushq	%r12
 .cfi_adjust_cfa_offset	8
 .cfi_offset	%r12,-16
+.Labi_test_bad_unwind_temporary_seh_push_r12:
 
-	incq	%r12
-	movq	%r12,(%rsp)
+	movq	%r12,%rax
+	incq	%rax
+	movq	%rax,(%rsp)
 
 
-	decq	%r12
+
 	movq	%r12,(%rsp)
 
 
@@ -476,6 +486,7 @@ abi_test_bad_unwind_temporary:
 .cfi_adjust_cfa_offset	-8
 .cfi_restore	%r12
 	.byte	0xf3,0xc3
+.Labi_test_bad_unwind_temporary_seh_end:
 .cfi_endproc	
 .size	abi_test_bad_unwind_temporary,.-abi_test_bad_unwind_temporary
 
