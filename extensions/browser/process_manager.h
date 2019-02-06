@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -25,6 +26,8 @@
 #include "extensions/browser/activity.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/service_worker/worker_id.h"
+#include "extensions/browser/service_worker/worker_id_set.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
 
@@ -66,6 +69,12 @@ class ProcessManager : public KeyedService,
                                content::RenderFrameHost* render_frame_host,
                                const Extension* extension);
   void UnregisterRenderFrameHost(content::RenderFrameHost* render_frame_host);
+
+  // Registers or unregisters a running worker state to this process manager.
+  // Note: This does not create any Service Workers.
+  // TODO(lazyboy): Hook this up to ServiceWorkerTaskQueue class.
+  void RegisterServiceWorker(const WorkerId& worker_id);
+  void UnregisterServiceWorker(const WorkerId& worker_id);
 
   // Returns the SiteInstance that the given URL belongs to.
   // TODO(aa): This only returns correct results for extensions and packaged
@@ -137,6 +146,21 @@ class ProcessManager : public KeyedService,
                                    Activity::Type activity_type,
                                    const std::string& extra_data);
 
+  // Methods to increment or decrement the ref-count of a specified service
+  // worker with id |worker_id|.
+  // The increment method returns the guid that needs to be passed to the
+  // decrement method.
+  std::string IncrementServiceWorkerKeepaliveCount(
+      const WorkerId& worker_id,
+      Activity::Type activity_type,
+      const std::string& extra_data);
+  // Decrements the ref-count of the specified worker with |worker_id| that
+  // had its ref-count incremented with |request_uuid|.
+  void DecrementServiceWorkerKeepaliveCount(const WorkerId& worker_id,
+                                            const std::string& request_uuid,
+                                            Activity::Type activity_type,
+                                            const std::string& extra_data);
+
   using ActivitiesMultisetPair = std::pair<Activity::Type, std::string>;
   using ActivitiesMultiset = std::multiset<ActivitiesMultisetPair>;
 
@@ -197,6 +221,15 @@ class ProcessManager : public KeyedService,
   const ExtensionHostSet& background_hosts() const {
     return background_hosts_;
   }
+
+  // Returns true if this ProcessManager has registered any worker with id
+  // |worker_id|.
+  bool HasServiceWorker(const WorkerId& worker_id) const;
+
+  // Returns all the Service Worker infos that is active in the given render
+  // process for the extension with |extension_id|.
+  std::vector<WorkerId> GetServiceWorkers(const ExtensionId& extension_id,
+                                          int render_process_id) const;
 
   bool startup_background_hosts_created_for_test() const {
     return startup_background_hosts_created_;
@@ -306,6 +339,13 @@ class ProcessManager : public KeyedService,
   // extensions. We also keep a cache of the host's view type, because that
   // information is not accessible at registration/deregistration time.
   ExtensionRenderFrames all_extension_frames_;
+
+  // TaskRunner for interacting with ServiceWorkerContexts.
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+
+  // Contains all active extension Service Worker information for all
+  // extensions.
+  WorkerIdSet all_extension_workers_;
 
   BackgroundPageDataMap background_page_data_;
 
