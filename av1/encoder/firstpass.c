@@ -490,7 +490,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       &cpi->td.pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2]->none;
   int i;
 
-  int recon_yoffset, recon_uvoffset;
+  int recon_yoffset, src_yoffset, recon_uvoffset;
   int64_t intra_error = 0;
   int64_t frame_avg_wavelet_energy = 0;
   int64_t coded_error = 0;
@@ -510,7 +510,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   int sum_in_vectors = 0;
   MV lastmv = kZeroMv;
   TWO_PASS *twopass = &cpi->twopass;
-  int recon_y_stride, recon_uv_stride, uv_mb_height;
+  int recon_y_stride, src_y_stride, recon_uv_stride, uv_mb_height;
 
   const YV12_BUFFER_CONFIG *const lst_yv12 =
       get_ref_frame_yv12_buf(cm, LAST_FRAME);
@@ -584,7 +584,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   // Tiling is ignored in the first pass.
   av1_tile_init(&tile, cm, 0, 0);
-
+  src_y_stride = cpi->source->y_stride;
   recon_y_stride = new_yv12->y_stride;
   recon_uv_stride = new_yv12->uv_stride;
   uv_mb_height = 16 >> (new_yv12->y_height > new_yv12->uv_height);
@@ -595,6 +595,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     // Reset above block coeffs.
     xd->up_available = (mb_row != 0);
     recon_yoffset = (mb_row * recon_y_stride * 16);
+    src_yoffset = (mb_row * src_y_stride * 16);
     recon_uvoffset = (mb_row * recon_uv_stride * uv_mb_height);
 
     // Set up limit values for motion vectors to prevent them extending
@@ -734,7 +735,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
         // frame as the reference. Skip the further motion search on
         // reconstructed frame if this error is small.
         unscaled_last_source_buf_2d.buf =
-            cpi->unscaled_last_source->y_buffer + recon_yoffset;
+            cpi->unscaled_last_source->y_buffer + src_yoffset;
         unscaled_last_source_buf_2d.stride =
             cpi->unscaled_last_source->y_stride;
         if (is_cur_buf_hbd(xd)) {
@@ -947,6 +948,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       x->plane[2].src.buf += uv_mb_height;
 
       recon_yoffset += 16;
+      src_yoffset += 16;
       recon_uvoffset += uv_mb_height;
     }
     // Adjust to the next row of MBs.
