@@ -26,6 +26,7 @@
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/browser/service_worker/test_service_worker_observer.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -1240,8 +1241,7 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
       update_helper->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
   update_helper->state_change_log_.clear();
-  scoped_refptr<base::TestSimpleTaskRunner> runner(
-      new base::TestSimpleTaskRunner());
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   registration->SetTaskRunnerForTest(runner);
 
   // Run the update job.
@@ -1256,20 +1256,19 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     EXPECT_EQ(first_version.get(), registration->active_version());
     // The new worker is installed but not yet to be activated.
+    scoped_refptr<ServiceWorkerVersion> new_version =
+        registration->waiting_version();
     EXPECT_EQ(2u, update_helper->attribute_change_log_.size());
     EXPECT_TRUE(RequestTermination(helper_.get(), first_version));
-    base::RunLoop().RunUntilIdle();
 
-    // RequestTermination() and following RunUntilIdle() terminated the service
-    // worker and resulted in calling ServiceWorkerRegistration::OnNoWork(). It
-    // started the activation procedure, and posted a delayed task to activate
-    // the worker. RunPendingTasks() runs the posted activation task.
-    EXPECT_TRUE(runner->HasPendingTask());
-    runner->RunPendingTasks();
-
-    // Make sure that all tasks for activation finish.
-    base::RunLoop().RunUntilIdle();
+    TestServiceWorkerObserver observer(helper_->context_wrapper());
+    observer.RunUntilActivated(new_version.get(), runner);
   }
+
+  // Pump the loop again. This ensures |update_helper| observes all
+  // the status changes, since RunUntilActivated() only ensured
+  // ServiceWorkerJobTest did.
+  base::RunLoop().RunUntilIdle();
 
   // Verify results.
   ASSERT_TRUE(registration->active_version());
@@ -1362,6 +1361,8 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   options.scope = GURL("https://www.example.com/one/");
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
 
   // Queue an Update. When this runs, it will use the waiting version's script.
   job_coordinator()->Update(registration.get(), false);
@@ -1382,13 +1383,15 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
     // Still waiting, but the waiting version isn't |version| since another
     // ServiceWorkerVersion is created during the update job and the job wipes
     // out the older waiting version.
+    ServiceWorkerVersion* waiting_version = registration->waiting_version();
     EXPECT_TRUE(registration->active_version());
-    EXPECT_NE(version.get(), registration->waiting_version());
-    EXPECT_NE(nullptr, registration->waiting_version());
+    EXPECT_TRUE(waiting_version);
+    EXPECT_NE(version.get(), waiting_version);
 
     EXPECT_TRUE(
         RequestTermination(helper_.get(), registration->active_version()));
-    base::RunLoop().RunUntilIdle();
+    TestServiceWorkerObserver observer(helper_->context_wrapper());
+    observer.RunUntilActivated(waiting_version, runner);
   }
 
   // The update job should have created a new version with the new script,
@@ -1466,8 +1469,7 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(script1, options);
-  scoped_refptr<base::TestSimpleTaskRunner> runner(
-      new base::TestSimpleTaskRunner());
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
@@ -1482,7 +1484,6 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
 
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_EQ(old_version, registration->active_version());
-
   scoped_refptr<ServiceWorkerVersion> new_version =
       registration->waiting_version();
 
@@ -1492,23 +1493,21 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
+  // Make the old version eligible for eviction.
   old_version->RemoveControllee(host->client_uuid());
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     EXPECT_TRUE(RequestTermination(helper_.get(), old_version));
-  base::RunLoop().RunUntilIdle();
 
+  // Wait for activated.
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(new_version.get(), runner);
+
+  // Verify state after the new version is activated.
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_FALSE(registration->is_uninstalled());
-
-  // Verify the new version is activated.
   EXPECT_EQ(nullptr, registration->installing_version());
   EXPECT_EQ(nullptr, registration->waiting_version());
   EXPECT_EQ(new_version, registration->active_version());
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
-
-  runner->RunUntilIdle();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
 
@@ -1571,8 +1570,7 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(script1, options);
-  scoped_refptr<base::TestSimpleTaskRunner> runner(
-      new base::TestSimpleTaskRunner());
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
@@ -1600,20 +1598,17 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   old_version->RemoveControllee(host->client_uuid());
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     EXPECT_TRUE(RequestTermination(helper_.get(), old_version));
-  base::RunLoop().RunUntilIdle();
 
+  // Wait for activated.
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(new_version.get(), runner);
+
+  // Verify state after the new version is activated.
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_FALSE(registration->is_uninstalled());
-
-  // Verify the new version is activated.
   EXPECT_EQ(nullptr, registration->installing_version());
   EXPECT_EQ(nullptr, registration->waiting_version());
   EXPECT_EQ(new_version, registration->active_version());
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
-
-  runner->RunUntilIdle();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
 
@@ -1626,8 +1621,7 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(script1, options);
-  scoped_refptr<base::TestSimpleTaskRunner> runner(
-      new base::TestSimpleTaskRunner());
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
@@ -1659,20 +1653,17 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   first_version->RemoveControllee(host->client_uuid());
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     EXPECT_TRUE(RequestTermination(helper_.get(), first_version));
-  base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(registration->is_uninstalling());
-  EXPECT_FALSE(registration->is_uninstalled());
+  // Wait for activated.
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(third_version.get(), runner);
 
   // Verify the new version is activated.
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
   EXPECT_EQ(nullptr, registration->installing_version());
   EXPECT_EQ(nullptr, registration->waiting_version());
   EXPECT_EQ(third_version, registration->active_version());
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, third_version->status());
-
-  runner->RunUntilIdle();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, third_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
 }
 
@@ -1939,8 +1930,7 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(script, options);
-  scoped_refptr<base::TestSimpleTaskRunner> runner(
-      new base::TestSimpleTaskRunner());
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee.
@@ -1975,9 +1965,11 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
     // RequestTermination() is called.
     EXPECT_EQ(first_version.get(), registration->active_version());
     EXPECT_TRUE(RequestTermination(update_helper, first_version));
-    base::RunLoop().RunUntilIdle();
   }
 
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilStatusChange(new_version.get(),
+                                ServiceWorkerVersion::ACTIVATING);
   EXPECT_EQ(new_version.get(), registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
 
