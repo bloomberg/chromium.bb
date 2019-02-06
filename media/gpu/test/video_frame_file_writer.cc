@@ -123,7 +123,7 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
   {
     base::AutoLock auto_lock(frame_writer_lock_);
     filename = output_folder_.Append("frame_.png")
-                   .InsertBeforeExtension(base::IntToString(frame_index));
+                   .InsertBeforeExtension(base::NumberToString(frame_index));
   }
 
   // Write the PNG data to file.

@@ -1478,7 +1478,7 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(
       WebString::FromUTF8("Content-Length"),
-      WebString::FromUTF8(base::Int64ToString(kDataSize / 2)));
+      WebString::FromUTF8(base::NumberToString(kDataSize / 2)));
   response.SetExpectedContentLength(kDataSize / 2);
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize / 2));

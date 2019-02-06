@@ -121,7 +121,7 @@ class CdmAdapterTestBase : public testing::Test,
   CdmAdapterTestBase() {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
-        base::IntToString(GetCdmInterfaceVersion()));
+        base::NumberToString(GetCdmInterfaceVersion()));
   }
 
   ~CdmAdapterTestBase() override { CdmModule::ResetInstanceForTesting(); }

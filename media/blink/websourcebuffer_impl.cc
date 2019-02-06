@@ -226,7 +226,7 @@ void WebSourceBufferImpl::InitSegmentReceived(
     trackInfo.track_type = mediaTrackTypeToBlink(track->type());
     trackInfo.id = blink::WebString::FromUTF8(track->id());
     trackInfo.byte_stream_track_id = blink::WebString::FromUTF8(
-        base::UintToString(track->bytestream_track_id()));
+        base::NumberToString(track->bytestream_track_id()));
     trackInfo.kind = blink::WebString::FromUTF8(track->kind());
     trackInfo.label = blink::WebString::FromUTF8(track->label());
     trackInfo.language = blink::WebString::FromUTF8(track->language());

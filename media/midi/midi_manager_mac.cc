@@ -19,7 +19,7 @@
 #include "media/midi/midi_service.h"
 #include "media/midi/task_service.h"
 
-using base::IntToString;
+using base::NumberToString;
 using base::SysCFStringRefToUTF8;
 using midi::mojom::PortState;
 using midi::mojom::Result;
@@ -72,7 +72,7 @@ mojom::PortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   result = MIDIObjectGetIntegerProperty(
       endpoint, kMIDIPropertyDriverVersion, &version_number);
   if (result == noErr) {
-    version = IntToString(version_number);
+    version = NumberToString(version_number);
   } else {
     // kMIDIPropertyDriverVersion is not supported in IAC driver providing
     // endpoints, and the result will be kMIDIUnknownProperty (-10835).
@@ -85,7 +85,7 @@ mojom::PortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   result = MIDIObjectGetIntegerProperty(
       endpoint, kMIDIPropertyUniqueID, &id_number);
   if (result == noErr) {
-    id = IntToString(id_number);
+    id = NumberToString(id_number);
   } else {
     // On connecting some devices, e.g., nano KONTROL2, unknown endpoints
     // appear and disappear quickly and they fail on queries.

@@ -44,7 +44,7 @@ const int kNumConfigs = 4;
 const int kNumBuffersInOneConfig = 5;
 
 static std::string GetDecoderName(int i) {
-  return std::string("VideoDecoder") + base::IntToString(i);
+  return std::string("VideoDecoder") + base::NumberToString(i);
 }
 
 struct VideoDecoderStreamTestParams {

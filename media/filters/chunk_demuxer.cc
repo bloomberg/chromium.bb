@@ -1337,7 +1337,7 @@ void ChunkDemuxer::OnSourceInitDone(
 // static
 MediaTrack::Id ChunkDemuxer::GenerateMediaTrackId() {
   static unsigned g_track_count = 0;
-  return base::UintToString(++g_track_count);
+  return base::NumberToString(++g_track_count);
 }
 
 ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(

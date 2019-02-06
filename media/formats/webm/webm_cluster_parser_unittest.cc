@@ -43,7 +43,7 @@ typedef WebMTracksParser::TextTracks TextTracks;
 MATCHER_P(OpusPacketDurationTooHigh, actual_duration_ms, "") {
   return CONTAINS_STRING(
       arg, "Warning, demuxed Opus packet with encoded duration: " +
-               base::IntToString(actual_duration_ms) +
+               base::NumberToString(static_cast<int64_t>(actual_duration_ms)) +
                "ms. Should be no greater than 120ms.");
 }
 
@@ -52,9 +52,11 @@ MATCHER_P2(WebMBlockDurationMismatchesOpusDuration,
            opus_duration_ms,
            "") {
   return CONTAINS_STRING(
-      arg, "BlockDuration (" + base::IntToString(block_duration_ms) +
+      arg, "BlockDuration (" +
+               base::NumberToString(static_cast<int64_t>(block_duration_ms)) +
                "ms) differs significantly from encoded duration (" +
-               base::IntToString(opus_duration_ms) + "ms).");
+               base::NumberToString(static_cast<int64_t>(opus_duration_ms)) +
+               "ms).");
 }
 
 namespace {

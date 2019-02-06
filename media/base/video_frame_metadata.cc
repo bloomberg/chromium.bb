@@ -17,7 +17,7 @@ namespace {
 // Map enum key to internal std::string key used by base::DictionaryValue.
 inline std::string ToInternalKey(VideoFrameMetadata::Key key) {
   DCHECK_LT(key, VideoFrameMetadata::NUM_KEYS);
-  return base::IntToString(static_cast<int>(key));
+  return base::NumberToString(static_cast<int>(key));
 }
 
 }  // namespace

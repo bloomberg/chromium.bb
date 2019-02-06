@@ -266,7 +266,7 @@ bool WebMTracksParser::OnListEnd(int id) {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring text track " << track_num_;
         ignored_tracks_.insert(track_num_);
       } else {
-        std::string track_num = base::Int64ToString(track_num_);
+        std::string track_num = base::NumberToString(track_num_);
         text_tracks_[track_num_] = TextTrackConfig(
             text_track_kind, track_name_, track_language_, track_num);
       }
