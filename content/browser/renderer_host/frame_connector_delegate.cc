@@ -76,6 +76,11 @@ bool FrameConnectorDelegate::TransformPointToCoordSpaceForView(
   return false;
 }
 
+bool FrameConnectorDelegate::BubbleScrollEvent(
+    const blink::WebGestureEvent& event) {
+  return false;
+}
+
 bool FrameConnectorDelegate::HasFocus() {
   return false;
 }
