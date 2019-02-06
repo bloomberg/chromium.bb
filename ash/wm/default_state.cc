@@ -378,7 +378,7 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
         screen_util::GetMaximizedWindowBoundsInParent(window_state->window()));
     return true;
   }
-  if (window_state->IsFullscreen()) {
+  if (window_state->IsFullscreen() || window_state->IsPinned()) {
     window_state->SetBoundsDirect(
         screen_util::GetDisplayBoundsInParent(window_state->window()));
     return true;
