@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_decoder.h"
@@ -74,8 +73,6 @@ class MEDIA_EXPORT Dav1dVideoDecoder : public VideoDecoder {
   // The allocated decoder; null before Initialize() and anytime after
   // CloseDecoder().
   Dav1dContext* dav1d_decoder_ = nullptr;
-
-  base::circular_deque<base::TimeDelta> timestamps_;
 
   DISALLOW_COPY_AND_ASSIGN(Dav1dVideoDecoder);
 };

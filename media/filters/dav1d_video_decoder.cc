@@ -188,7 +188,6 @@ void Dav1dVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = DecoderState::kNormal;
   dav1d_flush(dav1d_decoder_);
-  timestamps_.clear();
   base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
 }
 
@@ -211,8 +210,7 @@ bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
                         &ReleaseDecoderBuffer, buffer.get()) < 0) {
       return false;
     }
-
-    timestamps_.push_back(buffer->timestamp());
+    input_buffer->m.timestamp = buffer->timestamp().InMicroseconds();
     buffer->AddRef();
   }
 
@@ -283,16 +281,14 @@ scoped_refptr<VideoFrame> Dav1dVideoDecoder::CopyImageToVideoFrame(
   if (pixel_format == PIXEL_FORMAT_UNKNOWN)
     return nullptr;
 
-  const auto timestamp = timestamps_.front();
-  timestamps_.pop_front();
-
   // Since we're making a copy, only copy the visible area.
   const gfx::Size visible_size(pic->p.w, pic->p.h);
   return VideoFrame::WrapExternalYuvData(
       pixel_format, visible_size, gfx::Rect(visible_size),
       config_.natural_size(), pic->stride[0], pic->stride[1], pic->stride[1],
       static_cast<uint8_t*>(pic->data[0]), static_cast<uint8_t*>(pic->data[1]),
-      static_cast<uint8_t*>(pic->data[2]), timestamp);
+      static_cast<uint8_t*>(pic->data[2]),
+      base::TimeDelta::FromMicroseconds(pic->m.timestamp));
 }
 
 }  // namespace media
