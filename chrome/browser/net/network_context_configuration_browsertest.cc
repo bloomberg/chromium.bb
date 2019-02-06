@@ -1886,76 +1886,56 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
 
+#if defined(OS_CHROMEOS)
+// There's an extra network change event on ChromeOS, likely from
+// NetworkChangeNotifierChromeos that makes these tests flaky on ChromeOS when
+// there's an out of process network stack.
+//
+// TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.
+#define TEST_CASES(network_context_type) \
+  TestCase({NetworkServiceState::kDisabled, network_context_type})
+#else  // !defined(OS_CHROMEOS)
+#define TEST_CASES(network_context_type)                               \
+  TestCase({NetworkServiceState::kDisabled, network_context_type}),    \
+      TestCase({NetworkServiceState::kEnabled, network_context_type}), \
+      TestCase({NetworkServiceState::kRestarted, network_context_type})
+#endif  // !defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#define INSTANTIATE_EXTENSION_TESTS(TestFixture)                          \
-  INSTANTIATE_TEST_SUITE_P(                                               \
-      OnDiskApp, TestFixture,                                             \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
-                                  NetworkContextType::kOnDiskApp}),       \
-                        TestCase({NetworkServiceState::kEnabled,          \
-                                  NetworkContextType::kOnDiskApp}),       \
-                        TestCase({NetworkServiceState::kRestarted,        \
-                                  NetworkContextType::kOnDiskApp})));     \
-                                                                          \
-  INSTANTIATE_TEST_SUITE_P(                                               \
-      InMemoryApp, TestFixture,                                           \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
-                                  NetworkContextType::kInMemoryApp}),     \
-                        TestCase({NetworkServiceState::kEnabled,          \
-                                  NetworkContextType::kInMemoryApp}),     \
-                        TestCase({NetworkServiceState::kRestarted,        \
-                                  NetworkContextType::kInMemoryApp})));   \
-                                                                          \
-  INSTANTIATE_TEST_SUITE_P(                                               \
-      OnDiskAppWithIncognitoProfile, TestFixture,                         \
-      ::testing::Values(                                                  \
-          TestCase({NetworkServiceState::kDisabled,                       \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
-          TestCase({NetworkServiceState::kEnabled,                        \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
-          TestCase({NetworkServiceState::kRestarted,                      \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile})));
+#define INSTANTIATE_EXTENSION_TESTS(TestFixture)                        \
+  INSTANTIATE_TEST_SUITE_P(                                             \
+      OnDiskApp, TestFixture,                                           \
+      ::testing::Values(TEST_CASES(NetworkContextType::kOnDiskApp)));   \
+                                                                        \
+  INSTANTIATE_TEST_SUITE_P(                                             \
+      InMemoryApp, TestFixture,                                         \
+      ::testing::Values(TEST_CASES(NetworkContextType::kInMemoryApp))); \
+                                                                        \
+  INSTANTIATE_TEST_SUITE_P(                                             \
+      OnDiskAppWithIncognitoProfile, TestFixture,                       \
+      ::testing::Values(                                                \
+          TEST_CASES(NetworkContextType::kOnDiskAppWithIncognitoProfile)));
 #else  // !BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)
 #endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
 
-#define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
-  INSTANTIATE_EXTENSION_TESTS(TestFixture)                                 \
-  INSTANTIATE_TEST_SUITE_P(                                                \
-      SystemNetworkContext, TestFixture,                                   \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSystem}),           \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kSystem}),           \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kSystem})));         \
-                                                                           \
-  INSTANTIATE_TEST_SUITE_P(                                                \
-      SafeBrowsingNetworkContext, TestFixture,                             \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSafeBrowsing}),     \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kSafeBrowsing}),     \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kSafeBrowsing})));   \
-                                                                           \
-  INSTANTIATE_TEST_SUITE_P(                                                \
-      ProfileMainNetworkContext, TestFixture,                              \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kProfile}),          \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kProfile}),          \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kProfile})));        \
-                                                                           \
-  INSTANTIATE_TEST_SUITE_P(                                                \
-      IncognitoProfileMainNetworkContext, TestFixture,                     \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kIncognitoProfile}), \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kIncognitoProfile}), \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kIncognitoProfile})));
+#define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)             \
+  INSTANTIATE_EXTENSION_TESTS(TestFixture)                               \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      SystemNetworkContext, TestFixture,                                 \
+      ::testing::Values(TEST_CASES(NetworkContextType::kSystem)));       \
+                                                                         \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      SafeBrowsingNetworkContext, TestFixture,                           \
+      ::testing::Values(TEST_CASES(NetworkContextType::kSafeBrowsing))); \
+                                                                         \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      ProfileMainNetworkContext, TestFixture,                            \
+      ::testing::Values(TEST_CASES(NetworkContextType::kProfile)));      \
+                                                                         \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      IncognitoProfileMainNetworkContext, TestFixture,                   \
+      ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile)));
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
