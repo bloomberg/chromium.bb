@@ -40,11 +40,12 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
   base::Time GetHighAnnoyanceDeadline() override;
 
- private:
-  friend class base::NoDestructor<UpgradeDetectorChromeos>;
-
+ protected:
   UpgradeDetectorChromeos(const base::Clock* clock,
                           const base::TickClock* tick_clock);
+
+ private:
+  friend class base::NoDestructor<UpgradeDetectorChromeos>;
 
   // Returns the threshold to reach high annoyance level.
   static base::TimeDelta DetermineHighThreshold();
