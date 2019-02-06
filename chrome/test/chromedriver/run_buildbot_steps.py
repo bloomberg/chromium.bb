@@ -5,26 +5,16 @@
 
 """Runs all the buildbot steps for ChromeDriver except for update/compile."""
 
-import bisect
-import csv
-import datetime
 import glob
 import json
 import optparse
 import os
-import platform as platform_module
-import re
-import shutil
-import StringIO
 import sys
 import tempfile
 import time
-import urllib2
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-GS_CHROMEDRIVER_BUCKET = 'gs://chromedriver'
 GS_CHROMEDRIVER_DATA_BUCKET = 'gs://chromedriver-data'
-GS_CHROMEDRIVER_RELEASE_URL = 'http://chromedriver.storage.googleapis.com'
 GS_CONTINUOUS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/continuous'
 GS_PREBUILTS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/prebuilts'
 GS_SERVER_LOGS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/server_logs'
@@ -164,38 +154,6 @@ def _GetSupportedChromeVersions():
   return (chrome_min_version, chrome_max_version)
 
 
-def _CommitPositionState(test_results_log, commit_position):
-  """Check the state of tests at a given commit position.
-
-  Considers tests as having passed at a commit position if they passed at
-  revisions both before and after.
-
-  Args:
-    test_results_log: A test results log dictionary from _GetTestResultsLog().
-    commit_position: The commit position to check at.
-
-  Returns:
-    'passed', 'failed', or 'unknown'
-  """
-  assert isinstance(commit_position, int), 'The commit position must be an int'
-  keys = sorted(test_results_log.keys())
-  # Return passed if the exact commit position passed on Android.
-  if commit_position in test_results_log:
-    return 'passed' if test_results_log[commit_position] else 'failed'
-  # Tests were not run on this exact commit position on Android.
-  index = bisect.bisect_right(keys, commit_position)
-  # Tests have not yet run on Android at or above this commit position.
-  if index == len(test_results_log):
-    return 'unknown'
-  # No log exists for any prior commit position, assume it failed.
-  if index == 0:
-    return 'failed'
-  # Return passed if the commit position on both sides passed.
-  if test_results_log[keys[index]] and test_results_log[keys[index - 1]]:
-    return 'passed'
-  return 'failed'
-
-
 def _ArchiveGoodBuild(platform, commit_position):
   """Archive chromedriver binary if the build is green."""
   assert platform != 'android'
@@ -229,119 +187,6 @@ def _ArchiveGoodBuild(platform, commit_position):
   if slave_utils.GSUtilCopy(latest_file, latest_url, mimetype='text/plain'):
     util.MarkBuildStepError()
   os.remove(latest_file)
-
-
-def _WasReleased(version, platform):
-  """Check if the specified version is released for the given platform."""
-  result, _ = slave_utils.GSUtilListBucket(
-      '%s/%s/chromedriver_%s.zip' % (GS_CHROMEDRIVER_BUCKET, version, platform),
-      [])
-  return result == 0
-
-
-def _MaybeRelease(platform):
-  """Releases a release candidate if conditions are right."""
-  assert platform != 'android'
-
-  version = _GetVersion()
-
-  # Check if the current version has already been released.
-  if _WasReleased(version, platform):
-    return
-
-  # Fetch Android test results.
-  android_test_results = _GetTestResultsLog('android')
-
-  # Fetch release candidates.
-  result, output = slave_utils.GSUtilListBucket(
-      '%s/chromedriver_%s_%s*' % (
-          GS_CONTINUOUS_URL, platform, version),
-      [])
-  assert result == 0 and output, 'No release candidates found'
-  candidate_pattern = re.compile(
-      r'.*/chromedriver_%s_%s\.(\d+)\.zip$' % (platform, version))
-  candidates = []
-  for line in output.strip().split('\n'):
-    result = candidate_pattern.match(line)
-    if not result:
-      print 'Ignored line "%s"' % line
-      continue
-    candidates.append(int(result.group(1)))
-
-  # Release the latest candidate build that passed Android, if any.
-  # In this way, if a hot fix is needed, we can delete the release from
-  # the chromedriver bucket instead of bumping up the release version number.
-  candidates.sort(reverse=True)
-  for commit_position in candidates:
-    # Due to Android test bot migration (https://crbug.com/790300),
-    # temporarily disabling checking the Android test results.
-    # Android tests are being verified manually.
-
-    #android_result = _CommitPositionState(android_test_results, commit_position)
-    android_result = 'passed'
-    if android_result == 'failed':
-      print 'Android tests did not pass at commit position', commit_position
-    elif android_result == 'passed':
-      print 'Android tests passed at commit position', commit_position
-      candidate = 'chromedriver_%s_%s.%s.zip' % (
-          platform, version, commit_position)
-      _Release('%s/%s' % (GS_CONTINUOUS_URL, candidate), version, platform)
-      break
-    else:
-      print 'Android tests have not run at a commit position as recent as', \
-          commit_position
-
-
-def _Release(build, version, platform):
-  """Releases the given candidate build."""
-  release_name = 'chromedriver_%s.zip' % platform
-  util.MarkBuildStepStart('releasing %s' % release_name)
-  temp_dir = util.MakeTempDir()
-  slave_utils.GSUtilCopy(build, temp_dir)
-  zip_path = os.path.join(temp_dir, os.path.basename(build))
-
-  if util.IsLinux():
-    util.Unzip(zip_path, temp_dir)
-    server_path = os.path.join(temp_dir, 'chromedriver')
-    util.RunCommand(['strip', server_path])
-    zip_path = util.Zip(server_path)
-
-  slave_utils.GSUtilCopy(
-      zip_path, '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, version, release_name))
-
-  _MaybeUpdateLatestRelease(version)
-
-
-def _GetWebPageContent(url):
-  """Return the content of the web page specified by the given url."""
-  return urllib2.urlopen(url).read()
-
-
-def _MaybeUpdateLatestRelease(version):
-  """Update the file LATEST_RELEASE with the latest release version number."""
-  latest_release_fname = 'LATEST_RELEASE'
-  latest_release_url = '%s/%s' % (GS_CHROMEDRIVER_BUCKET, latest_release_fname)
-
-  # Check if LATEST_RELEASE is up to date.
-  latest_released_version = _GetWebPageContent(
-      '%s/%s' % (GS_CHROMEDRIVER_RELEASE_URL, latest_release_fname))
-  if version == latest_released_version:
-    return
-
-  # Check if chromedriver was released on all supported platforms.
-  supported_platforms = ['linux64', 'mac64', 'win32']
-  for platform in supported_platforms:
-    if not _WasReleased(version, platform):
-      return
-
-  util.MarkBuildStepStart('updating LATEST_RELEASE to %s' % version)
-
-  temp_latest_release_fname = tempfile.mkstemp()[1]
-  with open(temp_latest_release_fname, 'w') as f:
-    f.write(version)
-  if slave_utils.GSUtilCopy(temp_latest_release_fname, latest_release_url,
-                            mimetype='text/plain'):
-    util.MarkBuildStepError()
 
 
 def _WaitForLatestSnapshot(commit_position):
@@ -445,7 +290,6 @@ def main():
       _UpdateTestResultsLog(platform, commit_position, passed)
   elif passed:
     _ArchiveGoodBuild(platform, commit_position)
-    _MaybeRelease(platform)
 
   if not passed:
     # Make sure the build is red if there is some uncaught exception during
