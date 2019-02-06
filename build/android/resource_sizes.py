@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Reports binary size and static initializer metrics for an APK.
+"""Reports binary size metrics for an APK.
 
 More information at //docs/speed/binary_size/metrics.md.
 """
@@ -103,8 +103,6 @@ _BASE_CHART = {
     'trace_rerun_options': [],
     'charts': {}
 }
-_DUMP_STATIC_INITIALIZERS_PATH = os.path.join(
-    host_paths.DIR_SOURCE_ROOT, 'tools', 'linux', 'dump-static-initializers.py')
 # Macro definitions look like (something, 123) when
 # enable_resource_whitelist_generation=true.
 _RC_HEADER_RE = re.compile(r'^#define (?P<name>\w+).* (?P<id>\d+)\)?$')
@@ -173,13 +171,6 @@ def _CreateSectionNameSizeMap(so_path, tool_prefix):
   return section_sizes
 
 
-def _ParseLibBuildId(so_path, tool_prefix):
-  """Returns the Build ID of the given native library."""
-  stdout = _RunReadelf(so_path, ['-n'], tool_prefix)
-  match = re.search(r'Build ID: (\w+)', stdout)
-  return match.group(1) if match else None
-
-
 def _ParseManifestAttributes(apk_path):
   # Check if the manifest specifies whether or not to extract native libs.
   skip_extract_lib = False
@@ -194,46 +185,6 @@ def _ParseManifestAttributes(apk_path):
   sdk_version = int(m.group(1), 16)
 
   return sdk_version, skip_extract_lib
-
-
-def CountStaticInitializers(so_path, tool_prefix):
-  # Mostly copied from //infra/scripts/legacy/scripts/slave/chromium/sizes.py.
-  def get_elf_section_size(readelf_stdout, section_name):
-    # Matches: .ctors PROGBITS 000000000516add0 5169dd0 000010 00 WA 0 0 8
-    match = re.search(r'\.%s.*$' % re.escape(section_name),
-                      readelf_stdout, re.MULTILINE)
-    if not match:
-      return (False, -1)
-    size_str = re.split(r'\W+', match.group(0))[5]
-    return (True, int(size_str, 16))
-
-  # Find the number of files with at least one static initializer.
-  # First determine if we're 32 or 64 bit
-  stdout = _RunReadelf(so_path, ['-h'], tool_prefix)
-  elf_class_line = re.search('Class:.*$', stdout, re.MULTILINE).group(0)
-  elf_class = re.split(r'\W+', elf_class_line)[1]
-  if elf_class == 'ELF32':
-    word_size = 4
-  else:
-    word_size = 8
-
-  # Then find the number of files with global static initializers.
-  # NOTE: this is very implementation-specific and makes assumptions
-  # about how compiler and linker implement global static initializers.
-  si_count = 0
-  stdout = _RunReadelf(so_path, ['-SW'], tool_prefix)
-  has_init_array, init_array_size = get_elf_section_size(stdout, 'init_array')
-  if has_init_array:
-    si_count = init_array_size / word_size
-  si_count = max(si_count, 0)
-  return si_count
-
-
-def GetStaticInitializers(so_path, tool_prefix):
-  output = cmd_helper.GetCmdOutput([_DUMP_STATIC_INITIALIZERS_PATH, '-d',
-                                    so_path, '-t', tool_prefix])
-  summary = re.search(r'Found \d+ static initializers in (\d+) files.', output)
-  return output.splitlines()[:-1], int(summary.group(1))
 
 
 def _NormalizeLanguagePaks(translations, normalized_apk_size, factor):
@@ -600,48 +551,6 @@ def _AnnotatePakResources(out_dir):
   return id_name_map, id_header_map
 
 
-# This method also used by //build/android/gyp/assert_static_initializers.py
-def AnalyzeStaticInitializers(apk_filename, tool_prefix, dump_sis, out_dir,
-                              ignored_libs):
-  # Static initializer counting mostly copies logic in
-  # infra/scripts/legacy/scripts/slave/chromium/sizes.py.
-  with zipfile.ZipFile(apk_filename) as z:
-    so_files = [f for f in z.infolist()
-                if f.filename.endswith('.so') and f.file_size > 0
-                and os.path.basename(f.filename) not in ignored_libs]
-  # Skip checking static initializers for 32 bit .so files when 64 bit .so files
-  # are present since the 32 bit versions will be checked by bots that only
-  # build the 32 bit version. This avoids the complexity of finding 32 bit .so
-  # files in the output directory in 64 bit builds.
-  has_64 = any('64' in f.filename for f in so_files)
-  files_to_check = [f for f in so_files if not has_64 or '64' in f.filename]
-
-  si_count = 0
-  for f in files_to_check:
-    with Unzip(apk_filename, filename=f.filename) as unzipped_so:
-      si_count += CountStaticInitializers(unzipped_so, tool_prefix)
-      if dump_sis:
-        # Print count and list of SIs reported by dump-static-initializers.py.
-        # Doesn't work well on all archs (particularly arm), which is why
-        # the readelf method is used for tracking SI counts.
-        _PrintDumpSIsCount(f.filename, unzipped_so, out_dir, tool_prefix)
-  return si_count
-
-
-def _PrintDumpSIsCount(apk_so_name, unzipped_so, out_dir, tool_prefix):
-  lib_name = os.path.basename(apk_so_name).replace('crazy.', '')
-  so_with_symbols_path = os.path.join(out_dir, 'lib.unstripped', lib_name)
-  if os.path.exists(so_with_symbols_path):
-    _VerifyLibBuildIdsMatch(tool_prefix, unzipped_so, so_with_symbols_path)
-    sis, _ = GetStaticInitializers(
-        so_with_symbols_path, tool_prefix)
-    for si in sis:
-      print(si)
-  else:
-    raise Exception('Unstripped .so not found. Looked here: %s',
-                    so_with_symbols_path)
-
-
 def _CalculateCompressedSize(file_path):
   CHUNK_SIZE = 256 * 1024
   compressor = zlib.compressobj()
@@ -708,12 +617,6 @@ def Unzip(zip_file, filename=None):
     yield unzipped_files[0]
 
 
-def _VerifyLibBuildIdsMatch(tool_prefix, *so_files):
-  if len(set(_ParseLibBuildId(f, tool_prefix) for f in so_files)) > 1:
-    raise Exception('Found differing build ids in output directory and apk. '
-                    'Your output directory is likely stale.')
-
-
 def _ConfigOutDirAndToolsPrefix(out_dir):
   if out_dir:
     constants.SetOutputDirectory(os.path.abspath(out_dir))
@@ -752,14 +655,7 @@ def main():
   argparser.add_argument('--output-dir',
                          default='.',
                          help='Directory to save chartjson to.')
-  argparser.add_argument('--dump-static-initializers',
-                         action='store_true',
-                         dest='dump_sis',
-                         help='Run dump-static-initializers.py to get the list'
-                              'of static initializers (slow).')
-  argparser.add_argument('--loadable_module',
-                         action='append',
-                         help='Use for libraries added via loadable_modules')
+  argparser.add_argument('--loadable_module', help='Obsolete (ignored).')
   argparser.add_argument('--estimate-patch-size',
                          action='store_true',
                          help='Include patch size estimates. Useful for perf '
@@ -781,22 +677,11 @@ def main():
 
   chartjson = _BASE_CHART.copy() if args.output_format else None
   out_dir, tool_prefix = _ConfigOutDirAndToolsPrefix(args.out_dir)
-  if args.dump_sis and not out_dir:
-    argparser.error(
-        '--dump-static-initializers requires --chromium-output-directory')
 
   # Do not add any new metrics without also documenting them in:
   # //docs/speed/binary_size/metrics.md.
-
   PrintApkAnalysis(args.apk, tool_prefix, out_dir, chartjson=chartjson)
   _PrintDexAnalysis(args.apk, chartjson=chartjson)
-
-  ignored_libs = args.loadable_module if args.loadable_module else []
-
-  si_count = AnalyzeStaticInitializers(
-      args.apk, tool_prefix, args.dump_sis, out_dir, ignored_libs)
-  perf_tests_results_helper.ReportPerfResult(
-      chartjson, 'StaticInitializersCount', 'count', si_count, 'count')
 
   if args.estimate_patch_size:
     _PrintPatchSizeEstimate(args.apk, args.reference_apk_builder,
