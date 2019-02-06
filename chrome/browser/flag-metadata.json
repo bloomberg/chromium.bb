@@ -1433,6 +1433,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-lite-mode-rebrand",
+    "owners": [ "robertogden@chromium.org" ],
+    "expiry_milestone": 75
+  },
+  {
     "name": "enable-lite-page-server-previews",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
