@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/tether_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -29,7 +28,6 @@
 
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
-using chromeos::NetworkPortalDetector;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
@@ -58,9 +56,6 @@ class NetworkIconImpl {
 
   // Updates the local state for cellular networks. Returns true if changed.
   bool UpdateCellularState(const chromeos::NetworkState* network);
-
-  // Updates the portal state for wireless networks. Returns true if changed.
-  bool UpdatePortalState(const chromeos::NetworkState* network);
 
   // Gets |badges| based on |network| and the current state.
   void GetBadges(const NetworkState* network, Badges* badges);
@@ -357,17 +352,20 @@ void NetworkIconImpl::Update(const NetworkState* network, bool show_vpn_badge) {
   // Determine whether or not we need to update the icon.
   bool dirty = image_.isNull();
 
-  // If the network state has changed, the icon needs updating.
-  if (connection_state_ != network->connection_state()) {
-    connection_state_ = network->connection_state();
+  std::string connection_state = network->connection_state();
+  if (connection_state != connection_state_) {
+    connection_state_ = connection_state;
     dirty = true;
   }
 
-  dirty |= UpdatePortalState(network);
-
-  if (network->Matches(NetworkTypePattern::Wireless())) {
-    dirty |= UpdateWirelessStrengthIndex(network);
+  bool behind_captive_portal = network->IsCaptivePortal();
+  if (behind_captive_portal != behind_captive_portal_) {
+    behind_captive_portal_ = behind_captive_portal;
+    dirty = true;
   }
+
+  if (network->Matches(NetworkTypePattern::Wireless()))
+    dirty |= UpdateWirelessStrengthIndex(network);
 
   if (network->Matches(NetworkTypePattern::Cellular()))
     dirty |= UpdateCellularState(network);
@@ -406,22 +404,6 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
     dirty = true;
   }
   return dirty;
-}
-
-bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
-  bool behind_captive_portal = false;
-  if (network && chromeos::network_portal_detector::IsInitialized()) {
-    NetworkPortalDetector::CaptivePortalState state =
-        chromeos::network_portal_detector::GetInstance()->GetCaptivePortalState(
-            network->guid());
-    behind_captive_portal =
-        state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
-  }
-
-  if (behind_captive_portal == behind_captive_portal_)
-    return false;
-  behind_captive_portal_ = behind_captive_portal;
-  return true;
 }
 
 void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {

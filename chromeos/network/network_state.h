@@ -185,6 +185,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // NetworkStateHandler::EnsureCellularNetwork()).
   bool IsDefaultCellular() const;
 
+  // Returns true if Shill or Chrome have detected a captive portal state.
+  // The Chrome network portal detection is different from Shill's so the
+  // results may differ; this method tests both and should be preferred in UI.
+  // (NetworkState is already conservative in interpreting Shill's captive
+  // portal state, see IsCaptivePortalState in the .cc file).
+  bool IsCaptivePortal() const;
+
   // Returns the |raw_ssid| as a hex-encoded string
   std::string GetHexSsid() const;
 
@@ -309,6 +316,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Set while a network connect request is queued. Cleared on connect or
   // if the request is aborted.
   bool connect_requested_ = false;
+
+  // Set by NetworkStateHandler if Chrome detects a captive portal state.
+  // See IsCaptivePortal() for details.
+  bool is_chrome_captive_portal_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkState);
 };

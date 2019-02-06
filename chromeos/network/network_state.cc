@@ -465,6 +465,10 @@ bool NetworkState::IsDefaultCellular() const {
          path() == kDefaultCellularNetworkPath;
 }
 
+bool NetworkState::IsCaptivePortal() const {
+  return is_captive_portal_ || is_chrome_captive_portal_;
+}
+
 std::string NetworkState::GetHexSsid() const {
   return base::HexEncode(raw_ssid().data(), raw_ssid().size());
 }

@@ -145,9 +145,10 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Stores captive portal state for a |network| and notifies observers.
-  void OnDetectionCompleted(const NetworkState* network,
-                            const CaptivePortalState& results);
+  // Called synchronously from OnAttemptCompleted with the current default
+  // network. Stores the captive portal state and notifies observers.
+  void DetectionCompleted(const NetworkState* network,
+                          const CaptivePortalState& results);
 
   // Notifies observers that portal detection is completed for a |network|.
   void NotifyDetectionCompleted(const NetworkState* network,
