@@ -10,12 +10,13 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/sanitizer_buildflags.h"
 #include "build/build_config.h"
 
 namespace base {
 namespace debug {
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || BUILDFLAG(IS_HWASAN)
 
 // Generates an heap buffer overflow.
 BASE_EXPORT NOINLINE void AsanHeapOverflow();

@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
+#include "base/sanitizer_buildflags.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,7 +74,8 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
 }
 
 #if defined(OS_IOS) || defined(OS_FUCHSIA) || defined(ADDRESS_SANITIZER) || \
-    defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
+    defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER) ||               \
+    BUILDFLAG(IS_HWASAN)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
 #define MAYBE_NewOverflow NewOverflow

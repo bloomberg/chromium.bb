@@ -12,6 +12,7 @@
 #include "base/cfi_buildflags.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
+#include "base/sanitizer_buildflags.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -32,6 +33,9 @@ const base::subtle::Atomic32 kMagicValue = 42;
 #else
 #define HARMFUL_ACCESS(action,error_regexp) EXPECT_DEATH(action,error_regexp)
 #endif  // !OS_IOS
+#elif BUILDFLAG(IS_HWASAN)
+#define HARMFUL_ACCESS(action, error_regexp) \
+  EXPECT_DEATH(action, "tag-mismatch")
 #else
 #define HARMFUL_ACCESS(action, error_regexp)
 #define HARMFUL_ACCESS_IS_NOOP
@@ -105,9 +109,11 @@ TEST(ToolsSanityTest, MemoryLeak) {
 // crash the whole program under Asan.
 #define MAYBE_AccessesToNewMemory DISABLED_AccessesToNewMemory
 #define MAYBE_AccessesToMallocMemory DISABLED_AccessesToMallocMemory
+#define MAYBE_AccessesToStack DISABLED_AccessesToStack
 #else
 #define MAYBE_AccessesToNewMemory AccessesToNewMemory
 #define MAYBE_AccessesToMallocMemory AccessesToMallocMemory
+#define MAYBE_AccessesToStack AccessesToStack
 #endif  // (defined(ADDRESS_SANITIZER) && defined(OS_IOS))
 
 // The following tests pass with Clang r170392, but not r172454, which
@@ -126,19 +132,33 @@ TEST(ToolsSanityTest, MemoryLeak) {
 #endif  // defined(ADDRESS_SANITIZER)
 
 TEST(ToolsSanityTest, MAYBE_AccessesToNewMemory) {
-  char *foo = new char[10];
-  MakeSomeErrors(foo, 10);
+  char* foo = new char[16];
+  MakeSomeErrors(foo, 16);
   delete [] foo;
   // Use after delete.
   HARMFUL_ACCESS(foo[5] = 0, "heap-use-after-free");
 }
 
 TEST(ToolsSanityTest, MAYBE_AccessesToMallocMemory) {
-  char *foo = reinterpret_cast<char*>(malloc(10));
-  MakeSomeErrors(foo, 10);
+  char* foo = reinterpret_cast<char*>(malloc(16));
+  MakeSomeErrors(foo, 16);
   free(foo);
   // Use after free.
   HARMFUL_ACCESS(foo[5] = 0, "heap-use-after-free");
+}
+
+TEST(ToolsSanityTest, MAYBE_AccessesToStack) {
+  char foo[16];
+
+  ReadUninitializedValue(foo);
+  HARMFUL_ACCESS(ReadValueOutOfArrayBoundsLeft(foo),
+                 "underflows this variable");
+  HARMFUL_ACCESS(ReadValueOutOfArrayBoundsRight(foo, 16),
+                 "overflows this variable");
+  HARMFUL_ACCESS(WriteValueOutOfArrayBoundsLeft(foo),
+                 "underflows this variable");
+  HARMFUL_ACCESS(WriteValueOutOfArrayBoundsRight(foo, 16),
+                 "overflows this variable");
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -172,8 +192,6 @@ TEST(ToolsSanityTest, MAYBE_SingleElementDeletedWithBraces) {
   delete [] foo;
 }
 #endif
-
-#if defined(ADDRESS_SANITIZER)
 
 TEST(ToolsSanityTest, DISABLED_AddressSanitizerNullDerefCrashTest) {
   // Intentionally crash to make sure AddressSanitizer is running.
@@ -233,8 +251,6 @@ TEST(ToolsSanityTest, DISABLED_AsanCorruptHeap) {
 }
 #endif  // OS_WIN
 #endif  // !HARMFUL_ACCESS_IS_NOOP
-
-#endif  // ADDRESS_SANITIZER
 
 namespace {
 

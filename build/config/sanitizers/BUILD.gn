@@ -179,6 +179,9 @@ config("default_sanitizer_ldflags") {
         ldflags += [ "-fsanitize-address-use-after-scope" ]
       }
     }
+    if (is_hwasan) {
+      ldflags += [ "-fsanitize=hwaddress" ]
+    }
     if (is_lsan) {
       ldflags += [ "-fsanitize=leak" ]
     }
@@ -425,6 +428,12 @@ config("coverage_flags") {
   }
 }
 
+config("hwasan_flags") {
+  if (is_hwasan) {
+    cflags = [ "-fsanitize=hwaddress" ]
+  }
+}
+
 config("lsan_flags") {
   if (is_lsan) {
     cflags = [ "-fsanitize=leak" ]
@@ -559,6 +568,7 @@ all_sanitizer_configs = [
   ":default_sanitizer_ldflags",
   ":asan_flags",
   ":cfi_flags",
+  ":hwasan_flags",
   ":lsan_flags",
   ":msan_flags",
   ":tsan_flags",

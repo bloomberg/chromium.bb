@@ -185,13 +185,14 @@ TEST(ProcMapsTest, Permissions) {
   }
 }
 
-#if defined(ADDRESS_SANITIZER)
 // AddressSanitizer may move local variables to a dedicated "fake stack" which
 // is outside the stack region listed in /proc/self/maps. We disable ASan
 // instrumentation for this function to force the variable to be local.
-__attribute__((no_sanitize_address))
-#endif
-void CheckProcMapsRegions(const std::vector<MappedMemoryRegion> &regions) {
+//
+// Similarly, HWAddressSanitizer may add a tag to all stack pointers which may
+// move it outside of the stack regions in /proc/self/maps.
+__attribute__((no_sanitize("address", "hwaddress"))) void CheckProcMapsRegions(
+    const std::vector<MappedMemoryRegion>& regions) {
   // We should be able to find both the current executable as well as the stack
   // mapped into memory. Use the address of |exe_path| as a way of finding the
   // stack.
