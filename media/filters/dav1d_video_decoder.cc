@@ -98,10 +98,21 @@ static void LogDav1dMessage(void* cookie, const char* format, va_list ap) {
   DLOG(ERROR) << log;
 }
 
-// std::unique_ptr release helper.
+// std::unique_ptr release helpers. We need to release both the containing
+// structs as well as refs held within the structures.
+struct ScopedDav1dDataFree {
+  void operator()(void* x) const {
+    auto* data = static_cast<Dav1dData*>(x);
+    dav1d_data_unref(data);
+    delete data;
+  }
+};
+
 struct ScopedDav1dPictureFree {
   void operator()(void* x) const {
-    dav1d_picture_unref(static_cast<Dav1dPicture*>(x));
+    auto* pic = static_cast<Dav1dPicture*>(x);
+    dav1d_picture_unref(pic);
+    delete pic;
   }
 };
 
@@ -202,11 +213,12 @@ void Dav1dVideoDecoder::CloseDecoder() {
 bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  Dav1dData* input_buffer = nullptr;
+  using ScopedPtrDav1dData = std::unique_ptr<Dav1dData, ScopedDav1dDataFree>;
+  ScopedPtrDav1dData input_buffer;
+
   if (!buffer->end_of_stream()) {
-    // TODO(dalecurtis): Add a pool of these?
-    input_buffer = new Dav1dData();
-    if (dav1d_data_wrap(input_buffer, buffer->data(), buffer->data_size(),
+    input_buffer.reset(new Dav1dData{0});
+    if (dav1d_data_wrap(input_buffer.get(), buffer->data(), buffer->data_size(),
                         &ReleaseDecoderBuffer, buffer.get()) < 0) {
       return false;
     }
@@ -214,14 +226,22 @@ bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
     buffer->AddRef();
   }
 
+  // Used to DCHECK that dav1d_send_data() actually takes the packet. If we exit
+  // this function without sending |input_buffer| that packet will be lost. We
+  // have no packet to send at end of stream.
+  bool send_data_completed = buffer->end_of_stream();
+
   while (!input_buffer || input_buffer->sz) {
     if (input_buffer) {
-      const int res = dav1d_send_data(dav1d_decoder_, input_buffer);
+      const int res = dav1d_send_data(dav1d_decoder_, input_buffer.get());
       if (res < 0 && res != -EAGAIN) {
         MEDIA_LOG(ERROR, media_log_) << "dav1d_send_data() failed on "
                                      << buffer->AsHumanReadableString();
         return false;
       }
+
+      if (res != -EAGAIN)
+        send_data_completed = true;
 
       // Even if dav1d_send_data() returned EAGAIN, try dav1d_get_picture().
     }
@@ -239,8 +259,11 @@ bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
       }
 
       // We've reached end of stream and no frames remain to drain.
-      if (!input_buffer)
+      if (!input_buffer) {
+        DCHECK(send_data_completed);
         return true;
+      }
+
       continue;
     }
 
@@ -270,6 +293,7 @@ bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
     output_cb_.Run(std::move(frame));
   }
 
+  DCHECK(send_data_completed);
   return true;
 }
 
