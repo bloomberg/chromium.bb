@@ -259,11 +259,6 @@ AudioWorkletNode* AudioWorkletNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context->IsContextClosed()) {
-    context->ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (options->numberOfInputs() == 0 && options->numberOfOutputs() == 0) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

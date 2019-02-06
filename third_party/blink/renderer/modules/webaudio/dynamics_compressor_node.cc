@@ -240,11 +240,6 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   return MakeGarbageCollected<DynamicsCompressorNode>(context);
 }
 

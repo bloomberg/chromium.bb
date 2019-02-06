@@ -137,7 +137,14 @@ class MODULES_EXPORT BaseAudioContext
 
   String state() const;
   AudioContextState ContextState() const { return context_state_; }
-  void ThrowExceptionForClosedState(ExceptionState&);
+
+  // Warn user when creating a node on a closed context.  The node can't do
+  // anything useful because the context is closed.
+  void WarnIfContextClosed(const AudioHandler*) const;
+
+  // Warn user when connecting two nodes on a closed context. The connection
+  // does nothing useful because the context is closed.
+  void WarnForConnectionIfContextClosed() const;
 
   AudioBuffer* createBuffer(uint32_t number_of_channels,
                             uint32_t number_of_frames,

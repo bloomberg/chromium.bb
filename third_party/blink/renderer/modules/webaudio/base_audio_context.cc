@@ -208,10 +208,23 @@ AudioDestinationNode* BaseAudioContext::destination() const {
   return destination_node_;
 }
 
-void BaseAudioContext::ThrowExceptionForClosedState(
-    ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                    "AudioContext has been closed.");
+void BaseAudioContext::WarnIfContextClosed(const AudioHandler* handler) const {
+  DCHECK(handler);
+
+  if (IsContextClosed() && GetDocument()) {
+    GetDocument()->AddConsoleMessage(
+        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
+                               "Construction of " + handler->NodeTypeName() +
+                                   " is not useful when context is closed."));
+  }
+}
+
+void BaseAudioContext::WarnForConnectionIfContextClosed() const {
+  if (IsContextClosed() && GetDocument()) {
+    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        kOtherMessageSource, kWarningMessageLevel,
+        "Connecting nodes after the context has been closed is not useful."));
+  }
 }
 
 AudioBuffer* BaseAudioContext::createBuffer(uint32_t number_of_channels,

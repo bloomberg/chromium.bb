@@ -73,6 +73,7 @@ AudioHandler::AudioHandler(NodeType node_type,
       node_count_[GetNodeType()],
       InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter));
 #endif
+  node.context()->WarnIfContextClosed(this);
 }
 
 AudioHandler::~AudioHandler() {
@@ -159,6 +160,12 @@ String AudioHandler::NodeTypeName() const {
       return "DynamicsCompressorNode";
     case kNodeTypeWaveShaper:
       return "WaveShaperNode";
+    case kNodeTypeIIRFilter:
+      return "IIRFilterNode";
+    case kNodeTypeConstantSource:
+      return "ConstantSourceNode";
+    case kNodeTypeAudioWorklet:
+      return "AudioWorkletNode";
     case kNodeTypeUnknown:
     case kNodeTypeEnd:
     default:
@@ -678,12 +685,7 @@ AudioNode* AudioNode::connect(AudioNode* destination,
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(context());
 
-  if (context()->IsContextClosed()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot connect after the context has been closed.");
-    return nullptr;
-  }
+  context()->WarnForConnectionIfContextClosed();
 
   if (!destination) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -749,12 +751,7 @@ void AudioNode::connect(AudioParam* param,
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(context());
 
-  if (context()->IsContextClosed()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot connect after the context has been closed.");
-    return;
-  }
+  context()->WarnForConnectionIfContextClosed();
 
   if (!param) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,

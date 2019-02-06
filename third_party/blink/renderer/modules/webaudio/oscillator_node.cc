@@ -524,11 +524,6 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
                                        ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   return MakeGarbageCollected<OscillatorNode>(context, oscillator_type,
                                               wave_table);
 }

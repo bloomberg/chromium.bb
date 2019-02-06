@@ -430,11 +430,6 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (number_of_input_channels == 0 && number_of_output_channels == 0) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
