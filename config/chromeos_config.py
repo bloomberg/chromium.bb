@@ -1674,6 +1674,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   # Move the following builders to active_builders once they are consistently
   # green.
   unstable_builders = frozenset([
+      'arm64-generic', # Enable once stable.
       'lakitu',  # TODO: Re-enable after crbug.com/919630 resolved.
   ])
 
@@ -1885,9 +1886,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
+      'arm64-generic', # contact:manojgupta@
       'coral', # contact: xixuan@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
-      'kevin64', # contact:manojgupta@@
+      'kevin64', # contact:manojgupta@
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
@@ -2760,6 +2762,10 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
   ])
 
+  _chromium_pfq_experimental_boards = frozenset([
+      'arm64-generic',
+  ])
+
   master_config = site_config.Add(
       'master-chromium-pfq',
       site_config.templates.chromium_pfq,
@@ -2789,10 +2795,21 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.build_external_chrome,
       )
   )
+  # non-important configs.
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'chromium-pfq',
+          _chromium_pfq_experimental_boards,
+          external_board_configs,
+          site_config.templates.chromium_pfq,
+          site_config.templates.build_external_chrome,
+          important=False,
+      )
+  )
   site_config.AddForBoards(
       'chromium-pfq',
       ((boards_dict['all_full_boards'] & _chrome_boards) -
-       _chromium_pfq_important_boards),
+       (_chromium_pfq_important_boards | _chromium_pfq_experimental_boards)),
       external_board_configs,
       site_config.templates.chromium_pfq,
       site_config.templates.build_external_chrome,
@@ -3448,7 +3465,13 @@ def ApplyCustomOverrides(site_config):
       },
 
       # Run TestSimpleChromeWorkflow only on kevin64-release instead of
-      # kevin64-chrome-pfq/kevin64-full.
+      # arm64-generic/kevin64-chrome-pfq/kevin64-full.
+      'arm64-generic-chromium-pfq': {
+          'chrome_sdk_build_chrome': False,
+      },
+      'arm64-generic-full': {
+          'chrome_sdk_build_chrome': False,
+      },
       'kevin64-chrome-pfq': {
           'chrome_sdk_build_chrome': False,
       },

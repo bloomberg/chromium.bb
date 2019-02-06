@@ -13,6 +13,7 @@
   master-chromium-pfq
     amd64-generic-chromium-pfq
     arm-generic-chromium-pfq
+    arm64-generic-chromium-pfq
     betty-arcnext-chrome-pfq
     betty-chrome-pfq
     bob-chrome-pfq
@@ -45,6 +46,7 @@
   master-paladin
     amd64-generic-paladin
     arm-generic-paladin
+    arm64-generic-paladin
     atlas-paladin
     auron_paine-paladin
     auron_yuna-paladin
@@ -223,6 +225,7 @@
     amd64-generic-full
     amd64-generic-goma-full
     arm-generic-full
+    arm64-generic-full
     daisy-full
     kevin-full
     kevin64-full
@@ -2439,6 +2442,7 @@
   master-chromium-pfq-tryjob
     amd64-generic-chromium-pfq
     arm-generic-chromium-pfq
+    arm64-generic-chromium-pfq
     betty-arcnext-chrome-pfq
     betty-chrome-pfq
     bob-chrome-pfq
@@ -2470,6 +2474,7 @@
     amd64-generic-full
     amd64-generic-goma-full
     arm-generic-full
+    arm64-generic-full
     daisy-full
     kevin-full
     kevin64-full
@@ -2504,6 +2509,7 @@
   master-paladin-tryjob
     amd64-generic-paladin
     arm-generic-paladin
+    arm64-generic-paladin
     atlas-paladin
     auron_paine-paladin
     auron_yuna-paladin
