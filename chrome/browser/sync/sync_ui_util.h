@@ -52,6 +52,7 @@ enum AvatarSyncErrorType {
 
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
+// |status_label| and |link_label| must either be both null or both non-null.
 MessageType GetStatusLabels(Profile* profile,
                             const syncer::SyncService* service,
                             identity::IdentityManager* identity_manager,
