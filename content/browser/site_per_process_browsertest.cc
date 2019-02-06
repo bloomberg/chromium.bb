@@ -14448,7 +14448,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   rfh_b->DisableSwapOutTimerForTesting();
   rfh_c->DisableSwapOutTimerForTesting();
 
-  RenderFrameDeletedObserver delete_B(rfh_b), delete_C(rfh_c);
+  RenderFrameDeletedObserver delete_b(rfh_b), delete_c(rfh_c);
 
   // 2) Navigate rfh_c to D.
   NavigateFrameToURL(rfh_c->frame_tree_node(), url_d);
@@ -14457,7 +14457,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
   RenderFrameHostImpl* rfh_d = rfh_b->child_at(0)->current_frame_host();
 
-  RenderFrameDeletedObserver delete_D(rfh_d);
+  RenderFrameDeletedObserver delete_d(rfh_d);
 
   // Act as if there was a slow unload handler on rfh_d.
   // The non navigating frames are waiting for FrameHostMsg_Detach.
@@ -14473,16 +14473,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_d->unload_state_);
 
   // rfh_d completes its unload event. It deletes the frame, including rfh_c.
-  EXPECT_FALSE(delete_C.deleted());
-  EXPECT_FALSE(delete_D.deleted());
+  EXPECT_FALSE(delete_c.deleted());
+  EXPECT_FALSE(delete_d.deleted());
   rfh_d->OnDetach();
-  EXPECT_TRUE(delete_C.deleted());
-  EXPECT_TRUE(delete_D.deleted());
+  EXPECT_TRUE(delete_c.deleted());
+  EXPECT_TRUE(delete_d.deleted());
 
   // rfh_b completes its unload event.
-  EXPECT_FALSE(delete_B.deleted());
+  EXPECT_FALSE(delete_b.deleted());
   rfh_b->OnSwapOutACK();
-  EXPECT_TRUE(delete_B.deleted());
+  EXPECT_TRUE(delete_b.deleted());
 }
 
 // A set of nested frames A1(B1(A2)) are pending deletion because of a
@@ -14941,6 +14941,114 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
+}
+
+// Pending navigations must be canceled when a frame becomes pending deletion.
+//
+// 1) Initial state: A(B).
+// 2) Navigation from B to C. The server is slow to respond.
+// 3) Deletion of B.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigationCommitInIframePendingDeletionAB) {
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/hung"));
+
+  // 1) Initial state: A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+
+  // RFH B has an unload handler.
+  auto detach_filter_b = base::MakeRefCounted<DetachMessageFilter>();
+  rfh_b->GetProcess()->AddFilter(detach_filter_b.get());
+  EXPECT_TRUE(ExecJs(rfh_b, "onunload=function(){}"));
+
+  // 2) Navigation from B to C. The server is slow to respond.
+  TestNavigationManager navigation_observer(web_contents(), url_c);
+  EXPECT_TRUE(ExecJs(rfh_b, JsReplace("location.href=$1;", url_c)));
+  EXPECT_TRUE(navigation_observer.WaitForRequestStart());
+  RenderFrameHostImpl* rfh_c =
+      rfh_b->frame_tree_node()->render_manager()->speculative_frame_host();
+
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_c->unload_state_);
+
+  // 3) Deletion of B. The unload handler takes times to execute.
+  RenderFrameDeletedObserver delete_b(rfh_b), delete_c(rfh_c);
+  EXPECT_TRUE(
+      ExecJs(rfh_a, JsReplace("document.querySelector('iframe').remove();")));
+  EXPECT_FALSE(delete_b.deleted());
+  EXPECT_TRUE(delete_c.deleted());  // The speculative RFH is deleted.
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_b->unload_state_);
+
+  // The navigation has been canceled.
+  navigation_observer.WaitForNavigationFinished();
+  EXPECT_FALSE(navigation_observer.was_successful());
+
+  // |rfh_b| will complete its deletion at some point:
+  EXPECT_FALSE(delete_b.deleted());
+  rfh_b->OnDetach();
+  EXPECT_TRUE(delete_b.deleted());
+}
+
+// Pending navigations must be canceled when a frame becomes pending deletion.
+//
+// 1) Initial state: A(B(C)).
+// 2) Navigation from C to D. The server is slow to respond.
+// 3) Deletion of B.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigationCommitInIframePendingDeletionABC) {
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  GURL url_d(embedded_test_server()->GetURL("d.com", "/hung"));
+
+  // 1) Initial state: A(B(C)).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_c = rfh_b->child_at(0)->current_frame_host();
+
+  // RFH C has an unload handler.
+  auto detach_filter_c = base::MakeRefCounted<DetachMessageFilter>();
+  rfh_c->GetProcess()->AddFilter(detach_filter_c.get());
+  EXPECT_TRUE(ExecJs(rfh_c, "onunload=function(){}"));
+
+  // 2) Navigation from C to D. The server is slow to respond.
+  TestNavigationManager navigation_observer(web_contents(), url_d);
+  EXPECT_TRUE(ExecJs(rfh_c, JsReplace("location.href=$1;", url_d)));
+  EXPECT_TRUE(navigation_observer.WaitForRequestStart());
+  RenderFrameHostImpl* rfh_d =
+      rfh_c->frame_tree_node()->render_manager()->speculative_frame_host();
+
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_c->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_d->unload_state_);
+
+  // 3) Deletion of D. The unload handler takes times to execute.
+  RenderFrameDeletedObserver delete_b(rfh_b), delete_c(rfh_c), delete_d(rfh_d);
+  EXPECT_TRUE(
+      ExecJs(rfh_a, JsReplace("document.querySelector('iframe').remove();")));
+  EXPECT_FALSE(delete_b.deleted());
+  EXPECT_FALSE(delete_c.deleted());
+  EXPECT_TRUE(delete_d.deleted());  // The speculative RFH is deleted.
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::Completed, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
+
+  // The navigation has been canceled.
+  navigation_observer.WaitForNavigationFinished();
+  EXPECT_FALSE(navigation_observer.was_successful());
+
+  // |rfh_b| and |rfh_c| will complete their deletion at some point:
+  EXPECT_FALSE(delete_b.deleted());
+  EXPECT_FALSE(delete_c.deleted());
+  rfh_c->OnDetach();
+  EXPECT_TRUE(delete_b.deleted());
+  EXPECT_TRUE(delete_c.deleted());
 }
 
 }  // namespace content

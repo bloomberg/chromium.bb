@@ -995,6 +995,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            PendingDeletionCheckCompletedOnSubtree);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            DetachedIframeUnloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           NavigationCommitInIframePendingDeletionAB);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           NavigationCommitInIframePendingDeletionABC);
 
   class DroppedInterfaceRequestLogger;
 
@@ -1485,6 +1489,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // children. This is useful for pruning frames with no unload handlers from
   // this frame's subtree.
   void PendingDeletionCheckCompletedOnSubtree();
+
+  // In this frame and its children, removes every:
+  // - NavigationRequest.
+  // - Speculative RenderFrameHost.
+  void ResetNavigationsForPendingDeletion();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

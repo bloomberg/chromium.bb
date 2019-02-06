@@ -4358,6 +4358,8 @@ void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
 }
 
 void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
+  ResetNavigationsForPendingDeletion();
+
   DCHECK_NE(UnloadState::NotRun, unload_state_);
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
     for (FrameTreeNode* node :
@@ -4409,6 +4411,14 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
 
   for (RenderFrameHostImpl* child_rfh : children_rfh)
     child_rfh->PendingDeletionCheckCompletedOnSubtree();
+}
+
+void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
+  for (auto& child : children_)
+    child->current_frame_host()->ResetNavigationsForPendingDeletion();
+  ResetNavigationRequests();
+  frame_tree_node_->ResetNavigationRequest(false, false);
+  frame_tree_node_->render_manager()->CleanUpNavigation();
 }
 
 void RenderFrameHostImpl::UpdateOpener() {
@@ -6396,14 +6406,16 @@ void RenderFrameHostImpl::DidCommitNavigation(
                            approx_renderer_start_time, base::TimeTicks::Now());
   }
 
-  // If we're waiting for an unload ack from this frame and we receive a commit
-  // message, then the frame was navigating before it received the unload
-  // request.  It will either respond to the unload request soon or our timer
-  // will expire.  Either way, we should ignore this message, because we have
-  // already committed to destroying this RenderFrameHost.  Note that we
-  // intentionally do not ignore commits that happen while the current tab is
-  // being closed - see https://crbug.com/805705.
-  if (is_waiting_for_swapout_ack_)
+  // When a frame enters pending deletion, it waits for itself and its children
+  // to properly unload. Receiving DidCommitProvisionalLoad() here while the
+  // frame is not active means it comes from a navigation that reached the
+  // ReadyToCommit stage just before the frame entered pending deletion.
+  //
+  // We should ignore this message, because we have already committed to
+  // destroying this RenderFrameHost. Note that we intentionally do not ignore
+  // commits that happen while the current tab is being closed - see
+  // https://crbug.com/805705.
+  if (!is_active())
     return;
 
   // Retroactive sanity check:
