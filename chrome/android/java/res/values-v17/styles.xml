@@ -828,6 +828,41 @@
         <item name="android:textColor">@color/suggestion_url_dark_modern</item>
     </style>
 
+    <style name="TextAppearance.OmniboxAnswerTextLarge">
+        <item name="android:textSize">@dimen/text_size_large_leading</item>
+        <item name="android:textColor">@color/answers_answer_text</item>
+    </style>
+
+    <style name="TextAppearance.OmniboxAnswerTextMedium">
+        <item name="android:textSize">@dimen/text_size_medium_leading</item>
+        <item name="android:textColor">@color/answers_answer_text</item>
+    </style>
+
+    <style name="TextAppearance.OmniboxAnswerTextSmall">
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textColor">@color/answers_answer_text</item>
+    </style>
+
+    <style name="TextAppearance.OmniboxAnswerDescriptionNegative">
+        <item name="android:textSize">@dimen/text_size_small_leading</item>
+        <item name="android:textColor">@color/answers_description_text_negative</item>
+    </style>
+
+    <style name="TextAppearance.OmniboxAnswerDescriptionPositive">
+        <item name="android:textSize">@dimen/text_size_small_leading</item>
+        <item name="android:textColor">@color/answers_description_text_positive</item>
+    </style>
+
+    <style name="TextAppearance.OmniboxAnswerDescriptionNegativeSmall">
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textColor">@color/answers_description_text_negative</item>
+    </style>
+
+    <style name="TextAppearance.OmniboxAnswerDescriptionPositiveSmall">
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textColor">@color/answers_description_text_positive</item>
+    </style>
+
     <style name="OmniboxSuggestionIconButton">
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:layout_width">@dimen/min_touch_target_size</item>
