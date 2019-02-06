@@ -398,6 +398,12 @@ const QuantizeParam kQParamArraySSE2[] = {
              TX_32X32, TYPE_B, AOM_BITS_10),
   make_tuple(&aom_highbd_quantize_b_32x32_c, &aom_highbd_quantize_b_32x32_sse2,
              TX_32X32, TYPE_B, AOM_BITS_12),
+  make_tuple(&aom_highbd_quantize_b_64x64_c, &aom_highbd_quantize_b_64x64_sse2,
+             TX_64X64, TYPE_B, AOM_BITS_8),
+  make_tuple(&aom_highbd_quantize_b_64x64_c, &aom_highbd_quantize_b_64x64_sse2,
+             TX_64X64, TYPE_B, AOM_BITS_10),
+  make_tuple(&aom_highbd_quantize_b_64x64_c, &aom_highbd_quantize_b_64x64_sse2,
+             TX_64X64, TYPE_B, AOM_BITS_12)
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
