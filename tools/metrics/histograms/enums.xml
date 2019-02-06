@@ -31087,6 +31087,7 @@ from previous Chrome versions.
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
+  <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
   <int value="-1269093329" label="AndroidOmniboxPreviewsBadge:disabled"/>
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
@@ -31518,6 +31519,7 @@ from previous Chrome versions.
   <int value="-516845951" label="enable-embedded-extension-options"/>
   <int value="-513967943" label="CryptAuthV2Enrollment:disabled"/>
   <int value="-513305102" label="LanguagesPreference:enabled"/>
+  <int value="-513066193" label="SyncUSSPasswords:enabled"/>
   <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>

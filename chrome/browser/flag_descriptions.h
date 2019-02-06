@@ -549,6 +549,9 @@ extern const char kEnableSyncPseudoUSSThemesDescription[];
 extern const char kEnableSyncUSSBookmarksName[];
 extern const char kEnableSyncUSSBookmarksDescription[];
 
+extern const char kEnableSyncUSSPasswordsName[];
+extern const char kEnableSyncUSSPasswordsDescription[];
+
 extern const char kEnableSyncUSSSessionsName[];
 extern const char kEnableSyncUSSSessionsDescription[];
 
