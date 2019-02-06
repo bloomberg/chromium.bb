@@ -83,8 +83,8 @@ class MarkupAccumulator {
 
   EntityMask EntityMaskForText(const Text&) const;
 
-  void PushNamespaces();
-  void PopNamespaces();
+  void PushNamespaces(const Node& node);
+  void PopNamespaces(const Node& node);
   void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
   AtomicString LookupNamespaceURI(const AtomicString& prefix);
   AtomicString GeneratePrefix(const AtomicString& new_namespace);
