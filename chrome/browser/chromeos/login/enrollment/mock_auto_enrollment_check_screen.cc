@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
 
-using ::testing::AtLeast;
-using ::testing::NotNull;
-
 namespace chromeos {
 
 MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
@@ -16,10 +13,12 @@ MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
 
 MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() {}
 
-MockAutoEnrollmentCheckScreenView::MockAutoEnrollmentCheckScreenView()
-    : screen_(NULL) {
-  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
+void MockAutoEnrollmentCheckScreen::RealShow() {
+  AutoEnrollmentCheckScreen::Show();
 }
+
+MockAutoEnrollmentCheckScreenView::MockAutoEnrollmentCheckScreenView() =
+    default;
 
 MockAutoEnrollmentCheckScreenView::~MockAutoEnrollmentCheckScreenView() {
   if (screen_)

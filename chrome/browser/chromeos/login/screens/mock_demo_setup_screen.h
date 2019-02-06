@@ -17,6 +17,9 @@ class MockDemoSetupScreen : public DemoSetupScreen {
   MockDemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
                       DemoSetupScreenView* view);
   ~MockDemoSetupScreen() override;
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockDemoSetupScreenView : public DemoSetupScreenView {
@@ -34,7 +37,7 @@ class MockDemoSetupScreenView : public DemoSetupScreenView {
   void Bind(DemoSetupScreen* screen) override;
 
  private:
-  DemoSetupScreen* screen_;
+  DemoSetupScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos
