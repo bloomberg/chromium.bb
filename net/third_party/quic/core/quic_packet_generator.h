@@ -50,6 +50,7 @@
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
+#include "net/third_party/quic/platform/api/quic_mem_slice_span.h"
 
 namespace quic {
 
@@ -210,7 +211,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
 
   // Tries to add a message frame containing |message| and returns the status.
   MessageStatus AddMessageFrame(QuicMessageId message_id,
-                                QuicStringPiece message);
+                                QuicMemSliceSpan message);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
   QuicPacketLength GetLargestMessagePayload() const;

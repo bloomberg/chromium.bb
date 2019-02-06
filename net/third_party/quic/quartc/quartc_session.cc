@@ -6,6 +6,7 @@
 
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
+#include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
@@ -232,7 +233,12 @@ bool QuartcSession::SendOrQueueMessage(QuicString message) {
 
 void QuartcSession::ProcessSendMessageQueue() {
   while (!send_message_queue_.empty()) {
-    MessageResult result = SendMessage(send_message_queue_.front());
+    struct iovec iov = {const_cast<char*>(send_message_queue_.front().data()),
+                        send_message_queue_.front().length()};
+    QuicMemSliceStorage storage(
+        &iov, 1, connection()->helper()->GetStreamSendBufferAllocator(),
+        send_message_queue_.front().length());
+    MessageResult result = SendMessage(storage.ToSpan());
 
     const size_t message_size = send_message_queue_.front().size();
 

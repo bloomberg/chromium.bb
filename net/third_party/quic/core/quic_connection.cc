@@ -1317,7 +1317,8 @@ bool QuicConnection::OnMessageFrame(const QuicMessageFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnMessageFrame(frame);
   }
-  visitor_->OnMessageReceived(frame.message_data);
+  visitor_->OnMessageReceived(
+      QuicStringPiece(frame.data, frame.message_length));
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -3508,13 +3509,13 @@ void QuicConnection::UpdateReleaseTimeIntoFuture() {
 }
 
 MessageStatus QuicConnection::SendMessage(QuicMessageId message_id,
-                                          QuicStringPiece message) {
+                                          QuicMemSliceSpan message) {
   if (transport_version() <= QUIC_VERSION_44) {
     QUIC_BUG << "MESSAGE frame is not supported for version "
              << transport_version();
     return MESSAGE_STATUS_UNSUPPORTED;
   }
-  if (message.length() > GetLargestMessagePayload()) {
+  if (message.total_length() > GetLargestMessagePayload()) {
     return MESSAGE_STATUS_TOO_LARGE;
   }
   if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {

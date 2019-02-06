@@ -418,17 +418,19 @@ void QuicPacketGenerator::SetCanSetTransmissionType(
 }
 
 MessageStatus QuicPacketGenerator::AddMessageFrame(QuicMessageId message_id,
-                                                   QuicStringPiece message) {
+                                                   QuicMemSliceSpan message) {
   QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
                                      "generator tries to add message frame.";
-  if (message.length() > GetLargestMessagePayload()) {
+  const QuicByteCount message_length = message.total_length();
+  if (message_length > GetLargestMessagePayload()) {
     return MESSAGE_STATUS_TOO_LARGE;
   }
   SendQueuedFrames(/*flush=*/false);
-  if (!packet_creator_.HasRoomForMessageFrame(message.length())) {
+  if (!packet_creator_.HasRoomForMessageFrame(message_length)) {
     packet_creator_.Flush();
   }
-  QuicMessageFrame* frame = new QuicMessageFrame(message_id, message);
+  QuicMessageFrame* frame = new QuicMessageFrame(message_id);
+  message.SaveMemSlicesAsMessageData(frame);
   const bool success =
       packet_creator_.AddSavedFrame(QuicFrame(frame), next_transmission_type_);
   if (!success) {

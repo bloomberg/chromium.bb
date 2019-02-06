@@ -181,7 +181,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnMessageFrame(const QuicMessageFrame& frame) override {
-    message_frames_.push_back(frame);
+    message_frames_.emplace_back(frame.data, frame.message_length);
     return true;
   }
 

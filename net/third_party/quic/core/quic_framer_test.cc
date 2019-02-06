@@ -278,7 +278,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnMessageFrame(const QuicMessageFrame& frame) override {
     ++frame_count_;
-    message_frames_.push_back(QuicMakeUnique<QuicMessageFrame>(frame));
+    message_frames_.push_back(
+        QuicMakeUnique<QuicMessageFrame>(frame.data, frame.message_length));
     return true;
   }
 
@@ -614,6 +615,7 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicTime start_;
   QuicFramer framer_;
   test::TestQuicVisitor visitor_;
+  SimpleBufferAllocator allocator_;
 };
 
 // Multiple test cases of QuicFramerTest use byte arrays to define packets for
@@ -4782,8 +4784,8 @@ TEST_P(QuicFramerTest, MessageFrame) {
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
 
   ASSERT_EQ(2u, visitor_.message_frames_.size());
-  EXPECT_EQ(7u, visitor_.message_frames_[0]->message_data.length());
-  EXPECT_EQ(8u, visitor_.message_frames_[1]->message_data.length());
+  EXPECT_EQ(7u, visitor_.message_frames_[0]->message_length);
+  EXPECT_EQ(8u, visitor_.message_frames_[1]->message_length);
 
   CheckFramingBoundaries(packet45, QUIC_INVALID_MESSAGE_DATA);
 }
@@ -8157,9 +8159,13 @@ TEST_P(QuicFramerTest, BuildMessagePacket) {
   header.reset_flag = false;
   header.version_flag = false;
   header.packet_number = kPacketNumber;
+  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
 
-  QuicMessageFrame frame(1, "message");
-  QuicMessageFrame frame2(2, "message2");
+  QuicMessageFrame frame(1);
+  MakeSpan(&allocator_, "message", &storage).SaveMemSlicesAsMessageData(&frame);
+  QuicMessageFrame frame2(2);
+  MakeSpan(&allocator_, "message2", &storage)
+      .SaveMemSlicesAsMessageData(&frame2);
   QuicFrames frames = {QuicFrame(&frame), QuicFrame(&frame2)};
 
   // clang-format off

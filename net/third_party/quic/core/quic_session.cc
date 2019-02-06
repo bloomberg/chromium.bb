@@ -1545,7 +1545,7 @@ void QuicSession::SetTransmissionType(TransmissionType type) {
   connection_->SetTransmissionType(type);
 }
 
-MessageResult QuicSession::SendMessage(QuicStringPiece message) {
+MessageResult QuicSession::SendMessage(QuicMemSliceSpan message) {
   if (!IsEncryptionEstablished()) {
     return {MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0};
   }

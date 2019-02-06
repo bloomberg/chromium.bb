@@ -745,7 +745,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Tries to send |message| and returns the message status.
   virtual MessageStatus SendMessage(QuicMessageId message_id,
-                                    QuicStringPiece message);
+                                    QuicMemSliceSpan message);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
   QuicPacketLength GetLargestMessagePayload() const;

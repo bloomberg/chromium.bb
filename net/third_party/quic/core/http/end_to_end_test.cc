@@ -3502,22 +3502,30 @@ TEST_P(EndToEndTest, SendMessages) {
   QuicStringPiece message_buffer(message_string);
   QuicRandom* random =
       QuicConnectionPeer::GetHelper(client_connection)->GetRandomGenerator();
+  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   {
     QuicConnection::ScopedPacketFlusher flusher(
         client_session->connection(), QuicConnection::SEND_ACK_IF_PENDING);
     // Verify the largest message gets successfully sent.
     EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 1),
-              client_session->SendMessage(
+              client_session->SendMessage(MakeSpan(
+                  client_session->connection()
+                      ->helper()
+                      ->GetStreamSendBufferAllocator(),
                   QuicStringPiece(message_buffer.data(),
-                                  client_session->GetLargestMessagePayload())));
+                                  client_session->GetLargestMessagePayload()),
+                  &storage)));
     // Send more messages with size (0, largest_payload] until connection is
     // write blocked.
     const int kTestMaxNumberOfMessages = 100;
     for (size_t i = 2; i <= kTestMaxNumberOfMessages; ++i) {
       size_t message_length =
           random->RandUint64() % client_session->GetLargestMessagePayload() + 1;
-      MessageResult result = client_session->SendMessage(
-          QuicStringPiece(message_buffer.data(), message_length));
+      MessageResult result = client_session->SendMessage(MakeSpan(
+          client_session->connection()
+              ->helper()
+              ->GetStreamSendBufferAllocator(),
+          QuicStringPiece(message_buffer.data(), message_length), &storage));
       if (result.status == MESSAGE_STATUS_BLOCKED) {
         // Connection is write blocked.
         break;
@@ -3527,12 +3535,17 @@ TEST_P(EndToEndTest, SendMessages) {
   }
 
   client_->WaitForDelayedAcks();
-  EXPECT_EQ(MESSAGE_STATUS_TOO_LARGE,
-            client_session
-                ->SendMessage(QuicStringPiece(
-                    message_buffer.data(),
-                    client_session->GetLargestMessagePayload() + 1))
-                .status);
+  EXPECT_EQ(
+      MESSAGE_STATUS_TOO_LARGE,
+      client_session
+          ->SendMessage(MakeSpan(
+              client_session->connection()
+                  ->helper()
+                  ->GetStreamSendBufferAllocator(),
+              QuicStringPiece(message_buffer.data(),
+                              client_session->GetLargestMessagePayload() + 1),
+              &storage))
+          .status);
   EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
 
