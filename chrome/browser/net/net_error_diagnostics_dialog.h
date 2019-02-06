@@ -11,9 +11,11 @@ namespace content {
 class WebContents;
 }
 
-// Returns true if the platform has a supported tool for diagnosing network
-// errors encountered when requesting URLs.
-bool CanShowNetworkDiagnosticsDialog();
+// Returns true if a tool for diagnosing network errors encountered when
+// requesting URLs can be shown for the provided WebContents. The ability to
+// show the diagnostic tool depends on the host platform, and whether the
+// WebContents is incognito.
+bool CanShowNetworkDiagnosticsDialog(content::WebContents* web_contents);
 
 // Shows a dialog for investigating an error received when requesting
 // |failed_url|.  May only be called when CanShowNetworkDiagnosticsDialog()
