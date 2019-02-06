@@ -18,9 +18,9 @@
 
 namespace {
 
-using resource_coordinator::FrameCoordinationUnitImpl;
-using resource_coordinator::PageCoordinationUnitImpl;
-using resource_coordinator::ProcessCoordinationUnitImpl;
+using performance_manager::FrameCoordinationUnitImpl;
+using performance_manager::PageCoordinationUnitImpl;
+using performance_manager::ProcessCoordinationUnitImpl;
 
 // Returns true iff the given |process| is responsible for hosting the
 // main-frame of the given |page|.
@@ -37,7 +37,7 @@ bool HostsMainFrame(ProcessCoordinationUnitImpl* process,
 
 }  // namespace
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 CoordinationUnitIntrospectorImpl::CoordinationUnitIntrospectorImpl(
     CoordinationUnitGraph* graph)
@@ -52,10 +52,12 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
       graph_->GetAllProcessCoordinationUnits();
   for (auto* process_cu : process_cus) {
     int64_t pid;
-    if (!process_cu->GetProperty(mojom::PropertyType::kPID, &pid))
+    if (!process_cu->GetProperty(
+            resource_coordinator::mojom::PropertyType::kPID, &pid))
       continue;
 
-    mojom::ProcessInfoPtr process_info(mojom::ProcessInfo::New());
+    resource_coordinator::mojom::ProcessInfoPtr process_info(
+        resource_coordinator::mojom::ProcessInfo::New());
     process_info->pid = base::checked_cast<base::ProcessId>(pid);
     DCHECK_NE(base::kNullProcessId, process_info->pid);
     process_info->launch_time = process_cu->launch_time();
@@ -67,7 +69,8 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
       if (page_cu->GetProperty(
               resource_coordinator::mojom::PropertyType::kUKMSourceId,
               &ukm_source_id)) {
-        mojom::PageInfoPtr page_info(mojom::PageInfo::New());
+        resource_coordinator::mojom::PageInfoPtr page_info(
+            resource_coordinator::mojom::PageInfo::New());
         page_info->ukm_source_id = ukm_source_id;
         page_info->tab_id = page_cu->id().id;
         page_info->hosts_main_frame = HostsMainFrame(process_cu, page_cu);
@@ -90,4 +93,4 @@ void CoordinationUnitIntrospectorImpl::BindToInterface(
   bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

@@ -19,7 +19,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 PerformanceManager* g_performance_manager = nullptr;
@@ -130,7 +130,7 @@ void PerformanceManager::BindInterfaceImpl(
 }
 
 void PerformanceManager::BindWebUIGraphDump(
-    mojom::WebUIGraphDumpRequest request,
+    resource_coordinator::mojom::WebUIGraphDumpRequest request,
     const service_manager::BindSourceInfo& source_info) {
   std::unique_ptr<WebUIGraphDumpImpl> graph_dump =
       std::make_unique<WebUIGraphDumpImpl>(&graph_);
@@ -156,4 +156,4 @@ void PerformanceManager::OnGraphDumpConnectionError(
   graph_dumps_.erase(it);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class PageCoordinationUnitImpl;
 class ProcessCoordinationUnitImpl;
@@ -17,27 +17,35 @@ class ProcessCoordinationUnitImpl;
 // most has one parent that is a FrameCoordinationUnit.
 // A Frame Coordination Unit will have parents only if navigation committed.
 class FrameCoordinationUnitImpl
-    : public CoordinationUnitInterface<FrameCoordinationUnitImpl,
-                                       mojom::FrameCoordinationUnit,
-                                       mojom::FrameCoordinationUnitRequest> {
+    : public CoordinationUnitInterface<
+          FrameCoordinationUnitImpl,
+          resource_coordinator::mojom::FrameCoordinationUnit,
+          resource_coordinator::mojom::FrameCoordinationUnitRequest> {
  public:
-  static CoordinationUnitType Type() { return CoordinationUnitType::kFrame; }
+  static resource_coordinator::CoordinationUnitType Type() {
+    return resource_coordinator::CoordinationUnitType::kFrame;
+  }
 
   FrameCoordinationUnitImpl(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       CoordinationUnitGraph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
   ~FrameCoordinationUnitImpl() override;
 
   // FrameCoordinationUnit implementation.
-  void SetProcess(const CoordinationUnitID& cu_id) override;
-  void AddChildFrame(const CoordinationUnitID& cu_id) override;
-  void RemoveChildFrame(const CoordinationUnitID& cu_id) override;
+  void SetProcess(
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
+  void AddChildFrame(
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
+  void RemoveChildFrame(
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
   void SetNetworkAlmostIdle(bool idle) override;
-  void SetLifecycleState(mojom::LifecycleState state) override;
+  void SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
-  void SetInterventionPolicy(mojom::PolicyControlledIntervention intervention,
-                             mojom::InterventionPolicy policy) override;
+  void SetInterventionPolicy(
+      resource_coordinator::mojom::PolicyControlledIntervention intervention,
+      resource_coordinator::mojom::InterventionPolicy policy) override;
   void OnNonPersistentNotificationCreated() override;
 
   FrameCoordinationUnitImpl* GetParentFrameCoordinationUnit() const;
@@ -45,7 +53,9 @@ class FrameCoordinationUnitImpl
   ProcessCoordinationUnitImpl* GetProcessCoordinationUnit() const;
   bool IsMainFrame() const;
 
-  mojom::LifecycleState lifecycle_state() const { return lifecycle_state_; }
+  resource_coordinator::mojom::LifecycleState lifecycle_state() const {
+    return lifecycle_state_;
+  }
   bool has_nonempty_beforeunload() const { return has_nonempty_beforeunload_; }
 
   // Returns true if all intervention policies have been set for this frame.
@@ -58,16 +68,18 @@ class FrameCoordinationUnitImpl
 
   // Sets the same policy for all intervention types in this frame. Causes
   // Page::OnFrameInterventionPolicyChanged to be invoked.
-  void SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy policy);
+  void SetAllInterventionPoliciesForTesting(
+      resource_coordinator::mojom::InterventionPolicy policy);
 
  private:
   friend class PageCoordinationUnitImpl;
   friend class ProcessCoordinationUnitImpl;
 
   // CoordinationUnitInterface implementation.
-  void OnEventReceived(mojom::Event event) override;
-  void OnPropertyChanged(mojom::PropertyType property_type,
-                         int64_t value) override;
+  void OnEventReceived(resource_coordinator::mojom::Event event) override;
+  void OnPropertyChanged(
+      resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
 
   bool HasFrameCoordinationUnitInAncestors(
       FrameCoordinationUnitImpl* frame_cu) const;
@@ -91,17 +103,21 @@ class FrameCoordinationUnitImpl
   ProcessCoordinationUnitImpl* process_coordination_unit_;
   std::set<FrameCoordinationUnitImpl*> child_frame_coordination_units_;
 
-  mojom::LifecycleState lifecycle_state_ = mojom::LifecycleState::kRunning;
+  resource_coordinator::mojom::LifecycleState lifecycle_state_ =
+      resource_coordinator::mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
 
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.
-  mojom::InterventionPolicy intervention_policy_
-      [static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue) + 1];
+  resource_coordinator::mojom::InterventionPolicy
+      intervention_policy_[static_cast<size_t>(
+                               resource_coordinator::mojom::
+                                   PolicyControlledIntervention::kMaxValue) +
+                           1];
 
   DISALLOW_COPY_AND_ASSIGN(FrameCoordinationUnitImpl);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_FRAME_COORDINATION_UNIT_IMPL_H_

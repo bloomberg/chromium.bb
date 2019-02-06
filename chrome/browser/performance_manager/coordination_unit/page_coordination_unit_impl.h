@@ -9,27 +9,31 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class FrameCoordinationUnitImpl;
 class ProcessCoordinationUnitImpl;
 
 class PageCoordinationUnitImpl
-    : public CoordinationUnitInterface<PageCoordinationUnitImpl,
-                                       mojom::PageCoordinationUnit,
-                                       mojom::PageCoordinationUnitRequest> {
+    : public CoordinationUnitInterface<
+          PageCoordinationUnitImpl,
+          resource_coordinator::mojom::PageCoordinationUnit,
+          resource_coordinator::mojom::PageCoordinationUnitRequest> {
  public:
-  static CoordinationUnitType Type() { return CoordinationUnitType::kPage; }
+  static resource_coordinator::CoordinationUnitType Type() {
+    return resource_coordinator::CoordinationUnitType::kPage;
+  }
 
   PageCoordinationUnitImpl(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       CoordinationUnitGraph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
   ~PageCoordinationUnitImpl() override;
 
-  // mojom::PageCoordinationUnit implementation.
-  void AddFrame(const CoordinationUnitID& cu_id) override;
-  void RemoveFrame(const CoordinationUnitID& cu_id) override;
+  // resource_coordinator::mojom::PageCoordinationUnit implementation.
+  void AddFrame(const resource_coordinator::CoordinationUnitID& cu_id) override;
+  void RemoveFrame(
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
   void SetIsLoading(bool is_loading) override;
   void SetVisibility(bool visible) override;
   void SetUKMSourceId(int64_t ukm_source_id) override;
@@ -94,25 +98,28 @@ class PageCoordinationUnitImpl
   int64_t navigation_id() const { return navigation_id_; }
 
   // Invoked when the state of a frame in this page changes.
-  void OnFrameLifecycleStateChanged(FrameCoordinationUnitImpl* frame_cu,
-                                    mojom::LifecycleState old_state);
+  void OnFrameLifecycleStateChanged(
+      FrameCoordinationUnitImpl* frame_cu,
+      resource_coordinator::mojom::LifecycleState old_state);
 
   void OnFrameInterventionPolicyChanged(
       FrameCoordinationUnitImpl* frame,
-      mojom::PolicyControlledIntervention intervention,
-      mojom::InterventionPolicy old_policy,
-      mojom::InterventionPolicy new_policy);
+      resource_coordinator::mojom::PolicyControlledIntervention intervention,
+      resource_coordinator::mojom::InterventionPolicy old_policy,
+      resource_coordinator::mojom::InterventionPolicy new_policy);
 
   // Gets the current policy for the specified |intervention|, recomputing it
   // from individual frame policies if necessary. Returns kUnknown until there
   // are 1 or more frames, and they have all computed their local policy
   // settings.
-  mojom::InterventionPolicy GetInterventionPolicy(
-      mojom::PolicyControlledIntervention intervention);
+  resource_coordinator::mojom::InterventionPolicy GetInterventionPolicy(
+      resource_coordinator::mojom::PolicyControlledIntervention intervention);
 
   // Similar to GetInterventionPolicy, but doesn't trigger recomputes.
-  mojom::InterventionPolicy GetRawInterventionPolicyForTesting(
-      mojom::PolicyControlledIntervention intervention) const {
+  resource_coordinator::mojom::InterventionPolicy
+  GetRawInterventionPolicyForTesting(
+      resource_coordinator::mojom::PolicyControlledIntervention intervention)
+      const {
     return intervention_policy_[static_cast<size_t>(intervention)];
   }
 
@@ -124,9 +131,10 @@ class PageCoordinationUnitImpl
   friend class FrameCoordinationUnitImpl;
 
   // CoordinationUnitInterface implementation.
-  void OnEventReceived(mojom::Event event) override;
-  void OnPropertyChanged(mojom::PropertyType property_type,
-                         int64_t value) override;
+  void OnEventReceived(resource_coordinator::mojom::Event event) override;
+  void OnPropertyChanged(
+      resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
 
   bool AddFrame(FrameCoordinationUnitImpl* frame_cu);
   bool RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
@@ -152,7 +160,7 @@ class PageCoordinationUnitImpl
   // Recomputes intervention policy aggregation. This is invoked on demand when
   // a policy is queried.
   void RecomputeInterventionPolicy(
-      mojom::PolicyControlledIntervention intervention);
+      resource_coordinator::mojom::PolicyControlledIntervention intervention);
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
@@ -191,8 +199,11 @@ class PageCoordinationUnitImpl
   // aggregated from the corresponding per-frame values. If an individual value
   // is kUnknown then a frame in the frame tree has changed values and
   // a new aggregation is required.
-  mojom::InterventionPolicy intervention_policy_
-      [static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue) + 1];
+  resource_coordinator::mojom::InterventionPolicy
+      intervention_policy_[static_cast<size_t>(
+                               resource_coordinator::mojom::
+                                   PolicyControlledIntervention::kMaxValue) +
+                           1];
 
   // The number of child frames that have checked in with initial intervention
   // policy values. If this doesn't match the number of known child frames, then
@@ -204,6 +215,6 @@ class PageCoordinationUnitImpl
   DISALLOW_COPY_AND_ASSIGN(PageCoordinationUnitImpl);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_

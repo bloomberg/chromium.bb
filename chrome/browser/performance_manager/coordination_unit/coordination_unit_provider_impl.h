@@ -18,9 +18,10 @@ namespace service_manager {
 struct BindSourceInfo;
 }  // namespace service_manager
 
-namespace resource_coordinator {
+namespace performance_manager {
 
-class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
+class CoordinationUnitProviderImpl
+    : public resource_coordinator::mojom::CoordinationUnitProvider {
  public:
   CoordinationUnitProviderImpl(
       service_manager::ServiceKeepalive* service_keepalive,
@@ -33,16 +34,16 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
 
   void OnConnectionError(CoordinationUnitBase* coordination_unit);
 
-  // Overridden from mojom::CoordinationUnitProvider:
+  // Overridden from resource_coordinator::mojom::CoordinationUnitProvider:
   void CreateFrameCoordinationUnit(
       resource_coordinator::mojom::FrameCoordinationUnitRequest request,
-      const CoordinationUnitID& id) override;
+      const resource_coordinator::CoordinationUnitID& id) override;
   void CreatePageCoordinationUnit(
       resource_coordinator::mojom::PageCoordinationUnitRequest request,
-      const CoordinationUnitID& id) override;
+      const resource_coordinator::CoordinationUnitID& id) override;
   void CreateProcessCoordinationUnit(
       resource_coordinator::mojom::ProcessCoordinationUnitRequest request,
-      const CoordinationUnitID& id) override;
+      const resource_coordinator::CoordinationUnitID& id) override;
   void GetSystemCoordinationUnit(
       resource_coordinator::mojom::SystemCoordinationUnitRequest request)
       override;
@@ -51,11 +52,12 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
   service_manager::ServiceKeepalive* const service_keepalive_;
   std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
   CoordinationUnitGraph* coordination_unit_graph_;
-  mojo::BindingSet<mojom::CoordinationUnitProvider> bindings_;
+  mojo::BindingSet<resource_coordinator::mojom::CoordinationUnitProvider>
+      bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitProviderImpl);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_PROVIDER_IMPL_H_

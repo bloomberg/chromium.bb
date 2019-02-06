@@ -22,9 +22,12 @@ namespace content {
 class WebContents;
 }
 
+namespace performance_manager {
+class PerformanceManager;
+}  // namespace performance_manager
+
 namespace resource_coordinator {
 
-class PerformanceManager;
 
 namespace testing {
 
@@ -99,7 +102,7 @@ class ChromeTestHarnessWithLocalDB : public ChromeRenderViewHostTestHarness {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   service_manager::mojom::ServicePtr service_;
-  std::unique_ptr<PerformanceManager> performance_manager_;
+  std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
 };
 
 }  // namespace testing

@@ -11,7 +11,7 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -26,14 +26,14 @@ TEST_F(CoordinationUnitBaseTest, GetSetProperty) {
 
   // An empty value should be returned if property is not found
   int64_t test_value;
-  EXPECT_FALSE(
-      coordination_unit->GetProperty(mojom::PropertyType::kTest, &test_value));
+  EXPECT_FALSE(coordination_unit->GetProperty(
+      resource_coordinator::mojom::PropertyType::kTest, &test_value));
 
   // Perform a valid storage property set
   coordination_unit->SetPropertyForTesting(41);
   EXPECT_EQ(1u, coordination_unit->properties_for_testing().size());
-  EXPECT_TRUE(
-      coordination_unit->GetProperty(mojom::PropertyType::kTest, &test_value));
+  EXPECT_TRUE(coordination_unit->GetProperty(
+      resource_coordinator::mojom::PropertyType::kTest, &test_value));
   EXPECT_EQ(41, test_value);
 }
 
@@ -129,4 +129,4 @@ TEST_F(CoordinationUnitBaseTest,
                     cu_graph.other_process.get()));
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

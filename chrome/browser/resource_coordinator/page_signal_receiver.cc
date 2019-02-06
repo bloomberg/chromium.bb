@@ -66,7 +66,8 @@ void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
   // When PageSignalReceiver starts to have observer, construct the mojo
   // channel.
   if (!binding_.is_bound()) {
-    PerformanceManager* performance_manager = PerformanceManager::GetInstance();
+    performance_manager::PerformanceManager* performance_manager =
+        performance_manager::PerformanceManager::GetInstance();
     if (performance_manager) {
       mojom::PageSignalGeneratorPtr page_signal_generator_ptr;
       performance_manager->BindInterface(

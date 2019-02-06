@@ -17,8 +17,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
-
 struct CoordinationUnitID;
+}  // namespace resource_coordinator
+
+namespace performance_manager {
+
 class SystemCoordinationUnitImpl;
 
 template <class CoordinationUnitClass>
@@ -26,8 +29,9 @@ class TestCoordinationUnitWrapper {
  public:
   static TestCoordinationUnitWrapper<CoordinationUnitClass> Create(
       CoordinationUnitGraph* graph) {
-    CoordinationUnitID cu_id(CoordinationUnitClass::Type(),
-                             CoordinationUnitID::RANDOM_ID);
+    resource_coordinator::CoordinationUnitID cu_id(
+        CoordinationUnitClass::Type(),
+        resource_coordinator::CoordinationUnitID::RANDOM_ID);
     return TestCoordinationUnitWrapper<CoordinationUnitClass>(
         CoordinationUnitClass::Create(cu_id, graph, nullptr));
   }
@@ -65,7 +69,7 @@ class CoordinationUnitTestHarness : public testing::Test {
 
   template <class CoordinationUnitClass>
   TestCoordinationUnitWrapper<CoordinationUnitClass> CreateCoordinationUnit(
-      CoordinationUnitID cu_id) {
+      resource_coordinator::CoordinationUnitID cu_id) {
     return TestCoordinationUnitWrapper<CoordinationUnitClass>(
         CoordinationUnitClass::Create(cu_id, coordination_unit_graph(),
                                       service_keepalive_.CreateRef()));
@@ -73,8 +77,9 @@ class CoordinationUnitTestHarness : public testing::Test {
 
   template <class CoordinationUnitClass>
   TestCoordinationUnitWrapper<CoordinationUnitClass> CreateCoordinationUnit() {
-    CoordinationUnitID cu_id(CoordinationUnitClass::Type(),
-                             CoordinationUnitID::RANDOM_ID);
+    resource_coordinator::CoordinationUnitID cu_id(
+        CoordinationUnitClass::Type(),
+        resource_coordinator::CoordinationUnitID::RANDOM_ID);
     return CreateCoordinationUnit<CoordinationUnitClass>(cu_id);
   }
 
@@ -102,6 +107,6 @@ class CoordinationUnitTestHarness : public testing::Test {
   CoordinationUnitProviderImpl provider_;
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_TEST_HARNESS_H_

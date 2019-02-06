@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
 
+#include <map>
 #include <memory>
 
 #include "base/callback.h"
@@ -20,7 +21,7 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class CoordinationUnitGraph;
 
@@ -29,7 +30,7 @@ class CoordinationUnitGraph;
 // this class and can override shared funtionality when needed.
 class CoordinationUnitBase {
  public:
-  CoordinationUnitBase(const CoordinationUnitID& id,
+  CoordinationUnitBase(const resource_coordinator::CoordinationUnitID& id,
                        CoordinationUnitGraph* graph);
   virtual ~CoordinationUnitBase();
 
@@ -37,12 +38,14 @@ class CoordinationUnitBase {
   void BeforeDestroyed();
   void AddObserver(CoordinationUnitGraphObserver* observer);
   void RemoveObserver(CoordinationUnitGraphObserver* observer);
-  bool GetProperty(const mojom::PropertyType property_type,
-                   int64_t* result) const;
-  int64_t GetPropertyOrDefault(const mojom::PropertyType property_type,
-                               int64_t default_value) const;
+  bool GetProperty(
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t* result) const;
+  int64_t GetPropertyOrDefault(
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t default_value) const;
 
-  const CoordinationUnitID& id() const { return id_; }
+  const resource_coordinator::CoordinationUnitID& id() const { return id_; }
   CoordinationUnitGraph* graph() const { return graph_; }
 
   const base::ObserverList<CoordinationUnitGraphObserver>::Unchecked&
@@ -51,31 +54,34 @@ class CoordinationUnitBase {
   }
 
   void SetPropertyForTesting(int64_t value) {
-    SetProperty(mojom::PropertyType::kTest, value);
+    SetProperty(resource_coordinator::mojom::PropertyType::kTest, value);
   }
 
-  const std::map<mojom::PropertyType, int64_t>& properties_for_testing() const {
+  const std::map<resource_coordinator::mojom::PropertyType, int64_t>&
+  properties_for_testing() const {
     return properties_;
   }
 
  protected:
-  virtual void OnEventReceived(mojom::Event event);
-  virtual void OnPropertyChanged(mojom::PropertyType property_type,
-                                 int64_t value);
+  virtual void OnEventReceived(resource_coordinator::mojom::Event event);
+  virtual void OnPropertyChanged(
+      resource_coordinator::mojom::PropertyType property_type,
+      int64_t value);
 
-  void SendEvent(mojom::Event event);
-  void SetProperty(mojom::PropertyType property_type, int64_t value);
+  void SendEvent(resource_coordinator::mojom::Event event);
+  void SetProperty(resource_coordinator::mojom::PropertyType property_type,
+                   int64_t value);
 
   // Passes the ownership of the newly created |new_cu| to its graph.
   static CoordinationUnitBase* PassOwnershipToGraph(
       std::unique_ptr<CoordinationUnitBase> new_cu);
 
   CoordinationUnitGraph* const graph_;
-  const CoordinationUnitID id_;
+  const resource_coordinator::CoordinationUnitID id_;
 
  private:
   base::ObserverList<CoordinationUnitGraphObserver>::Unchecked observers_;
-  std::map<mojom::PropertyType, int64_t> properties_;
+  std::map<resource_coordinator::mojom::PropertyType, int64_t> properties_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitBase);
 };
@@ -87,7 +93,7 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
                                   public MojoInterfaceClass {
  public:
   static CoordinationUnitClass* Create(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       CoordinationUnitGraph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref) {
     std::unique_ptr<CoordinationUnitClass> new_cu =
@@ -110,7 +116,7 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
   }
 
   CoordinationUnitInterface(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       CoordinationUnitGraph* graph,
 
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
@@ -133,7 +139,7 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
   static CoordinationUnitClass* GetCoordinationUnitByID(
       CoordinationUnitGraph* graph,
-      const CoordinationUnitID cu_id) {
+      const resource_coordinator::CoordinationUnitID cu_id) {
     DCHECK(cu_id.type == CoordinationUnitClass::Type());
     auto* cu = graph->GetCoordinationUnitByID(cu_id);
     if (!cu)
@@ -151,6 +157,6 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitInterface);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_

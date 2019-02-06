@@ -25,7 +25,8 @@ class RenderProcessUserData : public base::SupportsUserData::Data {
   static RenderProcessUserData* GetForRenderProcessHost(
       content::RenderProcessHost* host);
 
-  ProcessResourceCoordinator* process_resource_coordinator() {
+  performance_manager::ProcessResourceCoordinator*
+  process_resource_coordinator() {
     return &process_resource_coordinator_;
   }
 
@@ -33,7 +34,7 @@ class RenderProcessUserData : public base::SupportsUserData::Data {
   explicit RenderProcessUserData(
       content::RenderProcessHost* render_process_host);
 
-  ProcessResourceCoordinator process_resource_coordinator_;
+  performance_manager::ProcessResourceCoordinator process_resource_coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessUserData);
 };

@@ -6,7 +6,7 @@
 
 #include "base/time/tick_clock.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -36,4 +36,4 @@ void ResourceCoordinatorClock::SetClockForTesting(
   g_tick_clock_for_testing() = tick_clock;
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

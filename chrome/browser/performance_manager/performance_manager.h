@@ -25,7 +25,7 @@ namespace ukm {
 class MojoUkmRecorder;
 }  // namespace ukm
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // The performance manager is a rendezvous point for binding to performance
 // manager interfaces.
@@ -66,8 +66,9 @@ class PerformanceManager {
   void BindInterfaceImpl(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
 
-  void BindWebUIGraphDump(mojom::WebUIGraphDumpRequest request,
-                          const service_manager::BindSourceInfo& source_info);
+  void BindWebUIGraphDump(
+      resource_coordinator::mojom::WebUIGraphDumpRequest request,
+      const service_manager::BindSourceInfo& source_info);
   void OnGraphDumpConnectionError(WebUIGraphDumpImpl* graph_dump);
 
   // TODO(siggi): Remove this as it's only here to maintain compatibility
@@ -98,6 +99,6 @@ void PerformanceManager::BindInterface(
   BindInterface(Interface::Name_, request.PassMessagePipe());
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PERFORMANCE_MANAGER_H_

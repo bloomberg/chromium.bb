@@ -14,7 +14,7 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -37,7 +37,8 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
 
   // Overridden from CoordinationUnitGraphObserver.
   bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override {
-    return coordination_unit->id().type == CoordinationUnitType::kFrame;
+    return coordination_unit->id().type ==
+           resource_coordinator::CoordinationUnitType::kFrame;
   }
   void OnCoordinationUnitCreated(
       const CoordinationUnitBase* coordination_unit) override {
@@ -49,7 +50,7 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
   }
   void OnFramePropertyChanged(
       const FrameCoordinationUnitImpl* frame_coordination_unit,
-      const mojom::PropertyType property_type,
+      const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override {
     ++property_changed_count_;
   }
@@ -81,8 +82,8 @@ TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
 
     // The registered observer will only observe the events that happen to
     // |root_frame_coordination_unit| and |frame_coordination_unit| because
-    // they are CoordinationUnitType::kFrame, so OnPropertyChanged
-    // will only be called for |root_frame_coordination_unit|.
+    // they are resource_coordinator::CoordinationUnitType::kFrame, so
+    // OnPropertyChanged will only be called for |root_frame_coordination_unit|.
     root_frame_cu->SetPropertyForTesting(42);
     process_cu->SetPropertyForTesting(42);
     EXPECT_EQ(1u, observer->property_changed_count());
@@ -91,4 +92,4 @@ TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
   EXPECT_EQ(2u, observer->coordination_unit_destroyed_count());
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

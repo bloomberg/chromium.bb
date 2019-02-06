@@ -15,7 +15,7 @@
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -25,18 +25,20 @@ class SystemAndProcessObserver : public CoordinationUnitGraphObserver {
   // CoordinationUnitGraphObserver implementation:
   bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override {
     auto cu_type = coordination_unit->id().type;
-    return cu_type == CoordinationUnitType::kSystem;
+    return cu_type == resource_coordinator::CoordinationUnitType::kSystem;
   }
 
-  void OnSystemEventReceived(const SystemCoordinationUnitImpl* system_cu,
-                             const mojom::Event event) override {
-    EXPECT_EQ(mojom::Event::kProcessCPUUsageReady, event);
+  void OnSystemEventReceived(
+      const SystemCoordinationUnitImpl* system_cu,
+      const resource_coordinator::mojom::Event event) override {
+    EXPECT_EQ(resource_coordinator::mojom::Event::kProcessCPUUsageReady, event);
     ++system_event_seen_count_;
   }
 
-  void OnProcessPropertyChanged(const ProcessCoordinationUnitImpl* process_cu,
-                                const mojom::PropertyType property,
-                                int64_t value) override {
+  void OnProcessPropertyChanged(
+      const ProcessCoordinationUnitImpl* process_cu,
+      const resource_coordinator::mojom::PropertyType property,
+      int64_t value) override {
     ++process_property_change_seen_count_;
   }
 
@@ -68,18 +70,18 @@ class SystemCoordinationUnitImplTest : public CoordinationUnitTestHarness {
   base::SimpleTestTickClock clock_;
 };
 
-mojom::ProcessResourceMeasurementBatchPtr CreateMeasurementBatch(
-    base::TimeTicks start_end_time,
-    size_t num_processes,
-    base::TimeDelta additional_cpu_time) {
-  mojom::ProcessResourceMeasurementBatchPtr batch =
-      mojom::ProcessResourceMeasurementBatch::New();
+resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
+CreateMeasurementBatch(base::TimeTicks start_end_time,
+                       size_t num_processes,
+                       base::TimeDelta additional_cpu_time) {
+  resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch =
+      resource_coordinator::mojom::ProcessResourceMeasurementBatch::New();
   batch->batch_started_time = start_end_time;
   batch->batch_ended_time = start_end_time;
 
   for (size_t i = 1; i <= num_processes; ++i) {
-    mojom::ProcessResourceMeasurementPtr measurement =
-        mojom::ProcessResourceMeasurement::New();
+    resource_coordinator::mojom::ProcessResourceMeasurementPtr measurement =
+        resource_coordinator::mojom::ProcessResourceMeasurement::New();
     measurement->pid = i;
     measurement->cpu_usage =
         base::TimeDelta::FromMicroseconds(i * 10) + additional_cpu_time;
@@ -127,15 +129,15 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
 
   // The first measurement batch results in a zero CPU usage for the processes.
   int64_t cpu_usage;
-  EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
-                                            &cpu_usage));
+  EXPECT_TRUE(cu_graph.process->GetProperty(
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(0, cpu_usage);
   EXPECT_EQ(100u, cu_graph.process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(10u),
             cu_graph.process->cumulative_cpu_usage());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
-      mojom::PropertyType::kCPUUsage, &cpu_usage));
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(0, cpu_usage);
   EXPECT_EQ(200u, cu_graph.other_process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
@@ -153,13 +155,13 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
   cu_graph.system->DistributeMeasurementBatch(
       CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(10),
                              3, base::TimeDelta::FromMicroseconds(10)));
-  EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
-                                            &cpu_usage));
+  EXPECT_TRUE(cu_graph.process->GetProperty(
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(100000, cpu_usage);
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
             cu_graph.process->cumulative_cpu_usage());
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
-      mojom::PropertyType::kCPUUsage, &cpu_usage));
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(100000, cpu_usage);
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(30u),
             cu_graph.other_process->cumulative_cpu_usage());
@@ -179,15 +181,15 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
       CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(20),
                              1, base::TimeDelta::FromMicroseconds(310)));
 
-  EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
-                                            &cpu_usage));
+  EXPECT_TRUE(cu_graph.process->GetProperty(
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(3000000, cpu_usage);
   EXPECT_EQ(100u, cu_graph.process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(320u),
             cu_graph.process->cumulative_cpu_usage());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
-      mojom::PropertyType::kCPUUsage, &cpu_usage));
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(0, cpu_usage);
   EXPECT_EQ(0u, cu_graph.other_process->private_footprint_kb());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(30u),
@@ -202,4 +204,4 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
   EXPECT_EQ(50u, cu_graph.other_page->private_footprint_kb_estimate());
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

@@ -5,13 +5,14 @@
 #include "chrome/browser/performance_manager/page_resource_coordinator.h"
 #include "base/bind.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 PageResourceCoordinator::PageResourceCoordinator(
     PerformanceManager* performance_manager)
     : ResourceCoordinatorInterface(), weak_ptr_factory_(this) {
-  CoordinationUnitID new_cu_id(CoordinationUnitType::kPage,
-                               CoordinationUnitID::RANDOM_ID);
+  resource_coordinator::CoordinationUnitID new_cu_id(
+      resource_coordinator::CoordinationUnitType::kPage,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(performance_manager,
                                                  new_cu_id);
 }
@@ -79,19 +80,21 @@ void PageResourceCoordinator::RemoveFrame(
 }
 
 void PageResourceCoordinator::ConnectToService(
-    mojom::CoordinationUnitProviderPtr& provider,
-    const CoordinationUnitID& cu_id) {
+    resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+    const resource_coordinator::CoordinationUnitID& cu_id) {
   provider->CreatePageCoordinationUnit(mojo::MakeRequest(&service_), cu_id);
 }
 
-void PageResourceCoordinator::AddFrameByID(const CoordinationUnitID& cu_id) {
+void PageResourceCoordinator::AddFrameByID(
+    const resource_coordinator::CoordinationUnitID& cu_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   service_->AddFrame(cu_id);
 }
 
-void PageResourceCoordinator::RemoveFrameByID(const CoordinationUnitID& cu_id) {
+void PageResourceCoordinator::RemoveFrameByID(
+    const resource_coordinator::CoordinationUnitID& cu_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   service_->RemoveFrame(cu_id);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

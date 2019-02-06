@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class CoordinationUnitBase;
 class CoordinationUnitGraph;
@@ -50,46 +50,52 @@ class CoordinationUnitGraphObserver {
 
   // Called whenever a property of the |coordination_unit| is changed if the
   // |coordination_unit| doesn't implement its own PropertyChanged handler.
-  virtual void OnPropertyChanged(const CoordinationUnitBase* coordination_unit,
-                                 const mojom::PropertyType property_type,
-                                 int64_t value) {}
+  virtual void OnPropertyChanged(
+      const CoordinationUnitBase* coordination_unit,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) {}
 
   // Called whenever a property of the FrameCoordinationUnit is changed.
-  virtual void OnFramePropertyChanged(const FrameCoordinationUnitImpl* frame_cu,
-                                      const mojom::PropertyType property_type,
-                                      int64_t value) {}
+  virtual void OnFramePropertyChanged(
+      const FrameCoordinationUnitImpl* frame_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) {}
 
   // Called whenever a property of the PageCoordinationUnit is changed.
-  virtual void OnPagePropertyChanged(const PageCoordinationUnitImpl* page_cu,
-                                     const mojom::PropertyType property_type,
-                                     int64_t value) {}
+  virtual void OnPagePropertyChanged(
+      const PageCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) {}
 
   // Called whenever a property of the ProcessCoordinationUnit is changed.
   virtual void OnProcessPropertyChanged(
       const ProcessCoordinationUnitImpl* process_cu,
-      const mojom::PropertyType property_type,
+      const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the SystemCoordinationUnit is changed.
   virtual void OnSystemPropertyChanged(
       const SystemCoordinationUnitImpl* system_cu,
-      const mojom::PropertyType property_type,
+      const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever an event is received in |coordination_unit| if the
   // |coordination_unit| doesn't implement its own EventReceived handler.
   virtual void OnEventReceived(const CoordinationUnitBase* coordination_unit,
-                               const mojom::Event event) {}
-  virtual void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
-                                    const mojom::Event event) {}
-  virtual void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
-                                   const mojom::Event event) {}
+                               const resource_coordinator::mojom::Event event) {
+  }
+  virtual void OnFrameEventReceived(
+      const FrameCoordinationUnitImpl* frame_cu,
+      const resource_coordinator::mojom::Event event) {}
+  virtual void OnPageEventReceived(
+      const PageCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::Event event) {}
   virtual void OnProcessEventReceived(
       const ProcessCoordinationUnitImpl* process_cu,
-      const mojom::Event event) {}
+      const resource_coordinator::mojom::Event event) {}
   virtual void OnSystemEventReceived(
       const SystemCoordinationUnitImpl* system_cu,
-      const mojom::Event event) {}
+      const resource_coordinator::mojom::Event event) {}
 
   // Called when all the frames in a process become frozen.
   virtual void OnAllFramesInProcessFrozen(
@@ -110,6 +116,6 @@ class CoordinationUnitGraphObserver {
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraphObserver);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_COORDINATION_UNIT_GRAPH_OBSERVER_H_

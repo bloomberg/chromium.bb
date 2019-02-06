@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 CoordinationUnitTestHarness::CoordinationUnitTestHarness()
     : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
@@ -22,4 +22,4 @@ void CoordinationUnitTestHarness::TearDown() {
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

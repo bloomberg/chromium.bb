@@ -10,7 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -38,8 +38,8 @@ TEST_F(ProcessCoordinationUnitImplTest, MeasureCPUUsage) {
   auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
   process_cu->SetCPUUsage(1);
   int64_t cpu_usage;
-  EXPECT_TRUE(
-      process_cu->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
+  EXPECT_TRUE(process_cu->GetProperty(
+      resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(1, cpu_usage / 1000.0);
 }
 
@@ -53,22 +53,27 @@ TEST_F(ProcessCoordinationUnitImplTest, OnAllFramesInProcessFrozen) {
 
   // 1/2 frame in the process is frozen.
   // No call to OnAllFramesInProcessFrozen() is expected.
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
 
   // 2/2 frames in the process are frozen.
   EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(cu_graph.process.get()));
-  cu_graph.other_frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
+  cu_graph.other_frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
   testing::Mock::VerifyAndClear(observer);
 
   // A frame is unfrozen and frozen.
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kRunning);
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kRunning);
   EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(cu_graph.process.get()));
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
   testing::Mock::VerifyAndClear(observer);
 
   // A frozen frame is frozen again.
   // No call to OnAllFramesInProcessFrozen() is expected.
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
 }
 
 TEST_F(ProcessCoordinationUnitImplTest, ProcessLifeCycle) {
@@ -112,4 +117,4 @@ TEST_F(ProcessCoordinationUnitImplTest, ProcessLifeCycle) {
   EXPECT_EQ(base::TimeDelta(), process_cu->cumulative_cpu_usage());
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

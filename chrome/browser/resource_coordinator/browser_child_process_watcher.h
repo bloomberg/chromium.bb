@@ -5,14 +5,18 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_BROWSER_CHILD_PROCESS_WATCHER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_BROWSER_CHILD_PROCESS_WATCHER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/common/service_manager_connection.h"
 
-namespace resource_coordinator {
-
+namespace performance_manager {
 class ProcessResourceCoordinator;
+}  // namespace performance_manager
+
+namespace resource_coordinator {
 
 class BrowserChildProcessWatcher : public content::BrowserChildProcessObserver {
  public:
@@ -34,7 +38,7 @@ class BrowserChildProcessWatcher : public content::BrowserChildProcessObserver {
 
   void GPUProcessStopped();
 
-  std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
+  std::unique_ptr<performance_manager::ProcessResourceCoordinator>
       gpu_process_resource_coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserChildProcessWatcher);

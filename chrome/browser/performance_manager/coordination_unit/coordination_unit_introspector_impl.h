@@ -13,12 +13,12 @@ namespace service_manager {
 struct BindSourceInfo;
 }  // namespace service_manager
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class CoordinationUnitGraph;
 
 class CoordinationUnitIntrospectorImpl
-    : public mojom::CoordinationUnitIntrospector {
+    : public resource_coordinator::mojom::CoordinationUnitIntrospector {
  public:
   explicit CoordinationUnitIntrospectorImpl(CoordinationUnitGraph* graph);
   ~CoordinationUnitIntrospectorImpl() override;
@@ -27,16 +27,17 @@ class CoordinationUnitIntrospectorImpl
       resource_coordinator::mojom::CoordinationUnitIntrospectorRequest request,
       const service_manager::BindSourceInfo& source_info);
 
-  // Overridden from mojom::CoordinationUnitIntrospector:
+  // Overridden from resource_coordinator::mojom::CoordinationUnitIntrospector:
   void GetProcessToURLMap(GetProcessToURLMapCallback callback) override;
 
  private:
   CoordinationUnitGraph* const graph_;
-  mojo::BindingSet<mojom::CoordinationUnitIntrospector> bindings_;
+  mojo::BindingSet<resource_coordinator::mojom::CoordinationUnitIntrospector>
+      bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitIntrospectorImpl);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_INTROSPECTOR_IMPL_H_

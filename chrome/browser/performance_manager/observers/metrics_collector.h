@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_METRICS_COLLECTOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_METRICS_COLLECTOR_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -13,7 +15,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class CoordinationUnitBase;
 class FrameCoordinationUnitImpl;
@@ -39,16 +41,20 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
       const CoordinationUnitBase* coordination_unit) override;
   void OnBeforeCoordinationUnitDestroyed(
       const CoordinationUnitBase* coordination_unit) override;
-  void OnPagePropertyChanged(const PageCoordinationUnitImpl* page_cu,
-                             const mojom::PropertyType property_type,
-                             int64_t value) override;
-  void OnProcessPropertyChanged(const ProcessCoordinationUnitImpl* process_cu,
-                                const mojom::PropertyType property_type,
-                                int64_t value) override;
-  void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
-                            const mojom::Event event) override;
-  void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
-                           const mojom::Event event) override;
+  void OnPagePropertyChanged(
+      const PageCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnProcessPropertyChanged(
+      const ProcessCoordinationUnitImpl* process_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnFrameEventReceived(
+      const FrameCoordinationUnitImpl* frame_cu,
+      const resource_coordinator::mojom::Event event) override;
+  void OnPageEventReceived(
+      const PageCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::Event event) override;
 
  private:
   struct MetricsReportRecord {
@@ -81,18 +87,22 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
 
   bool ShouldReportMetrics(const PageCoordinationUnitImpl* page_cu);
   bool IsCollectingExpectedQueueingTimeForUkm(
-      const CoordinationUnitID& page_cu_id);
-  void RecordExpectedQueueingTimeForUkm(const CoordinationUnitID& page_cu_id,
-                                        int64_t expected_queueing_time);
-  void UpdateUkmSourceIdForPage(const CoordinationUnitID& page_cu_id,
-                                ukm::SourceId ukm_source_id);
+      const resource_coordinator::CoordinationUnitID& page_cu_id);
+  void RecordExpectedQueueingTimeForUkm(
+      const resource_coordinator::CoordinationUnitID& page_cu_id,
+      int64_t expected_queueing_time);
+  void UpdateUkmSourceIdForPage(
+      const resource_coordinator::CoordinationUnitID& page_cu_id,
+      ukm::SourceId ukm_source_id);
   void UpdateWithFieldTrialParams();
-  void ResetMetricsReportRecord(CoordinationUnitID cu_id);
+  void ResetMetricsReportRecord(resource_coordinator::CoordinationUnitID cu_id);
 
   // The metrics_report_record_map_ is used to record whether a metric was
   // already reported to avoid reporting multiple metrics.
-  std::map<CoordinationUnitID, MetricsReportRecord> metrics_report_record_map_;
-  std::map<CoordinationUnitID, UkmCollectionState> ukm_collection_state_map_;
+  std::map<resource_coordinator::CoordinationUnitID, MetricsReportRecord>
+      metrics_report_record_map_;
+  std::map<resource_coordinator::CoordinationUnitID, UkmCollectionState>
+      ukm_collection_state_map_;
   // The number of reports to wait before reporting ExpectedQueueingTime. For
   // example, if |frequency_ukm_eqt_reported_| is 2, then the first value is not
   // reported, the second one is, the third one isn't, etc.
@@ -100,6 +110,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   DISALLOW_COPY_AND_ASSIGN(MetricsCollector);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_METRICS_COLLECTOR_H_

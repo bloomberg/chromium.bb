@@ -36,11 +36,12 @@ namespace resource_coordinator {
 ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManager::GetInstance()) {
+      performance_manager_(
+          performance_manager::PerformanceManager::GetInstance()) {
   TabLoadTracker::Get()->StartTracking(web_contents);
   if (performance_manager_) {
     page_resource_coordinator_ =
-        std::make_unique<resource_coordinator::PageResourceCoordinator>(
+        std::make_unique<performance_manager::PageResourceCoordinator>(
             performance_manager_);
 
     // Make sure to set the visibility property when we create
@@ -100,8 +101,9 @@ void ResourceCoordinatorTabHelper::RenderFrameCreated(
   if (!performance_manager_)
     return;
 
-  std::unique_ptr<FrameResourceCoordinator> frame =
-      std::make_unique<FrameResourceCoordinator>(performance_manager_);
+  std::unique_ptr<performance_manager::FrameResourceCoordinator> frame =
+      std::make_unique<performance_manager::FrameResourceCoordinator>(
+          performance_manager_);
   content::RenderFrameHost* parent = render_frame_host->GetParent();
   if (parent) {
     DCHECK(base::ContainsKey(frames_, parent));

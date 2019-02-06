@@ -186,7 +186,7 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
-  if (PerformanceManager::GetInstance()) {
+  if (performance_manager::PerformanceManager::GetInstance()) {
     resource_coordinator_signal_observer_.reset(
         new ResourceCoordinatorSignalObserver(page_signal_receiver));
   }

@@ -460,8 +460,8 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   }
 
   // The callback keeps this object alive until the callback is invoked.
-  resource_coordinator::PerformanceManager* performance_manager =
-      resource_coordinator::PerformanceManager::GetInstance();
+  performance_manager::PerformanceManager* performance_manager =
+      performance_manager::PerformanceManager::GetInstance();
   performance_manager->BindInterface(mojo::MakeRequest(&introspector_));
   auto callback2 =
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);

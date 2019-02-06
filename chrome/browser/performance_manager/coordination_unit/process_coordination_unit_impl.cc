@@ -8,10 +8,10 @@
 #include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
 #include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
-    const CoordinationUnitID& id,
+    const resource_coordinator::CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
     : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
@@ -30,18 +30,21 @@ void ProcessCoordinationUnitImpl::AddFrame(
     FrameCoordinationUnitImpl* frame_cu) {
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
   DCHECK(inserted);
-  if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+  if (frame_cu->lifecycle_state() ==
+      resource_coordinator::mojom::LifecycleState::kFrozen)
     IncrementNumFrozenFrames();
 }
 
 void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
-  SetProperty(mojom::PropertyType::kCPUUsage, cpu_usage * 1000);
+  SetProperty(resource_coordinator::mojom::PropertyType::kCPUUsage,
+              cpu_usage * 1000);
 }
 
 void ProcessCoordinationUnitImpl::SetExpectedTaskQueueingDuration(
     base::TimeDelta duration) {
-  SetProperty(mojom::PropertyType::kExpectedTaskQueueingDuration,
-              duration.InMilliseconds());
+  SetProperty(
+      resource_coordinator::mojom::PropertyType::kExpectedTaskQueueingDuration,
+      duration.InMilliseconds());
 }
 
 void ProcessCoordinationUnitImpl::SetLaunchTime(base::Time launch_time) {
@@ -51,8 +54,9 @@ void ProcessCoordinationUnitImpl::SetLaunchTime(base::Time launch_time) {
 
 void ProcessCoordinationUnitImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
-  SetProperty(mojom::PropertyType::kMainThreadTaskLoadIsLow,
-              main_thread_task_load_is_low);
+  SetProperty(
+      resource_coordinator::mojom::PropertyType::kMainThreadTaskLoadIsLow,
+      main_thread_task_load_is_low);
 }
 
 void ProcessCoordinationUnitImpl::SetPID(base::ProcessId pid) {
@@ -74,7 +78,7 @@ void ProcessCoordinationUnitImpl::SetPID(base::ProcessId pid) {
   private_footprint_kb_ = 0;
   cumulative_cpu_usage_ = base::TimeDelta();
 
-  SetProperty(mojom::PropertyType::kPID, pid);
+  SetProperty(resource_coordinator::mojom::PropertyType::kPID, pid);
 }
 
 void ProcessCoordinationUnitImpl::SetProcessExitStatus(int32_t exit_status) {
@@ -82,7 +86,7 @@ void ProcessCoordinationUnitImpl::SetProcessExitStatus(int32_t exit_status) {
 }
 
 void ProcessCoordinationUnitImpl::OnRendererIsBloated() {
-  SendEvent(mojom::Event::kRendererIsBloated);
+  SendEvent(resource_coordinator::mojom::Event::kRendererIsBloated);
 }
 
 const std::set<FrameCoordinationUnitImpl*>&
@@ -106,23 +110,25 @@ ProcessCoordinationUnitImpl::GetAssociatedPageCoordinationUnits() const {
 
 void ProcessCoordinationUnitImpl::OnFrameLifecycleStateChanged(
     FrameCoordinationUnitImpl* frame_cu,
-    mojom::LifecycleState old_state) {
+    resource_coordinator::mojom::LifecycleState old_state) {
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   DCHECK_NE(old_state, frame_cu->lifecycle_state());
 
-  if (old_state == mojom::LifecycleState::kFrozen)
+  if (old_state == resource_coordinator::mojom::LifecycleState::kFrozen)
     DecrementNumFrozenFrames();
-  else if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+  else if (frame_cu->lifecycle_state() ==
+           resource_coordinator::mojom::LifecycleState::kFrozen)
     IncrementNumFrozenFrames();
 }
 
-void ProcessCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
+void ProcessCoordinationUnitImpl::OnEventReceived(
+    resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnProcessEventReceived(this, event);
 }
 
 void ProcessCoordinationUnitImpl::OnPropertyChanged(
-    const mojom::PropertyType property_type,
+    const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())
     observer.OnProcessPropertyChanged(this, property_type, value);
@@ -133,7 +139,8 @@ void ProcessCoordinationUnitImpl::RemoveFrame(
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   frame_coordination_units_.erase(frame_cu);
 
-  if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+  if (frame_cu->lifecycle_state() ==
+      resource_coordinator::mojom::LifecycleState::kFrozen)
     DecrementNumFrozenFrames();
 }
 
@@ -154,4 +161,4 @@ void ProcessCoordinationUnitImpl::IncrementNumFrozenFrames() {
   }
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

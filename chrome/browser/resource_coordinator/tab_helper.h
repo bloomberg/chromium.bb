@@ -19,10 +19,13 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
-namespace resource_coordinator {
-
+namespace performance_manager {
 class PageResourceCoordinator;
 class PerformanceManager;
+}  // namespace performance_manager
+
+namespace resource_coordinator {
+
 class LocalSiteCharacteristicsWebContentsObserver;
 
 class ResourceCoordinatorTabHelper
@@ -33,7 +36,7 @@ class ResourceCoordinatorTabHelper
 
   static bool ukm_recorder_initialized;
 
-  resource_coordinator::PageResourceCoordinator* page_resource_coordinator() {
+  performance_manager::PageResourceCoordinator* page_resource_coordinator() {
     return page_resource_coordinator_.get();
   }
 
@@ -82,9 +85,9 @@ class ResourceCoordinatorTabHelper
   friend class content::WebContentsUserData<ResourceCoordinatorTabHelper>;
 
   // The performance manager for this process, if any.
-  PerformanceManager* performance_manager_ = nullptr;
+  performance_manager::PerformanceManager* performance_manager_ = nullptr;
 
-  std::unique_ptr<resource_coordinator::PageResourceCoordinator>
+  std::unique_ptr<performance_manager::PageResourceCoordinator>
       page_resource_coordinator_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
@@ -101,7 +104,8 @@ class ResourceCoordinatorTabHelper
   bool first_time_title_set_ = false;
 
   // Maps from RenderFrameHost to the associated RC node.
-  std::map<content::RenderFrameHost*, std::unique_ptr<FrameResourceCoordinator>>
+  std::map<content::RenderFrameHost*,
+           std::unique_ptr<performance_manager::FrameResourceCoordinator>>
       frames_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

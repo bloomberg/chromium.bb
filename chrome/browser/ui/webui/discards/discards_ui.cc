@@ -450,8 +450,8 @@ void DiscardsUI::BindDiscardsDetailsProvider(
 
 void DiscardsUI::BindWebUIGraphDumpProvider(
     resource_coordinator::mojom::WebUIGraphDumpRequest request) {
-  resource_coordinator::PerformanceManager* performance_manager =
-      resource_coordinator::PerformanceManager::GetInstance();
+  performance_manager::PerformanceManager* performance_manager =
+      performance_manager::PerformanceManager::GetInstance();
   if (performance_manager) {
     // Forward the interface request directly to the service.
     performance_manager->BindInterface(std::move(request));

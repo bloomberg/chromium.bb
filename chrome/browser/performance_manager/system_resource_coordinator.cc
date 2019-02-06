@@ -4,13 +4,14 @@
 
 #include "chrome/browser/performance_manager/system_resource_coordinator.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 SystemResourceCoordinator::SystemResourceCoordinator(
     PerformanceManager* performance_manager)
     : ResourceCoordinatorInterface() {
-  CoordinationUnitID new_cu_id(CoordinationUnitType::kSystem,
-                               CoordinationUnitID::RANDOM_ID);
+  resource_coordinator::CoordinationUnitID new_cu_id(
+      resource_coordinator::CoordinationUnitType::kSystem,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(performance_manager,
                                                  new_cu_id);
 }
@@ -18,16 +19,16 @@ SystemResourceCoordinator::SystemResourceCoordinator(
 SystemResourceCoordinator::~SystemResourceCoordinator() = default;
 
 void SystemResourceCoordinator::DistributeMeasurementBatch(
-    mojom::ProcessResourceMeasurementBatchPtr batch) {
+    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch) {
   if (!service_)
     return;
   service_->DistributeMeasurementBatch(std::move(batch));
 }
 
 void SystemResourceCoordinator::ConnectToService(
-    mojom::CoordinationUnitProviderPtr& provider,
-    const CoordinationUnitID& cu_id) {
+    resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+    const resource_coordinator::CoordinationUnitID& cu_id) {
   provider->GetSystemCoordinationUnit(mojo::MakeRequest(&service_));
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

@@ -13,7 +13,7 @@
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -197,83 +197,112 @@ TEST_F(PageCoordinationUnitImplTest, IsLoading) {
 
   // First attempt should fail, as the property is unset.
   int64_t loading = 0;
-  EXPECT_FALSE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_FALSE(page_cu->GetProperty(
+      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
 
   // Set to false and the property should read false.
   page_cu->SetIsLoading(false);
-  EXPECT_TRUE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_TRUE(page_cu->GetProperty(
+      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
   EXPECT_EQ(0u, loading);
 
   // Set to true and the property should read true.
   page_cu->SetIsLoading(true);
-  EXPECT_TRUE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_TRUE(page_cu->GetProperty(
+      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
   EXPECT_EQ(1u, loading);
 
   // Set to false and the property should read false again.
   page_cu->SetIsLoading(false);
-  EXPECT_TRUE(page_cu->GetProperty(mojom::PropertyType::kIsLoading, &loading));
+  EXPECT_TRUE(page_cu->GetProperty(
+      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
   EXPECT_EQ(0u, loading);
 }
 
 TEST_F(PageCoordinationUnitImplTest, OnAllFramesInPageFrozen) {
-  const int64_t kRunning =
-      static_cast<int64_t>(mojom::LifecycleState::kRunning);
-  const int64_t kFrozen = static_cast<int64_t>(mojom::LifecycleState::kFrozen);
+  const int64_t kRunning = static_cast<int64_t>(
+      resource_coordinator::mojom::LifecycleState::kRunning);
+  const int64_t kFrozen = static_cast<int64_t>(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
 
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph(
       coordination_unit_graph());
 
-  EXPECT_EQ(kRunning, cu_graph.page->GetPropertyOrDefault(
-                          mojom::PropertyType::kLifecycleState, kRunning));
+  EXPECT_EQ(kRunning,
+            cu_graph.page->GetPropertyOrDefault(
+                resource_coordinator::mojom::PropertyType::kLifecycleState,
+                kRunning));
 
   // 1/2 frames in the page is frozen. Expect the page to still be running.
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(kRunning, cu_graph.page->GetPropertyOrDefault(
-                          mojom::PropertyType::kLifecycleState, kRunning));
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
+  EXPECT_EQ(kRunning,
+            cu_graph.page->GetPropertyOrDefault(
+                resource_coordinator::mojom::PropertyType::kLifecycleState,
+                kRunning));
 
   // 2/2 frames in the process are frozen. We expect the page to be frozen.
-  cu_graph.child_frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(kFrozen, cu_graph.page->GetPropertyOrDefault(
-                         mojom::PropertyType::kLifecycleState, kRunning));
+  cu_graph.child_frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
+  EXPECT_EQ(kFrozen,
+            cu_graph.page->GetPropertyOrDefault(
+                resource_coordinator::mojom::PropertyType::kLifecycleState,
+                kRunning));
 
   // Unfreeze a frame and expect the page to be running again.
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kRunning);
-  EXPECT_EQ(kRunning, cu_graph.page->GetPropertyOrDefault(
-                          mojom::PropertyType::kLifecycleState, kRunning));
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kRunning);
+  EXPECT_EQ(kRunning,
+            cu_graph.page->GetPropertyOrDefault(
+                resource_coordinator::mojom::PropertyType::kLifecycleState,
+                kRunning));
 
   // Refreeze that frame and expect the page to be frozen again.
-  cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(kFrozen, cu_graph.page->GetPropertyOrDefault(
-                         mojom::PropertyType::kLifecycleState, kRunning));
+  cu_graph.frame->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
+  EXPECT_EQ(kFrozen,
+            cu_graph.page->GetPropertyOrDefault(
+                resource_coordinator::mojom::PropertyType::kLifecycleState,
+                kRunning));
 }
 
 namespace {
 
 const size_t kInterventionCount =
-    static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue) + 1;
+    static_cast<size_t>(
+        resource_coordinator::mojom::PolicyControlledIntervention::kMaxValue) +
+    1;
 
-void ExpectRawInterventionPolicy(mojom::InterventionPolicy policy,
-                                 const PageCoordinationUnitImpl* page_cu) {
+void ExpectRawInterventionPolicy(
+    resource_coordinator::mojom::InterventionPolicy policy,
+    const PageCoordinationUnitImpl* page_cu) {
   for (size_t i = 0; i < kInterventionCount; ++i) {
-    EXPECT_EQ(policy, page_cu->GetRawInterventionPolicyForTesting(
-                          static_cast<mojom::PolicyControlledIntervention>(i)));
+    EXPECT_EQ(
+        policy,
+        page_cu->GetRawInterventionPolicyForTesting(
+            static_cast<
+                resource_coordinator::mojom::PolicyControlledIntervention>(i)));
   }
 }
 
-void ExpectInterventionPolicy(mojom::InterventionPolicy policy,
-                              PageCoordinationUnitImpl* page_cu) {
+void ExpectInterventionPolicy(
+    resource_coordinator::mojom::InterventionPolicy policy,
+    PageCoordinationUnitImpl* page_cu) {
   for (size_t i = 0; i < kInterventionCount; ++i) {
-    EXPECT_EQ(policy, page_cu->GetInterventionPolicy(
-                          static_cast<mojom::PolicyControlledIntervention>(i)));
+    EXPECT_EQ(
+        policy,
+        page_cu->GetInterventionPolicy(
+            static_cast<
+                resource_coordinator::mojom::PolicyControlledIntervention>(i)));
   }
 }
 
 void ExpectInitialInterventionPolicyAggregationWorks(
     CoordinationUnitGraph* cu_graph,
-    mojom::InterventionPolicy f0_policy,
-    mojom::InterventionPolicy f1_policy,
-    mojom::InterventionPolicy f0_policy_aggregated,
-    mojom::InterventionPolicy f0f1_policy_aggregated) {
+    resource_coordinator::mojom::InterventionPolicy f0_policy,
+    resource_coordinator::mojom::InterventionPolicy f1_policy,
+    resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,
+    resource_coordinator::mojom::InterventionPolicy f0f1_policy_aggregated) {
   // Create two frames not tied to any page.
   TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f0 =
       TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
@@ -288,27 +317,32 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   TestCoordinationUnitWrapper<PageCoordinationUnitImpl> page =
       TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(cu_graph);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
 
   // Add a frame and expect the values to be invalidated. Reaggregate and
   // ensure the appropriate value results.
   page->AddFrame(f0->id());
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(f0_policy_aggregated, page.get());
 
   // Do it again. This time the raw values should be the same as the
   // aggregated values above.
   page->AddFrame(f1->id());
   EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(f0f1_policy_aggregated, page.get());
 
   // Remove a frame and expect the values to be invalidated again.
   f1.reset();
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(f0_policy_aggregated, page.get());
 }
 
@@ -324,62 +358,89 @@ TEST_F(PageCoordinationUnitImplTest, InitialInterventionPolicy) {
   // Default x [Default, OptIn, OptOut]
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kDefault /* f0_policy */,
-      mojom::InterventionPolicy::kDefault /* f1_policy */,
-      mojom::InterventionPolicy::kDefault /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kDefault /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kDefault /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kDefault /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kDefault /* f0_policy */,
-      mojom::InterventionPolicy::kOptIn /* f1_policy */,
-      mojom::InterventionPolicy::kDefault /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kDefault /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptIn /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kDefault /* f0_policy */,
-      mojom::InterventionPolicy::kOptOut /* f1_policy */,
-      mojom::InterventionPolicy::kDefault /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kDefault /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0f1_policy_aggregated */);
 
   // OptIn x [Default, OptIn, OptOut]
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kOptIn /* f0_policy */,
-      mojom::InterventionPolicy::kDefault /* f1_policy */,
-      mojom::InterventionPolicy::kOptIn /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptIn /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptIn /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kOptIn /* f0_policy */,
-      mojom::InterventionPolicy::kOptIn /* f1_policy */,
-      mojom::InterventionPolicy::kOptIn /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptIn /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptIn /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kOptIn /* f0_policy */,
-      mojom::InterventionPolicy::kOptOut /* f1_policy */,
-      mojom::InterventionPolicy::kOptIn /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptIn /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0f1_policy_aggregated */);
 
   // OptOut x [Default, OptIn, OptOut]
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kOptOut /* f0_policy */,
-      mojom::InterventionPolicy::kDefault /* f1_policy */,
-      mojom::InterventionPolicy::kOptOut /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kOptOut /* f0_policy */,
-      mojom::InterventionPolicy::kOptIn /* f1_policy */,
-      mojom::InterventionPolicy::kOptOut /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph, mojom::InterventionPolicy::kOptOut /* f0_policy */,
-      mojom::InterventionPolicy::kOptOut /* f1_policy */,
-      mojom::InterventionPolicy::kOptOut /* f0_policy_aggregated */,
-      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+      cu_graph,
+      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
+      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0_policy_aggregated */,
+      resource_coordinator::mojom::InterventionPolicy::
+          kOptOut /* f0f1_policy_aggregated */);
 }
 
 TEST_F(PageCoordinationUnitImplTest, IncrementalInterventionPolicy) {
@@ -401,24 +462,33 @@ TEST_F(PageCoordinationUnitImplTest, IncrementalInterventionPolicy) {
 
   // Set the policies on the first frame. This should be observed by the page
   // CU, but aggregation should still not be possible.
-  f0->SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy::kDefault);
+  f0->SetAllInterventionPoliciesForTesting(
+      resource_coordinator::mojom::InterventionPolicy::kDefault);
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
 
   // Now set the policy on the second frame. This should be observed and an
   // aggregated page policy value should now be available.
-  f1->SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy::kDefault);
+  f1->SetAllInterventionPoliciesForTesting(
+      resource_coordinator::mojom::InterventionPolicy::kDefault);
   EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(mojom::InterventionPolicy::kDefault, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kDefault, page.get());
 
   // Change the policy value on a frame and expect a new aggregation to be
   // required.
-  f1->SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy::kOptIn);
+  f1->SetAllInterventionPoliciesForTesting(
+      resource_coordinator::mojom::InterventionPolicy::kOptIn);
   EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(mojom::InterventionPolicy::kOptIn, page.get());
+  ExpectRawInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(
+      resource_coordinator::mojom::InterventionPolicy::kOptIn, page.get());
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

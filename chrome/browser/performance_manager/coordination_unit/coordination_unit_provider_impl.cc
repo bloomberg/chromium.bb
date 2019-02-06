@@ -15,7 +15,7 @@
 #include "chrome/browser/performance_manager/coordination_unit/system_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 CoordinationUnitProviderImpl::CoordinationUnitProviderImpl(
     service_manager::ServiceKeepalive* service_keepalive,
@@ -34,8 +34,8 @@ void CoordinationUnitProviderImpl::OnConnectionError(
 }
 
 void CoordinationUnitProviderImpl::CreateFrameCoordinationUnit(
-    mojom::FrameCoordinationUnitRequest request,
-    const CoordinationUnitID& id) {
+    resource_coordinator::mojom::FrameCoordinationUnitRequest request,
+    const resource_coordinator::CoordinationUnitID& id) {
   FrameCoordinationUnitImpl* frame_cu =
       coordination_unit_graph_->CreateFrameCoordinationUnit(
           id, service_keepalive_->CreateRef());
@@ -49,8 +49,8 @@ void CoordinationUnitProviderImpl::CreateFrameCoordinationUnit(
 }
 
 void CoordinationUnitProviderImpl::CreatePageCoordinationUnit(
-    mojom::PageCoordinationUnitRequest request,
-    const CoordinationUnitID& id) {
+    resource_coordinator::mojom::PageCoordinationUnitRequest request,
+    const resource_coordinator::CoordinationUnitID& id) {
   PageCoordinationUnitImpl* page_cu =
       coordination_unit_graph_->CreatePageCoordinationUnit(
           id, service_keepalive_->CreateRef());
@@ -64,8 +64,8 @@ void CoordinationUnitProviderImpl::CreatePageCoordinationUnit(
 }
 
 void CoordinationUnitProviderImpl::CreateProcessCoordinationUnit(
-    mojom::ProcessCoordinationUnitRequest request,
-    const CoordinationUnitID& id) {
+    resource_coordinator::mojom::ProcessCoordinationUnitRequest request,
+    const resource_coordinator::CoordinationUnitID& id) {
   ProcessCoordinationUnitImpl* process_cu =
       coordination_unit_graph_->CreateProcessCoordinationUnit(
           id, service_keepalive_->CreateRef());
@@ -92,4 +92,4 @@ void CoordinationUnitProviderImpl::Bind(
   bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

@@ -14,7 +14,7 @@
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "components/ukm/test_ukm_recorder.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 const char kResponsivenessMeasurement[] = "ResponsivenessMeasurement";
 const char kExpectedQueueingTime[] = "ExpectedTaskQueueingDuration";
@@ -263,4 +263,4 @@ TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   }
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
