@@ -304,6 +304,8 @@ if (enable_java_templates) {
   #   jni_package: subdirectory path for generated bindings
   #   jar_file: the path to the .jar. If not provided, will default to the sdk's
   #     android.jar
+  #   always_mangle: Mangle all generated method names. By default, the script
+  #     only mangles methods that cause ambiguity due to method overload.
   #
   #   deps, public_deps: As normal
   #
@@ -322,6 +324,8 @@ if (enable_java_templates) {
     } else {
       _jar_file = android_sdk_jar
     }
+
+    _always_mangle = defined(invoker.always_mangle) && invoker.always_mangle
 
     _base_output_dir = "${target_gen_dir}/${target_name}/${invoker.jni_package}"
     _jni_output_dir = "${_base_output_dir}/jni"
@@ -368,6 +372,9 @@ if (enable_java_templates) {
         }
         if (enable_jni_tracing) {
           args += [ "--enable_tracing" ]
+        }
+        if (_always_mangle) {
+          args += [ "--always_mangle" ]
         }
       }
     }
