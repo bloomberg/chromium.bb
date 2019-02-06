@@ -14,7 +14,7 @@
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // Delay the metrics report from GRC to UMA/UKM for 5 minutes from when the main
 // frame navigation is committed.
@@ -32,7 +32,8 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
 const int kDefaultFrequencyUkmEQTReported = 5u;
 
 // Gets the number of tabs that are co-resident in all of the render processes
-// associated with a |CoordinationUnitType::kPage| coordination unit.
+// associated with a |resource_coordinator::CoordinationUnitType::kPage|
+// coordination unit.
 size_t GetNumCoresidentTabs(const PageCoordinationUnitImpl* page_cu) {
   std::set<CoordinationUnitBase*> coresident_tabs;
   for (auto* process_cu : page_cu->GetAssociatedProcessCoordinationUnits()) {
@@ -53,14 +54,18 @@ MetricsCollector::~MetricsCollector() = default;
 
 bool MetricsCollector::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
-  return coordination_unit->id().type == CoordinationUnitType::kFrame ||
-         coordination_unit->id().type == CoordinationUnitType::kPage ||
-         coordination_unit->id().type == CoordinationUnitType::kProcess;
+  return coordination_unit->id().type ==
+             resource_coordinator::CoordinationUnitType::kFrame ||
+         coordination_unit->id().type ==
+             resource_coordinator::CoordinationUnitType::kPage ||
+         coordination_unit->id().type ==
+             resource_coordinator::CoordinationUnitType::kProcess;
 }
 
 void MetricsCollector::OnCoordinationUnitCreated(
     const CoordinationUnitBase* coordination_unit) {
-  if (coordination_unit->id().type == CoordinationUnitType::kPage) {
+  if (coordination_unit->id().type ==
+      resource_coordinator::CoordinationUnitType::kPage) {
     metrics_report_record_map_.emplace(coordination_unit->id(),
                                        MetricsReportRecord());
   }
@@ -68,7 +73,8 @@ void MetricsCollector::OnCoordinationUnitCreated(
 
 void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
     const CoordinationUnitBase* coordination_unit) {
-  if (coordination_unit->id().type == CoordinationUnitType::kPage) {
+  if (coordination_unit->id().type ==
+      resource_coordinator::CoordinationUnitType::kPage) {
     metrics_report_record_map_.erase(coordination_unit->id());
     ukm_collection_state_map_.erase(coordination_unit->id());
   }
@@ -76,17 +82,18 @@ void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
 
 void MetricsCollector::OnPagePropertyChanged(
     const PageCoordinationUnitImpl* page_cu,
-    const mojom::PropertyType property_type,
+    const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   const auto page_cu_id = page_cu->id();
-  if (property_type == mojom::PropertyType::kVisible) {
+  if (property_type == resource_coordinator::mojom::PropertyType::kVisible) {
     if (value) {
       // The page becomes visible again, clear all records in order to
       // report metrics when page becomes invisible next time.
       ResetMetricsReportRecord(page_cu_id);
       return;
     }
-  } else if (property_type == mojom::PropertyType::kUKMSourceId) {
+  } else if (property_type ==
+             resource_coordinator::mojom::PropertyType::kUKMSourceId) {
     ukm::SourceId ukm_source_id = value;
     UpdateUkmSourceIdForPage(page_cu_id, ukm_source_id);
     MetricsReportRecord& record =
@@ -97,9 +104,10 @@ void MetricsCollector::OnPagePropertyChanged(
 
 void MetricsCollector::OnProcessPropertyChanged(
     const ProcessCoordinationUnitImpl* process_cu,
-    const mojom::PropertyType property_type,
+    const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
-  if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration) {
+  if (property_type == resource_coordinator::mojom::PropertyType::
+                           kExpectedTaskQueueingDuration) {
     for (auto* page_cu : process_cu->GetAssociatedPageCoordinationUnits()) {
       if (IsCollectingExpectedQueueingTimeForUkm(page_cu->id())) {
         int64_t expected_queueing_time;
@@ -114,8 +122,9 @@ void MetricsCollector::OnProcessPropertyChanged(
 
 void MetricsCollector::OnFrameEventReceived(
     const FrameCoordinationUnitImpl* frame_cu,
-    const mojom::Event event) {
-  if (event == mojom::Event::kNonPersistentNotificationCreated) {
+    const resource_coordinator::mojom::Event event) {
+  if (event ==
+      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated) {
     auto* page_cu = frame_cu->GetPageCoordinationUnit();
     // Only record metrics while it is backgrounded.
     if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
@@ -131,8 +140,8 @@ void MetricsCollector::OnFrameEventReceived(
 
 void MetricsCollector::OnPageEventReceived(
     const PageCoordinationUnitImpl* page_cu,
-    const mojom::Event event) {
-  if (event == mojom::Event::kTitleUpdated) {
+    const resource_coordinator::mojom::Event event) {
+  if (event == resource_coordinator::mojom::Event::kTitleUpdated) {
     // Only record metrics while it is backgrounded.
     if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
       return;
@@ -141,7 +150,7 @@ void MetricsCollector::OnPageEventReceived(
     record.first_title_updated.OnSignalReceived(
         true, page_cu->TimeSinceLastVisibilityChange(),
         coordination_unit_graph().ukm_recorder());
-  } else if (event == mojom::Event::kFaviconUpdated) {
+  } else if (event == resource_coordinator::mojom::Event::kFaviconUpdated) {
     // Only record metrics while it is backgrounded.
     if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
       return;
@@ -159,14 +168,14 @@ bool MetricsCollector::ShouldReportMetrics(
 }
 
 bool MetricsCollector::IsCollectingExpectedQueueingTimeForUkm(
-    const CoordinationUnitID& page_cu_id) {
+    const resource_coordinator::CoordinationUnitID& page_cu_id) {
   UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
   return state.ukm_source_id != ukm::kInvalidSourceId &&
          ++state.num_unreported_eqt_measurements >= frequency_ukm_eqt_reported_;
 }
 
 void MetricsCollector::RecordExpectedQueueingTimeForUkm(
-    const CoordinationUnitID& page_cu_id,
+    const resource_coordinator::CoordinationUnitID& page_cu_id,
     int64_t expected_queueing_time) {
   UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
   state.num_unreported_eqt_measurements = 0u;
@@ -176,7 +185,7 @@ void MetricsCollector::RecordExpectedQueueingTimeForUkm(
 }
 
 void MetricsCollector::UpdateUkmSourceIdForPage(
-    const CoordinationUnitID& page_cu_id,
+    const resource_coordinator::CoordinationUnitID& page_cu_id,
     ukm::SourceId ukm_source_id) {
   UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
 
@@ -191,7 +200,8 @@ void MetricsCollector::UpdateWithFieldTrialParams() {
       kDefaultFrequencyUkmEQTReported);
 }
 
-void MetricsCollector::ResetMetricsReportRecord(CoordinationUnitID cu_id) {
+void MetricsCollector::ResetMetricsReportRecord(
+    resource_coordinator::CoordinationUnitID cu_id) {
   DCHECK(metrics_report_record_map_.find(cu_id) !=
          metrics_report_record_map_.end());
   metrics_report_record_map_.find(cu_id)->second.Reset();
@@ -215,4 +225,4 @@ void MetricsCollector::MetricsReportRecord::Reset() {
   first_title_updated.Reset();
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

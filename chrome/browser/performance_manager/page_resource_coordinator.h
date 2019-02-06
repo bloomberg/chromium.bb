@@ -12,11 +12,12 @@
 #include "chrome/browser/performance_manager/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class PageResourceCoordinator
-    : public ResourceCoordinatorInterface<mojom::PageCoordinationUnitPtr,
-                                          mojom::PageCoordinationUnitRequest> {
+    : public ResourceCoordinatorInterface<
+          resource_coordinator::mojom::PageCoordinationUnitPtr,
+          resource_coordinator::mojom::PageCoordinationUnitRequest> {
  public:
   explicit PageResourceCoordinator(PerformanceManager* performance_manager);
   ~PageResourceCoordinator() override;
@@ -34,11 +35,12 @@ class PageResourceCoordinator
   void RemoveFrame(const FrameResourceCoordinator& frame);
 
  private:
-  void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
-                        const CoordinationUnitID& cu_id) override;
+  void ConnectToService(
+      resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
 
-  void AddFrameByID(const CoordinationUnitID& cu_id);
-  void RemoveFrameByID(const CoordinationUnitID& cu_id);
+  void AddFrameByID(const resource_coordinator::CoordinationUnitID& cu_id);
+  void RemoveFrameByID(const resource_coordinator::CoordinationUnitID& cu_id);
 
   THREAD_CHECKER(thread_checker_);
 
@@ -49,6 +51,6 @@ class PageResourceCoordinator
   DISALLOW_COPY_AND_ASSIGN(PageResourceCoordinator);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PAGE_RESOURCE_COORDINATOR_H_

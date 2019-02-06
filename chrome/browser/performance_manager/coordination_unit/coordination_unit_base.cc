@@ -8,10 +8,11 @@
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
-CoordinationUnitBase::CoordinationUnitBase(const CoordinationUnitID& id,
-                                           CoordinationUnitGraph* graph)
+CoordinationUnitBase::CoordinationUnitBase(
+    const resource_coordinator::CoordinationUnitID& id,
+    CoordinationUnitGraph* graph)
     : graph_(graph), id_(id.type, id.id) {}
 
 CoordinationUnitBase::~CoordinationUnitBase() = default;
@@ -35,8 +36,9 @@ void CoordinationUnitBase::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool CoordinationUnitBase::GetProperty(const mojom::PropertyType property_type,
-                                       int64_t* result) const {
+bool CoordinationUnitBase::GetProperty(
+    const resource_coordinator::mojom::PropertyType property_type,
+    int64_t* result) const {
   auto value_it = properties_.find(property_type);
   if (value_it != properties_.end()) {
     *result = value_it->second;
@@ -46,7 +48,7 @@ bool CoordinationUnitBase::GetProperty(const mojom::PropertyType property_type,
 }
 
 int64_t CoordinationUnitBase::GetPropertyOrDefault(
-    const mojom::PropertyType property_type,
+    const resource_coordinator::mojom::PropertyType property_type,
     int64_t default_value) const {
   int64_t value = 0;
   if (GetProperty(property_type, &value))
@@ -54,23 +56,26 @@ int64_t CoordinationUnitBase::GetPropertyOrDefault(
   return default_value;
 }
 
-void CoordinationUnitBase::OnEventReceived(mojom::Event event) {
+void CoordinationUnitBase::OnEventReceived(
+    resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnEventReceived(this, event);
 }
 
-void CoordinationUnitBase::OnPropertyChanged(mojom::PropertyType property_type,
-                                             int64_t value) {
+void CoordinationUnitBase::OnPropertyChanged(
+    resource_coordinator::mojom::PropertyType property_type,
+    int64_t value) {
   for (auto& observer : observers())
     observer.OnPropertyChanged(this, property_type, value);
 }
 
-void CoordinationUnitBase::SendEvent(mojom::Event event) {
+void CoordinationUnitBase::SendEvent(resource_coordinator::mojom::Event event) {
   OnEventReceived(event);
 }
 
-void CoordinationUnitBase::SetProperty(mojom::PropertyType property_type,
-                                       int64_t value) {
+void CoordinationUnitBase::SetProperty(
+    resource_coordinator::mojom::PropertyType property_type,
+    int64_t value) {
   // The |CoordinationUnitGraphObserver| API specification dictates that
   // the property is guarranteed to be set on the |CoordinationUnitBase|
   // and propagated to the appropriate associated |CoordianationUnitBase|
@@ -85,4 +90,4 @@ CoordinationUnitBase* CoordinationUnitBase::PassOwnershipToGraph(
   return new_cu->graph()->AddNewCoordinationUnit(std::move(new_cu));
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

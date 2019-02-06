@@ -10,13 +10,14 @@
 #include "chrome/browser/performance_manager/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class ProcessResourceCoordinator;
 
 class FrameResourceCoordinator
-    : public ResourceCoordinatorInterface<mojom::FrameCoordinationUnitPtr,
-                                          mojom::FrameCoordinationUnitRequest> {
+    : public ResourceCoordinatorInterface<
+          resource_coordinator::mojom::FrameCoordinationUnitPtr,
+          resource_coordinator::mojom::FrameCoordinationUnitRequest> {
  public:
   explicit FrameResourceCoordinator(PerformanceManager* performance_manager);
   ~FrameResourceCoordinator() override;
@@ -29,12 +30,16 @@ class FrameResourceCoordinator
   void reset() { service_.reset(); }
 
  private:
-  void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
-                        const CoordinationUnitID& cu_id) override;
+  void ConnectToService(
+      resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
 
-  void SetProcessByID(const CoordinationUnitID& process_id);
-  void AddChildFrameByID(const CoordinationUnitID& child_id);
-  void RemoveChildFrameByID(const CoordinationUnitID& child_id);
+  void SetProcessByID(
+      const resource_coordinator::CoordinationUnitID& process_id);
+  void AddChildFrameByID(
+      const resource_coordinator::CoordinationUnitID& child_id);
+  void RemoveChildFrameByID(
+      const resource_coordinator::CoordinationUnitID& child_id);
 
   THREAD_CHECKER(thread_checker_);
 
@@ -45,6 +50,6 @@ class FrameResourceCoordinator
   DISALLOW_COPY_AND_ASSIGN(FrameResourceCoordinator);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_FRAME_RESOURCE_COORDINATOR_H_

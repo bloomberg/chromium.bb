@@ -14,7 +14,7 @@
 #include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
 #include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -53,7 +53,8 @@ WorkingSetTrimmer::~WorkingSetTrimmer() = default;
 
 bool WorkingSetTrimmer::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
-  return coordination_unit->id().type == CoordinationUnitType::kProcess;
+  return coordination_unit->id().type ==
+         resource_coordinator::CoordinationUnitType::kProcess;
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
@@ -64,4 +65,4 @@ void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
   }
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

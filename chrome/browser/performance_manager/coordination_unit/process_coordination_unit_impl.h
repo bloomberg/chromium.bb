@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class FrameCoordinationUnitImpl;
 
@@ -26,19 +26,22 @@ class FrameCoordinationUnitImpl;
 // 3. Process died or falied to start, have exit status.
 // 4. Back to 2.
 class ProcessCoordinationUnitImpl
-    : public CoordinationUnitInterface<ProcessCoordinationUnitImpl,
-                                       mojom::ProcessCoordinationUnit,
-                                       mojom::ProcessCoordinationUnitRequest> {
+    : public CoordinationUnitInterface<
+          ProcessCoordinationUnitImpl,
+          resource_coordinator::mojom::ProcessCoordinationUnit,
+          resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
  public:
-  static CoordinationUnitType Type() { return CoordinationUnitType::kProcess; }
+  static resource_coordinator::CoordinationUnitType Type() {
+    return resource_coordinator::CoordinationUnitType::kProcess;
+  }
 
   ProcessCoordinationUnitImpl(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       CoordinationUnitGraph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
   ~ProcessCoordinationUnitImpl() override;
 
-  // mojom::ProcessCoordinationUnit implementation.
+  // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
   void SetCPUUsage(double cpu_usage) override;
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetLaunchTime(base::Time launch_time) override;
@@ -72,14 +75,16 @@ class ProcessCoordinationUnitImpl
   void RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
 
   // Invoked when the state of a frame hosted by this process changes.
-  void OnFrameLifecycleStateChanged(FrameCoordinationUnitImpl* frame_cu,
-                                    mojom::LifecycleState old_state);
+  void OnFrameLifecycleStateChanged(
+      FrameCoordinationUnitImpl* frame_cu,
+      resource_coordinator::mojom::LifecycleState old_state);
 
  private:
   // CoordinationUnitInterface implementation.
-  void OnEventReceived(mojom::Event event) override;
-  void OnPropertyChanged(mojom::PropertyType property_type,
-                         int64_t value) override;
+  void OnEventReceived(resource_coordinator::mojom::Event event) override;
+  void OnPropertyChanged(
+      resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
 
   void DecrementNumFrozenFrames();
   void IncrementNumFrozenFrames();
@@ -99,6 +104,6 @@ class ProcessCoordinationUnitImpl
   DISALLOW_COPY_AND_ASSIGN(ProcessCoordinationUnitImpl);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_

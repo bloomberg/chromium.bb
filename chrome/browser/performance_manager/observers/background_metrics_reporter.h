@@ -19,7 +19,7 @@
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, base::TimeDelta::FromSeconds(1), \
                              base::TimeDelta::FromHours(48), 100)
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace internal {
 
@@ -128,6 +128,6 @@ class BackgroundMetricsReporter {
       ukm_reporter_;
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_BACKGROUND_METRICS_REPORTER_H_

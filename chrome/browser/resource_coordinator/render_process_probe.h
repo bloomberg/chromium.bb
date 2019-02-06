@@ -94,7 +94,8 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
   virtual base::ProcessId GetProcessId(int host_id,
                                        const RenderProcessInfo& info);
 
-  SystemResourceCoordinator* EnsureSystemResourceCoordinator();
+  performance_manager::SystemResourceCoordinator*
+  EnsureSystemResourceCoordinator();
 
   // Dispatch the collected metrics.
   // Virtual for testing.
@@ -113,7 +114,8 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
   bool is_gathering_ = false;
 
   // Used to signal the end of a CPU measurement cycle to the RC.
-  std::unique_ptr<SystemResourceCoordinator> system_resource_coordinator_;
+  std::unique_ptr<performance_manager::SystemResourceCoordinator>
+      system_resource_coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessProbeImpl);
 };

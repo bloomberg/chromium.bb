@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 SystemCoordinationUnitImpl::SystemCoordinationUnitImpl(
-    const CoordinationUnitID& id,
+    const resource_coordinator::CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
     : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
@@ -25,11 +25,12 @@ SystemCoordinationUnitImpl::SystemCoordinationUnitImpl(
 SystemCoordinationUnitImpl::~SystemCoordinationUnitImpl() = default;
 
 void SystemCoordinationUnitImpl::OnProcessCPUUsageReady() {
-  SendEvent(mojom::Event::kProcessCPUUsageReady);
+  SendEvent(resource_coordinator::mojom::Event::kProcessCPUUsageReady);
 }
 
 void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
-    mojom::ProcessResourceMeasurementBatchPtr measurement_batch) {
+    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
+        measurement_batch) {
   base::TimeDelta time_since_last_measurement;
   if (!last_measurement_end_time_.is_null()) {
     // Use the end of the measurement batch as a proxy for when every
@@ -159,16 +160,17 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
   OnProcessCPUUsageReady();
 }
 
-void SystemCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
+void SystemCoordinationUnitImpl::OnEventReceived(
+    resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnSystemEventReceived(this, event);
 }
 
 void SystemCoordinationUnitImpl::OnPropertyChanged(
-    mojom::PropertyType property_type,
+    resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())
     observer.OnSystemPropertyChanged(this, property_type, value);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

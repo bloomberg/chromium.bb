@@ -12,11 +12,12 @@
 #include "chrome/browser/performance_manager/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
-class ProcessResourceCoordinator : public ResourceCoordinatorInterface<
-                                       mojom::ProcessCoordinationUnitPtr,
-                                       mojom::ProcessCoordinationUnitRequest> {
+class ProcessResourceCoordinator
+    : public ResourceCoordinatorInterface<
+          resource_coordinator::mojom::ProcessCoordinationUnitPtr,
+          resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
  public:
   explicit ProcessResourceCoordinator(PerformanceManager* performance_manager);
   ~ProcessResourceCoordinator() override;
@@ -28,8 +29,9 @@ class ProcessResourceCoordinator : public ResourceCoordinatorInterface<
   void SetProcessExitStatus(int32_t exit_status);
 
  private:
-  void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
-                        const CoordinationUnitID& cu_id) override;
+  void ConnectToService(
+      resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+      const resource_coordinator::CoordinationUnitID& cu_id) override;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -40,6 +42,6 @@ class ProcessResourceCoordinator : public ResourceCoordinatorInterface<
   DISALLOW_COPY_AND_ASSIGN(ProcessResourceCoordinator);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PROCESS_RESOURCE_COORDINATOR_H_

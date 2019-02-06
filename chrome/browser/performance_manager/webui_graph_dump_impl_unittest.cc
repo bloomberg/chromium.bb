@@ -12,7 +12,7 @@
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class WebUIGraphDumpImplTest : public CoordinationUnitTestHarness {};
 
@@ -28,11 +28,12 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
 
   WebUIGraphDumpImpl impl(&graph);
 
-  mojom::WebUIGraphPtr returned_graph;
+  resource_coordinator::mojom::WebUIGraphPtr returned_graph;
   WebUIGraphDumpImpl::GetCurrentGraphCallback callback =
-      base::BindLambdaForTesting([&returned_graph](mojom::WebUIGraphPtr graph) {
-        returned_graph = std::move(graph);
-      });
+      base::BindLambdaForTesting(
+          [&returned_graph](resource_coordinator::mojom::WebUIGraphPtr graph) {
+            returned_graph = std::move(graph);
+          });
   impl.GetCurrentGraph(std::move(callback));
 
   task_env().RunUntilIdle();
@@ -64,4 +65,4 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
   }
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

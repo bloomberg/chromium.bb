@@ -25,7 +25,7 @@ class BinderRegistryWithArgs;
 struct BindSourceInfo;
 }  // namespace service_manager
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class CoordinationUnitBase;
 class CoordinationUnitGraphObserver;
@@ -59,13 +59,13 @@ class CoordinationUnitGraph {
       CoordinationUnitBase* coordination_unit);
 
   FrameCoordinationUnitImpl* CreateFrameCoordinationUnit(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
   PageCoordinationUnitImpl* CreatePageCoordinationUnit(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
   ProcessCoordinationUnitImpl* CreateProcessCoordinationUnit(
-      const CoordinationUnitID& id,
+      const resource_coordinator::CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
   SystemCoordinationUnitImpl* FindOrCreateSystemCoordinationUnit(
       std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
@@ -77,7 +77,8 @@ class CoordinationUnitGraph {
   // Retrieves the process CU with PID |pid|, if any.
   ProcessCoordinationUnitImpl* GetProcessCoordinationUnitByPid(
       base::ProcessId pid);
-  CoordinationUnitBase* GetCoordinationUnitByID(const CoordinationUnitID cu_id);
+  CoordinationUnitBase* GetCoordinationUnitByID(
+      const resource_coordinator::CoordinationUnitID cu_id);
 
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>>&
   observers_for_testing() {
@@ -85,7 +86,7 @@ class CoordinationUnitGraph {
   }
 
  private:
-  using CUIDMap = std::unordered_map<CoordinationUnitID,
+  using CUIDMap = std::unordered_map<resource_coordinator::CoordinationUnitID,
                                      std::unique_ptr<CoordinationUnitBase>>;
   using ProcessByPidMap =
       std::unordered_map<base::ProcessId, ProcessCoordinationUnitImpl*>;
@@ -104,7 +105,7 @@ class CoordinationUnitGraph {
   template <typename CUType>
   std::vector<CUType*> GetAllCoordinationUnitsOfType();
 
-  CoordinationUnitID system_coordination_unit_id_;
+  resource_coordinator::CoordinationUnitID system_coordination_unit_id_;
   CUIDMap coordination_units_;
   ProcessByPidMap processes_by_pid_;
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>> observers_;
@@ -116,6 +117,6 @@ class CoordinationUnitGraph {
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraph);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_GRAPH_H_

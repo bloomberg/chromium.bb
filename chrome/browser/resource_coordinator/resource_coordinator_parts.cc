@@ -12,7 +12,7 @@ namespace resource_coordinator {
 
 ResourceCoordinatorParts::ResourceCoordinatorParts()
     : page_signal_receiver_(
-          resource_coordinator::PerformanceManager::GetInstance()
+          performance_manager::PerformanceManager::GetInstance()
               ? std::make_unique<resource_coordinator::PageSignalReceiver>()
               : nullptr)
 #if !defined(OS_ANDROID)

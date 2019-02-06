@@ -14,7 +14,7 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 template <class CoordinationUnitMojoPtr, class CoordinationUnitMojoRequest>
 class ResourceCoordinatorInterface {
@@ -29,7 +29,7 @@ class ResourceCoordinatorInterface {
   }
 
   // Returns the ID. Note that this is meaningless for a singleton CU.
-  CoordinationUnitID id() const { return cu_id_; }
+  resource_coordinator::CoordinationUnitID id() const { return cu_id_; }
 
   // Returns the remote endpoint interface.
   const CoordinationUnitMojoPtr& service() const { return service_; }
@@ -44,26 +44,27 @@ class ResourceCoordinatorInterface {
   }
 
  protected:
-  virtual void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
-                                const CoordinationUnitID& cu_id) = 0;
+  virtual void ConnectToService(
+      resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+      const resource_coordinator::CoordinationUnitID& cu_id) = 0;
 
   void ConnectToService(PerformanceManager* performance_manager,
-                        const CoordinationUnitID& cu_id) {
+                        const resource_coordinator::CoordinationUnitID& cu_id) {
     if (!performance_manager)
       return;
     cu_id_ = cu_id;
-    mojom::CoordinationUnitProviderPtr provider;
+    resource_coordinator::mojom::CoordinationUnitProviderPtr provider;
     performance_manager->BindInterface(mojo::MakeRequest(&provider));
     ConnectToService(provider, cu_id);
   }
 
   CoordinationUnitMojoPtr service_;
-  CoordinationUnitID cu_id_;
+  resource_coordinator::CoordinationUnitID cu_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorInterface);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_RESOURCE_COORDINATOR_INTERFACE_H_

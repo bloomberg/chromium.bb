@@ -17,7 +17,7 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class PerformanceManagerTest : public testing::Test {
  public:
@@ -49,7 +49,9 @@ class PerformanceManagerTest : public testing::Test {
   void TestCUImpl(CoordinationUnitPtrType cu) {
     base::RunLoop loop;
     cu->GetID(base::BindLambdaForTesting(
-        [&loop](const CoordinationUnitID& cu_id) { loop.Quit(); }));
+        [&loop](const resource_coordinator::CoordinationUnitID& cu_id) {
+          loop.Quit();
+        }));
     loop.Run();
   }
 
@@ -79,32 +81,35 @@ class PerformanceManagerTest : public testing::Test {
 
 TEST_F(PerformanceManagerTest, ResourceCoordinatorInstantiate) {
   // Get the CU provider interface.
-  mojom::CoordinationUnitProviderPtr provider;
+  resource_coordinator::mojom::CoordinationUnitProviderPtr provider;
   performance_manager()->BindInterface(mojo::MakeRequest(&provider));
 
   // Create and test a dummy FrameCU.
-  CoordinationUnitID frame_id(CoordinationUnitType::kFrame,
-                              CoordinationUnitID::RANDOM_ID);
-  mojom::FrameCoordinationUnitPtr frame_cu;
+  resource_coordinator::CoordinationUnitID frame_id(
+      resource_coordinator::CoordinationUnitType::kFrame,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID);
+  resource_coordinator::mojom::FrameCoordinationUnitPtr frame_cu;
   provider->CreateFrameCoordinationUnit(mojo::MakeRequest(&frame_cu), frame_id);
   TestCU(frame_cu);
 
   // Create and test a dummy PageCU.
-  CoordinationUnitID page_id(CoordinationUnitType::kPage,
-                             CoordinationUnitID::RANDOM_ID);
-  mojom::PageCoordinationUnitPtr page_cu;
+  resource_coordinator::CoordinationUnitID page_id(
+      resource_coordinator::CoordinationUnitType::kPage,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID);
+  resource_coordinator::mojom::PageCoordinationUnitPtr page_cu;
   provider->CreatePageCoordinationUnit(mojo::MakeRequest(&page_cu), page_id);
   TestCU(page_cu);
 
   // Create and test a dummy SystemCU.
-  mojom::SystemCoordinationUnitPtr system_cu;
+  resource_coordinator::mojom::SystemCoordinationUnitPtr system_cu;
   provider->GetSystemCoordinationUnit(mojo::MakeRequest(&system_cu));
   TestCU(system_cu);
 
   // Create and test a dummy ProcessCU.
-  CoordinationUnitID process_id(CoordinationUnitType::kProcess,
-                                CoordinationUnitID::RANDOM_ID);
-  mojom::ProcessCoordinationUnitPtr process_cu;
+  resource_coordinator::CoordinationUnitID process_id(
+      resource_coordinator::CoordinationUnitType::kProcess,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID);
+  resource_coordinator::mojom::ProcessCoordinationUnitPtr process_cu;
   provider->CreateProcessCoordinationUnit(mojo::MakeRequest(&process_cu),
                                           process_id);
   TestCU(process_cu);
@@ -120,4 +125,4 @@ TEST_F(PerformanceManagerTest, ResourceCoordinatorInstantiate) {
   TestCU(&system_rc);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

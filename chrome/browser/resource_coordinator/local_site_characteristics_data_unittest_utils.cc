@@ -106,7 +106,7 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
   // ChromeRenderViewHostTestHarness::SetUp(), this will prevent the creation
   // of a non-mock version of a data store when browser_context() gets
   // initialized.
-  performance_manager_ = PerformanceManager::Create();
+  performance_manager_ = performance_manager::PerformanceManager::Create();
 
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
 
@@ -121,7 +121,8 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
 }
 
 void ChromeTestHarnessWithLocalDB::TearDown() {
-  PerformanceManager::Destroy(std::move(performance_manager_));
+  performance_manager::PerformanceManager::Destroy(
+      std::move(performance_manager_));
 
   content::ServiceManagerConnection::DestroyForProcess();
   ChromeRenderViewHostTestHarness::TearDown();

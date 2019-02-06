@@ -4,10 +4,10 @@
 
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 CoordinationUnitGraphObserver::CoordinationUnitGraphObserver() = default;
 
 CoordinationUnitGraphObserver::~CoordinationUnitGraphObserver() = default;
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // Empties the working set of processes in which all frames are frozen.
 //
@@ -40,6 +40,6 @@ class WorkingSetTrimmer : public CoordinationUnitGraphObserver {
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmer);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_WIN_H_

@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -138,4 +138,4 @@ TEST_F(WorkingSetTrimmerTest, EmptyWorkingSetInconsistentLaunchTime) {
   EXPECT_GE(GetWorkingSetSizeMb(child_process_.Handle()), 10U);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

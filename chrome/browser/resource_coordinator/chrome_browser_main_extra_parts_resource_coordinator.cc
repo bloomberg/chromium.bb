@@ -23,10 +23,10 @@ ChromeBrowserMainExtraPartsResourceCoordinator::
 void ChromeBrowserMainExtraPartsResourceCoordinator::
     ServiceManagerConnectionStarted(
         content::ServiceManagerConnection* connection) {
-  performance_manager_ = resource_coordinator::PerformanceManager::Create();
+  performance_manager_ = performance_manager::PerformanceManager::Create();
 
   process_resource_coordinator_ =
-      std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
+      std::make_unique<performance_manager::ProcessResourceCoordinator>(
           performance_manager_.get());
 
   process_resource_coordinator_->OnProcessLaunched(base::Process::Current());
@@ -52,6 +52,6 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::PreBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsResourceCoordinator::PostMainMessageLoopRun() {
-  resource_coordinator::PerformanceManager::Destroy(
+  performance_manager::PerformanceManager::Destroy(
       std::move(performance_manager_));
 }

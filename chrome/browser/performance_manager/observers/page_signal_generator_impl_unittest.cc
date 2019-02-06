@@ -22,7 +22,7 @@
 
 using ::testing::_;
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 MATCHER_P3(IdentityMatches, cu_id, navigation_id, url, "") {
   return arg.page_cu_id == cu_id && arg.navigation_id == navigation_id &&
@@ -32,10 +32,12 @@ MATCHER_P3(IdentityMatches, cu_id, navigation_id, url, "") {
 class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
  public:
   // Overridden from PageSignalGeneratorImpl.
-  void OnProcessPropertyChanged(const ProcessCoordinationUnitImpl* process_cu,
-                                const mojom::PropertyType property_type,
-                                int64_t value) override {
-    if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration)
+  void OnProcessPropertyChanged(
+      const ProcessCoordinationUnitImpl* process_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override {
+    if (property_type == resource_coordinator::mojom::PropertyType::
+                             kExpectedTaskQueueingDuration)
       ++eqt_change_count_;
   }
 
@@ -45,32 +47,38 @@ class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
   size_t eqt_change_count_ = 0;
 };
 
-class MockPageSignalReceiverImpl : public mojom::PageSignalReceiver {
+class MockPageSignalReceiverImpl
+    : public resource_coordinator::mojom::PageSignalReceiver {
  public:
-  explicit MockPageSignalReceiverImpl(mojom::PageSignalReceiverRequest request)
+  explicit MockPageSignalReceiverImpl(
+      resource_coordinator::mojom::PageSignalReceiverRequest request)
       : binding_(this, std::move(request)) {}
   ~MockPageSignalReceiverImpl() override = default;
 
-  // mojom::PageSignalReceiver implementation.
-  void NotifyPageAlmostIdle(
-      const PageNavigationIdentity& page_navigation_id) override {}
+  // resource_coordinator::mojom::PageSignalReceiver implementation.
+  void NotifyPageAlmostIdle(const resource_coordinator::PageNavigationIdentity&
+                                page_navigation_id) override {}
   void SetExpectedTaskQueueingDuration(
-      const PageNavigationIdentity& page_navigation_id,
+      const resource_coordinator::PageNavigationIdentity& page_navigation_id,
       base::TimeDelta duration) override {}
-  void SetLifecycleState(const PageNavigationIdentity& page_navigation_id,
-                         mojom::LifecycleState) override {}
+  void SetLifecycleState(
+      const resource_coordinator::PageNavigationIdentity& page_navigation_id,
+      resource_coordinator::mojom::LifecycleState) override {}
   MOCK_METHOD1(NotifyNonPersistentNotificationCreated,
-               void(const PageNavigationIdentity& page_navigation_id));
+               void(const resource_coordinator::PageNavigationIdentity&
+                        page_navigation_id));
   MOCK_METHOD1(NotifyRendererIsBloated,
-               void(const PageNavigationIdentity& page_navigation_id));
+               void(const resource_coordinator::PageNavigationIdentity&
+                        page_navigation_id));
   MOCK_METHOD4(OnLoadTimePerformanceEstimate,
-               void(const PageNavigationIdentity& page_navigation_id,
+               void(const resource_coordinator::PageNavigationIdentity&
+                        page_navigation_id,
                     base::TimeDelta load_duration,
                     base::TimeDelta cpu_usage_estimate,
                     uint64_t private_footprint_kb_estimate));
 
  private:
-  mojo::Binding<mojom::PageSignalReceiver> binding_;
+  mojo::Binding<resource_coordinator::mojom::PageSignalReceiver> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPageSignalReceiverImpl);
 };
@@ -329,7 +337,7 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
   auto* frame_cu = cu_graph.frame.get();
 
   // Create a mock receiver and register it against the psg.
-  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
   MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
   page_signal_generator()->AddReceiver(std::move(mock_receiver_ptr));
 
@@ -338,10 +346,12 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
                                  IdentityMatches(cu_graph.page->id(), 0u, "")))
       .WillOnce(::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  // Send a mojom::Event::kNonPersistentNotificationCreated event and wait for
-  // the receiver to get it.
+  // Send a
+  // resource_coordinator::mojom::Event::kNonPersistentNotificationCreated event
+  // and wait for the receiver to get it.
   page_signal_generator()->OnFrameEventReceived(
-      frame_cu, mojom::Event::kNonPersistentNotificationCreated);
+      frame_cu,
+      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated);
   run_loop.Run();
 
   ::testing::Mock::VerifyAndClear(&mock_receiver);
@@ -354,7 +364,7 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
   auto* psg = page_signal_generator();
 
   // Create a mock receiver and register it against the psg.
-  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
   MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
   psg->AddReceiver(std::move(mock_receiver_ptr));
 
@@ -372,7 +382,7 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
   auto* psg = page_signal_generator();
 
   // Create a mock receiver and register it against the psg.
-  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
   MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
   psg->AddReceiver(std::move(mock_receiver_ptr));
 
@@ -385,17 +395,17 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
 
 namespace {
 
-mojom::ProcessResourceMeasurementBatchPtr CreateMeasurementBatch(
-    base::TimeTicks start_time,
-    size_t cpu_time_us,
-    size_t private_fp_kb) {
-  mojom::ProcessResourceMeasurementBatchPtr batch =
-      mojom::ProcessResourceMeasurementBatch::New();
+resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
+CreateMeasurementBatch(base::TimeTicks start_time,
+                       size_t cpu_time_us,
+                       size_t private_fp_kb) {
+  resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch =
+      resource_coordinator::mojom::ProcessResourceMeasurementBatch::New();
   batch->batch_started_time = start_time;
   batch->batch_ended_time = start_time + base::TimeDelta::FromMicroseconds(10);
 
-  mojom::ProcessResourceMeasurementPtr measurement =
-      mojom::ProcessResourceMeasurement::New();
+  resource_coordinator::mojom::ProcessResourceMeasurementPtr measurement =
+      resource_coordinator::mojom::ProcessResourceMeasurement::New();
   measurement->pid = 1;
   measurement->cpu_usage = base::TimeDelta::FromMicroseconds(cpu_time_us);
   measurement->private_footprint_kb = static_cast<uint32_t>(private_fp_kb);
@@ -413,7 +423,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
       coordination_unit_graph());
 
   // Create a mock receiver and register it against the psg.
-  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
   MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
   page_signal_generator()->AddReceiver(std::move(mock_receiver_ptr));
 
@@ -496,4 +506,4 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

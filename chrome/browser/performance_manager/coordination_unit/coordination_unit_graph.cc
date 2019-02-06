@@ -24,11 +24,12 @@ namespace ukm {
 class UkmEntryBuilder;
 }  // namespace ukm
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 CoordinationUnitGraph::CoordinationUnitGraph()
-    : system_coordination_unit_id_(CoordinationUnitType::kSystem,
-                                   CoordinationUnitID::RANDOM_ID) {}
+    : system_coordination_unit_id_(
+          resource_coordinator::CoordinationUnitType::kSystem,
+          resource_coordinator::CoordinationUnitID::RANDOM_ID) {}
 
 CoordinationUnitGraph::~CoordinationUnitGraph() {
   // Because the graph has ownership of the CUs, and because the process CUs
@@ -78,20 +79,20 @@ void CoordinationUnitGraph::OnBeforeCoordinationUnitDestroyed(
 }
 
 FrameCoordinationUnitImpl* CoordinationUnitGraph::CreateFrameCoordinationUnit(
-    const CoordinationUnitID& id,
+    const resource_coordinator::CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   return FrameCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
 
 PageCoordinationUnitImpl* CoordinationUnitGraph::CreatePageCoordinationUnit(
-    const CoordinationUnitID& id,
+    const resource_coordinator::CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   return PageCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
 
 ProcessCoordinationUnitImpl*
 CoordinationUnitGraph::CreateProcessCoordinationUnit(
-    const CoordinationUnitID& id,
+    const resource_coordinator::CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   return ProcessCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
@@ -110,7 +111,7 @@ CoordinationUnitGraph::FindOrCreateSystemCoordinationUnit(
 }
 
 CoordinationUnitBase* CoordinationUnitGraph::GetCoordinationUnitByID(
-    const CoordinationUnitID cu_id) {
+    const resource_coordinator::CoordinationUnitID cu_id) {
   const auto& it = coordination_units_.find(cu_id);
   if (it == coordination_units_.end())
     return nullptr;
@@ -187,4 +188,4 @@ std::vector<CUType*> CoordinationUnitGraph::GetAllCoordinationUnitsOfType() {
   return ret;
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

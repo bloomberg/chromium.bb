@@ -32,7 +32,7 @@ LocalSiteCharacteristicsWebContentsObserver::
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
   // May not be present in some tests.
-  if (PerformanceManager::GetInstance()) {
+  if (performance_manager::PerformanceManager::GetInstance()) {
     // The PageSignalReceiver has to be enabled in order to properly track the
     // non-persistent notification events.
     TabLoadTracker::Get()->AddObserver(this);

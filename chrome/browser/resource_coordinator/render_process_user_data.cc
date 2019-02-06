@@ -53,7 +53,8 @@ class RenderProcessLifetimeWatcher : public content::RenderProcessHostObserver {
 
 RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
-    : process_resource_coordinator_(PerformanceManager::GetInstance()) {
+    : process_resource_coordinator_(
+          performance_manager::PerformanceManager::GetInstance()) {
   // The process itself shouldn't have been created at this point.
   DCHECK(!render_process_host->GetProcess().IsValid() ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(

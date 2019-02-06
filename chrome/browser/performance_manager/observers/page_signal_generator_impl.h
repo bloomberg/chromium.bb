@@ -19,43 +19,52 @@ namespace service_manager {
 struct BindSourceInfo;
 }  // namespace service_manager
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // The PageSignalGenerator is a dedicated |CoordinationUnitGraphObserver| for
 // calculating and emitting page-scoped signals. This observer observes
 // PageCoordinationUnits, ProcessCoordinationUnits and FrameCoordinationUnits,
 // combining information from the graph to generate page level signals.
-class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
-                                public mojom::PageSignalGenerator {
+class PageSignalGeneratorImpl
+    : public CoordinationUnitGraphObserver,
+      public resource_coordinator::mojom::PageSignalGenerator {
  public:
   PageSignalGeneratorImpl();
   ~PageSignalGeneratorImpl() override;
 
-  // mojom::PageSignalGenerator implementation.
-  void AddReceiver(mojom::PageSignalReceiverPtr receiver) override;
+  // resource_coordinator::mojom::PageSignalGenerator implementation.
+  void AddReceiver(
+      resource_coordinator::mojom::PageSignalReceiverPtr receiver) override;
 
   // CoordinationUnitGraphObserver implementation.
   bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override;
   void OnCoordinationUnitCreated(const CoordinationUnitBase* cu) override;
   void OnBeforeCoordinationUnitDestroyed(
       const CoordinationUnitBase* cu) override;
-  void OnFramePropertyChanged(const FrameCoordinationUnitImpl* frame_cu,
-                              const mojom::PropertyType property_type,
-                              int64_t value) override;
-  void OnPagePropertyChanged(const PageCoordinationUnitImpl* page_cu,
-                             const mojom::PropertyType property_type,
-                             int64_t value) override;
-  void OnProcessPropertyChanged(const ProcessCoordinationUnitImpl* process_cu,
-                                const mojom::PropertyType property_type,
-                                int64_t value) override;
-  void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
-                            const mojom::Event event) override;
-  void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
-                           const mojom::Event event) override;
-  void OnProcessEventReceived(const ProcessCoordinationUnitImpl* page_cu,
-                              const mojom::Event event) override;
-  void OnSystemEventReceived(const SystemCoordinationUnitImpl* system_cu,
-                             const mojom::Event event) override;
+  void OnFramePropertyChanged(
+      const FrameCoordinationUnitImpl* frame_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnPagePropertyChanged(
+      const PageCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnProcessPropertyChanged(
+      const ProcessCoordinationUnitImpl* process_cu,
+      const resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnFrameEventReceived(
+      const FrameCoordinationUnitImpl* frame_cu,
+      const resource_coordinator::mojom::Event event) override;
+  void OnPageEventReceived(
+      const PageCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::Event event) override;
+  void OnProcessEventReceived(
+      const ProcessCoordinationUnitImpl* page_cu,
+      const resource_coordinator::mojom::Event event) override;
+  void OnSystemEventReceived(
+      const SystemCoordinationUnitImpl* system_cu,
+      const resource_coordinator::mojom::Event event) override;
 
   void BindToInterface(
       resource_coordinator::mojom::PageSignalGeneratorRequest request,
@@ -150,7 +159,7 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
   // This method is called when a property affecting the lifecycle state is
   // observed.
   void UpdateLifecycleState(const PageCoordinationUnitImpl* page_cu,
-                            mojom::LifecycleState state);
+                            resource_coordinator::mojom::LifecycleState state);
 
   // Helper function for transitioning to the final state.
   void TransitionToLoadedAndIdle(const PageCoordinationUnitImpl* page_cu,
@@ -166,8 +175,9 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                           Method m,
                           Params... params);
 
-  mojo::BindingSet<mojom::PageSignalGenerator> bindings_;
-  mojo::InterfacePtrSet<mojom::PageSignalReceiver> receivers_;
+  mojo::BindingSet<resource_coordinator::mojom::PageSignalGenerator> bindings_;
+  mojo::InterfacePtrSet<resource_coordinator::mojom::PageSignalReceiver>
+      receivers_;
 
   // Stores per Page CU data. This set is maintained by
   // OnCoordinationUnitCreated and OnBeforeCoordinationUnitDestroyed.
@@ -176,6 +186,6 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
   DISALLOW_COPY_AND_ASSIGN(PageSignalGeneratorImpl);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_PAGE_SIGNAL_GENERATOR_IMPL_H_

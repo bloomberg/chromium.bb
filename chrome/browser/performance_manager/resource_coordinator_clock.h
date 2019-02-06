@@ -14,7 +14,7 @@ namespace base {
 class TickClock;
 }
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // ResourceCoordinatorClock provides timing methods that resource_coordinator/
 // needs at a central place, and facilitates testing across components when
@@ -36,6 +36,6 @@ class ResourceCoordinatorClock {
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorClock);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_RESOURCE_COORDINATOR_CLOCK_H_

@@ -10,13 +10,14 @@
 #include "chrome/browser/performance_manager/coordination_unit/system_coordination_unit_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 namespace {
 
 ProcessCoordinationUnitImpl* CreateProcessCU(CoordinationUnitGraph* graph) {
   return graph->CreateProcessCoordinationUnit(
-      CoordinationUnitID(CoordinationUnitType::kProcess,
-                         CoordinationUnitID::RANDOM_ID),
+      resource_coordinator::CoordinationUnitID(
+          resource_coordinator::CoordinationUnitType::kProcess,
+          resource_coordinator::CoordinationUnitID::RANDOM_ID),
       nullptr);
 }
 
@@ -117,4 +118,4 @@ TEST(CoordinationUnitGraphTest, GetAllCUsByType) {
   EXPECT_NE(nullptr, pages[1]);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

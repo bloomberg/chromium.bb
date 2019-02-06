@@ -7,13 +7,14 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 ProcessResourceCoordinator::ProcessResourceCoordinator(
     PerformanceManager* performance_manager)
     : ResourceCoordinatorInterface(), weak_ptr_factory_(this) {
-  CoordinationUnitID new_cu_id(CoordinationUnitType::kProcess,
-                               CoordinationUnitID::RANDOM_ID);
+  resource_coordinator::CoordinationUnitID new_cu_id(
+      resource_coordinator::CoordinationUnitType::kProcess,
+      resource_coordinator::CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(performance_manager,
                                                  new_cu_id);
 }
@@ -54,9 +55,9 @@ void ProcessResourceCoordinator::SetProcessExitStatus(int32_t exit_status) {
 }
 
 void ProcessResourceCoordinator::ConnectToService(
-    mojom::CoordinationUnitProviderPtr& provider,
-    const CoordinationUnitID& cu_id) {
+    resource_coordinator::mojom::CoordinationUnitProviderPtr& provider,
+    const resource_coordinator::CoordinationUnitID& cu_id) {
   provider->CreateProcessCoordinationUnit(mojo::MakeRequest(&service_), cu_id);
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

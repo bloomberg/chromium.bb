@@ -7,7 +7,7 @@
 
 #include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 class CoordinationUnitGraph;
 class FrameCoordinationUnitImpl;
@@ -110,6 +110,6 @@ struct MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph
   TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> other_process;
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_MOCK_COORDINATION_UNIT_GRAPHS_H_

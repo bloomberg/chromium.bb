@@ -14,7 +14,7 @@
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 MockSinglePageInSingleProcessCoordinationUnitGraph::
     MockSinglePageInSingleProcessCoordinationUnitGraph(
@@ -28,7 +28,7 @@ MockSinglePageInSingleProcessCoordinationUnitGraph::
       page(TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(
           graph)) {
   frame->SetAllInterventionPoliciesForTesting(
-      mojom::InterventionPolicy::kDefault);
+      resource_coordinator::mojom::InterventionPolicy::kDefault);
   page->AddFrame(frame->id());
   frame->SetProcess(process->id());
   process->SetPID(1);
@@ -47,7 +47,7 @@ MockMultiplePagesInSingleProcessCoordinationUnitGraph::
       other_page(TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(
           graph)) {
   other_frame->SetAllInterventionPoliciesForTesting(
-      mojom::InterventionPolicy::kDefault);
+      resource_coordinator::mojom::InterventionPolicy::kDefault);
   other_page->AddFrame(other_frame->id());
   other_frame->SetProcess(process->id());
 }
@@ -66,7 +66,7 @@ MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
           TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create(
               graph)) {
   child_frame->SetAllInterventionPoliciesForTesting(
-      mojom::InterventionPolicy::kDefault);
+      resource_coordinator::mojom::InterventionPolicy::kDefault);
   frame->AddChildFrame(child_frame->id());
   page->AddFrame(child_frame->id());
   child_frame->SetProcess(other_process->id());
@@ -87,7 +87,7 @@ MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
           TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create(
               graph)) {
   child_frame->SetAllInterventionPoliciesForTesting(
-      mojom::InterventionPolicy::kDefault);
+      resource_coordinator::mojom::InterventionPolicy::kDefault);
   other_frame->AddChildFrame(child_frame->id());
   other_page->AddFrame(child_frame->id());
   child_frame->SetProcess(other_process->id());
@@ -97,4 +97,4 @@ MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
 MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
     ~MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph() = default;
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
