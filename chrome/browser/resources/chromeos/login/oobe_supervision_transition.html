@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_supervision_transition.css">
     <oobe-dialog id="supervisionTransitionDialog">
-      <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon">
+      <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon"
+          aria-hidden="true">
       </iron-icon>
       <h1 slot="title" id="supervisionTitle">
         <div hidden="[[isRemovingSupervision_]]">
@@ -19,12 +20,13 @@
       </h1>
       <div slot="subtitle">$i18n{supervisionTransitionIntroMessage}</div>
       <div slot="footer">
-        <paper-progress class="slow" indeterminate>
+        <paper-progress class="slow" aria-hidden="true" indeterminate>
         </paper-progress>
       </div>
     </oobe-dialog>
     <oobe-dialog id="supervisionTransitionErrorDialog" has-buttons hidden>
-      <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon">
+      <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon"
+          aria-hidden="true">
       </iron-icon>
       <h1 slot="title">$i18n{supervisionTransitionErrorTitle}</h1>
       <div slot="subtitle">$i18n{supervisionTransitionErrorMessage}</div>
