@@ -327,6 +327,8 @@ core_idl_files =
                     "resize_observer/resize_observer.idl",
                     "resize_observer/resize_observer_entry.idl",
                     "streams/readable_stream.idl",
+                    "streams/readable_stream_default_controller.idl",
+                    "streams/readable_stream_default_reader.idl",
                     "streams/transform_stream.idl",
                     "streams/writable_stream.idl",
                     "streams/writable_stream_default_controller.idl",
