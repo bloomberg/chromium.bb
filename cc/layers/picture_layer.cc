@@ -248,6 +248,28 @@ void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
 }
 
+void PictureLayer::CaptureContent(const gfx::Rect& rect,
+                                  std::vector<NodeHolder>* content) {
+  if (!DrawsContent())
+    return;
+
+  const DisplayItemList* display_item_list = GetDisplayItemList();
+  if (!display_item_list)
+    return;
+
+  gfx::Transform inverse_screen_space_transform;
+  if (!ScreenSpaceTransform().GetInverse(&inverse_screen_space_transform))
+    return;
+  gfx::Rect transformed = MathUtil::ProjectEnclosingClippedRect(
+      inverse_screen_space_transform, rect);
+
+  transformed.Intersect(gfx::Rect(bounds()));
+  if (transformed.IsEmpty())
+    return;
+
+  display_item_list->CaptureContent(transformed, content);
+}
+
 void PictureLayer::DropRecordingSourceContentIfInvalid() {
   int source_frame_number = layer_tree_host()->SourceFrameNumber();
   gfx::Size recording_source_bounds = recording_source_->GetSize();

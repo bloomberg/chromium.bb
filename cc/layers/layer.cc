@@ -209,6 +209,9 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
+void Layer::CaptureContent(const gfx::Rect& rect,
+                           std::vector<NodeHolder>* content) {}
+
 sk_sp<SkPicture> Layer::GetPicture() const {
   return nullptr;
 }

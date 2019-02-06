@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_PICTURE_LAYER_H_
 #define CC_LAYERS_PICTURE_LAYER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/invalidation_region.h"
@@ -43,6 +45,8 @@ class CC_EXPORT PictureLayer : public Layer {
   bool HasSlowPaths() const override;
   bool HasNonAAPaint() const override;
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
+  void CaptureContent(const gfx::Rect& rect,
+                      std::vector<NodeHolder>* content) override;
 
   ContentLayerClient* client() { return picture_layer_inputs_.client; }
 

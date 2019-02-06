@@ -16,6 +16,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -748,6 +749,18 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
   }
 
   gpu_rasterization_histogram_recorded_ = true;
+}
+
+bool LayerTreeHost::CaptureContent(std::vector<NodeHolder>* content) {
+  if (viewport_visible_rect_.IsEmpty())
+    return false;
+
+  gfx::Rect rect = gfx::Rect(viewport_visible_rect_.width(),
+                             viewport_visible_rect_.height());
+  for (auto* layer : *this)
+    layer->CaptureContent(rect, content);
+
+  return true;
 }
 
 bool LayerTreeHost::DoUpdateLayers() {

@@ -64,6 +64,11 @@ class CC_PAINT_EXPORT DisplayItemList
               ImageProvider* image_provider = nullptr,
               PaintWorkletImageProvider* = nullptr) const;
 
+  // Captures the DrawTextBlobOp within |rect| and returns the associated
+  // NodeHolder in |content|.
+  void CaptureContent(const gfx::Rect& rect,
+                      std::vector<NodeHolder>* content) const;
+
   void StartPaint() {
 #if DCHECK_IS_ON()
     DCHECK(!IsPainting());
