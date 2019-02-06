@@ -319,6 +319,22 @@ CROS_WORKON_LOCALNAME=%s
     self.assertEquals(info.subtrees, [os.path.join(
         self.tempdir, 'platform', fake_localname)])
 
+  def testParseAlwaysLive(self):
+    """Tests if an ebuild which is always live is correctly handled."""
+    fake_project = 'my_project1'
+    fake_localname = 'foo'
+    fake_ebuild_contents = """
+CROS_WORKON_PROJECT=%s
+CROS_WORKON_LOCALNAME=%s
+CROS_WORKON_ALWAYS_LIVE=1
+    """ % (fake_project, fake_localname)
+    info = self._MockParseWorkonVariables(
+        [fake_project], [], [fake_localname], fake_ebuild_contents)
+    self.assertEquals(info.projects, [])
+    self.assertEquals(info.srcdirs, [])
+    self.assertEquals(info.srcdirs, [])
+    self.assertEquals(info.subtrees, [])
+
   def testParseArrayWorkonVariables(self):
     """Tests if ebuilds in an array format are correctly parsed."""
     fake_projects = ['my_project1', 'my_project2', 'my_project3']
