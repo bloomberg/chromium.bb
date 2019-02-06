@@ -5,14 +5,16 @@
 <dom-module id="shared-styles">
   <template>
     <style include="paper-button-style">
-      :host > * {
+      html,
+      :host {
         --error-color: var(--google-red-700);
         --page-width: 624px;
         --title-icon-color: var(--paper-grey-500);
         --user-manager-separator-line: 1px solid rgba(0, 0, 0, .12);
       }
 
-      :host-context([dark]) > * {
+      html[dark],
+      :host-context([dark]) {
         --error-color: var(--google-red-refresh-300);
         --user-manager-separator-line: var(--cr-separator-line);
       }
