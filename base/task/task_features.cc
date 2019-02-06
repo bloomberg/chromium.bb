@@ -20,4 +20,7 @@ const Feature kMergeBlockingNonBlockingPools = {
 const Feature kNoDetachBelowInitialCapacity = {
     "NoDetachBelowInitialCapacity", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const Feature kMayBlockWithoutDelay = {"MayBlockWithoutDelay",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace base

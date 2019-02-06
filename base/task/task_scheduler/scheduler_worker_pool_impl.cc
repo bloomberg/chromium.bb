@@ -370,6 +370,8 @@ void SchedulerWorkerPoolImpl::Start(
 
   DCHECK(workers_.empty());
 
+  in_start().may_block_without_delay_ =
+      FeatureList::IsEnabled(kMayBlockWithoutDelay);
   in_start().may_block_threshold =
       may_block_threshold ? may_block_threshold.value()
                           : (priority_hint_ == ThreadPriority::NORMAL
@@ -827,13 +829,16 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingStarted(
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
 
+  // MayBlock with no delay reuses WillBlock implementation.
+  if (outer_->after_start().may_block_without_delay_)
+    blocking_type = BlockingType::WILL_BLOCK;
+
   switch (blocking_type) {
     case BlockingType::MAY_BLOCK:
       MayBlockEntered();
       break;
     case BlockingType::WILL_BLOCK:
       WillBlockEntered();
-      break;
   }
 }
 
@@ -841,6 +846,11 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     BlockingTypeUpgraded() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
+
+  // The blocking type always being WILL_BLOCK in this experiment, it should
+  // never be considered "upgraded".
+  if (outer_->after_start().may_block_without_delay_)
+    return;
 
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
