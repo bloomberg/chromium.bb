@@ -9,7 +9,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
-#include "third_party/skia/include/core/SkMetaData.h"
 
 namespace cc {
 class SkottieWrapper;
@@ -19,7 +18,6 @@ namespace blink {
 
 class MockPaintCanvas : public cc::PaintCanvas {
  public:
-  MOCK_METHOD0(getMetaData, SkMetaData&());
   MOCK_CONST_METHOD0(imageInfo, SkImageInfo());
   MOCK_METHOD0(flush, void());
   MOCK_METHOD0(save, int());
@@ -103,6 +101,8 @@ class MockPaintCanvas : public cc::PaintCanvas {
                void(AnnotationType type,
                     const SkRect& rect,
                     sk_sp<SkData> data));
+  MOCK_METHOD0(GetPrintingMetafile, printing::MetafileSkia*());
+  MOCK_METHOD1(SetPrintingMetafile, void(printing::MetafileSkia*));
 };
 
 }  // namespace blink

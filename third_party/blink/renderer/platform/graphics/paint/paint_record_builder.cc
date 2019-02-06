@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
+PaintRecordBuilder::PaintRecordBuilder(printing::MetafileSkia* metafile,
                                        GraphicsContext* containing_context,
                                        PaintController* paint_controller)
     : paint_controller_(nullptr) {
@@ -34,7 +34,7 @@ PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
       containing_context ? &containing_context->high_contrast_settings()
                          : nullptr;
   context_ = std::make_unique<GraphicsContext>(*paint_controller_,
-                                               disabled_mode, meta_data);
+                                               disabled_mode, metafile);
   if (high_contrast_settings)
     context_->SetHighContrast(*high_contrast_settings);
 

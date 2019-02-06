@@ -57,7 +57,6 @@
 // nogncheck because dependency on //printing is conditional upon
 // enable_basic_printing flags.
 #include "printing/metafile_skia.h"          // nogncheck
-#include "printing/metafile_skia_wrapper.h"  // nogncheck
 #endif
 
 namespace content {
@@ -942,8 +941,7 @@ SkBitmap* RenderFrameProxy::GetSadPageBitmap() {
 uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
                                  cc::PaintCanvas* canvas) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  printing::MetafileSkia* metafile =
-      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+  auto* metafile = canvas->GetPrintingMetafile();
   DCHECK(metafile);
 
   // Create a place holder content for the remote frame so it can be replaced
