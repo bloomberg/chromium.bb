@@ -556,13 +556,22 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
   provider_endpoint->BindWithProviderInfo(std::move(provider_info));
 
   SimulateWorkerReadyForInspection(embedded_worker_id);
-  SimulateWorkerScriptCached(
-      embedded_worker_id,
-      base::BindOnce(&EmbeddedWorkerTestHelper::DidSimulateWorkerScriptCached,
+
+  // In production, new service workers would request their main script here,
+  // which causes the browser to write the script response in service worker
+  // storage. We do that manually here.
+  //
+  // TODO(falken): For new workers, this should use
+  // |script_loader_factory_ptr_info| from |start_params_->provider_info|
+  // to request the script and the browser process should be able to mock it.
+  // For installed workers, the map should already be populated.
+  PopulateScriptCacheMap(
+      service_worker_version_id,
+      base::BindOnce(&EmbeddedWorkerTestHelper::DidPopulateScriptCacheMap,
                      AsWeakPtr(), embedded_worker_id, pause_after_download));
 }
 
-void EmbeddedWorkerTestHelper::DidSimulateWorkerScriptCached(
+void EmbeddedWorkerTestHelper::DidPopulateScriptCacheMap(
     int embedded_worker_id,
     bool pause_after_download) {
   SimulateWorkerScriptLoaded(embedded_worker_id);
@@ -708,21 +717,9 @@ void EmbeddedWorkerTestHelper::OnSetIdleTimerDelayToZero(
   // Subclasses may implement this method.
 }
 
-void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
-    int embedded_worker_id) {
-  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  ASSERT_TRUE(worker);
-  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
-  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
-      ->OnReadyForInspection();
-  base::RunLoop().RunUntilIdle();
-}
-
-void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
-    int embedded_worker_id,
+void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
+    int64_t version_id,
     base::OnceClosure callback) {
-  int64_t version_id =
-      embedded_worker_id_service_worker_version_id_map_[embedded_worker_id];
   ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
   if (!version) {
     std::move(callback).Run();
@@ -743,6 +740,16 @@ void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
   // Call |callback| if |version| already has ResourceRecords.
   if (!callback.is_null())
     std::move(callback).Run();
+}
+
+void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
+    int embedded_worker_id) {
+  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
+  ASSERT_TRUE(worker);
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
+      ->OnReadyForInspection();
+  base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(

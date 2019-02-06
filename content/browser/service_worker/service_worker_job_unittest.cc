@@ -901,8 +901,8 @@ namespace {  // Helpers for the update job tests.
 
 const GURL kNoChangeOrigin("https://nochange/");
 const GURL kNewVersionOrigin("https://newversion/");
-const std::string kScope("scope/");
-const std::string kScript("script.js");
+const char kScope[] = "scope/";
+const char kScript[] = "script.js";
 
 void RunNestedUntilIdle() {
   base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
@@ -952,7 +952,7 @@ void WriteStringResponse(ServiceWorkerStorage* storage,
 
 class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
                             public ServiceWorkerRegistration::Listener,
-                            public ServiceWorkerVersion::Observer {
+                            public ServiceWorkerContextCoreObserver {
  public:
   struct AttributeChangeLogEntry {
     int64_t registration_id;
@@ -966,12 +966,13 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   };
 
   UpdateJobTestHelper()
-      : EmbeddedWorkerTestHelper(base::FilePath()), weak_factory_(this) {}
+      : EmbeddedWorkerTestHelper(base::FilePath()), weak_factory_(this) {
+    context_wrapper()->AddObserver(this);
+  }
   ~UpdateJobTestHelper() override {
+    context_wrapper()->RemoveObserver(this);
     if (observed_registration_.get())
       observed_registration_->RemoveListener(this);
-    for (auto& version : observed_versions_)
-      version->RemoveObserver(this);
   }
 
   ServiceWorkerStorage* storage() { return context()->storage(); }
@@ -1003,30 +1004,19 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     return registration;
   }
 
-  // EmbeddedWorkerTestHelper overrides
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t version_id,
-      const GURL& scope,
-      const GURL& script,
-      bool pause_after_download,
-      blink::mojom::ServiceWorkerRequest service_worker_request,
-      blink::mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
-      override {
+  // EmbeddedWorkerTestHelper overrides:
+  void PopulateScriptCacheMap(int64_t version_id,
+                              base::OnceClosure callback) override {
     const std::string kMockScriptBody = "mock_script";
     const uint64_t kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+    ASSERT_TRUE(version);
     ServiceWorkerRegistration* registration =
         context()->GetLiveRegistration(version->registration_id());
+    ASSERT_TRUE(registration);
+    GURL script = version->script_url();
     bool is_update = registration->active_version() &&
                      version != registration->active_version();
-
-    ASSERT_TRUE(version);
-    observed_versions_.push_back(base::WrapRefCounted(version));
-    version->AddObserver(this);
 
     // Simulate network access.
     base::TimeDelta time_since_last_check =
@@ -1043,48 +1033,19 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::OK, std::string());
-      version->SetMainScriptHttpResponseInfo(
-          EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    } else if (script.GetOrigin() == kNoChangeOrigin) {
+      // Simulate fetching the updated script and finding it's identical to
+      // the incumbent.
+      version->script_cache_map()->NotifyFinishedCaching(
+          script, kMockScriptSize, net::ERR_FILE_EXISTS, std::string());
     } else {
-      if (script.GetOrigin() == kNoChangeOrigin) {
-        // Simulate fetching the updated script and finding it's identical to
-        // the incumbent.
-        version->script_cache_map()->NotifyFinishedCaching(
-            script, kMockScriptSize, net::ERR_FILE_EXISTS, std::string());
-        version->SetMainScriptHttpResponseInfo(
-            EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
-
-        blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
-        instance_host_ptr.Bind(std::move(instance_host));
-        instance_host_ptr->OnScriptLoaded();
-        base::RunLoop().RunUntilIdle();
-        return;
-      }
-
       // Spoof caching the script for the new version.
       WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::OK, std::string());
-      version->SetMainScriptHttpResponseInfo(
-          EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     }
-
-    started_workers_.insert(embedded_worker_id);
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, version_id, scope, script, pause_after_download,
-        std::move(service_worker_request), std::move(controller_request),
-        std::move(instance_host), std::move(provider_info),
-        std::move(installed_scripts_info));
-  }
-
-  void OnStopWorker(int embedded_worker_id) override {
-    // Some of our tests don't call the base class in OnStartWorker(), so we
-    // can't call the base class's OnStopWorker() either.
-    auto iter = started_workers_.find(embedded_worker_id);
-    if (iter == started_workers_.end())
-      return;
-    EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
-    started_workers_.erase(iter);
+    version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
+    std::move(callback).Run();
   }
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
@@ -1097,6 +1058,16 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       return;
     }
     EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
+  }
+
+  // ServiceWorkerContextCore::Observer overrides
+  void OnVersionStateChanged(int64_t version_id,
+                             const GURL& scope,
+                             ServiceWorkerVersion::Status status) override {
+    StateChangeLogEntry entry;
+    entry.version_id = version_id;
+    entry.status = status;
+    state_change_log_.push_back(std::move(entry));
   }
 
   // ServiceWorkerRegistration::Listener overrides
@@ -1119,20 +1090,9 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     update_found_ = true;
   }
 
-  // ServiceWorkerVersion::Observer overrides
-  void OnVersionStateChanged(ServiceWorkerVersion* version) override {
-    StateChangeLogEntry entry;
-    entry.version_id = version->version_id();
-    entry.status = version->status();
-    state_change_log_.push_back(std::move(entry));
-  }
-
   scoped_refptr<ServiceWorkerRegistration> observed_registration_;
-  std::vector<scoped_refptr<ServiceWorkerVersion>> observed_versions_;
-
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;
-  std::set<int /* embedded_worker_id */> started_workers_;
   bool update_found_ = false;
   bool force_start_worker_failure_ = false;
   base::Optional<bool> will_be_terminated_;
