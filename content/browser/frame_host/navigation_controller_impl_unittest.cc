@@ -1905,47 +1905,34 @@ TEST_F(NavigationControllerTest, Redirect) {
   const GURL url2("http://foo2");  // Redirection target
 
   // First request.
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation->Start();
 
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
 
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = entry_id;
-  params.did_create_new_entry = true;
-  params.url = url2;
-  params.transition = ui::PAGE_TRANSITION_SERVER_REDIRECT;
-  params.redirects.push_back(GURL("http://foo1"));
-  params.redirects.push_back(GURL("http://foo2"));
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url2);
-
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  navigation->Redirect(url2);
+  navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
   // Second request.
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
+  auto navigation2 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation2->Start();
 
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
-  params.nav_entry_id = entry_id;
-  params.did_create_new_entry = false;
-
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
+
   LoadCommittedDetailsObserver observer(contents());
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  navigation2->set_did_create_new_entry(false);
+  navigation2->Redirect(url2);
+  navigation2->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1971,49 +1958,36 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   const GURL url2("http://foo2");  // Redirection target
 
   // First request as POST.
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  controller.GetVisibleEntry()->SetHasPostData(true);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation->SetMethod("POST");
+  navigation->Start();
 
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
 
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = entry_id;
-  params.did_create_new_entry = true;
-  params.url = url2;
-  params.transition = ui::PAGE_TRANSITION_SERVER_REDIRECT;
-  params.redirects.push_back(GURL("http://foo1"));
-  params.redirects.push_back(GURL("http://foo2"));
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.method = "POST";
-  params.page_state = PageState::CreateFromURL(url2);
-
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  navigation->Redirect(url2);
+  navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
   // Second request.
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
+  auto navigation2 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation2->Start();
 
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
-  params.nav_entry_id = entry_id;
-  params.did_create_new_entry = false;
-  params.method = "GET";
-
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
+
   LoadCommittedDetailsObserver observer(contents());
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  navigation2->set_did_create_new_entry(false);
+  navigation2->Redirect(GURL("http://foo2"));
+  navigation2->Commit();
+
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -2038,32 +2012,19 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   const GURL url2("http://foo2");  // Redirection target
 
   // First request
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation->Start();
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = entry_id;
-  params.did_create_new_entry = true;
-  params.url = url2;
-  params.transition = ui::PAGE_TRANSITION_SERVER_REDIRECT;
-  params.redirects.push_back(GURL("http://foo1"));
-  params.redirects.push_back(GURL("http://foo2"));
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url2);
-
-  LoadCommittedDetailsObserver observer(contents());
-
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+
+  LoadCommittedDetailsObserver observer(contents());
+  navigation->Redirect(GURL("http://foo2"));
+  navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -2141,55 +2102,15 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   navigation_entry_committed_counter_ = 0;
 
   // Prereq: add a subframe with an initial auto-subframe navigation.
-  std::string unique_name("uniqueName0");
-  main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(),
-      TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest(),
-      TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
-      base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
-  TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
-      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL subframe_url("http://foo1/subframe");
-  {
-    FrameHostMsg_DidCommitProvisionalLoad_Params params;
-    params.nav_entry_id = 0;
-    params.did_create_new_entry = false;
-    params.url = subframe_url;
-    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    params.should_update_history = false;
-    params.gesture = NavigationGestureUser;
-    params.method = "GET";
-    params.page_state = PageState::CreateFromURL(subframe_url);
-
-    // Navigating should do nothing.
-    subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
-    subframe->PrepareForCommit();
-    subframe->SendNavigateWithParams(&params, false);
-
-    // We notify of a PageState update here rather than during UpdateState for
-    // auto subframe navigations.
-    EXPECT_EQ(1u, navigation_entry_changed_counter_);
-  }
+  TestRenderFrameHost* subframe = main_test_rfh()->AppendChild("subframe");
+  NavigationSimulator::NavigateAndCommitFromDocument(subframe_url, subframe);
+  EXPECT_EQ(1u, navigation_entry_changed_counter_);
 
   // Now do a new navigation in the frame.
   const GURL url2("http://foo2");
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
-  params.url = url2;
-  params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureUser;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url2);
-
   LoadCommittedDetailsObserver observer(contents());
-  subframe->SendRendererInitiatedNavigationRequest(url2, true);
-  subframe->PrepareForCommit();
-  subframe->SendNavigateWithParams(&params, false);
+  NavigationSimulator::NavigateAndCommitFromDocument(url2, subframe);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(url1, observer.previous_url());
