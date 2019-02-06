@@ -7,7 +7,6 @@
 
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
 
 namespace extensions {
 
@@ -21,13 +20,8 @@ class IdentityGetAccountsFunction : public UIThreadExtensionFunction {
  private:
   ~IdentityGetAccountsFunction() override;
 
-  // Invoked in response to IdentityManager::GetAccounts().
-  void OnGotAccounts(std::vector<identity::mojom::AccountPtr> accounts);
-
   // UIThreadExtensionFunction implementation.
   ExtensionFunction::ResponseAction Run() override;
-
-  identity::mojom::IdentityManagerPtr identity_manager_;
 };
 
 }  // namespace extensions
