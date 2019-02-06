@@ -293,7 +293,8 @@ std::string GetSameVersionStartupCountSuffix() {
   DCHECK_GE(g_startups_with_current_version, 1);
   if (g_startups_with_current_version > kMaxSameVersionCountRecorded)
     return ".Over";
-  return std::string(".") + base::IntToString(g_startups_with_current_version);
+  return std::string(".") +
+         base::NumberToString(g_startups_with_current_version);
 }
 
 // Returns the system uptime on process launch.

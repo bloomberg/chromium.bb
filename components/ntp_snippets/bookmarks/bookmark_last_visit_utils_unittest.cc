@@ -55,14 +55,14 @@ void AddBookmarksRecentOnMobile(BookmarkModel* model,
                                 int num,
                                 const base::Time& visit_time) {
   AddBookmarks(model, num, kBookmarkLastVisitDateOnMobileKey,
-               base::Int64ToString(SerializeTime(visit_time)));
+               base::NumberToString(SerializeTime(visit_time)));
 }
 
 void AddBookmarksRecentOnDesktop(BookmarkModel* model,
                                  int num,
                                  const base::Time& visit_time) {
   AddBookmarks(model, num, kBookmarkLastVisitDateOnDesktopKey,
-               base::Int64ToString(SerializeTime(visit_time)));
+               base::NumberToString(SerializeTime(visit_time)));
 }
 
 void AddBookmarksNonVisited(BookmarkModel* model, int num) {
@@ -78,7 +78,7 @@ const BookmarkNode* AddSingleBookmark(BookmarkModel* model,
   const BookmarkNode* node =
       model->AddURL(model->bookmark_bar_node(), 0, title, GURL(url));
   model->SetNodeMetaInfo(node, last_visit_key,
-                         base::Int64ToString(SerializeTime(visit_time)));
+                         base::NumberToString(SerializeTime(visit_time)));
   return node;
 }
 
@@ -221,7 +221,7 @@ TEST(RemoveLastVisitedDatesBetween,
       model.get(), "http://url-1.com", kBookmarkLastVisitDateOnMobileKey,
       delete_begin + base::TimeDelta::FromSeconds(1));
   model->SetNodeMetaInfo(node, kBookmarkLastVisitDateOnDesktopKey,
-                         base::Int64ToString(SerializeTime(
+                         base::NumberToString(SerializeTime(
                              delete_begin - base::TimeDelta::FromSeconds(1))));
   ASSERT_THAT(
       GetRecentlyVisitedBookmarks(model.get(), 20, base::Time(),

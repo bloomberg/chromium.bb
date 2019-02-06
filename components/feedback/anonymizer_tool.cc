@@ -460,7 +460,7 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
     std::string matched_id_as_string = matched_id.as_string();
     std::string replacement_id = (*identifier_space)[matched_id_as_string];
     if (replacement_id.empty()) {
-      replacement_id = base::IntToString(identifier_space->size());
+      replacement_id = base::NumberToString(identifier_space->size());
       (*identifier_space)[matched_id_as_string] = replacement_id;
     }
 

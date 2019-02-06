@@ -40,7 +40,7 @@ std::string OfflineContentAggregator::CreateUniqueNameSpace(
     return prefix;
 
   static int num_registrations = 0;
-  return prefix + "_" + base::IntToString(++num_registrations);
+  return prefix + "_" + base::NumberToString(++num_registrations);
 }
 
 void OfflineContentAggregator::RegisterProvider(

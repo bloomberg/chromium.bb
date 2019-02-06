@@ -177,7 +177,7 @@ void TestProvider::AddResultsWithSearchTermsArgs(
   for (int i = start_at; i < num; i++) {
     AutocompleteMatch match(this, relevance_ - i, false, type);
 
-    match.fill_into_edit = prefix_ + base::UTF8ToUTF16(base::IntToString(i));
+    match.fill_into_edit = prefix_ + base::UTF8ToUTF16(base::NumberToString(i));
     match.destination_url = GURL(base::UTF16ToUTF8(match.fill_into_edit));
     match.allowed_to_be_default_match = true;
 

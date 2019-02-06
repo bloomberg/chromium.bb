@@ -42,7 +42,7 @@ OfflinePageItem CreateOfflinePageItem(const GURL& url,
   static int id = 0;
   ++id;
   return OfflinePageItem(
-      url, id, offline_pages::ClientId(name_space, base::IntToString(id)),
+      url, id, offline_pages::ClientId(name_space, base::NumberToString(id)),
       base::FilePath::FromUTF8Unsafe(
           base::StringPrintf("some/folder/%d.mhtml", id)),
       0, base::Time::Now());

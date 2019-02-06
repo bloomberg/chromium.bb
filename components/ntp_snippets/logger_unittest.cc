@@ -27,7 +27,7 @@ class LoggerTest : public ::testing::Test {
   void EnableFeature() {
     params_manager_.SetVariationParamsWithFeatureAssociations(
         kContentSuggestionsDebugLog.name,
-        {{"max_items_count", base::IntToString(kMaxItemsCount)}},
+        {{"max_items_count", base::NumberToString(kMaxItemsCount)}},
         {kContentSuggestionsDebugLog.name});
   }
 

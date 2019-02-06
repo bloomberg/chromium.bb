@@ -109,7 +109,7 @@ uint32_t GetUniqueId() {
 // Use to add a number suffix which is unique in the scope of the test.
 base::string16 StampUniqueSuffix(const char* base_str) {
   return ASCIIToUTF16(base_str) + ASCIIToUTF16("_") +
-         base::UintToString16(GetUniqueId());
+         base::NumberToString16(GetUniqueId());
 }
 
 // Describes which renderer IDs are expected for username/password fields

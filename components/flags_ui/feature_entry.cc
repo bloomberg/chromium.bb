@@ -55,7 +55,7 @@ std::string FeatureEntry::NameForOption(int index) const {
          type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   DCHECK_LT(index, num_options);
   return std::string(internal_name) + testing::kMultiSeparator +
-         base::IntToString(index);
+         base::NumberToString(index);
 }
 
 base::string16 FeatureEntry::DescriptionForOption(int index) const {

@@ -96,7 +96,7 @@ ConstantCategoryRanker::GetDebugData() {
 
   std::vector<std::string> category_strings;
   for (Category category : ordered_categories_) {
-    category_strings.push_back(base::IntToString(category.id()));
+    category_strings.push_back(base::NumberToString(category.id()));
   }
   result.push_back(CategoryRanker::DebugDataItem(
       "Current order", base::JoinString(category_strings, ", ")));

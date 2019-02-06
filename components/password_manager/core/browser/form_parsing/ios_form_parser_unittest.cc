@@ -19,7 +19,7 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
-using base::UintToString16;
+using base::NumberToString16;
 
 namespace password_manager {
 
@@ -78,8 +78,8 @@ FormData GetFormData(const FormParsingTestCase& test_form) {
     FormFieldData field;
     // An exact id is not important, set id such that different fields have
     // different id.
-    field.name_attribute = ASCIIToUTF16("field_name") + UintToString16(i);
-    field.id_attribute = ASCIIToUTF16("field_id") + UintToString16(i);
+    field.name_attribute = ASCIIToUTF16("field_name") + NumberToString16(i);
+    field.id_attribute = ASCIIToUTF16("field_id") + NumberToString16(i);
 
 // The fuzzing infrastructure doez not run on iOS, so the iOS specific parts of
 // PasswordForm are also built on fuzzer enabled platforms.
@@ -98,7 +98,7 @@ FormData GetFormData(const FormParsingTestCase& test_form) {
     } else if (!field_data.is_empty) {
       // An exact value is not important, set a value with simple pattern, such
       // that different fields have different values.
-      field.value = ASCIIToUTF16("field_value") + UintToString16(i);
+      field.value = ASCIIToUTF16("field_value") + NumberToString16(i);
     }
     if (field_data.autocomplete_attribute)
       field.autocomplete_attribute = field_data.autocomplete_attribute;

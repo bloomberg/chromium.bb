@@ -59,9 +59,9 @@ void AcquireMemoryMetrics(const base::Process& process,
     // of system pages.
     crash_keys->insert(std::make_pair(
         "SystemCommitRemaining",
-        base::UintToString(perf_info.CommitLimit - perf_info.CommitTotal)));
+        base::NumberToString(perf_info.CommitLimit - perf_info.CommitTotal)));
     crash_keys->insert(std::make_pair(
-        "SystemCommitLimit", base::UintToString(perf_info.CommitLimit)));
+        "SystemCommitLimit", base::NumberToString(perf_info.CommitLimit)));
   }
 }
 

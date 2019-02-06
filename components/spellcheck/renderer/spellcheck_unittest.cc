@@ -1505,13 +1505,14 @@ TEST_F(SpellCheckTest, FillSuggestions_OneLanguageManySuggestions) {
 
   suggestions_list.resize(1);
   for (int i = 0; i < spellcheck::kMaxSuggestions + 2; ++i)
-    suggestions_list[0].push_back(base::ASCIIToUTF16(base::IntToString(i)));
+    suggestions_list[0].push_back(base::ASCIIToUTF16(base::NumberToString(i)));
 
   FillSuggestions(suggestions_list, &suggestion_results);
   ASSERT_EQ(static_cast<size_t>(spellcheck::kMaxSuggestions),
             suggestion_results.size());
   for (int i = 0; i < spellcheck::kMaxSuggestions; ++i)
-    EXPECT_EQ(base::ASCIIToUTF16(base::IntToString(i)), suggestion_results[i]);
+    EXPECT_EQ(base::ASCIIToUTF16(base::NumberToString(i)),
+              suggestion_results[i]);
 }
 
 TEST_F(SpellCheckTest, FillSuggestions_RemoveDuplicates) {
@@ -1538,7 +1539,7 @@ TEST_F(SpellCheckTest, FillSuggestions_TwoLanguages) {
 
   suggestions_list.resize(2);
   for (size_t i = 0; i < 2; ++i) {
-    std::string prefix = base::IntToString(i);
+    std::string prefix = base::NumberToString(i);
     suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "foo"));
     suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "bar"));
     suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "baz"));
@@ -1562,7 +1563,7 @@ TEST_F(SpellCheckTest, FillSuggestions_ThreeLanguages) {
 
   suggestions_list.resize(3);
   for (size_t i = 0; i < 3; ++i) {
-    std::string prefix = base::IntToString(i);
+    std::string prefix = base::NumberToString(i);
     suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "foo"));
     suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "bar"));
     suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "baz"));

@@ -121,7 +121,7 @@ std::string SyncData::ToString() const {
   }
 
   SyncDataRemote sync_data_remote(*this);
-  std::string id = base::Int64ToString(sync_data_remote.id_);
+  std::string id = base::NumberToString(sync_data_remote.id_);
   return "{ isLocal: false, type: " + type + ", specifics: " + specifics +
          ", id: " + id + "}";
 }

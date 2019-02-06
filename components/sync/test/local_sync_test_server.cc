@@ -40,7 +40,7 @@ bool LocalSyncTestServer::AddCommandLineArguments(
   if (!LocalTestServer::AddCommandLineArguments(command_line))
     return false;
   if (xmpp_port_ != 0) {
-    std::string xmpp_port_str = base::UintToString(xmpp_port_);
+    std::string xmpp_port_str = base::NumberToString(xmpp_port_);
     command_line->AppendArg("--xmpp-port=" + xmpp_port_str);
   }
   return true;

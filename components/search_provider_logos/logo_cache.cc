@@ -65,7 +65,7 @@ void SetTimeValue(base::DictionaryValue& dict,
                   const std::string& key,
                   const base::Time& time) {
   int64_t internal_time_value = time.ToInternalValue();
-  dict.SetString(key, base::Int64ToString(internal_time_value));
+  dict.SetString(key, base::NumberToString(internal_time_value));
 }
 
 LogoType LogoTypeFromString(base::StringPiece type) {

@@ -39,7 +39,7 @@ void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
 // Create a dirty EntryKernel with an ID derived from |id| + |id_suffix|.
 std::unique_ptr<EntryKernel> CreateEntry(int id, const std::string& id_suffix) {
   std::unique_ptr<EntryKernel> entry(new EntryKernel());
-  std::string id_string = base::Int64ToString(id) + id_suffix;
+  std::string id_string = base::NumberToString(id) + id_suffix;
   entry->put(ID, Id::CreateFromClientString(id_string));
   entry->put(META_HANDLE, id);
   entry->mark_dirty(nullptr);

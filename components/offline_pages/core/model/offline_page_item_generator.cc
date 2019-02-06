@@ -21,7 +21,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.offline_id = store_utils::GenerateOfflineId();
   item.client_id.name_space = namespace_;
   if (id_.empty())
-    item.client_id.id = base::Int64ToString(item.offline_id);
+    item.client_id.id = base::NumberToString(item.offline_id);
   else
     item.client_id.id = id_;
   item.request_origin = request_origin_;

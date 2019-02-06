@@ -123,32 +123,32 @@ class PreviewsBlackListTest : public testing::Test {
 
   void SetHostThresholdParam(int per_host_threshold) {
     params_["per_host_opt_out_threshold"] =
-        base::IntToString(per_host_threshold);
+        base::NumberToString(per_host_threshold);
   }
 
   void SetHostIndifferentThresholdParam(int host_indifferent_threshold) {
     params_["host_indifferent_opt_out_threshold"] =
-        base::IntToString(host_indifferent_threshold);
+        base::NumberToString(host_indifferent_threshold);
   }
 
   void SetHostDurationParam(int duration_in_days) {
     params_["per_host_black_list_duration_in_days"] =
-        base::IntToString(duration_in_days);
+        base::NumberToString(duration_in_days);
   }
 
   void SetHostIndifferentDurationParam(int duration_in_days) {
     params_["host_indifferent_black_list_duration_in_days"] =
-        base::IntToString(duration_in_days);
+        base::NumberToString(duration_in_days);
   }
 
   void SetSingleOptOutDurationParam(int single_opt_out_duration) {
     params_["single_opt_out_duration_in_seconds"] =
-        base::IntToString(single_opt_out_duration);
+        base::NumberToString(single_opt_out_duration);
   }
 
   void SetMaxHostInBlackListParam(size_t max_hosts_in_blacklist) {
     params_["max_hosts_in_blacklist"] =
-        base::IntToString(max_hosts_in_blacklist);
+        base::NumberToString(max_hosts_in_blacklist);
   }
 
  protected:

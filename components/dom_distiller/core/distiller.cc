@@ -285,8 +285,8 @@ void DistillerImpl::OnPageDistillationFinished(
 
   for (int img_num = 0; img_num < distiller_result->content_images_size();
        ++img_num) {
-    std::string image_id =
-        base::IntToString(page_num + 1) + "_" + base::IntToString(img_num);
+    std::string image_id = base::NumberToString(page_num + 1) + "_" +
+                           base::NumberToString(img_num);
     MaybeFetchImage(page_num, image_id,
                     distiller_result->content_images(img_num).url());
   }

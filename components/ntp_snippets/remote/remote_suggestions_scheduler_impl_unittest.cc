@@ -1201,7 +1201,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotRefetchWhileDisplayingBeforeConfigurableDelay) {
   constexpr int kStaleHours = 18;
   SetVariationParameter("min_age_for_stale_fetch_hours",
-                        base::IntToString(kStaleHours));
+                        base::NumberToString(kStaleHours));
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   // First enable the scheduler -- this will trigger the persistent scheduling.
@@ -1230,7 +1230,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldRefetchWhileDisplayingAfterConfigurableDelay) {
   constexpr int kStaleHours = 18;
   SetVariationParameter("min_age_for_stale_fetch_hours",
-                        base::IntToString(kStaleHours));
+                        base::NumberToString(kStaleHours));
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   // First enable the scheduler -- this will trigger the persistent scheduling.
@@ -1258,7 +1258,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotRefetchWhileDisplayingBeforeFallbackConfigurableDelay) {
   constexpr int kStartupHours = 12;
   SetVariationParameter("startup_fetching_interval_hours-wifi-active_ntp_user",
-                        base::IntToString(kStartupHours));
+                        base::NumberToString(kStartupHours));
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   // First enable the scheduler -- this will trigger the persistent scheduling.
@@ -1287,7 +1287,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldRefetchWhileDisplayingAfterFallbackConfigurableDelay) {
   constexpr int kStartupHours = 12;
   SetVariationParameter("startup_fetching_interval_hours-wifi-active_ntp_user",
-                        base::IntToString(kStartupHours));
+                        base::NumberToString(kStartupHours));
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   // First enable the scheduler -- this will trigger the persistent scheduling.

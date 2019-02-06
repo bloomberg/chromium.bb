@@ -773,8 +773,8 @@ TEST_F(AutofillDownloadManagerTest, QueryTooManyFieldsTest) {
   for (auto& form : forms) {
     for (size_t i = 0; i < 5; ++i) {
       FormFieldData field;
-      field.label = base::IntToString16(i);
-      field.name = base::IntToString16(i);
+      field.label = base::NumberToString16(i);
+      field.name = base::NumberToString16(i);
       field.form_control_type = "text";
       form.fields.push_back(field);
     }
@@ -794,8 +794,8 @@ TEST_F(AutofillDownloadManagerTest, QueryNotTooManyFieldsTest) {
   for (auto& form : forms) {
     for (size_t i = 0; i < 4; ++i) {
       FormFieldData field;
-      field.label = base::IntToString16(i);
-      field.name = base::IntToString16(i);
+      field.label = base::NumberToString16(i);
+      field.name = base::NumberToString16(i);
       field.form_control_type = "text";
       form.fields.push_back(field);
     }

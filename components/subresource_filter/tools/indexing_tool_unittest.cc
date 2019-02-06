@@ -46,7 +46,7 @@ class IndexingToolTest : public ::testing::Test {
 
   base::FilePath GetUniquePath() {
     base::FilePath path = scoped_temp_dir_.GetPath().AppendASCII(
-        base::IntToString(file_count_++));
+        base::NumberToString(file_count_++));
     return path;
   }
 

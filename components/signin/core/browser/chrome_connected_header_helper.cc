@@ -188,7 +188,7 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
   }
   parts.push_back(
       base::StringPrintf("%s=%s", kProfileModeAttrName,
-                         base::IntToString(profile_mode_mask).c_str()));
+                         base::NumberToString(profile_mode_mask).c_str()));
   bool is_mirror_enabled =
       account_consistency_ == AccountConsistencyMethod::kMirror;
   parts.push_back(base::StringPrintf("%s=%s", kEnableAccountConsistencyAttrName,

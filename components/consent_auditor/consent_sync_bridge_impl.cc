@@ -46,7 +46,7 @@ std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserConsentSpecifics> specifics) {
   auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name =
-      base::Int64ToString(specifics->client_consent_time_usec());
+      base::NumberToString(specifics->client_consent_time_usec());
   entity_data->specifics.set_allocated_user_consent(specifics.release());
   return entity_data;
 }

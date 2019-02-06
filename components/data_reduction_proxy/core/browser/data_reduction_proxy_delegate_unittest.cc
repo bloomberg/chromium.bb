@@ -873,10 +873,10 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: " +
-           base::Int64ToString(static_cast<int64_t>(1) << 60) +
+           base::NumberToString(static_cast<int64_t>(1) << 60) +
            "\r\n"
            "Chrome-Proxy: ofcl=" +
-           base::Int64ToString((static_cast<int64_t>(1) << 60) * 3) +
+           base::NumberToString((static_cast<int64_t>(1) << 60) * 3) +
            "\r\n\r\n",
        100, 300},
       {"HTTP/1.1 206 Partial Content\r\n"

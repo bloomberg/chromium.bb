@@ -291,7 +291,7 @@ std::string DomainReliabilityHeader::ToString() const {
     string += "; ";
   }
 
-  string += "max-age=" + base::Int64ToString(max_age_s) + "; ";
+  string += "max-age=" + base::NumberToString(max_age_s) + "; ";
 
   if (config_->include_subdomains)
     string += "includeSubdomains; ";

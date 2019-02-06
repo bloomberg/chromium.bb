@@ -139,7 +139,7 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       // in debugging.
       static int next_folder_id = 1;
       TestNode* new_node = parent->Add(
-          std::make_unique<TestNode>(base::IntToString16(next_folder_id++),
+          std::make_unique<TestNode>(base::NumberToString16(next_folder_id++),
                                      BookmarkNode::FOLDER),
           parent->child_count());
       PopulateNodeImpl(description, index, new_node);

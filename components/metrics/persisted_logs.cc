@@ -173,7 +173,7 @@ void PersistedLogs::LoadPersistedUnsentLogs() {
 void PersistedLogs::StoreLog(const std::string& log_data) {
   list_.push_back(LogInfo());
   list_.back().Init(metrics_.get(), log_data,
-                    base::Int64ToString(base::Time::Now().ToTimeT()),
+                    base::NumberToString(base::Time::Now().ToTimeT()),
                     signing_key_);
 }
 

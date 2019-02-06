@@ -169,7 +169,7 @@ FieldSignature AutofillField::GetFieldSignature() const {
 }
 
 std::string AutofillField::FieldSignatureAsStr() const {
-  return base::UintToString(GetFieldSignature());
+  return base::NumberToString(GetFieldSignature());
 }
 
 bool AutofillField::IsFieldFillable() const {

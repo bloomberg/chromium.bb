@@ -432,7 +432,7 @@ base::string16 FormatOriginForSecurityDisplay(
   const int default_port = url::DefaultPortForScheme(
       scheme.data(), static_cast<int>(scheme.length()));
   if (port != 0 && port != default_port)
-    result += colon + base::UintToString16(origin.port());
+    result += colon + base::NumberToString16(origin.port());
 
   return result;
 }

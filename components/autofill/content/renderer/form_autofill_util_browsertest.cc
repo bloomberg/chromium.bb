@@ -316,7 +316,7 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest_TooLongTitle) {
   std::string kFormHtml = "<form id='target'>";
   for (int i = 0; i < 10; i++) {
     std::string kFieldHtml =
-        "<input type='button' value='" + base::IntToString(i) + title + "'>";
+        "<input type='button' value='" + base::NumberToString(i) + title + "'>";
     kFormHtml += kFieldHtml;
   }
   kFormHtml += "</form>";

@@ -38,7 +38,7 @@ class StringUtil {
   static String substring(const String& s, unsigned pos, unsigned len) {
     return s.substr(pos, len);
   }
-  static String fromInteger(int number) { return base::IntToString(number); }
+  static String fromInteger(int number) { return base::NumberToString(number); }
   static String fromDouble(double number) {
     return base::NumberToString(number);
   }

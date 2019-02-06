@@ -281,8 +281,9 @@ class RequestImpl : public WebHistoryService::Request {
 // history server.
 std::string ServerTimeString(base::Time time) {
   if (time < base::Time::UnixEpoch())
-    return base::Int64ToString(0);
-  return base::Int64ToString((time - base::Time::UnixEpoch()).InMicroseconds());
+    return base::NumberToString(0);
+  return base::NumberToString(
+      (time - base::Time::UnixEpoch()).InMicroseconds());
 }
 
 // Returns a URL for querying the history server for a query specified by
@@ -313,8 +314,8 @@ GURL GetQueryUrl(const base::string16& text_query,
   }
 
   if (options.max_count) {
-    url = net::AppendQueryParameter(
-        url, "num", base::IntToString(options.max_count));
+    url = net::AppendQueryParameter(url, "num",
+                                    base::NumberToString(options.max_count));
   }
 
   if (!text_query.empty())

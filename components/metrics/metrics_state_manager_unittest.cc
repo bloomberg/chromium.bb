@@ -175,7 +175,7 @@ TEST_F(MetricsStateManagerTest, HaveNoLowEntropySource) {
             state_manager->GetOldLowEntropySource());
   // ...and the high entropy source should include the *new* low entropy source.
   std::string high_source = state_manager->GetHighEntropySource();
-  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(new_low_source),
+  EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(new_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
 }
@@ -193,7 +193,7 @@ TEST_F(MetricsStateManagerTest, HaveOnlyNewLowEntropySource) {
             state_manager->GetOldLowEntropySource());
   // ...and the high entropy source should include the *new* low entropy source.
   std::string high_source = state_manager->GetHighEntropySource();
-  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(new_low_source),
+  EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(new_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
 }
@@ -212,7 +212,7 @@ TEST_F(MetricsStateManagerTest, HaveOnlyOldLowEntropySource) {
   EXPECT_EQ(old_low_source, state_manager->GetOldLowEntropySource());
   // ...and the high entropy source should include the *old* low entropy source.
   std::string high_source = state_manager->GetHighEntropySource();
-  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(old_low_source),
+  EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(old_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
 }
@@ -230,7 +230,7 @@ TEST_F(MetricsStateManagerTest, HaveBothLowEntropySources) {
   EXPECT_EQ(old_low_source, state_manager->GetOldLowEntropySource());
   // ...and the high entropy source should include the *old* low entropy source.
   std::string high_source = state_manager->GetHighEntropySource();
-  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(old_low_source),
+  EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(old_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
 }

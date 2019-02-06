@@ -248,7 +248,7 @@ TEST_F(TextLogUploadListTest, ParseWithState) {
     test_entry += ",";
     test_entry.append(kTestCaptureTime);
     test_entry += ",";
-    test_entry.append(base::IntToString(
+    test_entry.append(base::NumberToString(
         static_cast<int>(UploadList::UploadInfo::State::Uploaded)));
     test_entry += "\n";
   }

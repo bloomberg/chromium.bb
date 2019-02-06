@@ -191,7 +191,7 @@ std::string InstanceIDTokenInfo::GetSerializedValue(
     const std::string& registration_id) const {
   int64_t last_validated_ms = last_validated.since_origin().InMicroseconds();
   return registration_id + kSerializedValidationTimeSeparator +
-         base::Int64ToString(last_validated_ms);
+         base::NumberToString(last_validated_ms);
 }
 
 bool InstanceIDTokenInfo::Deserialize(const std::string& serialized_key,

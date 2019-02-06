@@ -175,8 +175,8 @@ class ContentSuggestionsServiceTest : public testing::Test {
   // Returns a suggestion instance for testing.
   ContentSuggestion CreateSuggestion(Category category, int number) {
     return ContentSuggestion(
-        category, base::IntToString(number),
-        GURL("http://testsuggestion/" + base::IntToString(number)));
+        category, base::NumberToString(number),
+        GURL("http://testsuggestion/" + base::NumberToString(number)));
   }
 
   std::vector<ContentSuggestion> CreateSuggestions(

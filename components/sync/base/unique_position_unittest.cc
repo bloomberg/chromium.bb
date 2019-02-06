@@ -392,7 +392,7 @@ class SuffixGenerator {
     // This is not entirely realistic, but that should be OK.  The current
     // suffix format is a base64'ed SHA1 hash, which should be fairly close to
     // random anyway.
-    std::string input = cache_guid_ + base::Int64ToString(next_id_--);
+    std::string input = cache_guid_ + base::NumberToString(next_id_--);
     std::string output;
     base::Base64Encode(base::SHA1HashString(input), &output);
     return output;

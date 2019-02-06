@@ -70,7 +70,7 @@ void FieldTrialTest::SetNetworkQueriesWithVariationsService(
 
   std::map<std::string, std::string> params;
   params["RandomQueryProbability"] = base::NumberToString(query_probability);
-  params["CheckTimeIntervalSeconds"] = base::Int64ToString(360);
+  params["CheckTimeIntervalSeconds"] = base::NumberToString(360);
   std::string fetch_behavior_param;
   switch (fetch_behavior) {
     case NetworkTimeTracker::FETCH_BEHAVIOR_UNKNOWN:

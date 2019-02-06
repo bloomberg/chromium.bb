@@ -410,7 +410,7 @@ TEST_F(DomDistillerServiceTest, TestMultiplePageArticle) {
   std::string base_url("http://www.example.com/p");
   GURL pages_url[kPageCount];
   for (int page_num = 0; page_num < kPageCount; ++page_num) {
-    pages_url[page_num] = GURL(base_url + base::IntToString(page_num));
+    pages_url[page_num] = GURL(base_url + base::NumberToString(page_num));
   }
 
   MockArticleAvailableCallback article_cb;
@@ -529,7 +529,7 @@ TEST_F(DomDistillerServiceTest, TestGetUrlForMultiPageEntry) {
   std::string base_url("http://www.example.com/p");
   GURL pages_url[kPageCount];
   for (int page_num = 0; page_num < kPageCount; ++page_num) {
-    pages_url[page_num] = GURL(base_url + base::IntToString(page_num));
+    pages_url[page_num] = GURL(base_url + base::NumberToString(page_num));
   }
 
   MockArticleAvailableCallback article_cb;

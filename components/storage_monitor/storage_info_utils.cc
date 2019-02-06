@@ -58,8 +58,8 @@ std::string GetDeviceIdFromStorageInfo(
 
   // Some devices have multiple data stores. Therefore, include storage id as
   // part of unique id along with vendor, model and volume information.
-  const std::string vendor_id = base::UintToString(storage_info.vendor_id);
-  const std::string model_id = base::UintToString(storage_info.product_id);
+  const std::string vendor_id = base::NumberToString(storage_info.vendor_id);
+  const std::string model_id = base::NumberToString(storage_info.product_id);
   return StorageInfo::MakeDeviceId(
       StorageInfo::MTP_OR_PTP,
       kVendorModelVolumeStoragePrefix + vendor_id + ":" + model_id + ":" +

@@ -31,7 +31,7 @@ std::string BuildAvatarImageUrl(const std::string& url, int size) {
   std::string result = url;
   size_t slash = result.rfind('/');
   if (slash != std::string::npos)
-    result.insert(slash, "/s" + base::IntToString(size) + "-c");
+    result.insert(slash, "/s" + base::NumberToString(size) + "-c");
   return result;
 }
 

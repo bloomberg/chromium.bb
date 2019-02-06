@@ -931,9 +931,9 @@ TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH,
-                  base::IntToString16(now_exploded.month));
+                  base::NumberToString16(now_exploded.month));
   card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                  base::IntToString16(now_exploded.year - 1));
+                  base::NumberToString16(now_exploded.year - 1));
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   EXPECT_FALSE(card.IsValid());
   EXPECT_FALSE(card.HasValidExpirationDate());

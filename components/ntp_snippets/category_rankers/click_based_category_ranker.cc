@@ -135,7 +135,7 @@ base::Optional<Category> GetPromotedCategoryFromVariations() {
 std::string GetOptionalCategoryAsString(
     const base::Optional<Category>& optional_category) {
   if (optional_category.has_value()) {
-    return base::IntToString(optional_category->id());
+    return base::NumberToString(optional_category->id());
   }
   return "None";
 }
@@ -293,8 +293,8 @@ ClickBasedCategoryRanker::GetDebugData() {
   for (const auto& ranked_category : ordered_categories_) {
     category_strings.push_back(base::ReplaceStringPlaceholders(
         "($1; $2)",
-        {base::IntToString(ranked_category.category.id()),
-         base::IntToString(ranked_category.clicks)},
+        {base::NumberToString(ranked_category.category.id()),
+         base::NumberToString(ranked_category.clicks)},
         /*offsets=*/nullptr));
   }
   result.push_back(
@@ -510,7 +510,7 @@ void ClickBasedCategoryRanker::StoreOrderToPrefs(
     dictionary->SetInteger(kClicksKey, category.clicks);
     dictionary->SetString(
         kLastDismissedKey,
-        base::Int64ToString(SerializeTime(category.last_dismissed)));
+        base::NumberToString(SerializeTime(category.last_dismissed)));
     list.Append(std::move(dictionary));
   }
   pref_service_->Set(prefs::kClickBasedCategoryRankerOrderWithClicks, list);

@@ -91,7 +91,7 @@ class SHA1EntropyGenerator : public TrialEntropyGenerator {
     const int low_entropy_source =
         static_cast<uint16_t>(base::RandInt(0, kMaxLowEntropySize - 1));
     const std::string high_entropy_source =
-        base::GenerateGUID() + base::IntToString(low_entropy_source);
+        base::GenerateGUID() + base::NumberToString(low_entropy_source);
     return GenerateSHA1Entropy(high_entropy_source, trial_name_);
   }
 

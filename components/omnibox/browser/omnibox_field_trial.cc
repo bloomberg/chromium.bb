@@ -749,7 +749,7 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   std::string value_str(variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       std::string(kEmphasizeTitlesRule) + "_" +
-          base::IntToString(static_cast<int>(input.type()))));
+          base::NumberToString(static_cast<int>(input.type()))));
   if (value_str.empty()) {
     value_str = variations::GetVariationParamValue(
         kBundledExperimentFieldTrialName,
@@ -945,7 +945,7 @@ std::string OmniboxFieldTrial::GetValueForRuleInContext(
     return std::string();
   }
   const std::string page_classification_str =
-      base::IntToString(static_cast<int>(page_classification));
+      base::NumberToString(static_cast<int>(page_classification));
   const std::string instant_extended =
       search::IsInstantExtendedAPIEnabled() ? "1" : "0";
   // Look up rule in this exact context.

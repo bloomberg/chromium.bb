@@ -920,7 +920,7 @@ bool JobScheduler::OnJobDone(JobID job_id,
                "Job done: %s => %s (elapsed time: %sms) - %s",
                job_info->ToString().c_str(),
                DriveApiErrorCodeToString(error).c_str(),
-               base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+               base::NumberToString(elapsed.InMilliseconds()).c_str(),
                GetQueueInfo(queue_type).c_str());
 
   // Retry, depending on the error.
@@ -1188,7 +1188,7 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
                "Job aborted: %s => %s (elapsed time: %sms) - %s",
                job->job_info.ToString().c_str(),
                DriveApiErrorCodeToString(error).c_str(),
-               base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+               base::NumberToString(elapsed.InMilliseconds()).c_str(),
                GetQueueInfo(queue_type).c_str());
 
   base::Callback<void(google_apis::DriveApiErrorCode)> callback =

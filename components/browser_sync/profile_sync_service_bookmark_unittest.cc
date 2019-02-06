@@ -87,7 +87,7 @@ void MakeServerUpdate(syncer::WriteTransaction* trans,
   syncer::syncable::ChangeEntryIDAndUpdateChildren(
       trans->GetWrappedWriteTrans(), node->GetMutableEntryForTest(),
       syncer::syncable::Id::CreateFromServerId(
-          base::Int64ToString(node->GetId())));
+          base::NumberToString(node->GetId())));
   node->GetMutableEntryForTest()->PutBaseVersion(10);
   node->GetMutableEntryForTest()->PutIsUnappliedUpdate(true);
 }
@@ -1440,7 +1440,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     base::string16 title =
-        base::ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
+        base::ASCIIToUTF16("Pre-insertion ") + base::NumberToString16(i);
     model()->AddFolder(model()->other_node(), 1, title);
     count++;
   }
@@ -1449,7 +1449,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     base::string16 title =
-        base::ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
+        base::ASCIIToUTF16("Post-insertion ") + base::NumberToString16(i);
     model()->AddFolder(model()->other_node(), count - 1, title);
     count++;
   }

@@ -86,7 +86,7 @@ class CSSAgentTest : public testing::Test {
       int node_id) {
     auto edits = protocol::Array<protocol::CSS::StyleDeclarationEdit>::create();
     auto edit = protocol::CSS::StyleDeclarationEdit::create()
-                    .setStyleSheetId(base::IntToString(node_id))
+                    .setStyleSheetId(base::NumberToString(node_id))
                     .setRange(protocol::CSS::SourceRange::create()
                                   .setStartLine(0)
                                   .setStartColumn(0)
@@ -171,7 +171,7 @@ TEST_F(CSSAgentTest, SettingVisibility) {
   EXPECT_EQ(result.second->length(), 1U);
   protocol::CSS::CSSStyle* style = result.second->get(0);
   EXPECT_EQ(style->getStyleSheetId("default"),
-            base::IntToString(element()->node_id()));
+            base::NumberToString(element()->node_id()));
   EXPECT_EQ(GetValueForProperty(style, "visibility"), "1");
 }
 
@@ -184,7 +184,7 @@ TEST_F(CSSAgentTest, SettingX) {
   EXPECT_EQ(result.second->length(), 1U);
   protocol::CSS::CSSStyle* style = result.second->get(0);
   EXPECT_EQ(style->getStyleSheetId("default"),
-            base::IntToString(element()->node_id()));
+            base::NumberToString(element()->node_id()));
   EXPECT_EQ(GetValueForProperty(style, "x"), "500");
 }
 
@@ -197,7 +197,7 @@ TEST_F(CSSAgentTest, SettingY) {
   EXPECT_EQ(result.second->length(), 1U);
   protocol::CSS::CSSStyle* style = result.second->get(0);
   EXPECT_EQ(style->getStyleSheetId("default"),
-            base::IntToString(element()->node_id()));
+            base::NumberToString(element()->node_id()));
   EXPECT_EQ(GetValueForProperty(style, "y"), "100");
 }
 TEST_F(CSSAgentTest, SettingWidth) {
@@ -209,7 +209,7 @@ TEST_F(CSSAgentTest, SettingWidth) {
   EXPECT_EQ(result.second->length(), 1U);
   protocol::CSS::CSSStyle* style = result.second->get(0);
   EXPECT_EQ(style->getStyleSheetId("default"),
-            base::IntToString(element()->node_id()));
+            base::NumberToString(element()->node_id()));
   EXPECT_EQ(GetValueForProperty(style, "width"), "20");
 }
 TEST_F(CSSAgentTest, SettingHeight) {
@@ -221,7 +221,7 @@ TEST_F(CSSAgentTest, SettingHeight) {
   EXPECT_EQ(result.second->length(), 1U);
   protocol::CSS::CSSStyle* style = result.second->get(0);
   EXPECT_EQ(style->getStyleSheetId("default"),
-            base::IntToString(element()->node_id()));
+            base::NumberToString(element()->node_id()));
   EXPECT_EQ(GetValueForProperty(style, "height"), "30");
 }
 
@@ -239,7 +239,7 @@ TEST_F(CSSAgentTest, SettingAll) {
   EXPECT_EQ(result.second->length(), 1U);
   protocol::CSS::CSSStyle* style = result.second->get(0);
   EXPECT_EQ(style->getStyleSheetId("default"),
-            base::IntToString(element()->node_id()));
+            base::NumberToString(element()->node_id()));
   EXPECT_EQ(GetValueForProperty(style, "x"), "9000");
   EXPECT_EQ(GetValueForProperty(style, "y"), "25");
   EXPECT_EQ(GetValueForProperty(style, "width"), "50");

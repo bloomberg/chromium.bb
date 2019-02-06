@@ -95,7 +95,7 @@ int ExamplePreprocessor::AddBucketizedFeatures(
         break;
     }
     // Set one hot feature as features[feature_name] = "index";
-    feature_map[feature_name].set_string_value(base::IntToString(index));
+    feature_map[feature_name].set_string_value(base::NumberToString(index));
   }
   return error_code;
 }
@@ -135,10 +135,10 @@ int ExamplePreprocessor::ConvertToStringFeatures(
       switch (feature.feature_type_case()) {
         case Feature::kBoolValue:
           feature.set_string_value(
-              base::IntToString(static_cast<int>(feature.bool_value())));
+              base::NumberToString(static_cast<int>(feature.bool_value())));
           break;
         case Feature::kInt32Value:
-          feature.set_string_value(base::IntToString(feature.int32_value()));
+          feature.set_string_value(base::NumberToString(feature.int32_value()));
           break;
         case Feature::kStringValue:
           break;

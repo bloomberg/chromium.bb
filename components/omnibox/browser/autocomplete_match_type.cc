@@ -239,6 +239,6 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     return result;  // Don't add "n of m" positional info when button focused.
 
   return l10n_util::GetStringFUTF16(IDS_ACC_AUTOCOMPLETE_N_OF_M, result,
-                                    base::IntToString16(match_index + 1),
-                                    base::IntToString16(total_matches));
+                                    base::NumberToString16(match_index + 1),
+                                    base::NumberToString16(total_matches));
 }

@@ -97,7 +97,7 @@ class VotesUploaderTest : public testing::Test {
 
  protected:
   base::string16 GetFieldNameByIndex(size_t index) {
-    return ASCIIToUTF16("field") + base::UintToString16(index);
+    return ASCIIToUTF16("field") + base::NumberToString16(index);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;

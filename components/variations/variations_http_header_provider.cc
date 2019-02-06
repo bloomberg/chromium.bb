@@ -74,7 +74,7 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
     base::AutoLock scoped_lock(lock_);
     for (const VariationIDEntry& entry : GetAllVariationIds()) {
       if (entry.second == GOOGLE_WEB_PROPERTIES) {
-        ids_string.append(base::IntToString(entry.first));
+        ids_string.append(base::NumberToString(entry.first));
         ids_string.push_back(' ');
       }
     }

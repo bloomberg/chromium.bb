@@ -491,7 +491,7 @@ void PrefService::SetFilePath(const std::string& path,
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {
   SetUserPrefValue(path,
-                   std::make_unique<base::Value>(base::Int64ToString(value)));
+                   std::make_unique<base::Value>(base::NumberToString(value)));
 }
 
 int64_t PrefService::GetInt64(const std::string& path) const {

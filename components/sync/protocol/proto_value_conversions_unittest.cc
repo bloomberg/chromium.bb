@@ -188,7 +188,8 @@ TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_FALSE(value->empty());
   std::string encoded_time;
   EXPECT_TRUE(value->GetString("creation_time_us", &encoded_time));
-  EXPECT_EQ(base::Int64ToString(creation_time.ToInternalValue()), encoded_time);
+  EXPECT_EQ(base::NumberToString(creation_time.ToInternalValue()),
+            encoded_time);
   std::string encoded_icon_url;
   EXPECT_TRUE(value->GetString("icon_url", &encoded_icon_url));
   EXPECT_EQ(icon_url, encoded_icon_url);

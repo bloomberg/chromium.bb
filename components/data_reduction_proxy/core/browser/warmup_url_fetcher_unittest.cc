@@ -76,9 +76,9 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
       base::TimeDelta second_retry) {
     std::map<std::string, std::string> params;
     params["warmup_url_fetch_wait_timer_first_retry_seconds"] =
-        base::IntToString(first_retry.InSeconds());
+        base::NumberToString(first_retry.InSeconds());
     params["warmup_url_fetch_wait_timer_second_retry_seconds"] =
-        base::IntToString(second_retry.InSeconds());
+        base::NumberToString(second_retry.InSeconds());
     scoped_feature_list->InitAndEnableFeatureWithParameters(
         features::kDataReductionProxyRobustConnection, params);
   }

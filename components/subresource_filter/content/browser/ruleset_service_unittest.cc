@@ -444,7 +444,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest, PathsAreSane) {
 
   EXPECT_TRUE(base_dir().IsParent(version_dir));
   EXPECT_PRED_FORMAT2(::testing::IsSubstring,
-                      base::IntToString(indexed_version.format_version),
+                      base::NumberToString(indexed_version.format_version),
                       version_dir.MaybeAsASCII());
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, indexed_version.content_version,
                       version_dir.MaybeAsASCII());

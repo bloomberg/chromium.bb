@@ -166,7 +166,7 @@ void AutocompleteResultTest::PopulateAutocompleteMatch(
     const TestData& data,
     AutocompleteMatch* match) {
   match->provider = GetProvider(data.provider_id);
-  match->fill_into_edit = base::IntToString16(data.url_id);
+  match->fill_into_edit = base::NumberToString16(data.url_id);
   std::string url_id(1, data.url_id + 'a');
   match->destination_url = GURL("http://" + url_id);
   match->relevance = data.relevance;
