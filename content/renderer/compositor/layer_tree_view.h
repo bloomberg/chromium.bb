@@ -74,7 +74,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void Initialize(const cc::LayerTreeSettings& settings,
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
-  void SetNeverVisible();
   void SetVisible(bool visible);
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
   void SetNeedsDisplayOnAllLayers();
@@ -256,7 +255,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   blink::scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
-  bool never_visible_ = false;
 
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 

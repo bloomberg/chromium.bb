@@ -610,14 +610,16 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates the compositor, but leaves it in a stopped state, where it will
   // not set up IPC channels or begin trying to produce frames until started
-  // via StartCompositor().
+  // via StartStopCompositor().
   LayerTreeView* InitializeLayerTreeView();
 
-  // Initiates the compositor to set up IPC channels and begin its scheduler.
-  void StartCompositor();
-  // Pauses the compositor's scheduler and tears down its IPC channels.
-  void StopCompositor();
+  // If appropriate, initiates the compositor to set up IPC channels and begin
+  // its scheduler. Otherwise, pauses the scheduler and tears down its IPC
+  // channels.
+  void StartStopCompositor();
 
+  // Request the window to close from the renderer by sending the request to the
+  // browser.
   void DoDeferredClose();
 
   gfx::Size GetSizeForWebWidget() const;
