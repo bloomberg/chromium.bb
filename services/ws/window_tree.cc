@@ -1072,7 +1072,8 @@ bool WindowTree::SetWindowPropertyImpl(
     const base::Optional<std::vector<uint8_t>>& value) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "SetWindowProperty client=" << client_id_
-           << " client window_id=" << window_id.ToString();
+           << " client window_id=" << window_id.ToString()
+           << " property=" << name;
   if (!window) {
     DVLOG(1) << "SetWindowProperty failed (no window)";
     return false;
