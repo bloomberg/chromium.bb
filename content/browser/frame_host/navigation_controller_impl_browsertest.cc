@@ -100,6 +100,16 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
   }
 };
 
+// Base class for tests that need to supply modifications to EmbeddedTestServer
+// which are required to be complete before it is started.
+class NavigationControllerBrowserTestNoServer : public ContentBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
+  }
+};
+
 // Ensure that tests can navigate subframes cross-site in both default mode and
 // --site-per-process, but that they only go cross-process in the latter.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
@@ -8899,6 +8909,51 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   histograms.ExpectTotalCount("Navigation.BackForward.ForwardTargetSkipped", 0);
   EXPECT_EQ(skippable_url, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+}
+
+// Tests that a same document navigation followed by a client redirect
+// do not add any more session history entries and going to previous entry
+// works.
+// It replaces invalidly behaving unit test added for http://crbug.com/40395.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+                       ClientRedirectAfterSameDocumentNavigation) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/foo.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  // Load an initial page, which the test will eventually go back to.
+  const GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(start_url, controller.GetLastCommittedEntry()->GetURL());
+
+  const GURL main_url(embedded_test_server()->GetURL("/foo.html"));
+  const GURL last_url(embedded_test_server()->GetURL("/title3.html"));
+
+  // Navigate to foo.html which will do a same document navigation and client
+  // redirect.
+  TestNavigationManager observer(shell()->web_contents(), last_url);
+  shell()->LoadURL(main_url);
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html><script>"
+      "window.location.replace('#a');"
+      "window.location='/title3.html';"
+      "</script></html>");
+  observer.WaitForNavigationFinished();
+
+  EXPECT_EQ(last_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_TRUE(controller.CanGoBack());
+
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+  EXPECT_EQ(start_url, controller.GetLastCommittedEntry()->GetURL());
 }
 
 }  // namespace content
