@@ -727,11 +727,16 @@ void FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
+  using extensions::api::file_manager_private_internal::GetCrostiniSharedPaths::
+      Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
   auto* crostini_share_path =
       crostini::CrostiniSharePath::GetForProfile(profile);
-  bool first_for_session = crostini_share_path->GetAndSetFirstForSession();
+  bool first_for_session = params->observe_first_for_session &&
+                           crostini_share_path->GetAndSetFirstForSession();
   auto shared_paths = crostini_share_path->GetPersistedSharedPaths();
   auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {

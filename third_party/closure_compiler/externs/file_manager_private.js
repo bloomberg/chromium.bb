@@ -983,9 +983,13 @@ chrome.fileManagerPrivate.unsharePathWithCrostini = function(
 /**
  * Returns list of paths shared with the crostini container, and whether this is
  * the first time this function is called for this session.
+ * @param {boolean} observeFirstForSession If true, callback provides whether
+ *     this is the first time this function has been called with
+ *     observeFirstForSession true.
  * @param {function(!Array<!Entry>, boolean)} callback
  */
-chrome.fileManagerPrivate.getCrostiniSharedPaths = function(callback) {};
+chrome.fileManagerPrivate.getCrostiniSharedPaths = function(
+    observeFirstForSession, callback) {};
 
 /**
  * Requests information about a Linux package.

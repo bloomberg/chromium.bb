@@ -244,8 +244,9 @@ binding.registerCustomHook(function(bindingsAPI) {
       });
 
   apiFunctions.setHandleRequest(
-      'getCrostiniSharedPaths', function(callback) {
+      'getCrostiniSharedPaths', function(observeFirstForSession, callback) {
         fileManagerPrivateInternal.getCrostiniSharedPaths(
+            observeFirstForSession,
             function(entryDescriptions, firstForSession) {
               callback(entryDescriptions.map(function(description) {
                 return GetExternalFileEntry(description);
