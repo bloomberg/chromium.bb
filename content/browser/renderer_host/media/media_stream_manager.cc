@@ -197,20 +197,23 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 
 MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
     MediaStreamType stream_type) {
-  if (stream_type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
+  if ((stream_type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) &&
+      (stream_type != blink::MEDIA_DISPLAY_AUDIO_CAPTURE))
     return stream_type;
   const bool audio_support_flag_for_desktop_share =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAudioSupportForDesktopShare);
-  return audio_support_flag_for_desktop_share
-             ? blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE
-             : blink::MEDIA_NO_SERVICE;
+  return audio_support_flag_for_desktop_share ? stream_type
+                                              : blink::MEDIA_NO_SERVICE;
 }
 
-// Returns MediaStreamDevice built with DesktopMediaID with fake
-// initializers if |kUseFakeDeviceForMediaStream| is set. Returns a
-// MediaStreamDevice with default DesktopMediaID otherwise.
-MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
+// Returns MediaStreamDevices for getDisplayMedia() calls.
+// Returns a video device built with DesktopMediaID with fake initializers if
+// |kUseFakeDeviceForMediaStream| is set. Returns a video device with
+// default DesktopMediaID otherwise.
+// Returns an audio device with default device parameters.
+MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(bool request_audio) {
+  MediaStreamDevices devices;
   DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_SCREEN;
   DesktopMediaID::Id desktop_media_id_id = DesktopMediaID::kNullId;
   media::mojom::DisplayCaptureSurfaceType display_surface =
@@ -250,7 +253,14 @@ MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
                            media_id.ToString(), media_id.ToString());
   device.display_media_info = media::mojom::DisplayMediaInformation::New(
       display_surface, true, media::mojom::CursorCaptureType::NEVER);
-  return device;
+  devices.push_back(device);
+  if (!request_audio)
+    return devices;
+
+  devices.emplace_back(blink::MEDIA_DISPLAY_AUDIO_CAPTURE,
+                       media::AudioDeviceDescription::kDefaultDeviceId,
+                       "Fake audio");
+  return devices;
 }
 
 }  // namespace
@@ -1141,21 +1151,16 @@ void MediaStreamManager::PostRequestToUI(
   // If using the fake UI, it will just auto-select from the available devices.
   // The fake UI doesn't work for desktop sharing requests since we can't see
   // its devices from here; always use the real UI for such requests. The
-  // processing below for MEDIA_GUM_DESKTOP_VIDEO_CAPTURE is for unittests only.
+  // processing below for MEDIA_GUM_DESKTOP_VIDEO_CAPTURE is for
+  // media_stream_dispatcher_host_unittest only.
   if (fake_ui_factory_ &&
       (request->video_type() != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
        !base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kUseFakeUIForMediaStream))) {
     MediaStreamDevices devices;
     if (request->video_type() == blink::MEDIA_DISPLAY_VIDEO_CAPTURE) {
-      devices.push_back(MediaStreamDeviceFromFakeDeviceConfig());
-      if (request->audio_type() == blink::MEDIA_DISPLAY_AUDIO_CAPTURE) {
-        DesktopMediaID media_id(DesktopMediaID::TYPE_SCREEN,
-                                DesktopMediaID::kNullId);
-        devices.emplace_back(
-            MediaStreamDevice(blink::MEDIA_DISPLAY_AUDIO_CAPTURE,
-                              media_id.ToString(), media_id.ToString()));
-      }
+      devices = DisplayMediaDevicesFromFakeDeviceConfig(
+          request->audio_type() == blink::MEDIA_DISPLAY_AUDIO_CAPTURE);
     } else if (request->video_type() ==
                blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
       // Cache the |label| in the device name field, for unit test purpose only.
