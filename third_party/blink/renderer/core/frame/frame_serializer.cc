@@ -85,7 +85,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
  public:
   SerializerMarkupAccumulator(FrameSerializer::Delegate&,
                               const Document&,
-                              HeapVector<Member<Node>>&);
+                              HeapVector<Member<const Node>>&);
   ~SerializerMarkupAccumulator() override;
 
  protected:
@@ -94,7 +94,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   bool ShouldIgnoreElement(const Element&) const override;
   void AppendElement(const Element&) override;
   void AppendAttribute(const Element&, const Attribute&) override;
-  void AppendStartMarkup(Node&) override;
+  void AppendStartMarkup(const Node&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
@@ -110,7 +110,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   // included into serialized text then extracts image, object, etc. The size
   // of this vector isn't small for large document. It is better to use
   // callback like functionality.
-  HeapVector<Member<Node>>& nodes_;
+  HeapVector<Member<const Node>>& nodes_;
 
   // Elements with links rewritten via appendAttribute method.
   HeapHashSet<Member<const Element>> elements_with_rewritten_links_;
@@ -119,7 +119,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     FrameSerializer::Delegate& delegate,
     const Document& document,
-    HeapVector<Member<Node>>& nodes)
+    HeapVector<Member<const Node>>& nodes)
     : MarkupAccumulator(kResolveAllURLs),
       delegate_(delegate),
       document_(&document),
@@ -204,7 +204,7 @@ void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
   MarkupAccumulator::AppendAttribute(element, attribute);
 }
 
-void SerializerMarkupAccumulator::AppendStartMarkup(Node& node) {
+void SerializerMarkupAccumulator::AppendStartMarkup(const Node& node) {
   MarkupAccumulator::AppendStartMarkup(node);
   nodes_.push_back(&node);
 }
@@ -269,7 +269,7 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     return;
   }
 
-  HeapVector<Member<Node>> serialized_nodes;
+  HeapVector<Member<const Node>> serialized_nodes;
   {
     TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame HTML");
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
@@ -288,38 +288,38 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
 
   should_collect_problem_metric_ =
       delegate_.ShouldCollectProblemMetric() && frame.IsMainFrame();
-  for (Node* node : serialized_nodes) {
+  for (const Node* node : serialized_nodes) {
     DCHECK(node);
     if (!node->IsElementNode())
       continue;
 
-    Element& element = ToElement(*node);
+    const Element& element = ToElement(*node);
     // We have to process in-line style as it might contain some resources
     // (typically background images).
     if (element.IsStyledElement()) {
       RetrieveResourcesForProperties(element.InlineStyle(), document);
-      RetrieveResourcesForProperties(element.PresentationAttributeStyle(),
-                                     document);
+      RetrieveResourcesForProperties(
+          const_cast<Element&>(element).PresentationAttributeStyle(), document);
     }
 
-    if (auto* image = ToHTMLImageElementOrNull(element)) {
+    if (const auto* image = ToHTMLImageElementOrNull(element)) {
       KURL url =
           document.CompleteURL(image->getAttribute(html_names::kSrcAttr));
       ImageResourceContent* cached_image = image->CachedImage();
       AddImageToResources(cached_image, url);
-    } else if (auto* input = ToHTMLInputElementOrNull(element)) {
+    } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
       if (input->type() == input_type_names::kImage && input->ImageLoader()) {
         KURL url = input->Src();
         ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
         AddImageToResources(cached_image, url);
       }
-    } else if (auto* link = ToHTMLLinkElementOrNull(element)) {
+    } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
       if (CSSStyleSheet* sheet = link->sheet()) {
         KURL url =
             document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
         SerializeCSSStyleSheet(*sheet, url);
       }
-    } else if (auto* style = ToHTMLStyleElementOrNull(element)) {
+    } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
       if (CSSStyleSheet* sheet = style->sheet())
         SerializeCSSStyleSheet(*sheet, NullURL());
     }
