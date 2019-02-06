@@ -842,36 +842,23 @@ if (is_win) {
     }
   }
 
-  if (using_sanitizer) {
-    bundle_data("chrome_framework_helpers_asan_runtime") {
-      # crashpad_handler requires the ASan runtime at its @executable_path.
-      sources = [
-        "$root_out_dir/libclang_rt.asan_osx_dynamic.dylib",
-      ]
-      outputs = [
-        "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
-      ]
-      public_deps = [
-        "//build/config/sanitizers:copy_asan_runtime",
-      ]
-    }
-  }
-
   bundle_data("chrome_framework_helpers") {
     sources = [
-      "$root_out_dir/chrome_crashpad_handler",
+      "$root_out_dir/crashpad_handler",
     ]
 
     outputs = [
-      "{{bundle_contents_dir}}/Helpers/crashpad_handler",
+      "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
     ]
 
     public_deps = [
-      "//components/crash/content/app:chrome_crashpad_handler",
+      "//third_party/crashpad/crashpad/handler:crashpad_handler",
     ]
 
     if (using_sanitizer) {
-      public_deps += [ ":chrome_framework_helpers_asan_runtime" ]
+      # crashpad_handler requires the ASan runtime at its @executable_path.
+      sources += [ "$root_out_dir/libclang_rt.asan_osx_dynamic.dylib" ]
+      public_deps += [ "//build/config/sanitizers:copy_asan_runtime" ]
     }
   }
 
@@ -1347,7 +1334,7 @@ if (is_win) {
       "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService",
       "$root_out_dir/$chrome_helper_name.app/Contents/MacOS/$chrome_helper_name",
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
-      "$root_out_dir/$chrome_framework_name.framework/Versions/$chrome_framework_version/Helpers/crashpad_handler",
+      "$root_out_dir/crashpad_handler",
       "$root_out_dir/libswiftshader_libEGL.dylib",
       "$root_out_dir/libswiftshader_libGLESv2.dylib",
     ]
@@ -1378,8 +1365,8 @@ if (is_win) {
         ":chrome_framework",
         ":chrome_helper_app",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-        "//components/crash/content/app:chrome_crashpad_handler",
         "//third_party/breakpad:dump_syms",
+        "//third_party/crashpad/crashpad/handler:crashpad_handler",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
@@ -1418,7 +1405,7 @@ if (is_win) {
         ":chrome_framework",
         ":chrome_helper_app",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-        "//components/crash/content/app:chrome_crashpad_handler",
+        "//third_party/crashpad/crashpad/handler:crashpad_handler",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
