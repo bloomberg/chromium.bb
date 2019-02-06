@@ -149,11 +149,6 @@ ChannelSplitterNode* ChannelSplitterNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (!number_of_outputs ||
       number_of_outputs > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(

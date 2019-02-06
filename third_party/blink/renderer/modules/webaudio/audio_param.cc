@@ -55,15 +55,20 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
       max_value_(max_value),
       summing_bus_(
           AudioBus::Create(1, audio_utilities::kRenderQuantumFrames, false)) {
-  // The destination MUST exist because we need the destination handler for the
-  // AudioParam.
-  CHECK(context.destination());
+  // An AudioParam needs the destination handler to run the timeline.  But the
+  // destination may have been destroyed (e.g. page gone), so the destination is
+  // null.  However, if the destination is gone, the AudioParam will never get
+  // pulled, so this is ok.  We have checks for the destination handler existing
+  // when the AudioParam want to use it.
+  if (context.destination()) {
+    destination_handler_ = &context.destination()->GetAudioDestinationHandler();
+  }
 
-  destination_handler_ = &context.destination()->GetAudioDestinationHandler();
   timeline_.SetSmoothedValue(default_value);
 }
 
 AudioDestinationHandler& AudioParamHandler::DestinationHandler() const {
+  CHECK(destination_handler_);
   return *destination_handler_;
 }
 

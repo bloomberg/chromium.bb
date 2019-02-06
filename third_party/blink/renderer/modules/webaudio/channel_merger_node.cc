@@ -143,11 +143,6 @@ ChannelMergerNode* ChannelMergerNode::Create(BaseAudioContext& context,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (!number_of_inputs ||
       number_of_inputs > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(

@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 // Higher values produce more debugging output.
-#define DEBUG_AUDIONODE_REFERENCES 0
+#define DEBUG_AUDIONODE_REFERENCES 1
 
 namespace blink {
 
@@ -367,6 +367,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   void SetHandler(scoped_refptr<AudioHandler>);
 
  private:
+  void WarnIfContextClosed() const;
   void Dispose();
   void DisconnectAllFromOutput(unsigned output_index);
   // Returns true if the specified AudioNodeInput was connected.

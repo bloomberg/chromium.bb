@@ -155,11 +155,6 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   return MakeGarbageCollected<MediaStreamAudioDestinationNode>(
       context, number_of_channels);
 }

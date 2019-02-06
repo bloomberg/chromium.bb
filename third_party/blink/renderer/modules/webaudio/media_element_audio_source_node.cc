@@ -217,11 +217,6 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   // First check if this media element already has a source node.
   if (media_element.AudioSourceNode()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
