@@ -21520,6 +21520,7 @@ Called by update_net_error_codes.py.-->
   <int value="2779" label="V8HTMLMediaElement_Remote_AttributeGetter"/>
   <int value="2780" label="V8RemotePlayback_WatchAvailability_Method"/>
   <int value="2781" label="V8RemotePlayback_Prompt_Method"/>
+  <int value="2782" label="LayoutJankExplicitlyRequested"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

@@ -58,6 +58,7 @@ class ExceptionState;
 class MemoryInfo;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
+class PerformanceLayoutJank;
 class PerformanceMark;
 class PerformanceMeasure;
 class PerformanceNavigation;
@@ -171,6 +172,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void setEventTimingBufferMaxSize(unsigned);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull,
                                   kEventtimingbufferfull);
+
+  void AddLayoutJankBuffer(PerformanceLayoutJank&);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
@@ -312,6 +315,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned event_timing_buffer_max_size_;
   PerformanceEntryVector element_timing_buffer_;
   unsigned element_timing_buffer_max_size_;
+  PerformanceEntryVector layout_jank_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   TraceWrapperMember<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;

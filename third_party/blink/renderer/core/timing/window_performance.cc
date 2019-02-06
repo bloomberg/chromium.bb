@@ -446,8 +446,11 @@ void WindowPerformance::DispatchFirstInputTiming(
 
 void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
   DCHECK(origin_trials::LayoutJankAPIEnabled(GetExecutionContext()));
-  PerformanceEntry* entry = PerformanceLayoutJank::Create(jank_fraction);
-  NotifyObserversOfEntry(*entry);
+  PerformanceLayoutJank* entry = PerformanceLayoutJank::Create(jank_fraction);
+  if (HasObserverFor(PerformanceEntry::kLayoutJank))
+    NotifyObserversOfEntry(*entry);
+  if (ShouldBufferEntries())
+    AddLayoutJankBuffer(*entry);
 }
 
 }  // namespace blink

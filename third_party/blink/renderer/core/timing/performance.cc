@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_layout_jank.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
@@ -157,9 +158,10 @@ void LogMeasureEndToUma(Performance::MeasureParameterType type) {
 
 using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
-static const size_t kDefaultResourceTimingBufferSize = 250;
+constexpr size_t kDefaultResourceTimingBufferSize = 250;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
 constexpr size_t kDefaultElementTimingBufferSize = 150;
+constexpr size_t kDefaultLayoutJankBufferSize = 150;
 
 Performance::Performance(
     TimeTicks time_origin,
@@ -209,6 +211,7 @@ PerformanceEntryVector Performance::getEntries() {
   entries.AppendVector(resource_timing_buffer_);
   entries.AppendVector(event_timing_buffer_);
   entries.AppendVector(element_timing_buffer_);
+  entries.AppendVector(layout_jank_buffer_);
   if (first_input_timing_)
     entries.push_back(first_input_timing_);
   if (!navigation_timing_)
@@ -291,9 +294,11 @@ PerformanceEntryVector Performance::getEntriesByType(
       break;
     case PerformanceEntry::kTaskAttribution:
       break;
-    // TODO(npm): decide which layout jank entries are accessible via the
-    // performance buffer.
     case PerformanceEntry::kLayoutJank:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kLayoutJankExplicitlyRequested);
+      for (const auto& layout_jank : layout_jank_buffer_)
+        entries.push_back(layout_jank);
       break;
     case PerformanceEntry::kInvalid:
       break;
@@ -321,6 +326,16 @@ PerformanceEntryVector Performance::getEntriesByName(
     }
   }
 
+  if (entry_type.IsNull() || type == PerformanceEntry::kLayoutJank) {
+    for (const auto& layout_jank : layout_jank_buffer_) {
+      if (layout_jank->name() == name)
+        entries.push_back(layout_jank);
+    }
+  }
+  if (type == PerformanceEntry::kLayoutJank) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kLayoutJankExplicitlyRequested);
+  }
   if (entry_type.IsNull() || type == PerformanceEntry::kElement) {
     for (const auto& element : element_timing_buffer_) {
       if (element->name() == name)
@@ -607,6 +622,11 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
 
   if (IsEventTimingBufferFull())
     DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
+}
+
+void Performance::AddLayoutJankBuffer(PerformanceLayoutJank& entry) {
+  if (layout_jank_buffer_.size() < kDefaultLayoutJankBufferSize)
+    layout_jank_buffer_.push_back(&entry);
 }
 
 unsigned Performance::ElementTimingBufferSize() const {
@@ -982,6 +1002,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_timing_secondary_buffer_);
   visitor->Trace(element_timing_buffer_);
   visitor->Trace(event_timing_buffer_);
+  visitor->Trace(layout_jank_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);
