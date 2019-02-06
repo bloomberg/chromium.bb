@@ -86,8 +86,7 @@ For example, canonicalization converts `https://ExAmPle.com:443/one/%2e./Tw%2fo/
 
 Do not attempt to write your own canonicalizer.
 
-<a name="simplify"></a>
-### Simplify URLs Whenever Possible
+### Simplify URLs Whenever Possible {#simplify}
 
 * [Do NOT display the username and password components](https://url.spec.whatwg.org/#url-rendering) of URLs (e.g., `https://user:password@example.com/`) anywhere the user is making a security decision.
 
@@ -177,7 +176,7 @@ Chrome’s [`FormatURLForSecurityDisplay`](https://cs.chromium.org/chromium/src/
 
     * Wrap the URL in U+202A ... U+202C, so that it is forced to appear in a LTR paragraph. The URL standard (both [RFC 3987](https://www.ietf.org/rfc/rfc3987.txt) and https://url.spec.whatwg.org) mandate that URLs are displayed in LTR paragraphs, no matter what they contain.
 
-<a id="sneakyunicode"></a>
+<a name="sneakyunicode"></a>
 #### Sneaky Unicode Characters
 
 An attacker may abuse whitespace and line-wrapping characters in order to push the display of their true origin out of view. Such characters should be banned or displayed in %-escaped form.
@@ -274,13 +273,15 @@ A **homograph** (or **homoglyph**) **attack** occurs when an attacker uses looka
 
 **International Domain Names** is a mechanism for using Unicode characters for hostnames. Under the covers, the Unicode labels are encoded using **[punycode](https://tools.ietf.org/html/rfc3492)** and prefixed with **xn--**. The browser may display the label in Unicode, or in the underlying punycode form. Users are not expected to be able to decode the punycode form: display in this form is intended to foil spoofing attempts.
 
-<a id="label"></a>A **[label](https://en.wikipedia.org/wiki/DNS_label#Parts_of_a_domain_name)** is a single component of a [domain name](https://en.wikipedia.org/wiki/Domain_name) string, delimited by periods. For instance, "*www*", “*microsoft*”, and “*com*” are the three labels in the domain name “*www.microsoft.com*”.
+<a name="label"></a>
+A **[label](https://en.wikipedia.org/wiki/DNS_label#Parts_of_a_domain_name)** is a single component of a [domain name](https://en.wikipedia.org/wiki/Domain_name) string, delimited by periods. For instance, "*www*", “*microsoft*”, and “*com*” are the three labels in the domain name “*www.microsoft.com*”.
 
 A **plain hostname** is an unqualified, single-label hostname like "*payroll*", which typically refers to a server on a local intranet.
 
 A **[Public Suffix](https://publicsuffix.org/)** is the suffix portion of a FQDN under which independent entities may register subdomains. For example, *ltd.co.im* is a Public Suffix. A Public Suffix contains one or more labels. Sometimes the term "[effective TLD](https://wiki.mozilla.org/Gecko:Effective_TLD_List)" is used as a synonym.
 
-<a id="registrabledomain"></a>The **registrable domain** is the public suffix plus one additional label. Sometimes eTLD+1 is used as a synonym.
+<a name="registrabledomain"></a>
+The **registrable domain** is the public suffix plus one additional label. Sometimes eTLD+1 is used as a synonym.
 
 ## A Caveat on Security Sensitive Surfaces
 

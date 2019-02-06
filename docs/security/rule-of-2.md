@@ -32,7 +32,7 @@ trust ourselves to parse it successfully or fail safely. (But see
 
 Obviously, any arbitrary peer on the Internet is an untrustworthy source without
 some evidence of trustworthiness (which includes at least [a strong assertion of
-the source's identity](#verifying-trustworthiness-source)).
+the source's identity](#verifying-the-trustworthiness-of-a-source)).
 
 _Unsafe implementation languages_ are languages that lack
 [memory safety](https://en.wikipedia.org/wiki/Memory_safety), including at least
@@ -82,7 +82,6 @@ of launching a utility process to parse an untrustworthy input is [Safe
 Browsing's ZIP
 analyzer](https://cs.chromium.org/chromium/src/chrome/common/safe_browsing/zip_analyzer.h).
 
-<a href="verifying-trustworthiness-source"></a>
 ### Verifying The Trustworthiness Of A Source
 
 If you can be sure that the input comes from a trustworthy source, it can be OK
@@ -93,8 +92,7 @@ source" meets all of these criteria:
   * peer's keys are [pinned in Chrome](https://cs.chromium.org/chromium/src/net/http/transport_security_state_static.json?sq=package:chromium&g=0); and
   * peer is operated by a business entity that Chrome should trust (e.g. an [Alphabet](https://abc.xyz) company).
 
-<a name="Normalization"></a>
-### Normalization
+### Normalization {#normalization}
 
 You can 'defang' a potentially-malicious input by transforming it into a
 _normal_ or _minimal_ form, usually by first transforming it into a format with
