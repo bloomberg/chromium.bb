@@ -51,8 +51,7 @@ void SigninManagerBase::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGoogleServicesUserAccountId,
                                std::string());
   registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
-  registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
-                             std::make_unique<base::ListValue>());
+  registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterInt64Pref(prefs::kSignedInTime,
                               base::Time().ToInternalValue());
