@@ -30,12 +30,15 @@ if (enable_pdf) {
     deps = [
       ":features",
       "//base",
-      "//gin",
       "//net",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//ui/base",
       "//ui/gfx/range",
+    ]
+
+    public_deps = [
+      "//gin",
     ]
 
     public = [
