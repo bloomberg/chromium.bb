@@ -675,6 +675,12 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     std::move(closure).Run();
   }
 
+  void RemoveCrostiniCallback(base::OnceClosure closure,
+                              CrostiniResult result) {
+    remove_crostini_callback_count_++;
+    std::move(closure).Run();
+  }
+
   // CrostiniManager::RestartObserver
   void OnComponentLoaded(CrostiniResult result) override {
     if (abort_on_component_loaded_) {
@@ -730,7 +736,8 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 
  protected:
   void Abort() {
-    crostini_manager()->AbortRestartCrostini(restart_id_);
+    crostini_manager()->AbortRestartCrostini(restart_id_,
+                                             base::DoNothing::Once());
     run_loop()->Quit();
   }
 
@@ -751,6 +758,8 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 
   CrostiniManager::RestartId restart_id_ =
       CrostiniManager::kUninitializedRestartId;
+  const CrostiniManager::RestartId uninitialized_id_ =
+      CrostiniManager::kUninitializedRestartId;
   bool abort_on_component_loaded_ = false;
   bool abort_on_concierge_started_ = false;
   bool abort_on_disk_image_created_ = false;
@@ -760,6 +769,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_container_setup_ = false;
   bool abort_on_ssh_keys_fetched_ = false;
   int restart_crostini_callback_count_ = 0;
+  int remove_crostini_callback_count_ = 0;
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
 };
 
@@ -1152,6 +1162,98 @@ TEST_F(CrostiniManagerTest, GetLinuxPackageInfoFromAptSuccess) {
                      base::Unretained(this), run_loop()->QuitClosure(),
                      expected));
   run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartThenUninstall) {
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()));
+
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
+
+  crostini_manager()->RemoveCrostini(
+      kVmName,
+      base::BindOnce(&CrostiniManagerRestartTest::RemoveCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(restart_id_));
+
+  run_loop()->Run();
+
+  // Aborts don't call the restart callback. If that changes, everything that
+  // calls RestartCrostini will need to be checked to make sure they handle it
+  // in a sensible way.
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+  EXPECT_EQ(1, remove_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartMultipleThenUninstall) {
+  CrostiniManager::RestartId id1, id2, id3;
+  id1 = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()));
+  id2 = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()));
+  id3 = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()));
+
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(id1));
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(id2));
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(id3));
+
+  crostini_manager()->RemoveCrostini(
+      kVmName,
+      base::BindOnce(&CrostiniManagerRestartTest::RemoveCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id1));
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id2));
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id3));
+
+  run_loop()->Run();
+
+  // Aborts don't call the restart callback. If that changes, everything that
+  // calls RestartCrostini will need to be checked to make sure they handle it
+  // in a sensible way.
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+  EXPECT_EQ(1, remove_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, UninstallThenRestart) {
+  // Install crostini first so that the uninstaller doesn't terminate before we
+  // can call the installer again
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
+
+  run_loop()->Run();
+
+  base::RunLoop run_loop2;
+  crostini_manager()->RemoveCrostini(
+      kVmName,
+      base::BindOnce(&CrostiniManagerRestartTest::RemoveCrostiniCallback,
+                     base::Unretained(this), run_loop2.QuitClosure()));
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()));
+
+  EXPECT_EQ(uninitialized_id_, restart_id_);
+
+  run_loop2.Run();
+
+  EXPECT_EQ(2, restart_crostini_callback_count_);
+  EXPECT_EQ(1, remove_crostini_callback_count_);
 }
 
 }  // namespace crostini

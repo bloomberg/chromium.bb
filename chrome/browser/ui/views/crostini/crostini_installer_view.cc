@@ -193,7 +193,7 @@ bool CrostiniInstallerView::Cancel() {
     // Abort the long-running flow, and prevent our RestartObserver methods
     // being called after "this" has been destroyed.
     crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
-        restart_id_);
+        restart_id_, base::DoNothing());
 
     SetupResult result = SetupResult::kUserCancelledStart;
     result = static_cast<SetupResult>(static_cast<int>(result) +
