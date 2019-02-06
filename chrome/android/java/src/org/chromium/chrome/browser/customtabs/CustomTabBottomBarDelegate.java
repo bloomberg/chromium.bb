@@ -334,7 +334,10 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
     @Override
     public void onBottomControlsHeightChanged(int bottomControlsHeight) {
         if (!isViewReady()) return;
-        getBottomBarView().setTranslationY(mFullscreenManager.getBottomControlOffset());
+        // Bottom offset might not have been received by FullscreenManager at this point, so
+        // using getBrowserControlHiddenRatio(), http://crbug.com/928903.
+        getBottomBarView().setTranslationY(mFullscreenManager.getBrowserControlHiddenRatio()
+                * bottomControlsHeight);
     }
 
     @Override
