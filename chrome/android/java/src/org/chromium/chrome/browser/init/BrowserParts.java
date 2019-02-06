@@ -65,14 +65,10 @@ public interface BrowserParts {
     void onStartupFailure();
 
     /**
-     * @return Whether the activity this delegate represents has been destoyed.
+     * @return Whether the activity this delegate represents has been destoyed or is in the
+     *         process of finishing.
      */
-    boolean isActivityDestroyed();
-
-    /**
-     * @return Whether the activity is marked itself to be closed.
-     */
-    boolean isActivityFinishing();
+    boolean isActivityFinishingOrDestroyed();
 
     /**
      * @return Whether GPU process needs to be started during the startup.

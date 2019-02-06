@@ -179,7 +179,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
             @StringRes int accessibilityStringId, View anchorView, AppMenuHandler appMenuHandler,
             ChromeActivity activity) {
         // Activity was destroyed; don't show IPH.
-        if (activity.isActivityDestroyed() || anchorView == null) return;
+        if (activity.isActivityFinishingOrDestroyed() || anchorView == null) return;
 
         assert(stringId != 0 && accessibilityStringId != 0);
 
@@ -187,7 +187,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         // is shown on startup, the anchor view may not have a height initially see
         // https://crbug.com/871537.
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            if (activity.isActivityDestroyed()) return;
+            if (activity.isActivityFinishingOrDestroyed()) return;
 
             if (TextUtils.equals(featureName, FeatureConstants.NTP_BUTTON_FEATURE)
                     && !canShowNTPButtonIPH(activity)) {

@@ -176,7 +176,7 @@ public class ChromeBrowserInitializer {
             preInflationStartup();
             parts.preInflationStartup();
         }
-        if (parts.isActivityFinishing()) return;
+        if (parts.isActivityFinishingOrDestroyed()) return;
         preInflationStartupDone();
         parts.setContentViewAndLoadLibrary(() -> this.onInflationComplete(parts));
     }
@@ -188,7 +188,7 @@ public class ChromeBrowserInitializer {
      * @param parts The {@link BrowserParts} that has finished layout inflation
      */
     private void onInflationComplete(final BrowserParts parts) {
-        if (parts.isActivityFinishing()) return;
+        if (parts.isActivityFinishingOrDestroyed()) return;
         postInflationStartup();
         parts.postInflationStartup();
     }
@@ -304,19 +304,19 @@ public class ChromeBrowserInitializer {
         });
 
         tasks.add(() -> {
-            if (delegate.isActivityDestroyed()) return;
+            if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeCompositor();
         });
 
         tasks.add(() -> {
-            if (delegate.isActivityDestroyed()) return;
+            if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeState();
         });
 
         if (!mNativeInitializationComplete) tasks.add(this::onFinishNativeInitialization);
 
         tasks.add(() -> {
-            if (delegate.isActivityDestroyed()) return;
+            if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.finishNativeInitialization();
         });
 

@@ -252,7 +252,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         Runnable onNativeFinished = new Runnable() {
             @Override
             public void run() {
-                if (isActivityDestroyed()) return;
+                if (isActivityFinishingOrDestroyed()) return;
 
                 onNativeDependenciesFullyInitialized();
             }

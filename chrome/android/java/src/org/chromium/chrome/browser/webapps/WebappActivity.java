@@ -201,14 +201,14 @@ public class WebappActivity extends SingleTabActivity {
             public void run() {
                 ViewGroup mainView = WarmupManager.inflateViewHierarchy(
                         WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
-                if (WebappActivity.this.isActivityFinishing()) return;
+                if (isActivityFinishingOrDestroyed()) return;
                 if (mainView != null) {
                     PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                        if (WebappActivity.this.isActivityFinishing()) return;
+                        if (isActivityFinishingOrDestroyed()) return;
                         onLayoutInflated(mainView);
                     });
                 } else {
-                    if (WebappActivity.this.isActivityFinishing()) return;
+                    if (isActivityFinishingOrDestroyed()) return;
                     PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                             () -> WebappActivity.super.doLayoutInflation());
                 }

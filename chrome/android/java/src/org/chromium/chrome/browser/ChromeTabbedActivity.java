@@ -301,7 +301,7 @@ public class ChromeTabbedActivity
 
         @Override
         public void closeAllIncognitoTabs() {
-            if (isActivityDestroyed()) return;
+            if (isActivityFinishingOrDestroyed()) return;
 
             // If the tabbed activity has not yet initialized, then finish the activity to avoid
             // timing issues with clearing the incognito tab state in the background.

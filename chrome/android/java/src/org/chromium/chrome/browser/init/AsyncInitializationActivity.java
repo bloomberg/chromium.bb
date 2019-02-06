@@ -526,13 +526,8 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
-    public boolean isActivityDestroyed() {
-        return mDestroyed;
-    }
-
-    @Override
-    public boolean isActivityFinishing() {
-        return isFinishing();
+    public boolean isActivityFinishingOrDestroyed() {
+        return mDestroyed || isFinishing();
     }
 
     @Override

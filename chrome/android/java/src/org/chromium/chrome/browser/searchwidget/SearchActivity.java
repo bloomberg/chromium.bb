@@ -181,7 +181,7 @@ public class SearchActivity extends AsyncInitializationActivity
         final Callback<Boolean> onSearchEngineFinalizedCallback = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
-                if (isActivityDestroyed()) return;
+                if (isActivityFinishingOrDestroyed()) return;
 
                 if (result == null || !result.booleanValue()) {
                     Log.e(TAG, "User failed to select a default search engine.");
