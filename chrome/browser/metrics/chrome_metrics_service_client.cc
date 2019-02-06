@@ -747,13 +747,13 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
           metrics::MetricsLogUploader::UKM));
 #endif  // !defined(OS_CHROMEOS)
 
-  ukm_service_->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::GPUMetricsProvider>());
 
-  ukm_service_->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::CPUMetricsProvider>());
 
-  ukm_service_->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
   // TODO(rkaplow): Support synthetic trials for UKM.

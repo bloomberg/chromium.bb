@@ -36,8 +36,6 @@
 
 class PrefService;
 class PrefRegistrySimple;
-FORWARD_DECLARE_TEST(ChromeMetricsServiceClientTest,
-                     TestRegisterMetricsServiceProviders);
 
 namespace base {
 class HistogramSamples;
@@ -386,8 +384,7 @@ class MetricsService : public base::HistogramFlattener {
   static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
-  FRIEND_TEST_ALL_PREFIXES(::ChromeMetricsServiceClientTest,
-                           TestRegisterMetricsServiceProviders);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointers factory used to post task on different threads. All weak
