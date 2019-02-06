@@ -1296,14 +1296,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindNFCRequest(device::mojom::NFCRequest request);
 #endif
 
+#if !defined(OS_ANDROID)
   void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
+  void BindAuthenticatorRequest(blink::mojom::AuthenticatorRequest request);
+#endif
 
   void BindPresentationServiceRequest(
       blink::mojom::PresentationServiceRequest request);
-
-#if !defined(OS_ANDROID)
-  void BindAuthenticatorRequest(blink::mojom::AuthenticatorRequest request);
-#endif
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
@@ -1817,8 +1816,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // media::mojom::InterfaceFactory calls to the remote "media" service.
   std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
 
+#if !defined(OS_ANDROID)
   // Hosts blink::mojom::SerialService for the RenderFrame.
   std::unique_ptr<SerialService> serial_service_;
+#endif
 
   // Hosts blink::mojom::PresentationService for the RenderFrame.
   std::unique_ptr<PresentationServiceImpl> presentation_service_;

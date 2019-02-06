@@ -91,7 +91,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/scoped_active_url.h"
-#include "content/browser/serial/serial_service.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
@@ -197,6 +196,8 @@
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/frame_host/render_frame_host_android.h"
 #include "content/public/browser/android/java_interfaces.h"
+#else
+#include "content/browser/serial/serial_service.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -4013,8 +4014,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&SensorProviderProxyImpl::Bind,
                  base::Unretained(sensor_provider_proxy_.get())));
 
+#if !defined(OS_ANDROID)
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::BindSerialServiceRequest, base::Unretained(this)));
+#endif  // !defined(OS_ANDROID)
 
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
   // Off-the-record contexts will internally use an ephemeral history DB.
@@ -5669,6 +5672,7 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
 }
 #endif
 
+#if !defined(OS_ANDROID)
 void RenderFrameHostImpl::BindSerialServiceRequest(
     blink::mojom::SerialServiceRequest request) {
   if (!serial_service_)
@@ -5677,15 +5681,6 @@ void RenderFrameHostImpl::BindSerialServiceRequest(
   serial_service_->Bind(std::move(request));
 }
 
-void RenderFrameHostImpl::BindPresentationServiceRequest(
-    blink::mojom::PresentationServiceRequest request) {
-  if (!presentation_service_)
-    presentation_service_ = PresentationServiceImpl::Create(this);
-
-  presentation_service_->Bind(std::move(request));
-}
-
-#if !defined(OS_ANDROID)
 void RenderFrameHostImpl::BindAuthenticatorRequest(
     blink::mojom::AuthenticatorRequest request) {
   if (!authenticator_impl_)
@@ -5694,6 +5689,14 @@ void RenderFrameHostImpl::BindAuthenticatorRequest(
   authenticator_impl_->Bind(std::move(request));
 }
 #endif
+
+void RenderFrameHostImpl::BindPresentationServiceRequest(
+    blink::mojom::PresentationServiceRequest request) {
+  if (!presentation_service_)
+    presentation_service_ = PresentationServiceImpl::Create(this);
+
+  presentation_service_->Bind(std::move(request));
+}
 
 blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
   blink::mojom::FileChooserPtr chooser;
