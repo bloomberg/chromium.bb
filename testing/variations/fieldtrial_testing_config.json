@@ -5077,6 +5077,25 @@
             ]
         }
     ],
+    "V8WasmCodeCache": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WasmCodeCache"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8WasmTrapHandler": [
         {
             "platforms": [
