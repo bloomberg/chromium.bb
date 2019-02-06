@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import logging
-import os
 
 from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
@@ -71,11 +70,6 @@ class GpuIntegrationTest(
       browser_args = []
     cls._finder_options = cls._original_finder_options.Copy()
     browser_options = cls._finder_options.browser_options
-
-    # Enable browser log on Windows to debug the crash (crbug.com/917211).
-    # TODO(kbr): remove this once the bug is addressed.
-    if os.name == 'nt':
-      browser_options.logging_verbosity = browser_options.VERBOSE_LOGGING
 
     # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
     # the browser to collect gpu info. A command line switch is added here to
