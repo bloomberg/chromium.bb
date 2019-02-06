@@ -6,8 +6,9 @@
 #define COMPONENTS_CRONET_STALE_HOST_RESOLVER_H_
 
 #include <memory>
-#include <unordered_set>
+#include <unordered_map>
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver.h"
@@ -106,8 +107,16 @@ class StaleHostResolver : public net::HostResolver {
   class RequestImpl;
   friend class StaleHostResolverTest;
 
-  // Called from |Request| when a request is complete and can be destroyed.
-  void OnRequestComplete(Request* request);
+  // Called on completion of |network_request| when completed asynchronously (a
+  // "network" request). Determines if the request is owned by a RequestImpl or
+  // if it is a detached request and handles appropriately.
+  void OnNetworkRequestComplete(ResolveHostRequest* network_request,
+                                base::WeakPtr<RequestImpl> stale_request,
+                                int error);
+
+  // Detach an inner request from a RequestImpl, letting it finish (and populate
+  // the host cache) as long as |this| is not destroyed.
+  void DetachRequest(std::unique_ptr<ResolveHostRequest> request);
 
   // Set |tick_clock_| for testing. Must be set before issuing any requests.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
@@ -120,7 +129,14 @@ class StaleHostResolver : public net::HostResolver {
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
 
   // Options that govern when a stale response can or can't be returned.
-  StaleOptions options_;
+  const StaleOptions options_;
+
+  // Requests not used for returned results but allowed to continue (unless
+  // |this| is destroyed) to backfill the cache.
+  std::unordered_map<ResolveHostRequest*, std::unique_ptr<ResolveHostRequest>>
+      detached_requests_;
+
+  base::WeakPtrFactory<StaleHostResolver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StaleHostResolver);
 };

@@ -32,6 +32,7 @@
 #include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver_impl.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
@@ -80,6 +81,25 @@ std::unique_ptr<net::DnsClient> CreateMockDnsClientForHosts() {
 
   return std::make_unique<net::MockDnsClient>(config,
                                               net::MockDnsClientRuleList());
+}
+
+// Create a net::DnsClient where address requests for |kHostname| will hang
+// until unblocked via CompleteDelayedTransactions() and then fail.
+std::unique_ptr<net::MockDnsClient> CreateHangingMockDnsClient() {
+  net::DnsConfig config;
+  config.nameservers.push_back(net::IPEndPoint());
+
+  net::MockDnsClientRuleList rules;
+  rules.emplace_back(
+      kHostname, net::dns_protocol::kTypeA,
+      net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
+      true /* delay */);
+  rules.emplace_back(
+      kHostname, net::dns_protocol::kTypeAAAA,
+      net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
+      true /* delay */);
+
+  return std::make_unique<net::MockDnsClient>(config, std::move(rules));
 }
 
 class MockHostResolverProc : public net::HostResolverProc {
@@ -395,6 +415,20 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleCache) {
   EXPECT_EQ(net::OK, resolve_error());
   EXPECT_EQ(1u, resolve_addresses().size());
   EXPECT_EQ(kCacheAddress, resolve_addresses()[0].ToStringWithoutPort());
+}
+
+// If the resolver is destroyed before a stale cache entry is returned, the
+// resolve should not complete.
+TEST_F(StaleHostResolverTest, StaleCache_DestroyedResolver) {
+  SetStaleDelay(kNoStaleDelaySec);
+  CreateResolverWithDnsClient(CreateHangingMockDnsClient());
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
+
+  Resolve();
+  DestroyResolver();
+  WaitForResolve();
+
+  EXPECT_FALSE(resolve_complete());
 }
 
 // Ensure that |use_stale_on_name_not_resolved| causes stale results to be
