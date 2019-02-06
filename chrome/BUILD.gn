@@ -16,6 +16,7 @@ import("//build/toolchain/toolchain.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")
+import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -407,7 +408,6 @@ if (is_win) {
       "//chrome/install_static:secondary_module",
       "//chrome_elf",
       "//components/crash/content/app",
-      "//components/gwp_asan/client",
       "//components/policy:generated",
       "//content/app/resources",
       "//content/public/common:service_names",
@@ -514,7 +514,6 @@ if (is_win) {
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
-        "//components/gwp_asan/client",
         "//content/public/app:child",
         "//content/public/common:service_names",
         "//headless:headless_shell_child_lib",
@@ -1422,6 +1421,7 @@ group("browser_dependencies") {
   public_deps = [
     "//chrome/browser",
     "//chrome/common",
+    "//components/gwp_asan/buildflags",
     "//components/sync",
     "//components/tracing",
   ]
@@ -1434,6 +1434,10 @@ group("browser_dependencies") {
     if (enable_print_preview && !is_chromeos) {
       public_deps += [ "//chrome/service" ]
     }
+  }
+
+  if (enable_gwp_asan) {
+    public_deps += [ "//components/gwp_asan/client" ]
   }
 
   if (!is_component_build) {
@@ -1463,6 +1467,7 @@ group("child_dependencies") {
     "//chrome/gpu",
     "//chrome/renderer",
     "//chrome/utility",
+    "//components/gwp_asan/buildflags",
     "//components/services/heap_profiling",
     "//components/sync",
     "//components/tracing",
@@ -1473,6 +1478,10 @@ group("child_dependencies") {
 
   if (enable_nacl) {
     public_deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
+  }
+
+  if (enable_gwp_asan) {
+    public_deps += [ "//components/gwp_asan/client" ]
   }
 }
 
@@ -1793,6 +1802,7 @@ if (is_android) {
       "//chrome/gpu",
       "//chrome/renderer",
       "//chrome/utility",
+      "//components/gwp_asan/buildflags",
       "//components/minidump_uploader",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
@@ -1814,6 +1824,10 @@ if (is_android) {
 
     if (enable_vr) {
       deps += [ "//third_party/gvr-android-sdk:gvr_shim" ]
+    }
+
+    if (enable_gwp_asan) {
+      deps += [ "//components/gwp_asan/client" ]
     }
   }
 }
