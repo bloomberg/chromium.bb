@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -169,10 +171,10 @@ ScriptPromise BackgroundFetchRegistration::match(
     const RequestOrUSVString& request,
     const CacheQueryOptions* options,
     ExceptionState& exception_state) {
-  return MatchImpl(script_state,
-                   base::make_optional<RequestOrUSVString>(request),
-                   Cache::ToQueryParams(options), exception_state,
-                   /* match_all = */ false);
+  return MatchImpl(
+      script_state, base::make_optional<RequestOrUSVString>(request),
+      mojom::blink::CacheQueryOptions::From(options), exception_state,
+      /* match_all = */ false);
 }
 
 ScriptPromise BackgroundFetchRegistration::matchAll(
@@ -190,13 +192,14 @@ ScriptPromise BackgroundFetchRegistration::matchAll(
     ExceptionState& exception_state) {
   return MatchImpl(
       script_state, base::make_optional<RequestOrUSVString>(request),
-      Cache::ToQueryParams(options), exception_state, /* match_all = */ true);
+      mojom::blink::CacheQueryOptions::From(options), exception_state,
+      /* match_all = */ true);
 }
 
 ScriptPromise BackgroundFetchRegistration::MatchImpl(
     ScriptState* script_state,
     base::Optional<RequestOrUSVString> request,
-    mojom::blink::QueryParamsPtr cache_query_params,
+    mojom::blink::CacheQueryOptionsPtr cache_query_options,
     ExceptionState& exception_state,
     bool match_all) {
   DCHECK(script_state);
@@ -236,7 +239,7 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
   BackgroundFetchBridge::From(registration_)
       ->MatchRequests(
           developer_id_, unique_id_, std::move(request_to_match),
-          std::move(cache_query_params), match_all,
+          std::move(cache_query_options), match_all,
           WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
                     WrapPersistent(this), WrapPersistent(resolver), match_all));
   return promise;

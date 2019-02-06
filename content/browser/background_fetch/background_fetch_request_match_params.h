@@ -16,7 +16,7 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
   BackgroundFetchRequestMatchParams();
   BackgroundFetchRequestMatchParams(
       blink::mojom::FetchAPIRequestPtr request_to_match,
-      blink::mojom::QueryParamsPtr cache_query_params,
+      blink::mojom::CacheQueryOptionsPtr cache_query_options,
       bool match_all);
   ~BackgroundFetchRequestMatchParams();
 
@@ -28,14 +28,14 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
     return request_to_match_;
   }
 
-  const blink::mojom::QueryParamsPtr& cache_query_params() const {
-    return cache_query_params_;
+  const blink::mojom::CacheQueryOptionsPtr& cache_query_options() const {
+    return cache_query_options_;
   }
 
-  blink::mojom::QueryParamsPtr cloned_cache_query_params() const {
-    if (!cache_query_params_)
+  blink::mojom::CacheQueryOptionsPtr cloned_cache_query_options() const {
+    if (!cache_query_options_)
       return nullptr;
-    return cache_query_params_->Clone();
+    return cache_query_options_->Clone();
   }
 
   bool match_all() const { return match_all_; }
@@ -47,7 +47,7 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
   blink::mojom::FetchAPIRequestPtr request_to_match_;
 
   // When nullptr, this has no effect on the response(s) returned.
-  blink::mojom::QueryParamsPtr cache_query_params_;
+  blink::mojom::CacheQueryOptionsPtr cache_query_options_;
 
   // Whether to return all matching responses from the cache storage.
   bool match_all_ = false;

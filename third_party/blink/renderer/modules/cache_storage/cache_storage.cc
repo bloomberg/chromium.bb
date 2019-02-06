@@ -23,23 +23,23 @@
 
 namespace mojo {
 
-using blink::mojom::blink::MultiQueryParams;
-using blink::mojom::blink::MultiQueryParamsPtr;
-using blink::mojom::blink::QueryParams;
-using blink::mojom::blink::QueryParamsPtr;
+using blink::mojom::blink::CacheQueryOptions;
+using blink::mojom::blink::CacheQueryOptionsPtr;
+using blink::mojom::blink::MultiCacheQueryOptions;
+using blink::mojom::blink::MultiCacheQueryOptionsPtr;
 
 template <>
-struct TypeConverter<MultiQueryParamsPtr,
+struct TypeConverter<MultiCacheQueryOptionsPtr,
                      const blink::MultiCacheQueryOptions*> {
-  static MultiQueryParamsPtr Convert(
+  static MultiCacheQueryOptionsPtr Convert(
       const blink::MultiCacheQueryOptions* input) {
-    QueryParamsPtr query_params = QueryParams::New();
-    query_params->ignore_search = input->ignoreSearch();
-    query_params->ignore_method = input->ignoreMethod();
-    query_params->ignore_vary = input->ignoreVary();
+    CacheQueryOptionsPtr query_options = CacheQueryOptions::New();
+    query_options->ignore_search = input->ignoreSearch();
+    query_options->ignore_method = input->ignoreMethod();
+    query_options->ignore_vary = input->ignoreVary();
 
-    MultiQueryParamsPtr output = MultiQueryParams::New();
-    output->query_params = std::move(query_params);
+    MultiCacheQueryOptionsPtr output = MultiCacheQueryOptions::New();
+    output->query_options = std::move(query_options);
     output->cache_name = input->cacheName();
     return output;
   }
@@ -219,7 +219,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   // callback from ever being executed.
   cache_storage_ptr_->Match(
       request->CreateFetchAPIRequest(),
-      mojom::blink::MultiQueryParams::From(options),
+      mojom::blink::MultiCacheQueryOptions::From(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
              const MultiCacheQueryOptions* options, CacheStorage* _,

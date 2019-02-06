@@ -4,6 +4,8 @@
 
 #include "content/browser/background_fetch/storage/match_requests_task.h"
 
+#include <memory>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
@@ -57,20 +59,20 @@ void MatchRequestsTask::DidOpenCache(CacheStorageCacheHandle handle,
     request = blink::mojom::FetchAPIRequest::New();
   }
 
-  auto query_params = match_params_->cloned_cache_query_params();
-  if (!query_params)
-    query_params = blink::mojom::QueryParams::New();
+  auto query_options = match_params_->cloned_cache_query_options();
+  if (!query_options)
+    query_options = blink::mojom::CacheQueryOptions::New();
 
   // Ignore the search params since we added query params to make the URL
   // unique.
-  query_params->ignore_search = true;
+  query_options->ignore_search = true;
 
   // Ignore the method since Cache Storage assumes the request being matched
   // against is a GET.
-  query_params->ignore_method = true;
+  query_options->ignore_method = true;
 
   handle_.value()->GetAllMatchedEntries(
-      std::move(request), std::move(query_params),
+      std::move(request), std::move(query_options),
       base::BindOnce(&MatchRequestsTask::DidGetAllMatchedEntries,
                      weak_factory_.GetWeakPtr()));
 }
@@ -124,15 +126,15 @@ bool MatchRequestsTask::ShouldMatchRequest(
     return true;
 
   // Ignore the request if the methods don't match.
-  if ((!match_params_->cache_query_params() ||
-       !match_params_->cache_query_params()->ignore_method) &&
+  if ((!match_params_->cache_query_options() ||
+       !match_params_->cache_query_options()->ignore_method) &&
       request->method != match_params_->request_to_match()->method) {
     return false;
   }
 
   // Ignore the request if the queries don't match.
-  if ((!match_params_->cache_query_params() ||
-       !match_params_->cache_query_params()->ignore_search) &&
+  if ((!match_params_->cache_query_options() ||
+       !match_params_->cache_query_options()->ignore_search) &&
       request->url.query() != match_params_->request_to_match()->url.query()) {
     return false;
   }

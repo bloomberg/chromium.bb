@@ -432,7 +432,7 @@ class CacheStorageMigrationTask : public InitializationSubTask {
     DCHECK(handle.value());
     // Get all entries in the cache.
     handle.value()->GetAllMatchedEntries(
-        /* request= */ nullptr, /* query_params= */ nullptr,
+        /* request= */ nullptr, /* query_options= */ nullptr,
         base::BindOnce(&CacheStorageMigrationTask::DidGetAllMatchedEntries,
                        weak_factory_.GetWeakPtr(), handle.Clone()));
   }

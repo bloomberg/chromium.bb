@@ -254,7 +254,8 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
           request->redirect_mode, request->integrity, request->priority,
           request->fetch_window_id, request->keepalive, request->is_reload,
           request->is_history_navigation);
-      cache_ptr_->Match(std::move(request), mojom::blink::QueryParams::New(),
+      cache_ptr_->Match(std::move(request),
+                        mojom::blink::CacheQueryOptions::New(),
                         WTF::Bind(
                             [](scoped_refptr<ResponsesAccumulator> accumulator,
                                mojom::blink::FetchAPIRequestPtr request,
@@ -372,7 +373,7 @@ class GetCacheKeysForRequestData {
 
   void Dispatch(std::unique_ptr<GetCacheKeysForRequestData> self) {
     cache_ptr_->Keys(
-        nullptr /* request */, mojom::blink::QueryParams::New(),
+        nullptr /* request */, mojom::blink::CacheQueryOptions::New(),
         WTF::Bind(
             [](DataRequestParams params,
                std::unique_ptr<GetCacheKeysForRequestData> self,
@@ -660,12 +661,12 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   request->url = KURL(request_url);
   request->method = String("GET");
 
-  auto multi_query_params = mojom::blink::MultiQueryParams::New();
-  multi_query_params->query_params = mojom::blink::QueryParams::New();
-  multi_query_params->cache_name = cache_name;
+  auto multi_query_options = mojom::blink::MultiCacheQueryOptions::New();
+  multi_query_options->query_options = mojom::blink::CacheQueryOptions::New();
+  multi_query_options->cache_name = cache_name;
 
   cache_storage->Match(
-      std::move(request), std::move(multi_query_params),
+      std::move(request), std::move(multi_query_options),
       WTF::Bind(
           [](std::unique_ptr<RequestCachedResponseCallback> callback,
              mojom::blink::MatchResultPtr result) {

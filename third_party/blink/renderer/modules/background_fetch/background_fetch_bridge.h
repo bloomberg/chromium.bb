@@ -63,14 +63,14 @@ class BackgroundFetchBridge final
   // Matches completed requests for the fetch associated with the |developer_id|
   // and |unique_id| and returns the {request, response} pairs based on the rest
   // of the arguments. If |filter_by_request| is true, only response(s) for
-  // |request_to_match| are returned. |cache_query_params|s are options for the
+  // |request_to_match| are returned. |cache_query_options|s are options for the
   // query to the cache storage. |match_all|, when true, returns all responses
   // from the result set, and when false, returns only the first one.
   void MatchRequests(
       const String& developer_id,
       const String& unique_id,
       mojom::blink::FetchAPIRequestPtr request_to_match,
-      mojom::blink::QueryParamsPtr cache_query_params,
+      mojom::blink::CacheQueryOptionsPtr cache_query_options,
       bool match_all,
       mojom::blink::BackgroundFetchService::MatchRequestsCallback callback);
 

@@ -662,16 +662,6 @@ ScriptPromise Cache::keys(ScriptState* script_state,
   return KeysImpl(script_state, new_request, options);
 }
 
-// static
-mojom::blink::QueryParamsPtr Cache::ToQueryParams(
-    const CacheQueryOptions* options) {
-  mojom::blink::QueryParamsPtr query_params = mojom::blink::QueryParams::New();
-  query_params->ignore_search = options->ignoreSearch();
-  query_params->ignore_method = options->ignoreMethod();
-  query_params->ignore_vary = options->ignoreVary();
-  return query_params;
-}
-
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
              CacheStorage* cache_storage,
              mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
@@ -700,7 +690,8 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
   // alive during the operation.  Otherwise GC might prevent the callback
   // from ever being executed.
   cache_ptr_->Match(
-      request->CreateFetchAPIRequest(), ToQueryParams(options),
+      request->CreateFetchAPIRequest(),
+      mojom::blink::CacheQueryOptions::From(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
              const CacheQueryOptions* options, Cache* _,
@@ -762,7 +753,8 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
   // alive during the operation.  Otherwise GC might prevent the callback
   // from ever being executed.
   cache_ptr_->MatchAll(
-      std::move(fetch_api_request), ToQueryParams(options),
+      std::move(fetch_api_request),
+      mojom::blink::CacheQueryOptions::From(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
              const CacheQueryOptions* options, Cache* _,
@@ -853,7 +845,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
   auto& operation = batch_operations.back();
   operation->operation_type = mojom::blink::OperationType::kDelete;
   operation->request = request->CreateFetchAPIRequest();
-  operation->match_params = ToQueryParams(options);
+  operation->match_options = mojom::blink::CacheQueryOptions::From(options);
 
   // Make sure to bind the Cache object to keep the mojo interface pointer
   // alive during the operation.  Otherwise GC might prevent the callback
@@ -1024,7 +1016,8 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
   // alive during the operation.  Otherwise GC might prevent the callback
   // from ever being executed.
   cache_ptr_->Keys(
-      std::move(fetch_api_request), ToQueryParams(options),
+      std::move(fetch_api_request),
+      mojom::blink::CacheQueryOptions::From(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
              const CacheQueryOptions* options, Cache* _,

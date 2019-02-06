@@ -113,11 +113,12 @@ class BackgroundFetchRegistration final
  private:
   void DidAbort(ScriptPromiseResolver* resolver,
                 mojom::blink::BackgroundFetchError error);
-  ScriptPromise MatchImpl(ScriptState* script_state,
-                          base::Optional<RequestOrUSVString> request,
-                          mojom::blink::QueryParamsPtr cache_query_params,
-                          ExceptionState& exception_state,
-                          bool match_all);
+  ScriptPromise MatchImpl(
+      ScriptState* script_state,
+      base::Optional<RequestOrUSVString> request,
+      mojom::blink::CacheQueryOptionsPtr cache_query_options,
+      ExceptionState& exception_state,
+      bool match_all);
   void DidGetMatchingRequests(
       ScriptPromiseResolver* resolver,
       bool return_all,
