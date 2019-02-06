@@ -12,6 +12,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
@@ -67,7 +68,9 @@ MixedRealityDevice::MixedRealityDevice()
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
 
-MixedRealityDevice::~MixedRealityDevice() {}
+MixedRealityDevice::~MixedRealityDevice() {
+  Shutdown();
+}
 
 mojom::IsolatedXRGamepadProviderFactoryPtr
 MixedRealityDevice::BindGamepadFactory() {
@@ -85,24 +88,138 @@ mojom::XRCompositorHostPtr MixedRealityDevice::BindCompositorHost() {
 void MixedRealityDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
-  // We don't yet support any sessions.
-  std::move(callback).Run(nullptr, nullptr);
+  if (!options->immersive) {
+    ReturnNonImmersiveSession(std::move(callback));
+    return;
+  }
+
+  if (!render_loop_)
+    CreateRenderLoop();
+
+  if (!render_loop_->IsRunning()) {
+    render_loop_->Start();
+
+    // IsRunning() should be true here unless the thread failed to start (likely
+    // memory exhaustion). If the thread fails to start, then we fail to create
+    // a session.
+    if (!render_loop_->IsRunning()) {
+      std::move(callback).Run(nullptr, nullptr);
+      return;
+    }
+
+    if (provider_request_) {
+      render_loop_->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
+                                    base::Unretained(render_loop_.get()),
+                                    std::move(provider_request_)));
+    }
+
+    if (overlay_request_) {
+      render_loop_->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,
+                                    base::Unretained(render_loop_.get()),
+                                    std::move(overlay_request_)));
+    }
+  }
+
+  auto my_callback =
+      base::BindOnce(&MixedRealityDevice::OnRequestSessionResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  auto on_presentation_ended = base::BindOnce(
+      &MixedRealityDevice::OnPresentationEnded, weak_ptr_factory_.GetWeakPtr());
+
+  render_loop_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
+                                base::Unretained(render_loop_.get()),
+                                std::move(on_presentation_ended),
+                                std::move(options), std::move(my_callback)));
+}
+
+void MixedRealityDevice::Shutdown() {
+  // Wait for the render loop to stop before completing destruction.
+  if (render_loop_ && render_loop_->IsRunning())
+    render_loop_->Stop();
+}
+
+void MixedRealityDevice::CreateRenderLoop() {
+  render_loop_ = std::make_unique<MixedRealityRenderLoop>();
+}
+
+void MixedRealityDevice::OnPresentationEnded() {}
+
+void MixedRealityDevice::OnRequestSessionResult(
+    mojom::XRRuntime::RequestSessionCallback callback,
+    bool result,
+    mojom::XRSessionPtr session) {
+  if (!result) {
+    OnPresentationEnded();
+    std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
+  OnStartPresenting();
+
+  mojom::XRSessionControllerPtr session_controller;
+  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+
+  // Use of Unretained is safe because the callback will only occur if the
+  // binding is not destroyed.
+  exclusive_controller_binding_.set_connection_error_handler(base::BindOnce(
+      &MixedRealityDevice::OnPresentingControllerMojoConnectionError,
+      base::Unretained(this)));
+
+  session->display_info = display_info_.Clone();
+
+  std::move(callback).Run(std::move(session), std::move(session_controller));
 }
 
 void MixedRealityDevice::GetIsolatedXRGamepadProvider(
     mojom::IsolatedXRGamepadProviderRequest provider_request) {
-  // Not implemented yet.
+  if (!render_loop_)
+    CreateRenderLoop();
+  if (render_loop_->IsRunning()) {
+    render_loop_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
+                                  base::Unretained(render_loop_.get()),
+                                  std::move(provider_request)));
+  } else {
+    provider_request_ = std::move(provider_request);
+  }
 }
 
 void MixedRealityDevice::CreateImmersiveOverlay(
     mojom::ImmersiveOverlayRequest overlay_request) {
-  // Not implemented yet.
+  if (!render_loop_)
+    CreateRenderLoop();
+  if (render_loop_->IsRunning()) {
+    render_loop_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,
+                                  base::Unretained(render_loop_.get()),
+                                  std::move(overlay_request)));
+  } else {
+    overlay_request_ = std::move(overlay_request);
+  }
 }
 
 // XRSessionController
 void MixedRealityDevice::SetFrameDataRestricted(bool restricted) {
   // Presentation sessions can not currently be restricted.
   DCHECK(false);
+}
+
+void MixedRealityDevice::OnPresentingControllerMojoConnectionError() {
+  if (!render_loop_)
+    CreateRenderLoop();
+  render_loop_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
+                                base::Unretained(render_loop_.get())));
+  // Don't stop the render loop here. We need to keep the gamepad provider alive
+  // so that we don't lose a pending mojo gamepad_callback_.
+  // TODO(https://crbug.com/875187): Alternatively, we could recreate the
+  // provider on the next session, or look into why the callback gets lost.
+  OnExitPresent();
+  exclusive_controller_binding_.Close();
 }
 
 }  // namespace device

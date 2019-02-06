@@ -46,6 +46,16 @@ class DEVICE_VR_EXPORT MixedRealityDevice
   void CreateImmersiveOverlay(
       mojom::ImmersiveOverlayRequest overlay_request) override;
 
+  void CreateRenderLoop();
+  void Shutdown();
+  void OnPresentingControllerMojoConnectionError();
+  void OnPresentationEnded();
+  void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
+                              bool result,
+                              mojom::XRSessionPtr session);
+
+  std::unique_ptr<XRCompositorCommon> render_loop_;
+
   mojo::Binding<mojom::IsolatedXRGamepadProviderFactory>
       gamepad_provider_factory_binding_;
   mojom::IsolatedXRGamepadProviderRequest provider_request_;
