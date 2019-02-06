@@ -121,6 +121,8 @@ def _GetMaxOutlinedIndex(sym_dict):
     m = _OUTLINED_FUNCTION_RE.match(sym)
     if m:
       seen.add(int(m.group('index')))
+  if not seen:
+    return None
   max_index = max(seen)
   # Assert that the number of outlined functions is reasonable compared to the
   # indices we've seen. At the time of writing, outlined functions are indexed
