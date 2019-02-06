@@ -36,9 +36,6 @@ namespace fuchsia {
 // object.
 class BASE_EXPORT ServiceDirectory {
  public:
-  // Callback called to connect incoming requests.
-  using ConnectServiceCallback = RepeatingCallback<void(zx::channel channel)>;
-
   // Responds to service requests over the supplied |request| channel.
   explicit ServiceDirectory(
       fidl::InterfaceRequest<::fuchsia::io::Directory> request);
@@ -53,13 +50,16 @@ class BASE_EXPORT ServiceDirectory {
   static ServiceDirectory* GetDefault();
 
   template <typename Interface>
-  void AddService(
-      RepeatingCallback<fidl::InterfaceRequest<Interface>> connect_callback) {
-    AddService(Interface::Name_,
-               BindRepeating([connect_callback](zx::channel request) {
-                 connect_callback.Run(
-                     fidl::InterfaceRequest<Interface>(std::move(request)));
-               }));
+  void AddService(RepeatingCallback<void(fidl::InterfaceRequest<Interface>)>
+                      connect_callback) {
+    AddServiceUnsafe(
+        Interface::Name_,
+        BindRepeating(
+            [](decltype(connect_callback) callback, zx::channel request) {
+              callback.Run(
+                  fidl::InterfaceRequest<Interface>(std::move(request)));
+            },
+            connect_callback));
   }
   void RemoveService(StringPiece name);
   void RemoveAllServices();
@@ -68,10 +68,11 @@ class BASE_EXPORT ServiceDirectory {
   // This is used only when proxying requests for interfaces not known at
   // compile-time. Use the type-safe APIs above whenever possible.
   void AddServiceUnsafe(StringPiece name,
-                        ConnectServiceCallback connect_callback);
+                        RepeatingCallback<void(zx::channel)> connect_callback);
 
   // TODO(https://crbug.com/920920): Clean up callers and remove this synonym.
-  void AddService(StringPiece name, ConnectServiceCallback connect_callback) {
+  void AddService(StringPiece name,
+                  RepeatingCallback<void(zx::channel)> connect_callback) {
     AddServiceUnsafe(name, std::move(connect_callback));
   }
 
@@ -84,7 +85,7 @@ class BASE_EXPORT ServiceDirectory {
   THREAD_CHECKER(thread_checker_);
 
   svc_dir_t* svc_dir_ = nullptr;
-  flat_map<std::string, ConnectServiceCallback> services_;
+  flat_map<std::string, RepeatingCallback<void(zx::channel)>> services_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDirectory);
 };

@@ -47,7 +47,7 @@ ServiceDirectory* ServiceDirectory::GetDefault() {
 
 void ServiceDirectory::AddServiceUnsafe(
     StringPiece name,
-    ConnectServiceCallback connect_callback) {
+    RepeatingCallback<void(zx::channel)> connect_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(services_.find(name) == services_.end());
 
