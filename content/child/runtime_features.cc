@@ -63,6 +63,7 @@ void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(true);
   WebRuntimeFeatures::EnableRemotePlaybackBackend(true);
   WebRuntimeFeatures::EnablePictureInPictureAPI(false);
+  WebRuntimeFeatures::EnableSerial(false);
 #else  // defined(OS_ANDROID)
   WebRuntimeFeatures::EnableNavigatorContentUtils(true);
   // Tracking bug for the implementation: https://crbug.com/728609
