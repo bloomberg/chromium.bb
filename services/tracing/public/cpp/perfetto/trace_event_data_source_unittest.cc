@@ -224,9 +224,8 @@ class TraceEventDataSourceTest : public testing::Test {
     producer_client_ = std::make_unique<MockProducerClient>(
         scoped_task_environment_.GetMainThreadTaskRunner());
 
-    auto data_source_config = mojom::DataSourceConfig::New();
-    TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
-                                                      *data_source_config);
+    TraceEventDataSource::GetInstance()->StartTracing(
+        producer_client(), perfetto::DataSourceConfig());
   }
 
   MockProducerClient* producer_client() { return producer_client_.get(); }
@@ -295,8 +294,8 @@ TEST_F(TraceEventDataSourceTest, MetadataSourceBasicTypes) {
 
   CreateTraceEventDataSource();
 
-  auto data_source_config = mojom::DataSourceConfig::New();
-  metadata_source->StartTracing(producer_client(), *data_source_config);
+  metadata_source->StartTracing(producer_client(),
+                                perfetto::DataSourceConfig());
 
   base::RunLoop wait_for_stop;
   metadata_source->StopTracing(wait_for_stop.QuitClosure());

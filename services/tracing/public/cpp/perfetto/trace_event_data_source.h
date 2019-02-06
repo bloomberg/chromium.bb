@@ -39,8 +39,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
 
   // ProducerClient::DataSourceBase implementation, called by
   // ProducerClent.
-  void StartTracing(ProducerClient* producer_client,
-                    const mojom::DataSourceConfig& data_source_config) override;
+  void StartTracing(
+      ProducerClient* producer_client,
+      const perfetto::DataSourceConfig& data_source_config) override;
   void StopTracing(base::OnceClosure stop_complete_callback) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
 
@@ -78,8 +79,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // which will clear the stored pointer to it, before it
   // gets destroyed. ProducerClient::CreateTraceWriter can be
   // called by the TraceEventDataSource on any thread.
-  void StartTracing(ProducerClient* producer_client,
-                    const mojom::DataSourceConfig& data_source_config) override;
+  void StartTracing(
+      ProducerClient* producer_client,
+      const perfetto::DataSourceConfig& data_source_config) override;
 
   // Called from the ProducerClient.
   void StopTracing(base::OnceClosure stop_complete_callback) override;

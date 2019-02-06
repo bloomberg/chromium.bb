@@ -102,7 +102,7 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
   // Called from the tracing::ProducerClient on its sequence.
   void StartTracing(
       tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) override {
+      const perfetto::DataSourceConfig& data_source_config) override {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CrOSDataSource::StartTracingOnUI,
@@ -131,17 +131,16 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
     DETACH_FROM_SEQUENCE(ui_sequence_checker_);
   }
 
-  void StartTracingOnUI(
-      tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) {
+  void StartTracingOnUI(tracing::ProducerClient* producer_client,
+                        const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
     DCHECK(!producer_client_);
     DCHECK(!session_);
     producer_client_ = producer_client;
-    target_buffer_ = data_source_config.target_buffer;
+    target_buffer_ = data_source_config.target_buffer();
     session_ = std::make_unique<CrOSSystemTracingSession>();
     session_->StartTracing(
-        data_source_config.trace_config,
+        data_source_config.chrome_config().trace_config(),
         base::BindOnce(&CrOSDataSource::SystemTracerStartedOnUI,
                        base::Unretained(this)));
   }

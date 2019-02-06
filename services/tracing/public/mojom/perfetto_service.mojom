@@ -63,10 +63,22 @@ struct CommitDataRequest {
   uint64 flush_request_id;
 };
 
+// Passed as part of DataSourceConfig
+struct ChromeConfig {
+  // TODO(crbug/928687): Once we've completed removing the old IPC layer we
+  // should convert this into a struct that represents a
+  // base::trace_event::TraceConfig object rather then the json encoded string
+  // used currently.
+  string trace_config;
+};
+
 struct DataSourceConfig {
   string name;
-  string trace_config;
   uint32 target_buffer;
+  uint32 trace_duration_ms;
+  uint64 tracing_session_id;
+  ChromeConfig chrome_config;
+  string legacy_config;
 };
 
 struct DataSourceRegistration {

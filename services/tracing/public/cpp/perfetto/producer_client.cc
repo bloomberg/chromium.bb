@@ -45,7 +45,7 @@ ProducerClient::DataSourceBase::~DataSourceBase() = default;
 void ProducerClient::DataSourceBase::StartTracingWithID(
     uint64_t data_source_id,
     ProducerClient* producer_client,
-    const mojom::DataSourceConfig& data_source_config) {
+    const perfetto::DataSourceConfig& data_source_config) {
   data_source_id_ = data_source_id;
   StartTracing(producer_client, data_source_config);
 }
@@ -180,14 +180,13 @@ void ProducerClient::OnTracingStart(
 
 void ProducerClient::StartDataSource(
     uint64_t id,
-    mojom::DataSourceConfigPtr data_source_config) {
+    const perfetto::DataSourceConfig& data_source_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data_source_config);
 
   // TODO(oysteine): Support concurrent tracing sessions.
   for (auto* data_source : data_sources_) {
-    if (data_source->name() == data_source_config->name) {
-      data_source->StartTracingWithID(id, this, *data_source_config);
+    if (data_source->name() == data_source_config.name()) {
+      data_source->StartTracingWithID(id, this, data_source_config);
       return;
     }
   }

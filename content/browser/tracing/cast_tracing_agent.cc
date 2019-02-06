@@ -165,14 +165,14 @@ class CastDataSource : public tracing::ProducerClient::DataSourceBase {
   // Called from the tracing::ProducerClient on its sequence.
   void StartTracing(
       tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) override {
+      const perfetto::DataSourceConfig& data_source_config) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
     DCHECK(!producer_client_);
     DCHECK(!session_);
     producer_client_ = producer_client;
-    target_buffer_ = data_source_config.target_buffer;
+    target_buffer_ = data_source_config.target_buffer();
     session_ = std::make_unique<CastSystemTracingSession>(worker_task_runner_);
-    session_->StartTracing(data_source_config.trace_config,
+    session_->StartTracing(data_source_config.chrome_config().trace_config(),
                            base::BindOnce(&CastDataSource::SystemTracerStarted,
                                           base::Unretained(this)));
   }

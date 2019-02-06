@@ -88,7 +88,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
       // We're currently tracing, so start the new bridge, too.
       // |this| never gets destructed, so it's OK to bind an unretained pointer.
       bridge->StartTracing(
-          data_source_config_.trace_config,
+          data_source_config_.chrome_config().trace_config(),
           base::BindOnce(&ArcTracingDataSource::OnTracingStartedOnUI,
                          base::Unretained(this)));
     }
@@ -120,7 +120,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
   // tracing::ProducerClient::DataSourceBase.
   void StartTracing(
       tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) override {
+      const perfetto::DataSourceConfig& data_source_config) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
     // |producer_client| is a singleton that is never destroyed.
     base::PostTaskWithTraits(
@@ -145,9 +145,8 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
   }
 
   // Starts all registered bridges.
-  void StartTracingOnUI(
-      tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) {
+  void StartTracingOnUI(tracing::ProducerClient* producer_client,
+                        const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     DCHECK(!producer_client_);
@@ -157,7 +156,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     for (ArcTracingBridge* bridge : bridges_) {
       // |this| never gets destructed, so it's OK to bind an unretained pointer.
       bridge->StartTracing(
-          data_source_config_.trace_config,
+          data_source_config_.chrome_config().trace_config(),
           base::BindOnce(&ArcTracingDataSource::OnTracingStartedOnUI,
                          base::Unretained(this)));
     }
@@ -223,7 +222,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     if (!data.empty()) {
       std::unique_ptr<perfetto::TraceWriter> trace_writer =
           producer_client_->CreateTraceWriter(
-              data_source_config_.target_buffer);
+              data_source_config_.target_buffer());
       DCHECK(trace_writer);
       perfetto::TraceWriter::TracePacketHandle trace_packet_handle =
           trace_writer->NewTracePacket();
@@ -267,7 +266,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
   // Called when all bridges have completed stopping, notifying ProducerClient.
   base::OnceClosure stop_complete_callback_;
   tracing::ProducerClient* producer_client_ = nullptr;
-  tracing::mojom::DataSourceConfig data_source_config_;
+  perfetto::DataSourceConfig data_source_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingDataSource);
 };
