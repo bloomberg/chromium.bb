@@ -122,16 +122,6 @@ bool LinkHighlights::NeedsHighlightEffectInternal(
   return false;
 }
 
-CompositorElementId LinkHighlights::element_id(const LayoutObject& object) {
-  for (auto& highlight : link_highlights_) {
-    if (auto* node = highlight->GetNode()) {
-      if (node->GetLayoutObject() == &object)
-        return highlight->element_id();
-    }
-  }
-  return CompositorElementId();
-}
-
 void LinkHighlights::Paint(GraphicsContext& context) const {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   for (const auto& highlight : link_highlights_)

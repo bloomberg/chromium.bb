@@ -87,6 +87,16 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
   compositor_animation_->SetAnimationDelegate(this);
   compositor_animation_->AttachElement(element_id());
   geometry_needs_update_ = true;
+
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &TransformPaintPropertyNode::Root();
+  state.compositor_element_id = element_id();
+  state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
+  effect_ = EffectPaintPropertyNode::Create(EffectPaintPropertyNode::Root(),
+                                            std::move(state));
+#if DCHECK_IS_ON()
+  effect_->SetDebugName("LinkHighlightEffect");
+#endif
 }
 
 LinkHighlightImpl::~LinkHighlightImpl() {
@@ -428,16 +438,8 @@ CompositorElementId LinkHighlightImpl::element_id() const {
   return CompositorElementIdFromUniqueObjectId(unique_id_);
 }
 
-const EffectPaintPropertyNode* LinkHighlightImpl::effect() const {
-  if (!node_)
-    return nullptr;
-
-  if (auto* layout_object = node_->GetLayoutObject()) {
-    if (auto* properties = layout_object->FirstFragment().PaintProperties())
-      return properties->LinkHighlightEffect();
-  }
-
-  return nullptr;
+const EffectPaintPropertyNode& LinkHighlightImpl::Effect() const {
+  return *effect_;
 }
 
 void LinkHighlightImpl::Paint(GraphicsContext& context) {
@@ -501,10 +503,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
         gfx::Vector2dF(bounding_rect.X(), bounding_rect.Y()));
 
     auto property_tree_state = fragment->LocalBorderBoxProperties();
-    DCHECK(fragment->PaintProperties());
-    DCHECK(fragment->PaintProperties()->LinkHighlightEffect());
-    property_tree_state.SetEffect(
-        *fragment->PaintProperties()->LinkHighlightEffect());
+    property_tree_state.SetEffect(Effect());
     RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight, layer,
                        property_tree_state);
   }

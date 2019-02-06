@@ -177,7 +177,6 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateTransformForNonRootSVG();
   ALWAYS_INLINE bool EffectCanUseCurrentClipAsOutputClip() const;
   ALWAYS_INLINE void UpdateEffect();
-  ALWAYS_INLINE void UpdateLinkHighlightEffect();
   ALWAYS_INLINE void UpdateFilter();
   ALWAYS_INLINE void UpdateFragmentClip();
   ALWAYS_INLINE void UpdateCssClip();
@@ -1016,48 +1015,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
   auto* page = object.GetFrame()->GetPage();
   return page->GetLinkHighlights().NeedsHighlightEffect(object);
-}
-
-void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
-  if (!NeedsPaintPropertyUpdate())
-    return;
-
-  DCHECK(properties_);
-
-  if (!NeedsLinkHighlightEffect(object_)) {
-    // Unlike other property nodes, link highlight effect nodes are guaranteed
-    // to be leaf nodes and do not require subtree invalidation, so we do not
-    // call |OnClear| here.
-    properties_->ClearLinkHighlightEffect();
-    return;
-  }
-
-  if (&fragment_data_ != &object_.FirstFragment()) {
-    // All fragments share the same LinkHighlightEffect node.
-    DCHECK(object_.FirstFragment().PaintProperties());
-    // TODO(crbug.com/923729): Temporary CHECK to debug the referenced bug. This
-    // should become a DCHECK once the bug is resolved.
-    CHECK(object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
-    properties_->SetLinkHighlightEffect(
-        object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
-    return;
-  }
-
-  // While the link highlight uses the current transform space for
-  // positioning, it's parent effect is the root so that it is not affected
-  // by enclosing filters.
-  const auto& parent = EffectPaintPropertyNode::Root();
-  EffectPaintPropertyNode::State link_highlight_state;
-  link_highlight_state.local_transform_space = context_.current.transform;
-  link_highlight_state.compositor_element_id =
-      object_.GetFrame()->GetPage()->GetLinkHighlights().element_id(object_);
-  link_highlight_state.direct_compositing_reasons =
-      CompositingReason::kActiveOpacityAnimation;
-  // Unlike other property nodes, link highlight effect nodes are guaranteed
-  // to be leaf nodes and do not require subtree invalidation, so we do not
-  // call |OnUpdate| here.
-  properties_->UpdateLinkHighlightEffect(parent,
-                                         std::move(link_highlight_state));
 }
 
 static bool NeedsFilter(const LayoutObject& object) {
@@ -2315,7 +2272,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     UpdateTransform();
     UpdateClipPathClip(false);
     UpdateEffect();
-    UpdateLinkHighlightEffect();
     UpdateClipPathClip(true);  // Special pass for SPv1 composited clip-path.
     UpdateCssClip();
     UpdateFilter();

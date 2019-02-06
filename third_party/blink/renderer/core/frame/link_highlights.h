@@ -60,8 +60,6 @@ class CORE_EXPORT LinkHighlights final
     return NeedsHighlightEffectInternal(object);
   }
 
-  CompositorElementId element_id(const LayoutObject& object);
-
   // For CompositeAfterPaint.
   void Paint(GraphicsContext&) const;
 

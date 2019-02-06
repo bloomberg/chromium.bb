@@ -89,7 +89,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
   CompositorElementId element_id() const;
 
-  const EffectPaintPropertyNode* effect() const override;
+  const EffectPaintPropertyNode& Effect() const override;
 
   void Paint(GraphicsContext&);
 
@@ -141,6 +141,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   GraphicsLayer* current_graphics_layer_;
   bool is_scrolling_graphics_layer_;
   std::unique_ptr<CompositorAnimation> compositor_animation_;
+  scoped_refptr<EffectPaintPropertyNode> effect_;
 
   bool geometry_needs_update_;
   bool is_animating_;

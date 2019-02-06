@@ -2512,10 +2512,8 @@ static void CollectLinkHighlightLayersForLayerListRecursively(
     return;
 
   for (auto* highlight : layer->GetLinkHighlights()) {
-    DCHECK(highlight->effect())
-        << "Highlight effect node should have been created in PrePaint.";
     auto property_tree_state = layer->GetPropertyTreeState();
-    property_tree_state.SetEffect(*highlight->effect());
+    property_tree_state.SetEffect(highlight->Effect());
     RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight,
                        highlight->Layer(), property_tree_state);
   }
