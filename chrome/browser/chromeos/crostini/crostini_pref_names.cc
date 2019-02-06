@@ -57,11 +57,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   default_container.SetKey("container_name",
                            base::Value(kCrostiniDefaultContainerName));
 
-  auto default_containers_list =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  default_containers_list->GetList().push_back(std::move(default_container));
+  base::Value::ListStorage default_containers_list;
+  default_containers_list.push_back(std::move(default_container));
   registry->RegisterListPref(kCrostiniContainers,
-                             std::move(default_containers_list));
+                             base::Value(std::move(default_containers_list)));
 
   registry->RegisterBooleanPref(crostini::prefs::kReportCrostiniUsageEnabled,
                                 false);
