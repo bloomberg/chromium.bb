@@ -55,15 +55,15 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorNoAvailableTransportsErrorModel>(
               dialog_model));
       break;
-    case Step::kPostMortemTimedOut:
+    case Step::kTimedOut:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorTimeoutErrorModel>(dialog_model));
       break;
-    case Step::kPostMortemKeyNotRegistered:
+    case Step::kKeyNotRegistered:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorNotRegisteredErrorModel>(dialog_model));
       break;
-    case Step::kPostMortemKeyAlreadyRegistered:
+    case Step::kKeyAlreadyRegistered:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorAlreadyRegisteredErrorModel>(
               dialog_model));

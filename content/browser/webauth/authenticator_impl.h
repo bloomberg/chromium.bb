@@ -149,12 +149,17 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
       base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
       base::Optional<device::FidoTransportProtocol> transport_used);
 
-  void FailWithNotAllowedErrorAndCleanup();
+  void FailWithErrorAndCleanup();
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();
   // Runs when the user cancels WebAuthN request via UI dialog.
   void Cancel();
+
+  // Decides whether or not UI is present that needs to block on user
+  // acknowledgement before returning the error, and handles the error
+  // appropriately.
+  void HandleBlockingError(blink::mojom::AuthenticatorStatus status);
 
   void InvokeCallbackAndCleanup(
       MakeCredentialCallback callback,
@@ -191,6 +196,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;
+  blink::mojom::AuthenticatorStatus error_awaiting_user_acknowledgement_ =
+      blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::Binding<blink::mojom::Authenticator> binding_;

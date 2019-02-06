@@ -16,8 +16,10 @@ AuthenticatorRequestClientDelegate::AuthenticatorRequestClientDelegate() =
 AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
-void AuthenticatorRequestClientDelegate::DidFailWithInterestingReason(
-    InterestingFailureReason reason) {}
+bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
+    InterestingFailureReason reason) {
+  return false;
+}
 
 void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
@@ -49,6 +51,12 @@ AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {
 
 void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
     device::FidoTransportProtocol transport) {}
+
+void AuthenticatorRequestClientDelegate::DisableUI() {}
+
+bool AuthenticatorRequestClientDelegate::IsWebAuthnUIEnabled() {
+  return false;
+}
 
 void AuthenticatorRequestClientDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {}
