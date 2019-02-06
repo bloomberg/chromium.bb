@@ -36,20 +36,22 @@ source_set("cast_runner_core") {
     "cast/cast_component.h",
     "cast/cast_runner.cc",
     "cast/cast_runner.h",
+    "cast/named_message_port_connector.cc",
+    "cast/named_message_port_connector.h",
   ]
   data = [
     "cast/cast_channel_bindings.js",
+    "cast/named_message_port_connector.js",
   ]
   deps = [
     "//base",
     "//fuchsia:mem_buffer_common",
-    "//fuchsia:named_message_port_connector",
-    "//fuchsia:web_fidl",
     "//url",
   ]
   public_deps = [
     ":common",
     "//fuchsia:cast_fidl",
+    "//fuchsia:web_fidl",
   ]
   configs += [ "//fuchsia:webrunner_implementation" ]
   visibility = [ ":*" ]
@@ -125,6 +127,7 @@ test("cast_runner_integration_tests") {
 test("cast_runner_browsertests") {
   sources = [
     "cast/cast_channel_bindings_browsertest.cc",
+    "cast/named_message_port_connector_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [
@@ -136,7 +139,6 @@ test("cast_runner_browsertests") {
     "//content/public/browser",
     "//fuchsia:browsertest_common",
     "//fuchsia:mem_buffer_common",
-    "//fuchsia:named_message_port_connector",
     "//fuchsia:test_support",
     "//testing/gmock",
     "//testing/gtest",

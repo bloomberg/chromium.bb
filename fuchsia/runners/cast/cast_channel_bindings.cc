@@ -16,7 +16,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/common/mem_buffer_util.h"
-#include "fuchsia/common/named_message_port_connector.h"
+#include "fuchsia/runners/cast/named_message_port_connector.h"
 
 // Unique identifier of the Cast Channel message port, used by the JavaScript
 // API to connect to the port.
@@ -24,7 +24,7 @@ const char kMessagePortName[] = "cast.__platform__.channel";
 
 CastChannelBindings::CastChannelBindings(
     chromium::web::Frame* frame,
-    webrunner::NamedMessagePortConnector* connector,
+    NamedMessagePortConnector* connector,
     chromium::cast::CastChannelPtr channel_consumer,
     base::OnceClosure on_error_closure)
     : frame_(frame),

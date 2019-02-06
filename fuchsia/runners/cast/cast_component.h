@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "base/fuchsia/service_directory.h"
-#include "fuchsia/common/named_message_port_connector.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
+#include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/common/web_component.h"
 
 class CastRunner;
@@ -38,7 +38,7 @@ class CastComponent : public WebComponent,
       OnNavigationStateChangedCallback callback) override;
 
   bool constructor_active_ = false;
-  webrunner::NamedMessagePortConnector connector_;
+  NamedMessagePortConnector connector_;
   std::unique_ptr<CastChannelBindings> cast_channel_;
 
   fidl::Binding<chromium::web::NavigationEventObserver>

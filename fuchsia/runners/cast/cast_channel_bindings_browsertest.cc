@@ -13,7 +13,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/common/mem_buffer_util.h"
-#include "fuchsia/common/named_message_port_connector.h"
 #include "fuchsia/common/test/test_common.h"
 #include "fuchsia/common/test/webrunner_browser_test.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
@@ -47,7 +46,7 @@ class CastChannelBindingsTest : public webrunner::WebRunnerBrowserTest,
     webrunner::WebRunnerBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
     frame_ = WebRunnerBrowserTest::CreateFrame(this);
-    connector_ = std::make_unique<webrunner::NamedMessagePortConnector>();
+    connector_ = std::make_unique<NamedMessagePortConnector>();
   }
 
   void OnNavigationStateChanged(
@@ -111,7 +110,7 @@ class CastChannelBindingsTest : public webrunner::WebRunnerBrowserTest,
 
   std::unique_ptr<base::RunLoop> navigate_run_loop_;
   chromium::web::FramePtr frame_;
-  std::unique_ptr<webrunner::NamedMessagePortConnector> connector_;
+  std::unique_ptr<NamedMessagePortConnector> connector_;
   fidl::Binding<chromium::cast::CastChannel> receiver_binding_;
 
   // The connected Cast Channel.

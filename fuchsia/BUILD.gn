@@ -15,23 +15,6 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
-source_set("named_message_port_connector") {
-  sources = [
-    "common/named_message_port_connector.cc",
-    "common/named_message_port_connector.h",
-  ]
-  data = [
-    "common/named_message_port_connector.js",
-  ]
-  deps = [
-    ":mem_buffer_common",
-    ":web_fidl",
-    "//base",
-    "//third_party/fuchsia-sdk/sdk:mem",
-  ]
-  configs += [ ":webrunner_implementation" ]
-}
-
 source_set("mem_buffer_common") {
   sources = [
     "common/fuchsia_export.h",
@@ -238,20 +221,14 @@ test("webrunner_browsertests") {
   sources = [
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
-    "common/named_message_port_connector_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [
     "browser/test/data",
-    "common/test/data",
-  ]
-  data_deps = [
-    ":named_message_port_connector",
   ]
   deps = [
     ":browsertest_common",
     ":mem_buffer_common",
-    ":named_message_port_connector",
     ":service_lib",
     ":test_support",
     ":test_support",
