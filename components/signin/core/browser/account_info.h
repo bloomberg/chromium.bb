@@ -32,6 +32,8 @@ struct CoreAccountInfo {
   std::string account_id;
   std::string gaia;
   std::string email;
+
+  bool is_under_advanced_protection = false;
 };
 
 // Stores all the information known about an account. Part of the information
@@ -53,7 +55,6 @@ struct AccountInfo : public CoreAccountInfo {
   std::string picture_url;
   gfx::Image account_image;
   bool is_child_account = false;
-  bool is_under_advanced_protection = false;
 
   // Returns true if all fields in the account info are empty.
   bool IsEmpty() const;
