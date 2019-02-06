@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -22,7 +21,6 @@
 
 class PrefRegistrySimple;
 class PrefService;
-FORWARD_DECLARE_TEST(ChromeMetricsServiceClientTest, TestRegisterUKMProviders);
 
 namespace metrics {
 class MetricsServiceClient;
@@ -82,7 +80,7 @@ class UkmService : public UkmRecorderImpl {
 
   // Registers the specified |provider| to provide additional metrics into the
   // UKM log. Should be called during MetricsService initialization only.
-  virtual void RegisterMetricsProvider(
+  void RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider> provider);
 
   // Registers the names of all of the preferences used by UkmService in
@@ -96,8 +94,7 @@ class UkmService : public UkmRecorderImpl {
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmUtilsForTest;
-  FRIEND_TEST_ALL_PREFIXES(::ChromeMetricsServiceClientTest,
-                           TestRegisterUKMProviders);
+
   // Starts metrics client initialization.
   void StartInitTask();
 
