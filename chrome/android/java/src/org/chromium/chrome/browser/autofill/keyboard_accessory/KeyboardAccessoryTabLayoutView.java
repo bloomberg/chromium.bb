@@ -66,11 +66,20 @@ public class KeyboardAccessoryTabLayoutView extends TabLayout {
      * @param activeTab The active tab to change. If null, all tabs are reset.
      */
     void setActiveTabColor(@Nullable Integer activeTab) {
+        setSelectedTabIndicatorHeight(activeTab == null
+                        ? 0
+                        : getResources().getDimensionPixelSize(R.dimen.divider_height));
         for (int i = getTabCount() - 1; i >= 0; i--) {
             TabLayout.Tab t = getTabAt(i);
             if (t == null || t.getIcon() == null) continue;
             int activeState = android.R.attr.state_selected;
-            if (activeTab == null || i != activeTab) activeState *= -1; // This means unselected.
+            if (activeTab == null || i != activeTab) { // This means unselected.
+                activeState *= -1;
+            } else if (!t.isSelected()) {
+                // If the active tab was set by the model, reflect that in the TabLayout's state.
+                // This triggers the tab observer but as the active tab doesn't change, it's a noop.
+                t.select();
+            }
             DrawableCompat.setTint(t.getIcon(),
                     getTabTextColors().getColorForState(
                             new int[] {activeState}, getTabTextColors().getDefaultColor()));

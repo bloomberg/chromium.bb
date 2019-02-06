@@ -33,6 +33,8 @@ class KeyboardAccessoryProperties {
     static final WritableIntPropertyKey BOTTOM_OFFSET_PX = new WritableIntPropertyKey("offset");
     static final WritableBooleanPropertyKey KEYBOARD_TOGGLE_VISIBLE =
             new WritableBooleanPropertyKey("toggle_visible");
+    static final WritableObjectPropertyKey<TabLayoutBarItem> TAB_LAYOUT_ITEM =
+            new WritableObjectPropertyKey<>("tab_layout_item");
     static final WritableObjectPropertyKey<Runnable> SHOW_KEYBOARD_CALLBACK =
             new WritableObjectPropertyKey<>("keyboard_callback");
 
@@ -44,12 +46,12 @@ class KeyboardAccessoryProperties {
         /**
          * This type is used to infer which type of view will represent this item.
          */
-        @IntDef({Type.ACTION_BUTTON, Type.SUGGESTION, Type.TAB_SWITCHER, Type.COUNT})
+        @IntDef({Type.ACTION_BUTTON, Type.SUGGESTION, Type.TAB_LAYOUT, Type.COUNT})
         @Retention(RetentionPolicy.SOURCE)
         public @interface Type {
             int ACTION_BUTTON = 0;
             int SUGGESTION = 1;
-            int TAB_SWITCHER = 2;
+            int TAB_LAYOUT = 2;
             int COUNT = 3;
         }
         private @Type int mType;
@@ -91,8 +93,8 @@ class KeyboardAccessoryProperties {
                 case Type.SUGGESTION:
                     typeName = "SUGGESTION";
                     break;
-                case Type.TAB_SWITCHER:
-                    typeName = "TAB_SWITCHER";
+                case Type.TAB_LAYOUT:
+                    typeName = "TAB_LAYOUT";
                     break;
             }
             return typeName + ": " + mAction;
@@ -123,6 +125,48 @@ class KeyboardAccessoryProperties {
         @Override
         public String toString() {
             return "Autofill" + super.toString();
+        }
+    }
+
+    /**
+     * A tab layout in a {@link RecyclerView} can be destroyed and recreated whenever it is
+     * scrolled out of/into view. This wrapper allows to trigger a callback whenever the view is
+     * recreated so it can be bound to its component.
+     */
+    public static final class TabLayoutBarItem extends BarItem {
+        /**
+         * These callbacks are triggered when the view corresponding to the tab layout is bound or
+         * unbound which provides opportunity to initialize and clean up.
+         */
+        public interface TabLayoutCallbacks {
+            /**
+             * Called when the this item is bound to a view. It's useful for setting up MCPs that
+             * need the view for initialization.
+             * @param tabs The {@link KeyboardAccessoryTabLayoutView} representing this item.
+             */
+            void onTabLayoutBound(KeyboardAccessoryTabLayoutView tabs);
+
+            /**
+             * Called right before the view currently representing this item gets recycled.
+             * It's useful for cleaning up Adapters and MCPs.
+             * @param tabs The {@link KeyboardAccessoryTabLayoutView} representing this item.
+             */
+            void onTabLayoutUnbound(KeyboardAccessoryTabLayoutView tabs);
+        }
+
+        private final TabLayoutCallbacks mTabLayoutCallbacks;
+
+        public TabLayoutBarItem(TabLayoutCallbacks tabLayoutCallbacks) {
+            super(Type.TAB_LAYOUT, null);
+            mTabLayoutCallbacks = tabLayoutCallbacks;
+        }
+
+        public void notifyAboutViewCreation(KeyboardAccessoryTabLayoutView tabs) {
+            mTabLayoutCallbacks.onTabLayoutBound(tabs);
+        }
+
+        public void notifyAboutViewDestruction(KeyboardAccessoryTabLayoutView tabs) {
+            mTabLayoutCallbacks.onTabLayoutUnbound(tabs);
         }
     }
 

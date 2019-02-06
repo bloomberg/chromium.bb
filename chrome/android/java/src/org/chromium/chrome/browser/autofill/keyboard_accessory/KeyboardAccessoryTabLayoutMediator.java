@@ -18,6 +18,9 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This mediator observes and changes a {@link PropertyModel} that contains the visual appearance of
  * a {@link TabLayout}. It manages {@link ViewPager.OnPageChangeListener}s.
@@ -28,7 +31,7 @@ class KeyboardAccessoryTabLayoutMediator
                    KeyboardAccessoryCoordinator.TabSwitchingDelegate {
     private final PropertyModel mModel;
     private @Nullable AccessoryTabObserver mAccessoryTabObserver;
-    private ViewPager.OnPageChangeListener mPageChangeListener;
+    private Set<TabLayout.TabLayoutOnPageChangeListener> mPageChangeListeners = new HashSet<>();
 
     KeyboardAccessoryTabLayoutMediator(PropertyModel model) {
         mModel = model;
@@ -37,25 +40,27 @@ class KeyboardAccessoryTabLayoutMediator
         mModel.set(TAB_SELECTION_CALLBACKS, this);
     }
 
-    void setPageChangeListener(ViewPager.OnPageChangeListener onPageChangeListener) {
-        mPageChangeListener = onPageChangeListener;
-    }
-
     ViewPager.OnPageChangeListener getStableOnPageChangeListener() {
         return new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int i, float v, int j) {
-                if (mPageChangeListener != null) mPageChangeListener.onPageScrolled(i, v, j);
+                for (TabLayout.TabLayoutOnPageChangeListener listener : mPageChangeListeners) {
+                    listener.onPageScrolled(i, v, j);
+                }
             }
 
             @Override
             public void onPageSelected(int i) {
-                if (mPageChangeListener != null) mPageChangeListener.onPageSelected(i);
+                for (TabLayout.TabLayoutOnPageChangeListener listener : mPageChangeListeners) {
+                    listener.onPageSelected(i);
+                }
             }
 
             @Override
             public void onPageScrollStateChanged(int i) {
-                if (mPageChangeListener != null) mPageChangeListener.onPageScrollStateChanged(i);
+                for (TabLayout.TabLayoutOnPageChangeListener listener : mPageChangeListeners) {
+                    listener.onPageScrollStateChanged(i);
+                }
             }
         };
     }
@@ -144,5 +149,14 @@ class KeyboardAccessoryTabLayoutMediator
 
     public void setTabObserver(AccessoryTabObserver accessoryTabObserver) {
         mAccessoryTabObserver = accessoryTabObserver;
+    }
+
+    public void addPageChangeListener(TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
+        mPageChangeListeners.add(pageChangeListener);
+    }
+
+    public void removePageChangeListener(
+            TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
+        mPageChangeListeners.remove(pageChangeListener);
     }
 }

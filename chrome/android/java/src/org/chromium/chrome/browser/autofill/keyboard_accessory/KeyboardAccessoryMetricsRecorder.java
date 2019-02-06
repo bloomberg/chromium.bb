@@ -76,8 +76,7 @@ public class KeyboardAccessoryMetricsRecorder {
                     recordFirstImpression();
                     maybeRecordBarBucket(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS);
                     maybeRecordBarBucket(AccessoryBarContents.WITH_TABS);
-                    recordUnrecordedList(mModel.get(KeyboardAccessoryProperties.BAR_ITEMS), 0,
-                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size());
+                    recordGeneralActionTypes();
                 } else {
                     mRecordedBarBuckets.clear();
                     mRecordedActionImpressions.clear();
@@ -100,17 +99,12 @@ public class KeyboardAccessoryMetricsRecorder {
          * @param count Number of elements starting with |first| that were added or changed.
          */
         private void recordUnrecordedList(ListObservable list, int first, int count) {
-            if (!mModel.get(KeyboardAccessoryProperties.VISIBLE)) return;
-            if (list != mModel.get(BAR_ITEMS)) return;
-            // Remove all changed items, so changes are treated as new recordings.
-            for (int index = first; index < first + count; ++index) {
-                BarItem barItem = mModel.get(BAR_ITEMS).get(index);
-                mRecordedActionImpressions.remove(barItem.getViewType());
-            }
+            assert list
+                    == mModel.get(BAR_ITEMS) : "Tried to record metrics for unknown list " + list;
             // Record any unrecorded type, but not more than once (i.e. one set of suggestion).
             for (int index = first; index < first + count; ++index) {
                 KeyboardAccessoryData.Action action = mModel.get(BAR_ITEMS).get(index).getAction();
-                if (action == null) continue; // Ignore!
+                if (action == null) continue; // Item is no relevant action.
                 maybeRecordBarBucket(action.getActionType() == AccessoryAction.AUTOFILL_SUGGESTION
                                 ? AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS
                                 : AccessoryBarContents.WITH_ACTIONS);

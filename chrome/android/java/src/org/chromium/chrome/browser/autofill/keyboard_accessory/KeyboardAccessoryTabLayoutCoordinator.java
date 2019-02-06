@@ -17,17 +17,22 @@ import org.chromium.ui.modelutil.ListModelChangeProcessor;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
+import java.util.HashMap;
+
 /**
  * This component reflects the state of selected tabs in the keyboard accessory. It can be assigned
  * to multiple {@link TabLayout}s and will keep them in sync.
  */
-class KeyboardAccessoryTabLayoutCoordinator {
+class KeyboardAccessoryTabLayoutCoordinator
+        implements KeyboardAccessoryProperties.TabLayoutBarItem.TabLayoutCallbacks {
     private final PropertyModel mModel =
             new PropertyModel.Builder(TABS, ACTIVE_TAB, TAB_SELECTION_CALLBACKS)
                     .with(TABS, new ListModel<>())
                     .with(ACTIVE_TAB, null)
                     .build();
     private final KeyboardAccessoryTabLayoutMediator mMediator;
+
+    private final HashMap<TabLayout, TemporaryTabLayoutBindings> mBindings = new HashMap<>();
 
     /**
      * This observer gets notified when a tab get selected, reselected or when any tab changes.
@@ -51,6 +56,24 @@ class KeyboardAccessoryTabLayoutCoordinator {
          * Called when tabs are inserted, removed or changed.
          */
         void onTabsChanged();
+    }
+
+    private class TemporaryTabLayoutBindings {
+        private PropertyModelChangeProcessor mMcp;
+        private TabLayout.TabLayoutOnPageChangeListener mOnPageChangeListener;
+
+        TemporaryTabLayoutBindings(KeyboardAccessoryTabLayoutView tabLayout) {
+            mMcp = PropertyModelChangeProcessor.create(
+                    mModel, tabLayout, KeyboardAccessoryTabLayoutViewBinder::bind);
+            mOnPageChangeListener = new TabLayout.TabLayoutOnPageChangeListener(tabLayout);
+            mMediator.addPageChangeListener(mOnPageChangeListener);
+        }
+
+        void destroy() {
+            mMediator.removePageChangeListener(mOnPageChangeListener);
+            mMcp.destroy();
+            mOnPageChangeListener = null;
+        }
     }
 
     /**
@@ -77,12 +100,25 @@ class KeyboardAccessoryTabLayoutCoordinator {
         mMediator = new KeyboardAccessoryTabLayoutMediator(mModel);
     }
 
+    @Override
+    public void onTabLayoutBound(KeyboardAccessoryTabLayoutView tabLayout) {
+        if (!mBindings.containsKey(tabLayout)) {
+            mBindings.put(tabLayout, new TemporaryTabLayoutBindings(tabLayout));
+        }
+    }
+
+    @Override
+    public void onTabLayoutUnbound(KeyboardAccessoryTabLayoutView tabLayout) {
+        TemporaryTabLayoutBindings binding = mBindings.remove(tabLayout);
+        if (binding != null) binding.destroy();
+    }
+
     /**
      * Binds the given view to its model using the {@link KeyboardAccessoryTabLayoutViewBinder}.
      * @param tabLayout A {@link TabLayout}.
      */
     public void assignNewView(TabLayout tabLayout) {
-        mMediator.setPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        mMediator.addPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         PropertyModelChangeProcessor.create(mModel, (KeyboardAccessoryTabLayoutView) tabLayout,
                 KeyboardAccessoryTabLayoutViewBinder::bind);
     }
