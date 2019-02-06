@@ -191,5 +191,5 @@ void LibsecretAttributesBuilder::Append(const std::string& name,
 
 void LibsecretAttributesBuilder::Append(const std::string& name,
                                         int64_t value) {
-  Append(name, base::Int64ToString(value));
+  Append(name, base::NumberToString(value));
 }

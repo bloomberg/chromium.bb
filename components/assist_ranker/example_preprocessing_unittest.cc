@@ -193,9 +193,9 @@ TEST_F(ExamplePreprocessorTest, ConvertToStringFeatures) {
             ExamplePreprocessor::kSuccess);
 
   (*expected.mutable_features())[bool_name_].set_string_value(
-      base::IntToString(static_cast<int>(bool_value_)));
+      base::NumberToString(static_cast<int>(bool_value_)));
   (*expected.mutable_features())[int32_name_].set_string_value(
-      base::IntToString(int32_value_));
+      base::NumberToString(int32_value_));
   EXPECT_EQUALS_EXAMPLE(example_, expected);
 }
 

@@ -68,7 +68,7 @@ std::string RenderOutputHtml(const std::string& base_url,
     line += base::UTF16ToUTF8(remaining_time_formatted);
     std::vector<std::string> providers;
     for (int p = 0; p < suggestion.providers_size(); ++p)
-      providers.push_back(base::IntToString(suggestion.providers(p)));
+      providers.push_back(base::NumberToString(suggestion.providers(p)));
     line += ". Provider IDs: " + base::JoinString(providers, ", ");
     line += "</li>\n";
     out.push_back(line);

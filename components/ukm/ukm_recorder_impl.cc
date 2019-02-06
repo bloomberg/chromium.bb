@@ -205,7 +205,7 @@ void UkmRecorderImpl::CreateFallbackSamplingTrial(
 
   // Everybody (100%) should have a sampling configuration.
   std::map<std::string, std::string> params = {
-      {"_default_sampling", base::IntToString(default_sampling)}};
+      {"_default_sampling", base::NumberToString(default_sampling)}};
   variations::AssociateVariationParams(trial->trial_name(), sampled_group,
                                        params);
   trial->AppendGroup(sampled_group, 100);

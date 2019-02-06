@@ -596,7 +596,7 @@ void SyncPrefs::UpdateInvalidationVersions(
   std::unique_ptr<base::DictionaryValue> invalidation_dictionary(
       new base::DictionaryValue());
   for (const auto& map_iter : invalidation_versions) {
-    std::string version_str = base::Int64ToString(map_iter.second);
+    std::string version_str = base::NumberToString(map_iter.second);
     invalidation_dictionary->SetString(ModelTypeToString(map_iter.first),
                                        version_str);
   }

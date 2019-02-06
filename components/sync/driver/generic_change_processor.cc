@@ -123,7 +123,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
       if (read_node.InitByIdLookup(it->id) != BaseNode::INIT_OK) {
         SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                         "Failed to look up data for received change with id " +
-                            base::Int64ToString(it->id),
+                            base::NumberToString(it->id),
                         GetModelTypeFromSpecifics(it->specifics));
         error_handler()->OnUnrecoverableError(error);
         return;

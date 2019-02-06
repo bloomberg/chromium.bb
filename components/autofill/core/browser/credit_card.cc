@@ -869,7 +869,7 @@ base::string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ == 0)
     return base::string16();
 
-  base::string16 month = base::IntToString16(expiration_month_);
+  base::string16 month = base::NumberToString16(expiration_month_);
   if (expiration_month_ >= 10)
     return month;
 
@@ -882,7 +882,7 @@ base::string16 CreditCard::Expiration4DigitYearAsString() const {
   if (expiration_year_ == 0)
     return base::string16();
 
-  return base::IntToString16(Expiration4DigitYear());
+  return base::NumberToString16(Expiration4DigitYear());
 }
 
 bool CreditCard::HasFirstAndLastName() const {
@@ -898,7 +898,7 @@ base::string16 CreditCard::Expiration2DigitYearAsString() const {
   if (expiration_year_ == 0)
     return base::string16();
 
-  return base::IntToString16(Expiration2DigitYear());
+  return base::NumberToString16(Expiration2DigitYear());
 }
 
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {

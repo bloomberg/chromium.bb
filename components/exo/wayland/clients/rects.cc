@@ -365,7 +365,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
           }
 
           // Set FPS counter text in case it's being shown.
-          fps_counter_text = base::UintToString(
+          fps_counter_text = base::NumberToString(
               std::round(benchmark_frames / benchmark_interval.InSecondsF()));
 
           benchmark_start_time = wall_time_start;

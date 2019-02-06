@@ -322,7 +322,7 @@ bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
   for (int year = time_exploded.year;
        year < time_exploded.year + kYearsToMatch;
        ++year) {
-    years_to_check.push_back(base::IntToString16(year));
+    years_to_check.push_back(base::NumberToString16(year));
   }
   return (FindConsecutiveStrings(years_to_check, field->option_values) ||
           FindConsecutiveStrings(years_to_check, field->option_contents));

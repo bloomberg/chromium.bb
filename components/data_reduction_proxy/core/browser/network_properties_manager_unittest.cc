@@ -243,7 +243,7 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
   size_t num_network_ids = 100;
 
   for (size_t i = 0; i < num_network_ids; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     network_properties_manager.OnChangeInNetworkID(network_id);
 
     // State should be reset when there is a change in the network ID.
@@ -271,14 +271,14 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
   // The last 10 network IDs are guaranteed to be present in the prefs.
   for (size_t i = num_network_ids - 10; i < num_network_ids; ++i) {
     EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
-                    ->HasKey("test" + base::IntToString(i)));
+                    ->HasKey("test" + base::NumberToString(i)));
   }
 
   {
     TestNetworkPropertiesManager network_properties_manager_2(
         &test_prefs, base::ThreadTaskRunnerHandle::Get());
     for (size_t i = 0; i < num_network_ids; ++i) {
-      std::string network_id("test" + base::IntToString(i));
+      std::string network_id("test" + base::NumberToString(i));
       network_properties_manager_2.OnChangeInNetworkID(network_id);
 
       EXPECT_EQ(test_prefs.GetDictionary(prefs::kNetworkProperties)
@@ -466,7 +466,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
       &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
   for (size_t i = 0; i < 5; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     network_properties_manager.OnChangeInNetworkID(network_id);
     network_properties_manager.SetIsCaptivePortal(true);
   }
@@ -474,7 +474,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
   test_clock.Advance(base::TimeDelta::FromDays(20));
 
   for (size_t i = 5; i < 10; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     network_properties_manager.OnChangeInNetworkID(network_id);
     network_properties_manager.SetIsCaptivePortal(true);
   }
@@ -484,7 +484,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
   // Verify the prefs.
   EXPECT_EQ(10u, test_prefs.GetDictionary(prefs::kNetworkProperties)->size());
   for (size_t i = 0; i < 10; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
                     ->HasKey(network_id));
   }
@@ -494,7 +494,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
     TestNetworkPropertiesManager network_properties_manager_2(
         &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
     for (size_t i = 0; i < 10; ++i) {
-      std::string network_id("test" + base::IntToString(i));
+      std::string network_id("test" + base::NumberToString(i));
 
       EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
                       ->HasKey(network_id));
@@ -507,7 +507,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
     TestNetworkPropertiesManager network_properties_manager_3(
         &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
     for (size_t i = 0; i < 10; ++i) {
-      std::string network_id("test" + base::IntToString(i));
+      std::string network_id("test" + base::NumberToString(i));
       EXPECT_EQ(i >= 5, test_prefs.GetDictionary(prefs::kNetworkProperties)
                             ->HasKey(network_id));
     }

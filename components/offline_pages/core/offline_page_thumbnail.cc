@@ -37,8 +37,8 @@ std::string OfflinePageThumbnail::ToString() const {
   base::Base64Encode(thumbnail, &thumb_data_base64);
 
   std::string s("OfflinePageThumbnail(");
-  s.append(base::Int64ToString(offline_id)).append(", ");
-  s.append(base::Int64ToString(store_utils::ToDatabaseTime(expiration)))
+  s.append(base::NumberToString(offline_id)).append(", ");
+  s.append(base::NumberToString(store_utils::ToDatabaseTime(expiration)))
       .append(", ");
   s.append(thumb_data_base64).append(")");
   return s;

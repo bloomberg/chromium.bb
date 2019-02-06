@@ -49,7 +49,7 @@ class DownloadSchedulerImplTest : public testing::Test {
   void BuildDataEntries(size_t size) {
     entries_ = std::vector<Entry>(size, Entry());
     for (size_t i = 0; i < size; ++i) {
-      entries_[i].guid = base::IntToString(i);
+      entries_[i].guid = base::NumberToString(i);
       entries_[i].scheduling_params.battery_requirements =
           SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
       entries_[i].scheduling_params.network_requirements =

@@ -1010,18 +1010,18 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_INPUT_TYPE:
         DCHECK(!i->is_post_param);
-        HandleReplacement(
-            "oit", base::IntToString(search_terms_args.input_type), *i, &url);
+        HandleReplacement("oit",
+                          base::NumberToString(search_terms_args.input_type),
+                          *i, &url);
         break;
 
       case GOOGLE_CONTEXTUAL_SEARCH_VERSION:
         if (search_terms_args.contextual_search_params.version >= 0) {
           HandleReplacement(
               "ctxs",
-              base::IntToString(
+              base::NumberToString(
                   search_terms_args.contextual_search_params.version),
-              *i,
-              &url);
+              *i, &url);
         }
         break;
 
@@ -1034,17 +1034,17 @@ std::string TemplateURLRef::HandleReplacements(
 
         if (params.contextual_cards_version > 0) {
           args.push_back("ctxsl_coca=" +
-                         base::IntToString(params.contextual_cards_version));
+                         base::NumberToString(params.contextual_cards_version));
         }
         if (!params.home_country.empty())
           args.push_back("ctxs_hc=" + params.home_country);
         if (params.previous_event_id != 0) {
           args.push_back("ctxsl_pid=" +
-                         base::Int64ToString(params.previous_event_id));
+                         base::NumberToString(params.previous_event_id));
         }
         if (params.previous_event_results != 0) {
           args.push_back("ctxsl_per=" +
-                         base::IntToString(params.previous_event_results));
+                         base::NumberToString(params.previous_event_results));
         }
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
@@ -1064,8 +1064,9 @@ std::string TemplateURLRef::HandleReplacements(
         if (search_terms_args.page_classification !=
             metrics::OmniboxEventProto::INVALID_SPEC) {
           HandleReplacement(
-              "pgcl", base::IntToString(search_terms_args.page_classification),
-              *i, &url);
+              "pgcl",
+              base::NumberToString(search_terms_args.page_classification), *i,
+              &url);
         }
         break;
 
@@ -1165,19 +1166,19 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_IMAGE_ORIGINAL_WIDTH:
         if (!search_terms_args.image_original_size.IsEmpty()) {
-          HandleReplacement(
-              std::string(),
-              base::IntToString(search_terms_args.image_original_size.width()),
-              *i, &url);
+          HandleReplacement(std::string(),
+                            base::NumberToString(
+                                search_terms_args.image_original_size.width()),
+                            *i, &url);
         }
         break;
 
       case GOOGLE_IMAGE_ORIGINAL_HEIGHT:
         if (!search_terms_args.image_original_size.IsEmpty()) {
-          HandleReplacement(
-              std::string(),
-              base::IntToString(search_terms_args.image_original_size.height()),
-              *i, &url);
+          HandleReplacement(std::string(),
+                            base::NumberToString(
+                                search_terms_args.image_original_size.height()),
+                            *i, &url);
         }
         break;
 

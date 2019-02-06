@@ -228,9 +228,9 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
           static_cast<size_t>(i - post_params.begin())) {
         switch (j->type) {
           case TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_WIDTH:
-            ExpectPostParamIs(*i, "width",
-                              base::IntToString(
-                                   search_args.image_original_size.width()));
+            ExpectPostParamIs(
+                *i, "width",
+                base::NumberToString(search_args.image_original_size.width()));
             break;
           case TemplateURLRef::GOOGLE_IMAGE_SEARCH_SOURCE:
             ExpectPostParamIs(*i, "sbisrc",

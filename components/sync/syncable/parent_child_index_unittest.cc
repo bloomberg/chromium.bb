@@ -33,11 +33,11 @@ class ParentChildIndexTest : public testing::Test {
   }
 
   static syncable::Id GetBookmarkId(int n) {
-    return syncable::Id::CreateFromServerId("b" + base::IntToString(n));
+    return syncable::Id::CreateFromServerId("b" + base::NumberToString(n));
   }
 
   static syncable::Id GetClientUniqueId(int n) {
-    return syncable::Id::CreateFromServerId("c" + base::IntToString(n));
+    return syncable::Id::CreateFromServerId("c" + base::NumberToString(n));
   }
 
   EntryKernel* MakeRoot() {
@@ -109,7 +109,7 @@ class ParentChildIndexTest : public testing::Test {
     item->put(SERVER_VERSION, 10);
     item->put(IS_DIR, false);
     item->put(ID, GetClientUniqueId(n));
-    item->put(UNIQUE_CLIENT_TAG, base::IntToString(n));
+    item->put(UNIQUE_CLIENT_TAG, base::NumberToString(n));
 
     if (!parent_id.IsNull()) {
       item->put(PARENT_ID, parent_id);

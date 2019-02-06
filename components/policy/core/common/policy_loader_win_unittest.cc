@@ -124,7 +124,7 @@ bool InstallValue(const base::Value& value,
         if (!list->Get(i, &item))
           return false;
         if (!InstallValue(*item, hive, path + kPathSep + name,
-                          base::UintToString16(i + 1))) {
+                          base::NumberToString16(i + 1))) {
           return false;
         }
       }
@@ -337,7 +337,7 @@ void RegistryTestHarness::InstallStringListPolicy(
     std::string element_value;
     if (!element->GetAsString(&element_value))
       continue;
-    std::string name(base::IntToString(index++));
+    std::string name(base::NumberToString(index++));
     key.WriteValue(UTF8ToUTF16(name).c_str(),
                    UTF8ToUTF16(element_value).c_str());
   }

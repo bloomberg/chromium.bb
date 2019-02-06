@@ -76,7 +76,7 @@ UpdaterState::Attributes UpdaterState::BuildAttributes() const {
       is_autoupdate_check_enabled_ ? "1" : "0";
 
   DCHECK((update_policy_ >= 0 && update_policy_ <= 3) || update_policy_ == -1);
-  attributes["updatepolicy"] = base::IntToString(update_policy_);
+  attributes["updatepolicy"] = base::NumberToString(update_policy_);
 
   return attributes;
 }

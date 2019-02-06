@@ -341,7 +341,7 @@ std::string MetricsStateManager::GetHighEntropySource() {
   if (low_entropy_source == kLowEntropySourceNotSet)
     low_entropy_source = GetLowEntropySource();
 
-  return client_id_ + base::IntToString(low_entropy_source);
+  return client_id_ + base::NumberToString(low_entropy_source);
 }
 
 int MetricsStateManager::GetLowEntropySource() {

@@ -35,8 +35,8 @@ const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
                                       int64_t start_time_ms) {
   GURL url(scheme + "://" + base::GenerateGUID());
   if (start_time_ms > 0) {
-    url = net::AppendOrReplaceQueryParameter(url, kTimeKey,
-        base::IntToString(start_time_ms));
+    url = net::AppendOrReplaceQueryParameter(
+        url, kTimeKey, base::NumberToString(start_time_ms));
   }
   return net::AppendOrReplaceQueryParameter(url, kUrlKey, view_url.spec());
 }

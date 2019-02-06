@@ -23,7 +23,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 
-using base::IntToString;
+using base::NumberToString;
 using content::BrowserThread;
 
 namespace {
@@ -398,8 +398,8 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
       info.extra_flags.size() > 512)
     return std::string();
   std::string retval("ABI:");
-  retval += IntToString(info.abi_version) + ";" + "opt:" +
-            IntToString(info.opt_level) +
+  retval += NumberToString(info.abi_version) + ";" +
+            "opt:" + NumberToString(info.opt_level) +
             (info.use_subzero ? "subzero;" : ";") + "URL:";
   // Filter the username, password, and ref components from the URL
   GURL::Replacements replacements;
@@ -416,12 +416,13 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
   if (info.last_modified.is_null() || !exploded.HasValidValues()) {
     memset(&exploded, 0, sizeof(exploded));
   }
-  retval += "modified:" + IntToString(exploded.year) + ":" +
-            IntToString(exploded.month) + ":" +
-            IntToString(exploded.day_of_month) + ":" +
-            IntToString(exploded.hour) + ":" + IntToString(exploded.minute) +
-            ":" + IntToString(exploded.second) + ":" +
-            IntToString(exploded.millisecond) + ":UTC;";
+  retval += "modified:" + NumberToString(exploded.year) + ":" +
+            NumberToString(exploded.month) + ":" +
+            NumberToString(exploded.day_of_month) + ":" +
+            NumberToString(exploded.hour) + ":" +
+            NumberToString(exploded.minute) + ":" +
+            NumberToString(exploded.second) + ":" +
+            NumberToString(exploded.millisecond) + ":UTC;";
   retval += "etag:" + info.etag + ";";
   retval += "sandbox:" + info.sandbox_isa + ";";
   retval += "extra_flags:" + info.extra_flags + ";";

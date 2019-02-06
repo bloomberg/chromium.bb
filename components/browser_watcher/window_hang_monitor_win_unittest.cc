@@ -76,7 +76,7 @@ void AppendSwitchHandle(base::CommandLine* command_line,
                         std::string switch_name,
                         HANDLE handle) {
   command_line->AppendSwitchASCII(
-      switch_name, base::UintToString(base::win::HandleToUint32(handle)));
+      switch_name, base::NumberToString(base::win::HandleToUint32(handle)));
 }
 
 // Retrieves the |handle| associated to |switch_name| from the command line.

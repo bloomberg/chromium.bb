@@ -159,7 +159,7 @@ bool UnackedInvalidationSet::DeserializeSetIntoMap(
 
 std::unique_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetString(kSourceKey, base::IntToString(object_id_.source()));
+  value->SetString(kSourceKey, base::NumberToString(object_id_.source()));
   value->SetString(kNameKey, object_id_.name());
 
   std::unique_ptr<base::ListValue> list_value(new base::ListValue);

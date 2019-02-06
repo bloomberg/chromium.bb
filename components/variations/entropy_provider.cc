@@ -37,8 +37,9 @@ double SHA1EntropyProvider::GetEntropyForTrial(
   // distribution given the same |trial_name|. When using such a low entropy
   // source, NormalizedMurmurHashEntropyProvider should be used instead.
   std::string input(entropy_source_);
-  input.append(randomization_seed == 0 ? trial_name : base::UintToString(
-                                                          randomization_seed));
+  input.append(randomization_seed == 0
+                   ? trial_name
+                   : base::NumberToString(randomization_seed));
 
   unsigned char sha1_hash[base::kSHA1Length];
   base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(input.c_str()),

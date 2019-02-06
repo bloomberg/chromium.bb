@@ -214,7 +214,7 @@ bool ParsePhoneNumber(const base::string16& value,
       i18n_number->country_code_source() !=
           ::i18n::phonenumbers::PhoneNumber::FROM_DEFAULT_COUNTRY) {
     *country_code =
-        base::UTF8ToUTF16(base::IntToString(i18n_number->country_code()));
+        base::UTF8ToUTF16(base::NumberToString(i18n_number->country_code()));
   }
 
   // The region might be different from what we started with.

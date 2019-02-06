@@ -94,8 +94,8 @@ void VerifyNoWalletDataProgressMarkerExists(
 }
 
 std::string GetTokenFromHashAndTime(int64_t hash, const base::Time& time) {
-  return base::Int64ToString(hash) + " " +
-         base::Int64ToString(time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  return base::NumberToString(hash) + " " +
+         base::NumberToString(time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 int64_t GetHashFromToken(const std::string& token, int64_t default_value) {

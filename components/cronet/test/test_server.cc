@@ -267,7 +267,7 @@ std::string TestServer::PrepareBigDataURL(size_t data_size) {
   response_builder += std::string(data_size, 'c');
   g_big_data_body.Get() = response_builder;
   return g_test_server
-      ->GetURL(kBigDataPath + base::Int64ToString(response_builder.size()))
+      ->GetURL(kBigDataPath + base::NumberToString(response_builder.size()))
       .spec();
 }
 

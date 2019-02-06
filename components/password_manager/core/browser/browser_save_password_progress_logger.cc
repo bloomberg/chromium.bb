@@ -21,7 +21,6 @@
 
 using autofill::AutofillUploadContents;
 using base::NumberToString;
-using base::UintToString;
 
 namespace password_manager {
 
@@ -154,7 +153,8 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
         ScrubNonDigit(field->FieldSignatureAsStr()) +
         ", type=" + ScrubElementID(field->form_control_type);
 
-    field_info += ", renderer_id = " + UintToString(field->unique_renderer_id);
+    field_info +=
+        ", renderer_id = " + NumberToString(field->unique_renderer_id);
 
     if (!field->autocomplete_attribute.empty())
       field_info +=
@@ -244,7 +244,7 @@ void BrowserSavePasswordProgressLogger::LogFormData(
 
   if (form.is_form_tag) {
     message +=
-        "Form renderer id: " + UintToString(form.unique_renderer_id) + "\n";
+        "Form renderer id: " + NumberToString(form.unique_renderer_id) + "\n";
   }
 
   // Log fields.
@@ -260,7 +260,7 @@ void BrowserSavePasswordProgressLogger::LogFormData(
     std::string field_info =
         ScrubElementID(field.name) +
         ": type=" + ScrubElementID(field.form_control_type) +
-        ", renderer_id = " + UintToString(field.unique_renderer_id) + ", " +
+        ", renderer_id = " + NumberToString(field.unique_renderer_id) + ", " +
         is_visible + ", " + is_empty + autocomplete + "\n";
     message += field_info;
   }

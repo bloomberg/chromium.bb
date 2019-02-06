@@ -192,7 +192,7 @@ std::string CastMessageToString(const CastMessage& message_proto) {
   out += "namespace = " + message_proto.namespace_();
   out += ", sourceId = " + message_proto.source_id();
   out += ", destId = " + message_proto.destination_id();
-  out += ", type = " + base::IntToString(message_proto.payload_type());
+  out += ", type = " + base::NumberToString(message_proto.payload_type());
   out += ", str = \"" + message_proto.payload_utf8() + "\"}";
   return out;
 }
@@ -212,7 +212,7 @@ std::string AuthMessageToString(const DeviceAuthMessage& message) {
   }
   if (message.has_error()) {
     out += ", error: {";
-    out += base::IntToString(message.error().error_type());
+    out += base::NumberToString(message.error().error_type());
     out += "}";
   }
   out += "}";

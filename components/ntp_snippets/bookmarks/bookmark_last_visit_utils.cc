@@ -41,7 +41,7 @@ const char kBookmarkLastVisitDateOnDesktopKey[] = "last_visited_desktop";
 const char kBookmarkDismissedFromNTP[] = "dismissed_from_ntp";
 
 std::string FormatLastVisitDate(const base::Time& date) {
-  return base::Int64ToString(SerializeTime(date));
+  return base::NumberToString(SerializeTime(date));
 }
 
 bool ExtractLastVisitDate(const BookmarkNode& node,

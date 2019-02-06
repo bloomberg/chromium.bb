@@ -48,7 +48,7 @@ void ExpectChangeRecordActionValue(ChangeRecord::Action expected_value,
 void CheckChangeRecordValue(const ChangeRecord& record,
                             const base::DictionaryValue& value) {
   ExpectChangeRecordActionValue(record.action, value, "action");
-  ExpectDictStringValue(base::Int64ToString(record.id), value, "id");
+  ExpectDictStringValue(base::NumberToString(record.id), value, "id");
   if (record.action == ChangeRecord::ACTION_DELETE) {
     std::unique_ptr<base::DictionaryValue> expected_extra_value;
     if (record.extra.has_value()) {

@@ -87,7 +87,7 @@ void PrefRegistrySimple::RegisterDictionaryPref(
 void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
                                            int64_t default_value,
                                            uint32_t flags) {
-  RegisterPreference(path, base::Value(base::Int64ToString(default_value)),
+  RegisterPreference(path, base::Value(base::NumberToString(default_value)),
                      flags);
 }
 

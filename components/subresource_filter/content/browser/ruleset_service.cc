@@ -92,7 +92,7 @@ class SentinelFile {
 base::FilePath IndexedRulesetLocator::GetSubdirectoryPathForVersion(
     const base::FilePath& base_dir,
     const IndexedRulesetVersion& version) {
-  return base_dir.AppendASCII(base::IntToString(version.format_version))
+  return base_dir.AppendASCII(base::NumberToString(version.format_version))
       .AppendASCII(version.content_version);
 }
 
@@ -119,7 +119,7 @@ void IndexedRulesetLocator::DeleteObsoleteRulesets(
     const base::FilePath& indexed_ruleset_base_dir,
     const IndexedRulesetVersion& most_recent_version) {
   base::FilePath current_format_dir(indexed_ruleset_base_dir.AppendASCII(
-      base::IntToString(IndexedRulesetVersion::CurrentFormatVersion())));
+      base::NumberToString(IndexedRulesetVersion::CurrentFormatVersion())));
 
   // First delete all directories containing rulesets of obsolete formats.
   base::FileEnumerator format_dirs(indexed_ruleset_base_dir,

@@ -165,9 +165,9 @@ void InitializeCrashpadImpl(bool initial_client,
 
   static crashpad::StringAnnotation<12> pid_key("pid");
 #if defined(OS_POSIX)
-  pid_key.Set(base::IntToString(getpid()));
+  pid_key.Set(base::NumberToString(getpid()));
 #elif defined(OS_WIN)
-  pid_key.Set(base::IntToString(::GetCurrentProcessId()));
+  pid_key.Set(base::NumberToString(::GetCurrentProcessId()));
 #endif
 
   logging::SetLogMessageHandler(LogMessageHandler);

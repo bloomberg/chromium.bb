@@ -155,7 +155,8 @@ void TestHarness::WriteConfigFile(const base::DictionaryValue& dict,
 
 std::string TestHarness::NextConfigFileName() {
   EXPECT_LE(next_policy_file_index_, 999);
-  return std::string("policy") + base::IntToString(next_policy_file_index_++);
+  return std::string("policy") +
+         base::NumberToString(next_policy_file_index_++);
 }
 
 // static
@@ -224,12 +225,12 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   const char kHomepageLocation[] = "HomepageLocation";
   test_dict_bar.SetString(kHomepageLocation, "http://bar.com");
   for (unsigned int i = 1; i <= 4; ++i)
-    harness_.WriteConfigFile(test_dict_bar, base::UintToString(i));
+    harness_.WriteConfigFile(test_dict_bar, base::NumberToString(i));
   base::DictionaryValue test_dict_foo;
   test_dict_foo.SetString(kHomepageLocation, "http://foo.com");
   harness_.WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
-    harness_.WriteConfigFile(test_dict_bar, base::UintToString(i));
+    harness_.WriteConfigFile(test_dict_bar, base::NumberToString(i));
 
   ConfigDirPolicyLoader loader(
       scoped_task_environment_.GetMainThreadTaskRunner(), harness_.test_dir(),

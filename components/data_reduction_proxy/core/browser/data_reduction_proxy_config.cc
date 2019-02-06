@@ -172,7 +172,7 @@ std::string DoGetCurrentNetworkID(
         // connection type.
         return "cell," + ssid_mccmnc;
       }
-      return base::IntToString(static_cast<int>(connection_type)) + "," +
+      return base::NumberToString(static_cast<int>(connection_type)) + "," +
              ssid_mccmnc;
     }
   }

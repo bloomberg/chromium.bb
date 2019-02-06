@@ -404,7 +404,7 @@ void ContentSettingsPref::UpdatePref(
                                                        value->CreateDeepCopy());
           // Update timestamp for whole resource dictionary.
           settings_dictionary->SetKey(kLastModifiedPath,
-                                      base::Value(base::Int64ToString(
+                                      base::Value(base::NumberToString(
                                           last_modified.ToInternalValue())));
         }
       } else {
@@ -418,7 +418,7 @@ void ContentSettingsPref::UpdatePref(
           settings_dictionary->SetWithoutPathExpansion(kSettingPath,
                                                        value->CreateDeepCopy());
           settings_dictionary->SetKey(kLastModifiedPath,
-                                      base::Value(base::Int64ToString(
+                                      base::Value(base::NumberToString(
                                           last_modified.ToInternalValue())));
         }
       }

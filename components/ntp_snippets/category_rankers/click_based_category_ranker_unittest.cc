@@ -86,7 +86,7 @@ class ClickBasedCategoryRankerTest : public testing::Test {
     variation_params_manager_.SetVariationParamsWithFeatureAssociations(
         kCategoryRanker.name,
         {{"click_based_category_ranker-dismissed_category_penalty",
-          base::IntToString(value)}},
+          base::NumberToString(value)}},
         {kCategoryRanker.name});
   }
 
@@ -94,7 +94,7 @@ class ClickBasedCategoryRankerTest : public testing::Test {
     variation_params_manager_.SetVariationParamsWithFeatureAssociations(
         kCategoryRanker.name,
         {{"click_based_category_ranker-promoted_category",
-          base::IntToString(value)}},
+          base::NumberToString(value)}},
         {kCategoryRanker.name});
   }
 

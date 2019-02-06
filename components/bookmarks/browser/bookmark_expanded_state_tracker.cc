@@ -109,7 +109,7 @@ void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
   std::vector<base::Value> values;
   values.reserve(nodes.size());
   for (const auto* node : nodes) {
-    values.emplace_back(base::Int64ToString(node->id()));
+    values.emplace_back(base::NumberToString(node->id()));
   }
 
   pref_service_->Set(prefs::kBookmarkEditorExpandedNodes,

@@ -285,7 +285,7 @@ void RunBasicJsonPrefStoreTest(
 
   pref_store->SetValue(
       kLongIntPref,
-      std::make_unique<Value>(base::Int64ToString(214748364842LL)),
+      std::make_unique<Value>(base::NumberToString(214748364842LL)),
       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kLongIntPref, &actual));
   EXPECT_TRUE(actual->GetAsString(&string_value));

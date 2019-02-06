@@ -68,8 +68,7 @@ size_t MessageFramer::MessageHeader::max_message_size() {
 }
 
 std::string MessageFramer::MessageHeader::ToString() {
-  return "{message_size: " +
-         base::UintToString(static_cast<uint32_t>(message_size)) + "}";
+  return "{message_size: " + base::NumberToString(message_size) + "}";
 }
 
 // static

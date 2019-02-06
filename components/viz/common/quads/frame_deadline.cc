@@ -31,7 +31,7 @@ std::string FrameDeadline::ToString() const {
       start_time_delta.InMilliseconds(),
       use_default_lower_bound_deadline_
           ? "unresolved"
-          : base::UintToString(deadline_in_frames_).c_str(),
+          : base::NumberToString(deadline_in_frames_).c_str(),
       frame_interval_.InMilliseconds());
 }
 

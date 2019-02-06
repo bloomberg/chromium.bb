@@ -238,7 +238,7 @@ TEST(AdSamplerTriggerTestFinch, FrequencyDenominatorFeature) {
   std::map<std::string, std::string> feature_params;
   feature_params[std::string(
       safe_browsing::kAdSamplerFrequencyDenominatorParam)] =
-      base::IntToString(kDenominatorInt);
+      base::NumberToString(kDenominatorInt);
   base::AssociateFieldTrialParams(safe_browsing::kAdSamplerTriggerFeature.name,
                                   "Group", feature_params);
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);

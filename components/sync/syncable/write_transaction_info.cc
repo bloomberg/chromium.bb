@@ -29,7 +29,7 @@ WriteTransactionInfo::~WriteTransactionInfo() {}
 std::unique_ptr<base::DictionaryValue> WriteTransactionInfo::ToValue(
     size_t max_mutations_size) const {
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("id", base::Int64ToString(id));
+  dict->SetString("id", base::NumberToString(id));
   dict->SetString("location", location_.ToString());
   dict->SetString("writer", WriterTagToString(writer));
   std::unique_ptr<base::Value> mutations_value;

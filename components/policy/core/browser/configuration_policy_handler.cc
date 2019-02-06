@@ -178,9 +178,8 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
 
   if (value < min_ || value > max_) {
     if (errors) {
-      errors->AddError(policy_name(),
-                       IDS_POLICY_OUT_OF_RANGE_ERROR,
-                       base::IntToString(value));
+      errors->AddError(policy_name(), IDS_POLICY_OUT_OF_RANGE_ERROR,
+                       base::NumberToString(value));
     }
 
     if (!clamp_)

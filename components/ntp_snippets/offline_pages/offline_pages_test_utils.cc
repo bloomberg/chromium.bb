@@ -65,7 +65,7 @@ std::vector<OfflinePageItem>* FakeOfflinePageModel::mutable_items() {
 OfflinePageItem CreateDummyOfflinePageItem(
     int id,
     const offline_pages::ClientId& client_id) {
-  std::string id_string = base::IntToString(id);
+  std::string id_string = base::NumberToString(id);
   return OfflinePageItem(
       GURL("http://dummy.com/" + id_string), id, client_id,
       base::FilePath::FromUTF8Unsafe("some/folder/test" + id_string + ".mhtml"),

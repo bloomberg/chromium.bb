@@ -497,7 +497,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
   logger_->Log(logging::LOG_INFO,
                "Change lists applied (%s) (elapsed time: %sms)",
                team_drive_msg_.c_str(),
-               base::Int64ToString(elapsed.InMilliseconds()).c_str());
+               base::NumberToString(elapsed.InMilliseconds()).c_str());
 
   if (should_notify_changed_directories) {
     for (auto& observer : observers_)

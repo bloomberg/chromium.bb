@@ -858,7 +858,7 @@ void AddSuggestionsDetails(int error_code,
 }
 
 std::string HttpErrorCodeToString(int error) {
-  return std::string("HTTP ERROR ") + base::IntToString(error);
+  return std::string("HTTP ERROR ") + base::NumberToString(error);
 }
 
 }  // namespace

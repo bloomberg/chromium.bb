@@ -1066,7 +1066,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "Chrome-Proxy: ofcl=" +
-      base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
+      base::NumberToString(kOriginalContentLength) + "\r\n\r\n";
 
   std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
       GURL(kTestURL), nullptr, response_headers, kResponseContentLength, 0));
@@ -1111,7 +1111,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetVideoHistograms) {
       "Content-Type: video/mp4\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "Chrome-Proxy: ofcl=" +
-      base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
+      base::NumberToString(kOriginalContentLength) + "\r\n\r\n";
 
   FetchURLRequest(GURL(kTestURL), nullptr, video_response_headers,
                   kResponseContentLength, 0);
@@ -1290,8 +1290,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, DetailedNetHistograms) {
 
     if (test.proxy_config == USE_INSECURE_PROXY) {
       via_header = "Via: 1.1 Chrome-Compression-Proxy\r\n";
-      ocl_header = "Chrome-Proxy: ofcl=" +
-                   base::Int64ToString(kOriginalContentLength) + "\r\n";
+      ocl_header =
+          "Chrome-Proxy: ofcl=" + base::NumberToString(kOriginalContentLength) +
+          "\r\n";
     }
     if (test.is_video) {
       // Check video

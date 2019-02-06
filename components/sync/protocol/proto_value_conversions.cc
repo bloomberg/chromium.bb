@@ -252,16 +252,16 @@ class ToValueVisitor {
   }
 
   std::unique_ptr<base::Value> ToValue(int64_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint64_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint32_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
   std::unique_ptr<base::Value> ToValue(int32_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
 
   std::unique_ptr<base::Value> ToValue(bool value) const {

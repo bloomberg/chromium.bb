@@ -71,7 +71,7 @@ void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
   // Newly added lists are empty. Add entries to back to fill the window,
   // each initialized to zero.
   while (list->GetSize() < length)
-    list->AppendString(base::Int64ToString(0));
+    list->AppendString(base::NumberToString(0));
   DCHECK_EQ(length, list->GetSize());
 }
 
@@ -83,7 +83,7 @@ void AddInt64ToListPref(size_t index,
                         base::ListValue* list_update) {
   int64_t value = GetInt64PrefValue(*list_update, index) + length;
   list_update->Set(index,
-                   std::make_unique<base::Value>(base::Int64ToString(value)));
+                   std::make_unique<base::Value>(base::NumberToString(value)));
 }
 
 // DailyContentLengthUpdate maintains a data saving pref. The pref is a list
@@ -227,7 +227,7 @@ void AddToDictionaryPref(PrefService* pref_service,
                          int value) {
   DictionaryPrefUpdate pref_update(pref_service, pref);
   base::DictionaryValue* pref_dict = pref_update.Get();
-  const std::string key_str = base::IntToString(key);
+  const std::string key_str = base::NumberToString(key);
   base::Value* dict_value = pref_dict->FindKey(key_str);
   if (dict_value)
     value += dict_value->GetInt();
@@ -365,7 +365,7 @@ class DataReductionProxyCompressionStats::DailyContentLengthUpdate {
     for (int i = 0;
          i < days_since_last_update && i < static_cast<int>(kNumDaysInHistory);
          ++i) {
-      update_->AppendString(base::Int64ToString(0));
+      update_->AppendString(base::NumberToString(0));
     }
 
     // Entries for new days may have been appended. Maintain the invariant that
@@ -619,8 +619,8 @@ void DataReductionProxyCompressionStats::ResetStatistics() {
   original_update->Clear();
   received_update->Clear();
   for (size_t i = 0; i < kNumDaysInHistory; ++i) {
-    original_update->AppendString(base::Int64ToString(0));
-    received_update->AppendString(base::Int64ToString(0));
+    original_update->AppendString(base::NumberToString(0));
+    received_update->AppendString(base::NumberToString(0));
   }
 }
 

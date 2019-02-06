@@ -91,7 +91,7 @@ void GetPeakMemoryMetrics(size_t* peak_virtual_memory,
   *resident_set_size_hwm = 0;
   auto status_path =
       base::FilePath("/proc")
-          .Append(base::IntToString(base::GetCurrentProcessHandle()))
+          .Append(base::NumberToString(base::GetCurrentProcessHandle()))
           .Append("status");
   std::string contents_string;
   base::ReadFileToString(status_path, &contents_string);

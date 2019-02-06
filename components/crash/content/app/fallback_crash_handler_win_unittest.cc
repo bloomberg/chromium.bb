@@ -120,7 +120,7 @@ class FallbackCrashHandlerWinTest : public testing::Test {
   }
 
   std::string SelfHandleAsString() const {
-    return base::UintToString(base::win::HandleToUint32(self_handle_));
+    return base::NumberToString(base::win::HandleToUint32(self_handle_));
   }
 
   void CreateDatabase() {
@@ -155,7 +155,7 @@ TEST_F(FallbackCrashHandlerWinTest, ParseCommandLine) {
   ASSERT_FALSE(handler.ParseCommandLine(cmd_line));
 
   cmd_line.AppendSwitchASCII(
-      "thread", base::UintToString(base::PlatformThread::CurrentId()));
+      "thread", base::NumberToString(base::PlatformThread::CurrentId()));
 
   // Should succeed with a fully populated command line.
   // Because of how handle ownership is guarded, we have to "disown" it before

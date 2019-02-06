@@ -616,9 +616,9 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         kKeepPrefetchedContentSuggestions.name,
         {
             {"max_additional_prefetched_suggestions",
-             base::IntToString(max_additional_prefetched_suggestions)},
+             base::NumberToString(max_additional_prefetched_suggestions)},
             {"max_age_for_additional_prefetched_suggestion_minutes",
-             base::IntToString(
+             base::NumberToString(
                  max_age_for_additional_prefetched_suggestion.InMinutes())},
         },
         {kKeepPrefetchedContentSuggestions.name});
@@ -669,7 +669,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     params_manager_.ClearAllVariationParams();
     params_manager_.SetVariationParamsWithFeatureAssociations(
         /*trial_name=*/kArticleSuggestionsFeature.name,
-        {{"fetch_more_suggestions_count", base::IntToString(count)}},
+        {{"fetch_more_suggestions_count", base::NumberToString(count)}},
         {kArticleSuggestionsFeature.name});
   }
 
@@ -2499,7 +2499,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   std::set<std::string> known_ids;
   for (int i = 0; i < 200; ++i) {
-    known_ids.insert(base::IntToString(i));
+    known_ids.insert(base::NumberToString(i));
   }
 
   EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
@@ -3382,7 +3382,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   FetchedCategoryBuilder category_builder =
       FetchedCategoryBuilder().SetCategory(articles_category());
   for (int i = 0; i < 10; ++i) {
-    const std::string url = "http://other.com/" + base::IntToString(i);
+    const std::string url = "http://other.com/" + base::NumberToString(i);
     category_builder.AddSuggestionViaBuilder(
         RemoteSuggestionBuilder().AddId(url).SetUrl(url));
   }
@@ -3408,7 +3408,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   for (int i = 0; i < 10; ++i) {
     expected.push_back(
         Property(&ContentSuggestion::id,
-                 MakeArticleID("http://other.com/" + base::IntToString(i))));
+                 MakeArticleID("http://other.com/" + base::NumberToString(i))));
   }
 
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
@@ -3601,7 +3601,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   FetchedCategoryBuilder category_builder =
       FetchedCategoryBuilder().SetCategory(articles_category());
   for (int i = 0; i < 10; ++i) {
-    const std::string url = "http://other.com/" + base::IntToString(i);
+    const std::string url = "http://other.com/" + base::NumberToString(i);
     category_builder.AddSuggestionViaBuilder(
         RemoteSuggestionBuilder().AddId(url).SetUrl(url));
   }
@@ -3634,7 +3634,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   for (int i = 0; i < 10; ++i) {
     expected.push_back(
         Property(&ContentSuggestion::id,
-                 MakeArticleID("http://other.com/" + base::IntToString(i))));
+                 MakeArticleID("http://other.com/" + base::NumberToString(i))));
   }
 
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),

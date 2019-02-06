@@ -319,10 +319,9 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
         *mode_value = ProxyPrefs::kSystemProxyModeName;
         break;
       default:
-        errors->AddError(key::kProxySettings,
-                         key::kProxyServerMode,
+        errors->AddError(key::kProxySettings, key::kProxyServerMode,
                          IDS_POLICY_OUT_OF_RANGE_ERROR,
-                         base::IntToString(server_mode_value));
+                         base::NumberToString(server_mode_value));
         return false;
     }
   }
