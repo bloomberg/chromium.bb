@@ -44,7 +44,7 @@ Polymer({
     var args = JSON.parse(dialogArgs);
     assert(args);
     assert(args.path);
-    assert(args.mid);
+    assert(typeof args.mid === 'number');
     this.sharePath_ = args.path;
     this.mountId_ = args.mid;
 
