@@ -194,6 +194,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     kNone,
     // Using a reduced amount of |client_|s provided PictureBuffers and
     // |decoder_|s GetNumReferenceFrames() internallly.
+    kSuperReduced,
+    // Similar to kSuperReduced, but we have to increase slightly the amount of
+    // PictureBuffers allocated for the |client_|.
     kReduced,
     // Using |client_|s provided PictureBuffers and as many internally
     // allocated.
@@ -202,7 +205,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Decides the concrete buffer allocation mode, depending on the hardware
   // platform and other parameters.
-  BufferAllocationMode DecideBufferAllocationMode();
+  BufferAllocationMode DecideBufferAllocationMode() const;
+  bool IsBufferAllocationModeReducedOrSuperReduced() const;
 
   // VAVDA state.
   enum State {

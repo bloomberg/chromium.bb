@@ -171,7 +171,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     vda_.buffer_allocation_mode_ =
         GetParam().decode_using_client_picture_buffers
             ? VaapiVideoDecodeAccelerator::BufferAllocationMode::kNone
-            : VaapiVideoDecodeAccelerator::BufferAllocationMode::kReduced;
+            : VaapiVideoDecodeAccelerator::BufferAllocationMode::kSuperReduced;
 
     vda_.state_ = VaapiVideoDecodeAccelerator::kIdle;
   }
@@ -238,7 +238,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
 
     const size_t expected_num_picture_buffers_requested =
         vda_.buffer_allocation_mode_ ==
-                VaapiVideoDecodeAccelerator::BufferAllocationMode::kReduced
+                VaapiVideoDecodeAccelerator::BufferAllocationMode::kSuperReduced
             ? num_pictures - kNumReferenceFrames
             : num_pictures;
 
