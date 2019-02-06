@@ -139,7 +139,8 @@ void ChildExitObserver::BrowserChildProcessHostDisconnected(
     browser_child_process_info_.erase(it);
   } else {
     info.process_host_id = data.id;
-    info.pid = data.GetProcess().Pid();
+    if (data.GetProcess().IsValid())
+      info.pid = data.GetProcess().Pid();
     info.process_type = static_cast<content::ProcessType>(data.process_type);
     info.app_state = base::android::ApplicationStatusListener::GetState();
     info.normal_termination = true;
