@@ -15,6 +15,7 @@ if (!is_android) {
       ":browser_proxy",
       ":chrome_app_permission_view",
       ":constants",
+      ":dom_switch",
       ":fake_page_handler",
       ":main_view",
       ":metadata_view",
@@ -52,6 +53,7 @@ if (!is_android) {
       ":actions",
       ":browser_proxy",
       ":constants",
+      ":dom_switch",
       ":main_view",
       ":metadata_view",
       ":pwa_permission_view",
@@ -90,6 +92,9 @@ if (!is_android) {
   }
 
   js_library("constants") {
+  }
+
+  js_library("dom_switch") {
   }
 
   js_library("fake_page_handler") {
