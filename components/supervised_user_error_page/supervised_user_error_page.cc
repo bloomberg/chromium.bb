@@ -30,8 +30,12 @@ bool ReasonIsAutomatic(FilteringBehaviorReason reason) {
 std::string BuildAvatarImageUrl(const std::string& url, int size) {
   std::string result = url;
   size_t slash = result.rfind('/');
-  if (slash != std::string::npos)
-    result.insert(slash, "/s" + base::NumberToString(size) + "-c");
+  if (slash != std::string::npos) {
+    // Check if the URL already contains the monogram (-mo) option.
+    // In that case, we must use the '-' separator, instead of '/'.
+    std::string separator = result.substr(slash - 3, 3) == "/mo" ? "-" : "/";
+    result.insert(slash, separator + "s" + base::IntToString(size) + "-c");
+  }
   return result;
 }
 
