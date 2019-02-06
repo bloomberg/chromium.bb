@@ -2276,6 +2276,7 @@
       'webkit_layout_tests': {
         'args': [
           '--additional-driver-flag=--no-sandbox',
+          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw',
           '--num-retries=3',
         ],
         'isolate_name': 'webkit_layout_tests_exparchive',
