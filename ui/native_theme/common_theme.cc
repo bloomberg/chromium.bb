@@ -44,6 +44,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     switch (color_id) {
       case NativeTheme::kColorId_LabelEnabledColor:
       case NativeTheme::kColorId_TextfieldDefaultColor:
+      case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
         return gfx::kGoogleGrey200;
