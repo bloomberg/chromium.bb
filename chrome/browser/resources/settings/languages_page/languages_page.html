@@ -147,6 +147,10 @@
                   <div title="[[item.language.nativeDisplayName]]">
                     [[item.language.displayName]]
                   </div>
+                  <div class="secondary"
+                      hidden="[[!isTranslationTarget_(item.language.code)]]">
+                    $i18n{translateTargetLabel}
+                  </div>
 <if expr="chromeos or is_win">
                   <div class="explain-selected"
                       hidden="[[!isProspectiveUILanguage_(
