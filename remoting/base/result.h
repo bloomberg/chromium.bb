@@ -150,28 +150,28 @@ struct ResultStorage {
   // Direct constructors.
   template <typename... Args>
   ResultStorage(SuccessTag, Args&&... args) : is_success(true) {
-    new (&success) SuccessType(std::forward<Args>(args)...);
+    new (std::addressof(success)) SuccessType(std::forward<Args>(args)...);
   }
 
   template <typename... Args>
   ResultStorage(ErrorTag, Args&&... args) : is_success(false) {
-    new (&error) ErrorType(std::forward<Args>(args)...);
+    new (std::addressof(error)) ErrorType(std::forward<Args>(args)...);
   }
 
   // Copy/move constructors.
   ResultStorage(const ResultStorage& other) : is_success(other.is_success) {
     if (is_success) {
-      new (&success) SuccessType(other.success);
+      new (std::addressof(success)) SuccessType(other.success);
     } else {
-      new (&error) ErrorType(other.error);
+      new (std::addressof(error)) ErrorType(other.error);
     }
   }
 
   ResultStorage(ResultStorage&& other) : is_success(other.is_success) {
     if (is_success) {
-      new (&success) SuccessType(std::move(other.success));
+      new (std::addressof(success)) SuccessType(std::move(other.success));
     } else {
-      new (&error) ErrorType(std::move(other.error));
+      new (std::addressof(error)) ErrorType(std::move(other.error));
     }
   }
 
@@ -180,18 +180,18 @@ struct ResultStorage {
   ResultStorage(const ResultStorage<S, E>& other)
       : is_success(other.is_success) {
     if (is_success) {
-      new (&success) SuccessType(other.success);
+      new (std::addressof(success)) SuccessType(other.success);
     } else {
-      new (&error) ErrorType(other.error);
+      new (std::addressof(error)) ErrorType(other.error);
     }
   }
 
   template <typename S, typename E>
   ResultStorage(ResultStorage<S, E>&& other) : is_success(other.is_success) {
     if (is_success) {
-      new (&success) SuccessType(std::move(other.success));
+      new (std::addressof(success)) SuccessType(std::move(other.success));
     } else {
-      new (&error) ErrorType(std::move(other.error));
+      new (std::addressof(error)) ErrorType(std::move(other.error));
     }
   }
 
@@ -636,8 +636,6 @@ class Result : public internal::DefaultConstructible<
 
   bool is_error() const { return !storage_.is_success; }
 
-  explicit operator bool() const { return storage_.is_success; }
-
   SuccessType& success() {
     DCHECK(storage_.is_success);
     return storage_.success;
@@ -657,6 +655,16 @@ class Result : public internal::DefaultConstructible<
     DCHECK(!storage_.is_success);
     return storage_.error;
   }
+
+  // Allow Result to be treated like an Optional that just happens to have more
+  // details in the error case.
+  explicit operator bool() const { return storage_.is_success; }
+
+  SuccessType& operator*() { return success(); }
+  const SuccessType& operator*() const { return success(); }
+
+  SuccessType* operator->() { return &success(); }
+  const SuccessType* operator->() const { return &success(); }
 
  private:
   internal::ResultStorage<SuccessType, ErrorType> storage_;
