@@ -16,6 +16,7 @@
 // using the image corpora used to assess Blink image decode performance. See
 // http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
+#include <chrono>
 #include <fstream>
 
 #include "base/command_line.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -62,7 +62,7 @@ void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
       data, all_data_received, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore());
 
-  auto start = CurrentTimeTicks();
+  auto start = std::chrono::steady_clock::now();
 
   decoder->SetData(data, all_data_received);
   size_t frame_count = decoder->FrameCount();
@@ -71,11 +71,12 @@ void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
       DecodeFailure(image);
   }
 
-  image->time += (CurrentTimeTicks() - start).InSecondsF();
+  auto end = std::chrono::steady_clock::now();
 
   if (!frame_count || decoder->Failed())
     DecodeFailure(image);
 
+  image->time += std::chrono::duration<double>(end - start).count();
   image->width = decoder->Size().Width();
   image->height = decoder->Size().Height();
   image->frames = frame_count;
