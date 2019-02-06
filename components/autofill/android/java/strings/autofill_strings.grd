@@ -6,6 +6,7 @@
     <output filename="values-am/autofill_strings.xml" lang="am" type="android" />
     <output filename="values-ar/autofill_strings.xml" lang="ar" type="android" />
     <output filename="values-bg/autofill_strings.xml" lang="bg" type="android" />
+    <output filename="values-bn/autofill_strings.xml" lang="bn" type="android" />
     <output filename="values-ca/autofill_strings.xml" lang="ca" type="android" />
     <output filename="values-cs/autofill_strings.xml" lang="cs" type="android" />
     <output filename="values-da/autofill_strings.xml" lang="da" type="android" />
@@ -15,20 +16,26 @@
     <output filename="values-en-rGB/autofill_strings.xml" lang="en-GB" type="android" />
     <output filename="values-es/autofill_strings.xml" lang="es" type="android" />
     <output filename="values-es-rUS/autofill_strings.xml" lang="es-419" type="android" />
+    <output filename="values-et/autofill_strings.xml" lang="et" type="android" />
     <output filename="values-fa/autofill_strings.xml" lang="fa" type="android" />
     <output filename="values-fi/autofill_strings.xml" lang="fi" type="android" />
     <output filename="values-tl/autofill_strings.xml" lang="fil" type="android" />
     <output filename="values-fr/autofill_strings.xml" lang="fr" type="android" />
+    <output filename="values-gu/autofill_strings.xml" lang="gu" type="android" />
+    <output filename="values-iw/autofill_strings.xml" lang="he" type="android" />
     <output filename="values-hi/autofill_strings.xml" lang="hi" type="android" />
     <output filename="values-hr/autofill_strings.xml" lang="hr" type="android" />
     <output filename="values-hu/autofill_strings.xml" lang="hu" type="android" />
     <output filename="values-in/autofill_strings.xml" lang="id" type="android" />
     <output filename="values-it/autofill_strings.xml" lang="it" type="android" />
-    <output filename="values-iw/autofill_strings.xml" lang="he" type="android" />
     <output filename="values-ja/autofill_strings.xml" lang="ja" type="android" />
+    <output filename="values-kn/autofill_strings.xml" lang="kn" type="android" />
     <output filename="values-ko/autofill_strings.xml" lang="ko" type="android" />
     <output filename="values-lt/autofill_strings.xml" lang="lt" type="android" />
     <output filename="values-lv/autofill_strings.xml" lang="lv" type="android" />
+    <output filename="values-ml/autofill_strings.xml" lang="ml" type="android" />
+    <output filename="values-mr/autofill_strings.xml" lang="mr" type="android" />
+    <output filename="values-ms/autofill_strings.xml" lang="ms" type="android" />
     <output filename="values-nl/autofill_strings.xml" lang="nl" type="android" />
     <output filename="values-nb/autofill_strings.xml" lang="no" type="android" />
     <output filename="values-pl/autofill_strings.xml" lang="pl" type="android" />
@@ -41,6 +48,8 @@
     <output filename="values-sr/autofill_strings.xml" lang="sr" type="android" />
     <output filename="values-sv/autofill_strings.xml" lang="sv" type="android" />
     <output filename="values-sw/autofill_strings.xml" lang="sw" type="android" />
+    <output filename="values-ta/autofill_strings.xml" lang="ta" type="android" />
+    <output filename="values-te/autofill_strings.xml" lang="te" type="android" />
     <output filename="values-th/autofill_strings.xml" lang="th" type="android" />
     <output filename="values-tr/autofill_strings.xml" lang="tr" type="android" />
     <output filename="values-uk/autofill_strings.xml" lang="uk" type="android" />

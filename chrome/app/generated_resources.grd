@@ -22,8 +22,8 @@ are declared in tools/grit/grit_rule.gni.
     <output filename="generated_resources_da.pak" type="data_package" lang="da" />
     <output filename="generated_resources_de.pak" type="data_package" lang="de" />
     <output filename="generated_resources_el.pak" type="data_package" lang="el" />
-    <output filename="generated_resources_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="generated_resources_en-US.pak" type="data_package" lang="en" />
+    <output filename="generated_resources_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="generated_resources_es.pak" type="data_package" lang="es" />
     <output filename="generated_resources_es-419.pak" type="data_package" lang="es-419" />
     <output filename="generated_resources_et.pak" type="data_package" lang="et" />
@@ -76,6 +76,7 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-am/generated_resources.xml" lang="am" type="android" context="android_java" />
       <output filename="java/res/values-ar/generated_resources.xml" lang="ar" type="android" context="android_java" />
       <output filename="java/res/values-bg/generated_resources.xml" lang="bg" type="android" context="android_java" />
+      <output filename="java/res/values-bn/generated_resources.xml" lang="bn" type="android" context="android_java" />
       <output filename="java/res/values-ca/generated_resources.xml" lang="ca" type="android" context="android_java" />
       <output filename="java/res/values-cs/generated_resources.xml" lang="cs" type="android" context="android_java" />
       <output filename="java/res/values-da/generated_resources.xml" lang="da" type="android" context="android_java" />
@@ -85,20 +86,26 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-en-rGB/generated_resources.xml" lang="en-GB" type="android" context="android_java" />
       <output filename="java/res/values-es/generated_resources.xml" lang="es" type="android" context="android_java" />
       <output filename="java/res/values-es-rUS/generated_resources.xml" lang="es-419" type="android" context="android_java" />
+      <output filename="java/res/values-et/generated_resources.xml" lang="et" type="android" context="android_java" />
       <output filename="java/res/values-fa/generated_resources.xml" lang="fa" type="android" context="android_java" />
       <output filename="java/res/values-fi/generated_resources.xml" lang="fi" type="android" context="android_java" />
       <output filename="java/res/values-tl/generated_resources.xml" lang="fil" type="android" context="android_java" />
       <output filename="java/res/values-fr/generated_resources.xml" lang="fr" type="android" context="android_java" />
+      <output filename="java/res/values-gu/generated_resources.xml" lang="gu" type="android" context="android_java" />
+      <output filename="java/res/values-iw/generated_resources.xml" lang="he" type="android" context="android_java" />
       <output filename="java/res/values-hi/generated_resources.xml" lang="hi" type="android" context="android_java" />
       <output filename="java/res/values-hr/generated_resources.xml" lang="hr" type="android" context="android_java" />
       <output filename="java/res/values-hu/generated_resources.xml" lang="hu" type="android" context="android_java" />
       <output filename="java/res/values-in/generated_resources.xml" lang="id" type="android" context="android_java" />
       <output filename="java/res/values-it/generated_resources.xml" lang="it" type="android" context="android_java" />
-      <output filename="java/res/values-iw/generated_resources.xml" lang="he" type="android" context="android_java" />
       <output filename="java/res/values-ja/generated_resources.xml" lang="ja" type="android" context="android_java" />
+      <output filename="java/res/values-kn/generated_resources.xml" lang="kn" type="android" context="android_java" />
       <output filename="java/res/values-ko/generated_resources.xml" lang="ko" type="android" context="android_java" />
       <output filename="java/res/values-lt/generated_resources.xml" lang="lt" type="android" context="android_java" />
       <output filename="java/res/values-lv/generated_resources.xml" lang="lv" type="android" context="android_java" />
+      <output filename="java/res/values-ml/generated_resources.xml" lang="ml" type="android" context="android_java" />
+      <output filename="java/res/values-mr/generated_resources.xml" lang="mr" type="android" context="android_java" />
+      <output filename="java/res/values-ms/generated_resources.xml" lang="ms" type="android" context="android_java" />
       <output filename="java/res/values-nl/generated_resources.xml" lang="nl" type="android" context="android_java" />
       <output filename="java/res/values-nb/generated_resources.xml" lang="no" type="android" context="android_java" />
       <output filename="java/res/values-pl/generated_resources.xml" lang="pl" type="android" context="android_java" />
@@ -111,6 +118,8 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-sr/generated_resources.xml" lang="sr" type="android" context="android_java" />
       <output filename="java/res/values-sv/generated_resources.xml" lang="sv" type="android" context="android_java" />
       <output filename="java/res/values-sw/generated_resources.xml" lang="sw" type="android" context="android_java" />
+      <output filename="java/res/values-ta/generated_resources.xml" lang="ta" type="android" context="android_java" />
+      <output filename="java/res/values-te/generated_resources.xml" lang="te" type="android" context="android_java" />
       <output filename="java/res/values-th/generated_resources.xml" lang="th" type="android" context="android_java" />
       <output filename="java/res/values-tr/generated_resources.xml" lang="tr" type="android" context="android_java" />
       <output filename="java/res/values-uk/generated_resources.xml" lang="uk" type="android" context="android_java" />
