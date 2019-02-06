@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/plugin_list.h"
+#include "content/browser/plugin_list.h"
 
 #include <stddef.h>
 
@@ -112,8 +112,7 @@ void PluginList::GetInternalPlugins(
   base::AutoLock lock(lock_);
 
   for (std::vector<WebPluginInfo>::iterator it = internal_plugins_.begin();
-       it != internal_plugins_.end();
-       ++it) {
+       it != internal_plugins_.end(); ++it) {
     internal_plugins->push_back(*it);
   }
 }
@@ -130,9 +129,7 @@ bool PluginList::ReadPluginInfo(const base::FilePath& filename,
   return false;
 }
 
-PluginList::PluginList()
-    : loading_state_(LOADING_STATE_NEEDS_REFRESH) {
-}
+PluginList::PluginList() : loading_state_(LOADING_STATE_NEEDS_REFRESH) {}
 
 bool PluginList::PrepareForPluginLoading() {
   base::AutoLock lock(lock_);
@@ -160,8 +157,7 @@ void PluginList::LoadPlugins() {
   GetPluginPathsToLoad(&plugin_paths);
 
   for (std::vector<base::FilePath>::const_iterator it = plugin_paths.begin();
-       it != plugin_paths.end();
-       ++it) {
+       it != plugin_paths.end(); ++it) {
     WebPluginInfo plugin_info;
     LoadPluginIntoPluginList(*it, &new_plugins, &plugin_info);
   }
@@ -169,10 +165,9 @@ void PluginList::LoadPlugins() {
   SetPlugins(new_plugins);
 }
 
-bool PluginList::LoadPluginIntoPluginList(
-    const base::FilePath& path,
-    std::vector<WebPluginInfo>* plugins,
-    WebPluginInfo* plugin_info) {
+bool PluginList::LoadPluginIntoPluginList(const base::FilePath& path,
+                                          std::vector<WebPluginInfo>* plugins,
+                                          WebPluginInfo* plugin_info) {
   if (!ReadPluginInfo(path, plugin_info))
     return false;
 
@@ -181,7 +176,7 @@ bool PluginList::LoadPluginIntoPluginList(
     // TODO: don't load global handlers for now.
     // WebKit hands to the Plugin before it tries
     // to handle mimeTypes on its own.
-    const std::string &mime_type = plugin_info->mime_types[i].mime_type;
+    const std::string& mime_type = plugin_info->mime_types[i].mime_type;
     if (mime_type == "*")
       return false;
   }
@@ -297,15 +292,12 @@ void PluginList::GetPluginInfoArray(
 void PluginList::RemoveExtraPluginPathLocked(
     const base::FilePath& plugin_path) {
   lock_.AssertAcquired();
-  std::vector<base::FilePath>::iterator it =
-      std::find(extra_plugin_paths_.begin(), extra_plugin_paths_.end(),
-                plugin_path);
+  std::vector<base::FilePath>::iterator it = std::find(
+      extra_plugin_paths_.begin(), extra_plugin_paths_.end(), plugin_path);
   if (it != extra_plugin_paths_.end())
     extra_plugin_paths_.erase(it);
 }
 
-PluginList::~PluginList() {
-}
-
+PluginList::~PluginList() {}
 
 }  // namespace content

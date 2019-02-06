@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/plugin_list.h"
+#include "content/browser/plugin_list.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,9 +20,7 @@ const char* kFooMimeType = "application/x-foo-mime-type";
 const char* kFooFileType = "foo";
 
 bool Equals(const WebPluginInfo& a, const WebPluginInfo& b) {
-  return (a.name == b.name &&
-          a.path == b.path &&
-          a.version == b.version &&
+  return (a.name == b.name && a.path == b.path && a.version == b.version &&
           a.desc == b.desc);
 }
 
@@ -48,8 +46,7 @@ class PluginListTest : public testing::Test {
         bar_plugin_(base::ASCIIToUTF16("Bar Plugin"),
                     base::FilePath(kBarPath),
                     base::ASCIIToUTF16("2.3.4"),
-                    base::ASCIIToUTF16("bar")) {
-  }
+                    base::ASCIIToUTF16("bar")) {}
 
   void SetUp() override {
     plugin_list_.RegisterInternalPlugin(bar_plugin_, false);
@@ -94,24 +91,20 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
   // The file type of the URL is supported by foo_plugin_. However,
   // GetPluginInfoArray should not match foo_plugin_ because the MIME type is
   // application/octet-stream.
-  plugin_list_.GetPluginInfoArray(target_url,
-                                  "application/octet-stream",
-                                  false, // allow_wildcard
-                                  NULL,  // use_stale
-                                  &plugins,
-                                  &actual_mime_types);
+  plugin_list_.GetPluginInfoArray(target_url, "application/octet-stream",
+                                  false,  // allow_wildcard
+                                  NULL,   // use_stale
+                                  &plugins, &actual_mime_types);
   EXPECT_EQ(0u, plugins.size());
   EXPECT_EQ(0u, actual_mime_types.size());
 
   // foo_plugin_ matches due to the MIME type.
   plugins.clear();
   actual_mime_types.clear();
-  plugin_list_.GetPluginInfoArray(target_url,
-                                  kFooMimeType,
-                                  false, // allow_wildcard
-                                  NULL,  // use_stale
-                                  &plugins,
-                                  &actual_mime_types);
+  plugin_list_.GetPluginInfoArray(target_url, kFooMimeType,
+                                  false,  // allow_wildcard
+                                  NULL,   // use_stale
+                                  &plugins, &actual_mime_types);
   EXPECT_EQ(1u, plugins.size());
   EXPECT_TRUE(Contains(plugins, foo_plugin_));
   ASSERT_EQ(1u, actual_mime_types.size());
@@ -120,12 +113,10 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
   // foo_plugin_ matches due to the file type and empty MIME type.
   plugins.clear();
   actual_mime_types.clear();
-  plugin_list_.GetPluginInfoArray(target_url,
-                                  "",
-                                  false, // allow_wildcard
-                                  NULL,  // use_stale
-                                  &plugins,
-                                  &actual_mime_types);
+  plugin_list_.GetPluginInfoArray(target_url, "",
+                                  false,  // allow_wildcard
+                                  NULL,   // use_stale
+                                  &plugins, &actual_mime_types);
   EXPECT_EQ(1u, plugins.size());
   EXPECT_TRUE(Contains(plugins, foo_plugin_));
   ASSERT_EQ(1u, actual_mime_types.size());
