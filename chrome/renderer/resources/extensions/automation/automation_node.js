@@ -1014,6 +1014,7 @@ var stringAttributes = [
     'containerLiveStatus',
     'description',
     'display',
+    'fontFamily',
     'htmlTag',
     'imageDataUrl',
     'innerHtml',
@@ -1088,9 +1089,10 @@ var nodeRefListAttributes = [
     ['labelledbyIds', 'labelledBy', 'labelFor']];
 
 var floatAttributes = [
-    'valueForRange',
+    'fontSize',
+    'maxValueForRange',
     'minValueForRange',
-    'maxValueForRange'];
+    'valueForRange'];
 
 var htmlAttributes = [
     ['type', 'inputType']];
