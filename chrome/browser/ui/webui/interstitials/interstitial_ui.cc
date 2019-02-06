@@ -11,6 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
+#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -252,6 +254,17 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
       base::Callback<void(content::CertificateRequestResultType)>());
 }
 
+LookalikeUrlInterstitialPage* CreateLookalikeInterstitialPage(
+    content::WebContents* web_contents) {
+  GURL request_url("https://example.net");
+  GURL safe_url("https://example.com");
+
+  return new LookalikeUrlInterstitialPage(
+      web_contents, safe_url,
+      std::make_unique<LookalikeUrlControllerClient>(web_contents, nullptr,
+                                                     request_url, safe_url));
+}
+
 safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
     content::WebContents* web_contents) {
   safe_browsing::SBThreatType threat_type =
@@ -473,6 +486,8 @@ void InterstitialHTMLSource::StartDataRequest(
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
   } else if (path_without_query == "/clock") {
     interstitial_delegate.reset(CreateBadClockBlockingPage(web_contents));
+  } else if (path_without_query == "/lookalike") {
+    interstitial_delegate.reset(CreateLookalikeInterstitialPage(web_contents));
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   } else if (path_without_query == "/captiveportal") {
     interstitial_delegate.reset(CreateCaptivePortalBlockingPage(web_contents));
