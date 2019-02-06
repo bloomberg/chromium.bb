@@ -45,10 +45,17 @@ AnimationWorkletProxyClient::AnimationWorkletProxyClient(
       next_global_scope_switch_countdown_(0),
       current_stateless_global_scope_index_(0) {
   DCHECK(IsMainThread());
-  mutator_items_.emplace_back(std::move(compositor_mutator_dispatcher),
-                              std::move(compositor_mutator_runner));
-  mutator_items_.emplace_back(std::move(main_thread_mutator_dispatcher),
-                              std::move(main_thread_mutator_runner));
+
+  // The dispatchers are weak pointers that may come from another thread. It's
+  // illegal to check them here. Instead, the task runners are checked.
+  if (compositor_mutator_runner) {
+    mutator_items_.emplace_back(std::move(compositor_mutator_dispatcher),
+                                std::move(compositor_mutator_runner));
+  }
+  if (main_thread_mutator_runner) {
+    mutator_items_.emplace_back(std::move(main_thread_mutator_dispatcher),
+                                std::move(main_thread_mutator_runner));
+  }
 }
 
 void AnimationWorkletProxyClient::Trace(blink::Visitor* visitor) {
@@ -68,7 +75,6 @@ void AnimationWorkletProxyClient::SynchronizeAnimatorName(
   // registered names are synced before resolving the load promise therefore it
   // is safe to use a post task here.
   for (auto& mutator_item : mutator_items_) {
-    DCHECK(mutator_item.mutator_runner);
     PostCrossThreadTask(
         *mutator_item.mutator_runner, FROM_HERE,
         CrossThreadBind(
@@ -101,7 +107,6 @@ void AnimationWorkletProxyClient::AddGlobalScope(
   state_ = RunState::kWorking;
 
   for (auto& mutator_item : mutator_items_) {
-    DCHECK(mutator_item.mutator_runner);
     PostCrossThreadTask(
         *mutator_item.mutator_runner, FROM_HERE,
         CrossThreadBind(&AnimationWorkletMutatorDispatcherImpl::
@@ -116,7 +121,6 @@ void AnimationWorkletProxyClient::Dispose() {
     // At worklet scope termination break the reference to the clients if it is
     // still alive.
     for (auto& mutator_item : mutator_items_) {
-      DCHECK(mutator_item.mutator_runner);
       PostCrossThreadTask(
           *mutator_item.mutator_runner, FROM_HERE,
           CrossThreadBind(&AnimationWorkletMutatorDispatcherImpl::

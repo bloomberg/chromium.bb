@@ -72,6 +72,10 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   MutatorClient* client() { return client_; }
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+    return host_queue_;
+  }
+
  private:
   class OutputVectorRef;
 
@@ -95,10 +99,6 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // The AnimationWorkletProxyClients are also owned by the WorkerClients
   // dictionary.
   AnimationWorkletMutatorToTaskRunnerMap mutator_map_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
-    return host_queue_;
-  }
 
   template <typename ClientType>
   static std::unique_ptr<ClientType> CreateClient(

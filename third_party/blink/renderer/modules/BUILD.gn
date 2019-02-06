@@ -249,6 +249,7 @@ jumbo_source_set("unit_tests") {
     "accessibility/testing/accessibility_test.cc",
     "accessibility/testing/accessibility_test.h",
     "animationworklet/animation_worklet_global_scope_test.cc",
+    "animationworklet/animation_worklet_proxy_client_test.cc",
     "animationworklet/worklet_animation_test.cc",
     "background_fetch/background_fetch_icon_loader_test.cc",
     "background_fetch/background_fetch_manager_test.cc",
