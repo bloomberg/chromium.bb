@@ -136,7 +136,7 @@ bool ParseResponseMap(const cbor::Value& value,
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
         base::StringPrintf(
-            "Expected request map, got non-map type. Actual type: %d",
+            "Expected response map, got non-map type. Actual type: %d",
             static_cast<int>(value.type())));
     return false;
   }
