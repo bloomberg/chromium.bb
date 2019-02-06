@@ -643,8 +643,10 @@ def GetMangledMethodName(jni_params, name, params, return_type):
   return mangled_name
 
 
-def MangleCalledByNatives(jni_params, called_by_natives):
-  """Mangles all the overloads from the call_by_natives list."""
+def MangleCalledByNatives(jni_params, called_by_natives, always_mangle):
+  """Mangles all the overloads from the call_by_natives list or
+     mangle all methods if always_mangle is true.
+  """
   method_counts = collections.defaultdict(
       lambda: collections.defaultdict(lambda: 0))
   for called_by_native in called_by_natives:
@@ -655,7 +657,7 @@ def MangleCalledByNatives(jni_params, called_by_natives):
     java_class_name = called_by_native.java_class_name
     method_name = called_by_native.name
     method_id_var_name = method_name
-    if method_counts[java_class_name][method_name] > 1:
+    if always_mangle or method_counts[java_class_name][method_name] > 1:
       method_id_var_name = GetMangledMethodName(jni_params, method_name,
                                                 called_by_native.params,
                                                 called_by_native.return_type)
@@ -684,12 +686,13 @@ def RemoveIndentedEmptyLines(string):
   return re.sub('^(?: {2})+$\n', '', string, flags=re.MULTILINE)
 
 
-def ExtractCalledByNatives(jni_params, contents):
+def ExtractCalledByNatives(jni_params, contents, always_mangle):
   """Parses all methods annotated with @CalledByNative.
 
   Args:
     jni_params: JniParams object.
     contents: the contents of the java file.
+    always_mangle: See MangleCalledByNatives.
 
   Returns:
     A list of dict with information about the annotated methods.
@@ -724,7 +727,7 @@ def ExtractCalledByNatives(jni_params, contents):
     if '@CalledByNative' in line1:
       raise ParseError('could not parse @CalledByNative method signature',
                        line1, line2)
-  return MangleCalledByNatives(jni_params, called_by_natives)
+  return MangleCalledByNatives(jni_params, called_by_natives, always_mangle)
 
 
 def RemoveComments(contents):
@@ -800,7 +803,8 @@ class JNIFromJavaP(object):
           signature=JniParams.ParseJavaPSignature(contents[lineno + 1]),
           is_constructor=True)]
     self.called_by_natives = MangleCalledByNatives(self.jni_params,
-                                                   self.called_by_natives)
+                                                   self.called_by_natives,
+                                                   options.always_mangle)
     self.constant_fields = []
     re_constant_field = re.compile('.*?public static final int (?P<name>.*?);')
     re_constant_field_value = re.compile(
@@ -931,7 +935,9 @@ class JNIFromJavaSource(object):
     self.jni_params.ExtractImportsAndInnerClasses(contents)
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
     natives = ExtractNatives(contents, options.ptr_type)
-    called_by_natives = ExtractCalledByNatives(self.jni_params, contents)
+    called_by_natives = ExtractCalledByNatives(self.jni_params,
+                                               contents,
+                                               options.always_mangle)
 
     natives += ProxyHelpers.ExtractStaticProxyNatives(
         fully_qualified_class, contents, options.ptr_type,
@@ -1591,6 +1597,8 @@ See SampleForTests.java for more details.
                            help='Add additional profiling instrumentation.')
   option_parser.add_option('--enable_tracing', action='store_true',
                            help='Add TRACE_EVENTs to generated functions.')
+  option_parser.add_option('--always_mangle', action='store_true',
+                           help='Mangle all function names')
   option_parser.add_option(
       '--use_proxy_hash',
       action='store_true',

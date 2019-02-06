@@ -48,6 +48,7 @@ class TestOptions(object):
     self.enable_profiling = False
     self.enable_tracing = False
     self.use_proxy_hash = False
+    self.always_mangle = False
 
 
 class BaseTest(unittest.TestCase):
@@ -543,8 +544,8 @@ class TestGenerator(BaseTest):
     """
     jni_params = jni_generator.JniParams('org/chromium/Foo')
     jni_params.ExtractImportsAndInnerClasses(test_data)
-    called_by_natives = jni_generator.ExtractCalledByNatives(jni_params,
-                                                             test_data)
+    called_by_natives = jni_generator.ExtractCalledByNatives(
+        jni_params, test_data, always_mangle=False)
     golden_called_by_natives = [
         CalledByNative(
             return_type='InnerClass',
@@ -787,7 +788,7 @@ public static int foo(); // This one is fine
 
 @CalledByNative
 scooby doo
-""")
+""", always_mangle=False)
       self.fail('Expected a ParseError')
     except jni_generator.ParseError, e:
       self.assertEquals(('@CalledByNative', 'scooby doo'), e.context_lines)
@@ -830,6 +831,27 @@ import org.chromium.base.BuildInfo;
             [Param(name='p1',
                    datatype='java/lang/String'),],
              'java/io/InputStream'))
+
+  def testMethodNameAlwaysMangle(self):
+    test_data = """
+    import f.o.o.Bar;
+    import f.o.o.Baz;
+
+    class Clazz {
+      @CalledByNative
+      public Baz methodz(Bar bar) {
+        return null;
+      }
+    }
+    """
+    jni_params = jni_generator.JniParams('org/chromium/Foo')
+    jni_params.ExtractImportsAndInnerClasses(test_data)
+    called_by_natives = jni_generator.ExtractCalledByNatives(jni_params,
+                                                             test_data,
+                                                             always_mangle=True)
+    self.assertEquals(1, len(called_by_natives))
+    method = called_by_natives[0]
+    self.assertEquals('methodzFOOB_FOOB', method.method_id_var_name)
 
   def testFromJavaPGenerics(self):
     contents = """

@@ -24,7 +24,7 @@ ScopedJavaSurface::ScopedJavaSurface(
 
 ScopedJavaSurface::ScopedJavaSurface(const SurfaceTexture* surface_texture) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> tmp(JNI_Surface::Java_Surface_Constructor(
+  ScopedJavaLocalRef<jobject> tmp(JNI_Surface::Java_Surface_ConstructorAVS_AGST(
       env, surface_texture->j_surface_texture()));
   DCHECK(!tmp.is_null());
   j_surface_.Reset(tmp);
@@ -46,7 +46,7 @@ ScopedJavaSurface::~ScopedJavaSurface() {
 void ScopedJavaSurface::ReleaseSurfaceIfNeeded() {
   if (auto_release_ && !j_surface_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    JNI_Surface::Java_Surface_release(env, j_surface_);
+    JNI_Surface::Java_Surface_releaseV(env, j_surface_);
   }
 }
 
@@ -64,7 +64,7 @@ bool ScopedJavaSurface::IsEmpty() const {
 
 bool ScopedJavaSurface::IsValid() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return !IsEmpty() && JNI_Surface::Java_Surface_isValid(env, j_surface_);
+  return !IsEmpty() && JNI_Surface::Java_Surface_isValidZ(env, j_surface_);
 }
 
 // static
