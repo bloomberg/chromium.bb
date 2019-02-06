@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,6 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
         "enable-features=AutoFetchOnNetErrorPage", "disable-features=NewNetErrorPageUI"})
 public class OfflinePageAutoFetchTest {
     private static final String TAG = "AutoFetchTest";
+    private static final long WAIT_TIMEOUT_MS = 20000;
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -156,7 +158,6 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
     public void testAutoFetchOnDinoPage() throws Exception {
         startWebServer();
         final String testUrl = mWebServer.getBaseUrl();
@@ -189,7 +190,7 @@ public class OfflinePageAutoFetchTest {
 
         waitForHistogram("OfflinePages.AutoFetch.CompleteNotificationAction:TAPPED", 1);
         // A new tab should open, and it should load the offline page.
-        CriteriaHelper.pollInstrumentationThread(() -> {
+        pollInstrumentationThread(() -> {
             return getCurrentTabModel().getCount() == 2
                     && getCurrentTab().getTitle().equals("MyTestPage");
         });
@@ -198,7 +199,6 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
     public void testSwipeAwayCompleteNotification() throws Exception {
         // Standard setup to trigger auto-fetch.
         startWebServer();
@@ -224,7 +224,6 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
     public void testAutoFetchCancelOnLoad() throws Exception {
         startWebServer();
         final String testUrl = mWebServer.getBaseUrl();
@@ -275,7 +274,6 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
     public void testAutoFetchNotifyOnTabClose() throws Exception {
         final String testUrl = "http://www.offline.com";
         // Make |testUrl| return an offline error and attempt to load the page.
@@ -292,7 +290,6 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
     public void testAutoFetchSwipeInProgressNotification() throws Exception {
         // Trigger an auto-fetch request, and then an in-progress notification.
         final String testUrl = "http://www.offline.com";
@@ -312,7 +309,6 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    @DisabledTest(message = "Flaky: https://crbug.com/883486#c20")
     public void testAutoFetchTwoRequestsCancel() throws Exception {
         // Trigger two auto-fetch requests.
         final String testUrl1 = "http://www.offline1.com";
@@ -340,7 +336,7 @@ public class OfflinePageAutoFetchTest {
     }
 
     private void waitForRequestCount(int requestCount) {
-        CriteriaHelper.pollInstrumentationThread(
+        pollInstrumentationThread(
                 () -> OfflineTestUtil.getRequestsInQueue().length == requestCount);
     }
 
@@ -350,7 +346,7 @@ public class OfflinePageAutoFetchTest {
     }
 
     private void waitForPageAdded() throws Exception {
-        mPageAddedHelper.waitForCallback(0, 1, 10000, TimeUnit.MILLISECONDS);
+        mPageAddedHelper.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
     private Tab activityTab() {
@@ -399,9 +395,8 @@ public class OfflinePageAutoFetchTest {
     }
 
     private void waitForHistogram(String histogramAndEnum, int delta) {
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> histogramSnapshot().get(histogramAndEnum)
+        pollInstrumentationThread(()
+                                          -> histogramSnapshot().get(histogramAndEnum)
                                 - mInitialHistograms.get(histogramAndEnum)
                         >= delta);
     }
@@ -479,5 +474,9 @@ public class OfflinePageAutoFetchTest {
                     "Request Coordinator state:" + OfflineTestUtil.dumpRequestCoordinatorState());
         } catch (TimeoutException | InterruptedException e) {
         }
+    }
+    private void pollInstrumentationThread(final Callable<Boolean> criteria) {
+        CriteriaHelper.pollInstrumentationThread(
+                criteria, "Criteria not met", WAIT_TIMEOUT_MS, 100);
     }
 }
