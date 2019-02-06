@@ -23,6 +23,8 @@ class ASH_EXPORT DisplayConfigurationObserver
   DisplayConfigurationObserver();
   ~DisplayConfigurationObserver() override;
 
+  bool save_preference() const { return save_preference_; }
+
  protected:
   // WindowTreeHostManager::Observer:
   void OnDisplaysInitialized() override;
