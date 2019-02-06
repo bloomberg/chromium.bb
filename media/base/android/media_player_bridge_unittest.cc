@@ -29,10 +29,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                     int height,
                     bool success));
   MOCK_METHOD1(OnPlaybackComplete, void(int player_id));
-  MOCK_METHOD1(OnMediaInterrupted, void(int player_id));
-  MOCK_METHOD2(OnBufferingUpdate, void(int player_id, int percentage));
-  MOCK_METHOD2(OnSeekComplete,
-               void(int player_id, const base::TimeDelta& current_time));
   MOCK_METHOD2(OnError, void(int player_id, int error));
   MOCK_METHOD3(OnVideoSizeChanged, void(int player_id, int width, int height));
   MOCK_METHOD2(OnAudibleStateChanged, void(int player_id, bool is_audible_now));
@@ -54,9 +50,6 @@ class MediaPlayerBridgeTest : public testing::Test {
                 "",
                 false,
                 &manager_,
-                base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
-                           base::Unretained(&manager_)),
-                GURL(),
                 false) {}
 
   void SetCanSeekForward(bool can_seek_forward) {
