@@ -129,14 +129,6 @@ ChromeVoxBackgroundTest.prototype = {
       <p>After</p>
     </div>
   */},
-
-  languageSwitchingDoc: function() {/*!
-    <p id="breakfast">In the morning, I sometimes eat breakfast.</p>
-    <p id="lunch" lang="fr">Dans l'apres-midi, je dejeune.</p>
-    <p id="greeting">
-      Hello it's a pleasure to meet you. <span lang="fr">Comment ca va?</span>
-    </p>
-  */},
 };
 
 /** Tests that ChromeVox classic is in this context. */
@@ -1867,26 +1859,6 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverTargetsLeafNode', function() {
         .expectSpeech('Jefferson')
         .expectSpeech('Button')
         .replay();
-  });
-});
-
-TEST_F('ChromeVoxBackgroundTest', 'DetectLanguage', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(this.languageSwitchingDoc, function() {
-
-    mockFeedback.call(doCmd('jumpToTop'))
-        .expectSpeech("In the morning, I sometimes eat breakfast.");
-    mockFeedback.call(doCmd('nextLine'))
-        .expectSpeech("Dans l'apres-midi, je dejeune.");
-    mockFeedback.call(doCmd('nextLine'))
-        .expectSpeech("Hello it's a pleasure to meet you. ");
-    mockFeedback.call(doCmd('nextLine'))
-        .expectSpeech("Comment ca va?");
-
-    // TODO(akihiroota): Implement expectSpeechWithLanguage() to assert correct
-    // output language.
-
-    mockFeedback.replay();
   });
 });
 

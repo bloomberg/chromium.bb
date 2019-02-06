@@ -27,6 +27,7 @@ goog.require('cvox.TtsCategory');
 goog.require('cvox.ValueSelectionSpan');
 goog.require('cvox.ValueSpan');
 goog.require('goog.i18n.MessageFormat');
+goog.require('LanguageSwitching');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -1245,6 +1246,12 @@ Output.prototype = {
 
           this.append_(buff, node.name || '', options);
           ruleStr.writeTokenWithValue(token, node.name);
+          // Language Switching. Only execute if feature is enabled.
+          if (localStorage['languageSwitching'] === 'true') {
+            speechProps = new Output.SpeechProperties();
+            speechProps['lang'] =
+                LanguageSwitching.updateCurrentLanguageForNode(node);
+          }
         } else if (token == 'description') {
           if (node.name == node.description)
             return;
