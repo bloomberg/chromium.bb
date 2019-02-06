@@ -343,6 +343,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Callback that indicates a picture has been cleared.
   void PictureCleared();
 
+  // Returns the number of OutputRecords at client/device. This is used to
+  // compute values reported for chrome://tracing.
+  size_t GetNumOfOutputRecordsAtClient() const;
+  size_t GetNumOfOutputRecordsAtDevice() const;
+
   size_t input_planes_count_;
   size_t output_planes_count_;
 

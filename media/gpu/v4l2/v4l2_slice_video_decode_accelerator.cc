@@ -28,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/unaligned_shared_memory.h"
@@ -314,6 +315,7 @@ void V4L2SliceVideoDecodeAccelerator::InitializeTask() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitialized);
+  TRACE_EVENT0("media,gpu", "V4L2SVDA::InitializeTask");
 
   if (IsDestroyPending())
     return;
@@ -350,6 +352,7 @@ void V4L2SliceVideoDecodeAccelerator::Destroy() {
 void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
   DVLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media,gpu", "V4L2SVDA::DestroyTask");
 
   state_ = kDestroying;
 
@@ -595,7 +598,7 @@ void V4L2SliceVideoDecodeAccelerator::DismissPictures(
 void V4L2SliceVideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   DVLOGF(3);
   DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
-
+  TRACE_EVENT0("media,gpu", "V4L2SVDA::DevicePollTask");
   bool event_pending;
   if (!device_->Poll(poll_device, &event_pending)) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -785,7 +788,6 @@ bool V4L2SliceVideoDecodeAccelerator::FinishEventProcessing() {
 
 void V4L2SliceVideoDecodeAccelerator::ProcessPendingEventsIfNeeded() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
   // Process pending events, if any, in the correct order.
   // We always first process the surface set change, as it is an internal
   // event from the decoder and interleaving it with external requests would
@@ -882,6 +884,10 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(int index) {
   DCHECK_NE(output_record.picture_id, -1);
 
   if (output_record.egl_fence) {
+    TRACE_EVENT0("media,gpu",
+                 "V4L2SVDA::EnqueueOutputRecord: "
+                 "GLFenceEGL::ClientWaitWithTimeoutNanos");
+
     // If we have to wait for completion, wait. Note that free_output_buffers_
     // is a FIFO queue, so we always wait on the buffer that has been in the
     // queue the longest. Every 100ms we check whether the decoder is shutting
@@ -1080,6 +1086,9 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
 
   decoder_input_queue_.push_back(std::move(bitstream_record));
 
+  TRACE_COUNTER_ID1("media,gpu", "V4L2SVDA decoder input BitstreamBuffers",
+                    this, decoder_input_queue_.size());
+
   ScheduleDecodeBufferTaskIfNeeded();
 }
 
@@ -1121,6 +1130,7 @@ void V4L2SliceVideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
 void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media,gpu", "V4L2SVDA::DecodeBufferTask");
 
   if (IsDestroyPending())
     return;
@@ -1131,8 +1141,9 @@ void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
   }
 
   while (true) {
-    AcceleratedVideoDecoder::DecodeResult res;
-    res = decoder_->Decode();
+    TRACE_EVENT_BEGIN0("media,gpu", "V4L2SVDA::DecodeBufferTask AVD::Decode");
+    const AcceleratedVideoDecoder::DecodeResult res = decoder_->Decode();
+    TRACE_EVENT_END0("media,gpu", "V4L2SVDA::DecodeBufferTask AVD::Decode");
     switch (res) {
       case AcceleratedVideoDecoder::kAllocateNewSurfaces:
         VLOGF(2) << "Decoder requesting a new set of surfaces";
@@ -1174,7 +1185,7 @@ void V4L2SliceVideoDecodeAccelerator::InitiateSurfaceSetChange() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecoding);
-
+  TRACE_EVENT_ASYNC_BEGIN0("media,gpu", "V4L2SVDA Resolution Change", this);
   DCHECK(!surface_set_change_pending_);
   surface_set_change_pending_ = true;
   NewEventPending();
@@ -1226,6 +1237,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
 
   surface_set_change_pending_ = false;
   VLOGF(2) << "Surface set change finished";
+  TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2SVDA Resolution Change", this);
   return true;
 }
 
@@ -1319,6 +1331,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kAwaitingPictureBuffers);
+  TRACE_EVENT1("media,gpu", "V4L2SVDA::AssignPictureBuffersTask",
+               "buffers_size", buffers.size());
 
   if (IsDestroyPending())
     return;
@@ -1413,6 +1427,8 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(texture_id, 0u);
+  TRACE_EVENT1("media,gpu", "V4L2SVDA::CreateGLImageFor", "picture_buffer_id",
+               picture_buffer_id);
 
   if (!make_context_current_cb_) {
     VLOGF(1) << "GL callbacks required for binding to GLImages";
@@ -1689,6 +1705,7 @@ void V4L2SliceVideoDecodeAccelerator::FlushTask() {
 void V4L2SliceVideoDecodeAccelerator::InitiateFlush() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT_ASYNC_BEGIN0("media,gpu", "V4L2SVDA Flush", this);
 
   // This will trigger output for all remaining surfaces in the decoder.
   // However, not all of them may be decoded yet (they would be queued
@@ -1739,6 +1756,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishFlush() {
   child_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Client::NotifyFlushDone, client_));
 
+  TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2SVDA Flush", this);
   return true;
 }
 
@@ -1754,6 +1772,7 @@ void V4L2SliceVideoDecodeAccelerator::Reset() {
 void V4L2SliceVideoDecodeAccelerator::ResetTask() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT_ASYNC_BEGIN0("media,gpu", "V4L2SVDA Reset", this);
 
   if (IsDestroyPending())
     return;
@@ -1814,6 +1833,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishReset() {
   child_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Client::NotifyResetDone, client_));
 
+  TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2SVDA Reset", this);
   return true;
 }
 
@@ -1948,6 +1968,15 @@ scoped_refptr<V4L2DecodeSurface>
 V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecoding);
+  TRACE_COUNTER_ID2("media,gpu", "V4L2 input buffers", this, "free",
+                    free_input_buffers_.size(), "in use",
+                    input_buffer_map_.size() - free_input_buffers_.size());
+  TRACE_COUNTER_ID2("media,gpu", "V4L2 output buffers", this, "free",
+                    free_output_buffers_.size(), "in use",
+                    output_buffer_map_.size() - free_output_buffers_.size());
+  TRACE_COUNTER_ID2("media,gpu", "V4L2 output buffers", this, "at client",
+                    GetNumOfOutputRecordsAtClient(), "at device",
+                    GetNumOfOutputRecordsAtDevice());
 
   if (free_input_buffers_.empty() || free_output_buffers_.empty())
     return nullptr;
@@ -2047,6 +2076,18 @@ V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles() {
 
   return device->GetSupportedDecodeProfiles(
       base::size(supported_input_fourccs_), supported_input_fourccs_);
+}
+
+size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtDevice() const {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  return std::count_if(output_buffer_map_.begin(), output_buffer_map_.end(),
+                       [](const auto& r) { return r.at_device; });
+}
+
+size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtClient() const {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  return std::count_if(output_buffer_map_.begin(), output_buffer_map_.end(),
+                       [](const auto& r) { return r.at_client; });
 }
 
 // base::trace_event::MemoryDumpProvider implementation.
