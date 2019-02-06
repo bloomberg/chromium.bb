@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 #define CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
@@ -247,6 +249,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
                                       std::string username,
                                       base::ScopedFD password_fd,
                                       StatusCallback callback) = 0;
+
+  // Calls UpdateSharePath. This will update a mount's share path with
+  // |share_path|. Returns smbprovider::ERROR_OK if the mount's share path was
+  // successfully updated. Returns smbprovider::ERROR_NOT_FOUND if the mount's
+  // share path were not updated.
+  virtual void UpdateSharePath(int32_t mount_id,
+                               const std::string& share_path,
+                               StatusCallback callback) = 0;
 
  protected:
   // Create() should be used instead.

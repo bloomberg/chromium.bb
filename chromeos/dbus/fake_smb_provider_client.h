@@ -141,6 +141,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
                 bool ntlm_enabled,
                 MountCallback callback) override;
 
+  void UpdateSharePath(int32_t mount_id,
+                       const std::string& share_path,
+                       StatusCallback callback) override;
+
   // Adds |share| to the list of shares for |server_url| in |shares_|.
   void AddToShares(const std::string& server_url, const std::string& share);
 

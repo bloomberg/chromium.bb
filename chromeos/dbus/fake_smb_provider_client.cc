@@ -276,6 +276,13 @@ void FakeSmbProviderClient::Premount(const base::FilePath& share_path,
                                 1 /* mount_id */));
 }
 
+void FakeSmbProviderClient::UpdateSharePath(int32_t mount_id,
+                                            const std::string& share_path,
+                                            StatusCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
+}
+
 void FakeSmbProviderClient::ClearShares() {
   shares_.clear();
 }
