@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_SERVICE_H_
-#define CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_SERVICE_H_
+#ifndef CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_
+#define CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_
 
 #include <vector>
 
@@ -57,4 +57,4 @@ class LookalikeUrlService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(LookalikeUrlService);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_SERVICE_H_
+#endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_

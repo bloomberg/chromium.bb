@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/lookalike_url_service.h"
+#include "chrome/browser/lookalikes/lookalike_url_service.h"
 
 #include <utility>
 
@@ -24,8 +24,6 @@
 
 namespace {
 constexpr uint32_t kEngagedSiteUpdateIntervalInSeconds = 5 * 60;
-
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class LookalikeUrlServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
