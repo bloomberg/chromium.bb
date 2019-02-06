@@ -1657,7 +1657,7 @@ class AppCacheStorageImplTest : public testing::Test {
     service_.reset(new AppCacheServiceImpl(nullptr));
     auto loader_factory_getter = base::MakeRefCounted<URLLoaderFactoryGetter>();
     loader_factory_getter->SetNetworkFactoryForTesting(
-        &mock_url_loader_factory_);
+        &mock_url_loader_factory_, /* is_corb_enabled = */ true);
     service_->set_url_loader_factory_getter(loader_factory_getter.get());
 
     service_->Initialize(temp_directory_.GetPath());
