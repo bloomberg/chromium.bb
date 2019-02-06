@@ -66,6 +66,12 @@
 
 namespace blink {
 
+namespace {
+
+constexpr char kGlobalProxyLabel[] = "WindowProxy::global_proxy_";
+
+}  // namespace
+
 void LocalWindowProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   WindowProxy::Trace(visitor);
@@ -161,6 +167,7 @@ void LocalWindowProxy::Initialize() {
   v8::Local<v8::Context> context = script_state_->GetContext();
   if (global_proxy_.IsEmpty()) {
     global_proxy_.Set(GetIsolate(), context->Global());
+    global_proxy_.Get().AnnotateStrongRetainer(kGlobalProxyLabel);
     CHECK(!global_proxy_.IsEmpty());
   }
 
