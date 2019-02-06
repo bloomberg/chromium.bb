@@ -22,7 +22,9 @@ be considered carefully.
 from __future__ import print_function
 
 import os
+import re
 
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import trybot_patch_pool
@@ -34,6 +36,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
+from chromite.lib import gs
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import request_build
 from chromite.lib import timeout_util
@@ -530,6 +535,7 @@ class WorkspaceBuildImageStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     self._BuildImages()
 
+
 class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
                                  generic_stages.BoardSpecificBuilderStage,
                                  generic_stages.ArchivingStageMixin):
@@ -551,13 +557,13 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
         chroot_args=ChrootArgs(self._run.options),
         extra_env=self._portage_extra_env)
 
-    # Generate breakpad symbols of Android binaries if we have a symbol archive.
-    # This archive is created by AndroidDebugSymbolsStage in Android PFQ.
-    # This must be done after GenerateBreakpadSymbols because it clobbers the
-    # output directory.
-    symbols_file = os.path.join(self.archive_path,
-                                constants.ANDROID_SYMBOLS_FILE)
-    if os.path.exists(symbols_file):
+    # Download android symbols (if this build has them), and Generate
+    # breakpad symbols of Android binaries. This must be done after
+    # GenerateBreakpadSymbols because it clobbers the output
+    # directory.
+    symbols_file = self.DownloadAndroidSymbols()
+
+    if symbols_file:
       commands.GenerateAndroidBreakpadSymbols(
           buildroot, board, symbols_file,
           chroot_args=ChrootArgs(self._run.options),
@@ -626,3 +632,131 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     if not upload_passed:
       raise artifact_stages.DebugSymbolsUploadException(
           'Failed to upload all symbols.')
+
+  def DetermineAndroidPackage(self):
+    """Returns the active Android container package in use by the board.
+
+    Workspace version of cbuildbot_run.DetermineAndroidPackage().
+
+    Returns:
+      String identifier for a package, or None
+    """
+    packages = portage_util.GetPackageDependencies(
+        self._current_board, 'virtual/target-os',
+        buildroot=self._build_root)
+
+    android_packages = [p for p in packages
+                        if p.startswith('chromeos-base/android-container')]
+
+    assert len(android_packages) <= 1
+
+    if android_packages:
+      return android_packages[0]
+    else:
+      return None
+
+  def DetermineAndroidBranch(self, package):
+    """Returns the Android branch in use by the active container ebuild.
+
+    Workspace version of cbuildbot_run.DetermineAndroidBranch().
+
+    Args:
+      package: String name of Android package to get branch of.
+
+    Returns:
+      String with the android container branch name.
+    """
+    ebuild_path = portage_util.FindEbuildForBoardPackage(
+        package, self._current_board, buildroot=self._build_root)
+    host_ebuild_path = path_util.FromChrootPath(ebuild_path,
+                                                source_path=self._build_root)
+    # We assume all targets pull from the same branch and that we always
+    # have an ARM_TARGET or an AOSP_X86_USERDEBUG_TARGET.
+    targets = ['ARM_TARGET', 'AOSP_X86_USERDEBUG_TARGET']
+    ebuild_content = osutils.SourceEnvironment(host_ebuild_path, targets)
+    logging.info('Got ebuild env: %s', ebuild_content)
+    for target in targets:
+      if target in ebuild_content:
+        branch = re.search(r'(.*?)-linux-', ebuild_content[target])
+        if branch is not None:
+          return branch.group(1)
+    raise cbuildbot_run.NoAndroidBranchError(
+        'Android branch could not be determined for %s (ebuild empty?)' %
+        ebuild_path)
+
+  def DetermineAndroidVersion(self, package):
+    """Determine the current Android version in buildroot now and return it.
+
+    This uses the typical portage logic to determine which version of Android
+    is active right now in the buildroot.
+
+    Workspace version of cbuildbot_run.DetermineAndroidVersion().
+
+    Args:
+      package: String name of Android package to get version of.
+
+    Returns:
+      The Android build ID of the container for the boards.
+    """
+    cpv = portage_util.SplitCPV(package)
+    return cpv.version_no_rev
+
+  def DetermineAndroidABI(self):
+    """Returns the Android ABI in use by the active container ebuild.
+
+    Workspace version of cbuildbot_run.DetermineAndroidABI().
+
+    Args:
+      package: String name of Android package to get ABI version of.
+
+    Returns:
+      string defining ABI of the container.
+    """
+    use_flags = portage_util.GetInstalledPackageUseFlags(
+        'sys-devel/arc-build', self._current_board,
+        buildroot=self._build_root)
+    if 'abi_x86_64' in use_flags.get('sys-devel/arc-build', []):
+      return 'x86_64'
+    elif 'abi_x86_32' in use_flags.get('sys-devel/arc-build', []):
+      return 'x86'
+    else:
+      # ARM only supports 32-bit so it does not have abi_x86_{32,64} set. But it
+      # is also the last possible ABI, so returning by default.
+      return 'arm'
+
+  def DownloadAndroidSymbols(self):
+    """Helper to download android container symbols, as needed.
+
+    Determines which, if any, Android container this build includes, and
+    downloads it's symbols.
+
+    Returns:
+      path to downloaded symbols file, or None if not downloaded.
+    """
+    android_package = self.DetermineAndroidPackage()
+    if not android_package:
+      logging.info('Android is not enabled on this board. Skipping symbols.')
+      return None
+
+    android_build_branch = self.DetermineAndroidBranch(android_package)
+    android_version = self.DetermineAndroidVersion(android_package)
+    arch = self.DetermineAndroidABI()
+
+    logging.info(
+        'Downloading symbols of Android %s (%s)...',
+        android_version, android_build_branch)
+
+    symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
+        'branch': android_build_branch,
+        'arch': arch,
+        'version': android_version}
+
+    # Should be based on self.archive_path, but we need a path inside
+    # the workspace chroot, not infra chroot.
+    symbols_file = os.path.join(self._build_root,
+                                'buildbot_archive',
+                                constants.ANDROID_SYMBOLS_FILE)
+    gs_context = gs.GSContext()
+    gs_context.Copy(symbols_file_url, symbols_file)
+
+    return symbols_file

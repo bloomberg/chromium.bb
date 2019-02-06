@@ -1765,12 +1765,13 @@ def FindPackageNameMatches(pkg_str, board=None,
   return matches
 
 
-def FindEbuildForBoardPackage(pkg_str, board):
+def FindEbuildForBoardPackage(pkg_str, board,
+                              buildroot=constants.SOURCE_ROOT):
   """Returns a path to an ebuild for a particular board."""
   equery = 'equery-%s' % board
   cmd = [equery, 'which', pkg_str]
   return cros_build_lib.RunCommand(
-      cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+      cmd, cwd=buildroot, enter_chroot=True,
       capture_output=True).output.strip()
 
 
@@ -1848,12 +1849,14 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
   return ebuilds_map[pkg_str]
 
 
-def GetInstalledPackageUseFlags(pkg_str, board=None):
+def GetInstalledPackageUseFlags(pkg_str, board=None,
+                                buildroot=constants.SOURCE_ROOT):
   """Gets the list of USE flags for installed packages matching |pkg_str|.
 
   Args:
     pkg_str: The package name with optional category, version, and slot.
     board: The board to inspect.
+    buildroot: Source root to find overlays.
 
   Returns:
     A dictionary with the key being a package CP and the value being the list
@@ -1865,7 +1868,8 @@ def GetInstalledPackageUseFlags(pkg_str, board=None):
 
   cmd += ['-CqU', pkg_str]
   result = cros_build_lib.RunCommand(
-      cmd, enter_chroot=True, capture_output=True, error_code_ok=True)
+      cmd, enter_chroot=True, capture_output=True, error_code_ok=True,
+      cwd=buildroot)
 
   use_flags = {}
   if result.returncode == 0:
@@ -1908,13 +1912,14 @@ def GetBoardUseFlags(board):
   return PortageqEnvvar('USE', board=board).split()
 
 
-def GetPackageDependencies(board, package):
+def GetPackageDependencies(board, package,
+                           buildroot=constants.SOURCE_ROOT):
   """Returns the depgraph list of packages for a board and package."""
   emerge = 'emerge-%s' % board
   cmd = [emerge, '-p', '--cols', '--quiet', '--root', '/var/empty', '-e',
          package]
   emerge_output = cros_build_lib.RunCommand(
-      cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+      cmd, cwd=buildroot, enter_chroot=True,
       capture_output=True).output.splitlines()
   packages = []
   for line in emerge_output:

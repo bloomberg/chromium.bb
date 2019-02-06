@@ -449,9 +449,9 @@ class WorkspaceUpdateSDKStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'USE': '-cros-debug chrome_internal chromeless_tty',
-            'FEATURES': 'separatedebug -separatedebug splitdebug',
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
+            'FEATURES': 'separatedebug -separatedebug splitdebug',
+            'USE': '-cros-debug chrome_internal chromeless_tty',
         },
         cwd=self.workspace,
     )
@@ -718,7 +718,6 @@ class WorkspaceDebugSymbolsStageTest(WorkspaceStageBase):
 
     self.RunStage()
 
-    self.assertEqual(self.rc.call_count, 1)
     self.rc.assertCommandCalled(
         [
             '/mnt/host/source/chromite/bin/cros_generate_breakpad_symbols',
@@ -732,8 +731,7 @@ class WorkspaceDebugSymbolsStageTest(WorkspaceStageBase):
             'USE': '-cros-debug chrome_internal',
             'FEATURES': 'separatedebug',
         },
-        cwd=self.workspace,
-    )
+        cwd=self.workspace)
 
     self.assertEqual(
         self.tarball_mock.call_args_list,
