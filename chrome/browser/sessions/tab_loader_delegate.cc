@@ -71,6 +71,11 @@ class TabLoaderDelegateImpl
   // TabLoaderDelegate:
   void NotifyTabLoadStarted() override { policy_->NotifyTabLoadStarted(); }
 
+  // TabLoaderDelegate:
+  resource_coordinator::SessionRestorePolicy* GetPolicyForTesting() override {
+    return policy_;
+  }
+
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 

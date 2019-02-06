@@ -3848,9 +3848,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCSSFragmentIdentifiers)},
 
 #if !defined(OS_ANDROID)
-    {"infinite-session-restore", flag_descriptions::kInfiniteSessionRestoreName,
-     flag_descriptions::kInfiniteSessionRestoreDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kInfiniteSessionRestore)},
     {"page-almost-idle", flag_descriptions::kPageAlmostIdleName,
      flag_descriptions::kPageAlmostIdleDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPageAlmostIdle)},

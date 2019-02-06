@@ -334,32 +334,6 @@ TEST_F(TabLoaderTest, DelegatePolicyIsApplied) {
 
   test_policy_.reset();
 
-  std::set<std::string> features;
-  features.insert(features::kInfiniteSessionRestore.name);
-
-  // Configure the policy engine via its experimental feature. This configures
-  // it such that there are 2 max simultaneous tab loads, and 3 maximum tabs to
-  // restore.
-  std::map<std::string, std::string> params;
-  params[rc::InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.name] = "2";
-  params[rc::InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.name] = "2";
-  params[rc::InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.name] =
-      "0";
-  params[rc::InfiniteSessionRestoreParams::kMinTabsToRestore.name] = "1";
-  params[rc::InfiniteSessionRestoreParams::kMaxTabsToRestore.name] = "3";
-
-  // Disable these policy features.
-  params[rc::InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.name] =
-      "0";
-  params[rc::InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.name] =
-      "0";
-  params[rc::InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.name] =
-      "0";
-
-  variations::testing::VariationParamsManager variations_manager;
-  variations_manager.SetVariationParamsWithFeatureAssociations(
-      "DummyTrial", params, features);
-
   // Don't directly configure the max simultaneous loads, but rather let it be
   // configured via the policy engine.
   max_simultaneous_loads_ = 0;
@@ -372,6 +346,19 @@ TEST_F(TabLoaderTest, DelegatePolicyIsApplied) {
   StartTabLoader();
   EXPECT_EQ(4u, tab_loader_.tabs_to_load().size());
   EXPECT_EQ(1u, tab_loader_.scheduled_to_load_count());
+
+  // Configure the policy engine explicitly. Values of zero disable those
+  // particular aspects of the policy engine.
+  auto* policy = tab_loader_.GetPolicy();
+  policy->MinSimultaneousTabLoadsForTesting() = 2;
+  policy->MaxSimultaneousTabLoadsForTesting() = 2;
+  policy->CoresPerSimultaneousTabLoadForTesting() = 0;
+  policy->MinTabsToRestoreForTesting() = 1;
+  policy->MaxTabsToRestoreForTesting() = 3;
+  policy->MbFreeMemoryPerTabToRestoreForTesting() = 0;
+  policy->MaxTimeSinceLastUseToRestoreForTesting() = base::TimeDelta();
+  policy->MinSiteEngagementToRestoreForTesting() = 0;
+  policy->CalculateSimultaneousTabLoadsForTesting();
 
   // Simulate the first tab as having loaded. Another 2 should start loading.
   SimulateLoaded(0);

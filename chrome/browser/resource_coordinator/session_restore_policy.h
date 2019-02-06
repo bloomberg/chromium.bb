@@ -84,13 +84,37 @@ class SessionRestorePolicy {
   // Returns the status of the policy logic.
   bool policy_enabled() const { return policy_enabled_; }
 
+  // Direct access to parameters for testing.
+  uint32_t& MinSimultaneousTabLoadsForTesting() {
+    return min_simultaneous_tab_loads_;
+  }
+  uint32_t& MaxSimultaneousTabLoadsForTesting() {
+    return max_simultaneous_tab_loads_;
+  }
+  uint32_t& CoresPerSimultaneousTabLoadForTesting() {
+    return cores_per_simultaneous_tab_load_;
+  }
+  uint32_t& MinTabsToRestoreForTesting() { return min_tabs_to_restore_; }
+  uint32_t& MaxTabsToRestoreForTesting() { return max_tabs_to_restore_; }
+  uint32_t& MbFreeMemoryPerTabToRestoreForTesting() {
+    return mb_free_memory_per_tab_to_restore_;
+  }
+  base::TimeDelta& MaxTimeSinceLastUseToRestoreForTesting() {
+    return max_time_since_last_use_to_restore_;
+  }
+  uint32_t& MinSiteEngagementToRestoreForTesting() {
+    return min_site_engagement_to_restore_;
+  }
+  size_t& SimultaneousTabLoadsForTesting() { return simultaneous_tab_loads_; }
+  void CalculateSimultaneousTabLoadsForTesting() {
+    simultaneous_tab_loads_ = CalculateSimultaneousTabLoads();
+  }
+
  protected:
   // Protected so can be exposed for unittesting.
 
   // Full constructor for testing.
-  SessionRestorePolicy(bool policy_enabled,
-                       const Delegate* delegate,
-                       const InfiniteSessionRestoreParams* params);
+  SessionRestorePolicy(bool policy_enabled, const Delegate* delegate);
 
   // Helper function for computing the number of loading slots to use. All
   // parameters are exposed for testing.
@@ -157,9 +181,9 @@ class SessionRestorePolicy {
     float score = 0.0f;
   };
 
-  // This is safe to call from the constructor if |delegate_| and |params_| are
-  // already initialized.
-  size_t CalculateSimultaneousTabLoadsFromParams() const;
+  // This is safe to call from the constructor if |delegate_| is already
+  // initialized.
+  size_t CalculateSimultaneousTabLoads() const;
 
   // Initializes |used_in_bg| using the data from the |reader|. The reader must
   // be initialized at the time this is called.
@@ -193,25 +217,50 @@ class SessionRestorePolicy {
   // Returns true if given tab has had a final score calculated for it.
   static bool HasFinalScore(const TabData* tab_data);
 
-  // Initialized from the InfiniteSessionRestore policy.
+  // Only used in testing to disable the policy.
   const bool policy_enabled_;
 
   // Delegate for interface with the system. This allows easy testing of only
   // the logic in this class.
   const Delegate* const delegate_;
 
-  // A container for storing parsed parameters. Unless parameters are injected
-  // externally this will be populated with parsed parameters.
-  const InfiniteSessionRestoreParams parsed_params_;
+  // The minimum number of tabs to ever load simultaneously. This can be
+  // exceeded by user actions or load timeouts. See TabLoader for details.
+  uint32_t min_simultaneous_tab_loads_ = 1;
 
-  // The parameters being used by this policy engine. By default this is simply
-  // a pointer to |parsed_params_|, but it can also point to externally
-  // injected parameters for testing.
-  const InfiniteSessionRestoreParams* const params_;
+  // The maximum number of simultaneous tab loads that should be permitted.
+  // Setting to zero means no maximum is applied.
+  uint32_t max_simultaneous_tab_loads_ = 4;
+
+  // The number of CPU cores required before per permitted simultaneous tab
+  // load. Setting to zero means no CPU core limit applies.
+  uint32_t cores_per_simultaneous_tab_load_ = 2;
+
+  // The minimum total number of tabs to restore (if there are even that many).
+  uint32_t min_tabs_to_restore_ = 4;
+
+  // The maximum total number of tabs to restore in a session restore. Setting
+  // to zero means no maximum is applied.
+  uint32_t max_tabs_to_restore_ = 20;
+
+  // The required amount of system free memory per tab to restore. Setting to
+  // zero means no memory limit will be applied.
+  uint32_t mb_free_memory_per_tab_to_restore_ = 150;
+
+  // The maximum time since last use of a tab in order for it to be restored.
+  // Setting to zero means this logic does not apply.
+  base::TimeDelta max_time_since_last_use_to_restore_ =
+      base::TimeDelta::FromDays(30);
+
+  // The minimum site engagement score in order for a tab to be restored.
+  // Setting this to zero means all tabs will be restored regardless of the
+  // site engagement score.
+  uint32_t min_site_engagement_to_restore_ = 15;
 
   // The number of simultaneous tab loads that are permitted by policy. This
-  // is computed via InfiniteSessionRestore feature variations.
-  const size_t simultaneous_tab_loads_;
+  // is computed based on the number of cores on the machine, except for in
+  // tests.
+  size_t simultaneous_tab_loads_;
 
   // The number of tab loads that have started. Every call to ShouldLoad
   // returning to true is assumed to correspond to a tab that starts loading,

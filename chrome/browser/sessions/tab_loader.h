@@ -216,6 +216,12 @@ class TabLoader : public base::RefCounted<TabLoader>,
   // sorted.
   void MoveToSortedPosition(TabVector::iterator it);
 
+  // The number of tabs to load simultaneously. This is a soft cap in that it
+  // can be exceeded by tabs that timeout, visible tabs, and user interactions
+  // forcing a tab load. However, normal session restore tab loads will not kick
+  // off a new load unless there is room below this cap.
+  size_t MaxSimultaneousLoads() const;
+
   // The OS specific delegate of the TabLoader.
   std::unique_ptr<TabLoaderDelegate> delegate_;
 
@@ -227,12 +233,9 @@ class TabLoader : public base::RefCounted<TabLoader>,
   // non-active tabs from being scheduled to load initially.
   bool did_one_tab_load_ = false;
 
-  // The number of tabs to load simultaneously. This is a soft cap in that it
-  // can be exceeded by tabs that timeout, visible tabs, and user interactions
-  // forcing a tab load. However, normal session restore tab loads will not kick
-  // off a new load unless there is room below this cap. This is initialized via
-  // the delegate. The initial value of 0 is used to indicate "uninitialized".
-  size_t max_simultaneous_loads_ = 0;
+  // Overrides the value of max simultaneous loads that is normally provided by
+  // the policy engine.
+  size_t max_simultaneous_loads_for_testing_ = 0;
 
   // The delay timer multiplier. See class description for details.
   size_t force_load_delay_multiplier_ = 1;

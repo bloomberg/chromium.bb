@@ -1681,9 +1681,6 @@ extern const char kEnableWebAuthenticationTestingAPIDescription[];
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
-extern const char kInfiniteSessionRestoreName[];
-extern const char kInfiniteSessionRestoreDescription[];
-
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
 

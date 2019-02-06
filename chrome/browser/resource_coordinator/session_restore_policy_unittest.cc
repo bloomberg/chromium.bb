@@ -79,10 +79,19 @@ class TestSessionRestorePolicy : public SessionRestorePolicy {
   using SessionRestorePolicy::TabData;
   using SessionRestorePolicy::UpdateSiteEngagementScoreForTesting;
 
-  TestSessionRestorePolicy(bool policy_enabled,
-                           const Delegate* delegate,
-                           const InfiniteSessionRestoreParams* params)
-      : SessionRestorePolicy(policy_enabled, delegate, params) {}
+  // Expose parameters.
+  using SessionRestorePolicy::cores_per_simultaneous_tab_load_;
+  using SessionRestorePolicy::max_simultaneous_tab_loads_;
+  using SessionRestorePolicy::max_tabs_to_restore_;
+  using SessionRestorePolicy::max_time_since_last_use_to_restore_;
+  using SessionRestorePolicy::mb_free_memory_per_tab_to_restore_;
+  using SessionRestorePolicy::min_simultaneous_tab_loads_;
+  using SessionRestorePolicy::min_site_engagement_to_restore_;
+  using SessionRestorePolicy::min_tabs_to_restore_;
+  using SessionRestorePolicy::simultaneous_tab_loads_;
+
+  TestSessionRestorePolicy(bool policy_enabled, const Delegate* delegate)
+      : SessionRestorePolicy(policy_enabled, delegate) {}
 
   ~TestSessionRestorePolicy() override {}
 
@@ -124,17 +133,7 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
   void SetUp() override {
     testing::ChromeTestHarnessWithLocalDB::SetUp();
 
-    // Set some reasonable initial parameters. Tests often override these.
-    params_.min_simultaneous_tab_loads = 1;
-    params_.max_simultaneous_tab_loads = 4;
-    params_.cores_per_simultaneous_tab_load = 2;
-    params_.min_tabs_to_restore = 2;
-    params_.max_tabs_to_restore = 30;
-    params_.mb_free_memory_per_tab_to_restore = 150;
-    params_.max_time_since_last_use_to_restore = base::TimeDelta::FromHours(6);
-    params_.min_site_engagement_to_restore = 15;
-
-    // Ditto for delegate constants.
+    // Set some reasonable delegate constants.
     delegate_.SetNumberOfCores(4);
     delegate_.SetFreeMemoryMiB(1024);
     delegate_.SetSiteEngagementScore(30);
@@ -165,8 +164,24 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
   }
 
   void CreatePolicy(bool policy_enabled) {
-    policy_ = std::make_unique<TestSessionRestorePolicy>(policy_enabled,
-                                                         &delegate_, &params_);
+    policy_ =
+        std::make_unique<TestSessionRestorePolicy>(policy_enabled, &delegate_);
+
+    // Set some reasonable initial parameters.
+    policy_->min_simultaneous_tab_loads_ = 1;
+    policy_->max_simultaneous_tab_loads_ = 4;
+    policy_->cores_per_simultaneous_tab_load_ = 2;
+    policy_->min_tabs_to_restore_ = 2;
+    policy_->max_tabs_to_restore_ = 30;
+    policy_->mb_free_memory_per_tab_to_restore_ = 150;
+    policy_->max_time_since_last_use_to_restore_ =
+        base::TimeDelta::FromHours(6);
+    policy_->min_site_engagement_to_restore_ = 15;
+
+    // Ensure the simultaneous tab loads is properly calculated wrt the above
+    // parameters.
+    policy_->CalculateSimultaneousTabLoadsForTesting();
+
     policy_->SetTabScoreChangedCallback(base::BindRepeating(
         &TabScoreChangeMock::NotifyTabScoreChanged, base::Unretained(&mock_)));
     policy_->AddTabForScoring(contents1_.get());
@@ -185,7 +200,6 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
  protected:
   base::SimpleTestTickClock clock_;
   TestDelegate delegate_;
-  InfiniteSessionRestoreParams params_;
 
   TabScoreChangeMock mock_;
   std::unique_ptr<TestSessionRestorePolicy> policy_;
@@ -248,7 +262,7 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureEnabled) {
 
   // Reset and set a maximum number of tabs to load policy.
   policy_->SetTabLoadsStartedForTesting(0);
-  params_.max_tabs_to_restore = 2;
+  policy_->max_tabs_to_restore_ = 2;
   EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
   policy_->NotifyTabLoadStarted();
   EXPECT_TRUE(policy_->ShouldLoad(contents2_.get()));
@@ -256,13 +270,13 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureEnabled) {
   EXPECT_FALSE(policy_->ShouldLoad(contents3_.get()));
 
   // Disable the number of tab load limits entirely.
-  params_.min_tabs_to_restore = 0;
-  params_.max_tabs_to_restore = 0;
+  policy_->min_tabs_to_restore_ = 0;
+  policy_->max_tabs_to_restore_ = 0;
 
   // Reset and impose a memory policy.
   policy_->SetTabLoadsStartedForTesting(0);
   constexpr size_t kFreeMemoryLimit = 150;
-  params_.mb_free_memory_per_tab_to_restore = kFreeMemoryLimit;
+  policy_->mb_free_memory_per_tab_to_restore_ = kFreeMemoryLimit;
   delegate_.SetFreeMemoryMiB(kFreeMemoryLimit);
   EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
   policy_->NotifyTabLoadStarted();
@@ -273,24 +287,25 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureEnabled) {
   policy_->NotifyTabLoadStarted();
 
   // Disable memory limits to not interfere with later tests.
-  params_.mb_free_memory_per_tab_to_restore = 0;
+  policy_->mb_free_memory_per_tab_to_restore_ = 0;
 
   // Reset and impose a max time since use policy. The contents have ages of 1,
   // 2 and 3 hours respectively.
   policy_->SetTabLoadsStartedForTesting(0);
-  params_.max_time_since_last_use_to_restore = base::TimeDelta::FromMinutes(90);
+  policy_->max_time_since_last_use_to_restore_ =
+      base::TimeDelta::FromMinutes(90);
   EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
   policy_->NotifyTabLoadStarted();
   EXPECT_FALSE(policy_->ShouldLoad(contents2_.get()));
   EXPECT_FALSE(policy_->ShouldLoad(contents3_.get()));
 
   // Disable the age limits entirely.
-  params_.max_time_since_last_use_to_restore = base::TimeDelta();
+  policy_->max_time_since_last_use_to_restore_ = base::TimeDelta();
 
   // Reset and impose a site engagement policy.
   policy_->SetTabLoadsStartedForTesting(0);
   constexpr size_t kEngagementLimit = 15;
-  params_.min_site_engagement_to_restore = kEngagementLimit;
+  policy_->min_site_engagement_to_restore_ = kEngagementLimit;
   policy_->UpdateSiteEngagementScoreForTesting(contents1_.get(),
                                                kEngagementLimit + 1);
   EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
@@ -312,11 +327,12 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureDisabled) {
 
   // Set everything aggressive so it would return false if the feature was
   // enabled.
-  params_.min_tabs_to_restore = 0;
-  params_.max_tabs_to_restore = 1;
-  params_.mb_free_memory_per_tab_to_restore = 1024;
-  params_.max_time_since_last_use_to_restore = base::TimeDelta::FromMinutes(1);
-  params_.min_site_engagement_to_restore = 100;
+  policy_->min_tabs_to_restore_ = 0;
+  policy_->max_tabs_to_restore_ = 1;
+  policy_->mb_free_memory_per_tab_to_restore_ = 1024;
+  policy_->max_time_since_last_use_to_restore_ =
+      base::TimeDelta::FromMinutes(1);
+  policy_->min_site_engagement_to_restore_ = 100;
 
   // Make the system look like its effectively out of memory as well.
   delegate_.SetFreeMemoryMiB(1);

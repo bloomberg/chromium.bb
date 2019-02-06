@@ -23,11 +23,6 @@ namespace features {
 const base::Feature kCustomizedTabLoadTimeout{
     "CustomizedTabLoadTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables TabLoader improvements for reducing the overhead of session restores
-// involving many many tabs.
-const base::Feature kInfiniteSessionRestore{"InfiniteSessionRestore",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables proactive tab freezing and discarding.
 const base::Feature kProactiveTabFreezeAndDiscard{
     resource_coordinator::kProactiveTabFreezeAndDiscardFeatureName,
@@ -135,24 +130,6 @@ constexpr base::FeatureParam<int>
 constexpr base::FeatureParam<int>
     SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod;
 
-// Instantiate the feature parameters for infinite session restore.
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMinSimultaneousTabLoads;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMinTabsToRestore;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMaxTabsToRestore;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore;
-constexpr base::FeatureParam<int>
-    InfiniteSessionRestoreParams::kMinSiteEngagementToRestore;
-
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams() =
     default;
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams(
@@ -162,10 +139,6 @@ SiteCharacteristicsDatabaseParams::SiteCharacteristicsDatabaseParams() =
     default;
 SiteCharacteristicsDatabaseParams::SiteCharacteristicsDatabaseParams(
     const SiteCharacteristicsDatabaseParams& rhs) = default;
-
-InfiniteSessionRestoreParams::InfiniteSessionRestoreParams() = default;
-InfiniteSessionRestoreParams::InfiniteSessionRestoreParams(
-    const InfiniteSessionRestoreParams& rhs) = default;
 
 ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
     int memory_in_gb) {
@@ -282,29 +255,6 @@ GetStaticSiteCharacteristicsDatabaseParams() {
   static base::NoDestructor<SiteCharacteristicsDatabaseParams> params(
       GetSiteCharacteristicsDatabaseParams());
   return *params;
-}
-
-InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams() {
-  InfiniteSessionRestoreParams params = {};
-
-  params.min_simultaneous_tab_loads =
-      InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.Get();
-  params.max_simultaneous_tab_loads =
-      InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.Get();
-  params.cores_per_simultaneous_tab_load =
-      InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.Get();
-  params.min_tabs_to_restore =
-      InfiniteSessionRestoreParams::kMinTabsToRestore.Get();
-  params.max_tabs_to_restore =
-      InfiniteSessionRestoreParams::kMaxTabsToRestore.Get();
-  params.mb_free_memory_per_tab_to_restore =
-      InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.Get();
-  params.max_time_since_last_use_to_restore = base::TimeDelta::FromSeconds(
-      InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.Get());
-  params.min_site_engagement_to_restore =
-      InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.Get();
-
-  return params;
 }
 
 int GetNumOldestTabsToScoreWithTabRanker() {

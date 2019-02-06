@@ -14,7 +14,6 @@
 namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
-extern const base::Feature kInfiniteSessionRestore;
 extern const base::Feature kProactiveTabFreezeAndDiscard;
 extern const base::Feature kSiteCharacteristicsDatabase;
 extern const base::Feature kStaggeredBackgroundTabOpening;
@@ -241,66 +240,6 @@ struct SiteCharacteristicsDatabaseParams {
   base::TimeDelta audio_usage_grace_period;
 };
 
-// Parameters used by the infinite session restore feature.
-struct InfiniteSessionRestoreParams {
-  InfiniteSessionRestoreParams();
-  InfiniteSessionRestoreParams(const InfiniteSessionRestoreParams& rhs);
-
-  // Static definition of the different parameters that can be used by this
-  // feature.
-
-  static constexpr base::FeatureParam<int> kMinSimultaneousTabLoads{
-      &features::kInfiniteSessionRestore, "MinSimultaneousTabLoads", 1};
-  static constexpr base::FeatureParam<int> kMaxSimultaneousTabLoads{
-      &features::kInfiniteSessionRestore, "MaxSimultaneousTabLoads", 4};
-  static constexpr base::FeatureParam<int> kCoresPerSimultaneousTabLoad{
-      &features::kInfiniteSessionRestore, "CoresPerSimultaneousTabLoad", 2};
-  static constexpr base::FeatureParam<int> kMinTabsToRestore{
-      &features::kInfiniteSessionRestore, "MinTabsToRestore", 4};
-  static constexpr base::FeatureParam<int> kMaxTabsToRestore{
-      &features::kInfiniteSessionRestore, "MaxTabsToRestore", 20};
-  // This is the 75th percentile of Memory.Renderer.PrivateMemoryFootprint.
-  static constexpr base::FeatureParam<int> kMbFreeMemoryPerTabToRestore{
-      &features::kInfiniteSessionRestore, "MbFreeMemoryPerTabToRestore", 150};
-  // This value has been determined by a Finch experiment, it reduces user pain
-  // without impacting the gains from this feature.
-  static constexpr base::FeatureParam<int> kMaxTimeSinceLastUseToRestore{
-      &features::kInfiniteSessionRestore, "MaxTimeSinceLastUseToRestore",
-      30 * base::Time::kHoursPerDay* base::Time::kSecondsPerHour};
-  // Taken from an informal survey of Googlers on min engagement of things they
-  // think *must* load. Note that about 25% of session-restore tabs fall above
-  // this threshold (see SessionRestore.RestoredTab.SiteEngagementScore).
-  static constexpr base::FeatureParam<int> kMinSiteEngagementToRestore{
-      &features::kInfiniteSessionRestore, "MinSiteEngagementToRestore", 15};
-
-  // Parameters directly retrieved from the experiment configuration.
-
-  // The minimum number of tabs to ever load simultaneously. This can be
-  // exceeded by user actions or load timeouts. See TabLoader for details.
-  uint32_t min_simultaneous_tab_loads;
-  // The maximum number of simultaneous tab loads that should be permitted.
-  // Setting to zero means no maximum is applied.
-  uint32_t max_simultaneous_tab_loads;
-  // The number of CPU cores required before per permitted simultaneous tab
-  // load. Setting to zero means no CPU core limit applies.
-  uint32_t cores_per_simultaneous_tab_load;
-  // The minimum total number of tabs to restore (if there are even that many).
-  uint32_t min_tabs_to_restore;
-  // The maximum total number of tabs to restore in a session restore. Setting
-  // to zero means no maximum is applied.
-  uint32_t max_tabs_to_restore;
-  // The required amount of system free memory per tab to restore. Setting to
-  // zero means no memory limit will be applied.
-  uint32_t mb_free_memory_per_tab_to_restore;
-  // The maximum time since last use of a tab in order for it to be restored.
-  // Setting to zero means this logic does not apply.
-  base::TimeDelta max_time_since_last_use_to_restore;
-  // The minimum site engagement score in order for a tab to be restored.
-  // Setting this to zero means all tabs will be restored regardless of the
-  // site engagement score.
-  uint32_t min_site_engagement_to_restore;
-};
-
 // Gets parameters for the proactive tab discarding feature. This does no
 // parameter validation, and sets the default values if the feature is not
 // enabled.
@@ -326,9 +265,6 @@ SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams();
 // all the classes that need one.
 const SiteCharacteristicsDatabaseParams&
 GetStaticSiteCharacteristicsDatabaseParams();
-
-// Gets parameters for the infinite session restore feature.
-InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
 
 // Gets number of oldest tab that should be scored by TabRanker.
 int GetNumOldestTabsToScoreWithTabRanker();

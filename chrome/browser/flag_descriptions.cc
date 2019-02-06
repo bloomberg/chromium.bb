@@ -2837,12 +2837,6 @@ const char kHappinessTrackingSurveysForDesktopName[] =
 const char kHappinessTrackingSurveysForDesktopDescription[] =
     "Enable showing Happiness Tracking Surveys to users on Desktop";
 
-const char kInfiniteSessionRestoreName[] = "Infinite Session Restore";
-const char kInfiniteSessionRestoreDescription[] =
-    "Reduces the number of tabs being loaded simultaneously during session "
-    "restore, to improve responsiveness of the foreground tab. This requires "
-    "#enable-page-almost-idle.";
-
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
 const char kOmniboxDriveSuggestionsDescriptions[] =
