@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/files/file_path.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #import "content/browser/cocoa/system_hotkey_map.h"
@@ -19,17 +20,15 @@ class SystemHotkeyMapTest : public ::testing::Test {
  protected:
   SystemHotkeyMapTest() {}
 
-  NSData* DataFromTestFile(const char* file) {
+  NSDictionary* DictionaryFromTestFile(const char* file) {
     base::FilePath test_data_dir;
     bool result = base::PathService::Get(DIR_TEST_DATA, &test_data_dir);
     if (!result)
       return nil;
 
     base::FilePath test_path = test_data_dir.AppendASCII(file);
-    std::string test_path_string = test_path.AsUTF8Unsafe();
-    NSString* file_path =
-        [NSString stringWithUTF8String:test_path_string.c_str()];
-    return [NSData dataWithContentsOfFile:file_path];
+    return [NSDictionary
+        dictionaryWithContentsOfURL:base::mac::FilePathToNSURL(test_path)];
   }
 
   void AddEntryToDictionary(BOOL enabled,
@@ -84,10 +83,8 @@ class SystemHotkeyMapTest : public ::testing::Test {
 TEST_F(SystemHotkeyMapTest, Parse) {
   // This plist was pulled from a real machine. It is extensively populated,
   // and has no missing or incomplete entries.
-  NSData* data = DataFromTestFile("mac/mac_system_hotkeys.plist");
-  ASSERT_TRUE(data);
-
-  NSDictionary* dictionary = SystemHotkeyMap::DictionaryFromData(data);
+  NSDictionary* dictionary =
+      DictionaryFromTestFile("mac/mac_system_hotkeys.plist");
   ASSERT_TRUE(dictionary);
 
   SystemHotkeyMap map;
@@ -124,10 +121,8 @@ TEST_F(SystemHotkeyMapTest, ParseNil) {
 TEST_F(SystemHotkeyMapTest, ParseMouse) {
   // This plist was pulled from a real machine. It has missing entries,
   // incomplete entries, and mouse hotkeys.
-  NSData* data = DataFromTestFile("mac/mac_system_hotkeys_sparse.plist");
-  ASSERT_TRUE(data);
-
-  NSDictionary* dictionary = SystemHotkeyMap::DictionaryFromData(data);
+  NSDictionary* dictionary =
+      DictionaryFromTestFile("mac/mac_system_hotkeys_sparse.plist");
   ASSERT_TRUE(dictionary);
 
   SystemHotkeyMap map;
