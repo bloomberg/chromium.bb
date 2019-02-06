@@ -8,10 +8,12 @@
   <script>
   'use strict';
   var settings;
+  var has_audio_track = false;
 
   function handleSuccess(stream) {
-    var video = document.querySelector('video');
+    has_audio_track = stream.getAudioTracks().length == 1;
     settings = stream.getVideoTracks()[0].getSettings();
+    var video = document.querySelector('video');
     video.srcObject = stream;
     video.play();
     returnToTest("getdisplaymedia-success");
@@ -25,6 +27,10 @@
   function runGetDisplayMedia(constraints) {
     navigator.mediaDevices.getDisplayMedia(constraints).
       then(handleSuccess).catch(handleError);
+  }
+
+  function hasAudioTrack() {
+    returnToTest(has_audio_track ? "true" : "false");
   }
 
   function getDisplaySurfaceSetting() {
