@@ -1443,6 +1443,11 @@ class DynamicIsolatedOriginTest : public IsolatedOriginTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+
+    if (AreAllSitesIsolatedForTesting()) {
+      LOG(WARNING) << "This test should be run without strict site isolation. "
+                   << "It does nothing when --site-per-process is specified.";
+    }
   }
 
  private:
@@ -1453,6 +1458,10 @@ class DynamicIsolatedOriginTest : public IsolatedOriginTest {
 // BrowsingInstances only.
 IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
                        IsolationAppliesToFutureBrowsingInstances) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   // Start on a non-isolated origin with same-site iframe.
   GURL foo_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
@@ -1540,6 +1549,10 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
 // Check that dynamically added isolated origins take effect for future
 // BrowsingInstances only, focusing on various main frame navigations.
 IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, MainFrameNavigations) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   // Create three windows on a non-isolated origin.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
@@ -1611,6 +1624,10 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, MainFrameNavigations) {
 // Check that dynamically added isolated origins do not prevent older processes
 // for the same origin from accessing cookies.
 IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, OldProcessCanAccessCookies) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
@@ -1686,6 +1703,10 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, OldProcessCanAccessCookies) {
 // Verify that when isolating sub.foo.com dynamically, foo.com and sub.foo.com
 // start to be treated as cross-site for process model decisions.
 IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, IsolatedSubdomain) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL foo_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
@@ -1730,6 +1751,10 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, IsolatedSubdomain) {
 // IDs.
 IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
                        NewBrowsingInstanceInOldProcess) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   // Force process reuse for main frames in new BrowsingInstances.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -1909,6 +1934,11 @@ class IsolatedOriginTestWithStrictSiteInstances : public IsolatedOriginTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+
+    if (AreAllSitesIsolatedForTesting()) {
+      LOG(WARNING) << "This test should be run without strict site isolation. "
+                   << "It does nothing when --site-per-process is specified.";
+    }
   }
 
  private:
@@ -1919,6 +1949,10 @@ class IsolatedOriginTestWithStrictSiteInstances : public IsolatedOriginTest {
 
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
                        NonIsolatedFramesCanShareDefaultProcess) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL top_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
   ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(top_url)));
@@ -1982,6 +2016,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
 // SiteInstances.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
                        IsolatedChildWithNonIsolatedGrandchild) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL top_url(
       embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
   ASSERT_FALSE(IsIsolatedOrigin(url::Origin::Create(top_url)));
@@ -2041,6 +2079,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
 // confuse BrowsingInstance into holding onto a stale default_process_.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
                        SubframeNavigatesOutofIsolationThenToIsolation) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com",
                                                    "/page_with_iframe.html"));
   ASSERT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
@@ -2090,6 +2132,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
 // enabled.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
                        NonIsolatedPopup) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL foo_url(
       embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
