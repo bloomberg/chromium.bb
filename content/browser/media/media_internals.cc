@@ -481,6 +481,8 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     uma_name += "VP9.";
   } else if (player_info.video_codec_name == "h264") {
     uma_name += "H264.";
+  } else if (player_info.video_codec_name == "av1") {
+    uma_name += "AV1.";
   } else {
     return uma_name + "Other";
   }
