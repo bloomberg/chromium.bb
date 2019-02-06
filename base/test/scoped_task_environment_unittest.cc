@@ -356,37 +356,6 @@ TEST_F(ScopedTaskEnvironmentTest, TaskSchedulerPoolAllowsMTA) {
 }
 #endif  // defined(OS_WIN)
 
-namespace {
-
-class MockLifetimeObserver : public ScopedTaskEnvironment::LifetimeObserver {
- public:
-  MockLifetimeObserver() = default;
-  ~MockLifetimeObserver() override = default;
-
-  MOCK_METHOD2(OnScopedTaskEnvironmentCreated,
-               void(ScopedTaskEnvironment::MainThreadType,
-                    scoped_refptr<SingleThreadTaskRunner>));
-  MOCK_METHOD0(OnScopedTaskEnvironmentDestroyed, void());
-};
-
-}  // namespace
-
-TEST_F(ScopedTaskEnvironmentTest, LifetimeObserver) {
-  testing::StrictMock<MockLifetimeObserver> lifetime_observer;
-  ScopedTaskEnvironment::SetLifetimeObserver(&lifetime_observer);
-
-  EXPECT_CALL(lifetime_observer,
-              OnScopedTaskEnvironmentCreated(testing::_, testing::_));
-  std::unique_ptr<ScopedTaskEnvironment> task_environment(
-      std::make_unique<ScopedTaskEnvironment>());
-  testing::Mock::VerifyAndClearExpectations(&lifetime_observer);
-
-  EXPECT_CALL(lifetime_observer, OnScopedTaskEnvironmentDestroyed());
-  task_environment.reset();
-  testing::Mock::VerifyAndClearExpectations(&lifetime_observer);
-  ScopedTaskEnvironment::SetLifetimeObserver(nullptr);
-}
-
 TEST_F(ScopedTaskEnvironmentTest, SetsDefaultRunTimeout) {
   const RunLoop::ScopedRunTimeoutForTest* old_run_timeout =
       RunLoop::ScopedRunTimeoutForTest::Current();
