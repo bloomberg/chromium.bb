@@ -137,11 +137,11 @@ SignedExchangeLoader::SignedExchangeLoader(
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_.url.is_valid());
 
-  if (!(outer_request_.load_flags & net::LOAD_PREFETCH)) {
+  // |metric_recorder_| could be null in some tests.
+  if (!(outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
     metric_recorder_->OnSignedExchangeNonPrefetch(
         outer_request_.url, outer_response_.response_time);
   }
-
   // Can't use HttpResponseHeaders::GetMimeType() because SignedExchangeHandler
   // checks "v=" parameter.
   outer_response.headers->EnumerateHeader(nullptr, "content-type",
@@ -251,15 +251,15 @@ void SignedExchangeLoader::ProceedWithResponse() {
 
 void SignedExchangeLoader::SetPriority(net::RequestPriority priority,
                                        int intra_priority_value) {
-  // TODO(https://crbug.com/803774): Implement this.
+  url_loader_->SetPriority(priority, intra_priority_value);
 }
 
 void SignedExchangeLoader::PauseReadingBodyFromNet() {
-  // TODO(https://crbug.com/803774): Implement this.
+  url_loader_->PauseReadingBodyFromNet();
 }
 
 void SignedExchangeLoader::ResumeReadingBodyFromNet() {
-  // TODO(https://crbug.com/803774): Implement this.
+  url_loader_->ResumeReadingBodyFromNet();
 }
 
 void SignedExchangeLoader::ConnectToClient(
@@ -276,7 +276,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
-  if (outer_request_.load_flags & net::LOAD_PREFETCH) {
+  // |metric_recorder_| could be null in some tests.
+  if ((outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
     UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
     metric_recorder_->OnSignedExchangePrefetchFinished(
         outer_request_.url, outer_response_.response_time);
