@@ -617,6 +617,9 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
     indexes = [NSIndexSet indexSetWithIndex:index];
 
   [tabBrowser_ selectRowIndexes:indexes byExtendingSelection:NO];
+
+  // Enable or disable the OK button based on whether we have a selection.
+  [shareButton_ setEnabled:(index >= 0)];
 }
 
 #pragma mark NSWindowDelegate
