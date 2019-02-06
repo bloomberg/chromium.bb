@@ -512,6 +512,16 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       << "Don't call this method for JavaScript URLs as those create a "
          "temporary  NavigationRequest and we don't want to reset an ongoing "
          "navigation's speculative RFH.";
+  // A frame that's pending deletion should never be navigated. If this happens,
+  // log a DumpWithoutCrashing to understand the root cause.
+  // See https://crbug.com/926820 and https://crbug.com/927705.
+  if (!current_frame_host()->is_active()) {
+    NOTREACHED() << "Navigation in an inactive frame";
+    NavigationHandle* handle = request.navigation_handle();
+    DEBUG_ALIAS_FOR_GURL(url_from, handle->GetPreviousURL())
+    DEBUG_ALIAS_FOR_GURL(url_to, handle->GetURL())
+    base::debug::DumpWithoutCrashing();
+  }
 
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
