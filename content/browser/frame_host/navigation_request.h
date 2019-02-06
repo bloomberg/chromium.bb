@@ -231,6 +231,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     common_params_.transition = transition;
   }
 
+  void set_has_user_gesture(bool has_user_gesture) {
+    common_params_.has_user_gesture = has_user_gesture;
+  }
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,

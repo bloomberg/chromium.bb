@@ -6174,6 +6174,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // request.
   committed_request->set_transition(validated_params->transition);
 
+  committed_request->set_has_user_gesture(validated_params->gesture ==
+                                          NavigationGestureUser);
+
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
 
   accessibility_reset_count_ = 0;
