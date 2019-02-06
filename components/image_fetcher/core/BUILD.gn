@@ -15,6 +15,7 @@ static_library("core") {
     "image_data_fetcher.cc",
     "image_data_fetcher.h",
     "image_decoder.h",
+    "image_fetcher.cc",
     "image_fetcher.h",
     "image_fetcher_impl.cc",
     "image_fetcher_impl.h",

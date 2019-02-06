@@ -6,21 +6,64 @@
 #define COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_H_
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
-
-namespace gfx {
-class Size;
-}  // namespace gfx
 
 namespace image_fetcher {
 
 class ImageDecoder;
+
+// Encapsulates image fetching customization options.
+// (required)
+// traffic_annotation
+//   Documents what the network traffic is for, gives you free metrics.
+// max_download_size
+//   Limits the size of the downloaded image.
+// frame_size
+//   If multiple sizes of the image are available on the server, choose the one
+//   that's closest to the given size (only useful for .icos). Does NOT resize
+//   the downloaded image to the given dimensions.
+class ImageFetcherParams {
+ public:
+  ImageFetcherParams(
+      net::NetworkTrafficAnnotationTag network_traffic_annotation_tag);
+  ImageFetcherParams(const ImageFetcherParams& params);
+  ImageFetcherParams(ImageFetcherParams&& params);
+
+  ~ImageFetcherParams() = default;
+
+  const net::NetworkTrafficAnnotationTag traffic_annotation() const {
+    return network_traffic_annotation_tag_;
+  }
+
+  void set_max_download_size(base::Optional<int64_t> max_download_bytes) {
+    max_download_bytes_ = max_download_bytes;
+  }
+
+  base::Optional<int64_t> max_download_size() const {
+    return max_download_bytes_;
+  }
+
+  void set_frame_size(gfx::Size desired_frame_size) {
+    desired_frame_size_ = desired_frame_size;
+  }
+
+  gfx::Size frame_size() const { return desired_frame_size_; }
+
+ private:
+  const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag_;
+
+  base::Optional<int64_t> max_download_bytes_;
+  gfx::Size desired_frame_size_;
+};
 
 // A class used to fetch server images. It can be called from any thread and the
 // callback will be called on the thread which initiated the fetch.
@@ -29,57 +72,34 @@ class ImageFetcher {
   ImageFetcher() {}
   virtual ~ImageFetcher() {}
 
-  // Sets a service name against which to track data usage.
-  virtual void SetDataUseServiceName(
-      DataUseServiceName data_use_service_name) = 0;
-
-  // Sets an upper limit for image downloads that is by default disabled.
-  // Setting |max_download_bytes| to a negative value will disable the limit.
-  // Already running downloads are not affected.
-  virtual void SetImageDownloadLimit(
-      base::Optional<int64_t> max_download_bytes) = 0;
-
-  // Sets the desired size for images with multiple frames (like .ico files).
-  // By default, the image fetcher choses smaller images. Override to choose a
-  // frame with a size as close as possible to |size| (trying to take one in
-  // larger size if there's no precise match). Passing gfx::Size() as
-  // |size| is also supported and will result in chosing the smallest available
-  // size.
-  virtual void SetDesiredImageFrameSize(const gfx::Size& size) = 0;
-
   // Fetch an image and optionally decode it. |image_data_callback| is called
   // when the image fetch completes, but |image_data_callback| may be empty.
   // |image_callback| is called when the image is finished decoding.
   // |image_callback| may be empty if image decoding is not required. If a
   // callback is provided, it will be called exactly once. On failure, an empty
   // string/gfx::Image is returned.
-  virtual void FetchImageAndData(
-      const std::string& id,
-      const GURL& image_url,
-      ImageDataFetcherCallback image_data_callback,
-      ImageFetcherCallback image_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+  virtual void FetchImageAndData(const GURL& image_url,
+                                 ImageDataFetcherCallback image_data_callback,
+                                 ImageFetcherCallback image_callback,
+                                 ImageFetcherParams params) = 0;
 
   // Fetch an image and decode it. An empty gfx::Image will be returned to the
   // callback in case the image could not be fetched. This is the same as
   // calling FetchImageAndData without an |image_data_callback|.
-  void FetchImage(const std::string& id,
-                  const GURL& image_url,
+  void FetchImage(const GURL& image_url,
                   ImageFetcherCallback callback,
-                  const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-    FetchImageAndData(id, image_url, ImageDataFetcherCallback(),
-                      std::move(callback), traffic_annotation);
+                  ImageFetcherParams params) {
+    FetchImageAndData(image_url, ImageDataFetcherCallback(),
+                      std::move(callback), params);
   }
 
   // Just fetch the image data, do not decode. This is the same as
   // calling FetchImageAndData without an |image_callback|.
-  void FetchImageData(
-      const std::string& id,
-      const GURL& image_url,
-      ImageDataFetcherCallback callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-    FetchImageAndData(id, image_url, std::move(callback),
-                      ImageFetcherCallback(), traffic_annotation);
+  void FetchImageData(const GURL& image_url,
+                      ImageDataFetcherCallback callback,
+                      ImageFetcherParams params) {
+    FetchImageAndData(image_url, std::move(callback), ImageFetcherCallback(),
+                      params);
   }
 
   virtual ImageDecoder* GetImageDecoder() = 0;

@@ -33,10 +33,6 @@ namespace {
 const base::FilePath::CharType kImageCacheSubdir[] =
     FILE_PATH_LITERAL("image_cache");
 
-std::unique_ptr<ImageDecoder> CreateImageDecoderImpl() {
-  return std::make_unique<suggestions::ImageDecoderImpl>();
-}
-
 }  // namespace
 
 // static
@@ -92,7 +88,7 @@ KeyedService* CachedImageFetcherServiceFactory::BuildServiceInstanceFor(
           ->GetURLLoaderFactoryForBrowserProcess();
 
   return new CachedImageFetcherService(
-      base::BindRepeating(CreateImageDecoderImpl),
+      std::make_unique<suggestions::ImageDecoderImpl>(),
       std::move(url_loader_factory), std::move(image_cache),
       context->IsOffTheRecord());
 }

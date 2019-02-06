@@ -31,7 +31,7 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<PrefetchImporter> prefetch_importer,
       std::unique_ptr<PrefetchBackgroundTaskHandler> background_task_handler,
       std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
-      std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher_);
+      image_fetcher::ImageFetcher* thumbnail_image_fetcher_);
 
   ~PrefetchServiceImpl() override;
 
@@ -83,7 +83,8 @@ class PrefetchServiceImpl : public PrefetchService {
   // Zine/Feed: only non-null when using Zine.
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
   std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher_;
-  std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher_;
+  // Owned by CachedImageFetcherService.
+  image_fetcher::ImageFetcher* thumbnail_image_fetcher_;
 
   // Zine/Feed: only non-null when using Feed.
   SuggestionsProvider* suggestions_provider_ = nullptr;

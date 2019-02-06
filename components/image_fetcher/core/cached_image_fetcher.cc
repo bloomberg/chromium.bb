@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -25,17 +26,7 @@ struct CachedImageFetcherRequest {
   // The url to be fetched.
   const GURL url;
 
-  // An identifier passed back to the caller.
-  const std::string id;
-
-  // The desired frame size if there are multiple frames to choose from.
-  const gfx::Size desired_frame_size;
-
-  // The service to track data usage for.
-  const DataUseServiceName data_use_service_name;
-
-  // Limit the number of bytes to download for the image.
-  const base::Optional<int64_t> image_download_limit_bytes;
+  const ImageFetcherParams params;
 
   // Analytic events below.
 
@@ -58,13 +49,12 @@ void DataCallbackIfPresent(ImageDataFetcherCallback data_callback,
 }
 
 void ImageCallbackIfPresent(ImageFetcherCallback image_callback,
-                            const std::string& id,
                             const gfx::Image& image,
                             const image_fetcher::RequestMetadata& metadata) {
   if (image_callback.is_null()) {
     return;
   }
-  std::move(image_callback).Run(id, image, metadata);
+  std::move(image_callback).Run(image, metadata);
 }
 
 std::string EncodeSkBitmapToPNG(const SkBitmap& bitmap) {
@@ -93,37 +83,20 @@ CachedImageFetcher::CachedImageFetcher(
 
 CachedImageFetcher::~CachedImageFetcher() = default;
 
-void CachedImageFetcher::SetDataUseServiceName(
-    DataUseServiceName data_use_service_name) {
-  data_use_service_name_ = data_use_service_name;
-}
-
-void CachedImageFetcher::SetDesiredImageFrameSize(const gfx::Size& size) {
-  desired_frame_size_ = size;
-}
-
-void CachedImageFetcher::SetImageDownloadLimit(
-    base::Optional<int64_t> max_download_bytes) {
-  image_download_limit_bytes_ = max_download_bytes;
-}
-
 ImageDecoder* CachedImageFetcher::GetImageDecoder() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return image_fetcher_->GetImageDecoder();
 }
 
 void CachedImageFetcher::FetchImageAndData(
-    const std::string& id,
     const GURL& image_url,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    ImageFetcherParams params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(wylieb): Inject a clock for better testability.
   CachedImageFetcherRequest request = {
-      image_url,
-      id,
-      desired_frame_size_,
-      data_use_service_name_,
-      image_download_limit_bytes_,
+      image_url, std::move(params),
       /* cache_hit_before_network_request */ false,
       /* start_time */ base::Time::Now()};
 
@@ -132,7 +105,7 @@ void CachedImageFetcher::FetchImageAndData(
       read_only_, image_url.spec(),
       base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     traffic_annotation, std::move(image_data_callback),
+                     std::move(image_data_callback),
                      std::move(image_callback)));
 
   CachedImageFetcherMetricsReporter::ReportEvent(
@@ -141,13 +114,12 @@ void CachedImageFetcher::FetchImageAndData(
 
 void CachedImageFetcher::OnImageFetchedFromCache(
     CachedImageFetcherRequest request,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback,
     std::string image_data) {
   if (image_data.empty()) {
     // Fetching from the DB failed, start a network fetch.
-    EnqueueFetchImageFromNetwork(std::move(request), traffic_annotation,
+    EnqueueFetchImageFromNetwork(std::move(request),
                                  std::move(image_data_callback),
                                  std::move(image_callback));
 
@@ -156,14 +128,19 @@ void CachedImageFetcher::OnImageFetchedFromCache(
   } else {
     DataCallbackIfPresent(std::move(image_data_callback), image_data,
                           RequestMetadata());
-    GetImageDecoder()->DecodeImage(
-        image_data,
-        /* The frame size had already been chosen during fetch. */ gfx::Size(),
-        base::BindRepeating(
-            &CachedImageFetcher::OnImageDecodedFromCache,
-            weak_ptr_factory_.GetWeakPtr(), std::move(request),
-            traffic_annotation, base::Passed(std::move(image_data_callback)),
-            base::Passed(std::move(image_callback)), image_data));
+
+    // Only continue with decoding if the user actually asked for an image.
+    if (!image_callback.is_null()) {
+      GetImageDecoder()->DecodeImage(
+          image_data,
+          /* The frame size had already been chosen during fetch. */
+          gfx::Size(),
+          base::BindRepeating(&CachedImageFetcher::OnImageDecodedFromCache,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              std::move(request),
+                              base::Passed(std::move(image_data_callback)),
+                              base::Passed(std::move(image_callback))));
+    }
     CachedImageFetcherMetricsReporter::ReportEvent(
         CachedImageFetcherEvent::kCacheHit);
   }
@@ -171,23 +148,20 @@ void CachedImageFetcher::OnImageFetchedFromCache(
 
 void CachedImageFetcher::OnImageDecodedFromCache(
     CachedImageFetcherRequest request,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback,
-    const std::string& image_data,
     const gfx::Image& image) {
   if (image.IsEmpty()) {
     // Upon failure, fetch from the network.
     request.cache_hit_before_network_request = true;
-    EnqueueFetchImageFromNetwork(std::move(request), traffic_annotation,
+    EnqueueFetchImageFromNetwork(std::move(request),
                                  std::move(image_data_callback),
                                  std::move(image_callback));
 
     CachedImageFetcherMetricsReporter::ReportEvent(
         CachedImageFetcherEvent::kCacheDecodingError);
   } else {
-    ImageCallbackIfPresent(std::move(image_callback), request.id, image,
-                           RequestMetadata());
+    ImageCallbackIfPresent(std::move(image_callback), image, RequestMetadata());
     CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
         request.start_time);
   }
@@ -195,47 +169,39 @@ void CachedImageFetcher::OnImageDecodedFromCache(
 
 void CachedImageFetcher::EnqueueFetchImageFromNetwork(
     CachedImageFetcherRequest request,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&CachedImageFetcher::FetchImageFromNetwork,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     traffic_annotation, std::move(image_data_callback),
+                     std::move(image_data_callback),
                      std::move(image_callback)));
 }
 
 void CachedImageFetcher::FetchImageFromNetwork(
     CachedImageFetcherRequest request,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback) {
-  std::string id = request.id;
   const GURL& url = request.url;
-  // Fetch image data and the image itself. The image data will be stored in
-  // the image cache, and the image will be returned to the caller.
-  image_fetcher_->SetDesiredImageFrameSize(request.desired_frame_size);
-  image_fetcher_->SetDataUseServiceName(request.data_use_service_name);
-  image_fetcher_->SetImageDownloadLimit(request.image_download_limit_bytes);
+  bool cache_hit = request.cache_hit_before_network_request;
   image_fetcher_->FetchImageAndData(
-      id, url, std::move(image_data_callback),
+      url,
+      cache_hit ? ImageDataFetcherCallback() : std::move(image_data_callback),
       base::BindOnce(&CachedImageFetcher::OnImageFetchedFromNetwork,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
                      std::move(image_callback)),
-      traffic_annotation);
+      std::move(request.params));
 }
 
 void CachedImageFetcher::OnImageFetchedFromNetwork(
     CachedImageFetcherRequest request,
     ImageFetcherCallback image_callback,
-    const std::string& id,
     const gfx::Image& image,
     const RequestMetadata& request_metadata) {
   // The image has been deocded by the fetcher already, return straight to the
   // caller.
-  ImageCallbackIfPresent(std::move(image_callback), request.id, image,
-                         request_metadata);
+  ImageCallbackIfPresent(std::move(image_callback), image, request_metadata);
 
   // Copy the image data out and store it on disk.
   const SkBitmap* bitmap = image.IsEmpty() ? nullptr : image.ToSkBitmap();

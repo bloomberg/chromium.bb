@@ -54,7 +54,6 @@ class NtpIconSource : public content::URLDataSource {
   bool IsRequestedUrlInServerSuggestions(const GURL& url);
   void RequestServerFavicon(const NtpIconRequest& request);
   void OnServerFaviconAvailable(const NtpIconRequest& request,
-                                const std::string& id,
                                 const gfx::Image& fetched_image,
                                 const image_fetcher::RequestMetadata& metadata);
 

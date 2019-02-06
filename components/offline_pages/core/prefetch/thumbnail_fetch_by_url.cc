@@ -12,8 +12,9 @@
 namespace offline_pages {
 
 namespace {
-net::NetworkTrafficAnnotationTag TrafficAnnotation() {
-  return net::DefineNetworkTrafficAnnotation("prefetch_thumbnail", R"(
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("prefetch_thumbnail", R"(
         semantics {
           sender: "Offline Pages Prefetch"
           description:
@@ -38,7 +39,6 @@ net::NetworkTrafficAnnotationTag TrafficAnnotation() {
             }
           }
         })");
-}
 
 }  // namespace
 
@@ -52,9 +52,12 @@ void FetchThumbnailByURL(
          const image_fetcher::RequestMetadata& request_metadata) {
         std::move(callback).Run(image_data);
       };
-  fetcher->FetchImageData(/*id=*/std::string(), thumbnail_url,
+
+  image_fetcher::ImageFetcherParams params(kTrafficAnnotation);
+
+  fetcher->FetchImageData(thumbnail_url,
                           base::BindOnce(forward_callback, std::move(callback)),
-                          TrafficAnnotation());
+                          std::move(params));
 }
 
 }  // namespace offline_pages

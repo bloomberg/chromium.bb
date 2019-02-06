@@ -36,9 +36,6 @@ class ImageDataFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ImageDataFetcher();
 
-  // Sets a service name against which to track data usage.
-  void SetDataUseServiceName(DataUseServiceName data_use_service_name);
-
   // Sets an upper limit for image downloads.
   // Already running downloads are not affected.
   void SetImageDownloadLimit(base::Optional<int64_t> max_download_bytes);
@@ -83,8 +80,6 @@ class ImageDataFetcher {
       pending_requests_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  DataUseServiceName data_use_service_name_;
 
   // Upper limit for the number of bytes to download per image.
   base::Optional<int64_t> max_download_bytes_;

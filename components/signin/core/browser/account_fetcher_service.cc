@@ -303,9 +303,9 @@ void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
   GURL image_url_with_size(signin::GetAvatarImageURLWithOptions(
       picture_url, kAccountImageDownloadSize, true /* no_silhouette */));
   auto callback = base::BindRepeating(&AccountFetcherService::OnImageFetched,
-                                      base::Unretained(this));
-  GetOrCreateImageFetcher()->FetchImage(account_id, image_url_with_size,
-                                        callback, traffic_annotation);
+                                      base::Unretained(this), account_id);
+  GetOrCreateImageFetcher()->FetchImage(image_url_with_size, callback,
+                                        traffic_annotation);
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(

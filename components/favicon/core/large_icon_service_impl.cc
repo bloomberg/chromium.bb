@@ -411,14 +411,15 @@ void OnSetOnDemandFaviconComplete(
 void OnFetchIconFromGoogleServerComplete(
     FaviconService* favicon_service,
     const GURL& page_url,
+    const GURL& server_request_url,
     favicon_base::IconType icon_type,
     const favicon_base::GoogleFaviconServerCallback& callback,
-    const std::string& server_request_url,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
   if (image.IsEmpty()) {
-    DLOG(WARNING) << "large icon server fetch empty " << server_request_url;
-    favicon_service->UnableToDownloadFavicon(GURL(server_request_url));
+    DLOG(WARNING) << "large icon server fetch empty "
+                  << server_request_url.spec();
+    favicon_service->UnableToDownloadFavicon(server_request_url);
     callback.Run(
         metadata.http_response_code ==
                 image_fetcher::RequestMetadata::RESPONSE_CODE_INVALID
@@ -434,7 +435,7 @@ void OnFetchIconFromGoogleServerComplete(
   // Otherwise, use the request URL as fallback.
   std::string original_icon_url = metadata.content_location_header;
   if (original_icon_url.empty()) {
-    original_icon_url = server_request_url;
+    original_icon_url = server_request_url.spec();
   }
 
   // Write fetched icons to FaviconService's cache, but only if no icon was
@@ -607,13 +608,12 @@ void LargeIconServiceImpl::OnCanSetOnDemandFaviconComplete(
     return;
   }
 
-  image_fetcher_->SetDataUseServiceName(
-      data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
+  image_fetcher::ImageFetcherParams params(traffic_annotation);
   image_fetcher_->FetchImage(
-      server_request_url.spec(), server_request_url,
+      server_request_url,
       base::BindOnce(&OnFetchIconFromGoogleServerComplete, favicon_service_,
-                     page_url, icon_type, callback),
-      traffic_annotation);
+                     page_url, server_request_url, icon_type, callback),
+      std::move(params));
 }
 
 }  // namespace favicon

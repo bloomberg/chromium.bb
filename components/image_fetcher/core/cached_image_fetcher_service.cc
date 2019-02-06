@@ -10,30 +10,28 @@
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/cached_image_fetcher.h"
 #include "components/image_fetcher/core/image_decoder.h"
+#include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace image_fetcher {
 
 CachedImageFetcherService::CachedImageFetcherService(
-    CreateImageDecoderCallback create_image_decoder_fn,
+    std::unique_ptr<ImageDecoder> image_decoder,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<ImageCache> image_cache,
     bool read_only)
-    : create_image_decoder_callback_(create_image_decoder_fn),
-      url_loader_factory_(url_loader_factory),
-      image_cache_(image_cache),
-      read_only_(read_only) {}
+    : cached_image_fetcher_(std::make_unique<CachedImageFetcher>(
+          std::make_unique<ImageFetcherImpl>(std::move(image_decoder),
+                                             url_loader_factory),
+          image_cache,
+          read_only)),
+      image_cache_(image_cache) {}
 
 CachedImageFetcherService::~CachedImageFetcherService() = default;
 
-// TODO(wylieb): Store CachedImageFetcher once it's stateless.
-std::unique_ptr<CachedImageFetcher>
-CachedImageFetcherService::CreateCachedImageFetcher() {
-  return std::make_unique<CachedImageFetcher>(
-      std::make_unique<ImageFetcherImpl>(create_image_decoder_callback_.Run(),
-                                         url_loader_factory_),
-      image_cache_, read_only_);
+ImageFetcher* CachedImageFetcherService::GetCachedImageFetcher() {
+  return cached_image_fetcher_.get();
 }
 
 scoped_refptr<ImageCache> CachedImageFetcherService::ImageCacheForTesting()

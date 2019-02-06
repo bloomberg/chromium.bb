@@ -38,20 +38,10 @@ class ImageFetcherImpl : public ImageFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ImageFetcherImpl() override;
 
-  // Sets a service name against which to track data usage.
-  void SetDataUseServiceName(DataUseServiceName data_use_service_name) override;
-
-  void SetDesiredImageFrameSize(const gfx::Size& size) override;
-
-  void SetImageDownloadLimit(
-      base::Optional<int64_t> max_download_bytes) override;
-
-  void FetchImageAndData(
-      const std::string& id,
-      const GURL& image_url,
-      ImageDataFetcherCallback image_data_callback,
-      ImageFetcherCallback image_callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
+  void FetchImageAndData(const GURL& image_url,
+                         ImageDataFetcherCallback image_data_callback,
+                         ImageFetcherCallback image_callback,
+                         ImageFetcherParams params) override;
 
   ImageDecoder* GetImageDecoder() override;
 
@@ -79,6 +69,7 @@ class ImageFetcherImpl : public ImageFetcher {
   // Processes image URL fetched events. This is the continuation method used
   // for creating callbacks that are passed to the ImageDataFetcher.
   void OnImageURLFetched(const GURL& image_url,
+                         ImageFetcherParams params,
                          const std::string& image_data,
                          const RequestMetadata& metadata);
 
@@ -87,8 +78,6 @@ class ImageFetcherImpl : public ImageFetcher {
   void OnImageDecoded(const GURL& image_url,
                       const RequestMetadata& metadata,
                       const gfx::Image& image);
-
-  gfx::Size desired_image_frame_size_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
