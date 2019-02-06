@@ -119,6 +119,12 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** Whether a timing event should be recorded. This will be true once per omnibox focus. */
     private boolean mShouldRecordTimingEvent;
 
+    /** Whether the first suggestion after an omnibox focus event has been processed. */
+    private boolean mFirstSuggestionProcessedForCurrentOmniboxFocus;
+
+    /** Whether this processor should ignore all subsequent suggestion. */
+    private boolean mIgnoreSuggestions;
+
     /**
      * @param locationBarDelegate A means of modifying the location bar.
      * @param selectionHandler A mechanism for handling selection of the edit URL suggestion item.
@@ -143,8 +149,19 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     @Override
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
         Tab activeTab = mTabProvider != null ? mTabProvider.getActivityTab() : null;
-        if (OmniboxSuggestionType.URL_WHAT_YOU_TYPED != suggestion.getType() || activeTab == null
-                || activeTab.isIncognito() || activeTab.isNativePage()) {
+
+        // The what-you-typed suggestion can potentially appear as the second suggestion in some
+        // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
+        if (!mFirstSuggestionProcessedForCurrentOmniboxFocus) {
+            mFirstSuggestionProcessedForCurrentOmniboxFocus = true;
+            mIgnoreSuggestions = activeTab == null || activeTab.isNativePage()
+                    || activeTab.isIncognito()
+                    || OmniboxSuggestionType.URL_WHAT_YOU_TYPED != suggestion.getType()
+                    || !TextUtils.equals(suggestion.getUrl(), activeTab.getUrl());
+        }
+
+        if (OmniboxSuggestionType.URL_WHAT_YOU_TYPED != suggestion.getType()
+                || mIgnoreSuggestions) {
             return false;
         }
         mLastProcessedSuggestion = suggestion;
@@ -231,6 +248,8 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             mOriginalTitle = null;
             mHasClearedOmniboxForFocus = false;
             mLastProcessedSuggestion = null;
+            mFirstSuggestionProcessedForCurrentOmniboxFocus = false;
+            mIgnoreSuggestions = false;
         }
         mShouldRecordTimingEvent = hasFocus;
     }
