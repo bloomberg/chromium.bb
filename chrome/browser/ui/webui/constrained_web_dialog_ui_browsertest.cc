@@ -173,8 +173,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, ReleaseWebContents) {
 
 // Tests that dialog autoresizes based on web contents when autoresizing
 // is enabled.
+// Flaky on CrOS: http://crbug.com/928924
+#if defined(OS_CHROMEOS)
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  DISABLED_ContentResizeInAutoResizingDialog
+#else
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  ContentResizeInAutoResizingDialog
+#endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
-                       ContentResizeInAutoResizingDialog) {
+                       MAYBE_ContentResizeInAutoResizingDialog) {
   // During auto-resizing, dialogs size to (WebContents size) + 16.
   const int dialog_border_space = 16;
 
@@ -257,16 +265,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
 // is on by default, this test can be deleted.
 // TODO(fsamuel): Fix tis for Mac too.
 #if defined(USE_AURA)
-// Flaky on CrOS: http://crbug.com/928924
-#if defined(OS_CHROMEOS)
-#define MAYBE_ContentResizeInAutoResizingDialog \
-  DISABLED_ContentResizeInAutoResizingDialog
-#else
-#define MAYBE_ContentResizeInAutoResizingDialog \
-  ContentResizeInAutoResizingDialog
-#endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
-                       MAYBE_ContentResizeInAutoResizingDialog) {
+                       ContentResizeInAutoResizingDialog) {
   // During auto-resizing, dialogs size to (WebContents size) + 16.
   const int dialog_border_space = 16;
 
