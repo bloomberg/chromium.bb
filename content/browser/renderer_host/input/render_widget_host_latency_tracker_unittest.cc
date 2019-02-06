@@ -1237,13 +1237,15 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestScrollUpdateAverageLag) {
   }
   // Send 101 ScrollUpdate events to verify that there is 1 AverageLag record
   // per 1 second.
-  for (int i = 0; i <= 100; i++) {
+  const int kUpdates = 101;
+  for (int i = 0; i < kUpdates; i++) {
     // ScrollUpdate
     SyntheticWebTouchEvent touch;
     touch.PressPoint(0, 0);
     ui::LatencyInfo touch_latency(ui::SourceEventType::TOUCH);
 
-    touch_latency.set_scroll_update_delta(10);
+    const int sign = (i < kUpdates / 2) ? 1 : -1;
+    touch_latency.set_scroll_update_delta(sign * 10);
     event_time += base::TimeDelta::FromMilliseconds(10);
     touch_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, event_time,

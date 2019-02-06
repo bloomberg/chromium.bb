@@ -369,7 +369,7 @@ void LatencyTracker::CalculateAverageLag(
     // creation time and gpu swap begin time.
     pending_finished_lag_report_->lag =
         (gpu_swap_begin_timestamp - event_timestamp).InMillisecondsF() *
-        latency.scroll_update_delta();
+        std::abs(latency.scroll_update_delta());
     // The next report time should be a least 1 second away from current report
     // time.
     next_report_time_ = pending_finished_lag_report_->report_time +
@@ -386,14 +386,14 @@ void LatencyTracker::CalculateAverageLag(
     // average delta(current delta/2).
     float pending_finger_move_lag =
         (event_timestamp - last_event_timestamp_).InMillisecondsF() *
-        latency.scroll_update_delta() / 2;
+        std::abs(latency.scroll_update_delta() / 2);
 
     // |event_dispatch_lag| is the area between the current event creation time
     // (i.e. last coalesced event of current event creation time) and gpu swap
     // begin time of this event.
     float event_dispatch_lag =
         (gpu_swap_begin_timestamp - event_timestamp).InMillisecondsF() *
-        latency.scroll_update_delta();
+        std::abs(latency.scroll_update_delta());
 
     if (pending_finished_lag_report_) {
       if (event_timestamp >= pending_finished_lag_report_->report_time) {
@@ -421,7 +421,7 @@ void LatencyTracker::CalculateAverageLag(
             (gpu_swap_begin_timestamp -
              pending_finished_lag_report_->report_time)
                 .InMillisecondsF() *
-            latency.scroll_update_delta();
+            std::abs(latency.scroll_update_delta());
         pending_finished_lag_report_->lag += pending_finger_move_lag +
                                              event_dispatch_lag -
                                              lag_after_report_time;
@@ -460,9 +460,10 @@ void LatencyTracker::CalculateAverageLag(
 void LatencyTracker::ReportAverageLagUma(std::unique_ptr<LagData> report) {
   if (report) {
     DCHECK(!report->report_time.is_null());
+    DCHECK(report->lag >= 0.f);
     base::UmaHistogramCounts1000(
         "Event.Latency." + report->scroll_name + ".Touch.AverageLag",
-        std::abs(report->lag) /
+        report->lag /
             (report->report_time - last_reported_time_).InMillisecondsF());
 
     last_reported_time_ = report->report_time;
