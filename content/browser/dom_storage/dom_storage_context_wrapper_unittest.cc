@@ -63,13 +63,14 @@ TEST_F(DOMStorageContextWrapperTest, BadMessageScheduling) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace_ptr;
   auto request = mojo::MakeRequest(&ss_namespace_ptr);
   bool called = false;
+
   // This call is invalid because |CreateSessionNamespace| was never called on
   // the SessionStorage context.
   context_->OpenSessionStorage(
       0, "nonexistant-namespace",
       base::BindLambdaForTesting(
           [&called](const std::string& message) { called = true; }),
-      std::move(request));
+      std::move(request), base::DoNothing());
   EXPECT_FALSE(called);
   fake_mojo_task_runner_->RunPendingTasks();
 

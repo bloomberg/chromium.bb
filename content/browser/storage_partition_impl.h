@@ -154,10 +154,11 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request) override;
-  void OpenSessionStorage(
-      const std::string& namespace_id,
-      blink::mojom::SessionStorageNamespaceRequest request) override;
+                        blink::mojom::StorageAreaRequest request,
+                        OpenLocalStorageCallback callback) override;
+  void OpenSessionStorage(const std::string& namespace_id,
+                          blink::mojom::SessionStorageNamespaceRequest request,
+                          OpenSessionStorageCallback callback) override;
 
   // network::mojom::NetworkContextClient interface.
   void OnCanSendReportingReports(

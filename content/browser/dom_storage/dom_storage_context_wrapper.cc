@@ -431,25 +431,36 @@ void DOMStorageContextWrapper::Flush() {
 
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    blink::mojom::StorageAreaRequest request,
+    base::OnceClosure bind_done) {
   DCHECK(mojo_state_);
+
+  base::OnceClosure wrapped_done_callback = base::BindOnce(
+      base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
+      base::SequencedTaskRunnerHandle::Get(), FROM_HERE, std::move(bind_done));
+
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
   // as soon as that task is posted, mojo_state_ is set to null, preventing
   // further tasks from being queued.
   mojo_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LocalStorageContextMojo::OpenLocalStorage,
-                                base::Unretained(mojo_state_), origin,
-                                std::move(request)));
+      FROM_HERE,
+      base::BindOnce(&LocalStorageContextMojo::OpenLocalStorage,
+                     base::Unretained(mojo_state_), origin, std::move(request),
+                     std::move(wrapped_done_callback)));
 }
 
 void DOMStorageContextWrapper::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
-    blink::mojom::SessionStorageNamespaceRequest request) {
+    blink::mojom::SessionStorageNamespaceRequest request,
+    base::OnceClosure bind_done) {
   if (!mojo_session_state_)
     return;
+  base::OnceClosure wrapped_done_callback = base::BindOnce(
+      base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
+      base::SequencedTaskRunnerHandle::Get(), FROM_HERE, std::move(bind_done));
   // The bad message callback must be called on the same sequenced task runner
   // as the binding set. It cannot be called from our own mojo task runner.
   auto wrapped_bad_message_callback = base::BindOnce(
@@ -469,7 +480,7 @@ void DOMStorageContextWrapper::OpenSessionStorage(
       base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
                      base::Unretained(mojo_session_state_), process_id,
                      namespace_id, std::move(wrapped_bad_message_callback),
-                     std::move(request)));
+                     std::move(request), std::move(wrapped_done_callback)));
 }
 
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(

@@ -85,7 +85,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void OpenSessionStorage(int process_id,
                           const std::string& namespace_id,
                           mojo::ReportBadMessageCallback bad_message_callback,
-                          blink::mojom::SessionStorageNamespaceRequest request);
+                          blink::mojom::SessionStorageNamespaceRequest request,
+                          base::OnceClosure bind_done);
 
   void CreateSessionNamespace(const std::string& namespace_id);
   void CloneSessionNamespace(const std::string& namespace_id_to_clone,

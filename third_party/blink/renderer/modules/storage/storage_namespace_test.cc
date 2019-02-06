@@ -22,11 +22,16 @@ class NoopStoragePartitionService
     : public mojom::blink::StoragePartitionService {
  public:
   void OpenLocalStorage(const scoped_refptr<const SecurityOrigin>& origin,
-                        mojom::blink::StorageAreaRequest request) override {}
+                        mojom::blink::StorageAreaRequest request,
+                        OpenLocalStorageCallback callback) override {
+    std::move(callback).Run();
+  }
 
-  void OpenSessionStorage(
-      const String& namespace_id,
-      mojom::blink::SessionStorageNamespaceRequest request) override {}
+  void OpenSessionStorage(const String& namespace_id,
+                          mojom::blink::SessionStorageNamespaceRequest request,
+                          OpenSessionStorageCallback callback) override {
+    std::move(callback).Run();
+  }
 };
 
 }  // namespace

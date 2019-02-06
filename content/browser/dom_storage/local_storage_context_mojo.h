@@ -57,7 +57,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request);
+                        blink::mojom::StorageAreaRequest request,
+                        base::OnceClosure bind_done);
   void GetStorageUsage(GetStorageUsageCallback callback);
   // |callback| is called when the deletion is sent to the database and
   // GetStorageUsage() will not return entries for |origin| anymore.
@@ -123,7 +124,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request);
+                        blink::mojom::StorageAreaRequest request,
+                        base::OnceClosure bind_done);
   StorageAreaHolder* GetOrCreateStorageArea(const url::Origin& origin);
 
   // The (possibly delayed) implementation of GetStorageUsage(). Can be called

@@ -919,7 +919,8 @@ StoragePartitionImpl::GetGeneratedCodeCacheContext() {
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    blink::mojom::StorageAreaRequest request,
+    OpenLocalStorageCallback callback) {
   int process_id = bindings_.dispatch_context();
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
           process_id, origin.GetURL())) {
@@ -927,16 +928,18 @@ void StoragePartitionImpl::OpenLocalStorage(
     bindings_.ReportBadMessage("Access denied for localStorage request");
     return;
   }
-  dom_storage_context_->OpenLocalStorage(origin, std::move(request));
+  dom_storage_context_->OpenLocalStorage(origin, std::move(request),
+                                         std::move(callback));
 }
 
 void StoragePartitionImpl::OpenSessionStorage(
     const std::string& namespace_id,
-    blink::mojom::SessionStorageNamespaceRequest request) {
+    blink::mojom::SessionStorageNamespaceRequest request,
+    OpenSessionStorageCallback callback) {
   int process_id = bindings_.dispatch_context();
-  dom_storage_context_->OpenSessionStorage(process_id, namespace_id,
-                                           bindings_.GetBadMessageCallback(),
-                                           std::move(request));
+  dom_storage_context_->OpenSessionStorage(
+      process_id, namespace_id, bindings_.GetBadMessageCallback(),
+      std::move(request), std::move(callback));
 }
 
 void StoragePartitionImpl::OnCanSendReportingReports(

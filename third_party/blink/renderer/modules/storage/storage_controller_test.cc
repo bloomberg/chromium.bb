@@ -28,12 +28,16 @@ class MockStoragePartitionService
     : public mojom::blink::StoragePartitionService {
  public:
   void OpenLocalStorage(const scoped_refptr<const SecurityOrigin>& origin,
-                        mojom::blink::StorageAreaRequest request) override {}
+                        mojom::blink::StorageAreaRequest request,
+                        OpenLocalStorageCallback done) override {
+    std::move(done).Run();
+  }
 
-  void OpenSessionStorage(
-      const String& namespace_id,
-      mojom::blink::SessionStorageNamespaceRequest request) override {
+  void OpenSessionStorage(const String& namespace_id,
+                          mojom::blink::SessionStorageNamespaceRequest request,
+                          OpenSessionStorageCallback done) override {
     session_storage_opens++;
+    std::move(done).Run();
   }
 
   void GetSessionStorageUsage(int32_t* out) const {

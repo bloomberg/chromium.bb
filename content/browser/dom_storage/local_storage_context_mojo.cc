@@ -395,10 +395,11 @@ LocalStorageContextMojo::LocalStorageContextMojo(
 
 void LocalStorageContextMojo::OpenLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    blink::mojom::StorageAreaRequest request,
+    base::OnceClosure bind_done) {
   RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::BindLocalStorage,
                                   weak_ptr_factory_.GetWeakPtr(), origin,
-                                  std::move(request)));
+                                  std::move(request), std::move(bind_done)));
 }
 
 void LocalStorageContextMojo::GetStorageUsage(
@@ -911,8 +912,10 @@ void LocalStorageContextMojo::OnDBDestroyed(
 // directly from that function, or through |on_database_open_callbacks_|.
 void LocalStorageContextMojo::BindLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    blink::mojom::StorageAreaRequest request,
+    base::OnceClosure bind_done) {
   GetOrCreateStorageArea(origin)->Bind(std::move(request));
+  std::move(bind_done).Run();
 }
 
 LocalStorageContextMojo::StorageAreaHolder*
