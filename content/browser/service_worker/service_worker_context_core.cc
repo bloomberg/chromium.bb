@@ -70,23 +70,23 @@ void CheckFetchHandlerOfInstalledServiceWorker(
           : ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER);
 }
 
-void SuccessCollectorCallback(base::OnceClosure done_closure,
-                              bool* overall_success,
-                              blink::ServiceWorkerStatusCode status) {
-  if (status != blink::ServiceWorkerStatusCode::kOk) {
-    *overall_success = false;
-  }
-  std::move(done_closure).Run();
-}
-
+// This function will call |callback| after |*expected_calls| reaches zero or
+// when an error occurs. In case of an error, |*expected_calls| is set to -1
+// to prevent calling |callback| again.
 void SuccessReportingCallback(
-    const bool* success,
-    base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool result = *success;
-  std::move(callback).Run(result
-                              ? blink::ServiceWorkerStatusCode::kOk
-                              : blink::ServiceWorkerStatusCode::kErrorFailed);
+    int* expected_calls,
+    const base::RepeatingCallback<void(blink::ServiceWorkerStatusCode)>&
+        callback,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    *expected_calls = -1;
+    callback.Run(blink::ServiceWorkerStatusCode::kErrorFailed);
+    return;
+  }
+  (*expected_calls)--;
+  if (*expected_calls == 0) {
+    callback.Run(blink::ServiceWorkerStatusCode::kOk);
+  }
 }
 
 bool IsSameOriginClientProviderHost(const GURL& origin,
@@ -512,24 +512,29 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     std::move(callback).Run(status);
     return;
   }
-  bool* overall_success = new bool(true);
+  if (registrations.empty()) {
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
+    return;
+  }
+
+  int* expected_calls = new int(2 * registrations.size());
   // The barrier must be executed twice for each registration: once for
-  // unregistration and once for deletion.
-  base::RepeatingClosure barrier = base::BarrierClosure(
-      2 * registrations.size(),
-      base::BindOnce(&SuccessReportingCallback, base::Owned(overall_success),
-                     std::move(callback)));
+  // unregistration and once for deletion. It will call |callback| immediately
+  // if an error occurs.
+  base::RepeatingCallback<void(blink::ServiceWorkerStatusCode)> barrier =
+      base::BindRepeating(SuccessReportingCallback, base::Owned(expected_calls),
+                          base::AdaptCallbackForRepeating(std::move(callback)));
   for (const auto& registration : registrations) {
     DCHECK(registration);
     if (!registration->is_deleted()) {
-      RegistrationDeletionListener::WaitForDeletion(registration, barrier);
+      RegistrationDeletionListener::WaitForDeletion(
+          registration,
+          base::BindOnce(barrier, blink::ServiceWorkerStatusCode::kOk));
     } else {
-      barrier.Run();
+      barrier.Run(blink::ServiceWorkerStatusCode::kOk);
     }
     job_coordinator_->Abort(registration->scope());
-    UnregisterServiceWorker(
-        registration->scope(),
-        base::BindOnce(&SuccessCollectorCallback, barrier, overall_success));
+    UnregisterServiceWorker(registration->scope(), barrier);
   }
 }
 
