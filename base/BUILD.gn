@@ -2500,6 +2500,7 @@ test("base_unittests") {
     "task/sequence_manager/lazily_deallocated_deque_unittest.cc",
     "task/sequence_manager/sequence_manager_impl_unittest.cc",
     "task/sequence_manager/task_queue_selector_unittest.cc",
+    "task/sequence_manager/test/mock_time_message_pump_unittest.cc",
     "task/sequence_manager/thread_controller_with_message_pump_impl_unittest.cc",
     "task/sequence_manager/time_domain_unittest.cc",
     "task/sequence_manager/work_queue_sets_unittest.cc",
