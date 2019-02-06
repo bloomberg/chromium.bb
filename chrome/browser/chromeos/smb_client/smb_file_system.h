@@ -52,6 +52,11 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       base::RepeatingCallback<void(const std::string& /* share_path */,
                                    int32_t /* mount_id */,
                                    base::OnceClosure /* reply */)>;
+  using RequestUpdatedSharePathCallback =
+      base::RepeatingCallback<void(const std::string& /* share_path */,
+                                   int32_t /* mount_id */,
+                                   SmbService::StartReadDirIfSuccessfulCallback
+                                   /* reply */)>;
 
   SmbFileSystem(
       const file_system_provider::ProvidedFileSystemInfo& file_system_info,

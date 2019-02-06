@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 
+#include <utility>
+
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -20,7 +22,8 @@ namespace smb_client {
 
 SmbProvider::SmbProvider(
     UnmountCallback unmount_callback,
-    SmbFileSystem::RequestCredentialsCallback request_creds_callback)
+    SmbFileSystem::RequestCredentialsCallback request_creds_callback,
+    SmbFileSystem::RequestUpdatedSharePathCallback request_path_callback)
     : provider_id_(ProviderId::CreateFromNativeId("smb")),
       capabilities_(false /* configurable */,
                     false /* watchable */,
@@ -28,7 +31,8 @@ SmbProvider::SmbProvider(
                     extensions::SOURCE_NETWORK),
       name_(l10n_util::GetStringUTF8(IDS_SMB_SHARES_ADD_SERVICE_MENU_OPTION)),
       unmount_callback_(std::move(unmount_callback)),
-      request_creds_callback_(std::move(request_creds_callback)) {
+      request_creds_callback_(std::move(request_creds_callback)),
+      request_path_callback_(std::move(request_path_callback)) {
   icon_set_.SetIcon(IconSet::IconSize::SIZE_16x16,
                     GURL("chrome://theme/IDR_SMB_ICON"));
   icon_set_.SetIcon(IconSet::IconSize::SIZE_32x32,

@@ -488,6 +488,8 @@ void SmbService::CompleteSetup(
   GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
       base::BindRepeating(&SmbService::Unmount, base::Unretained(this)),
       base::BindRepeating(&SmbService::RequestCredentials,
+                          base::Unretained(this)),
+      base::BindRepeating(&SmbService::RequestUpdatedSharePath,
                           base::Unretained(this))));
   RestoreMounts();
 }
@@ -580,6 +582,13 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropdown() const {
 
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForPremount() const {
   return GetPreconfiguredSharePaths(kModePreMountValue);
+}
+
+void SmbService::RequestUpdatedSharePath(
+    const std::string& share_path,
+    int32_t mount_id,
+    StartReadDirIfSuccessfulCallback reply) {
+  NOTREACHED();
 }
 
 void SmbService::RecordMountCount() const {
