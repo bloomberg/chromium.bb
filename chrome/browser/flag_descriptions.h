@@ -340,6 +340,9 @@ extern const char kEnableCaptivePortalRandomUrlDescription[];
 extern const char kEnableChromevoxDeveloperOptionName[];
 extern const char kEnableChromevoxDeveloperOptionDescription[];
 
+extern const char kEnableDataSaverLiteModeRebrandName[];
+extern const char kEnableDataSaverLiteModeRebrandDescription[];
+
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 

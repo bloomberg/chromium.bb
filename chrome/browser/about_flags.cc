@@ -2026,6 +2026,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLitePageServerPreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kLitePageServerPreviews)},
 #endif  // OS_ANDROID
+    {"enable-lite-mode-rebrand",
+     flag_descriptions::kEnableDataSaverLiteModeRebrandName,
+     flag_descriptions::kEnableDataSaverLiteModeRebrandDescription, kOsAll,
+     FEATURE_VALUE_TYPE(previews::features::kDataSaverLiteModeRebranding)},
     {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
      flag_descriptions::kEnableClientLoFiDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},

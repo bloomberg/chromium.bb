@@ -509,6 +509,11 @@ const char kEnableChromevoxDeveloperOptionName[] =
 const char kEnableChromevoxDeveloperOptionDescription[] =
     "This option provides tools for developing in chromevox.";
 
+const char kEnableDataSaverLiteModeRebrandName[] =
+    "Data Saver Lite Mode Rebranding";
+const char kEnableDataSaverLiteModeRebrandDescription[] =
+    "Enable the Data Saver rebranding to Lite Mode.";
+
 const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 
 const char kEnableClientLoFiDescription[] =
