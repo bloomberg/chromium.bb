@@ -20,8 +20,6 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
@@ -29,7 +27,6 @@
 #include "components/os_crypt/os_crypt.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -207,7 +204,7 @@ void SigninWithCredentialProviderIfPossible(Profile* profile) {
   if (!(first_run::IsChromeFirstRun() &&
         g_browser_process->profile_manager()->GetInitialProfileDir() ==
             profile->GetPath().BaseName() &&
-        !SigninManagerFactory::GetForProfile(profile)->IsAuthenticated())) {
+        !IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount())) {
     return;
   }
 
@@ -220,19 +217,17 @@ bool ReauthWithCredentialProviderIfPossible(Profile* profile) {
   //  - The profile is marked as having been signed in with a system credential.
   //  - The profile is already signed in.
   //  - The profile is in an auth error state.
-  SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (!(profile->GetPrefs()->GetBoolean(
             prefs::kSignedInWithCredentialProvider) &&
-        manager->IsAuthenticated() &&
-        token_service->RefreshTokenHasError(
-            manager->GetAuthenticatedAccountId()))) {
+        identity_manager->HasPrimaryAccount() &&
+        identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+            identity_manager->GetPrimaryAccountId()))) {
     return false;
   }
 
   base::string16 gaia_id =
-      base::UTF8ToUTF16(manager->GetAuthenticatedAccountInfo().gaia.c_str());
+      base::UTF8ToUTF16(identity_manager->GetPrimaryAccountInfo().gaia.c_str());
   return TrySigninWithCredentialProvider(profile, gaia_id, false);
 }
 
