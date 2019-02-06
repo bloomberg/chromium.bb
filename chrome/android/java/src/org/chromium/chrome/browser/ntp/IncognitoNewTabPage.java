@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -38,6 +39,8 @@ public class IncognitoNewTabPage
 
     private IncognitoNewTabPageManager mIncognitoNewTabPageManager;
 
+    private final int mIncognitoNTPBackgroundColor;
+
     private void showIncognitoLearnMore() {
         HelpAndFeedback.getInstance(mActivity).show(mActivity,
                 mActivity.getString(R.string.help_context_incognito_learn_more),
@@ -49,7 +52,10 @@ public class IncognitoNewTabPage
      * @param activity The activity used to create the new tab page's View.
      */
     public IncognitoNewTabPage(ChromeActivity activity, NativePageHost host) {
-        super(activity, host, true);
+        super(activity, host);
+
+        mIncognitoNTPBackgroundColor =
+                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito);
     }
 
     @Override
@@ -133,6 +139,11 @@ public class IncognitoNewTabPage
     @Override
     public String getUrl() {
         return UrlConstants.NTP_URL;
+    }
+
+    @Override
+    public int getBackgroundColor() {
+        return mIncognitoNTPBackgroundColor;
     }
 
     @Override

@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -84,7 +83,6 @@ public class NewTabPage
 
     private final String mTitle;
     private final int mBackgroundColor;
-    private final int mThemeColor;
     protected final NewTabPageManagerImpl mNewTabPageManager;
     protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
@@ -293,7 +291,6 @@ public class NewTabPage
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modern_primary_color);
-        mThemeColor = ColorUtils.getDefaultThemeColor(activity.getResources(), false);
         mIsTablet = activity.isTablet();
         TemplateUrlService.getInstance().addObserver(this);
 
@@ -625,11 +622,6 @@ public class NewTabPage
     @Override
     public int getBackgroundColor() {
         return mBackgroundColor;
-    }
-
-    @Override
-    public int getThemeColor() {
-        return isLocationBarShownInNTP() ? mBackgroundColor : mThemeColor;
     }
 
     @Override
