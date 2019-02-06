@@ -422,8 +422,7 @@ void SequenceManagerImpl::OnQueueHasIncomingImmediateWork(
     controller_->ScheduleWork();
 }
 
-void SequenceManagerImpl::MaybeScheduleImmediateWork(
-    const Location& from_here) {
+void SequenceManagerImpl::ScheduleWork() {
   controller_->ScheduleWork();
 }
 
@@ -797,7 +796,7 @@ void SequenceManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   DCHECK(queue->IsQueueEnabled());
   // Only schedule DoWork if there's something to do.
   if (queue->HasTaskToRunImmediately() && !queue->BlockedByFence())
-    MaybeScheduleImmediateWork(FROM_HERE);
+    ScheduleWork();
 }
 
 void SequenceManagerImpl::ReclaimMemory() {

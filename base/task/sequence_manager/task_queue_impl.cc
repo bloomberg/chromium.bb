@@ -491,9 +491,8 @@ void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
     // can be called elsewhere (e.g. tests and fast-path for posting
     // delayed tasks). Ensure that there is a DoWork posting. No-op inside
     // existing DoWork due to DoWork deduplication.
-    if (IsQueueEnabled() || !main_thread_only().current_fence) {
-      sequence_manager_->MaybeScheduleImmediateWork(FROM_HERE);
-    }
+    if (IsQueueEnabled() || !main_thread_only().current_fence)
+      sequence_manager_->ScheduleWork();
   }
 
   UpdateDelayedWakeUp(lazy_now);
@@ -697,7 +696,7 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   }
 
   if (IsQueueEnabled() && task_unblocked)
-    sequence_manager_->MaybeScheduleImmediateWork(FROM_HERE);
+    sequence_manager_->ScheduleWork();
 }
 
 void TaskQueueImpl::InsertFenceAt(TimeTicks time) {
@@ -727,7 +726,7 @@ void TaskQueueImpl::RemoveFence() {
   }
 
   if (IsQueueEnabled() && task_unblocked)
-    sequence_manager_->MaybeScheduleImmediateWork(FROM_HERE);
+    sequence_manager_->ScheduleWork();
 }
 
 bool TaskQueueImpl::BlockedByFence() const {

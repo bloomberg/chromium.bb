@@ -43,7 +43,7 @@ void TimeDomain::SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) {
 }
 
 void TimeDomain::RequestDoWork() {
-  sequence_manager_->MaybeScheduleImmediateWork(FROM_HERE);
+  sequence_manager_->ScheduleWork();
 }
 
 void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
