@@ -365,6 +365,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
 
+    # Win / Intel / Validating command decoder
+    self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['win', 'intel', 'no_passthrough', 'd3d11'], bug=929009)
+
     # D3D9 / Passthrough command decoder
     self.Fail('conformance/textures/canvas/' +
         'tex-2d-luminance-luminance-unsigned_byte.html',
