@@ -245,6 +245,11 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
 TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
   const uint32_t kDataSize = 1024;
 
+  // This test cannot succeed on devices without a proper ashmem device
+  // because Lock() will always succeed.
+  if (!DiscardableSharedMemory::IsAshmemDeviceSupportedForTesting())
+    return;
+
   DiscardableSharedMemory memory1;
   bool rv1 = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv1);
