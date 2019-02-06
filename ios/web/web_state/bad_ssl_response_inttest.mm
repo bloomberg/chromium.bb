@@ -6,7 +6,10 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/public/certificate_policy_cache.h"
+#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
+#import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/features.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -136,6 +139,53 @@ TEST_P(BadSslResponseTest, AllowLoad) {
         cert.get(), url.host(), net::CERT_STATUS_AUTHORITY_INVALID);
     return CertPolicy::Judgment::ALLOWED == policy;
   }));
+
+  // Verify that |BuildSessionStorage| correctly saves certificate decision
+  // to CRWSessionCertificateStorage.
+  CRWSessionCertificatePolicyCacheStorage* cache_storage =
+      web_state()->BuildSessionStorage().certPolicyCacheStorage;
+  ASSERT_TRUE(cache_storage);
+  ASSERT_EQ(1U, cache_storage.certificateStorages.count);
+  CRWSessionCertificateStorage* cert_storage =
+      [cache_storage.certificateStorages anyObject];
+  EXPECT_TRUE(cert->EqualsIncludingChain(cert_storage.certificate));
+  EXPECT_EQ(url.host(), cert_storage.host);
+  EXPECT_EQ(net::CERT_STATUS_AUTHORITY_INVALID, cert_storage.status);
+}
+
+// Tests creating WebState with CRWSessionCertificateStorage and populating
+// CertificatePolicyCache.
+TEST_P(BadSslResponseTest, ReadFromSessionCertificateStorage) {
+  // Create WebState with CRWSessionCertificateStorage.
+  GURL url(https_server_.GetURL("/echo"));
+  scoped_refptr<net::X509Certificate> cert = https_server_.GetCertificate();
+
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.lastCommittedItemIndex = -1;
+  session_storage.certPolicyCacheStorage =
+      [[CRWSessionCertificatePolicyCacheStorage alloc] init];
+  CRWSessionCertificateStorage* cert_storage =
+      [[CRWSessionCertificateStorage alloc]
+          initWithCertificate:cert
+                         host:url.host()
+                       status:net::CERT_STATUS_AUTHORITY_INVALID];
+  session_storage.certPolicyCacheStorage.certificateStorages =
+      [NSSet setWithObject:cert_storage];
+
+  WebState::CreateParams params(GetBrowserState());
+  std::unique_ptr<WebState> web_state =
+      WebState::CreateWithStorageSession(params, session_storage);
+  web_state->GetNavigationManager()->LoadIfNecessary();
+
+  // CertificatePolicyCache must be updated manually.
+  web_state->GetSessionCertificatePolicyCache()->UpdateCertificatePolicyCache(
+      BrowserState::GetCertificatePolicyCache(GetBrowserState()));
+
+  // Navigation should succeed without consulting AllowCertificateErrors.
+  web_client()->SetAllowCertificateErrors(false);
+  test::LoadUrl(web_state.get(), url);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state.get(), "Echo"));
+  EXPECT_EQ(url, web_state->GetLastCommittedURL());
 }
 
 // Tests navigation to a page with self signed SSL cert and allowing the load
