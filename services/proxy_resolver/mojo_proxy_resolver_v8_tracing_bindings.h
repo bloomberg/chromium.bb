@@ -5,13 +5,22 @@
 #ifndef SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_V8_TRACING_BINDINGS_H_
 #define SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_V8_TRACING_BINDINGS_H_
 
+#include <memory>
+#include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/address_family.h"
+#include "net/base/host_port_pair.h"
+#include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_host_resolver.h"
+#include "net/proxy_resolution/proxy_resolver_v8.h"
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "services/proxy_resolver/host_resolver_mojo.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace proxy_resolver {
 
@@ -41,7 +50,7 @@ class MojoProxyResolverV8TracingBindings
     client_->OnError(line_number, base::UTF16ToUTF8(message));
   }
 
-  net::HostResolver* GetHostResolver() override {
+  net::ProxyHostResolver* GetHostResolver() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return &host_resolver_;
   }
@@ -53,10 +62,27 @@ class MojoProxyResolverV8TracingBindings
 
  private:
   // HostResolverMojo::Impl override.
-  void ResolveDns(std::unique_ptr<net::HostResolver::RequestInfo> request_info,
-                  mojom::HostResolverRequestClientPtr client) override {
+  void ResolveDns(
+      const std::string& hostname,
+      net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
+      mojom::HostResolverRequestClientPtr client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    client_->ResolveDns(std::move(request_info), std::move(client));
+
+    net::HostPortPair host_port = net::HostPortPair(hostname, 80);
+    auto info = std::make_unique<net::HostResolver::RequestInfo>(host_port);
+
+    // Flag myIpAddress requests.
+    if (operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS ||
+        operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS_EX)
+      info->set_is_my_ip_address(true);
+
+    // The non-ex flavors are limited to IPv4 results.
+    if (operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS ||
+        operation == net::ProxyResolverV8::JSBindings::DNS_RESOLVE) {
+      info->set_address_family(net::ADDRESS_FAMILY_IPV4);
+    }
+
+    client_->ResolveDns(std::move(info), std::move(client));
   }
 
   base::ThreadChecker thread_checker_;
