@@ -1425,10 +1425,7 @@ size_t H264Decoder::GetRequiredNumOfPictures() const {
 size_t H264Decoder::GetNumReferenceFrames() const {
   // Use the maximum number of pictures in the Decoded Picture Buffer plus one
   // for the one being currently egressed.
-  // Another +1 is experimentally needed for high-to-high resolution changes.
-  // TODO(mcasas): Figure out why +2 instead of +1, see crbug.com/909926 and
-  // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
-  return dpb_.max_num_pics() + 2;
+  return dpb_.max_num_pics() + 1;
 }
 
 // static

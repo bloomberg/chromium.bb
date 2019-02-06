@@ -536,12 +536,18 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
 
   // If we are in BufferAllocationMode::kNone, split the requested |num_pics|
   // between VA reference frames and client PictureBuffers proper.
-  if (buffer_allocation_mode_ == BufferAllocationMode::kReduced)
+  if (IsBufferAllocationModeReducedOrSuperReduced())
     requested_num_reference_frames_ = num_reference_frames;
   else
     requested_num_reference_frames_ = 0;
 
   requested_num_pics_ = num_pics - requested_num_reference_frames_;
+
+  // Add an extra allocation for |client_| and |decoder_| in the kReduced case.
+  if (buffer_allocation_mode_ == BufferAllocationMode::kReduced) {
+    requested_num_reference_frames_++;
+    requested_num_pics_++;
+  }
 
   VLOGF(2) << " |requested_num_pics_| = " << requested_num_pics_
            << "; |requested_num_reference_frames_| = "
@@ -558,7 +564,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 
   base::AutoLock auto_lock(lock_);
   const size_t expected_max_available_va_surfaces =
-      buffer_allocation_mode_ == BufferAllocationMode::kReduced
+      IsBufferAllocationModeReducedOrSuperReduced()
           ? previously_requested_num_reference_frames_
           : pictures_.size();
 
@@ -703,7 +709,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_EQ(va_surface_ids.size(), buffers.size());
   } else {
     const size_t requested_num_surfaces =
-        buffer_allocation_mode_ == BufferAllocationMode::kReduced
+        IsBufferAllocationModeReducedOrSuperReduced()
             ? requested_num_reference_frames_
             : pictures_.size();
     CHECK_NE(requested_num_surfaces, 0u);
@@ -1027,7 +1033,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
     available_va_surfaces_.pop_front();
 
     TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
-                      (buffer_allocation_mode_ == BufferAllocationMode::kReduced
+                      (IsBufferAllocationModeReducedOrSuperReduced()
                            ? requested_num_reference_frames_
                            : pictures_.size()) -
                           available_va_surfaces_.size(),
@@ -1066,13 +1072,12 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
     base::AutoLock auto_lock(lock_);
     available_va_surfaces_.push_back(va_surface_id);
     if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
-      TRACE_COUNTER_ID2(
-          "media,gpu", "Vaapi VASurfaceIDs", this, "used",
-          (buffer_allocation_mode_ == BufferAllocationMode::kReduced
-               ? requested_num_reference_frames_
-               : pictures_.size()) -
-              available_va_surfaces_.size(),
-          "available", available_va_surfaces_.size());
+      TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
+                        (IsBufferAllocationModeReducedOrSuperReduced()
+                             ? requested_num_reference_frames_
+                             : pictures_.size()) -
+                            available_va_surfaces_.size(),
+                        "available", available_va_surfaces_.size());
     }
     surfaces_available_.Signal();
   }
@@ -1087,7 +1092,7 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
 }
 
 VaapiVideoDecodeAccelerator::BufferAllocationMode
-VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
+VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() const {
   // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
   // |output_mode_| as well.
   if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
@@ -1110,10 +1115,23 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
   // request the |client_| to allocate less than the usual |decoder_|s
   // GetRequiredNumOfPictures().
   // TODO(crbug.com/912295): enable for previous architectures.
-  if (IsSkyLakeOrLater())
-    return BufferAllocationMode::kReduced;
+  if (IsSkyLakeOrLater()) {
+    // Another +1 is experimentally needed for high-to-high resolution changes.
+    // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
+    // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
+    if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
+      return BufferAllocationMode::kReduced;
+
+    return BufferAllocationMode::kSuperReduced;
+  }
 
   return BufferAllocationMode::kNormal;
+}
+
+bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
+    const {
+  return buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced ||
+         buffer_allocation_mode_ == BufferAllocationMode::kReduced;
 }
 
 bool VaapiVideoDecodeAccelerator::OnMemoryDump(
@@ -1142,7 +1160,7 @@ bool VaapiVideoDecodeAccelerator::OnMemoryDump(
   // calculated size is an estimation since we don't know the internal VA
   // strides, texture compression, headers, etc, but is a good lower boundary.
   const size_t requested_num_surfaces =
-      buffer_allocation_mode_ == BufferAllocationMode::kReduced
+      IsBufferAllocationModeReducedOrSuperReduced()
           ? requested_num_reference_frames_
           : pictures_.size();
   dump->AddScalar(MemoryAllocatorDump::kNameSize,
