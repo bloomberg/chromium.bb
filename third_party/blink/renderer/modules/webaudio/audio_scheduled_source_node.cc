@@ -122,6 +122,8 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
     // SCHEDULED_STATE to PLAYING_STATE.
     SetPlaybackState(PLAYING_STATE);
     // Determine the offset of the true start time from the starting frame.
+    // NOTE: start_frame_offset is usually negative, but may not be because of
+    // the rounding that may happen in computing |start_frame| above.
     start_frame_offset = start_time_ * sample_rate - start_frame;
   } else {
     start_frame_offset = 0;
@@ -135,7 +137,6 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
 
   if (!non_silent_frames_to_process) {
     // Output silence.
-    DCHECK_LE(start_frame_offset, 0);
     output_bus->Zero();
     return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
                            start_frame_offset);
@@ -179,7 +180,6 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
     Finish();
   }
 
-  DCHECK_LE(start_frame_offset, 0);
   return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
                          start_frame_offset);
 }

@@ -274,10 +274,6 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // Get local copy.
   double virtual_read_index = virtual_read_index_;
 
-  // We should never start the the source before the start time, so
-  // start_time_offset should always be negative or 0.
-  DCHECK_LE(start_time_offset, 0);
-
   // Adjust the read index by the start_time_offset (compensated by the playback
   // rate) because we always start output on a frame boundary with interpolation
   // if necessary.
