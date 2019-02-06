@@ -21,7 +21,7 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: {
       type: Object,
-      observer: 'updateShouldShowSpinner_',
+      observer: 'onDestinationSet_',
     },
 
     /** @type {?print_preview.DestinationStore} */
@@ -145,45 +145,42 @@ Polymer({
 
   /** @private */
   onCloudPrintStateChanged_: function() {
-    switch (this.cloudPrintState) {
-      case print_preview.CloudPrintState.ENABLED:
-        // Try to fetch all the destinations/invitations if the dialog is open.
-        const destinationDialog = this.$$('print-preview-destination-dialog');
-        if (destinationDialog && destinationDialog.isOpen()) {
-          this.destinationStore.startLoadCloudDestinations();
-          if (this.activeUser) {
-            this.invitationStore.startLoadingInvitations(this.activeUser);
-          }
-        } else {
-          // Only try to load the docs destination for now. If this request
-          // succeeds, it will trigger a transition to SIGNED_IN, and we can
-          // load the remaining destinations.
-          this.destinationStore.startLoadCookieDestination(
-              print_preview.Destination.GooglePromotedId.DOCS);
-        }
-        break;
-      case print_preview.CloudPrintState.SIGNED_IN:
-        // Load docs, in case sign in was triggered by something else.
-        this.destinationStore.startLoadCookieDestination(
-            print_preview.Destination.GooglePromotedId.DOCS);
-        // Load any recent cloud destinations for the dropdown.
-        this.recentDestinations.forEach(destination => {
-          if (destination.origin === print_preview.DestinationOrigin.COOKIES &&
-              (destination.account === this.activeUser ||
-               destination.account === '')) {
-            this.destinationStore.startLoadCookieDestination(destination.id);
-          }
-        });
-        break;
-      default:
-        break;
+    if (this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN) {
+      return;
+    }
+
+    if (this.destination && this.destination.account !== '') {
+      this.updateDestination_();
+    }
+
+    // Load docs, in case the user was not signed in previously and signed in
+    // from the destinations dialog.
+    this.destinationStore.startLoadCookieDestination(
+        print_preview.Destination.GooglePromotedId.DOCS);
+
+    // Load any recent cloud destinations for the dropdown.
+    this.recentDestinations.forEach(destination => {
+      if (destination.origin === print_preview.DestinationOrigin.COOKIES &&
+          (destination.account === this.activeUser ||
+           destination.account === '')) {
+        this.destinationStore.startLoadCookieDestination(destination.id);
+      }
+    });
+  },
+
+  /** @private */
+  onDestinationSet_: function() {
+    this.updateShouldShowSpinner_();
+    if (this.cloudPrintState === print_preview.CloudPrintState.ENABLED) {
+      // Only try to load the docs destination for now. If this request
+      // succeeds, it will trigger a transition to SIGNED_IN, and we can
+      // load the remaining destinations. Otherwise, it will transition to
+      // NOT_SIGNED_IN, so we will not do this more than once.
+      this.destinationStore.startLoadCookieDestination(
+          print_preview.Destination.GooglePromotedId.DOCS);
     }
   },
 
-  // TODO (rbpotter): Clean up the updateShouldShowSpinner_ observer so that it
-  // is a multiple property observer instead of registered twice once Polymer 1
-  // support in Print Preview is dropped. It is currently registered twice to
-  // allow it to be called when |destination| is undefined.
   /** @private */
   updateShouldShowSpinner_: function() {
     this.shouldShowSpinner_ = !this.destination && !this.noDestinationsFound;
@@ -223,20 +220,16 @@ Polymer({
 
   /** @private */
   onDialogClose_: function() {
-    // Reset the select value in case the user dismissed the dialog without
+    // Reset the select value if the user dismissed the dialog without
     // selecting a new destination.
     if (this.destination) {
-      this.$.destinationSelect.updateDestination();
+      this.updateDestination_();
     }
     this.$.destinationSelect.focus();
   },
 
   /** @private */
-  onShouldShowSpinnerChange_: function() {
-    if (this.shouldShowSpinner_ || this.noDestinationsFound) {
-      return;
-    }
-
+  updateDestination_: function() {
     // TODO (rbpotter): Remove this conditional when the Polymer 2 migration
     // is completed.
     if (Polymer.DomIf) {
@@ -248,5 +241,15 @@ Polymer({
         this.$.destinationSelect.updateDestination();
       });
     }
+  },
+
+  /** @private */
+  onShouldShowSpinnerChange_: function() {
+    if (this.shouldShowSpinner_ || this.noDestinationsFound ||
+        (this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN &&
+         this.destination.account !== '')) {
+      return;
+    }
+    this.updateDestination_();
   },
 });

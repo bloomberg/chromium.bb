@@ -332,7 +332,6 @@ cr.define('cloudprint', function() {
         for (let i = 0; i < users.length; i++) {
           this.userSessionIndex_[users[i]] = i;
         }
-        this.dispatchUserUpdateEvent_(request.result['request']['user'], users);
       }
     }
 
@@ -433,6 +432,8 @@ cr.define('cloudprint', function() {
         });
         // Extract and store users.
         this.setUsers_(request);
+        this.dispatchUserUpdateEvent_(
+            activeUser, request.result['request']['users']);
         // Dispatch SEARCH_DONE event.
         this.eventTarget_.dispatchEvent(
             new CustomEvent(CloudPrintInterfaceEventType.SEARCH_DONE, {
@@ -555,11 +556,12 @@ cr.define('cloudprint', function() {
           request.result && request.result['request']['user'] &&
           request.result['request']['users'] &&
           request.account != request.result['request']['user']) {
+        const users = request.result['request']['users'];
         this.setUsers_(request);
         // In case the user account is known, but not the primary one,
         // activate it.
-        if (request.account && this.userSessionIndex_[request.account] > 0) {
-          this.dispatchUserUpdateEvent_(request.result['request']['user']);
+        if (this.userSessionIndex_[request.account] > 0 && request.account) {
+          this.dispatchUserUpdateEvent_(request.account, users);
           // Repeat the request for the newly activated account.
           this.printer(
               request.result['request']['params']['printerid'], request.origin,
@@ -567,6 +569,7 @@ cr.define('cloudprint', function() {
           // Stop processing this request, wait for the new response.
           return;
         }
+        this.dispatchUserUpdateEvent_(request.result['request']['user'], users);
       }
       // Process response.
       if (request.xhr.status == 200 && request.result['success']) {

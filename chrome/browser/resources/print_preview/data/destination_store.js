@@ -374,6 +374,7 @@ cr.define('print_preview', function() {
 
       let startedAutoSelect = false;
       let selected = false;
+      let account = '';
       // Run through the destinations forward. As soon as we find a
       // destination, don't select any future destinations, just fetch their
       // capabilities in case the user switches to them later.
@@ -382,19 +383,29 @@ cr.define('print_preview', function() {
             print_preview.createRecentDestinationKey(destination));
         const shouldSelectDestination =
             !this.useSystemDefaultAsDefault_ && !selected && !startedAutoSelect;
+        if (destination.account && account && destination.account !== account) {
+          // If we have already selected a destination with a specific account,
+          // don't request destinations from a different account, as doing so
+          // will cause the cloud print interface to reset the UI to have a
+          // different active user from the user that owns the selected printer.
+          continue;
+        }
         if (candidate != undefined) {
           // Destination is already in the store. Select it, if we haven't
           // started selecting a destination already.
           if (shouldSelectDestination) {
             this.selectDestination(candidate);
             selected = true;
+            account = destination.account;
           }
         } else {
           // Pre-fetch the destination and start auto select if needed.
           const startedFetch = this.fetchPreselectedDestination_(
               destination, shouldSelectDestination);
-          startedAutoSelect =
-              startedAutoSelect || (startedFetch && shouldSelectDestination);
+          if (startedFetch && shouldSelectDestination) {
+            startedAutoSelect = true;
+            account = destination.account;
+          }
         }
       }
 
@@ -1147,7 +1158,6 @@ cr.define('print_preview', function() {
       this.destinations_ = [];
       this.destinationMap_.clear();
       this.inFlightCloudPrintRequests_.clear();
-      this.selectDestination(null);
       this.loadedCloudOrigins_.clear();
       this.destinationSearchStatus_.forEach((status, type) => {
         this.destinationSearchStatus_.set(

@@ -699,6 +699,13 @@ TEST_F('PrintPreviewDestinationSelectTest', 'RecentSaveAsPdf', function() {
   this.runMochaTest(destination_select_test.TestNames.RecentSaveAsPdf);
 });
 
+TEST_F(
+    'PrintPreviewDestinationSelectTest', 'MultipleRecentDestinationsAccounts',
+    function() {
+      this.runMochaTest(
+          destination_select_test.TestNames.MultipleRecentDestinationsAccounts);
+    });
+
 PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -1242,3 +1249,10 @@ TEST_F(
 TEST_F('PrintPreviewDestinationSettingsTest', 'OpenDialog', function() {
   this.runMochaTest(destination_settings_test.TestNames.OpenDialog);
 });
+
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'TwoAccountsRecentDestinations',
+    function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.TwoAccountsRecentDestinations);
+    });
