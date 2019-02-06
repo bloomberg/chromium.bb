@@ -140,10 +140,6 @@ vars = {
   # and whatever else without interference from each other.
   'angle_revision': '5f662c0042703344eb0eef6d1c123e902e3aefbf',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling build tools
-  # and whatever else without interference from each other.
-  'buildtools_revision': '6fbda1b24c1893a893b17aa219b765b9e7c801d8',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
   'swiftshader_revision': '09a91e48c066c1584619ae0009e72fe09329115e',
@@ -259,6 +255,22 @@ vars = {
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
   'quiche_revision': 'e72b8874b23a8219c68fd7f1d7db097fa4811114',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling clang format
+  # and whatever else without interference from each other.
+  "clang_format_revision": "96636aa0e9f047f17447f2d45a094d0b59ed7917",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libc++
+  # and whatever else without interference from each other.
+  "libcxx_revision": "e713cc0acf1ae8b82f451bf58ebef67a46ceddfb",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libc++abi
+  # and whatever else without interference from each other.
+  "libcxxabi_revision": "307bb62985575b2e3216a8cfd7e122e0574f33a9",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libunwind
+  # and whatever else without interference from each other.
+  "libunwind_revision": "69d9b84cca8354117b9fe9705a4430d789ee599b",
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -279,6 +291,19 @@ allowed_hosts = [
 ]
 
 deps = {
+  "src/buildtools/clang_format/script":
+    Var("chromium_git") + "/chromium/llvm-project/cfe/tools/clang-format.git@" +
+    Var("clang_format_revision"),
+  "src/buildtools/third_party/libc++/trunk":
+    Var("chromium_git") + "/chromium/llvm-project/libcxx.git" + "@" +
+    Var("libcxx_revision"),
+  "src/buildtools/third_party/libc++abi/trunk":
+    Var("chromium_git") + "/chromium/llvm-project/libcxxabi.git" + "@" +
+    Var("libcxxabi_revision"),
+  "src/buildtools/third_party/libunwind/trunk":
+    Var("chromium_git") + "/external/llvm.org/libunwind.git" + "@" +
+    Var("libunwind_revision"),
+
   'src/chrome/browser/resources/media_router/extension/src':
     Var('chromium_git') + '/media_router.git' + '@' + '29324b698ccd8920bc81c71d42dadc6310f0ad0f',
 
@@ -292,9 +317,6 @@ deps = {
       'condition': 'checkout_android',
       'dep_type': 'cipd',
   },
-
-  'src/buildtools':
-    Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
 
   'src/chrome/installer/mac/third_party/xz/xz': {
       'url': Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
@@ -2799,8 +2821,6 @@ hooks = [
 ]
 
 recursedeps = [
-  # buildtools provides clang_format, libc++, and libc++abi
-  'src/buildtools',
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
   "src/third_party/angle",
   # src-internal has its own DEPS file to pull additional internal repos
