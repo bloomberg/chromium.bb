@@ -480,7 +480,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
 
   if (!did_commit) {
     SendNavigateWithParamsAndInterfaceParams(
-        params.release(),
+        params.get(),
         mojom::DidCommitProvisionalLoadInterfaceParams::New(
             std::move(interface_provider_request),
             std::move(document_interface_broker_content_request),
