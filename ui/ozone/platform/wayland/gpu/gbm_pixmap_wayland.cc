@@ -160,8 +160,7 @@ void GbmPixmapWayland::CreateZwpLinuxDmabuf() {
   for (size_t i = 0; i < plane_count; ++i) {
     strides.push_back(GetDmaBufPitch(i));
     offsets.push_back(GetDmaBufOffset(i));
-    if (modifier != DRM_FORMAT_MOD_INVALID)
-      modifiers.push_back(modifier);
+    modifiers.push_back(modifier);
   }
 
   base::ScopedFD fd(HANDLE_EINTR(dup(GetDmaBufFd(0))));
