@@ -12,7 +12,6 @@
 #include "components/printing/common/print_messages.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
-#include "printing/metafile_skia_wrapper.h"
 
 namespace printing {
 

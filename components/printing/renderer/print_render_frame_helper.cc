@@ -37,7 +37,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
-#include "printing/metafile_skia_wrapper.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -1555,7 +1554,7 @@ void PrintRenderFrameHelper::OnPrintFrameContent(
       metafile.GetVectorCanvasForNewPage(area_size, gfx::Rect(area_size), 1.0f);
   DCHECK(canvas);
 
-  MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, &metafile);
+  canvas->SetPrintingMetafile(&metafile);
 
   // This subframe doesn't need to fit to the page size, thus we are not using
   // printing layout for it. It just prints with the specified size.
@@ -2107,7 +2106,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
   if (!canvas)
     return;
 
-  MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
+  canvas->SetPrintingMetafile(metafile);
 
   if (params.display_header_footer) {
 #if defined(OS_WIN)

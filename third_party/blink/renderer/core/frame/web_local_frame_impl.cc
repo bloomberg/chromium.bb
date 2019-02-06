@@ -309,7 +309,7 @@ class ChromePrintContext : public PrintContext {
     // The page rect gets scaled and translated, so specify the entire
     // print content area here as the recording rect.
     FloatRect bounds(0, 0, printed_page_height_, printed_page_width_);
-    PaintRecordBuilder builder(&canvas->getMetaData());
+    PaintRecordBuilder builder(canvas->GetPrintingMetafile());
     builder.Context().SetPrinting(true);
     builder.Context().BeginRecording(bounds);
     float scale = SpoolPage(builder.Context(), page_number);
@@ -337,7 +337,7 @@ class ChromePrintContext : public PrintContext {
     int total_height = num_pages * (page_size_in_pixels.Height() + 1) - 1;
     FloatRect all_pages_rect(0, 0, page_width, total_height);
 
-    PaintRecordBuilder builder(&canvas->getMetaData());
+    PaintRecordBuilder builder(canvas->GetPrintingMetafile());
     GraphicsContext& context = builder.Context();
     context.SetPrinting(true);
     context.BeginRecording(all_pages_rect);
@@ -403,7 +403,8 @@ class ChromePrintContext : public PrintContext {
     PropertyTreeState property_tree_state =
         frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
 
-    PaintRecordBuilder builder(&context.Canvas()->getMetaData(), &context);
+    PaintRecordBuilder builder(context.Canvas()->GetPrintingMetafile(),
+                               &context);
 
     frame_view->PaintContentsOutsideOfLifecycle(
         builder.Context(), kGlobalPaintNormalPhase, CullRect(page_rect));
@@ -487,7 +488,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   // NativeTheme doesn't play well with scaling. Scaling is done browser side
   // instead. Returns the scale to be applied.
   float SpoolPage(GraphicsContext& context, int page_number) override {
-    PaintRecordBuilder builder(&context.Canvas()->getMetaData());
+    PaintRecordBuilder builder(context.Canvas()->GetPrintingMetafile());
     plugin_->PrintPage(page_number, builder.Context());
     context.DrawRecord(builder.EndRecording());
 

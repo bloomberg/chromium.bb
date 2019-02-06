@@ -37,8 +37,6 @@ component("printing") {
     "metafile.h",
     "metafile_skia.cc",
     "metafile_skia.h",
-    "metafile_skia_wrapper.cc",
-    "metafile_skia_wrapper.h",
     "native_drawing_context.h",
     "nup_parameters.cc",
     "nup_parameters.h",

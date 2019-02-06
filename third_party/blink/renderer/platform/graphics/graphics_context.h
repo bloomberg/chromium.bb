@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/skia/include/core/SkClipOp.h"
-#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkPath;
@@ -74,7 +73,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   explicit GraphicsContext(PaintController&,
                            DisabledMode = kNothingDisabled,
-                           SkMetaData* = nullptr);
+                           printing::MetafileSkia* = nullptr);
 
   ~GraphicsContext();
 
@@ -455,8 +454,6 @@ class PLATFORM_EXPORT GraphicsContext {
                                const FloatRoundedRect& rounded_hole_rect,
                                const Color&);
 
-  const SkMetaData& MetaData() const { return meta_data_; }
-
   class HighContrastFlags;
   bool ShouldApplyHighContrastFilterToImage(Image&);
   Color ApplyHighContrastFilter(const Color& input) const;
@@ -479,7 +476,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   PaintRecorder paint_recorder_;
 
-  SkMetaData meta_data_;
+  printing::MetafileSkia* metafile_;
 
 #if DCHECK_IS_ON()
   int layer_count_;
@@ -495,7 +492,6 @@ class PLATFORM_EXPORT GraphicsContext {
   HighContrastImageClassifier high_contrast_image_classifier_;
 
   unsigned printing_ : 1;
-  unsigned has_meta_data_ : 1;
   unsigned in_drawing_recorder_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsContext);

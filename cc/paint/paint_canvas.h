@@ -12,8 +12,11 @@
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
+
+namespace printing {
+class MetafileSkia;
+}  // namespace printing
 
 namespace cc {
 class SkottieWrapper;
@@ -41,8 +44,6 @@ class CC_PAINT_EXPORT PaintCanvas {
  public:
   PaintCanvas() {}
   virtual ~PaintCanvas() {}
-
-  SkMetaData& getMetaData() { return metadata_; }
 
   // TODO(enne): this only appears to mostly be used to determine if this is
   // recording or not, so could be simplified or removed.
@@ -173,6 +174,7 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual bool isClipRect() const = 0;
   virtual const SkMatrix& getTotalMatrix() const = 0;
 
+  // Used for printing
   enum class AnnotationType {
     URL,
     NAMED_DESTINATION,
@@ -181,12 +183,16 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void Annotate(AnnotationType type,
                         const SkRect& rect,
                         sk_sp<SkData> data) = 0;
+  printing::MetafileSkia* GetPrintingMetafile() const { return metafile_; }
+  void SetPrintingMetafile(printing::MetafileSkia* metafile) {
+    metafile_ = metafile;
+  }
 
   // Subclasses can override to handle custom data.
   virtual void recordCustomData(uint32_t id) {}
 
  private:
-  SkMetaData metadata_;
+  printing::MetafileSkia* metafile_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
 };

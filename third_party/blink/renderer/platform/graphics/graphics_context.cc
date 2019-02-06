@@ -89,11 +89,12 @@ class GraphicsContext::HighContrastFlags final {
 
 GraphicsContext::GraphicsContext(PaintController& paint_controller,
                                  DisabledMode disable_context_or_painting,
-                                 SkMetaData* meta_data)
+                                 printing::MetafileSkia* metafile)
     : canvas_(nullptr),
       paint_controller_(paint_controller),
       paint_state_stack_(),
       paint_state_index_(0),
+      metafile_(metafile),
 #if DCHECK_IS_ON()
       layer_count_(0),
       disable_destruction_checks_(false),
@@ -101,11 +102,7 @@ GraphicsContext::GraphicsContext(PaintController& paint_controller,
       disabled_state_(disable_context_or_painting),
       device_scale_factor_(1.0f),
       printing_(false),
-      has_meta_data_(!!meta_data),
       in_drawing_recorder_(false) {
-  if (meta_data)
-    meta_data_ = *meta_data;
-
   // FIXME: Do some tests to determine how many states are typically used, and
   // allocate several here.
   paint_state_stack_.push_back(GraphicsContextState::Create());
@@ -331,8 +328,8 @@ void GraphicsContext::BeginRecording(const FloatRect& bounds) {
 
   DCHECK(!canvas_);
   canvas_ = paint_recorder_.beginRecording(bounds);
-  if (has_meta_data_)
-    canvas_->getMetaData() = meta_data_;
+  if (metafile_)
+    canvas_->SetPrintingMetafile(metafile_);
 }
 
 namespace {

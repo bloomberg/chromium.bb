@@ -136,7 +136,6 @@
 // nogncheck because dependency on //printing is conditional upon
 // enable_basic_printing flags.
 #include "printing/metafile_skia.h"          // nogncheck
-#include "printing/metafile_skia_wrapper.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1996,8 +1995,7 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
   DCHECK(plugin_print_interface_);
 
   // |canvas| should always have an associated metafile.
-  printing::MetafileSkia* metafile =
-      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+  auto* metafile = canvas->GetPrintingMetafile();
   DCHECK(metafile);
 
   // |ranges_| should be empty IFF |metafile_| is not set.
