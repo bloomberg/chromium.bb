@@ -479,7 +479,8 @@ void PasswordManager::ProvisionallySavePassword(
     return;
   }
 
-  bool should_block = ShouldBlockPasswordForSameOriginButDifferentScheme(form);
+  bool should_block =
+      ShouldBlockPasswordForSameOriginButDifferentScheme(form.origin);
   metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
       should_block);
   if (should_block) {
@@ -670,7 +671,8 @@ void PasswordManager::ShowManualFallbackForSaving(
     const PasswordForm& password_form) {
   if (!client_->GetPasswordStore()->IsAbleToSavePasswords() ||
       !client_->IsSavingAndFillingEnabled(password_form.origin) ||
-      ShouldBlockPasswordForSameOriginButDifferentScheme(password_form) ||
+      ShouldBlockPasswordForSameOriginButDifferentScheme(
+          password_form.origin) ||
       !client_->GetStoreResultFilter()->ShouldSave(password_form))
     return;
 
@@ -900,8 +902,17 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
   // PasswordToSave in NewPasswordFormManager DCHECKs that the password is never
   // empty.
 
-  // TODO(https://crbug.com/831123): Add the
-  // ShouldBlockPasswordForSameOriginButDifferentScheme check.
+  const GURL& origin = submitted_form.origin;
+  bool should_block =
+      ShouldBlockPasswordForSameOriginButDifferentScheme(origin);
+  metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
+      should_block);
+  if (should_block) {
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS, origin,
+        logger.get());
+    return nullptr;
+  }
 
   NewPasswordFormManager* matched_manager =
       GetMatchedManager(driver, submitted_form);
@@ -929,6 +940,11 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     if (manager.get() != matched_manager)
       manager->set_not_submitted();
   }
+
+  // Cache the user-visible URL (i.e., the one seen in the omnibox). Once the
+  // post-submit navigation concludes, we compare the landing URL against the
+  // cached and report the difference through UMA.
+  main_frame_url_ = client_->GetMainFrameURL();
 
   return matched_manager;
 }
@@ -1006,12 +1022,10 @@ bool PasswordManager::IsAutomaticSavePromptAvailable() {
 }
 
 bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
-    const PasswordForm& form) const {
+    const GURL& origin) const {
   const GURL& old_origin = main_frame_url_.GetOrigin();
-  const GURL& new_origin = form.origin.GetOrigin();
-  return old_origin.host_piece() == new_origin.host_piece() &&
-         old_origin.SchemeIsCryptographic() &&
-         !new_origin.SchemeIsCryptographic();
+  return old_origin.host_piece() == origin.host_piece() &&
+         old_origin.SchemeIsCryptographic() && !origin.SchemeIsCryptographic();
 }
 
 void PasswordManager::OnPasswordFormsRendered(

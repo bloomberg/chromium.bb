@@ -1252,14 +1252,13 @@ TEST_F(PasswordManagerTest,
        false},
   };
 
-  PasswordForm form = MakeSimpleForm();
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
     manager()->main_frame_url_ = GURL(test_case.old_origin);
-    form.origin = GURL(test_case.new_origin);
+    GURL origin = GURL(test_case.new_origin);
     EXPECT_EQ(
         test_case.result,
-        manager()->ShouldBlockPasswordForSameOriginButDifferentScheme(form));
+        manager()->ShouldBlockPasswordForSameOriginButDifferentScheme(origin));
   }
 }
 

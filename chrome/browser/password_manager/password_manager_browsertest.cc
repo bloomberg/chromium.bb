@@ -1549,60 +1549,78 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTest,
     NoPromptForSeperateLoginFormWhenSwitchingFromHttpsToHttp) {
-  std::string path = "/password/password_form.html";
-  GURL https_url(https_test_server().GetURL(path));
-  ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
+  for (bool use_new_parsing_for_saving : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "use_new_parsing_for_saving = "
+                                    << use_new_parsing_for_saving);
+    base::test::ScopedFeatureList scoped_feature_list;
+    SetNewParsingForSaving(&scoped_feature_list, use_new_parsing_for_saving);
 
-  NavigationObserver form_observer(WebContents());
-  ui_test_utils::NavigateToURL(browser(), https_url);
-  form_observer.Wait();
+    std::string path = "/password/password_form.html";
+    GURL https_url(https_test_server().GetURL(path));
+    ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
 
-  std::string fill_and_submit_redirect =
-      "document.getElementById('username_redirect').value = 'user';"
-      "document.getElementById('password_redirect').value = 'password';"
-      "document.getElementById('submit_redirect').click()";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit_redirect));
+    NavigationObserver form_observer(WebContents());
+    ui_test_utils::NavigateToURL(browser(), https_url);
+    form_observer.Wait();
 
-  NavigationObserver redirect_observer(WebContents());
-  redirect_observer.SetPathToWaitFor("/password/redirect.html");
-  redirect_observer.Wait();
+    std::string fill_and_submit_redirect =
+        "document.getElementById('username_redirect').value = 'user';"
+        "document.getElementById('password_redirect').value = 'password';"
+        "document.getElementById('submit_redirect').click()";
+    ASSERT_TRUE(
+        content::ExecuteScript(WebContents(), fill_and_submit_redirect));
 
-  WaitForPasswordStore();
-  BubbleObserver prompt_observer(WebContents());
-  EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
+    NavigationObserver redirect_observer(WebContents());
+    redirect_observer.SetPathToWaitFor("/password/redirect.html");
+    redirect_observer.Wait();
 
-  // Normally the redirect happens to done.html. Here an attack is simulated
-  // that hijacks the redirect to a attacker controlled page.
-  GURL http_url(
-      embedded_test_server()->GetURL("/password/simple_password.html"));
-  std::string attacker_redirect =
-      "window.location.href = '" + http_url.spec() + "';";
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
-                                                       attacker_redirect));
+    WaitForPasswordStore();
+    BubbleObserver prompt_observer(WebContents());
+    EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 
-  NavigationObserver attacker_observer(WebContents());
-  attacker_observer.SetPathToWaitFor("/password/simple_password.html");
-  attacker_observer.Wait();
+    // Normally the redirect happens to done.html. Here an attack is simulated
+    // that hijacks the redirect to a attacker controlled page.
+    GURL http_url(
+        embedded_test_server()->GetURL("/password/simple_password.html"));
+    std::string attacker_redirect =
+        "window.location.href = '" + http_url.spec() + "';";
+    ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
+                                                         attacker_redirect));
 
-  EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
+    NavigationObserver attacker_observer(WebContents());
+    attacker_observer.SetPathToWaitFor("/password/simple_password.html");
+    attacker_observer.Wait();
 
-  std::string fill_and_submit_attacker_form =
-      "document.getElementById('username_field').value = 'attacker_username';"
-      "document.getElementById('password_field').value = 'attacker_password';"
-      "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(
-      content::ExecuteScript(WebContents(), fill_and_submit_attacker_form));
+    EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 
-  NavigationObserver done_observer(WebContents());
-  done_observer.SetPathToWaitFor("/password/done.html");
-  done_observer.Wait();
+    std::string fill_and_submit_attacker_form =
+        "document.getElementById('username_field').value = 'attacker_username';"
+        "document.getElementById('password_field').value = 'attacker_password';"
+        "document.getElementById('input_submit_button').click()";
+    ASSERT_TRUE(
+        content::ExecuteScript(WebContents(), fill_and_submit_attacker_form));
 
-  EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
-  prompt_observer.AcceptSavePrompt();
+    NavigationObserver done_observer(WebContents());
+    done_observer.SetPathToWaitFor("/password/done.html");
+    done_observer.Wait();
 
-  // Wait for password store and check that credentials are stored.
-  WaitForPasswordStore();
-  CheckThatCredentialsStored("user", "password");
+    EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
+    prompt_observer.AcceptSavePrompt();
+
+    // Wait for password store and check that credentials are stored.
+    WaitForPasswordStore();
+    CheckThatCredentialsStored("user", "password");
+
+    // Password store clearing is required because there are 2 test iterations.
+    // TODO(https://crbug.com/831123): Remove store clearing when the old parser
+    // is gone and there is only one iteration in this test.
+    scoped_refptr<password_manager::TestPasswordStore> password_store =
+        static_cast<password_manager::TestPasswordStore*>(
+            PasswordStoreFactory::GetForProfile(
+                browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+                .get());
+    password_store->Clear();
+  }
 }
 
 // Tests that after HTTP -> HTTPS migration the credential is autofilled.
