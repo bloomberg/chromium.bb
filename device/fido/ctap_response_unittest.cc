@@ -572,15 +572,15 @@ TEST(CTAPResponseTest, TestReadGetInfoResponse) {
       base::ContainsKey(get_info_response->versions(), ProtocolVersion::kCtap));
   EXPECT_TRUE(
       base::ContainsKey(get_info_response->versions(), ProtocolVersion::kU2f));
-  EXPECT_TRUE(get_info_response->options().is_platform_device());
-  EXPECT_TRUE(get_info_response->options().supports_resident_key());
-  EXPECT_TRUE(get_info_response->options().user_presence_required());
+  EXPECT_TRUE(get_info_response->options().is_platform_device);
+  EXPECT_TRUE(get_info_response->options().supports_resident_key);
+  EXPECT_TRUE(get_info_response->options().user_presence_required);
   EXPECT_EQ(AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured,
-            get_info_response->options().user_verification_availability());
+            get_info_response->options().user_verification_availability);
   EXPECT_EQ(AuthenticatorSupportedOptions::ClientPinAvailability::
                 kSupportedButPinNotSet,
-            get_info_response->options().client_pin_availability());
+            get_info_response->options().client_pin_availability);
 }
 
 TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectFormat) {
@@ -597,14 +597,12 @@ TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
       {ProtocolVersion::kCtap, ProtocolVersion::kU2f}, kTestDeviceAaguid);
   response.SetExtensions({"uvm", "hmac-secret"});
   AuthenticatorSupportedOptions options;
-  options.SetSupportsResidentKey(true);
-  options.SetIsPlatformDevice(true);
-  options.SetClientPinAvailability(
-      AuthenticatorSupportedOptions::ClientPinAvailability::
-          kSupportedButPinNotSet);
-  options.SetUserVerificationAvailability(
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured);
+  options.supports_resident_key = true;
+  options.is_platform_device = true;
+  options.client_pin_availability = AuthenticatorSupportedOptions::
+      ClientPinAvailability::kSupportedButPinNotSet;
+  options.user_verification_availability = AuthenticatorSupportedOptions::
+      UserVerificationAvailability::kSupportedAndConfigured;
   response.SetOptions(std::move(options));
   response.SetMaxMsgSize(1200);
   response.SetPinProtocols({1});

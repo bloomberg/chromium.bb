@@ -52,24 +52,24 @@ void ReturnCtap2Response(
 
 bool AreMakeCredentialOptionsValid(const AuthenticatorSupportedOptions& options,
                                    const CtapMakeCredentialRequest& request) {
-  if (request.resident_key_required() && !options.supports_resident_key())
+  if (request.resident_key_required() && !options.supports_resident_key)
     return false;
 
   return request.user_verification() !=
              UserVerificationRequirement::kRequired ||
-         options.user_verification_availability() ==
+         options.user_verification_availability ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured;
 }
 
 bool AreGetAssertionOptionsValid(const AuthenticatorSupportedOptions& options,
                                  const CtapGetAssertionRequest& request) {
-  if (request.user_presence_required() && !options.user_presence_required())
+  if (request.user_presence_required() && !options.user_presence_required)
     return false;
 
   return request.user_verification() !=
              UserVerificationRequirement::kRequired ||
-         options.user_verification_availability() ==
+         options.user_verification_availability ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured;
 }
@@ -259,8 +259,8 @@ base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
 }
 
 void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
-    AuthenticatorSupportedOptions options) {
-  device_info_.SetOptions(std::move(options));
+    const AuthenticatorSupportedOptions& options) {
+  device_info_.SetOptions(options);
 }
 
 CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(

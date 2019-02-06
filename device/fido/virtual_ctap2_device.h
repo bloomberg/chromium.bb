@@ -38,7 +38,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
-  void SetAuthenticatorSupportedOptions(AuthenticatorSupportedOptions options);
+  void SetAuthenticatorSupportedOptions(
+      const AuthenticatorSupportedOptions& options);
 
  private:
   CtapDeviceResponseCode OnMakeCredential(base::span<const uint8_t> request,

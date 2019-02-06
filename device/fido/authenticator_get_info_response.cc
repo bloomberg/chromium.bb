@@ -58,8 +58,8 @@ AuthenticatorGetInfoResponse& AuthenticatorGetInfoResponse::SetExtensions(
 }
 
 AuthenticatorGetInfoResponse& AuthenticatorGetInfoResponse::SetOptions(
-    AuthenticatorSupportedOptions options) {
-  options_ = std::move(options);
+    const AuthenticatorSupportedOptions& options) {
+  options_ = options;
   return *this;
 }
 
