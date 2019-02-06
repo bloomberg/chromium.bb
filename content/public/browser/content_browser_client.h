@@ -1293,8 +1293,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
 
+#if !defined(OS_ANDROID)
   // Allows the embedder to provide an implementation of the Serial API.
   virtual SerialDelegate* GetSerialDelegate();
+#endif
 
   // Attempt to open the Payment Handler window inside its corresponding
   // PaymentRequest UI surface. Returns true if the ContentBrowserClient

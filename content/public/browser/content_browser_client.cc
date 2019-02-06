@@ -804,9 +804,11 @@ void ContentBrowserClient::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {}
 
+#if !defined(OS_ANDROID)
 SerialDelegate* ContentBrowserClient::GetSerialDelegate() {
   return nullptr;
 }
+#endif
 
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,

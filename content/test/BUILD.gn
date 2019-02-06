@@ -873,7 +873,6 @@ test("content_browsertests") {
     "../browser/scheduler/responsiveness/native_event_observer_browsertest_win.cc",
     "../browser/screen_orientation/screen_orientation_browsertest.cc",
     "../browser/security_exploit_browsertest.cc",
-    "../browser/serial/serial_browsertest.cc",
     "../browser/service_manager/service_manager_context_browsertest.cc",
     "../browser/service_worker/service_worker_browsertest.cc",
     "../browser/service_worker/service_worker_clients_api_browsertest.cc",
@@ -1185,6 +1184,7 @@ test("content_browsertests") {
     # Non-Android.
     sources += [
       "../browser/host_zoom_map_impl_browsertest.cc",
+      "../browser/serial/serial_browsertest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
       "../browser/zoom_browsertest.cc",
     ]
