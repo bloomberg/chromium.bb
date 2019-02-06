@@ -74,7 +74,7 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
         Java_VideoCaptureFactory_getFacingMode(env, camera_id);
     const std::string display_name =
         base::android::ConvertJavaStringToUTF8(device_name);
-    const std::string device_id = base::IntToString(camera_id);
+    const std::string device_id = base::NumberToString(camera_id);
 
     // Android cameras are not typically USB devices, and the model_id is
     // currently only used for USB model identifiers, so this implementation

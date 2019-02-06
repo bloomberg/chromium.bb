@@ -371,9 +371,9 @@ void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
                                      &sw_encoded_size, &elapsed_sw));
 
   g_env->LogToFile("hw_encode_time",
-                   base::Int64ToString(elapsed_hw.InMicroseconds()));
+                   base::NumberToString(elapsed_hw.InMicroseconds()));
   g_env->LogToFile("sw_encode_time",
-                   base::Int64ToString(elapsed_sw.InMicroseconds()));
+                   base::NumberToString(elapsed_sw.InMicroseconds()));
 
   if (g_save_to_file) {
     SaveToFile(test_image, hw_encoded_size, sw_encoded_size);

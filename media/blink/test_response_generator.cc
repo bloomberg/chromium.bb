@@ -31,7 +31,7 @@ WebURLResponse TestResponseGenerator::Generate200() {
 
   response.SetHTTPHeaderField(
       WebString::FromUTF8("Content-Length"),
-      WebString::FromUTF8(base::Int64ToString(content_length_)));
+      WebString::FromUTF8(base::NumberToString(content_length_)));
   response.SetExpectedContentLength(content_length_);
   return response;
 }
@@ -80,7 +80,7 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
   if ((flags & kNoContentLength) == 0) {
     response.SetHTTPHeaderField(
         WebString::FromUTF8("Content-Length"),
-        WebString::FromUTF8(base::Int64ToString(range_content_length)));
+        WebString::FromUTF8(base::NumberToString(range_content_length)));
     response.SetExpectedContentLength(range_content_length);
   }
   return response;

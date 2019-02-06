@@ -146,7 +146,7 @@ class SourceBufferStateTest
   ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type) {
     static unsigned track_id = 0;
     demuxer_streams_.push_back(base::WrapUnique(new ChunkDemuxerStream(
-        type, base::UintToString(++track_id), range_api_)));
+        type, base::NumberToString(++track_id), range_api_)));
     return demuxer_streams_.back().get();
   }
 
