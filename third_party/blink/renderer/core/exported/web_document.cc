@@ -138,6 +138,10 @@ WebURL WebDocument::SiteForCookies() const {
   return ConstUnwrap<Document>()->SiteForCookies();
 }
 
+WebSecurityOrigin WebDocument::TopFrameOrigin() const {
+  return ConstUnwrap<Document>()->TopFrameOrigin();
+}
+
 WebElement WebDocument::DocumentElement() const {
   return WebElement(ConstUnwrap<Document>()->documentElement());
 }

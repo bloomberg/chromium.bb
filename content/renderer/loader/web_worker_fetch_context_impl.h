@@ -92,6 +92,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
   blink::WebURL SiteForCookies() const override;
+  base::Optional<blink::WebSecurityOrigin> TopFrameOrigin() const override;
   void DidRunContentWithCertificateErrors() override;
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunInsecureContent(const blink::WebSecurityOrigin&,
@@ -119,6 +120,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_frame_request_blocker(
       scoped_refptr<FrameRequestBlocker> frame_request_blocker);
   void set_site_for_cookies(const blink::WebURL& site_for_cookies);
+  void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
   // Sets whether the worker context is a secure context.
   // https://w3c.github.io/webappsec-secure-contexts/
   void set_is_secure_context(bool flag);
@@ -242,6 +244,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // blocked.
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
   GURL site_for_cookies_;
+  base::Optional<url::Origin> top_frame_origin_;
   bool is_secure_context_ = false;
   GURL origin_url_;
   int appcache_host_id_ = blink::mojom::kAppCacheNoHostId;

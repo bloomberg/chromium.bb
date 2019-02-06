@@ -53,6 +53,8 @@ class ServiceWorkerFetchContextImpl final
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       const override;
   blink::WebURL SiteForCookies() const override;
+  base::Optional<blink::WebSecurityOrigin> TopFrameOrigin() const override;
+
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;

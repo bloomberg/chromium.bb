@@ -47,6 +47,22 @@ KURL WorkerFetchContext::GetSiteForCookies() const {
   return web_context_->SiteForCookies();
 }
 
+scoped_refptr<const SecurityOrigin> WorkerFetchContext::GetTopFrameOrigin()
+    const {
+  base::Optional<WebSecurityOrigin> top_frame_origin =
+      web_context_->TopFrameOrigin();
+
+  // TODO(crbug.com/918868) The top frame origin of shared and service
+  // workers is unknown.
+  if (!top_frame_origin) {
+    DCHECK(global_scope_->IsSharedWorkerGlobalScope() ||
+           global_scope_->IsServiceWorkerGlobalScope());
+    return scoped_refptr<const SecurityOrigin>();
+  }
+
+  return *top_frame_origin;
+}
+
 SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
   return subresource_filter_.Get();
 }
@@ -273,6 +289,8 @@ void WorkerFetchContext::PopulateResourceRequest(
     ResourceRequest& out_request) {
   FrameLoader::UpgradeInsecureRequest(out_request, global_scope_);
   SetFirstPartyCookie(out_request);
+  if (!out_request.TopFrameOrigin())
+    out_request.SetTopFrameOrigin(GetTopFrameOrigin());
 }
 
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {

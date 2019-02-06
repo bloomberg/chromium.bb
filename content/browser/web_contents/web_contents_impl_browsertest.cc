@@ -930,10 +930,66 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
       return http_response;
     }
 
+    // A basic worker that loads 3p.com/script
+    if (absolute_url.path() == "/worker.js") {
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_OK);
+
+      GURL resource = GenURL("3p.com", "/script");
+      std::string content =
+          base::StringPrintf("importScripts('%s');", resource.spec().c_str());
+
+      http_response->set_content(content);
+      http_response->set_content_type("application/javascript");
+      return http_response;
+    }
+
+    // A worker that loads a nested /worker.js on an origin provided as a query
+    // param.
+    if (absolute_url.path() == "/embedding_worker.js") {
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_OK);
+
+      GURL resource =
+          GenURL(base::StringPrintf("%s.com", absolute_url.query().c_str()),
+                 "/worker.js");
+
+      const char kLoadWorkerScript[] = "let w = new Worker('%s');";
+      std::string content =
+          base::StringPrintf(kLoadWorkerScript, resource.spec().c_str());
+
+      http_response->set_content(content);
+      http_response->set_content_type("application/javascript");
+      return http_response;
+    }
+
     return std::unique_ptr<net::test_server::HttpResponse>();
   }
 
  protected:
+  bool TestResourceLoadFromDedicatedWorker(const GURL& url,
+                                           const GURL& worker) {
+    // Kill the renderer to clear the in-memory cache.
+    NavigateToURL(shell(), GURL("chrome:crash"));
+
+    // Observe network requests.
+    ResourceLoadObserver observer(shell());
+
+    NavigateToURL(shell(), url);
+
+    const char kLoadWorkerScript[] = "let w = new Worker('%s');";
+    std::string create_worker_script =
+        base::StringPrintf(kLoadWorkerScript, worker.spec().c_str());
+
+    EXPECT_TRUE(ExecuteScript(shell(), create_worker_script));
+
+    GURL resource = GenURL("3p.com", "/script");
+    observer.WaitForResourceCompletion(resource);
+    return (*observer.FindResource(resource))->was_cached;
+  }
+
   // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
   // valid and return if the script was cached or not.
   bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
@@ -1079,6 +1135,53 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
   // Load it from a cross-origin iframe, and it's still cached.
   EXPECT_TRUE(TestResourceLoad(GenURL("b.com", "/title1.html"),
                                GenURL("c.com", "/title1.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled,
+                       SplitCacheDedicatedWorkers) {
+  // Load 3p.com/script from a.com's worker. The first time it's loaded from the
+  // network and the second it's cached.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
+
+  // Load 3p.com/script from a worker with a new top frame origin. Due to split
+  // caching it's a cache miss.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
+
+  // Load 3p.com/script from a nested worker with a new top-frame origin. Due to
+  // split caching it's a cache miss.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("c.com", "/title1.html"),
+      GenURL("c.com", "/embedding_worker.js?c")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("c.com", "/title1.html"),
+      GenURL("c.com", "/embedding_worker.js?c")));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
+                       SplitCacheDedicatedWorkers) {
+  // Load 3p.com/script from a.com's worker. The first time it's loaded from the
+  // network and the second it's cached.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
+
+  // Load 3p.com/script from b.com's worker. The cache isn't split by top frame
+  // origin so the resource is already cached.
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
+
+  // Load 3p.com/script from a nested worker with a new top-frame origin. The
+  // cache isn't split by top frame origin so the resource is already cached.
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("c.com", "/title1.html"),
+      GenURL("c.com", "/embedding_worker.js?c")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

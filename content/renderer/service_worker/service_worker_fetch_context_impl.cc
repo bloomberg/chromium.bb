@@ -129,6 +129,13 @@ blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {
   return worker_script_url_;
 }
 
+base::Optional<blink::WebSecurityOrigin>
+ServiceWorkerFetchContextImpl::TopFrameOrigin() const {
+  // TODO(jkarlin): Determine what the top-frame-origin of a service worker is.
+  // See https://crbug.com/918868.
+  return base::nullopt;
+}
+
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

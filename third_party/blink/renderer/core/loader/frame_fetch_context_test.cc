@@ -176,6 +176,10 @@ class FrameFetchContextTest : public testing::Test {
     GetFetchContext()->SetFirstPartyCookie(request);
   }
 
+  scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() {
+    return GetFetchContext()->GetTopFrameOrigin();
+  }
+
   std::unique_ptr<DummyPageHolder> dummy_page_holder;
   // We don't use the DocumentLoader directly in any tests, but need to keep it
   // around as long as the ResourceFetcher and Document live due to indirect
@@ -1334,6 +1338,32 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 
   EXPECT_EQ(document_url, request.SiteForCookies());
   EXPECT_EQ(document_url.GetString(), request.SiteForCookies().GetString());
+}
+
+TEST_F(FrameFetchContextTest, TopFrameOrigin) {
+  const KURL url("https://www.example.com/hoge/fuga");
+  ResourceRequest request(url);
+  const KURL document_url("https://www2.example.com/foo/bar");
+  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(document_url);
+
+  document->SetSecurityOrigin(origin);
+  document->SetURL(document_url);
+
+  EXPECT_EQ(origin, GetTopFrameOrigin());
+}
+
+TEST_F(FrameFetchContextTest, TopFrameOriginDetached) {
+  const KURL url("https://www.example.com/hoge/fuga");
+  ResourceRequest request(url);
+  const KURL document_url("https://www2.example.com/foo/bar");
+  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(document_url);
+
+  document->SetSecurityOrigin(origin);
+  document->SetURL(document_url);
+
+  dummy_page_holder = nullptr;
+
+  EXPECT_EQ(origin, GetTopFrameOrigin());
 }
 
 // Tests if "Intervention" header is added for frame with Client Lo-Fi enabled.
