@@ -131,7 +131,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   was_select_cache_called_ = true;
   if (!is_cache_selection_enabled_) {
-    FinishCacheSelection(nullptr, nullptr);
+    FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
     return;
   }
 
@@ -169,7 +169,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     AppCachePolicy* policy = service()->appcache_policy();
     if (policy &&
         !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
-      FinishCacheSelection(nullptr, nullptr);
+      FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
       std::vector<int> host_ids(1, host_id_);
       frontend_->EventRaised(
           host_ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
@@ -192,7 +192,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   }
   // TODO(michaeln): If there was a manifest URL, the user agent may report
   // to the user that it was ignored, to aid in application development.
-  FinishCacheSelection(nullptr, nullptr);
+  FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
 }
 
 void AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
@@ -211,7 +211,7 @@ void AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
     LoadSelectedCache(appcache_id);
     return;
   }
-  FinishCacheSelection(nullptr, nullptr);
+  FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
 }
 
 // TODO(michaeln): change method name to MarkEntryAsForeign for consistency
@@ -405,12 +405,13 @@ void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
                                  const GURL& manifest_url) {
   DCHECK(manifest_url == pending_selected_manifest_url_);
   pending_selected_manifest_url_ = GURL();
-  FinishCacheSelection(nullptr, group);
+  FinishCacheSelection(nullptr, group, mojo::ReportBadMessageCallback());
 }
 
 void AppCacheHost::LoadSelectedCache(int64_t cache_id) {
   DCHECK(cache_id != blink::mojom::kAppCacheNoCacheId);
   pending_selected_cache_id_ = cache_id;
+  pending_selected_cache_bad_message_callback_ = mojo::GetBadMessageCallback();
   storage()->LoadCache(cache_id, this);
 }
 
@@ -420,12 +421,16 @@ void AppCacheHost::OnCacheLoaded(AppCache* cache, int64_t cache_id) {
     main_resource_cache_ = cache;
   } else if (cache_id == pending_selected_cache_id_) {
     pending_selected_cache_id_ = blink::mojom::kAppCacheNoCacheId;
-    FinishCacheSelection(cache, nullptr);
+    FinishCacheSelection(
+        cache, nullptr,
+        std::move(pending_selected_cache_bad_message_callback_));
   }
 }
 
 void AppCacheHost::FinishCacheSelection(
-    AppCache *cache, AppCacheGroup* group) {
+    AppCache* cache,
+    AppCacheGroup* group,
+    mojo::ReportBadMessageCallback bad_message_callback) {
   DCHECK(!associated_cache());
 
   // 6.9.6 The application cache selection algorithm
@@ -434,9 +439,16 @@ void AppCacheHost::FinishCacheSelection(
     // with the application cache from which it was loaded. Invoke the
     // application cache update process for that cache and with the browsing
     // context being navigated.
-    DCHECK(cache->owning_group());
     DCHECK(new_master_entry_url_.is_empty());
-    DCHECK_EQ(cache->owning_group()->manifest_url(), preferred_manifest_url_);
+    DCHECK(bad_message_callback);
+    if (!cache->owning_group()) {
+      std::move(bad_message_callback).Run("ACH_SELECT_CACHE_ID_NOT_OWNED");
+      return;
+    }
+    if (cache->owning_group()->manifest_url() != preferred_manifest_url_) {
+      std::move(bad_message_callback).Run("ACH_SELECT_CACHE_BAD_MANIFEST_URL");
+      return;
+    }
     AppCacheGroup* owning_group = cache->owning_group();
     const char* kFormatString =
         "Document was loaded from Application Cache with manifest %s";
