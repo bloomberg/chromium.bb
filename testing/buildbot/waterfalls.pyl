@@ -1573,14 +1573,6 @@
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
-      'mac-views-rel': {
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
-        },
-        'args': [
-          '--enable-features=ViewsBrowserWindows',
-        ],
-      },
       'mac10.10-blink-rel-dummy': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
