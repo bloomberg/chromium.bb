@@ -52,7 +52,8 @@ WaylandConnection::~WaylandConnection() = default;
 
 bool WaylandConnection::Initialize() {
   static const wl_registry_listener registry_listener = {
-      &WaylandConnection::Global, &WaylandConnection::GlobalRemove,
+      &WaylandConnection::Global,
+      &WaylandConnection::GlobalRemove,
   };
 
   display_.reset(wl_display_connect(nullptr));
@@ -364,7 +365,8 @@ void WaylandConnection::Global(void* data,
                                const char* interface,
                                uint32_t version) {
   static const wl_seat_listener seat_listener = {
-      &WaylandConnection::Capabilities, &WaylandConnection::Name,
+      &WaylandConnection::Capabilities,
+      &WaylandConnection::Name,
   };
   static const xdg_shell_listener shell_listener = {
       &WaylandConnection::Ping,

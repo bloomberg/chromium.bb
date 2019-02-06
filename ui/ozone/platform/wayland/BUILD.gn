@@ -5,6 +5,7 @@
 visibility = [ "//ui/ozone/*" ]
 
 import("//build/config/linux/pkg_config.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//ui/ozone/platform/wayland/wayland.gni")
 
 pkg_config("wayland-egl") {
@@ -206,6 +207,10 @@ source_set("test_support") {
 
   deps = [
     "//base:base",
+    "//ui/ozone:platform",
+  ]
+
+  public_deps = [
     "//skia",
     "//testing/gmock",
     "//third_party/wayland:wayland_server",
@@ -261,4 +266,19 @@ source_set("wayland_unittests") {
   if (use_wayland_gbm) {
     defines += [ "WAYLAND_GBM" ]
   }
+}
+
+fuzzer_test("wayland_buffer_fuzzer") {
+  defines = [ "WL_HIDE_DEPRECATED" ]
+  sources = [
+    "wayland_buffer_fuzzer.cc",
+  ]
+  deps = [
+    ":test_support",
+    ":wayland",
+    "//base/test:test_support",
+    "//build/config/linux/libdrm",
+    "//ui/gfx:test_support",
+    "//ui/platform_window:platform_window",
+  ]
 }

@@ -20,9 +20,10 @@ constexpr uint32_t kCompositorVersion = 4;
 void CreateSurface(wl_client* client,
                    wl_resource* compositor_resource,
                    uint32_t id) {
-  wl_resource* resource = CreateResourceWithImpl<MockSurface>(
-      client, &wl_surface_interface,
-      wl_resource_get_version(compositor_resource), &kMockSurfaceImpl, id);
+  wl_resource* resource =
+      CreateResourceWithImpl<::testing::NiceMock<MockSurface>>(
+          client, &wl_surface_interface,
+          wl_resource_get_version(compositor_resource), &kMockSurfaceImpl, id);
   GetUserDataAs<TestCompositor>(compositor_resource)
       ->AddSurface(GetUserDataAs<MockSurface>(resource));
 }

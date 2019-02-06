@@ -30,6 +30,9 @@ TestWaylandServerThread::TestWaylandServerThread()
       controller_(FROM_HERE) {}
 
 TestWaylandServerThread::~TestWaylandServerThread() {
+  if (client_)
+    wl_client_destroy(client_);
+
   Resume();
   Stop();
 }

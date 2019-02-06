@@ -34,9 +34,10 @@ void Create(wl_client* client,
   auto* buffer_params =
       GetUserDataAs<MockZwpLinuxBufferParamsV1>(buffer_params_resource);
 
-  wl_resource* buffer_resource = CreateResourceWithImpl<MockBuffer>(
-      client, &wl_buffer_interface, 1, &kMockWlBufferImpl, 0,
-      std::move(buffer_params->fds_));
+  wl_resource* buffer_resource =
+      CreateResourceWithImpl<::testing::NiceMock<MockBuffer>>(
+          client, &wl_buffer_interface, 1, &kMockWlBufferImpl, 0,
+          std::move(buffer_params->fds_));
 
   zwp_linux_buffer_params_v1_send_created(buffer_params_resource,
                                           buffer_resource);
