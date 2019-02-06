@@ -11,10 +11,9 @@
 #include "base/threading/thread_checker.h"
 
 namespace base {
-class MessageLoopImpl;
 namespace sequence_manager {
 namespace internal {
-class SequenceManagerImpl;
+class ThreadControllerWithMessagePumpImpl;
 }
 }  // namespace sequence_manager
 
@@ -54,8 +53,7 @@ class BASE_EXPORT WorkIdProvider {
 
  private:
   // Friended to allow use of IncrementWorkId().
-  friend class MessageLoopImpl;
-  friend class sequence_manager::internal::SequenceManagerImpl;
+  friend class sequence_manager::internal::ThreadControllerWithMessagePumpImpl;
 
   WorkIdProvider();
 

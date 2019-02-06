@@ -203,6 +203,8 @@ void MessagePumpForUI::DoRunLoop() {
     if (more_work_is_plausible)
       continue;
 
+    // WaitForWork() does some work itself, so notify the delegate of it.
+    state_->delegate->BeforeDoInternalWork();
     WaitForWork();  // Wait (sleep) until we have work to do again.
   }
 }

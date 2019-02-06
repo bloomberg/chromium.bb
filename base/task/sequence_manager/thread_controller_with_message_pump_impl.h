@@ -9,6 +9,7 @@
 
 #include "base/debug/task_annotator.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/work_id_provider.h"
 #include "base/run_loop.h"
 #include "base/task/common/operations_controller.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
@@ -74,6 +75,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   explicit ThreadControllerWithMessagePumpImpl(const TickClock* time_source);
 
   // MessagePump::Delegate implementation.
+  void BeforeDoInternalWork() override;
   MessagePump::Delegate::NextWorkInfo DoSomeWork() override;
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_run_time) override;
@@ -165,6 +167,11 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   debug::TaskAnnotator task_annotator_;
   const TickClock* time_source_;  // Not owned.
+
+  // Non-null provider of id state for identifying distinct work items executed
+  // by the message loop (task, event, etc.). Cached on the class to avoid TLS
+  // lookups on task execution.
+  WorkIdProvider* work_id_provider_ = nullptr;
 
   // Required to register the current thread as a sequence.
   base::internal::SequenceLocalStorageMap sequence_local_storage_map_;

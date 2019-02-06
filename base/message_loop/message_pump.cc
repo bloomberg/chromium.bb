@@ -6,8 +6,6 @@
 
 namespace base {
 
-void MessagePump::Delegate::BeforeDoInternalWork() {}
-
 MessagePump::MessagePump() = default;
 
 MessagePump::~MessagePump() = default;

@@ -23,8 +23,10 @@ class BASE_EXPORT MessagePump {
    public:
     virtual ~Delegate() = default;
 
-    // Called before work performed internal to the message pump is executed.
-    virtual void BeforeDoInternalWork();
+    // Called before work performed internal to the message pump is executed,
+    // including waiting for a wake up. Currently only called on Windows.
+    // TODO(wittman): Implement for other platforms.
+    virtual void BeforeDoInternalWork() = 0;
 
     struct NextWorkInfo {
       // Helper to extract a TimeDelta for pumps that need a
