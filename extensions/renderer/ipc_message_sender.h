@@ -82,8 +82,7 @@ class IPCMessageSender {
   virtual void SendCloseMessagePort(int routing_id,
                                     const PortId& port_id,
                                     bool close_channel) = 0;
-  virtual void SendPostMessageToPort(int routing_id,
-                                     const PortId& port_id,
+  virtual void SendPostMessageToPort(const PortId& port_id,
                                      const Message& message) = 0;
 
   // Creates an IPCMessageSender for use on the main thread.

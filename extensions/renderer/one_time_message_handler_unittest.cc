@@ -100,8 +100,7 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndDontExpectReply) {
               SendOpenMessageChannel(script_context(), port_id, target,
                                      messaging_util::kSendMessageChannel,
                                      include_tls_channel_id));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
+  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
 
@@ -137,8 +136,7 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectReply) {
               SendOpenMessageChannel(script_context(), port_id, target,
                                      messaging_util::kSendMessageChannel,
                                      include_tls_channel_id));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
+  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
 
   message_handler()->SendMessage(script_context(), port_id, target,
                                  messaging_util::kSendMessageChannel,
@@ -183,8 +181,7 @@ TEST_F(OneTimeMessageHandlerTest, DisconnectOpener) {
               SendOpenMessageChannel(script_context(), port_id, target,
                                      messaging_util::kSendMessageChannel,
                                      include_tls_channel_id));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
+  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
   message_handler()->SendMessage(script_context(), port_id, target,
                                  messaging_util::kSendMessageChannel,
                                  include_tls_channel_id, message, callback);
@@ -285,9 +282,9 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverAndReply) {
 
   // When the listener replies, we should post the reply to the message port and
   // close the channel.
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id,
-                                    Message(R"({"data":"hey"})", false)));
+  EXPECT_CALL(
+      *ipc_message_sender(),
+      SendPostMessageToPort(port_id, Message(R"({"data":"hey"})", false)));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
   message_handler()->DeliverMessage(script_context(), message, port_id);
@@ -332,8 +329,7 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
   v8::Local<v8::Value> args[] = {reply_arg};
 
   EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id,
-                                    Message("\"hi\"", false)));
+              SendPostMessageToPort(port_id, Message("\"hi\"", false)));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
   RunFunction(reply.As<v8::Function>(), context, base::size(args), args);
@@ -380,9 +376,9 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInListener) {
       *ipc_message_sender(),
       SendOpenMessageChannel(script_context(), listener_created_port_id, target,
                              messaging_util::kSendMessageChannel, false));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, listener_created_port_id,
-                                    listener_sent_message));
+  EXPECT_CALL(
+      *ipc_message_sender(),
+      SendPostMessageToPort(listener_created_port_id, listener_sent_message));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, original_port_id, false));
 
@@ -418,8 +414,7 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInCallback) {
       SendOpenMessageChannel(script_context(), original_port_id, target,
                              messaging_util::kSendMessageChannel, false));
   EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, original_port_id,
-                                    original_message));
+              SendPostMessageToPort(original_port_id, original_message));
   RunFunctionOnGlobal(send_message, context, 0, nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 
@@ -431,8 +426,7 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInCallback) {
       SendOpenMessageChannel(script_context(), new_port_id, target,
                              messaging_util::kSendMessageChannel, false));
   EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, new_port_id,
-                                    Message("\"bar\"", false)));
+              SendPostMessageToPort(new_port_id, Message("\"bar\"", false)));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, original_port_id, true));
   const Message reply("\"reply\"", false);

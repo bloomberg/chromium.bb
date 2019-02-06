@@ -86,10 +86,8 @@ class TestIPCMessageSender : public IPCMessageSender {
                void(int routing_id, const PortId& port_id));
   MOCK_METHOD3(SendCloseMessagePort,
                void(int routing_id, const PortId& port_id, bool close_channel));
-  MOCK_METHOD3(SendPostMessageToPort,
-               void(int routing_id,
-                    const PortId& port_id,
-                    const Message& message));
+  MOCK_METHOD2(SendPostMessageToPort,
+               void(const PortId& port_id, const Message& message));
 
   const ExtensionHostMsg_Request_Params* last_params() const {
     return last_params_.get();

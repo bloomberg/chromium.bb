@@ -120,8 +120,8 @@ void NativeRendererMessagingService::PostMessageToPort(
   if (!ScriptContextIsValid(script_context))
     return;
 
-  bindings_system_->GetIPCMessageSender()->SendPostMessageToPort(
-      routing_id, port_id, *message);
+  bindings_system_->GetIPCMessageSender()->SendPostMessageToPort(port_id,
+                                                                 *message);
 }
 
 void NativeRendererMessagingService::ClosePort(v8::Local<v8::Context> context,

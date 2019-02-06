@@ -103,8 +103,7 @@ void SendMessageTester::TestSendMessageOrRequest(
                                      expected_target, expected_channel,
                                      expected_include_tls_channel_id));
   Message message(expected_message, false);
-  EXPECT_CALL(*ipc_sender_, SendPostMessageToPort(MSG_ROUTING_NONE,
-                                                  expected_port_id, message));
+  EXPECT_CALL(*ipc_sender_, SendPostMessageToPort(expected_port_id, message));
 
   if (expected_port_status == CLOSED) {
     EXPECT_CALL(*ipc_sender_,
