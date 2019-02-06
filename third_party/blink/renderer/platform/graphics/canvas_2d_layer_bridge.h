@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_2D_LAYER_BRIDGE_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -109,7 +110,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   virtual bool IsAccelerated() const;
 
   cc::PaintCanvas* Canvas();
-  bool IsValid() const;
+  bool IsValid();
   bool WritePixels(const SkImageInfo&,
                    const void* pixels,
                    size_t row_bytes,
@@ -158,13 +159,19 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
     virtual ~Logger() = default;
   };
 
-  void SetLoggerForTesting(std::unique_ptr<Logger>);
+  void SetLoggerForTesting(std::unique_ptr<Logger> logger) {
+    logger_ = std::move(logger);
+  }
   CanvasResourceProvider* GetOrCreateResourceProvider(
       AccelerationHint = kPreferAcceleration);
   CanvasResourceProvider* ResourceProvider() const;
   void FlushRecording();
 
  private:
+  friend class Canvas2DLayerBridgeTest;
+  friend class CanvasRenderingContext2DTest;
+  friend class HTMLCanvasPainterTestForCAP;
+
   bool IsHidden() { return is_hidden_; }
   bool CheckResourceProviderValid();
   void ResetResourceProvider();
@@ -179,24 +186,19 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   scoped_refptr<cc::TextureLayer> layer_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
   std::unique_ptr<Logger> logger_;
-  int msaa_sample_count_;
   int frames_since_last_commit_ = 0;
-  size_t bytes_allocated_;
   bool have_recorded_draw_commands_;
   bool is_hidden_;
+  // See the implementation of DisableDeferral() for more information.
   bool is_deferral_enabled_;
   bool software_rendering_while_hidden_;
   bool hibernation_scheduled_ = false;
   bool dont_use_idle_scheduling_for_testing_ = false;
   bool context_lost_ = false;
 
-  friend class Canvas2DLayerBridgeTest;
-  friend class CanvasRenderingContext2DTest;
-  friend class HTMLCanvasPainterTestForCAP;
-
-  AccelerationMode acceleration_mode_;
-  CanvasColorParams color_params_;
-  IntSize size_;
+  const AccelerationMode acceleration_mode_;
+  const CanvasColorParams color_params_;
+  const IntSize size_;
   base::CheckedNumeric<int> recording_pixel_count_;
 
   enum SnapshotState {
