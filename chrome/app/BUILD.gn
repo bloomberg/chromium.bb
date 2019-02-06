@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -340,6 +341,7 @@ static_library("test_support") {
     "//chrome/gpu",
     "//chrome/renderer",
     "//chrome/utility",
+    "//components/gwp_asan/buildflags",
     "//components/nacl/common:buildflags",
     "//components/startup_metric_utils/browser:lib",
     "//components/tracing",
@@ -373,7 +375,6 @@ static_library("test_support") {
       "//chrome:chrome_initial",
       "//chrome/install_static:install_static_util",
       "//chrome_elf:test_stubs",
-      "//components/gwp_asan/client",
       "//sandbox/win:sandbox",
     ]
   }
@@ -394,6 +395,10 @@ static_library("test_support") {
       "//ash/components/quick_launch/public/mojom:constants",
       "//services/ws/public/mojom:constants",
     ]
+  }
+
+  if (enable_gwp_asan) {
+    deps += [ "//components/gwp_asan/client" ]
   }
 }
 
