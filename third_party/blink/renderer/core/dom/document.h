@@ -866,9 +866,10 @@ class CORE_EXPORT Document : public ContainerNode,
     kTransitionRunListener = 1 << 9,
     kTransitionStartListener = 1 << 10,
     kTransitionEndListener = 1 << 11,
-    kScrollListener = 1 << 12,
-    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 13
-    // 2 bits remaining
+    kTransitionCancelListener = 1 << 12,
+    kScrollListener = 1 << 13,
+    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 14
+    // 1 bit remaining
   };
 
   bool HasListenerType(ListenerType listener_type) const {

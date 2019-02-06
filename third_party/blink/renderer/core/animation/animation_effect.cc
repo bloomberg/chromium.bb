@@ -267,10 +267,17 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
           current_iteration, kLocalIterationDuration, iteration_time, timing_);
     }
 
+    const bool was_canceled = current_phase != calculated_.phase &&
+                              current_phase == AnimationEffect::kPhaseNone;
+    calculated_.phase = current_phase;
+    // If the animation was canceled, we need to fire the event condition before
+    // updating the timing so that the cancelation time can be determined.
+    if (was_canceled && event_delegate_)
+      event_delegate_->OnEventCondition(*this);
+
     calculated_.current_iteration = current_iteration;
     calculated_.progress = progress;
 
-    calculated_.phase = current_phase;
     calculated_.is_in_effect = !IsNull(active_time);
     calculated_.is_in_play = GetPhase() == kPhaseActive;
     calculated_.is_current = GetPhase() == kPhaseBefore || IsInPlay();
