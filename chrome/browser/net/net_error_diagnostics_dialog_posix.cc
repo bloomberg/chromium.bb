@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-bool CanShowNetworkDiagnosticsDialog() {
+bool CanShowNetworkDiagnosticsDialog(content::WebContents* web_contents) {
   return false;
 }
 

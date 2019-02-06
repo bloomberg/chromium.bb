@@ -199,6 +199,17 @@ std::string GetShowSavedButtonLabel() {
   return l10n_util::GetStringUTF8(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY);
 }
 
+// Returns true if the platform has support for a diagnostics tool, and it
+// can be launched from |web_contents|.
+bool WebContentsCanShowDiagnosticsTool(content::WebContents* web_contents) {
+#if defined(OS_CHROMEOS)
+  // ChromeOS uses an extension instead of a diagnostics dialog.
+  return true;
+#else
+  return CanShowNetworkDiagnosticsDialog(web_contents);
+#endif
+}
+
 class ErrorPageTest : public InProcessBrowserTest {
  public:
   enum HistoryNavigationDirection {
@@ -1004,6 +1015,34 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, CheckEasterEggIsNotDisabled) {
   EXPECT_EQ(1, result);
 }
 
+// Test error page in incognito mode. The two major things are that navigation
+// corrections are not fetched (Only one navigation, display local error page),
+// and that no network diagnostic link is included, except on ChromeOS.
+IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Incognito) {
+  Browser* incognito_browser = CreateIncognitoBrowser();
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      incognito_browser,
+      URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED), 1);
+
+  // Verify that the expected error page is being displayed.
+  ExpectDisplayingLocalErrorPage(
+      embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
+      incognito_browser, net::ERR_NAME_NOT_RESOLVED);
+
+#if !defined(OS_CHROMEOS)
+  // Can't currently show the diagnostics in incognito on any platform but
+  // ChromeOS.
+  EXPECT_FALSE(WebContentsCanShowDiagnosticsTool(
+      incognito_browser->tab_strip_model()->GetActiveWebContents()));
+#endif
+
+  // Diagnostics button should be displayed, if available.
+  EXPECT_EQ(WebContentsCanShowDiagnosticsTool(
+                incognito_browser->tab_strip_model()->GetActiveWebContents()),
+            IsDisplayingDiagnosticsLink(incognito_browser));
+}
+
 class ErrorPageAutoReloadTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1168,23 +1207,12 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
 
   void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
 
-  // Returns true if the platform has support for a diagnostics tool, which
-  // can be launched from the error page.
-  bool PlatformSupportsDiagnosticsTool() {
-#if defined(OS_CHROMEOS)
-    // ChromeOS uses an extension instead of a diagnostics dialog.
-    return true;
-#else
-    return CanShowNetworkDiagnosticsDialog();
-#endif
-  }
-
  private:
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 // Make sure that when corrections fail to load, the network error page is
-// successfully loaded.
+// successfully loaded and shows a link to the diagnostics too, if appropriate.
 IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
                        FetchCorrectionsFails) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1198,8 +1226,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
       embedded_test_server()->GetURL("mock.http", "/title2.html").spec(),
       browser(), net::ERR_NAME_NOT_RESOLVED);
 
-  // Diagnostics button should be displayed, if available on this platform.
-  EXPECT_EQ(PlatformSupportsDiagnosticsTool(),
+  // Diagnostics button should be displayed, if available.
+  EXPECT_EQ(WebContentsCanShowDiagnosticsTool(
+                browser()->tab_strip_model()->GetActiveWebContents()),
             IsDisplayingDiagnosticsLink(browser()));
 }
 
