@@ -26,137 +26,15 @@
 
 namespace tracing {
 
-class MockService : public perfetto::TracingService {
- public:
-  explicit MockService(base::MessageLoop* message_loop);
-
-  void OnTracingEnabled(const std::string& config);
-  void WaitForTracingEnabled();
-
-  void OnTracingDisabled();
-  void WaitForTracingDisabled();
-
-  const std::string& tracing_enabled_with_config() const {
-    return tracing_enabled_with_config_;
-  }
-
-  // perfetto::TracingService implementation.
-  std::unique_ptr<ProducerEndpoint> ConnectProducer(
-      perfetto::Producer*,
-      uid_t uid,
-      const std::string& name,
-      size_t shared_buffer_size_hint_bytes = 0) override;
-
-  std::unique_ptr<ConsumerEndpoint> ConnectConsumer(perfetto::Consumer*,
-                                                    uid_t) override;
-
-  void SetSMBScrapingEnabled(bool enabled) override;
-
- private:
-  base::MessageLoop* message_loop_;
-
-  base::RunLoop wait_for_tracing_enabled_;
-  base::RunLoop wait_for_tracing_disabled_;
-  std::string tracing_enabled_with_config_;
-};
-
-class MockConsumerEndpoint : public perfetto::TracingService::ConsumerEndpoint {
- public:
-  explicit MockConsumerEndpoint(MockService* mock_service)
-      : mock_service_(mock_service) {
-    CHECK(mock_service);
-  }
-
-  void EnableTracing(
-      const perfetto::TraceConfig& config,
-      perfetto::base::ScopedFile = perfetto::base::ScopedFile()) override {
-    EXPECT_EQ(mojom::kTraceEventDataSourceName,
-              config.data_sources()[0].config().name());
-    mock_service_->OnTracingEnabled(
-        config.data_sources()[0].config().chrome_config().trace_config());
-  }
-  void DisableTracing() override { mock_service_->OnTracingDisabled(); }
-  void ReadBuffers() override {}
-  void FreeBuffers() override {}
-  void Flush(uint32_t timeout_ms, FlushCallback callback) override {
-    callback(true);
-  }
-
-  // Unused in chrome, only meaningful when using TraceConfig.deferred_start.
-  void StartTracing() override {}
-
-  // Unused in chrome.
-  void Detach(const std::string& /*key*/) override {}
-  void Attach(const std::string& /*key*/) override {}
-  void GetTraceStats() override {}
-
- private:
-  MockService* mock_service_;
-};
-
-MockService::MockService(base::MessageLoop* message_loop)
-    : message_loop_(message_loop) {
-  DCHECK(message_loop);
-}
-
-void MockService::OnTracingEnabled(const std::string& config) {
-  tracing_enabled_with_config_ = config;
-  wait_for_tracing_enabled_.Quit();
-}
-
-void MockService::WaitForTracingEnabled() {
-  wait_for_tracing_enabled_.Run();
-}
-
-void MockService::OnTracingDisabled() {
-  wait_for_tracing_disabled_.Quit();
-}
-
-void MockService::WaitForTracingDisabled() {
-  wait_for_tracing_disabled_.Run();
-}
-
-void MockService::SetSMBScrapingEnabled(bool enabled) {}
-
-// perfetto::TracingService implementation.
-std::unique_ptr<perfetto::TracingService::ProducerEndpoint>
-MockService::ConnectProducer(perfetto::Producer*,
-                             uid_t uid,
-                             const std::string& name,
-                             size_t shared_buffer_size_hint_bytes) {
-  NOTREACHED();
-  return nullptr;
-}
-
-std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
-MockService::ConnectConsumer(perfetto::Consumer* consumer, uid_t) {
-  message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&perfetto::Consumer::OnConnect,
-                                base::Unretained(consumer)));
-
-  return std::make_unique<MockConsumerEndpoint>(this);
-}
-
 class JSONTraceExporterTest : public testing::Test {
  public:
   void SetUp() override {
-    message_loop_ = std::make_unique<base::MessageLoop>();
-    service_ = std::make_unique<MockService>(message_loop_.get());
+    json_trace_exporter_.reset(new JSONTraceExporter(base::BindRepeating(
+        &JSONTraceExporterTest::OnTraceEventJSON, base::Unretained(this))));
   }
 
   void TearDown() override {
-    service_.reset();
     json_trace_exporter_.reset();
-    message_loop_.reset();
-  }
-
-  void CreateJSONTraceExporter(const std::string& config) {
-    json_trace_exporter_.reset(new JSONTraceExporter(config, service_.get()));
-  }
-
-  void StopAndFlush() {
-    json_trace_exporter_->StopAndFlush(base::BindRepeating(
-        &JSONTraceExporterTest::OnTraceEventJSON, base::Unretained(this)));
   }
 
   void OnTraceEventJSON(const std::string& json,
@@ -242,31 +120,18 @@ class JSONTraceExporterTest : public testing::Test {
     return trace_analyzer_.get();
   }
 
-  MockService* service() { return service_.get(); }
   const base::DictionaryValue* parsed_trace_data() const {
     return parsed_trace_data_.get();
   }
 
  private:
-  std::unique_ptr<MockService> service_;
   std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<trace_analyzer::TraceAnalyzer> trace_analyzer_;
   std::unique_ptr<base::DictionaryValue> parsed_trace_data_;
 };
 
-TEST_F(JSONTraceExporterTest, EnableTracingWithGivenConfig) {
-  const char kDummyTraceConfig[] = "trace_all_the_things";
-  CreateJSONTraceExporter(kDummyTraceConfig);
-  service()->WaitForTracingEnabled();
-  EXPECT_EQ(kDummyTraceConfig, service()->tracing_enabled_with_config());
-}
-
 TEST_F(JSONTraceExporterTest, TestMetadata) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
 
   {
@@ -299,7 +164,6 @@ TEST_F(JSONTraceExporterTest, TestMetadata) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* metadata = parsed_trace_data()->FindKey("metadata");
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->FindKey("int_metadata")->GetInt(), 42);
@@ -311,25 +175,16 @@ TEST_F(JSONTraceExporterTest, TestMetadata) {
 }
 
 TEST_F(JSONTraceExporterTest, TestBasicEvent) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
   SetTestPacketBasicData(new_trace_event);
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   ValidateAndGetBasicTestPacket();
 }
 
 TEST_F(JSONTraceExporterTest, TestStringTable) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -364,8 +219,6 @@ TEST_F(JSONTraceExporterTest, TestStringTable) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
-
   auto* trace_event = trace_analyzer()->FindFirstOf(
       trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
       trace_analyzer::Query::String("foo_name"));
@@ -378,10 +231,6 @@ TEST_F(JSONTraceExporterTest, TestStringTable) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithBoolArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -401,7 +250,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithBoolArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_TRUE(trace_event->GetKnownArgAsBool("foo1"));
@@ -409,10 +257,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithBoolArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithUintArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -432,7 +276,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithUintArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_EQ(1, trace_event->GetKnownArgAsDouble("foo1"));
@@ -440,10 +283,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithUintArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithIntArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -463,7 +302,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithIntArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_EQ(1, trace_event->GetKnownArgAsDouble("foo1"));
@@ -471,10 +309,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithIntArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithDoubleArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -494,7 +328,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithDoubleArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_EQ(1.0, trace_event->GetKnownArgAsDouble("foo1"));
@@ -502,10 +335,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithDoubleArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithStringArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -525,7 +354,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithStringArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_EQ("bar1", trace_event->GetKnownArgAsString("foo1"));
@@ -533,10 +361,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithStringArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithPointerArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -556,7 +380,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithPointerArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_EQ("0x1", trace_event->GetKnownArgAsString("foo1"));
@@ -564,10 +387,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithPointerArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithConvertableArgs) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -587,7 +406,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithConvertableArgs) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   EXPECT_EQ("conv_value1", trace_event->GetKnownArgAsString("foo1"));
@@ -595,10 +413,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithConvertableArgs) {
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithTracedValueArg) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
   auto* new_trace_event =
       trace_packet_proto.mutable_chrome_events()->add_trace_events();
@@ -612,7 +426,6 @@ TEST_F(JSONTraceExporterTest, TestEventWithTracedValueArg) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* trace_event = ValidateAndGetBasicTestPacket();
 
   auto arg_value = trace_event->GetKnownArgAsValue("foo1");
@@ -716,10 +529,6 @@ TEST_F(JSONTraceExporterTest, TracedValueHierarchy) {
 }
 
 TEST_F(JSONTraceExporterTest, TestLegacyUserTrace) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
 
   auto* new_trace_event =
@@ -736,7 +545,6 @@ TEST_F(JSONTraceExporterTest, TestLegacyUserTrace) {
 
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   ValidateAndGetBasicTestPacket();
 
   const trace_analyzer::TraceEvent* trace_event = trace_analyzer()->FindFirstOf(
@@ -754,27 +562,18 @@ TEST_F(JSONTraceExporterTest, TestLegacyUserTrace) {
 }
 
 TEST_F(JSONTraceExporterTest, TestLegacySystemFtrace) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   std::string ftrace = "#dummy data";
 
   perfetto::protos::TracePacket trace_packet_proto;
   trace_packet_proto.mutable_chrome_events()->add_legacy_ftrace_output(ftrace);
   FinalizePacket(trace_packet_proto);
 
-  service()->WaitForTracingDisabled();
   auto* sys_trace = parsed_trace_data()->FindKey("systemTraceEvents");
   EXPECT_TRUE(sys_trace);
   EXPECT_EQ(sys_trace->GetString(), ftrace);
 }
 
 TEST_F(JSONTraceExporterTest, TestLegacySystemTraceEvents) {
-  CreateJSONTraceExporter("foo");
-  service()->WaitForTracingEnabled();
-  StopAndFlush();
-
   perfetto::protos::TracePacket trace_packet_proto;
 
   auto* json_trace =
@@ -787,8 +586,6 @@ TEST_F(JSONTraceExporterTest, TestLegacySystemTraceEvents) {
       ",\"id2\":{\"global\":\"0x5\"},\"args\":{}}]");
 
   FinalizePacket(trace_packet_proto);
-
-  service()->WaitForTracingDisabled();
 
   auto* sys_trace = parsed_trace_data()->FindKey("systemTraceEvents");
   EXPECT_TRUE(sys_trace);
