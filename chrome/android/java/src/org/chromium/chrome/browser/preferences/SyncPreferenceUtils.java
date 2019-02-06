@@ -10,6 +10,7 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -60,11 +61,11 @@ public class SyncPreferenceUtils {
         Resources res = context.getResources();
 
         if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
-            return res.getString(org.chromium.chrome.R.string.sync_android_master_sync_disabled);
+            return res.getString(R.string.sync_android_master_sync_disabled);
         }
 
         if (profileSyncService == null) {
-            return res.getString(org.chromium.chrome.R.string.sync_is_disabled);
+            return res.getString(R.string.sync_is_disabled);
         }
 
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
@@ -74,33 +75,31 @@ public class SyncPreferenceUtils {
 
         if (profileSyncService.getProtocolErrorClientAction()
                 == ProtocolErrorClientAction.UPGRADE_CLIENT) {
-            return res.getString(org.chromium.chrome.R.string.sync_error_upgrade_client,
-                    BuildInfo.getInstance().hostPackageLabel);
+            return res.getString(
+                    R.string.sync_error_upgrade_client, BuildInfo.getInstance().hostPackageLabel);
         }
 
         if (profileSyncService.hasUnrecoverableError()) {
-            return res.getString(org.chromium.chrome.R.string.sync_error_generic);
+            return res.getString(R.string.sync_error_generic);
         }
 
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         boolean syncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         if (syncEnabled) {
             if (!profileSyncService.isSyncActive()) {
-                return res.getString(org.chromium.chrome.R.string.sync_setup_progress);
+                return res.getString(R.string.sync_setup_progress);
             }
 
             if (profileSyncService.isPassphraseRequiredForDecryption()) {
-                return res.getString(org.chromium.chrome.R.string.sync_need_passphrase);
+                return res.getString(R.string.sync_need_passphrase);
             }
-            return context.getString(
-                    org.chromium.chrome.R.string.account_management_sync_summary, accountName);
+            return context.getString(R.string.account_management_sync_summary, accountName);
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            return context.getString(
-                    org.chromium.chrome.R.string.account_management_sync_off_summary, accountName);
+            return context.getString(R.string.account_management_sync_off_summary, accountName);
         }
-        return context.getString(org.chromium.chrome.R.string.sync_is_disabled);
+        return context.getString(R.string.sync_is_disabled);
     }
 
     /**
