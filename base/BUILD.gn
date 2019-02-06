@@ -953,8 +953,6 @@ jumbo_component("base") {
     "trace_event/trace_event_impl.h",
     "trace_event/trace_event_memory_overhead.cc",
     "trace_event/trace_event_memory_overhead.h",
-    "trace_event/trace_event_system_stats_monitor.cc",
-    "trace_event/trace_event_system_stats_monitor.h",
     "trace_event/trace_log.cc",
     "trace_event/trace_log.h",
     "trace_event/trace_log_constants.cc",
@@ -1543,7 +1541,6 @@ jumbo_component("base") {
       "system/sys_info_posix.cc",
       "task/task_scheduler/initialization_util.cc",
       "task/task_scheduler/initialization_util.h",
-      "trace_event/trace_event_system_stats_monitor.cc",
     ]
 
     if (is_nacl_nonsfi) {
@@ -2582,7 +2579,6 @@ test("base_unittests") {
     "trace_event/trace_config_unittest.cc",
     "trace_event/trace_event_filter_test_utils.cc",
     "trace_event/trace_event_filter_test_utils.h",
-    "trace_event/trace_event_system_stats_monitor_unittest.cc",
     "trace_event/trace_event_unittest.cc",
     "trace_event/traced_value_unittest.cc",
     "traits_bag_unittest.cc",
