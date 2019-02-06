@@ -826,28 +826,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'textureprojgrad.html',
         ['mac', 'intel'], bug=905004)
 
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-              'tex-2d-r8ui-red_integer-unsigned_byte.html',
-              ['yosemite', 'intel'], bug=665656)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-              'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-              ['yosemite', 'intel'], bug=665656)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-              'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-              ['yosemite', 'intel'], bug=665656)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-              'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-              ['yosemite', 'intel'], bug=665656)
-
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['mac', 'intel'], bug=665197)
+        ['mac', ('intel', 0x0a2e)], bug=665197)
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['mac', 'intel'], bug=665197)
+        ['mac', ('intel', 0x0a2e)], bug=665197)
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-        ['mac', 'intel'], bug=665197)
+        ['mac', ('intel', 0x0a2e)], bug=665197)
 
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-texture-sampling.html',
@@ -855,7 +842,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
-        ['sierra', 'intel'], bug=731877)
+        ['mac', ('intel', 0x0a2e)], bug=731877)
 
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['mac', 'intel'], bug=782317)
