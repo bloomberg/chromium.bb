@@ -10,13 +10,10 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 
 namespace ash {
 
-class TrayNetworkStateObserver
-    : public chromeos::NetworkStateHandlerObserver,
-      public chromeos::NetworkPortalDetector::Observer {
+class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
  public:
   class Delegate {
    public:
@@ -38,12 +35,6 @@ class TrayNetworkStateObserver
   void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
                                  active_networks) override;
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
-
-  // NetworkPortalDetector::Observer
-  void OnPortalDetectionCompleted(
-      const chromeos::NetworkState* network,
-      const chromeos::NetworkPortalDetector::CaptivePortalState& state)
-      override;
 
  private:
   void SignalUpdate(bool notify_a11y);

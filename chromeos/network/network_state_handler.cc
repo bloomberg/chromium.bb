@@ -455,10 +455,27 @@ void NetworkStateHandler::SetNetworkConnectRequested(
     const std::string& service_path,
     bool connect_requested) {
   NetworkState* network = GetModifiableNetworkState(service_path);
-  if (network) {
-    network->connect_requested_ = connect_requested;
-    network_list_sorted_ = false;
-  }
+  if (!network)
+    return;
+  network->connect_requested_ = connect_requested;
+  network_list_sorted_ = false;
+  OnNetworkConnectionStateChanged(network);
+}
+
+void NetworkStateHandler::SetNetworkChromePortalDetected(
+    const std::string& service_path,
+    bool portal_detected) {
+  NetworkState* network = GetModifiableNetworkState(service_path);
+  if (!network || network->is_chrome_captive_portal_ == portal_detected)
+    return;
+  bool was_captive_portal = network->IsCaptivePortal();
+  network->is_chrome_captive_portal_ = portal_detected;
+  // Only notify a connection state change if IsCaptivePortal() changed, i.e.
+  // is_chrome_captive_portal_ != (shill) is_captive_portal_.
+  if (was_captive_portal == network->IsCaptivePortal())
+    return;
+  network_list_sorted_ = false;
+  OnNetworkConnectionStateChanged(network);
 }
 
 std::string NetworkStateHandler::FormattedHardwareAddressForType(

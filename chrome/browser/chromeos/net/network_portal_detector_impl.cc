@@ -168,6 +168,13 @@ void RecordPortalToOnlineTransition(const base::TimeDelta& duration) {
   }
 }
 
+void SetNetworkPortalDetected(const NetworkState* network,
+                              bool portal_detected) {
+  NetworkHandler::Get()
+      ->network_state_handler()
+      ->SetNetworkChromePortalDetected(network->path(), portal_detected);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -294,6 +301,7 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
     return;
   NET_LOG(EVENT) << "Starting detection attempt:"
                  << " name=" << network->name() << " id=" << network->guid();
+  SetNetworkPortalDetected(network, false /* portal_detected */);
   portal_state_map_.erase(network->guid());
   StartDetection();
 }
@@ -339,7 +347,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
 
     CaptivePortalState state;
     state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
-    OnDetectionCompleted(nullptr, state);
+    DetectionCompleted(nullptr, state);
     return;
   }
 
@@ -579,10 +587,10 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
 
   if (state.status != CAPTIVE_PORTAL_STATUS_OFFLINE ||
       same_detection_result_count_ >= kMaxOfflineResultsBeforeReport) {
-    OnDetectionCompleted(network, state);
+    DetectionCompleted(network, state);
   }
 
-  // Observers (via OnDetectionCompleted) may already schedule new attempt.
+  // Observers (via DetectionCompleted) may already schedule new attempt.
   if (is_idle())
     ScheduleAttempt(results.retry_after_delta);
 }
@@ -600,7 +608,7 @@ void NetworkPortalDetectorImpl::Observe(
   }
 }
 
-void NetworkPortalDetectorImpl::OnDetectionCompleted(
+void NetworkPortalDetectorImpl::DetectionCompleted(
     const NetworkState* network,
     const CaptivePortalState& state) {
   if (!network) {
@@ -622,6 +630,9 @@ void NetworkPortalDetectorImpl::OnDetectionCompleted(
       RecordPortalToOnlineTransition(state.time - it->second.time);
     }
 
+    SetNetworkPortalDetected(
+        network,
+        state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
     portal_state_map_[network->guid()] = state;
   }
   NotifyDetectionCompleted(network, state);

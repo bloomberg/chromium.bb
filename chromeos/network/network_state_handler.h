@@ -183,6 +183,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   void SetNetworkConnectRequested(const std::string& service_path,
                                   bool connect_requested);
 
+  // Called from Chrome's network portal detector to indicate whether Chrome has
+  // detected that the network is in a captive portal state. This may or may
+  // not match the network's |is_captive_portal_| which is provided by Shill.
+  void SetNetworkChromePortalDetected(const std::string& service_path,
+                                      bool portal_detected);
+
   // Returns the aa:bb formatted hardware (MAC) address for the first connected
   // network matching |type|, or an empty string if none is connected.
   std::string FormattedHardwareAddressForType(const NetworkTypePattern& type);
