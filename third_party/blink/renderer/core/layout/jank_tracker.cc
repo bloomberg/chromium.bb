@@ -235,7 +235,8 @@ void JankTracker::NotifyPrePaintFinished() {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance &&
-        performance->HasObserverFor(PerformanceEntry::kLayoutJank)) {
+        (performance->HasObserverFor(PerformanceEntry::kLayoutJank) ||
+         performance->ShouldBufferEntries())) {
       performance->AddLayoutJankFraction(jank_fraction);
     }
   }
