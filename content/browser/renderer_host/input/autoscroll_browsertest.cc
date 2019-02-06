@@ -165,8 +165,7 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
 // We don't plan on supporting middle click autoscroll on Android.
 // See https://crbug.com/686223
 #if !defined(OS_ANDROID)
-// TODO(sahel): This test is flaky https://crbug.com/838769
-IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest, DISABLED_AutoscrollFling) {
+IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest, AutoscrollFling) {
   LoadURL(kAutoscrollDataURL);
 
   // Start autoscroll with middle click.
