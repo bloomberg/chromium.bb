@@ -40,10 +40,6 @@
 
 namespace WTF {
 
-// Initializes global state required by |currentThread|.
-// Needs to be called once during program execution, before |currentThread|.
-WTF_EXPORT void InitializeCurrentThread();
-
 WTF_EXPORT base::PlatformThreadId CurrentThread();
 
 #if DCHECK_IS_ON()
