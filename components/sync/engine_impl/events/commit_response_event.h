@@ -25,18 +25,18 @@ class CommitResponseEvent : public ProtocolEvent {
                       SyncerError result,
                       const sync_pb::ClientToServerResponse& response);
   ~CommitResponseEvent() override;
+  std::unique_ptr<ProtocolEvent> Clone() const override;
 
+ private:
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
   std::string GetDetails() const override;
   std::unique_ptr<base::DictionaryValue> GetProtoMessage(
       bool include_specifics) const override;
-  std::unique_ptr<ProtocolEvent> Clone() const override;
 
   static std::unique_ptr<base::DictionaryValue> ToValue(
       const ProtocolEvent& event);
 
- private:
   const base::Time timestamp_;
   const SyncerError result_;
   const sync_pb::ClientToServerResponse response_;
