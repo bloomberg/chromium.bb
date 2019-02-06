@@ -17,11 +17,12 @@ class XRReferenceSpace : public XRSpace {
   XRReferenceSpace(XRSession*);
   ~XRReferenceSpace() override;
 
+  virtual std::unique_ptr<TransformationMatrix> DefaultPose();
   virtual std::unique_ptr<TransformationMatrix> TransformBasePose(
-      const TransformationMatrix& base_pose) = 0;
+      const TransformationMatrix& base_pose);
   virtual std::unique_ptr<TransformationMatrix> TransformBaseInputPose(
       const TransformationMatrix& base_input_pose,
-      const TransformationMatrix& base_pose) = 0;
+      const TransformationMatrix& base_pose);
 
   void Trace(blink::Visitor*) override;
 };
