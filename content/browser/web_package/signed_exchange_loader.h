@@ -40,8 +40,9 @@ class SourceStreamToDataPipe;
 // exchange response, and is owned by the handler until the StartLoaderCallback
 // of SignedExchangeRequestHandler::StartResponse is called. After that, it is
 // owned by the URLLoader mojo endpoint.
-class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
-                                   public network::mojom::URLLoader {
+class CONTENT_EXPORT SignedExchangeLoader final
+    : public network::mojom::URLLoaderClient,
+      public network::mojom::URLLoader {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
@@ -98,7 +99,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   }
 
   // Set nullptr to reset the mocking.
-  CONTENT_EXPORT static void SetSignedExchangeHandlerFactoryForTest(
+  static void SetSignedExchangeHandlerFactoryForTest(
       SignedExchangeHandlerFactory* factory);
 
  private:
