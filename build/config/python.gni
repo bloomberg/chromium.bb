@@ -72,6 +72,11 @@ template("python_library") {
 #
 #     build/print_python_deps.py --inplace build/android/gyp/foo.py
 #
+# Example
+#   action_with_pydeps("create_foo") {
+#     script = "myscript.py"
+#     args = [...]
+#   }
 template("action_with_pydeps") {
   # Read the .pydeps file now. Note that this is done everytime this
   # template is called, but benchmarking doesn't show any impact on overall
@@ -80,16 +85,10 @@ template("action_with_pydeps") {
   _pydeps_raw = read_file(_pydeps_file, "list lines")
 
   # Filter out comments.
-  # This is a bit convoluted to preserve the value of sources if defined.
-  _old_sources = []
-  if (defined(sources)) {
-    _old_sources = sources
-  }
   set_sources_assignment_filter([ "#*" ])
   sources = _pydeps_raw
   _pydeps = sources
-  set_sources_assignment_filter([])
-  sources = _old_sources
+  sources = []
 
   action(target_name) {
     # Forward all variables. Ensure that testonly and visibility are forwarded
@@ -115,7 +114,7 @@ template("action_with_pydeps") {
 
     # Dependencies are listed relative to the script directory, but inputs
     # expects paths that are relative to the current BUILD.gn
-    _script_dir = get_path_info(script, "dir")
+    _script_dir = get_path_info(_pydeps_file, "dir")
     inputs += rebase_path(_pydeps, ".", _script_dir)
   }
 }
