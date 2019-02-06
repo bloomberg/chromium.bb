@@ -12,12 +12,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -57,14 +58,19 @@ class SigninHelper : public GaiaAuthConsumer {
   // GaiaAuthConsumer overrides.
   void OnClientOAuthSuccess(const ClientOAuthResult& result) override {
     // TODO(sinhak): Do not depend on Profile unnecessarily. A Profile should
-    // call |AccountTrackerServiceFactory| for the list of accounts it wants to
+    // call |IdentityManagerFactory| for the list of accounts it wants to
     // pull from |AccountManager|, not the other way round. Remove this when we
     // release multi Profile on Chrome OS and have the infra in place to do
     // this.
     // Account info needs to be seeded before the OAuth2TokenService chain can
     // use it. Do this before anything else.
-    AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
-        account_key_.id, email_);
+    AccountInfo account_info;
+    account_info.gaia = account_key_.id;
+    account_info.email = email_;
+    // TODO(crbug.com/922026): SigninHelper and InlineLoginHandlerChromeOS
+    // must be refactored to remove this use of LegacySeedAccountInfo.
+    IdentityManagerFactory::GetForProfile(profile_)->LegacySeedAccountInfo(
+        account_info);
 
     account_manager_->UpsertToken(account_key_, result.refresh_token);
 
