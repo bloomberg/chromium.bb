@@ -4,7 +4,6 @@ deps_libweston = [
 	dep_libm,
 	dep_libdl,
 	dep_libdrm_headers,
-	dep_libshared,
 	dep_xkbcommon,
 ]
 srcs_libweston = [
@@ -75,6 +74,7 @@ lib_weston = shared_library(
 	link_args: [ '-export-dynamic' ],
 	install: true,
 	version: '0.0.@0@'.format(libweston_revision),
+	link_whole: lib_libshared,
 	dependencies: deps_libweston
 )
 

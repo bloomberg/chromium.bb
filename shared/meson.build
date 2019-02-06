@@ -12,6 +12,7 @@ lib_libshared = static_library(
 	srcs_libshared,
 	include_directories: include_directories('..'),
 	dependencies: deps_libshared,
+	pic: true,
 	install: false
 )
 dep_libshared = declare_dependency(

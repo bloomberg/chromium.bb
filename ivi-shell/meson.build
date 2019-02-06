@@ -30,7 +30,7 @@ if get_option('shell-ivi')
 		'hmi-controller',
 		srcs_ivi_hmi,
 		include_directories: include_directories('..', '../shared'),
-		dependencies: dep_libweston,
+		dependencies: [ dep_libweston, dep_libshared ],
 		name_prefix: '',
 		install: true,
 		install_dir: dir_module_weston

@@ -88,6 +88,13 @@ Libweston was first introduced in Weston 1.12, and is expected to
 continue evolving through many Weston releases before it achieves a
 stable API and feature completeness.
 
+Libweston's primary purpose is exporting an API for creating Wayland
+compositors. Libweston's secondary purpose is to export the weston_config API
+so that third party plugins and helper programs can read `weston.ini` if they
+want to. However, these two scopes are orthogonal and independent. At no point
+will the compositor functionality use or depend on the weston_config
+functionality.
+
 
 API/ABI (in)stability and parallel installability
 -------------------------------------------------
