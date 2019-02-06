@@ -22,10 +22,6 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
-namespace password_manager {
-class PasswordManagerDriver;
-}  // namespace password_manager
-
 // Interface for password-specific keyboard accessory controller between the
 // ManualFillingController and PasswordManagerClient.
 //
@@ -65,12 +61,6 @@ class PasswordAccessoryController
           best_matches,
       const url::Origin& origin) = 0;
 
-  // Notifies the view that automatic password generation status changed.
-  virtual void OnAutomaticGenerationStatusChanged(
-      bool available,
-      const base::Optional<
-          autofill::password_generation::PasswordGenerationUIData>& ui_data,
-      const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) = 0;
 
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.
@@ -109,22 +99,6 @@ class PasswordAccessoryController
   // the selected option.
   virtual void OnOptionSelected(
       const base::string16& selected_option) const = 0;
-
-  // Called by the UI code to signal that the user requested password
-  // generation. This should prompt a modal dialog with the generated password.
-  virtual void OnGenerationRequested() = 0;
-
-  // Called from the modal dialog if the user accepted the generated password.
-  virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;
-
-  // Called from the modal dialog if the user rejected the generated password.
-  virtual void GeneratedPasswordRejected() = 0;
-
-  // -----------------
-  // Member accessors:
-  // -----------------
-
-  virtual gfx::NativeWindow native_window() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryController);

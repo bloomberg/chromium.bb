@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_generation_controller_impl.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -16,9 +16,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 PasswordGenerationDialogViewAndroid::PasswordGenerationDialogViewAndroid(
-    PasswordAccessoryController* controller)
+    PasswordGenerationController* controller)
     : controller_(controller) {
-  ui::WindowAndroid* window_android = controller_->native_window();
+  ui::WindowAndroid* window_android = controller_->top_level_native_window();
 
   DCHECK(window_android);
   java_object_.Reset(Java_PasswordGenerationDialogBridge_create(
@@ -60,6 +60,6 @@ void PasswordGenerationDialogViewAndroid::PasswordRejected(
 // static
 std::unique_ptr<PasswordGenerationDialogViewInterface>
 PasswordGenerationDialogViewInterface::Create(
-    PasswordAccessoryController* controller) {
+    PasswordGenerationController* controller) {
   return std::make_unique<PasswordGenerationDialogViewAndroid>(controller);
 }

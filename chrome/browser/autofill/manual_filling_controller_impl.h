@@ -15,17 +15,13 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class PasswordAccessoryController;
+class PasswordGenerationController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
 class ManualFillingControllerImpl
     : public ManualFillingController,
       public content::WebContentsUserData<ManualFillingControllerImpl> {
  public:
-  // Constructor that allows to inject a mock or fake view.
-  ManualFillingControllerImpl(
-      content::WebContents* web_contents,
-      base::WeakPtr<PasswordAccessoryController> pwd_controller,
-      std::unique_ptr<ManualFillingViewInterface> view);
   ~ManualFillingControllerImpl() override;
 
   // ManualFillingController:
@@ -54,6 +50,7 @@ class ManualFillingControllerImpl
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
+      PasswordGenerationController* pwd_generation_controller_for_testing,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
@@ -67,6 +64,13 @@ class ManualFillingControllerImpl
   // Required for construction via |CreateForWebContents|:
   explicit ManualFillingControllerImpl(content::WebContents* contents);
 
+  // Constructor that allows to inject a mock or fake view.
+  ManualFillingControllerImpl(
+      content::WebContents* web_contents,
+      base::WeakPtr<PasswordAccessoryController> pwd_controller,
+      PasswordGenerationController* pwd_generation_controller_for_testing,
+      std::unique_ptr<ManualFillingViewInterface> view);
+
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
@@ -75,6 +79,11 @@ class ManualFillingControllerImpl
 
   // The password accessory controller object to forward view requests to.
   base::WeakPtr<PasswordAccessoryController> pwd_controller_;
+
+  // A password generation controller used in tests which receives requests
+  // from the view.
+  PasswordGenerationController* pwd_generation_controller_for_testing_ =
+      nullptr;
 
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up

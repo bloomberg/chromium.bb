@@ -95,6 +95,7 @@
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
@@ -657,7 +658,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
     return;
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
+  if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
     if (available) {
       password_manager::PasswordManagerDriver* driver =
           driver_factory_->GetDriverForFrame(
@@ -667,7 +668,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
           driver, ui_data.value().password_form,
           ui_data.value().generation_element,
           false /* is_manually_triggered */);
-      PasswordAccessoryController::GetOrCreate(web_contents())
+      PasswordGenerationController::GetOrCreate(web_contents())
           ->OnAutomaticGenerationStatusChanged(true, ui_data,
                                                driver->AsWeakPtr());
       gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
@@ -676,11 +677,11 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
       driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
           element_bounds_in_screen_space, ui_data.value().text_direction);
     } else {
-      PasswordAccessoryController* accessory =
-          PasswordAccessoryController::GetIfExisting(web_contents());
-      if (accessory) {
-        accessory->OnAutomaticGenerationStatusChanged(false, base::nullopt,
-                                                      nullptr);
+      PasswordGenerationController* generation_controller =
+          PasswordGenerationController::GetIfExisting(web_contents());
+      if (generation_controller) {
+        generation_controller->OnAutomaticGenerationStatusChanged(
+            false, base::nullopt, nullptr);
       }
     }
   }
