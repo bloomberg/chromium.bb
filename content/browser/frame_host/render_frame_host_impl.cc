@@ -4103,13 +4103,6 @@ bool RenderFrameHostImpl::CanCommitOrigin(
     return true;
   }
 
-  // file: URLs can be allowed to access any other origin, based on settings.
-  if (origin.scheme() == url::kFileScheme) {
-    WebPreferences prefs = render_view_host_->GetWebkitPreferences();
-    if (prefs.allow_universal_access_from_file_urls)
-      return true;
-  }
-
   // It is safe to commit into a unique origin, regardless of the URL, as it is
   // restricted from accessing other origins.
   if (origin.opaque())
@@ -5034,8 +5027,35 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
   // out-of-process iframes implementation is ready, we should check for
   // cross-site URLs that are not allowed to commit in this process.
 
+  // MHTML subframes can supply URL at commit time that do not match the process
+  // lock. For example, it can be either "cid:..." or arbitrary URL at which
+  // the frame was at the time of generating the MHTML
+  // (e.g. "http://localhost"). In such cases, don't verify the URL, however
+  // enforce that the commit is allowed only in the process of the main frame.
+  if (!frame_tree_node()->IsMainFrame()) {
+    bool is_in_mhtml = frame_tree_node_->frame_tree()
+                           ->root()
+                           ->current_frame_host()
+                           ->is_mhtml_document();
+    if (is_in_mhtml) {
+      return IsSameSiteInstance(
+          frame_tree_node()->parent()->current_frame_host());
+    }
+  }
+
   // Give the client a chance to disallow URLs from committing.
-  return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
+  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
+    return false;
+
+  // TODO(nasko): This check should be updated to apply to all URLs, not just
+  // standard ones.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (url.IsStandard() &&
+      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
+    return false;
+  }
+
+  return true;
 }
 
 void RenderFrameHostImpl::BlockRequestsForFrame() {
@@ -5991,10 +6011,19 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     }
   }
 
+  // file: URLs can be allowed to access any other origin, based on settings.
+  bool bypass_checks_for_file_scheme = false;
+  if (validated_params->origin.scheme() == url::kFileScheme) {
+    WebPreferences prefs = render_view_host_->GetWebkitPreferences();
+    if (prefs.allow_universal_access_from_file_urls)
+      bypass_checks_for_file_scheme = true;
+  }
+
   // Attempts to commit certain off-limits URL should be caught more strictly
   // than our FilterURL checks.  If a renderer violates this policy, it
   // should be killed.
-  if (!is_permitted_error_page && !CanCommitURL(validated_params->url)) {
+  if (!is_permitted_error_page && !bypass_checks_for_file_scheme &&
+      !CanCommitURL(validated_params->url)) {
     VLOG(1) << "Blocked URL " << validated_params->url.spec();
     LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
 
@@ -6006,7 +6035,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
   // Verify that the origin passed from the renderer process is valid and can
   // be allowed to commit in this RenderFrameHost.
-  if (!CanCommitOrigin(validated_params->origin, validated_params->url)) {
+  if (!bypass_checks_for_file_scheme &&
+      !CanCommitOrigin(validated_params->origin, validated_params->url)) {
     DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
     LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
 
@@ -6178,6 +6208,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                           NavigationGestureUser);
 
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
+
+  // Set the state whether this navigation is to an MHTML document, since there
+  // are certain security checks that we cannot apply to subframes in MHTML
+  // documents. Do not trust renderer data when determining that, rather use
+  // the |committed_request|, which was generated and stays browser side.
+  is_mhtml_document_ =
+      (committed_request->GetMimeType() == "multipart/related" ||
+       committed_request->GetMimeType() == "message/rfc822");
 
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,

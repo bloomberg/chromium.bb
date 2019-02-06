@@ -14719,18 +14719,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderProcessHostKillWaiter kill_waiter(
       root->current_frame_host()->GetProcess());
 
-  // Create commit params with a different origin than the origin lock
-  // of the process.
+  // Create commit params with the same URL as the start one, so URL checks
+  // pass, but use a different origin than the origin lock of the process.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
       std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
   params->nav_entry_id = 0;
   params->did_create_new_entry = false;
-  params->url = another_url;
+  params->url = start_url;
   params->transition = ui::PAGE_TRANSITION_LINK;
   params->should_update_history = false;
   params->gesture = NavigationGestureAuto;
   params->method = "GET";
-  params->page_state = PageState::CreateFromURL(another_url);
+  params->page_state = PageState::CreateFromURL(start_url);
+
   // Use an origin mismatched with the origin lock.
   params->origin = url::Origin::Create(another_url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -14738,6 +14739,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ("http://a.com/", policy->GetOriginLock(process_id));
   EXPECT_EQ(start_url.host(), policy->GetOriginLock(process_id).host());
   EXPECT_NE(another_url.host(), policy->GetOriginLock(process_id).host());
+
   // Simulate a commit IPC.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   blink::mojom::DocumentInterfaceBrokerPtrInfo
