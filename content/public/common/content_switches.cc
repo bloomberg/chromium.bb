@@ -817,6 +817,11 @@ const char kTouchEventFeatureDetectionDisabled[] = "disabled";
 // the platform default is used.
 const char kTouchTextSelectionStrategy[]    = "touch-selection-strategy";
 
+// Replaces the existing codecs supported in peer connection with a single fake
+// codec entry that create a fake video encoder and decoder.
+const char kUseFakeCodecForPeerConnection[] =
+    "use-fake-codec-for-peer-connection";
+
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";

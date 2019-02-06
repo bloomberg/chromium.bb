@@ -62,6 +62,7 @@
 #include "third_party/webrtc/api/create_peerconnection_factory.h"
 #include "third_party/webrtc/api/media_constraints_interface.h"
 #include "third_party/webrtc/api/video_track_source_proxy.h"
+#include "third_party/webrtc/media/engine/fake_video_codec_factory.h"
 #include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -302,6 +303,13 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
         std::move(webrtc_encoder_factory));
     webrtc_decoder_factory = std::make_unique<webrtc::MultiplexDecoderFactory>(
         std::move(webrtc_decoder_factory));
+  }
+
+  if (cmd_line->HasSwitch(switches::kUseFakeCodecForPeerConnection)) {
+    webrtc_encoder_factory =
+        std::make_unique<webrtc::FakeVideoEncoderFactory>();
+    webrtc_decoder_factory =
+        std::make_unique<webrtc::FakeVideoDecoderFactory>();
   }
 
   pc_factory_ = webrtc::CreatePeerConnectionFactory(
