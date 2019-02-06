@@ -2216,6 +2216,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   double boost_score = 0.0;
   int active_min_gf_interval;
+  int active_max_gf_interval;
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
   double gf_group_raw_error = 0.0;
@@ -2282,6 +2283,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   // TODO(urvang): Try logic to vary min and max interval based on q.
   active_min_gf_interval = rc->min_gf_interval;
+  active_max_gf_interval = rc->max_gf_interval;
 
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
@@ -2343,9 +2345,9 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     boost_score +=
         decay_accumulator *
         calc_frame_boost(cpi, &next_frame, this_frame_mv_in_out, GF_MAX_BOOST);
-    // If almost totally static, we will not use the the fixed GF length later,
+    // If almost totally static, we will not use the the max GF length later,
     // so we can continue for more frames.
-    if (i >= (av1_rc_get_fixed_gf_length(oxcf->gf_max_pyr_height) + 1) &&
+    if ((i >= active_max_gf_interval + 1) &&
         !is_almost_static(zero_motion_accumulator,
                           twopass->kf_zeromotion_pct)) {
       break;
