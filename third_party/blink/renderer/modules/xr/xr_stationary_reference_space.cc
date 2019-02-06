@@ -54,6 +54,12 @@ void XRStationaryReferenceSpace::UpdateFloorLevelTransform() {
   display_info_id_ = session()->DisplayInfoPtrId();
 }
 
+// No default pose for stationary reference spaces.
+std::unique_ptr<TransformationMatrix>
+XRStationaryReferenceSpace::DefaultPose() {
+  return nullptr;
+}
+
 // Transforms a pose into the correct space.
 std::unique_ptr<TransformationMatrix>
 XRStationaryReferenceSpace::TransformBasePose(

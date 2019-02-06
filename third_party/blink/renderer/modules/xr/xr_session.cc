@@ -238,7 +238,9 @@ ScriptPromise XRSession::requestReferenceSpace(
   }
 
   XRReferenceSpace* reference_space = nullptr;
-  if (options->type() == "stationary") {
+  if (options->type() == "identity") {
+    reference_space = MakeGarbageCollected<XRReferenceSpace>(this);
+  } else if (options->type() == "stationary") {
     if (!options->hasSubtype()) {
       return ScriptPromise::RejectWithDOMException(
           script_state,

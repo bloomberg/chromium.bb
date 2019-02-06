@@ -21,6 +21,11 @@ void XRBoundedReferenceSpace::UpdateBoundsGeometry(
   // event when the bounds change.
 }
 
+// No default pose for bounded reference spaces.
+std::unique_ptr<TransformationMatrix> XRBoundedReferenceSpace::DefaultPose() {
+  return nullptr;
+}
+
 void XRBoundedReferenceSpace::UpdateFloorLevelTransform() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
       session()->GetVRDisplayInfo();
@@ -63,16 +68,6 @@ XRBoundedReferenceSpace::TransformBasePose(
   }
 
   return nullptr;
-}
-
-// Serves the same purpose as TransformBasePose, but for input poses. Needs to
-// know the head pose so that cases like the head-model frame of reference can
-// properly adjust the input's relative position.
-std::unique_ptr<TransformationMatrix>
-XRBoundedReferenceSpace::TransformBaseInputPose(
-    const TransformationMatrix& base_input_pose,
-    const TransformationMatrix& base_pose) {
-  return TransformBasePose(base_input_pose);
 }
 
 void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {

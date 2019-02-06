@@ -23,6 +23,7 @@ class XRStationaryReferenceSpace final : public XRReferenceSpace {
   XRStationaryReferenceSpace(XRSession*, Subtype);
   ~XRStationaryReferenceSpace() override;
 
+  std::unique_ptr<TransformationMatrix> DefaultPose() override;
   std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) override;
   std::unique_ptr<TransformationMatrix> TransformBaseInputPose(

@@ -17,10 +17,8 @@ class XRUnboundedReferenceSpace final : public XRReferenceSpace {
   XRUnboundedReferenceSpace(XRSession*);
   ~XRUnboundedReferenceSpace() override;
 
+  std::unique_ptr<TransformationMatrix> DefaultPose() override;
   std::unique_ptr<TransformationMatrix> TransformBasePose(
-      const TransformationMatrix& base_pose) override;
-  std::unique_ptr<TransformationMatrix> TransformBaseInputPose(
-      const TransformationMatrix& base_input_pose,
       const TransformationMatrix& base_pose) override;
 
   void Trace(blink::Visitor*) override;
