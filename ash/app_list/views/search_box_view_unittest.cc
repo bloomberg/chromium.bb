@@ -614,14 +614,6 @@ TEST_F(SearchBoxViewAutocompleteTest,
       true);
 }
 
-// Tests that only the autocomplete suggestion text is deleted after pressing
-// up, down, left, right, or backspace.
-TEST_P(SearchBoxViewAutocompleteTest,
-       SearchBoxDeletesAutocompleteTextOnlyAfterUpDownLeftRightBackspace) {
-  TestKeyEvent(ui::KeyEvent(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE),
-               false);
-}
-
 // Tests that autocomplete is not handled if IME is using composition text.
 TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
   // Add a search result with a non-empty title field.
