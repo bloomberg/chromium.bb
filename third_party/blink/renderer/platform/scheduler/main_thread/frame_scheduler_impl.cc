@@ -392,6 +392,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
+    // kInternalContentCapture uses BestEffortTaskQueue and is handled
+    // sparately.
+    case TaskType::kInternalContentCapture:
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits();
     case TaskType::kInternalLoading:
@@ -506,6 +509,8 @@ scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
       return frame_task_queue_controller_->LoadingControlTaskQueue();
     case TaskType::kInternalInspector:
       return frame_task_queue_controller_->InspectorTaskQueue();
+    case TaskType::kInternalContentCapture:
+      return frame_task_queue_controller_->BestEffortTaskQueue();
     case TaskType::kExperimentalWebSchedulingUserInteraction:
       return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
           FrameTaskQueueController::WebSchedulingTaskQueueType::

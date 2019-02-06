@@ -66,6 +66,17 @@ FrameTaskQueueController::InspectorTaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::BestEffortTaskQueue() {
+  if (!best_effort_task_queue_) {
+    best_effort_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::kIdle)
+            .SetFixedPriority(TaskQueue::QueuePriority::kBestEffortPriority));
+  }
+  return best_effort_task_queue_;
+}
+
+scoped_refptr<MainThreadTaskQueue>
 FrameTaskQueueController::ExperimentalWebSchedulingTaskQueue(
     WebSchedulingTaskQueueType task_queue_type) {
   if (!web_scheduling_task_queues_[task_queue_type])
