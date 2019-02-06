@@ -234,24 +234,30 @@ Polymer({
   },
 
   /**
+   * Returns true in case Android apps settings needs to be created. It is not
+   * created in case ARC++ is not allowed for the current profile.
    * @return {boolean}
    * @private
    */
-  shouldShowAndroidApps_: function() {
+  shouldCreateAndroidAppsSection_: function() {
     const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.androidApps'));
-    if (!this.showAndroidApps || !this.showPage_(visibility)) {
-      return false;
-    }
+    return this.showAndroidApps && this.showPage_(visibility);
+  },
 
-    // Section is invisible in case we don't have the Play Store app and
-    // settings app is not yet available.
-    if (!this.havePlayStoreApp &&
-        (!this.androidAppsInfo || !this.androidAppsInfo.settingsAppAvailable)) {
-      return false;
+  /**
+   * Returns true in case Android apps settings should be shown. It is not
+   * shown in case we don't have the Play Store app and settings app is not
+   * yet available.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAndroidAppsSection_: function() {
+    if (this.havePlayStoreApp ||
+        (this.androidAppsInfo && this.androidAppsInfo.settingsAppAvailable)) {
+      return true;
     }
-
-    return true;
+    return false;
   },
 
   /**
