@@ -20,6 +20,7 @@
 #include "android_webview/browser/aw_render_process.h"
 #include "android_webview/browser/aw_renderer_priority.h"
 #include "android_webview/browser/aw_resource_context.h"
+#include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_web_contents_delegate.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
@@ -852,6 +853,12 @@ void AwContents::OnNewPicture() {
         "onNewPicture");
     Java_AwContents_onNewPicture(env, obj);
   }
+}
+
+void AwContents::OnViewTreeForceDarkStateChanged(
+    bool view_tree_force_dark_state) {
+  view_tree_force_dark_state_ = view_tree_force_dark_state;
+  web_contents_->NotifyPreferencesChanged();
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(

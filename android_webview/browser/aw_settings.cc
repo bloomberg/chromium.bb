@@ -489,6 +489,21 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
 
   web_prefs->scroll_top_left_interop_enabled =
       Java_AwSettings_getScrollTopLeftInteropEnabledLocked(env, obj);
+
+  switch (Java_AwSettings_getForceDarkModeLocked(env, obj)) {
+    case ForceDarkMode::FORCE_DARK_OFF:
+      web_prefs->force_dark_mode_enabled = false;
+      break;
+    case ForceDarkMode::FORCE_DARK_ON:
+      web_prefs->force_dark_mode_enabled = true;
+      break;
+    case ForceDarkMode::FORCE_DARK_AUTO: {
+      AwContents* contents = AwContents::FromWebContents(web_contents());
+      web_prefs->force_dark_mode_enabled =
+          contents && contents->GetViewTreeForceDarkState();
+      break;
+    }
+  }
 }
 
 static jlong JNI_AwSettings_Init(JNIEnv* env,

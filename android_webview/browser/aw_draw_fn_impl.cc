@@ -321,6 +321,8 @@ static jlong JNI_AwDrawFnImpl_Create(JNIEnv* env) {
 }
 
 void AwDrawFnImpl::OnSync(AwDrawFn_OnSyncParams* params) {
+  render_thread_manager_.UpdateViewTreeForceDarkStateOnRT(
+      params->apply_force_dark);
   render_thread_manager_.CommitFrameOnRT();
 }
 

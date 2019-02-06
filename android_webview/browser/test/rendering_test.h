@@ -69,6 +69,8 @@ class RenderingTest : public testing::Test,
   void DidDrawOnRT() override {}
 
   virtual void OnParentDrawConstraintsUpdated() {}
+  void OnViewTreeForceDarkStateChanged(
+      bool view_tree_force_dark_state) override {}
 
  protected:
 

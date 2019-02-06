@@ -217,6 +217,8 @@ class AwContents : public FindHelper::Listener,
   jint GetEffectivePriority(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
+  bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
+
   // PermissionRequestHandlerClient implementation.
   void OnPermissionRequest(base::android::ScopedJavaLocalRef<jobject> j_request,
                            AwPermissionRequest* request) override;
@@ -279,6 +281,8 @@ class AwContents : public FindHelper::Listener,
   void PostInvalidate() override;
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
+  void OnViewTreeForceDarkStateChanged(
+      bool view_tree_force_dark_state) override;
 
   // |new_value| is in physical pixel scale.
   void ScrollContainerViewTo(const gfx::Vector2d& new_value) override;
@@ -390,6 +394,8 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
+
+  bool view_tree_force_dark_state_ = false;
 
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result
