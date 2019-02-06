@@ -104,9 +104,8 @@ class BASE_EXPORT TaskQueueImpl {
 
   // TaskQueue implementation.
   const char* GetName() const;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
-      scoped_refptr<TaskQueue> owning_task_queue);
   bool IsQueueEnabled() const;
+  void SetQueueEnabled(bool enabled);
   bool IsEmpty() const;
   size_t GetNumberOfPendingTasks() const;
   bool HasTaskToRunImmediately() const;
@@ -198,25 +197,6 @@ class BASE_EXPORT TaskQueueImpl {
 
   void PushImmediateIncomingTaskForTest(Task&& task);
 
-  class QueueEnabledVoterImpl : public TaskQueue::QueueEnabledVoter {
-   public:
-    explicit QueueEnabledVoterImpl(scoped_refptr<TaskQueue> task_queue);
-    ~QueueEnabledVoterImpl() override;
-
-    // QueueEnabledVoter implementation.
-    void SetQueueEnabled(bool enabled) override;
-
-    TaskQueueImpl* GetTaskQueueForTest() const {
-      return task_queue_->GetTaskQueueImpl();
-    }
-
-   private:
-    friend class TaskQueueImpl;
-
-    scoped_refptr<TaskQueue> task_queue_;
-    bool enabled_;
-  };
-
   // Iterates over |delayed_incoming_queue| removing canceled tasks. In
   // addition MaybeShrinkQueue is called on all internal queues.
   void ReclaimMemory(TimeTicks now);
@@ -245,10 +225,6 @@ class BASE_EXPORT TaskQueueImpl {
   // Whether this task queue owns any tasks. Task queue being disabled doesn't
   // affect this.
   bool HasTasks() const;
-
-  // Disables queue for testing purposes, when a QueueEnabledVoter can't be
-  // constructed due to not having TaskQueue.
-  void SetQueueEnabledForTest(bool enabled);
 
  protected:
   void SetDelayedWakeUpForTesting(Optional<DelayedWakeUp> wake_up);
@@ -378,8 +354,7 @@ class BASE_EXPORT TaskQueueImpl {
     DelayedIncomingQueue delayed_incoming_queue;
     ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     base::internal::HeapHandle heap_handle;
-    int is_enabled_refcount;
-    int voter_refcount;
+    bool is_enabled;
     trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
     Optional<TimeTicks> delayed_fence;
@@ -432,8 +407,6 @@ class BASE_EXPORT TaskQueueImpl {
                               TimeTicks now,
                               trace_event::TracedValue* state);
 
-  void RemoveQueueEnabledVoter(const QueueEnabledVoterImpl* voter);
-  void OnQueueEnabledVoteChanged(bool enabled);
   void EnableOrDisableWithSelector(bool enable);
 
   // Schedules delayed work on time domain and calls the observer.

@@ -192,20 +192,26 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   // An interface that lets the owner vote on whether or not the associated
   // TaskQueue should be enabled.
-  class QueueEnabledVoter {
+  class BASE_EXPORT QueueEnabledVoter {
    public:
-    QueueEnabledVoter() = default;
-    virtual ~QueueEnabledVoter() = default;
+    ~QueueEnabledVoter();
+
+    QueueEnabledVoter(const QueueEnabledVoter&) = delete;
+    const QueueEnabledVoter& operator=(const QueueEnabledVoter&) = delete;
 
     // Votes to enable or disable the associated TaskQueue. The TaskQueue will
     // only be enabled if all the voters agree it should be enabled, or if there
     // are no voters.
     // NOTE this must be called on the thread the associated TaskQueue was
     // created on.
-    virtual void SetQueueEnabled(bool enabled) = 0;
+    void SetQueueEnabled(bool enabled);
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(QueueEnabledVoter);
+    friend class TaskQueue;
+    explicit QueueEnabledVoter(scoped_refptr<TaskQueue> task_queue);
+
+    scoped_refptr<TaskQueue> const task_queue_;
+    bool enabled_;
   };
 
   // Returns an interface that allows the caller to vote on whether or not this
@@ -326,6 +332,11 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   friend class internal::SequenceManagerImpl;
   friend class internal::TaskQueueImpl;
 
+  void AddQueueEnabledVoter(bool voter_is_enabled);
+  void RemoveQueueEnabledVoter(bool voter_is_enabled);
+  bool AreAllQueueEnabledVotersEnabled() const;
+  void OnQueueEnabledVoteChanged(bool enabled);
+
   bool IsOnMainThread() const;
 
   Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
@@ -348,6 +359,9 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   scoped_refptr<internal::AssociatedThreadId> associated_thread_;
   scoped_refptr<SingleThreadTaskRunner> default_task_runner_;
+
+  int enabled_voter_count_ = 0;
+  int voter_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };

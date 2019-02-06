@@ -131,8 +131,7 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(TaskQueueImpl* task_queue,
       immediate_work_queue(new WorkQueue(task_queue,
                                          "immediate",
                                          WorkQueue::QueueType::kImmediate)),
-      is_enabled_refcount(0),
-      voter_refcount(0),
+      is_enabled(true),
       blame_context(nullptr),
       is_enabled_for_test(true) {}
 
@@ -793,64 +792,15 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
   state->EndDictionary();
 }
 
-TaskQueueImpl::QueueEnabledVoterImpl::QueueEnabledVoterImpl(
-    scoped_refptr<TaskQueue> task_queue)
-    : task_queue_(task_queue), enabled_(true) {}
-
-TaskQueueImpl::QueueEnabledVoterImpl::~QueueEnabledVoterImpl() {
-  if (task_queue_->GetTaskQueueImpl())
-    task_queue_->GetTaskQueueImpl()->RemoveQueueEnabledVoter(this);
-}
-
-void TaskQueueImpl::QueueEnabledVoterImpl::SetQueueEnabled(bool enabled) {
-  if (enabled_ == enabled)
-    return;
-
-  task_queue_->GetTaskQueueImpl()->OnQueueEnabledVoteChanged(enabled);
-  enabled_ = enabled;
-}
-
-void TaskQueueImpl::RemoveQueueEnabledVoter(
-    const QueueEnabledVoterImpl* voter) {
-  // Bail out if we're being called from TaskQueueImpl::UnregisterTaskQueue.
-  if (!main_thread_only().time_domain)
-    return;
-
-  bool was_enabled = IsQueueEnabled();
-  if (voter->enabled_) {
-    main_thread_only().is_enabled_refcount--;
-    DCHECK_GE(main_thread_only().is_enabled_refcount, 0);
-  }
-
-  main_thread_only().voter_refcount--;
-  DCHECK_GE(main_thread_only().voter_refcount, 0);
-
-  bool is_enabled = IsQueueEnabled();
-  if (was_enabled != is_enabled)
-    EnableOrDisableWithSelector(is_enabled);
-}
-
 bool TaskQueueImpl::IsQueueEnabled() const {
-  // By default is_enabled_refcount and voter_refcount both equal zero.
-  return (main_thread_only().is_enabled_refcount ==
-          main_thread_only().voter_refcount) &&
-         main_thread_only().is_enabled_for_test;
+  return main_thread_only().is_enabled;
 }
 
-void TaskQueueImpl::OnQueueEnabledVoteChanged(bool enabled) {
-  bool was_enabled = IsQueueEnabled();
-  if (enabled) {
-    main_thread_only().is_enabled_refcount++;
-    DCHECK_LE(main_thread_only().is_enabled_refcount,
-              main_thread_only().voter_refcount);
-  } else {
-    main_thread_only().is_enabled_refcount--;
-    DCHECK_GE(main_thread_only().is_enabled_refcount, 0);
+void TaskQueueImpl::SetQueueEnabled(bool enabled) {
+  if (main_thread_only().is_enabled != enabled) {
+    main_thread_only().is_enabled = enabled;
+    EnableOrDisableWithSelector(enabled);
   }
-
-  bool is_enabled = IsQueueEnabled();
-  if (was_enabled != is_enabled)
-    EnableOrDisableWithSelector(is_enabled);
 }
 
 void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
@@ -874,14 +824,6 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
   } else {
     sequence_manager_->main_thread_only().selector.DisableQueue(this);
   }
-}
-
-std::unique_ptr<TaskQueue::QueueEnabledVoter>
-TaskQueueImpl::CreateQueueEnabledVoter(scoped_refptr<TaskQueue> task_queue) {
-  DCHECK_EQ(task_queue->GetTaskQueueImpl(), this);
-  main_thread_only().voter_refcount++;
-  main_thread_only().is_enabled_refcount++;
-  return std::make_unique<QueueEnabledVoterImpl>(task_queue);
 }
 
 void TaskQueueImpl::ReclaimMemory(TimeTicks now) {
@@ -1012,11 +954,6 @@ bool TaskQueueImpl::IsUnregistered() const {
 
 WeakPtr<SequenceManagerImpl> TaskQueueImpl::GetSequenceManagerWeakPtr() {
   return sequence_manager_->GetWeakPtr();
-}
-
-void TaskQueueImpl::SetQueueEnabledForTest(bool enabled) {
-  main_thread_only().is_enabled_for_test = enabled;
-  EnableOrDisableWithSelector(IsQueueEnabled());
 }
 
 void TaskQueueImpl::ActivateDelayedFenceIfNeeded(TimeTicks now) {
