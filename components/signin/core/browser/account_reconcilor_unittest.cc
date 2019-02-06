@@ -263,9 +263,6 @@ class AccountReconcilorTest : public ::testing::Test {
   }
   DiceTestSigninClient* test_signin_client() { return &test_signin_client_; }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
-  GaiaCookieManagerService* cookie_manager_service() {
-    return &cookie_manager_service_;
-  }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   MockAccountReconcilor* GetMockReconcilor();
@@ -671,7 +668,7 @@ class AccountReconcilorTestTable
     }
     signin::SetListAccountsResponseWithParams(cookie_params,
                                               &test_url_loader_factory_);
-    cookie_manager_service()->set_list_accounts_stale_for_testing(true);
+    identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
   }
 
   std::string GaiaIdForAccountKey(char account_key) {
@@ -971,7 +968,7 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
   ConfigureCookieManagerService(cookies);
 
   // Call list accounts now so that the next call completes synchronously.
-  cookie_manager_service()->ListAccounts(nullptr, nullptr);
+  identity_test_env()->identity_manager()->GetAccountsInCookieJar();
   base::RunLoop().RunUntilIdle();
 
   // Setup expectations.
@@ -1091,7 +1088,7 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
   std::vector<Cookie> cookies_after_reconcile = cookies;
 
   // Call list accounts now so that the next call completes synchronously.
-  cookie_manager_service()->ListAccounts(nullptr, nullptr);
+  identity_test_env()->identity_manager()->GetAccountsInCookieJar();
   base::RunLoop().RunUntilIdle();
 
   // Setup expectations.
@@ -1332,7 +1329,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceLastKnownFirstAccount) {
 
   // Delete the cookies.
   signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
-  cookie_manager_service()->set_list_accounts_stale_for_testing(true);
+  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
 
   if (!IsMultiloginEnabled()) {
     // Reconcile again and check that account_id_2 is added first.
@@ -1791,7 +1788,7 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
   ConfigureCookieManagerService(cookies);
 
   // Call list accounts now so that the next call completes synchronously.
-  cookie_manager_service()->ListAccounts(nullptr, nullptr);
+  identity_test_env()->identity_manager()->GetAccountsInCookieJar();
   base::RunLoop().RunUntilIdle();
 
   // Setup expectations.
@@ -1919,13 +1916,12 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieSuccess) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
 
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  ASSERT_TRUE(
-      cookie_manager_service()->ListAccounts(&accounts, &signed_out_accounts));
-  ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ(account_id, accounts[0].id);
-  ASSERT_EQ(0u, signed_out_accounts.size());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_test_env()->identity_manager()->GetAccountsInCookieJar();
+  ASSERT_TRUE(accounts_in_cookie_jar_info.accounts_are_fresh);
+  ASSERT_EQ(1u, accounts_in_cookie_jar_info.signed_in_accounts.size());
+  ASSERT_EQ(account_id, accounts_in_cookie_jar_info.signed_in_accounts[0].id);
+  ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_out_accounts.size());
 }
 
 TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieFailure) {
@@ -1940,12 +1936,11 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieFailure) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
   base::RunLoop().RunUntilIdle();
 
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  ASSERT_FALSE(
-      cookie_manager_service()->ListAccounts(&accounts, &signed_out_accounts));
-  ASSERT_EQ(0u, accounts.size());
-  ASSERT_EQ(0u, signed_out_accounts.size());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_test_env()->identity_manager()->GetAccountsInCookieJar();
+  ASSERT_FALSE(accounts_in_cookie_jar_info.accounts_are_fresh);
+  ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_in_accounts.size());
+  ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_out_accounts.size());
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_ERROR, reconcilor->GetState());
@@ -2041,7 +2036,9 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   base::RunLoop().RunUntilIdle();
   std::vector<gaia::ListedAccount> accounts;
   // This will be the first call to ListAccounts.
-  ASSERT_FALSE(cookie_manager_service()->ListAccounts(&accounts, nullptr));
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_test_env()->identity_manager()->GetAccountsInCookieJar();
+  ASSERT_FALSE(accounts_in_cookie_jar_info.accounts_are_fresh);
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
@@ -2440,7 +2437,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   signin::SetListAccountsResponseTwoAccounts(
       account_info.email, account_info.gaia, account_info2.email,
       account_info2.gaia, &test_url_loader_factory_);
-  cookie_manager_service()->set_list_accounts_stale_for_testing(true);
+  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
 
   // This will cause the reconcilor to fire.
   identity_test_env()->SetRefreshTokenForAccount(account_id3);
