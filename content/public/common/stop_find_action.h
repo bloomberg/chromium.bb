@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_STOP_FIND_ACTION_H_
 #define CONTENT_PUBLIC_COMMON_STOP_FIND_ACTION_H_
 
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-shared.h"
 
 namespace content {
 

@@ -25,6 +25,7 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 
 class PrefService;
 
@@ -37,6 +38,7 @@ class TimeDelta;
 namespace net {
 class HttpRequestHeaders;
 class URLRequestContextGetter;
+class ProxyList;
 }
 
 namespace data_reduction_proxy {

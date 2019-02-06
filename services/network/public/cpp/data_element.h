@@ -22,8 +22,8 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
-#include "services/network/public/mojom/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-forward.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/gurl.h"
 

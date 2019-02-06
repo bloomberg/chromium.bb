@@ -33,7 +33,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;

@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 
 class GURL;
 

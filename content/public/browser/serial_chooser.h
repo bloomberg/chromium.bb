@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "services/device/public/mojom/serial.mojom.h"
+#include "services/device/public/mojom/serial.mojom-forward.h"
 
 namespace content {
 

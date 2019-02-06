@@ -10,6 +10,8 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 
 namespace network {
 

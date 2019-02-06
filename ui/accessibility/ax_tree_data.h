@@ -13,7 +13,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/gfx/geometry/rect.h"

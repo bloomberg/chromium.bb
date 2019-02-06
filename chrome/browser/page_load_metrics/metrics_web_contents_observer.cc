@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/base/page_transition_types.h"

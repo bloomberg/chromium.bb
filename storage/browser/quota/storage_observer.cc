@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "storage/browser/quota/storage_observer.h"
+
 #include <stdint.h>
 
-#include "storage/browser/quota/storage_observer.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 
 namespace storage {
 

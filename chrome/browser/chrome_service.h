@@ -8,7 +8,7 @@
 #include "base/no_destructor.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom-forward.h"
 
 namespace service_manager {
 class Connector;

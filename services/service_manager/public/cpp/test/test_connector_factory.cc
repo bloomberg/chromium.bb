@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
 

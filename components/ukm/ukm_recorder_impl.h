@@ -18,7 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 
 namespace metrics {
 class UkmBrowserTestBase;

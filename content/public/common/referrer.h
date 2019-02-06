@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request.h"
-#include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {

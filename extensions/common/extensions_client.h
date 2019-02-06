@@ -12,7 +12,7 @@
 
 #include "base/strings/string_piece.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
 
 class GURL;
 

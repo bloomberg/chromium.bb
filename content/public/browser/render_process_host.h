@@ -24,10 +24,10 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
-#include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -44,6 +44,10 @@ class Token;
 
 namespace service_manager {
 class Identity;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {

@@ -15,6 +15,7 @@
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/test/test_content_utility_client.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 
 namespace {
 

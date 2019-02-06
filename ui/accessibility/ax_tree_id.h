@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/unguessable_token.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace mojo {

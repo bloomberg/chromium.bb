@@ -196,8 +196,8 @@ include_rules = [
   # Allow mojo generated files in WebKit. These files use STL types and
   # don't use WTF types.
   "+third_party/blink/public/platform/autoplay.mojom.h",
-  "+third_party/blink/public/platform/web_feature.mojom.h",
   "+third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h",
+  "+third_party/blink/public/platform/modules/badging/badging.mojom.h",
   "+third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h",
   "+third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h",
   "+third_party/blink/public/platform/modules/installation/installation.mojom.h",
@@ -206,9 +206,10 @@ include_rules = [
   "+third_party/blink/public/platform/modules/presentation/presentation.mojom.h",
   "+third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h",
   "+third_party/blink/public/platform/modules/webshare/webshare.mojom.h",
-  "+third_party/blink/public/platform/modules/badging/badging.mojom.h",
   "+third_party/blink/public/platform/oom_intervention.mojom.h",
   "+third_party/blink/public/platform/site_engagement.mojom.h",
+  "+third_party/blink/public/platform/web_feature.mojom-shared.h",
+  "+third_party/blink/public/platform/web_feature.mojom.h",
   "+third_party/blink/public/web/window_features.mojom.h",
 
   # The following restrictions are for ChromeOS and in particular mus/mash where

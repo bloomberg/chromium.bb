@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 namespace network {
 

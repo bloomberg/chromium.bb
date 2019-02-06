@@ -34,6 +34,7 @@
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/browser/shell_extensions_browser_api_provider.h"
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state/login_state.h"

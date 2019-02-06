@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 #include "url/origin.h"
 
 namespace storage {

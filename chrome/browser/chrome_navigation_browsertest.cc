@@ -49,6 +49,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 
 class ChromeNavigationBrowserTest : public InProcessBrowserTest {
  public:

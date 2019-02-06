@@ -38,7 +38,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
-#include "components/download/public/common/download_stream.mojom.h"
+#include "components/download/public/common/download_stream.mojom-forward.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/input_stream.h"
 #include "content/common/content_export.h"

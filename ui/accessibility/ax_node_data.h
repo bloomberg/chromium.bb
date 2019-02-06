@@ -14,7 +14,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"

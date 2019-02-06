@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
 namespace network {
 

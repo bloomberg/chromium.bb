@@ -14,7 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_value_store.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom-forward.h"
 
 class PersistentPrefStore;
 class PrefRegistry;

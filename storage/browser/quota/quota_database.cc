@@ -20,6 +20,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "url/gurl.h"
 
 using blink::mojom::StorageType;

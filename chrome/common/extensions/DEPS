@@ -13,5 +13,6 @@ specific_include_rules = {
   # API schemas exist, so it needs to know about app APIs.
   "chrome_extensions_client\.cc": [
      "+apps/common/api/generated_schemas.h",
+     "+services/network/public/mojom/cors_origin_pattern.mojom.h",
   ],
 }

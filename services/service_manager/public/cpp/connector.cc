@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
 

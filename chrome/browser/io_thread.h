@@ -29,7 +29,7 @@
 #include "content/public/browser/browser_thread_delegate.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/network_change_notifier.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 #include "services/network/url_request_context_owner.h"
 
 class PrefRegistrySimple;

@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "components/subresource_filter/core/common/common_features.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 
 namespace subresource_filter {
 
