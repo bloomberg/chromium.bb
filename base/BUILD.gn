@@ -1175,6 +1175,7 @@ jumbo_component("base") {
     ":orderfile_buildflags",
     ":partition_alloc_buildflags",
     ":protected_memory_buildflags",
+    ":sanitizer_buildflags",
     ":synchronization_buildflags",
     "//base/numerics:base_numerics",
   ]
@@ -1979,6 +1980,13 @@ buildflag_header("clang_coverage_buildflags") {
   flags = [ "CLANG_COVERAGE=$use_clang_coverage" ]
 }
 
+buildflag_header("sanitizer_buildflags") {
+  header = "sanitizer_buildflags.h"
+  header_dir = "base"
+
+  flags = [ "IS_HWASAN=$is_hwasan" ]
+}
+
 # This is the subset of files from base that should not be used with a dynamic
 # library. Note that this library cannot depend on base because base depends on
 # base_static.
@@ -2625,6 +2633,7 @@ test("base_unittests") {
     ":base",
     ":base_unittests_tasktraits",
     ":i18n",
+    ":sanitizer_buildflags",
     "//base/allocator:buildflags",
     "//base/test:native_library_test_utils",
     "//base/test:run_all_base_unittests",
