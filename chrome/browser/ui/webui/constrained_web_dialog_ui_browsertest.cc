@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   ContentResizeInAutoResizingDialog
 #endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
-                       ContentResizeInAutoResizingDialog) {
+                       MAYBE_ContentResizeInAutoResizingDialog) {
   // During auto-resizing, dialogs size to (WebContents size) + 16.
   const int dialog_border_space = 16;
 
