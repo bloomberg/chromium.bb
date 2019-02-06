@@ -628,4 +628,31 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
   }
 }
 
+TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
+  const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+
+  // A cache that the document wasn't actually loaded from. Trying to select it
+  // should cause a BadMessage.
+  const int kCacheId = 22;
+  const GURL kDocumentURL("http://origin/document");
+  scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
+
+  AppCacheBackendImpl backend(&service_, kProcessIdForTest);
+  backend.set_frontend_for_testing(&mock_frontend_);
+  backend.RegisterHostForTesting(kHostIdForTest, kRenderFrameIdForTest);
+
+  blink::mojom::AppCacheBackendPtr backend_ptr;
+  mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(
+      &backend, mojo::MakeRequest(&backend_ptr));
+
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+    backend_ptr->SelectCache(kHostIdForTest, kDocAndOriginUrl, kCacheId,
+                             GURL());
+
+    EXPECT_EQ("ACH_SELECT_CACHE_ID_NOT_OWNED",
+              bad_message_observer.WaitForBadMessage());
+  }
+}
+
 }  // namespace content

@@ -249,7 +249,10 @@ class CONTENT_EXPORT AppCacheHost
   void OnServiceReinitialized(
       AppCacheStorageReference* old_storage_ref) override;
 
-  void FinishCacheSelection(AppCache* cache, AppCacheGroup* group);
+  void FinishCacheSelection(
+      AppCache* cache,
+      AppCacheGroup* group,
+      mojo::ReportBadMessageCallback bad_message_callback);
   void DoPendingGetStatus();
   void DoPendingStartUpdate();
   void DoPendingSwapCache();
@@ -319,11 +322,19 @@ class CONTENT_EXPORT AppCacheHost
   scoped_refptr<AppCache> main_resource_cache_;
   int64_t pending_main_resource_cache_id_;
 
-  // Cache loading is async, if we're loading a specific cache or group
+  // Cache loading is async. If we're loading a specific cache or group
   // for the purposes of cache selection, one or the other of these will
   // indicate which cache or group is being loaded.
   int64_t pending_selected_cache_id_;
   GURL pending_selected_manifest_url_;
+
+  // Cache loading is async. If we determine after loading that the request to
+  // load the cache was actually invalid we can call this callback to report an
+  // earlier mojo message as bad to kill the renderer.
+  // Unlike the pending*callback_ fields further below in this class, it is
+  // fine for this callback to not get called, and as such it is not included
+  // in the cleanup code in the destructor.
+  mojo::ReportBadMessageCallback pending_selected_cache_bad_message_callback_;
 
   // Used to defend against bad IPC messages.
   bool was_select_cache_called_;

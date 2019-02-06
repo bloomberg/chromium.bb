@@ -628,7 +628,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job());
     EXPECT_TRUE(job()->IsWaiting());
 
-    host_->FinishCacheSelection(cache.get(), nullptr);
+    host_->FinishCacheSelection(cache.get(), nullptr, base::DoNothing());
     EXPECT_FALSE(job()->IsWaiting());
     EXPECT_TRUE(job()->IsDeliveringErrorResponse());
 
