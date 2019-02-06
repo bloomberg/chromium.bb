@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_text_track_list_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_control_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_slider_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_display_cutout_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_media_event_listener.h"
@@ -373,6 +374,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       duration_display_(nullptr),
       mute_button_(nullptr),
       volume_slider_(nullptr),
+      volume_control_container_(nullptr),
       toggle_closed_captions_button_(nullptr),
       text_track_list_(nullptr),
       overflow_list_(nullptr),
@@ -507,11 +509,15 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |  +-HTMLDivElement
 //     |  |    (-internal-media-controls-button-spacer)
 //     |  |    {if ModernMediaControls is enabled and is video element}
-//     |  +-MediaControlMuteButtonElement
-//     |  |    (-webkit-media-controls-mute-button)
-//     |  +-MediaControlVolumeSliderElement
-//     |  |    (-webkit-media-controls-volume-slider)
-//     |  |    {if not ModernMediaControlsEnabled}
+//     |  +-MediaControlVolumeControlContainerElement
+//     |  |  |  (-webkit-media-controls-volume-control-container)
+//     |  |  +-HTMLDivElement
+//     |  |  |    (-webkit-media-controls-volume-control-hover-background)
+//     |  |  +-MediaControlMuteButtonElement
+//     |  |  |    (-webkit-media-controls-mute-button)
+//     |  |  +-MediaControlVolumeSliderElement
+//     |  |       (-webkit-media-controls-volume-slider)
+//     |  |       {if not ModernMediaControlsEnabled}
 //     |  +-MediaControlPictureInPictureButtonElement
 //     |  |    (-webkit-media-controls-picture-in-picture-button)
 //     |  +-MediaControlFullscreenButtonElement
@@ -591,6 +597,8 @@ void MediaControlsImpl::InitializeControls() {
   mute_button_ = MakeGarbageCollected<MediaControlMuteButtonElement>(*this);
 
   volume_slider_ = MakeGarbageCollected<MediaControlVolumeSliderElement>(*this);
+  volume_control_container_ =
+      MakeGarbageCollected<MediaControlVolumeControlContainerElement>(*this);
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 
@@ -695,14 +703,9 @@ void MediaControlsImpl::PopulatePanel() {
 
   // On modern controls, the volume slider is to the left of the mute button.
   if (IsModern()) {
-    volume_control_container_ = MediaControlElementsHelper::CreateDiv(
-        "-webkit-media-controls-volume-control-container", button_panel);
-    MediaControlElementsHelper::CreateDiv(
-        "-webkit-media-controls-volume-control-hover-background",
-        volume_control_container_);
     MaybeParserAppendChild(volume_control_container_, volume_slider_);
     volume_control_container_->ParserAppendChild(mute_button_);
-    HideVolumeControlHoverBackground();
+    button_panel->ParserAppendChild(volume_control_container_);
   } else {
     button_panel->ParserAppendChild(mute_button_);
     MaybeParserAppendChild(button_panel, volume_slider_);
@@ -1406,7 +1409,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     element->SetDoesFit(does_fit);
 
     if (element == mute_button_.Get() && IsModern())
-      SetVolumeControlContainerIsWanted(does_fit);
+      volume_control_container_->SetIsWanted(does_fit);
 
     // The element does fit and is sticky so we should allocate space for it. If
     // we cannot fit this element we should stop allocating space for other
@@ -1438,7 +1441,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     last_element->SetOverflowElementIsWanted(true);
 
     if (last_element == mute_button_.Get() && IsModern())
-      SetVolumeControlContainerIsWanted(false);
+      volume_control_container_->SetIsWanted(false);
   }
 
   MaybeRecordElementsDisplayed();
@@ -2308,7 +2311,7 @@ void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
 
 void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
   volume_slider_->OpenSlider();
-  ShowVolumeControlHoverBackground();
+  volume_control_container_->OpenContainer();
 }
 
 void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
@@ -2316,7 +2319,7 @@ void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
     if (volume_slider_->IsFocused() || mute_button_->IsFocused()) {
       // When we're focusing with the keyboard, we don't need the delay.
       volume_slider_->OpenSlider();
-      ShowVolumeControlHoverBackground();
+      volume_control_container_->OpenContainer();
     } else {
       volume_slider_wanted_timer_.StartOneShot(
           WebTestSupport::IsRunningWebTest() ? kTimeToShowVolumeSliderTest
@@ -2329,28 +2332,10 @@ void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
 void MediaControlsImpl::CloseVolumeSliderIfNecessary() {
   if (ShouldCloseVolumeSlider()) {
     volume_slider_->CloseSlider();
-    HideVolumeControlHoverBackground();
+    volume_control_container_->CloseContainer();
 
     if (volume_slider_wanted_timer_.IsActive())
       volume_slider_wanted_timer_.Stop();
-  }
-}
-
-void MediaControlsImpl::ShowVolumeControlHoverBackground() {
-  volume_control_container_->classList().Remove(kClosedCSSClass);
-}
-
-void MediaControlsImpl::HideVolumeControlHoverBackground() {
-  volume_control_container_->classList().Add(kClosedCSSClass);
-}
-
-void MediaControlsImpl::SetVolumeControlContainerIsWanted(
-    bool is_wanted) const {
-  if (is_wanted) {
-    volume_control_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
-  } else {
-    volume_control_container_->SetInlineStyleProperty(CSSPropertyDisplay,
-                                                      CSSValueNone);
   }
 }
 
@@ -2365,7 +2350,7 @@ bool MediaControlsImpl::ShouldCloseVolumeSlider() const {
   if (!volume_slider_ || !IsModern())
     return false;
 
-  return !(volume_slider_->IsHovered() || mute_button_->IsHovered() ||
+  return !(volume_control_container_->IsHovered() ||
            volume_slider_->IsFocused() || mute_button_->IsFocused());
 }
 

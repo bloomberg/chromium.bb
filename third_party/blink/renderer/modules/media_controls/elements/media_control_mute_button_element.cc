@@ -70,15 +70,11 @@ void MediaControlMuteButtonElement::DefaultEventHandler(Event& event) {
   }
 
   if (!IsOverflowElement()) {
-    if (event.type() == event_type_names::kMouseover ||
-        event.type() == event_type_names::kFocus) {
+    if (event.type() == event_type_names::kFocus)
       GetMediaControls().OpenVolumeSliderIfNecessary();
-    }
 
-    if (event.type() == event_type_names::kMouseout ||
-        event.type() == event_type_names::kBlur) {
+    if (event.type() == event_type_names::kBlur)
       GetMediaControls().CloseVolumeSliderIfNecessary();
-    }
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
