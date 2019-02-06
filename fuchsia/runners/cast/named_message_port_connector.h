@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_COMMON_NAMED_MESSAGE_PORT_CONNECTOR_H_
-#define FUCHSIA_COMMON_NAMED_MESSAGE_PORT_CONNECTOR_H_
+#ifndef FUCHSIA_RUNNERS_CAST_NAMED_MESSAGE_PORT_CONNECTOR_H_
+#define FUCHSIA_RUNNERS_CAST_NAMED_MESSAGE_PORT_CONNECTOR_H_
 
 #include <deque>
 #include <map>
@@ -14,8 +14,6 @@
 #include "base/macros.h"
 #include "fuchsia/common/fuchsia_export.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
-
-namespace webrunner {
 
 // The implementation actively creates a MessagePort for each registered Id,
 // passing them all to the web container every time a page-load occurs. It then
@@ -65,6 +63,4 @@ class FUCHSIA_EXPORT NamedMessagePortConnector {
   DISALLOW_COPY_AND_ASSIGN(NamedMessagePortConnector);
 };
 
-}  // namespace webrunner
-
-#endif  // FUCHSIA_COMMON_NAMED_MESSAGE_PORT_CONNECTOR_H_
+#endif  // FUCHSIA_RUNNERS_CAST_NAMED_MESSAGE_PORT_CONNECTOR_H_

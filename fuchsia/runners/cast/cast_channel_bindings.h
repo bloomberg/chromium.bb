@@ -13,10 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "fuchsia/common/fuchsia_export.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
-
-namespace webrunner {
-class NamedMessagePortConnector;
-}
+#include "fuchsia/runners/cast/named_message_port_connector.h"
 
 // Handles the injection of cast.__platform__.channel bindings into pages'
 // scripting context, and establishes a bidirectional message pipe over
@@ -33,7 +30,7 @@ class FUCHSIA_EXPORT CastChannelBindings {
   // |channel_consumer|: A FIDL service which receives opened Cast Channels.
   // Both |frame| and |connector| must outlive |this|.
   CastChannelBindings(chromium::web::Frame* frame,
-                      webrunner::NamedMessagePortConnector* connector,
+                      NamedMessagePortConnector* connector,
                       chromium::cast::CastChannelPtr channel_consumer,
                       base::OnceClosure on_error_closure);
   ~CastChannelBindings();
@@ -56,7 +53,7 @@ class FUCHSIA_EXPORT CastChannelBindings {
   void OnMasterPortError();
 
   chromium::web::Frame* const frame_;
-  webrunner::NamedMessagePortConnector* const connector_;
+  NamedMessagePortConnector* const connector_;
 
   // A queue of channels waiting to be sent the Cast Channel FIDL service.
   std::deque<chromium::web::MessagePortPtr> connected_channel_queue_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/common/named_message_port_connector.h"
+#include "fuchsia/runners/cast/named_message_port_connector.h"
 
 #include <memory>
 #include <utility>
@@ -16,11 +16,10 @@
 #include "fuchsia/common/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
-namespace webrunner {
 namespace {
 
 const char kBindingsJsPath[] =
-    FILE_PATH_LITERAL("fuchsia/common/named_message_port_connector.js");
+    FILE_PATH_LITERAL("fuchsia/runners/cast/named_message_port_connector.js");
 const char kConnectedMessage[] = "connected";
 
 }  // namespace
@@ -28,7 +27,7 @@ const char kConnectedMessage[] = "connected";
 NamedMessagePortConnector::NamedMessagePortConnector() {
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
-  bindings_script_ = MemBufferFromFile(
+  bindings_script_ = webrunner::MemBufferFromFile(
       base::File(assets_path.AppendASCII(kBindingsJsPath),
                  base::File::FLAG_OPEN | base::File::FLAG_READ));
 }
@@ -88,7 +87,7 @@ void NamedMessagePortConnector::NotifyPageLoad(chromium::web::Frame* frame) {
          handler =
              registration.handler](chromium::web::WebMessage message) mutable {
           std::string message_str;
-          if (!StringFromMemBuffer(message.data, &message_str)) {
+          if (!webrunner::StringFromMemBuffer(message.data, &message_str)) {
             LOG(ERROR) << "Couldn't read from message VMO.";
             return;
           }
@@ -112,7 +111,7 @@ void NamedMessagePortConnector::InjectBindings(chromium::web::Frame* frame) {
 
   std::vector<std::string> origins = {"*"};
   frame->ExecuteJavaScript(
-      std::move(origins), CloneBuffer(bindings_script_),
+      std::move(origins), webrunner::CloneBuffer(bindings_script_),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { CHECK(success) << "Couldn't inject bindings."; });
 }
@@ -123,5 +122,3 @@ NamedMessagePortConnector::RegistrationEntry::~RegistrationEntry() = default;
 
 NamedMessagePortConnector::RegistrationEntry::RegistrationEntry(
     const RegistrationEntry& other) = default;
-
-}  // namespace webrunner
