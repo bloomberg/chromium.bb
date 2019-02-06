@@ -28,7 +28,6 @@ Polymer({
       value: function() {
         return new Map();
       },
-      observer: 'forceListUpdate_',
     },
 
     /**
@@ -82,15 +81,6 @@ Polymer({
      * @private
      */
     selectedItem_: Object,
-
-    /**
-     * Used to determine focus between settings pages.
-     * @type {!Map<string, (string|Function)>}
-     */
-    focusConfig: {
-      type: Object,
-      observer: 'focusConfigChanged_',
-    },
 
     /**
      * @private
@@ -186,6 +176,7 @@ Polymer({
         newMap.set(siteGroup.etldPlus1, siteGroup);
       });
       this.siteGroupMap = newMap;
+      this.forceListUpdate_();
     });
   },
 
@@ -202,6 +193,8 @@ Polymer({
       newMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
     });
     this.siteGroupMap = newMap;
+    this.forceListUpdate_();
+    this.focusOnLastSelectedEntry_();
   },
 
   /**
@@ -329,40 +322,6 @@ Polymer({
   },
 
   /**
-   * @param {!Map<string, (string|Function)>} newConfig
-   * @param {?Map<string, (string|Function)>} oldConfig
-   * @private
-   */
-  focusConfigChanged_: function(newConfig, oldConfig) {
-    // focusConfig is set only once on the parent, so this observer should only
-    // fire once.
-    assert(!oldConfig);
-
-    if (!settings.routes.SITE_SETTINGS_ALL) {
-      return;
-    }
-
-    const onNavigatedTo = () => {
-      this.async(() => {
-        if (this.selectedItem_ == null || this.siteGroupMap.size == 0) {
-          return;
-        }
-
-        // Focus the site-entry to ensure the iron-list renders it, otherwise
-        // the query selector will not be able to find it. Note the index is
-        // used here instead of the item, in case the item was already removed.
-        const index = Math.max(
-            0, Math.min(this.selectedItem_.index, this.siteGroupMap.size));
-        this.$.allSitesList.focusItem(index);
-        this.selectedItem_ = null;
-      });
-    };
-
-    this.focusConfig.set(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS.path, onNavigatedTo);
-  },
-
-  /**
    * Whether the |siteGroupMap| is empty.
    * @return {boolean}
    * @private
@@ -388,6 +347,21 @@ Polymer({
   onDeleteCurrentEntry_: function(e) {
     this.siteGroupMap.delete(e.detail.etldPlus1);
     this.forceListUpdate_();
-  }
+  },
 
+  /**
+   * Focus on previously selected entry.
+   * @private
+   */
+  focusOnLastSelectedEntry_: function() {
+    if (this.selectedItem_ == null || this.siteGroupMap.size == 0) {
+      return;
+    }
+    // Focus the site-entry to ensure the iron-list renders it, otherwise
+    // the query selector will not be able to find it. Note the index is
+    // used here instead of the item, in case the item was already removed.
+    const index =
+        Math.max(0, Math.min(this.selectedItem_.index, this.siteGroupMap.size));
+    this.$.allSitesList.focusItem(index);
+  }
 });

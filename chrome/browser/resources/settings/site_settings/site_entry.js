@@ -215,15 +215,11 @@ Polymer({
   /**
    * Calculates the amount of disk storage used by the given group of origins
    * and eTLD+1. Also updates the corresponding display strings.
-   * TODO(https://crbug.com/835712): Add website storage as well.
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
    * @private
    */
   calculateUsageInfo_: function(siteGroup) {
     const getFormattedBytesForSize = (numBytes) => {
-      if (numBytes == 0) {
-        return Promise.resolve('0 B');
-      }
       return this.browserProxy.getFormattedBytes(numBytes);
     };
 
