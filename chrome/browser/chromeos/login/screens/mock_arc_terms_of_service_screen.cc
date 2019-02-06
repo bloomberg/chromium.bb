@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/mock_arc_terms_of_service_screen.h"
 
-using ::testing::AtLeast;
-using ::testing::NotNull;
-
 namespace chromeos {
 
 MockArcTermsOfServiceScreen::MockArcTermsOfServiceScreen(
@@ -27,6 +24,13 @@ void MockArcTermsOfServiceScreenView::AddObserver(
     ArcTermsOfServiceScreenViewObserver* observer) {
   observer_ = observer;
   MockAddObserver(observer);
+}
+
+void MockArcTermsOfServiceScreenView::RemoveObserver(
+    ArcTermsOfServiceScreenViewObserver* observer) {
+  if (observer_ == observer)
+    observer_ = nullptr;
+  MockRemoveObserver(observer);
 }
 
 }  // namespace chromeos

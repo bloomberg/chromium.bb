@@ -17,6 +17,8 @@ class MockUpdateScreen : public UpdateScreen {
   MockUpdateScreen(BaseScreenDelegate* base_screen_delegate, UpdateView* view);
   virtual ~MockUpdateScreen();
 
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(StartNetworkCheck, void());
 };
 

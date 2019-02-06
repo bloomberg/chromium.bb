@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 
-using ::testing::AtLeast;
-using ::testing::NotNull;
-
 namespace chromeos {
 
 MockEnableDebuggingScreen::MockEnableDebuggingScreen(
@@ -16,9 +13,7 @@ MockEnableDebuggingScreen::MockEnableDebuggingScreen(
 
 MockEnableDebuggingScreen::~MockEnableDebuggingScreen() {}
 
-MockEnableDebuggingScreenView::MockEnableDebuggingScreenView() {
-  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
-}
+MockEnableDebuggingScreenView::MockEnableDebuggingScreenView() = default;
 
 MockEnableDebuggingScreenView::~MockEnableDebuggingScreenView() {
   if (delegate_)

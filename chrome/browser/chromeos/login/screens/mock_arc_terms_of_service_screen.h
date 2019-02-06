@@ -16,6 +16,9 @@ class MockArcTermsOfServiceScreen : public ArcTermsOfServiceScreen {
   MockArcTermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
                               ArcTermsOfServiceScreenView* view);
   ~MockArcTermsOfServiceScreen() override;
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockArcTermsOfServiceScreenView : public ArcTermsOfServiceScreenView {
@@ -24,17 +27,18 @@ class MockArcTermsOfServiceScreenView : public ArcTermsOfServiceScreenView {
   ~MockArcTermsOfServiceScreenView() override;
 
   void AddObserver(ArcTermsOfServiceScreenViewObserver* observer) override;
+  void RemoveObserver(ArcTermsOfServiceScreenViewObserver* observer) override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(Bind, void(ArcTermsOfServiceScreen* screen));
   MOCK_METHOD1(MockAddObserver,
                void(ArcTermsOfServiceScreenViewObserver* observer));
-  MOCK_METHOD1(RemoveObserver,
+  MOCK_METHOD1(MockRemoveObserver,
                void(ArcTermsOfServiceScreenViewObserver* observer));
 
  private:
-  ArcTermsOfServiceScreenViewObserver* observer_;
+  ArcTermsOfServiceScreenViewObserver* observer_ = nullptr;
 };
 
 }  // namespace chromeos

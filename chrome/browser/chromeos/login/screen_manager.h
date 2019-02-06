@@ -26,15 +26,10 @@ class ScreenManager {
 
   bool HasScreen(OobeScreen screen);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
-  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
-  friend class WizardControllerFlowTest;
-  friend class WizardControllerOobeResumeTest;
-  friend class WizardControllerBrokenLocalStateTest;
-  friend class WizardControllerOobeConfigurationTest;
-  friend class WizardControllerSupervisionTransitionOobeTest;
+  void SetScreenForTesting(std::unique_ptr<BaseScreen> value);
+  void DeleteScreenForTesting(OobeScreen screen);
 
+ private:
   // Created screens.
   std::map<OobeScreen, std::unique_ptr<BaseScreen>> screens_;
 
