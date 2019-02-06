@@ -43683,6 +43683,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="User opted out of this preview (pre-s13n only)"/>
   <int value="7" label="The user has blocked cookies for the original page"/>
   <int value="8" label="ECT Unknown"/>
+  <int value="9"
+      label="Exceeded maximum number of navigation restarts or a redirect
+             loop was detected"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

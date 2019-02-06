@@ -14,6 +14,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "url/gurl.h"
 
 class GURL;
 
@@ -119,6 +120,9 @@ const char* page_policies_directive();
 // Returns true if the Chrome-Proxy-Content-Transform response header indicates
 // that an empty image has been provided.
 bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers);
+
+// Returns true if there is a cycle in |url_chain|.
+bool HasURLRedirectCycle(const std::vector<GURL>& url_chain);
 
 // Retrieves the accepted transform type, if any, from |headers|.
 TransformDirective ParseRequestTransform(

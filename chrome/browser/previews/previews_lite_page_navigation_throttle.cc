@@ -234,6 +234,7 @@ class WebContentsLifetimeHelper
     // synchronous.
     restarted_navigation_url_ = url_params.url;
     info_ = std::move(info);
+    info_->restart_count++;
 
     web_contents_->OpenURL(url_params);
   }
@@ -332,6 +333,15 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
                                     &setting);
   if (!content_settings::CookieSettingsBase::IsAllowed(setting)) {
     ineligible_reasons.push_back(IneligibleReason::kCookiesBlocked);
+  }
+
+  if (data_reduction_proxy::HasURLRedirectCycle(
+          navigation_handle()->GetRedirectChain()) ||
+      (GetServerLitePageInfo() &&
+       GetServerLitePageInfo()->restart_count >=
+           previews::params::LitePageRedirectPreviewMaxNavigationRestarts())) {
+    ineligible_reasons.push_back(
+        IneligibleReason::kExceededMaxNavigationRestarts);
   }
 
   // Record UMA.
