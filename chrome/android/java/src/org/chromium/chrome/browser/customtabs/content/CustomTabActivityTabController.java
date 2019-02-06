@@ -480,7 +480,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
                 // Blink has rendered the page by this point, but we need to wait for the compositor
                 // frame swap to avoid flash of white content.
                 mCompositorViewHolder.get().getCompositorView().surfaceRedrawNeededAsync(() -> {
-                    if (!tab.isInitialized() || mActivity.isActivityDestroyed()) return;
+                    if (!tab.isInitialized() || mActivity.isActivityFinishingOrDestroyed()) return;
                     tab.getView().setBackgroundResource(0);
                 });
             }

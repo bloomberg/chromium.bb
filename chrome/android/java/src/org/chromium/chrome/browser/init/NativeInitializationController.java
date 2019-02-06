@@ -113,7 +113,7 @@ class NativeInitializationController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (mActivityDelegate.isActivityDestroyed()) return;
+                    if (mActivityDelegate.isActivityFinishingOrDestroyed()) return;
                     mActivityDelegate.onCreateWithNative();
                 }
             });

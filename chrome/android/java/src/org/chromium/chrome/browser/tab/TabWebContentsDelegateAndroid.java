@@ -365,7 +365,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
             Log.e(TAG, "Activity not set activateContents().  Bailing out.");
             return;
         }
-        if (activity.isActivityDestroyed()) {
+        if (activity.isActivityFinishingOrDestroyed()) {
             Log.e(TAG, "Activity destroyed before calling activateContents().  Bailing out.");
             return;
         }

@@ -1137,12 +1137,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @CallSuper
     protected void initDeferredStartupForActivity() {
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
+            if (isActivityFinishingOrDestroyed()) return;
             UpdateInfoBarController.createInstance(ChromeActivity.this);
             UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
         });
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityDestroyed()) return;
+            if (isActivityFinishingOrDestroyed()) return;
             BeamController.registerForBeam(ChromeActivity.this, () -> {
                 Tab currentTab = getActivityTab();
                 if (currentTab == null) return null;
@@ -1153,7 +1154,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         final String simpleName = getClass().getSimpleName();
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityDestroyed()) return;
+            if (isActivityFinishingOrDestroyed()) return;
             if (mToolbarManager != null) {
                 RecordHistogram.recordTimesHistogram(
                         "MobileStartup.ToolbarInflationTime." + simpleName,
@@ -1175,13 +1176,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         });
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityDestroyed()) return;
+            if (isActivityFinishingOrDestroyed()) return;
             ForcedSigninProcessor.checkCanSignIn(ChromeActivity.this);
         });
 
         // GSA connection is not needed on low-end devices because Icing is disabled.
         if (!SysUtils.isLowEndDevice()) {
-            if (isActivityDestroyed()) return;
+            if (isActivityFinishingOrDestroyed()) return;
             DeferredStartupHandler.getInstance().addDeferredTask(() -> {
                 if (!GSAState.getInstance(this).isGsaAvailable()) {
                     ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
@@ -1194,7 +1195,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityDestroyed()) return;
+            if (isActivityFinishingOrDestroyed()) return;
             Context context = ContextUtils.getApplicationContext();
             Boolean ReadPermissionGranted = Boolean.valueOf(
                     context.checkPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -1566,7 +1567,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @CallSuper
     public boolean shouldShowAppMenu() {
-        if (isActivityDestroyed()) return false;
+        if (isActivityFinishingOrDestroyed()) return false;
 
         @ActivityState
         int state = ApplicationStatus.getStateForActivity(this);
@@ -1813,10 +1814,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @NonNull
     public ChromeFullscreenManager getFullscreenManager() {
-        if (isActivityDestroyed()) {
-            throw new IllegalStateException("Accessing FullscreenManager in destroyed activity");
-        }
         if (mFullscreenManager == null) {
+            // When finish()ing, getFullscreenManager() is required to perform cleanup logic.
+            // It should never be called when it results in creating a new manager though.
+            if (isActivityFinishingOrDestroyed()) {
+                throw new IllegalStateException();
+            }
             mFullscreenManager = createFullscreenManager();
             assert mFullscreenManager != null;
         }
@@ -2117,7 +2120,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Callback for when UpdateMenuItemHelper has a state change.
      */
     public void onUpdateStateChanged() {
-        if (isActivityDestroyed()) return;
+        if (isActivityFinishingOrDestroyed()) return;
 
         MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
 
