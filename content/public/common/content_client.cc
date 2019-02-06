@@ -105,7 +105,7 @@ blink::OriginTrialPolicy* ContentClient::GetOriginTrialPolicy() {
 }
 
 bool ContentClient::AllowScriptExtensionForServiceWorker(
-    const GURL& script_url) {
+    const url::Origin& script_origin) {
   return false;
 }
 

@@ -182,7 +182,8 @@ class CONTENT_EXPORT ContentClient {
 
   // Returns whether or not V8 script extensions should be allowed for a
   // service worker.
-  virtual bool AllowScriptExtensionForServiceWorker(const GURL& script_url);
+  virtual bool AllowScriptExtensionForServiceWorker(
+      const url::Origin& script_origin);
 
   // Returns the origin trial policy, or nullptr if origin trials are not
   // supported by the embedder.

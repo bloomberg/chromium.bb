@@ -587,8 +587,9 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
 }
 
 bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(
-    const blink::WebURL& scriptUrl) {
-  return GetContentClient()->AllowScriptExtensionForServiceWorker(scriptUrl);
+    const blink::WebSecurityOrigin& script_origin) {
+  return GetContentClient()->AllowScriptExtensionForServiceWorker(
+      script_origin);
 }
 
 blink::WebCrypto* BlinkPlatformImpl::Crypto() {

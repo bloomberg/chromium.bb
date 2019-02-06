@@ -74,7 +74,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
   bool AllowScriptExtensionForServiceWorker(
-      const blink::WebURL& script_url) override;
+      const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
   const char* GetBrowserServiceName() const override;
   blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;

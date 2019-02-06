@@ -93,7 +93,8 @@ class ChromeContentClient : public content::ContentClient {
   base::DictionaryValue GetNetLogConstants() const override;
   std::string GetProcessTypeNameInEnglish(int type) override;
 
-  bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;
+  bool AllowScriptExtensionForServiceWorker(
+      const url::Origin& script_origin) override;
 
   blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
