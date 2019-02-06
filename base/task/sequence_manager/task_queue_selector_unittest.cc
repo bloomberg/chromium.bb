@@ -204,12 +204,12 @@ TEST_F(TaskQueueSelectorTest, TestControlPriority) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithEnabledQueue) {
-  task_queues_[1]->SetQueueEnabledForTest(false);
+  task_queues_[1]->SetQueueEnabled(false);
   selector_.DisableQueue(task_queues_[1].get());
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(1);
-  task_queues_[1]->SetQueueEnabledForTest(true);
+  task_queues_[1]->SetQueueEnabled(true);
   selector_.EnableQueue(task_queues_[1].get());
 }
 
@@ -229,9 +229,9 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
 
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(queue_order, 5);
-  task_queues_[2]->SetQueueEnabledForTest(false);
+  task_queues_[2]->SetQueueEnabled(false);
   selector_.DisableQueue(task_queues_[2].get());
-  task_queues_[4]->SetQueueEnabledForTest(false);
+  task_queues_[4]->SetQueueEnabled(false);
   selector_.DisableQueue(task_queues_[4].get());
   // Disabling a queue should not affect its priority.
   EXPECT_EQ(TaskQueue::kNormalPriority, task_queues_[2]->GetQueuePriority());
@@ -239,12 +239,12 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
   EXPECT_THAT(PopTasksAndReturnQueueIndices(), ElementsAre(0, 1, 3));
 
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
-  task_queues_[2]->SetQueueEnabledForTest(true);
+  task_queues_[2]->SetQueueEnabled(true);
   selector_.EnableQueue(task_queues_[2].get());
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::kBestEffortPriority);
   EXPECT_THAT(PopTasksAndReturnQueueIndices(), ElementsAre(2));
-  task_queues_[4]->SetQueueEnabledForTest(true);
+  task_queues_[4]->SetQueueEnabled(true);
   selector_.EnableQueue(task_queues_[4].get());
   EXPECT_THAT(PopTasksAndReturnQueueIndices(), ElementsAre(4));
 }
@@ -253,7 +253,7 @@ TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
   EXPECT_TRUE(task_queues_[2]->delayed_work_queue()->Empty());
   EXPECT_TRUE(task_queues_[2]->immediate_work_queue()->Empty());
 
-  task_queues_[2]->SetQueueEnabledForTest(false);
+  task_queues_[2]->SetQueueEnabled(false);
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::kHighestPriority);
 
@@ -262,7 +262,7 @@ TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
 
   EXPECT_TRUE(task_queues_[2]->delayed_work_queue()->Empty());
   EXPECT_FALSE(task_queues_[2]->immediate_work_queue()->Empty());
-  task_queues_[2]->SetQueueEnabledForTest(true);
+  task_queues_[2]->SetQueueEnabled(true);
 
   EXPECT_EQ(TaskQueue::kHighestPriority, task_queues_[2]->GetQueuePriority());
   EXPECT_THAT(PopTasksAndReturnQueueIndices(), ElementsAre(2, 0, 1, 3, 4));
@@ -274,14 +274,14 @@ TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
   // Test only disabled queues.
   size_t queue_order[] = {0};
   PushTasks(queue_order, 1);
-  task_queues_[0]->SetQueueEnabledForTest(false);
+  task_queues_[0]->SetQueueEnabled(false);
   selector_.DisableQueue(task_queues_[0].get());
   EXPECT_EQ(nullptr, selector_.SelectWorkQueueToService());
 
   // These tests are unusual since there's no TQM. To avoid a later DCHECK when
   // deleting the task queue, we re-enable the queue here so the selector
   // doesn't get out of sync.
-  task_queues_[0]->SetQueueEnabledForTest(true);
+  task_queues_[0]->SetQueueEnabled(true);
   selector_.EnableQueue(task_queues_[0].get());
 }
 
@@ -686,7 +686,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   std::unique_ptr<TaskQueueImpl> task_queue(NewTaskQueueWithBlockReporting());
   selector.AddQueue(task_queue.get());
 
-  task_queue->SetQueueEnabledForTest(false);
+  task_queue->SetQueueEnabled(false);
   selector.DisableQueue(task_queue.get());
 
   Task task(PostedTask(test_closure_, FROM_HERE), TimeTicks(), EnqueueOrder(),
@@ -695,7 +695,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
 
   EXPECT_EQ(nullptr, selector.SelectWorkQueueToService());
 
-  task_queue->SetQueueEnabledForTest(true);
+  task_queue->SetQueueEnabled(true);
   selector.EnableQueue(task_queue.get());
   selector.RemoveQueue(task_queue.get());
   task_queue->UnregisterTaskQueue();
@@ -711,8 +711,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   selector.AddQueue(task_queue.get());
   selector.AddQueue(task_queue2.get());
 
-  task_queue->SetQueueEnabledForTest(false);
-  task_queue2->SetQueueEnabledForTest(false);
+  task_queue->SetQueueEnabled(false);
+  task_queue2->SetQueueEnabled(false);
   selector.DisableQueue(task_queue.get());
   selector.DisableQueue(task_queue2.get());
 
@@ -731,14 +731,14 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
 
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
 
-  task_queue->SetQueueEnabledForTest(true);
+  task_queue->SetQueueEnabled(true);
   selector.EnableQueue(task_queue.get());
 
   selector.RemoveQueue(task_queue.get());
   task_queue->UnregisterTaskQueue();
   EXPECT_EQ(nullptr, selector.SelectWorkQueueToService());
 
-  task_queue2->SetQueueEnabledForTest(true);
+  task_queue2->SetQueueEnabled(true);
   selector.EnableQueue(task_queue2.get());
   selector.RemoveQueue(task_queue2.get());
   task_queue2->UnregisterTaskQueue();

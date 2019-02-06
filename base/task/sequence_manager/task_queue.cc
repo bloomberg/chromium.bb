@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
@@ -47,6 +48,69 @@ scoped_refptr<SingleThreadTaskRunner> CreateNullTaskRunner() {
 }
 
 }  // namespace
+
+TaskQueue::QueueEnabledVoter::QueueEnabledVoter(
+    scoped_refptr<TaskQueue> task_queue)
+    : task_queue_(std::move(task_queue)), enabled_(true) {
+  task_queue_->AddQueueEnabledVoter(enabled_);
+}
+
+TaskQueue::QueueEnabledVoter::~QueueEnabledVoter() {
+  task_queue_->RemoveQueueEnabledVoter(enabled_);
+}
+
+void TaskQueue::QueueEnabledVoter::SetQueueEnabled(bool enabled) {
+  if (enabled == enabled_)
+    return;
+  enabled_ = enabled;
+  task_queue_->OnQueueEnabledVoteChanged(enabled_);
+}
+
+void TaskQueue::AddQueueEnabledVoter(bool voter_is_enabled) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  ++voter_count_;
+  if (voter_is_enabled)
+    ++enabled_voter_count_;
+}
+
+void TaskQueue::RemoveQueueEnabledVoter(bool voter_is_enabled) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (!impl_)
+    return;
+
+  bool was_enabled = AreAllQueueEnabledVotersEnabled();
+  if (voter_is_enabled) {
+    --enabled_voter_count_;
+    DCHECK_GE(enabled_voter_count_, 0);
+  }
+
+  --voter_count_;
+  DCHECK_GE(voter_count_, 0);
+
+  bool is_enabled = AreAllQueueEnabledVotersEnabled();
+  if (was_enabled != is_enabled)
+    impl_->SetQueueEnabled(is_enabled);
+}
+
+bool TaskQueue::AreAllQueueEnabledVotersEnabled() const {
+  return enabled_voter_count_ == voter_count_;
+}
+
+void TaskQueue::OnQueueEnabledVoteChanged(bool enabled) {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  bool was_enabled = AreAllQueueEnabledVotersEnabled();
+  if (enabled) {
+    ++enabled_voter_count_;
+    DCHECK_LE(enabled_voter_count_, voter_count_);
+  } else {
+    --enabled_voter_count_;
+    DCHECK_GE(enabled_voter_count_, 0);
+  }
+
+  bool is_enabled = AreAllQueueEnabledVotersEnabled();
+  if (was_enabled != is_enabled)
+    impl_->SetQueueEnabled(is_enabled);
+}
 
 TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                      const TaskQueue::Spec& spec)
@@ -118,7 +182,7 @@ TaskQueue::CreateQueueEnabledVoter() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return nullptr;
-  return impl_->CreateQueueEnabledVoter(this);
+  return WrapUnique(new QueueEnabledVoter(this));
 }
 
 bool TaskQueue::IsQueueEnabled() const {
