@@ -21,13 +21,14 @@ if (is_nacl) {
 
 declare_args() {
   # Enables whitelist generation for IDR_ grit defines seen by the compiler.
-  # Currently works only on Android and enabled by default for release builds.
+  # Currently works only on some platforms and enabled by default for release
+  # builds.
   # Requires debug info, so disabled for symbol_level=0 & strip_debug_info=true.
   enable_resource_whitelist_generation =
-      is_android && is_official_build &&
+      is_official_build &&
       # Don't enable for Android-on-Chrome OS so that they can build with
       # symbol_level=0 without this failing (crbug.com/891164).
-      target_os == "android"
+      (target_os == "android" || target_os == "win")
 }
 
 # When the arg is set via args.gn, it applies to all toolchains. In order to not

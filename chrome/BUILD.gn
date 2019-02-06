@@ -1833,10 +1833,27 @@ if (is_android) {
 
 if (enable_resource_whitelist_generation) {
   generate_resource_whitelist("resource_whitelist") {
-    deps = [
-      "//chrome/android:libchrome",
-    ]
-    input = "$root_out_dir/lib.unstripped/libchrome$shlib_extension"
+    if (is_android) {
+      deps = [
+        "//chrome/android:libchrome",
+      ]
+      inputs = [
+        "$root_out_dir/lib.unstripped/libchrome$shlib_extension",
+      ]
+    } else if (is_win) {
+      deps = [
+        ":main_dll",
+      ]
+      inputs = [
+        "$root_out_dir/chrome.dll.pdb",
+      ]
+      if (is_multi_dll_chrome) {
+        deps += [ ":chrome_child" ]
+        inputs += [ "$root_out_dir/chrome_child.dll.pdb" ]
+      }
+    } else {
+      assert(false, "unsupported platform for whitelist generation")
+    }
     output = chrome_resource_whitelist
   }
 }

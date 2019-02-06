@@ -468,7 +468,9 @@ if (enable_resource_whitelist_generation) {
     deps = [
       ":libwebviewchromium",
     ]
-    input = "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension"
+    inputs = [
+      "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension",
+    ]
     output = system_webview_pak_whitelist
   }
 }

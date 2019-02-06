@@ -95,11 +95,13 @@ import("//build/config/ui.gni")
 import("//build/toolchain/gcc_toolchain.gni")  # For enable_resource_whitelist_generation
 import("//third_party/closure_compiler/closure_args.gni")
 
-assert(
-    !enable_resource_whitelist_generation ||
-        (is_android && symbol_level > 0 && !strip_debug_info &&
-             !is_component_build),
-    "resource whitelist generation only works on non-component android builds with debug info enabled.")
+if (enable_resource_whitelist_generation) {
+  assert(target_os == "android" || target_os == "win",
+         "unsupported platform for resource whitelist generation")
+  assert(
+      symbol_level > 0 && !strip_debug_info && !is_component_build,
+      "resource whitelist generation only works on non-component builds with debug info enabled.")
+}
 
 grit_defines = []
 
@@ -373,7 +375,19 @@ template("grit") {
     args += define_args + grit_flags + assert_files_flags
 
     if (enable_resource_whitelist_generation) {
-      args += [ "--whitelist-support" ]
+      set_sources_assignment_filter([ "*.rc" ])
+      sources = grit_outputs
+      rc_grit_outputs = grit_outputs - sources
+      sources = []
+
+      if (rc_grit_outputs != []) {
+        # Resource whitelisting cannot be used with .rc files.
+        # Make sure that there aren't any .pak outputs which would require
+        # whitelist annotations.
+        assert(pak_grit_outputs == [], "can't combine .pak and .rc outputs")
+      } else {
+        args += [ "--whitelist-support" ]
+      }
     }
     if (_strip_resource_files) {
       js_minifier_command = rebase_path(_js_minifier, root_build_dir)
