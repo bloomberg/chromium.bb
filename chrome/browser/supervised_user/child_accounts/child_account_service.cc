@@ -77,11 +77,9 @@ ChildAccountService::ChildAccountService(Profile* profile)
       gaia_cookie_manager_(
           GaiaCookieManagerServiceFactory::GetForProfile(profile)),
       weak_ptr_factory_(this) {
-  gaia_cookie_manager_->AddObserver(this);
 }
 
 ChildAccountService::~ChildAccountService() {
-  gaia_cookie_manager_->RemoveObserver(this);
 }
 
 // static
@@ -102,6 +100,7 @@ void ChildAccountService::RegisterProfilePrefs(
 
 void ChildAccountService::Init() {
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
+  gaia_cookie_manager_->AddObserver(this);
   IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
 
   PropagateChildStatusToUser(profile_->IsChild());
@@ -121,6 +120,7 @@ bool ChildAccountService::IsChildAccountStatusKnown() {
 void ChildAccountService::Shutdown() {
   family_fetcher_.reset();
   IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
+  gaia_cookie_manager_->RemoveObserver(this);
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(nullptr);
   DCHECK(!active_);
 }
