@@ -1,14 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="icons.html">
 <link rel="import" href="signin_shared_css.html">
 <link rel="import" href="sync_confirmation_browser_proxy.html">
 
@@ -89,7 +86,6 @@
       }
 
       .message-container {
-        display: flex;
         line-height: 20px;
         margin-bottom: 16px;
         padding: 0 24px;
@@ -97,28 +93,6 @@
 
       .secondary {
         color: var(--paper-grey-600);
-      }
-
-      .logo {
-        background-size: cover;
-        flex-shrink: 0;
-        height: 16px;
-        margin-inline-end: 16px;
-        margin-top: 2px;
-        position: relative;
-        width: 16px;
-      }
-
-      #sync-logo {
-        fill: var(--google-green-700);
-      }
-
-      #spellcheck-logo {
-        fill: var(--google-blue-700);
-      }
-
-      #lock-logo {
-        fill: var(--google-yellow-700);
       }
 
       #grey-banner {
@@ -161,37 +135,9 @@
         $i18n{syncConfirmationTitle}
       </h1>
       <div class="message-container">
-        <iron-icon icon="cr:sync" id="sync-logo" class="logo"></iron-icon>
-        <div>
-          <div consent-description>$i18n{syncConfirmationSyncInfoTitle}</div>
-          <div class="secondary" consent-description>
-            $i18n{syncConfirmationSyncInfoDesc}
-          </div>
-        </div>
-      </div>
-      <div class="message-container">
-        <iron-icon icon="sync-confirmation:spellcheck" id="spellcheck-logo"
-            class="logo">
-        </iron-icon>
-        <div>
-          <div consent-description>
-            $i18n{syncConfirmationSpellcheckInfoTitle}
-          </div>
-          <div class="secondary" consent-description>
-            $i18n{syncConfirmationSpellcheckInfoDesc}
-          </div>
-        </div>
-      </div>
-      <div class="message-container">
-        <iron-icon icon="sync-confirmation:lock" id="lock-logo" class="logo">
-        </iron-icon>
-        <div>
-          <div consent-description>
-            $i18n{syncConfirmationImproveChromeInfoTitle}
-          </div>
-          <div class="secondary" consent-description>
-            $i18n{syncConfirmationImproveChromeInfoDesc}
-          </div>
+        <div consent-description>$i18n{syncConfirmationSyncInfoTitle}</div>
+        <div class="secondary" consent-description>
+          $i18n{syncConfirmationSyncInfoDesc}
         </div>
       </div>
       <div id="footer" class="message-container secondary">

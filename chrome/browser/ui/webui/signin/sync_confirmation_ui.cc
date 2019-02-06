@@ -43,8 +43,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   int undo_button_ids = -1;
   if (is_unified_consent_enabled && is_sync_allowed) {
     source->SetDefaultResource(IDR_DICE_SYNC_CONFIRMATION_HTML);
-    source->AddResourcePath("icons.html",
-                            IDR_DICE_SYNC_CONFIRMATION_ICONS_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.html",
                             IDR_DICE_SYNC_CONFIRMATION_BROWSER_PROXY_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.js",
@@ -60,14 +58,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                       IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_TITLE);
     AddStringResource(source, "syncConfirmationSyncInfoDesc",
                       IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_DESC);
-    AddStringResource(source, "syncConfirmationSpellcheckInfoTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_TITLE);
-    AddStringResource(source, "syncConfirmationSpellcheckInfoDesc",
-                      IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_DESC);
-    AddStringResource(source, "syncConfirmationImproveChromeInfoTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_TITLE);
-    AddStringResource(source, "syncConfirmationImproveChromeInfoDesc",
-                      IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_DESC);
     AddStringResource(source, "syncConfirmationSettingsInfo",
                       IDS_SYNC_CONFIRMATION_UNITY_SETTINGS_INFO);
 
@@ -87,7 +77,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     }
     source->AddString("accountPictureUrl", custom_picture_url);
 
-    title_ids = IDS_SYNC_CONFIRMATION_UNITY_TITLE;
+    title_ids = IDS_SYNC_CONFIRMATION_DICE_TITLE;
     confirm_button_ids = IDS_SYNC_CONFIRMATION_DICE_CONFIRM_BUTTON_LABEL;
     undo_button_ids = IDS_CANCEL;
     consent_feature_ = consent_auditor::Feature::CHROME_UNIFIED_CONSENT;

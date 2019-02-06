@@ -22,8 +22,7 @@ cr.define('signin_sync_confirmation', function() {
     // Tests that no DCHECKS are thrown during initialization of the UI.
     test('LoadPage', function() {
       assertEquals(
-          'Get Google smarts in Chrome',
-          app.$.syncConfirmationHeading.textContent.trim());
+          'Turn on sync?', app.$.syncConfirmationHeading.textContent.trim());
     });
   });
 
@@ -52,14 +51,10 @@ cr.define('signin_sync_confirmation', function() {
     });
 
     const STANDARD_CONSENT_DESCRIPTION_TEXT = [
-      'Get Google smarts in Chrome',
+      'Turn on sync?',
       'Sync your bookmarks, passwords, history, and more on all your devices',
       'Google may use your history to personalize Search, ads, and other ' +
           'Google services',
-      'Fix spelling errors with enhanced spell check',
-      'The text you type in text fields will be sent to Google',
-      'Help improve Chrome and its security',
-      'Sends some system information and page content to Google anonymously'
     ];
 
 
