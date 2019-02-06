@@ -498,6 +498,10 @@ void WebRuntimeFeatures::EnableSecMetadata(bool enable) {
   RuntimeEnabledFeatures::SetSecMetadataEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSerial(bool enable) {
+  RuntimeEnabledFeatures::SetSerialEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {
   RuntimeEnabledFeatures::SetTimerThrottlingForBackgroundTabsEnabled(enable);
 }

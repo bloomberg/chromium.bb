@@ -166,6 +166,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechSynthesis(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollAnchorSerialization(bool);
   BLINK_PLATFORM_EXPORT static void EnableSecMetadata(bool);
+  BLINK_PLATFORM_EXPORT static void EnableSerial(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedArrayBuffer(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
