@@ -331,9 +331,9 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
       property_trees->element_id_to_effect_node_index[highlight->element_id()]);
   // The link highlight cc effect node should correspond to the blink effect
   // node.
-  EXPECT_EQ(highlight->effect()->GetCompositorElementId(),
+  EXPECT_EQ(highlight->Effect().GetCompositorElementId(),
             highlight->element_id());
-  EXPECT_TRUE(highlight->effect()->RequiresCompositingForAnimation());
+  EXPECT_TRUE(highlight->Effect().RequiresCompositingForAnimation());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
@@ -378,16 +378,13 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
 
   // The link highlight cc effect node should correspond to the blink effect
   // node.
-  const auto* effect = highlight->effect();
-  ASSERT_TRUE(effect);
-  EXPECT_EQ(effect->GetCompositorElementId(), highlight->element_id());
-  EXPECT_TRUE(effect->RequiresCompositingForAnimation());
+  const auto& effect = highlight->Effect();
+  EXPECT_EQ(effect.GetCompositorElementId(), highlight->element_id());
+  EXPECT_TRUE(effect.RequiresCompositingForAnimation());
 
   const auto& first_fragment = touch_node->GetLayoutObject()->FirstFragment();
-  EXPECT_EQ(effect, first_fragment.PaintProperties()->LinkHighlightEffect());
   const auto* second_fragment = first_fragment.NextFragment();
   ASSERT_TRUE(second_fragment);
-  EXPECT_EQ(effect, second_fragment->PaintProperties()->LinkHighlightEffect());
   EXPECT_FALSE(second_fragment->NextFragment());
 
   auto check_layer = [&](const cc::PictureLayer* layer) {

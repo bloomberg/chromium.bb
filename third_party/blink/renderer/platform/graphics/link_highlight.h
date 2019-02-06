@@ -24,7 +24,7 @@ class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
   virtual void ClearCurrentGraphicsLayer() = 0;
   virtual cc::Layer* Layer() = 0;
 
-  virtual const EffectPaintPropertyNode* effect() const = 0;
+  virtual const EffectPaintPropertyNode& Effect() const = 0;
 
   // DisplayItemClient methods
   // TODO(wangxianzhu): This class doesn't need to be a DisplayItemClient in

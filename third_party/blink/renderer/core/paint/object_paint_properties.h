@@ -153,12 +153,9 @@ class CORE_EXPORT ObjectPaintProperties {
   // |     Isolated group for painting the CSS mask. This node will have
   // |     SkBlendMode::kDstIn and shall paint last, i.e. after masked contents.
   // +-[ clip path ]
-  // |     Isolated group for painting the CSS clip-path. This node will have
-  // |     SkBlendMode::kDstIn and shall paint last, i.e. after clipped
-  // |     contents.
-  // +-[ link highlight effect ]
-  //       The link highlight effect is only used for link highlight animations
-  //       and should never have descendants.
+  //       Isolated group for painting the CSS clip-path. This node will have
+  //       SkBlendMode::kDstIn and shall paint last, i.e. after clipped
+  //       contents.
   //
   // ... +-[ effectIsolationNode ]
   //       This serves as a parent to subtree effects on an element with paint
@@ -170,15 +167,7 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_EFFECT(HorizontalScrollbarEffect, horizontal_scrollbar_effect_);
   ADD_EFFECT(Mask, mask_);
   ADD_EFFECT(ClipPath, clip_path_);
-  ADD_EFFECT(LinkHighlightEffect, link_highlight_effect_);
   ADD_EFFECT(EffectIsolationNode, effect_isolation_node_);
-
-  // For a fragmented link highlight, we only need one LinkHighlightEffect node.
-  // PaintPropertyTreeBuilder uses this method to let the subsequent fragments
-  // share the same LinkHighlightEffect node created for the first fragment.
-  void SetLinkHighlightEffect(const EffectPaintPropertyNode* effect) {
-    link_highlight_effect_ = const_cast<EffectPaintPropertyNode*>(effect);
-  }
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ fragment clip ]
