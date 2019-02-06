@@ -11,18 +11,17 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 
-class PasswordAccessoryController;
+class PasswordGenerationController;
 
 // Modal dialog displaying a generated password with options to accept or
 // reject it. Communicates events to its Java counterpart and passes responses
-// back to the |PasswordAccessoryController|.
-// TODO(crbug.com/835234): Add a specialized dialog controller.
+// back to the |PasswordGenerationController|.
 class PasswordGenerationDialogViewAndroid
     : public PasswordGenerationDialogViewInterface {
  public:
   // Builds the UI for the |controller|
   explicit PasswordGenerationDialogViewAndroid(
-      PasswordAccessoryController* controller);
+      PasswordGenerationController* controller);
 
   ~PasswordGenerationDialogViewAndroid() override;
 
@@ -40,7 +39,7 @@ class PasswordGenerationDialogViewAndroid
 
  private:
   // The controller provides data for this view and owns it.
-  PasswordAccessoryController* controller_;
+  PasswordGenerationController* controller_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

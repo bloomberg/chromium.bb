@@ -28,12 +28,7 @@ namespace favicon {
 class FaviconService;
 }  // namespace favicon
 
-namespace password_manager {
-class PasswordManagerDriver;
-}  // namespace password_manager
-
 class ManualFillingController;
-class PasswordGenerationDialogViewInterface;
 
 // Use either PasswordAccessoryController::GetOrCreate or
 // PasswordAccessoryController::GetIfExisting to obtain instances of this class.
@@ -44,9 +39,6 @@ class PasswordAccessoryControllerImpl
     : public PasswordAccessoryController,
       public content::WebContentsUserData<PasswordAccessoryControllerImpl> {
  public:
-  using CreateDialogFactory = base::RepeatingCallback<std::unique_ptr<
-      PasswordGenerationDialogViewInterface>(PasswordAccessoryController*)>;
-
   ~PasswordAccessoryControllerImpl() override;
 
   // PasswordAccessoryController:
@@ -54,12 +46,6 @@ class PasswordAccessoryControllerImpl
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
       const url::Origin& origin) override;
-  void OnAutomaticGenerationStatusChanged(
-      bool available,
-      const base::Optional<
-          autofill::password_generation::PasswordGenerationUIData>& ui_data,
-      const base::WeakPtr<password_manager::PasswordManagerDriver>& driver)
-      override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void RefreshSuggestionsForField(const url::Origin& origin,
                                   bool is_fillable,
@@ -71,10 +57,6 @@ class PasswordAccessoryControllerImpl
   void OnFillingTriggered(bool is_password,
                           const base::string16& text_to_fill) override;
   void OnOptionSelected(const base::string16& selected_option) const override;
-  void OnGenerationRequested() override;
-  void GeneratedPasswordAccepted(const base::string16& password) override;
-  void GeneratedPasswordRejected() override;
-  gfx::NativeWindow native_window() const override;
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Additionally, it allows inject a manual filling
@@ -82,14 +64,9 @@ class PasswordAccessoryControllerImpl
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
       base::WeakPtr<ManualFillingController> mf_controller,
-      CreateDialogFactory create_dialog_callback,
       favicon::FaviconService* favicon_service);
 
  private:
-  // Data including the form and field for which generation was requested,
-  // their signatures and the maximum password size.
-  struct GenerationElementData;
-
   // Data for a credential pair that is transformed into a suggestion.
   struct SuggestionElementData;
 
@@ -105,7 +82,6 @@ class PasswordAccessoryControllerImpl
   PasswordAccessoryControllerImpl(
       content::WebContents* web_contents,
       base::WeakPtr<ManualFillingController> mf_controller,
-      CreateDialogFactory create_dialog_callback,
       favicon::FaviconService* favicon_service);
 
   // Creates the view items based on the given |suggestions|.
@@ -131,9 +107,6 @@ class PasswordAccessoryControllerImpl
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
-  // Data for the generation element used to generate the password.
-  std::unique_ptr<GenerationElementData> generation_element_data_;
-
   // The origin of the currently focused frame. It's used to ensure that
   // favicons are not displayed across origins.
   url::Origin current_origin_;
@@ -147,21 +120,12 @@ class PasswordAccessoryControllerImpl
   // object aborts the request. Upon destruction, requests are cancelled, too.
   base::CancelableTaskTracker favicon_tracker_;
 
-  // Password manager driver for the target frame used for password generation.
-  base::WeakPtr<password_manager::PasswordManagerDriver> target_frame_driver_;
-
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
-
-  // Modal dialog view meant to display the generated password.
-  std::unique_ptr<PasswordGenerationDialogViewInterface> dialog_view_;
 
   // Remembers whether the last focused field was a password field. That way,
   // the reconstructed elements have the correct type.
   bool last_focused_field_was_for_passwords_ = false;
-
-  // Creation callback for the modal dialog view meant to facilitate testing.
-  CreateDialogFactory create_dialog_factory_;
 
   // The favicon service used to make retrieve icons for a given origin.
   favicon::FaviconService* favicon_service_;
