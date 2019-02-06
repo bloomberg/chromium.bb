@@ -549,7 +549,7 @@ bool D3D11TextureHelper::EnsureInitialized() {
   render_state_ = {};
 
   D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
-  UINT flags = 0;
+  UINT flags = bgra_ ? D3D11_CREATE_DEVICE_BGRA_SUPPORT : 0;
   D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_1;
 
   Microsoft::WRL::ComPtr<IDXGIAdapter> adapter = GetAdapter();

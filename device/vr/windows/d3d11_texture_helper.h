@@ -25,6 +25,7 @@ class D3D11TextureHelper {
   bool EnsureInitialized();
   bool SetAdapterIndex(int32_t index);
   bool SetAdapterLUID(const LUID& luid);
+  void SetUseBGRA(bool bgra) { bgra_ = bgra; }
 
   void CleanupNoSubmit();
   void SetSourceAndOverlayVisible(bool source_visible, bool overlay_visible);
@@ -101,6 +102,8 @@ class D3D11TextureHelper {
 
   bool overlay_visible_ = true;
   bool source_visible_ = true;
+
+  bool bgra_ = false;
 
   gfx::RectF target_left_;   // 0 to 1 in each direction
   gfx::RectF target_right_;  // 0 to 1 in each direction

@@ -10,9 +10,9 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/com_init_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
+#include "base/win/scoped_winrt_initializer.h"
 
 namespace device {
 
@@ -33,7 +33,7 @@ class DEVICE_VR_EXPORT MixedRealityDeviceStaticsImpl
  private:
   // Adds get_IsAvailable and get_IsSupported to HolographicSpaceStatics.
   ComPtr<IHolographicSpaceStatics2> holographic_space_statics_;
-  bool initialized_ = false;
+  base::win::ScopedWinrtInitializer initializer_;
 };
 
 std::unique_ptr<MixedRealityDeviceStatics>
@@ -44,14 +44,10 @@ MixedRealityDeviceStatics::CreateInstance() {
 MixedRealityDeviceStatics::~MixedRealityDeviceStatics() {}
 
 MixedRealityDeviceStaticsImpl::MixedRealityDeviceStaticsImpl() {
-  if (!base::win::ResolveCoreWinRTDelayload() ||
+  if (!initializer_.Succeeded() ||
       !base::win::ScopedHString::ResolveCoreWinRTStringDelayload()) {
     return;
   }
-
-  initialized_ = SUCCEEDED(base::win::RoInitialize(RO_INIT_SINGLETHREADED));
-  if (!initialized_)
-    return;
 
   base::win::ScopedHString holographic_space_string =
       base::win::ScopedHString::Create(
@@ -66,9 +62,8 @@ MixedRealityDeviceStaticsImpl::MixedRealityDeviceStaticsImpl() {
 }
 
 MixedRealityDeviceStaticsImpl::~MixedRealityDeviceStaticsImpl() {
+  // Explicitly null this out before initializer_ is destroyed.
   holographic_space_statics_ = nullptr;
-  if (initialized_)
-    base::win::RoUninitialize();
 }
 
 bool MixedRealityDeviceStaticsImpl::IsHardwareAvailable() {
