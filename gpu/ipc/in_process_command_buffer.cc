@@ -679,6 +679,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   image_factory_ = params.image_factory;
 
+  if (gpu_channel_manager_delegate_)
+    gpu_channel_manager_delegate_->DidCreateContextSuccessfully();
+
   return gpu::ContextResult::kSuccess;
 }
 
