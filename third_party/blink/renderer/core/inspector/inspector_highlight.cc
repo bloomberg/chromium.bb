@@ -309,46 +309,40 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   return text_info;
 }
 
-std::unique_ptr<protocol::Value> BuildGapAndPositions(
-    double origin,
-    LayoutUnit gap,
-    const Vector<LayoutUnit>& positions,
-    float scale) {
-  std::unique_ptr<protocol::DictionaryValue> result =
-      protocol::DictionaryValue::create();
-  result->setDouble("origin", floor(origin * scale));
-  result->setDouble("gap", round(gap * scale));
-
-  std::unique_ptr<protocol::ListValue> spans = protocol::ListValue::create();
-  for (const LayoutUnit& position : positions) {
-    spans->pushValue(
-        protocol::FundamentalValue::create(round(position * scale)));
-  }
-  result->setValue("positions", std::move(spans));
-
-  return result;
-}
-
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
+    LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
-    FloatPoint origin,
     Color color,
     float scale,
     bool isPrimary) {
   std::unique_ptr<protocol::DictionaryValue> grid_info =
       protocol::DictionaryValue::create();
 
-  grid_info->setValue(
-      "rows", BuildGapAndPositions(origin.Y(),
-                                   layout_grid->GridGap(kForRows) +
-                                       layout_grid->GridItemOffset(kForRows),
-                                   layout_grid->RowPositions(), scale));
-  grid_info->setValue(
-      "columns",
-      BuildGapAndPositions(origin.X(),
-                           layout_grid->GridGap(kForColumns) +
-                               layout_grid->GridItemOffset(kForColumns),
-                           layout_grid->ColumnPositions(), scale));
+  const auto& rows = layout_grid->RowPositions();
+  const auto& columns = layout_grid->ColumnPositions();
+
+  PathBuilder cell_builder;
+  auto row_gap =
+      layout_grid->GridGap(kForRows) + layout_grid->GridItemOffset(kForRows);
+  auto column_gap = layout_grid->GridGap(kForColumns) +
+                    layout_grid->GridItemOffset(kForColumns);
+
+  for (size_t i = 1; i < rows.size(); ++i) {
+    for (size_t j = 1; j < columns.size(); ++j) {
+      FloatPoint position(columns.at(j - 1), rows.at(i - 1));
+      FloatSize size(columns.at(j) - columns.at(j - 1),
+                     rows.at(i) - rows.at(i - 1));
+      if (i != rows.size() - 1)
+        size.Expand(0, -row_gap);
+      if (j != columns.size() - 1)
+        size.Expand(-column_gap, 0);
+      FloatRect cell(position, size);
+      FloatQuad cell_quad = layout_grid->LocalToAbsoluteQuad(cell);
+      FrameQuadToViewport(containing_view, cell_quad);
+      cell_builder.AppendPath(QuadToPath(cell_quad), scale);
+    }
+  }
+  grid_info->setValue("cells", cell_builder.Release());
   grid_info->setString("color", color.Serialized());
   grid_info->setBoolean("isPrimaryGrid", isPrimary);
   return grid_info;
@@ -519,18 +513,18 @@ void InspectorHighlight::AppendNodeHighlight(
     return;
   grid_info_ = protocol::ListValue::create();
   if (layout_object->IsLayoutGrid()) {
-    grid_info_->pushValue(BuildGridInfo(ToLayoutGrid(layout_object),
-                                        border.P1(), highlight_config.css_grid,
-                                        scale_, true));
+    grid_info_->pushValue(
+        BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(layout_object),
+                      highlight_config.css_grid, scale_, true));
   }
   LayoutObject* parent = layout_object->Parent();
   if (!parent || !parent->IsLayoutGrid())
     return;
   if (!BuildNodeQuads(parent->GetNode(), &content, &padding, &border, &margin))
     return;
-  grid_info_->pushValue(BuildGridInfo(ToLayoutGrid(parent), border.P1(),
-                                      highlight_config.css_grid, scale_,
-                                      false));
+  grid_info_->pushValue(
+      BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(parent),
+                    highlight_config.css_grid, scale_, false));
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()

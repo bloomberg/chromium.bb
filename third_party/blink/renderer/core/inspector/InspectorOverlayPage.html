@@ -771,8 +771,7 @@ function _drawRulers(context, bounds, rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function drawPath(context, commands, fillColor, outlineColor, bounds)
-{
+function buildPath(commands, bounds) {
     var commandsIndex = 0;
 
     function extractPoints(count)
@@ -797,7 +796,6 @@ function drawPath(context, commands, fillColor, outlineColor, bounds)
         return points;
     }
 
-    context.save();
     var commandsLength = commands.length;
     var path = new Path2D();
     while (commandsIndex < commandsLength) {
@@ -820,16 +818,22 @@ function drawPath(context, commands, fillColor, outlineColor, bounds)
         }
     }
     path.closePath();
-    context.lineWidth = 0;
-    context.fillStyle = fillColor;
-    context.fill(path);
+    return path;
+}
 
+function drawPath(context, commands, fillColor, outlineColor, bounds)
+{
+    context.save();
+    const path = buildPath(commands, bounds);
+    if (fillColor) {
+        context.fillStyle = fillColor;
+        context.fill(path);
+    }
     if (outlineColor) {
         context.lineWidth = 2;
         context.strokeStyle = outlineColor;
         context.stroke(path);
     }
-
     context.restore();
     return path;
 }
@@ -851,72 +855,48 @@ function emptyBounds()
 
 function _drawLayoutGridHighlight(highlight, context)
 {
-    var originX = highlight.columns.origin;
-    var originY = highlight.rows.origin;
-
-    var columnGap = highlight.columns.gap;
-    var rowGap = highlight.rows.gap;
-
-    var rows = highlight.rows.positions;
-    var columns = highlight.columns.positions;
-
-    if (!rows.length || !columns.length)
-        return;
-
     context.save();
-    context.translate(originX + 0.5, originY + 0.5);
-    context.scale(pageScaleFactor, pageScaleFactor)
-
-    if (columnGap > 1 && highlight.isPrimaryGrid) {
-        var top = rows[0];
-        var height = rows[rows.length - 1] - rows[0];
-        for (var i = 1; i < columns.length - 1; i++)
-            context.clearRect(columns[i] - columnGap, top, columnGap, height);
-    }
-
-    if (rowGap > 1 && highlight.isPrimaryGrid) {
-        var left = columns[0];
-        var width = columns[columns.length - 1] - columns[0];
-        for (var i = 1; i < rows.length - 1; i++)
-            context.clearRect(left, rows[i] - rowGap, width, rowGap);
-    }
-
+    context.translate(0.5, 0.5);
     context.setLineDash([3, 3]);
+    context.lineWidth = 0;
     context.strokeStyle = highlight.color;
+    context.stroke(buildPath(highlight.cells, emptyBounds()));
+    context.restore();
+}
 
-    for (var column = 1; column < columns.length; column++) {
-        var x = columns[column - 1];
-        var width = columns[column] - columns[column - 1];
-        if (column !== columns.length - 1)
-            width -= columnGap;
-        for (var row = 1; row < rows.length; row++) {
-            var y = rows[row - 1];
-            var height = rows[row] - rows[row - 1];
-            if (row !== rows.length - 1)
-                height -= rowGap;
-            context.strokeRect(x, y, width, height);
+function clipLayoutGridCells(highlight) {
+    if (highlight.gridInfo) {
+        for (const grid of highlight.gridInfo) {
+            if (!grid.isPrimaryGrid)
+                continue;
+            const path = buildPath(grid.cells, emptyBounds());
+            context.clip(path);
         }
     }
-    context.restore();
 }
 
 function drawHighlight(highlight, context)
 {
     context = context || window.context;
     context.save();
-
     var bounds = emptyBounds();
 
     for (var paths = highlight.paths.slice(); paths.length;) {
         var path = paths.pop();
+        // Clip content quad using the data grid cells info to create white stripes.
+        context.save();
+        if (path.name === "content")
+            clipLayoutGridCells(highlight);
         drawPath(context, path.path, path.fillColor, path.outlineColor, bounds);
         if (paths.length) {
-            context.save();
             context.globalCompositeOperation = "destination-out";
             drawPath(context, paths[paths.length - 1].path, "red", null, bounds);
-            context.restore();
         }
+        context.restore();
     }
+    context.restore();
+
+    context.save();
 
     var rulerAtRight = highlight.paths.length && highlight.showRulers && bounds.minX < 20 && bounds.maxX + 20 < canvasWidth;
     var rulerAtBottom = highlight.paths.length && highlight.showRulers && bounds.minY < 20 && bounds.maxY + 20 < canvasHeight;
