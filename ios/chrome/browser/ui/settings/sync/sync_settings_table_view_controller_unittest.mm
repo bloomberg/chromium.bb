@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 
 #include <memory>
 
@@ -26,11 +26,11 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
-#import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
+#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "testing/gtest_mac.h"
@@ -40,7 +40,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SyncSettingsCollectionViewController (ExposedForTesting)
+@interface SyncSettingsTableViewController (ExposedForTesting)
 - (int)titleIdForSyncableDataType:(SyncSetupService::SyncableDatatype)datatype;
 - (void)onSyncStateChanged;
 @end
@@ -85,10 +85,10 @@ class SyncSetupServiceMockThatSucceeds : public SyncSetupServiceMockThatFails {
   void SetSyncingAllDataTypes(bool sync_all) override { sync_all_ = sync_all; }
 };
 
-class SyncSettingsCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class SyncSettingsTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  public:
-  SyncSettingsCollectionViewControllerTest()
+  SyncSettingsTableViewControllerTest()
       : default_auth_error_(GoogleServiceAuthError::NONE) {}
 
   static std::unique_ptr<KeyedService> CreateSyncSetupService(
@@ -171,7 +171,7 @@ class SyncSettingsCollectionViewControllerTest
         base::BindRepeating(&CreateProfileSyncService));
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
 
     DefaultValue<const GoogleServiceAuthError&>::Set(default_auth_error_);
     DefaultValue<syncer::SyncCycleSnapshot>::Set(default_sync_cycle_snapshot_);
@@ -198,28 +198,30 @@ class SyncSettingsCollectionViewControllerTest
         .WillRepeatedly(Return(syncer::UserSelectableTypes()));
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[SyncSettingsCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[SyncSettingsTableViewController alloc]
           initWithBrowserState:chrome_browser_state_.get()
         allowSwitchSyncAccount:YES];
   }
 
-  SyncSettingsCollectionViewController* CreateSyncController() {
+  SyncSettingsTableViewController* CreateSyncController() {
     CreateController();
     CheckTitleWithId(IDS_IOS_SYNC_SETTING_TITLE);
-    return static_cast<SyncSettingsCollectionViewController*>(controller());
+    return static_cast<SyncSettingsTableViewController*>(controller());
   }
 
   void CheckErrorIcon(BOOL expectedShouldDisplayError,
                       NSInteger section,
                       NSInteger item) {
-    CollectionViewModel* model = [controller() collectionViewModel];
+    TableViewModel* model = [controller() tableViewModel];
     NSIndexPath* path = [NSIndexPath indexPathForItem:item inSection:section];
 
-    TextAndErrorItem* errorObject = base::mac::ObjCCastStrict<TextAndErrorItem>(
-        [model itemAtIndexPath:path]);
+    TableViewImageItem* errorObject =
+        base::mac::ObjCCastStrict<TableViewImageItem>(
+            [model itemAtIndexPath:path]);
     EXPECT_TRUE(errorObject);
-    EXPECT_EQ(expectedShouldDisplayError, errorObject.shouldDisplayError);
+    BOOL hasImage = !!errorObject.image;
+    EXPECT_EQ(expectedShouldDisplayError, hasImage);
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -233,11 +235,10 @@ class SyncSettingsCollectionViewControllerTest
   syncer::SyncCycleSnapshot default_sync_cycle_snapshot_;
 };
 
-TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
+TEST_F(SyncSettingsTableViewControllerTest, TestModel) {
   TurnSyncEverythingOn();
   TurnSyncOn();
-  SyncSettingsCollectionViewController* sync_controller =
-      CreateSyncController();
+  SyncSettingsTableViewController* sync_controller = CreateSyncController();
 
   EXPECT_EQ(3, NumberOfSections());
 
@@ -249,7 +250,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   EXPECT_EQ(expected_number_of_items, NumberOfItemsInSection(1));
   EXPECT_EQ(2, NumberOfItemsInSection(2));
 
-  LegacySyncSwitchItem* syncItem = GetCollectionViewItem(0, 0);
+  SyncSwitchItem* syncItem = GetTableViewItem(0, 0);
   EXPECT_EQ(syncItem.isOn, YES);
   EXPECT_NSEQ(syncItem.text,
               l10n_util::GetNSString(IDS_IOS_SYNC_SETTING_TITLE));
@@ -257,7 +258,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
       syncItem.detailText,
       l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE));
 
-  LegacySyncSwitchItem* syncEverythingItem = GetCollectionViewItem(1, 0);
+  SyncSwitchItem* syncEverythingItem = GetTableViewItem(1, 0);
   EXPECT_EQ(syncEverythingItem.isOn, YES);
   EXPECT_NSEQ(syncEverythingItem.text,
               l10n_util::GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE));
@@ -266,59 +267,57 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   for (int i = 0; i < SyncSetupService::kNumberOfSyncableDatatypes; i++) {
     SyncSetupService::SyncableDatatype dataType =
         static_cast<SyncSetupService::SyncableDatatype>(i);
-    LegacySyncSwitchItem* syncDataTypeItem = GetCollectionViewItem(1, item++);
+    SyncSwitchItem* syncDataTypeItem = GetTableViewItem(1, item++);
     EXPECT_NSEQ(syncDataTypeItem.text,
                 l10n_util::GetNSString(
                     [sync_controller titleIdForSyncableDataType:dataType]));
   }
 
-  LegacySyncSwitchItem* autofillWalletImportItem =
-      GetCollectionViewItem(1, item);
+  SyncSwitchItem* autofillWalletImportItem = GetTableViewItem(1, item);
   NSString* title = l10n_util::GetNSString(
       IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
   EXPECT_NSEQ(autofillWalletImportItem.text, title);
 
-  TextAndErrorItem* encryptionItem = GetCollectionViewItem(2, 0);
-  EXPECT_NSEQ(encryptionItem.text,
+  TableViewImageItem* encryptionItem = GetTableViewItem(2, 0);
+  EXPECT_NSEQ(encryptionItem.title,
               l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE));
   CheckErrorIcon(NO, 2, 0);
 }
 
-TEST_F(SyncSettingsCollectionViewControllerTest, TestEnabledCellsSyncOff) {
+TEST_F(SyncSettingsTableViewControllerTest, TestEnabledCellsSyncOff) {
   CreateSyncController();
 
   for (int item = 0; item < NumberOfItemsInSection(1); ++item) {
-    LegacySyncSwitchItem* object = GetCollectionViewItem(1, item);
+    SyncSwitchItem* object = GetTableViewItem(1, item);
     EXPECT_FALSE(object.enabled);
   }
 
-  TextAndErrorItem* encryptionItem = GetCollectionViewItem(2, 0);
+  TableViewImageItem* encryptionItem = GetTableViewItem(2, 0);
   EXPECT_FALSE(encryptionItem.enabled);
 }
 
-TEST_F(SyncSettingsCollectionViewControllerTest,
-       TestEnabledCellsSyncEverythingOn) {
+TEST_F(SyncSettingsTableViewControllerTest, TestEnabledCellsSyncEverythingOn) {
   TurnSyncOn();
   TurnSyncEverythingOn();
   CreateSyncController();
 
-  LegacySyncSwitchItem* syncEverythingItem = GetCollectionViewItem(1, 0);
+  SyncSwitchItem* syncEverythingItem = GetTableViewItem(1, 0);
   EXPECT_TRUE(syncEverythingItem.enabled);
   for (int item = 1; item <= SyncSetupService::kNumberOfSyncableDatatypes;
        ++item) {
-    LegacySyncSwitchItem* object = GetCollectionViewItem(1, item);
+    SyncSwitchItem* object = GetTableViewItem(1, item);
     EXPECT_FALSE(object.enabled);
   }
 
-  LegacySyncSwitchItem* autofillWalletImportItem =
-      GetCollectionViewItem(1, NumberOfItemsInSection(1) - 1);
+  SyncSwitchItem* autofillWalletImportItem =
+      GetTableViewItem(1, NumberOfItemsInSection(1) - 1);
   EXPECT_FALSE(autofillWalletImportItem.enabled);
 
-  TextAndErrorItem* encryptionItem = GetCollectionViewItem(2, 0);
+  TableViewImageItem* encryptionItem = GetTableViewItem(2, 0);
   EXPECT_TRUE(encryptionItem.enabled);
 }
 
-TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOff) {
+TEST_F(SyncSettingsTableViewControllerTest, TestAutofillWalletImportOff) {
   autofill::prefs::SetPaymentsIntegrationEnabled(
       chrome_browser_state_->GetPrefs(), false);
 
@@ -326,12 +325,12 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOff) {
   TurnSyncEverythingOn();
   CreateSyncController();
 
-  LegacySyncSwitchItem* autofillWalletImportItem =
-      GetCollectionViewItem(1, NumberOfItemsInSection(1) - 1);
+  SyncSwitchItem* autofillWalletImportItem =
+      GetTableViewItem(1, NumberOfItemsInSection(1) - 1);
   EXPECT_FALSE(autofillWalletImportItem.isOn);
 }
 
-TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOn) {
+TEST_F(SyncSettingsTableViewControllerTest, TestAutofillWalletImportOn) {
   autofill::prefs::SetPaymentsIntegrationEnabled(
       chrome_browser_state_->GetPrefs(), true);
 
@@ -339,14 +338,13 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOn) {
   TurnSyncEverythingOn();
   CreateSyncController();
 
-  LegacySyncSwitchItem* autofillWalletImportItem =
-      GetCollectionViewItem(1, NumberOfItemsInSection(1) - 1);
+  SyncSwitchItem* autofillWalletImportItem =
+      GetTableViewItem(1, NumberOfItemsInSection(1) - 1);
   EXPECT_TRUE(autofillWalletImportItem.isOn);
 }
 
-TEST_F(SyncSettingsCollectionViewControllerTest, TestShouldDisplayError) {
-  SyncSettingsCollectionViewController* sync_controller =
-      CreateSyncController();
+TEST_F(SyncSettingsTableViewControllerTest, TestShouldDisplayError) {
+  SyncSettingsTableViewController* sync_controller = CreateSyncController();
   EXPECT_FALSE([sync_controller shouldDisplaySyncError]);
   EXPECT_FALSE([sync_controller shouldDisableSettingsOnSyncError]);
   EXPECT_FALSE([sync_controller shouldDisplayEncryptionError]);
@@ -382,30 +380,29 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestShouldDisplayError) {
   EXPECT_FALSE([sync_controller shouldDisplayEncryptionError]);
 }
 
-TEST_F(SyncSettingsCollectionViewControllerTest,
+TEST_F(SyncSettingsTableViewControllerTest,
        TestSyncStateChangedWithEncryptionError) {
   TurnSyncOn();
   TurnSyncEverythingOn();
 
-  SyncSettingsCollectionViewController* sync_controller =
-      CreateSyncController();
+  SyncSettingsTableViewController* sync_controller = CreateSyncController();
 
-  TextAndErrorItem* encryptionItem = GetCollectionViewItem(2, 0);
-  EXPECT_NSEQ(encryptionItem.text,
+  TableViewImageItem* encryptionItem = GetTableViewItem(2, 0);
+  EXPECT_NSEQ(encryptionItem.title,
               l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE));
   CheckErrorIcon(NO, 2, 0);
 
   TurnSyncPassphraseErrorOn();
   [sync_controller onSyncStateChanged];
-  encryptionItem = GetCollectionViewItem(3, 0);
-  EXPECT_NSEQ(encryptionItem.text,
+  encryptionItem = GetTableViewItem(3, 0);
+  EXPECT_NSEQ(encryptionItem.title,
               l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE));
   CheckErrorIcon(YES, 3, 0);
 
   TurnSyncErrorOff();
   [sync_controller onSyncStateChanged];
-  encryptionItem = GetCollectionViewItem(2, 0);
-  EXPECT_NSEQ(encryptionItem.text,
+  encryptionItem = GetTableViewItem(2, 0);
+  EXPECT_NSEQ(encryptionItem.title,
               l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE));
   CheckErrorIcon(NO, 2, 0);
 }

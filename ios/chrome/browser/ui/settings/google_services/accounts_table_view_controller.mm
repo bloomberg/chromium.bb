@@ -28,7 +28,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
@@ -450,8 +450,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  SyncSettingsCollectionViewController* controllerToPush =
-      [[SyncSettingsCollectionViewController alloc]
+  SyncSettingsTableViewController* controllerToPush =
+      [[SyncSettingsTableViewController alloc]
             initWithBrowserState:_browserState
           allowSwitchSyncAccount:YES];
   controllerToPush.dispatcher = self.dispatcher;

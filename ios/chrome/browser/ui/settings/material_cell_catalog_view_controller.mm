@@ -33,11 +33,9 @@
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
@@ -72,7 +70,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeTextCheckmark = kItemTypeEnumZero,
   ItemTypeTextDetail,
   ItemTypeText,
-  ItemTypeTextError,
   ItemTypeDetailBasic,
   ItemTypeDetailLeftMedium,
   ItemTypeDetailRightMedium,
@@ -82,7 +79,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeMultilineBasic,
   ItemTypeImportDataMultiline,
   ItemTypeSwitchDynamicHeight,
-  ItemTypeSwitchSync,
   ItemTypeHeader,
   ItemTypeAccountDetail,
   ItemTypeAccountCheckMark,
@@ -156,16 +152,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   [model addItem:smallTextCell
       toSectionWithIdentifier:SectionIdentifierTextCell];
 
-  // Text and Error cell.
-  TextAndErrorItem* textAndErrorItem =
-      [[TextAndErrorItem alloc] initWithType:ItemTypeTextError];
-  textAndErrorItem.text = @"Text and Error cell";
-  textAndErrorItem.shouldDisplayError = YES;
-  textAndErrorItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
-  [model addItem:textAndErrorItem
-      toSectionWithIdentifier:SectionIdentifierTextCell];
-
   // Detail cells.
   [model addSectionWithIdentifier:SectionIdentifierDetailCell];
   LegacySettingsDetailItem* detailBasic =
@@ -216,11 +202,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   detailLongBoth.iconImageName = @"ntp_history_icon";
   [model addItem:detailLongBoth
       toSectionWithIdentifier:SectionIdentifierDetailCell];
-
-  // Switch cells.
-  [model addSectionWithIdentifier:SectionIdentifierSwitchCell];
-  [model addItem:[self syncSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierSwitchCell];
 
   // Autofill cells.
   [model addSectionWithIdentifier:SectionIdentifierAutofill];
@@ -354,12 +335,10 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeContentSuggestions:
     case ItemTypeFooter:
     case ItemTypeSwitchDynamicHeight:
-    case ItemTypeSwitchSync:
     case ItemTypeAccountControlDynamicHeight:
     case ItemTypeTextCheckmark:
     case ItemTypeTextDetail:
     case ItemTypeText:
-    case ItemTypeTextError:
     case ItemTypeMultilineBasic:
     case ItemTypeImportDataMultiline:
     case ItemTypeAutofillCVC:
@@ -425,7 +404,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeApp:
     case ItemTypeColdStateSigninPromo:
     case ItemTypeSwitchDynamicHeight:
-    case ItemTypeSwitchSync:
     case ItemTypeWarmStateSigninPromo:
       return YES;
     default:
@@ -514,16 +492,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 #pragma mark Private
-
-- (CollectionViewItem*)syncSwitchItem {
-  LegacySyncSwitchItem* item =
-      [[LegacySyncSwitchItem alloc] initWithType:ItemTypeSwitchSync];
-  item.text = @"Cell used in Sync Settings";
-  item.detailText =
-      @"This is a very long text that is intended to overflow to two lines.";
-  item.on = NO;
-  return item;
-}
 
 - (CollectionViewItem*)paymentsItemWithWrappingTextandOptionalImage {
   PaymentsTextItem* item =

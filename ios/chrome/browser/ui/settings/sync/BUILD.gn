@@ -11,8 +11,8 @@ source_set("sync") {
     "sync_encryption_passphrase_table_view_controller.mm",
     "sync_encryption_table_view_controller.h",
     "sync_encryption_table_view_controller.mm",
-    "sync_settings_collection_view_controller.h",
-    "sync_settings_collection_view_controller.mm",
+    "sync_settings_table_view_controller.h",
+    "sync_settings_table_view_controller.mm",
   ]
   deps = [
     "//base",
@@ -31,6 +31,7 @@ source_set("sync") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
@@ -58,7 +59,7 @@ source_set("unit_tests") {
     "sync_create_passphrase_table_view_controller_unittest.mm",
     "sync_encryption_passphrase_table_view_controller_unittest.mm",
     "sync_encryption_table_view_controller_unittest.mm",
-    "sync_settings_collection_view_controller_unittest.mm",
+    "sync_settings_table_view_controller_unittest.mm",
   ]
   deps = [
     ":sync",
@@ -85,6 +86,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/cells/legacy",
     "//ios/chrome/browser/ui/settings/sync/utils",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:test_support",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/web/public/test",

@@ -22,6 +22,7 @@
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewImageCell class];
+    _enabled = YES;
   }
   return self;
 }
@@ -48,6 +49,8 @@
   } else if (styler.cellTitleColor) {
     cell.titleLabel.textColor = styler.cellTitleColor;
   }
+
+  cell.userInteractionEnabled = self.enabled;
 }
 
 @end
@@ -103,6 +106,11 @@
     ]];
   }
   return self;
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.userInteractionEnabled = YES;
 }
 
 @end

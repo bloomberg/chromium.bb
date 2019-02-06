@@ -19,6 +19,9 @@
 // UIColor for the cell's textLabel. ChromeTableViewStyler's |cellTitleColor|
 // takes precedence over the default color, but not over |textColor|.
 @property(nonatomic, strong) UIColor* textColor;
+// Whether the item is enabled. When it is not enabled, the associated cell
+// cannot be interacted with.
+@property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 
 @end
 
