@@ -1173,8 +1173,10 @@ interface Functions {
       [instanceof=Entry] object entry, SimpleCallback callback);
 
   // Returns list of paths shared with crostini container.
-  [nocompile]
-  static void getCrostiniSharedPaths(GetCrostiniSharedPathsCallback callback);
+  // |observeFirstForSession| If true, callback provides whether this is the
+  // first time this function has been called with observeFirstForSession true.
+  [nocompile] static void getCrostiniSharedPaths(
+      boolean observeFirstForSession, GetCrostiniSharedPathsCallback callback);
 
   // Requests information about a Linux package. |entry| is a .deb file.
   [nocompile]

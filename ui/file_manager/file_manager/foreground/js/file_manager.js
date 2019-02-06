@@ -1235,7 +1235,10 @@ FileManager.prototype = /** @struct */ {
       }
 
       // Load any existing shared paths.
+      // Only observe firstForSession when using full-page FilesApp.
+      // I.e., don't show toast in a dialog.
       chrome.fileManagerPrivate.getCrostiniSharedPaths(
+          this.dialogType === DialogType.FULL_PAGE,
           (entries, firstForSession) => {
             for (let i = 0; i < entries.length; i++) {
               this.crostini_.registerSharedPath(entries[i]);
