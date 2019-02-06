@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 29
+version_id: 28
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -29,6 +29,17 @@ default_file_type {
 file_types {
   extension: "bin"
   uma_value: 159
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  # PDFs are opened internally, so they are considered safe.
+  extension: "pdf"
+  uma_value: 14
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "rtf"
+  uma_value: 244
   ping_setting: SAMPLED_PING
 }
 file_types {
@@ -57,6 +68,21 @@ file_types {
   ping_setting: SAMPLED_PING
 }
 file_types {
+  extension: "xls"
+  uma_value: 327
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "doc"
+  uma_value: 328
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pptx"
+  uma_value: 329
+  ping_setting: SAMPLED_PING
+}
+file_types {
   extension: "csv"
   uma_value: 330
   ping_setting: SAMPLED_PING
@@ -64,6 +90,11 @@ file_types {
 file_types {
   extension: "ica"
   uma_value: 331
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ppt"
+  uma_value: 332
   ping_setting: SAMPLED_PING
 }
 file_types {
@@ -84,6 +115,11 @@ file_types {
 file_types {
   extension: "tif"
   uma_value: 336
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "rtf"
+  uma_value: 337
   ping_setting: SAMPLED_PING
 }
 file_types {
@@ -1332,182 +1368,88 @@ file_types {
   }
 }
 
-# Office Docs. These have been abused in the past through embedded
-# executables, so send a FULL_PING.
+# OOXML MS Office files.  These can embed executables, but they don't
+# execute automatically when opened.  These are here to produce UMA metrics.
+# crbug.com/566110
 file_types {
-  extension: "doc"
-  uma_value: 328
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "docb"
-  uma_value: 272
-  ping_setting: FULL_PING
+  extension: "docx"
+  uma_value: 268
+  ping_setting: SAMPLED_PING
 }
 file_types {
   extension: "docm"
   uma_value: 269
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "docx"
-  uma_value: 268
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "dot"
-  uma_value: 342
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "dotm"
-  uma_value: 271
-  ping_setting: FULL_PING
+  ping_setting: SAMPLED_PING
 }
 file_types {
   extension: "dott"
   uma_value: 270
-  ping_setting: FULL_PING
+  ping_setting: SAMPLED_PING
 }
 file_types {
-  extension: "dotx"
-  uma_value: 343
-  ping_setting: FULL_PING
+  extension: "dotm"
+  uma_value: 271
+  ping_setting: SAMPLED_PING
 }
 file_types {
-  extension: "pdf"
-  uma_value: 14
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "pot"
-  uma_value: 352
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "potm"
-  uma_value: 353
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "potx"
-  uma_value: 279
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "ppam"
-  uma_value: 280
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "pps"
-  uma_value: 355
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "ppsm"
-  uma_value: 354
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "ppsx"
-  uma_value: 281
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "ppt"
-  uma_value: 332
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "pptm"
-  uma_value: 278
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "pptx"
-  uma_value: 277
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "rtf"
-  uma_value: 244
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "sldm"
-  uma_value: 283
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "sldx"
-  uma_value: 282
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xla"
-  uma_value: 348
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xlam"
-  uma_value: 349
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xldm"
-  uma_value: 347
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xll"
-  uma_value: 350
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xlm"
-  uma_value: 346
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xls"
-  uma_value: 327
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xlsb"
-  uma_value: 344
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xlsm"
-  uma_value: 274
-  ping_setting: FULL_PING
+  extension: "docb"
+  uma_value: 272
+  ping_setting: SAMPLED_PING
 }
 file_types {
   extension: "xlsx"
   uma_value: 273
-  ping_setting: FULL_PING
+  ping_setting: SAMPLED_PING
 }
 file_types {
-  extension: "xlt"
-  uma_value: 345
-  ping_setting: FULL_PING
-}
-file_types {
-  extension: "xltm"
-  uma_value: 276
-  ping_setting: FULL_PING
+  extension: "xlsm"
+  uma_value: 274
+  ping_setting: SAMPLED_PING
 }
 file_types {
   extension: "xltx"
   uma_value: 275
-  ping_setting: FULL_PING
+  ping_setting: SAMPLED_PING
 }
 file_types {
-  extension: "xlw"
-  uma_value: 351
-  ping_setting: FULL_PING
+  extension: "xltm"
+  uma_value: 276
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pptx"
+  uma_value: 277
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pptm"
+  uma_value: 278
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "potx"
+  uma_value: 279
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ppam"
+  uma_value: 280
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ppsx"
+  uma_value: 281
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "sldx"
+  uma_value: 282
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "sldm"
+  uma_value: 283
+  ping_setting: SAMPLED_PING
 }
 
 # Extensions that will open in IE even when chrome is set as default browser.

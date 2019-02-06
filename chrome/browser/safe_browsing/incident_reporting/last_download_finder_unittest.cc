@@ -100,8 +100,8 @@ static const base::FilePath::CharType kBinaryFileName[] =
     FILE_PATH_LITERAL("spam.exe");
 #endif
 
-static const base::FilePath::CharType kTxtFileName[] =
-    FILE_PATH_LITERAL("download.txt");
+static const base::FilePath::CharType kPDFFileName[] =
+    FILE_PATH_LITERAL("download.pdf");
 
 }  // namespace
 
@@ -345,7 +345,7 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEnd) {
 
   // Add a binary and non-binary download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
-  AddDownload(profile, CreateTestDownloadRow(kTxtFileName));
+  AddDownload(profile, CreateTestDownloadRow(kPDFFileName));
 
   std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
   std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
@@ -361,7 +361,7 @@ TEST_F(LastDownloadFinderTest, NonBinaryOnly) {
   TestingProfile* profile = CreateProfile(SAFE_BROWSING_AND_EXTENDED_REPORTING);
 
   // Add a non-binary download.
-  AddDownload(profile, CreateTestDownloadRow(kTxtFileName));
+  AddDownload(profile, CreateTestDownloadRow(kPDFFileName));
 
   std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download;
   std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
