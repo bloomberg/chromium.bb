@@ -17,7 +17,7 @@ snippets. For a detailed API references please consult the headers in
 [//mojo/public/cpp/bindings](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/README.md).
 
 For a simplified guide targeted at Chromium developers, see [this
-link](/docs/mojo_guide.md).
+link](/docs/mojo_and_services.md).
 
 ## Getting Started
 
@@ -153,7 +153,7 @@ routed to some implementation which will **bind** it. The `InterfaceRequest<T>`
 doesn't actually *do* anything other than hold onto a pipe endpoint and carry
 useful compile-time type information.
 
-![Diagram illustrating InterfacePtr and InterfaceRequest on either end of a message pipe](https://docs.google.com/drawings/d/1_Ocprq7EGgTKcSE_WlOn_RBfXcr5C3FJyIbWhwzwNX8/pub?w=608&h=100)
+![Diagram illustrating InterfacePtr and InterfaceRequest on either end of a message pipe](/docs/images/mojo_pipe.png)
 
 So how do we create a strongly-typed message pipe?
 
@@ -211,7 +211,7 @@ logger->Log("Hello!");
 
 This actually writes a `Log` message to the pipe.
 
-![Diagram illustrating a message traveling on a pipe from LoggerPtr to LoggerRequest](https://docs.google.com/drawings/d/11vnOpNP3UBLlWg4KplQuIU3r_e1XqwDFETD-O_bV-2w/pub?w=635&h=112)
+![Diagram illustrating a message traveling on a pipe from LoggerPtr to LoggerRequest](/docs/images/mojo_message.png)
 
 But as mentioned above, `InterfaceRequest` *doesn't actually do anything*, so
 that message will just sit on the pipe forever. We need a way to read messages
@@ -278,7 +278,7 @@ motion by the above line of code:
 3. The `Log` message is read and deserialized, causing the `Binding` to invoke
    the `Logger::Log` implementation on its bound `LoggerImpl`.
 
-![Diagram illustrating the progression of binding a request, reading a pending message, and dispatching it](https://docs.google.com/drawings/d/1F2VvfoOINGuNibomqeEU8KekYCtxYVFC00146CFGGQY/pub?w=550&h=500)
+![Diagram illustrating the progression of binding a request, reading a pending message, and dispatching it](/docs/images/mojo_binding_and_dispatch.png)
 
 As a result, our implementation will eventually log the client's `"Hello!"`
 message via `LOG(ERROR)`.
@@ -1261,8 +1261,7 @@ sync method call? It continues to process incoming sync request messages
 messages and sync response messages that don’t match the ongoing sync
 call.
 
-![Diagram illustrating sync call flow](
-https://docs.google.com/a/google.com/drawings/d/e/2PACX-1vRvsmrmZBszFl_OX9AhCn2Cqwx63K0GC7cYrDNPoRYRuHzxS30OZ4ygMBpeU_cThuQY2lYZkYpvSCdM/pub?w=960&h=560)
+![Diagram illustrating sync call flow](/docs/images/mojo_sync_call_flow.png)
 
 Please note that sync response messages that don’t match the ongoing
 sync call cannot re-enter. That is because they correspond to sync calls
@@ -1274,8 +1273,7 @@ while the stack unwinds.
 Please note that the re-entrancy behavior doesn’t prevent deadlocks
 involving async calls. You need to avoid call sequences such as:
 
-![Diagram illustrating a sync call deadlock](
-https://docs.google.com/a/google.com/drawings/d/e/2PACX-1vTBl5XPA8K-kVPt0oByMNSSoxpCKh1p2_atIDR9Me4xGfa6nf0fNAKkJ-Hg5utllY5ghXtoS1haHL6d/pub?w=960&h=480)
+![Diagram illustrating a sync call deadlock](/docs/images/mojo_sync_call_deadlock.png)
 
 ### Read more
 
