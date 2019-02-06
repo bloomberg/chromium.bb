@@ -2022,13 +2022,13 @@ TEST_P(SequenceManagerTest, TimeDomainsAreIndependant) {
                                             TimeDelta::FromMilliseconds(30));
 
   domain_b->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(50));
-  sequence_manager()->MaybeScheduleImmediateWork(FROM_HERE);
+  sequence_manager()->ScheduleWork();
 
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4u, 5u, 6u));
 
   domain_a->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(50));
-  sequence_manager()->MaybeScheduleImmediateWork(FROM_HERE);
+  sequence_manager()->ScheduleWork();
 
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4u, 5u, 6u, 1u, 2u, 3u));
@@ -2064,7 +2064,7 @@ TEST_P(SequenceManagerTest, TimeDomainMigration) {
                                         TimeDelta::FromMilliseconds(40));
 
   domain_a->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(20));
-  sequence_manager()->MaybeScheduleImmediateWork(FROM_HERE);
+  sequence_manager()->ScheduleWork();
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 
@@ -2074,7 +2074,7 @@ TEST_P(SequenceManagerTest, TimeDomainMigration) {
   queue->SetTimeDomain(domain_b.get());
 
   domain_b->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(50));
-  sequence_manager()->MaybeScheduleImmediateWork(FROM_HERE);
+  sequence_manager()->ScheduleWork();
 
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u));

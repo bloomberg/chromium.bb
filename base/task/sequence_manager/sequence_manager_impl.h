@@ -166,11 +166,8 @@ class BASE_EXPORT SequenceManagerImpl
   void DeletePendingTasks() override;
   bool HasTasks() override;
 
-  // Requests that a task to process work is posted on the main task runner.
-  // These tasks are de-duplicated in two buckets: main-thread and all other
-  // threads. This distinction is done to reduce the overhead from locks, we
-  // assume the main-thread path will be hot.
-  void MaybeScheduleImmediateWork(const Location& from_here);
+  // Requests that a task to process work is scheduled.
+  void ScheduleWork();
 
   // Requests that a delayed task to process work is posted on the main task
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
