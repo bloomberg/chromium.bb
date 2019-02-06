@@ -15,6 +15,32 @@ objects. Instead, objects live on only one thread, we pass messages between
 threads for communication, and we use callback interfaces (implemented by
 message passing) for most cross-thread requests.
 
+### Nomenclature
+ * **Thread-unsafe**: The vast majority of types in Chrome are thread-unsafe by
+   design. Such types/methods cannot be accessed concurrently from different
+   threads. They should either be accessed from a single
+   `base::SequencedTaskRunner` (this should be enforced by a `SEQUENCE_CHECKER`)
+   or be accessed with external synchronization (e.g. locks -- but
+   [prefer sequences](#Using-Sequences-Instead-of-Locks)).
+ * **Thread-affine**: Such types/methods need to be always accessed from the
+   same physical thread (i.e. from the same `base::SingleThreadTaskRunner`).
+   Short of using a third-party API or having a leaf dependency which is
+   thread-affine: there's pretty much no reason for a type to be thread-affine
+   in Chrome. Note that `base::SingleThreadTaskRunner` is-a
+   `base::SequencedTaskRunner` so thread-affine is a subset of thread-unsafe.
+ * **Thread-safe**: Such types/methods can be safely accessed concurrently.
+ * **Thread-compatible**: Such types/methods are initialized once in a
+   thread-safe manner (either in the single-threaded phase of startup or lazily
+   through a thread-safe static-local-initialization paradigm a la
+   `base::NoDestructor`) and can forever after be accessed concurrently in a
+   read-only manner.
+ * **Sequence-friendly**: Such types/methods are thread-unsafe types which
+   support being invoked from a `base::SequencedTaskRunner`. Ideally this would
+   be the case for all thread-unsafe types but legacy code sometimes has
+   overzealous checks that enforce thread-affinity in mere thread-unsafe
+   scenarios. See [Prefer Sequences to Threads](#prefer-sequences-to-threads)
+   below for more details.
+
 ### Threads
 
 Every Chrome process has
@@ -70,9 +96,10 @@ availability (increased parallelism on bigger machines, avoids trashing
 resources on smaller machines).
 
 Many core APIs were recently made sequence-friendly (classes are rarely
-thread-affine -- i.e. only when using thread-local-storage or third-party APIs
-that do). But the codebase has long evolved assuming single-threaded contexts...
-If your class could run on a sequence but is blocked by an overzealous use of
+thread-affine -- i.e. only when using third-party APIs that are thread-affine;
+even ThreadLocalStorage has a SequenceLocalStorage equivalent). But the codebase
+has long evolved assuming single-threaded contexts... If your class could run on
+a sequence but is blocked by an overzealous use of
 ThreadChecker/ThreadTaskRunnerHandle/SingleThreadTaskRunner in a leaf
 dependency, consider fixing that dependency for everyone's benefit (or at the
 very least file a blocking bug against https://crbug.com/675631 and flag your
