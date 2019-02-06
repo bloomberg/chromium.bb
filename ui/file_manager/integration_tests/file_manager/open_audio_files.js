@@ -75,9 +75,9 @@ function audioPlayingQuery(fileName) {
  *
  * @param {string} audioAppId The Audio Player window ID.
  */
-function audioTimeLeapForward(audioAppId) {
+async function audioTimeLeapForward(audioAppId) {
   for (let i = 1; i <= 9; ++i) {
-    audioPlayerApp.fakeKeyDown(
+    await audioPlayerApp.fakeKeyDown(
         audioAppId, 'body', 'ArrowRight', false, false, false);
   }
 }
@@ -219,7 +219,7 @@ async function audioAutoAdvance(path) {
   await audioPlayerApp.waitForElement(audioAppId, playFile);
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing.
   await audioPlayerApp.waitForElement(audioAppId, playFile);
@@ -259,7 +259,7 @@ async function audioRepeatAllModeSingleFile(path) {
       'Failed to click the repeat button');
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing (non-repeated).
   const initial = playFile + '[playcount="0"]';
@@ -293,7 +293,7 @@ async function audioNoRepeatModeSingleFile(path) {
   await audioPlayerApp.waitForElement(audioAppId, playFile);
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing (non-repeated).
   const initial = playFile + '[playcount="0"]';
@@ -341,7 +341,7 @@ async function audioRepeatOneModeSingleFile(path) {
       'Failed to click the repeat button');
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing (non-repeated).
   const initial = playFile + '[playcount="0"]';
@@ -382,7 +382,7 @@ async function audioRepeatAllModeMultipleFile(path) {
       'Failed to click the repeat button');
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing (non-repeated).
   const initial = playFile + '[playcount="0"]';
@@ -393,7 +393,7 @@ async function audioRepeatAllModeMultipleFile(path) {
   await audioPlayerApp.waitForElement(audioAppId, playFile2);
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // When it ends, Audio Player should replay the first file (repeat-all).
   await audioPlayerApp.waitForElement(audioAppId, playFile);
@@ -422,7 +422,7 @@ async function audioNoRepeatModeMultipleFile(path) {
   await audioPlayerApp.waitForElement(audioAppId, playFile);
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing (non-repeated).
   const initial = playFile + '[playcount="0"]';
@@ -470,7 +470,7 @@ async function audioRepeatOneModeMultipleFile(path) {
       'Failed to click the repeat button');
 
   // Leap forward in time.
-  audioTimeLeapForward(audioAppId);
+  await audioTimeLeapForward(audioAppId);
 
   // Check: the same file should still be playing (non-repeated).
   const initial = playFile + '[playcount="0"]';
