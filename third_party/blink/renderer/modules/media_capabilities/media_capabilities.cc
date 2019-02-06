@@ -8,6 +8,7 @@
 
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
+#include "media/filters/stream_parser_factory.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_client.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
@@ -39,35 +40,6 @@ constexpr const char* kApplicationMimeTypePrefix = "application/";
 constexpr const char* kAudioMimeTypePrefix = "audio/";
 constexpr const char* kVideoMimeTypePrefix = "video/";
 constexpr const char* kCodecsMimeTypeParam = "codecs";
-
-// Returns whether the AudioConfiguration is supported.
-// Sends console warnings if the codec string was badly formatted.
-bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
-                                   String* console_warning) {
-  media::AudioCodec audio_codec = media::kUnknownAudioCodec;
-  bool is_audio_codec_ambiguous = true;
-
-  if (!media::ParseAudioCodecString(audio_config.mime_type.Ascii(),
-                                    audio_config.codec.Ascii(),
-                                    &is_audio_codec_ambiguous, &audio_codec)) {
-    console_warning->append(("Failed to parse audio contentType: " +
-                             audio_config.mime_type.Ascii() +
-                             "; codecs=" + audio_config.codec.Ascii())
-                                .c_str());
-
-    return false;
-  }
-
-  if (is_audio_codec_ambiguous) {
-    console_warning->append(("Invalid (ambiguous) audio codec string: " +
-                             audio_config.codec.Ascii())
-                                .c_str());
-
-    return false;
-  }
-
-  return media::IsSupportedAudioType({audio_codec});
-}
 
 // Computes the effective framerate value based on the framerate field passed to
 // the VideoConfiguration. It will return the parsed string as a double or
@@ -336,6 +308,94 @@ WebMediaConfiguration ToWebMediaConfiguration(
   return web_configuration;
 }
 
+// Utility function that will create a MediaCapabilitiesDecodingInfo object with
+// all the values set to either true or false.
+MediaCapabilitiesDecodingInfo* CreateDecodingInfoWith(bool value) {
+  MediaCapabilitiesDecodingInfo* info = MediaCapabilitiesDecodingInfo::Create();
+  info->setSupported(value);
+  info->setSmooth(value);
+  info->setPowerEfficient(value);
+
+  return info;
+}
+
+bool CheckMseSupport(const WebMediaConfiguration& configuration) {
+  DCHECK_EQ(MediaConfigurationType::kMediaSource, configuration.type);
+
+  // For MSE queries, we assume the queried audio and video streams will be
+  // placed into separate source buffers.
+  // TODO(chcunningham): Clarify this assumption in the spec.
+
+  // Media MIME API expects a vector of codec strings. We query audio and video
+  // separately, so |codec_string|.size() should always be 1 or 0 (when no
+  // codecs parameter is required for the given mime type).
+  std::vector<std::string> codec_vector;
+
+  if (configuration.audio_configuration) {
+    const WebAudioConfiguration& audio_config =
+        configuration.audio_configuration.value();
+
+    if (!audio_config.codec.Ascii().empty())
+      codec_vector.push_back(audio_config.codec.Ascii());
+
+    if (!media::StreamParserFactory::IsTypeSupported(
+            audio_config.mime_type.Ascii(), codec_vector)) {
+      DVLOG(2) << __func__ << " MSE does not support audio config: "
+               << audio_config.mime_type.Ascii() << " "
+               << (codec_vector.empty() ? "" : codec_vector[1]);
+      return false;
+    }
+  }
+
+  if (configuration.video_configuration) {
+    const WebVideoConfiguration& video_config =
+        configuration.video_configuration.value();
+
+    codec_vector.clear();
+    if (!video_config.codec.Ascii().empty())
+      codec_vector.push_back(video_config.codec.Ascii());
+
+    if (!media::StreamParserFactory::IsTypeSupported(
+            video_config.mime_type.Ascii(), codec_vector)) {
+      DVLOG(2) << __func__ << " MSE does not support video config: "
+               << video_config.mime_type.Ascii() << " "
+               << (codec_vector.empty() ? "" : codec_vector[1]);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Returns whether the AudioConfiguration is supported.
+// Sends console warnings if the codec string was badly formatted.
+bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
+                                   String* console_warning) {
+  media::AudioCodec audio_codec = media::kUnknownAudioCodec;
+  bool is_audio_codec_ambiguous = true;
+
+  if (!media::ParseAudioCodecString(audio_config.mime_type.Ascii(),
+                                    audio_config.codec.Ascii(),
+                                    &is_audio_codec_ambiguous, &audio_codec)) {
+    console_warning->append(("Failed to parse audio contentType: " +
+                             audio_config.mime_type.Ascii() +
+                             "; codecs=" + audio_config.codec.Ascii())
+                                .c_str());
+
+    return false;
+  }
+
+  if (is_audio_codec_ambiguous) {
+    console_warning->append(("Invalid (ambiguous) audio codec string: " +
+                             audio_config.codec.Ascii())
+                                .c_str());
+
+    return false;
+  }
+
+  return media::IsSupportedAudioType({audio_codec});
+}
+
 }  // anonymous namespace
 
 MediaCapabilities::MediaCapabilities() = default;
@@ -392,6 +452,14 @@ ScriptPromise MediaCapabilities::decodingInfo(
       ToWebMediaConfiguration(configuration);
 
   DCHECK(message.IsEmpty());
+
+  // MSE support is cheap to check (regex matching). Do it first.
+  if (web_config.type == MediaConfigurationType::kMediaSource &&
+      !CheckMseSupport(web_config)) {
+    resolver->Resolve(WrapPersistent(CreateDecodingInfoWith(false)));
+    return promise;
+  }
+
   bool audio_supported = true;
 
   if (configuration->hasAudio()) {
@@ -401,11 +469,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 
   // No need to check video capabilities if video not included in configuration
   // or when audio is already known to be unsupported.
-  // NOTE: at the moment, it is excluding MSE audio streams as they need to
-  // still be checked at the //media level.
-  if (!audio_supported ||
-      (!configuration->hasVideo() &&
-       web_config.type != MediaConfigurationType::kMediaSource)) {
+  if (!audio_supported || !configuration->hasVideo()) {
     // The call to IsAudioConfiguraationSupported may have returned a console
     // message to print. It would only happen when |audio_supported| is false.
     if (!message.IsEmpty()) {
@@ -416,13 +480,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
       }
     }
 
-    Persistent<MediaCapabilitiesDecodingInfo> info(
-        MediaCapabilitiesDecodingInfo::Create());
-    info->setSupported(audio_supported);
-    info->setSmooth(audio_supported);
-    info->setPowerEfficient(audio_supported);
-
-    resolver->Resolve(std::move(info));
+    resolver->Resolve(WrapPersistent(CreateDecodingInfoWith(audio_supported)));
     return promise;
   }
 

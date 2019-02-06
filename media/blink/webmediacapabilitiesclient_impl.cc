@@ -9,18 +9,15 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "media/base/audio_codecs.h"
 #include "media/base/key_system_names.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
-#include "media/filters/stream_parser_factory.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/modules/media_capabilities/web_audio_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_decoding_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
@@ -66,54 +63,6 @@ bool CheckVideoSupport(const blink::WebVideoConfiguration& video_config,
   return video_supported;
 }
 
-bool CheckMseSupport(const blink::WebMediaConfiguration& configuration) {
-  DCHECK_EQ(blink::MediaConfigurationType::kMediaSource, configuration.type);
-
-  // For MSE queries, we assume the queried audio and video streams will be
-  // placed into separate source buffers.
-  // TODO(chcunningham): Clarify this assumption in the spec.
-
-  // Media MIME API expects a vector of codec strings. We query audio and video
-  // separately, so |codec_string|.size() should always be 1 or 0 (when no
-  // codecs parameter is required for the given mime type).
-  std::vector<std::string> codec_vector;
-
-  if (configuration.audio_configuration) {
-    const blink::WebAudioConfiguration& audio_config =
-        configuration.audio_configuration.value();
-
-    if (!audio_config.codec.Ascii().empty())
-      codec_vector.push_back(audio_config.codec.Ascii());
-
-    if (!media::StreamParserFactory::IsTypeSupported(
-            audio_config.mime_type.Ascii(), codec_vector)) {
-      DVLOG(2) << __func__ << " MSE does not support audio config: "
-               << audio_config.mime_type.Ascii() << " "
-               << (codec_vector.empty() ? "" : codec_vector[1]);
-      return false;
-    }
-  }
-
-  if (configuration.video_configuration) {
-    const blink::WebVideoConfiguration& video_config =
-        configuration.video_configuration.value();
-
-    codec_vector.clear();
-    if (!video_config.codec.Ascii().empty())
-      codec_vector.push_back(video_config.codec.Ascii());
-
-    if (!media::StreamParserFactory::IsTypeSupported(
-            video_config.mime_type.Ascii(), codec_vector)) {
-      DVLOG(2) << __func__ << " MSE does not support video config: "
-               << video_config.mime_type.Ascii() << " "
-               << (codec_vector.empty() ? "" : codec_vector[1]);
-      return false;
-    }
-  }
-
-  return true;
-}
-
 WebMediaCapabilitiesClientImpl::WebMediaCapabilitiesClientImpl() = default;
 
 WebMediaCapabilitiesClientImpl::~WebMediaCapabilitiesClientImpl() = default;
@@ -144,22 +93,6 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
         callbacks) {
   std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfo> info(
       new blink::WebMediaCapabilitiesDecodingInfo());
-
-  // MSE support is cheap to check (regex matching). Do it first.
-  if (configuration.type == blink::MediaConfigurationType::kMediaSource &&
-      !CheckMseSupport(configuration)) {
-    info->supported = info->smooth = info->power_efficient = false;
-    callbacks->OnSuccess(std::move(info));
-    return;
-  }
-
-  // Audio-only checks should stop here.
-  // TODO: remove when MSE checks more to Blink.
-  if (!configuration.video_configuration) {
-    info->supported = info->smooth = info->power_efficient = true;
-    callbacks->OnSuccess(std::move(info));
-    return;
-  }
 
   DCHECK(configuration.video_configuration);
   const blink::WebVideoConfiguration& video_config =
