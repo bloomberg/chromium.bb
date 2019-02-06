@@ -55,9 +55,9 @@ class MarkupAccumulator {
 
  protected:
   // Serialize a Node, without its children and its end tag.
-  virtual void AppendStartMarkup(Node&, Namespaces&);
-  virtual void AppendElement(const Element&, Namespaces&);
-  virtual void AppendAttribute(const Element&, const Attribute&, Namespaces&);
+  virtual void AppendStartMarkup(Node&);
+  virtual void AppendElement(const Element&);
+  virtual void AppendAttribute(const Element&, const Attribute&);
 
   MarkupFormatter formatter_;
   StringBuilder markup_;
@@ -67,16 +67,14 @@ class MarkupAccumulator {
   String ToString() { return markup_.ToString(); }
 
   void AppendString(const String&);
-  void AppendStartTagOpen(const Element&, Namespaces&);
+  void AppendStartTagOpen(const Element&);
   void AppendStartTagClose(const Element&);
-  bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
+  bool ShouldAddNamespaceElement(const Element&);
   void AppendNamespace(const AtomicString& prefix,
-                       const AtomicString& namespace_uri,
-                       Namespaces& namespaces);
+                       const AtomicString& namespace_uri);
   void AppendAttributeAsXMLWithNamespace(const Element& element,
                                          const Attribute& attribute,
-                                         const String& value,
-                                         Namespaces& namespaces);
+                                         const String& value);
   static bool ShouldAddNamespaceAttribute(const Attribute& attribute,
                                           const Element& element);
 
@@ -85,7 +83,12 @@ class MarkupAccumulator {
 
   EntityMask EntityMaskForText(const Text&) const;
 
-  virtual void AppendCustomAttributes(const Element&, Namespaces&);
+  void PushNamespaces();
+  void PopNamespaces();
+  void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
+  AtomicString LookupNamespaceURI(const AtomicString& prefix);
+
+  virtual void AppendCustomAttributes(const Element&);
   virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
   virtual bool ShouldIgnoreElement(const Element&) const;
 
@@ -100,8 +103,9 @@ class MarkupAccumulator {
 
   template <typename Strategy>
   void SerializeNodesWithNamespaces(Node& target_node,
-                                    EChildrenOnly children_only,
-                                    const Namespaces& namespaces);
+                                    EChildrenOnly children_only);
+
+  Vector<Namespaces> namespace_stack_;
 
   DISALLOW_COPY_AND_ASSIGN(MarkupAccumulator);
 };
