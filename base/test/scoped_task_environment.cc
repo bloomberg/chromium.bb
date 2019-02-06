@@ -38,9 +38,6 @@ namespace test {
 
 namespace {
 
-LazyInstance<ThreadLocalPointer<ScopedTaskEnvironment::LifetimeObserver>>::Leaky
-    environment_lifetime_observer;
-
 base::Optional<MessageLoop::Type> GetMessageLoopTypeForMainThreadType(
     ScopedTaskEnvironment::MainThreadType main_thread_type) {
   switch (main_thread_type) {
@@ -373,12 +370,6 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
 
   if (execution_control_mode_ == ExecutionMode::QUEUED)
     CHECK(task_tracker_->DisallowRunTasks());
-
-  LifetimeObserver* observer = environment_lifetime_observer.Get().Get();
-  if (observer) {
-    observer->OnScopedTaskEnvironmentCreated(main_thread_type,
-                                             GetMainThreadTaskRunner());
-  }
 }
 
 ScopedTaskEnvironment::ScopedTaskEnvironment(ScopedTaskEnvironment&& other) =
@@ -415,10 +406,6 @@ void ScopedTaskEnvironment::
   if (!sequence_manager_)
     return;
 
-  LifetimeObserver* observer = environment_lifetime_observer.Get().Get();
-  if (observer)
-    observer->OnScopedTaskEnvironmentDestroyed();
-
   if (mock_time_domain_)
     sequence_manager_->UnregisterTimeDomain(mock_time_domain_.get());
 
@@ -433,12 +420,6 @@ ScopedTaskEnvironment::CreateDefaultTaskQueue() {
   return sequence_manager_->CreateTaskQueue(
       sequence_manager::TaskQueue::Spec("scoped_task_environment_default")
           .SetTimeDomain(mock_time_domain_.get()));
-}
-
-void ScopedTaskEnvironment::SetLifetimeObserver(
-    ScopedTaskEnvironment::LifetimeObserver* lifetime_observer) {
-  DCHECK_NE(!!environment_lifetime_observer.Get().Get(), !!lifetime_observer);
-  environment_lifetime_observer.Get().Set(lifetime_observer);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
