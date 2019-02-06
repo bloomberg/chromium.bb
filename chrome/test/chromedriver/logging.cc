@@ -254,8 +254,6 @@ bool InitLogging() {
       printf("Failed to redirect stderr to log file.\n");
       return false;
     }
-    VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
-    VLOG(0) << kPortProtectionMessage;
   }
 
   Log::truncate_logged_params = !cmd_line->HasSwitch("replayable");
@@ -300,7 +298,12 @@ bool InitLogging() {
 
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  return logging::InitLogging(logging_settings);
+  bool res = logging::InitLogging(logging_settings);
+  if (cmd_line->HasSwitch("log-path") && res) {
+    VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
+    VLOG(0) << kPortProtectionMessage;
+  }
+  return res;
 }
 
 Status CreateLogs(
