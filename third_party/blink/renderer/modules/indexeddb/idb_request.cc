@@ -137,7 +137,7 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       metrics_(std::move(metrics)),
       source_(source),
       event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
-                                      TaskType::kInternalIndexedDB)) {}
+                                      TaskType::kDatabaseAccess)) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||

@@ -166,10 +166,6 @@ enum class TaskType : unsigned {
   // * //components/webcrypto
   kInternalWebCrypto = 27,
 
-  // Tasks to execute IndexedDB's callbacks. Tasks with this type are posted by:
-  // * //content/renderer/indexed_db
-  kInternalIndexedDB = 28,
-
   // Tasks to execute media-related things like logging or playback. Tasks with
   // this type are mainly posted by:
   // * //content/renderer/media

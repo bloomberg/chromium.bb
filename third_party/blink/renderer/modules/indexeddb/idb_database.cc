@@ -105,7 +105,7 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
                          v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
-      event_queue_(EventQueue::Create(context, TaskType::kInternalIndexedDB)),
+      event_queue_(EventQueue::Create(context, TaskType::kDatabaseAccess)),
       database_callbacks_(callbacks),
       isolate_(isolate) {
   database_callbacks_->Connect(this);
