@@ -7560,6 +7560,7 @@ TEST_P(QuicConnectionTest, SendMessage) {
   }
   QuicString message(connection_.GetLargestMessagePayload() * 2, 'a');
   QuicStringPiece message_data(message);
+  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   {
     QuicConnection::ScopedPacketFlusher flusher(&connection_,
                                                 QuicConnection::SEND_ACK);
@@ -7568,22 +7569,32 @@ TEST_P(QuicConnectionTest, SendMessage) {
     // get sent, one contains stream frame, and the other only contains the
     // message frame.
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-    EXPECT_EQ(MESSAGE_STATUS_SUCCESS,
-              connection_.SendMessage(
-                  1, QuicStringPiece(message_data.data(),
-                                     connection_.GetLargestMessagePayload())));
+    EXPECT_EQ(
+        MESSAGE_STATUS_SUCCESS,
+        connection_.SendMessage(
+            1, MakeSpan(connection_.helper()->GetStreamSendBufferAllocator(),
+                        QuicStringPiece(message_data.data(),
+                                        connection_.GetLargestMessagePayload()),
+                        &storage)));
   }
   // Fail to send a message if connection is congestion control blocked.
   EXPECT_CALL(*send_algorithm_, CanSend(_)).WillOnce(Return(false));
-  EXPECT_EQ(MESSAGE_STATUS_BLOCKED, connection_.SendMessage(2, "message"));
+  EXPECT_EQ(
+      MESSAGE_STATUS_BLOCKED,
+      connection_.SendMessage(
+          2, MakeSpan(connection_.helper()->GetStreamSendBufferAllocator(),
+                      "message", &storage)));
 
   // Always fail to send a message which cannot fit into one packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   EXPECT_EQ(
       MESSAGE_STATUS_TOO_LARGE,
       connection_.SendMessage(
-          3, QuicStringPiece(message_data.data(),
-                             connection_.GetLargestMessagePayload() + 1)));
+          3,
+          MakeSpan(connection_.helper()->GetStreamSendBufferAllocator(),
+                   QuicStringPiece(message_data.data(),
+                                   connection_.GetLargestMessagePayload() + 1),
+                   &storage)));
 }
 
 // Test to check that the path challenge/path response logic works

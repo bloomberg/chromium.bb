@@ -3413,7 +3413,9 @@ bool QuicFramer::ProcessMessageFrame(QuicDataReader* reader,
                                      bool no_message_length,
                                      QuicMessageFrame* frame) {
   if (no_message_length) {
-    frame->message_data = QuicString(reader->ReadRemainingPayload());
+    QuicStringPiece remaining(reader->ReadRemainingPayload());
+    frame->data = remaining.data();
+    frame->message_length = remaining.length();
     return true;
   }
 
@@ -3429,7 +3431,8 @@ bool QuicFramer::ProcessMessageFrame(QuicDataReader* reader,
     return false;
   }
 
-  frame->message_data = QuicString(message_piece);
+  frame->data = message_piece.data();
+  frame->message_length = message_length;
 
   return true;
 }
@@ -3777,7 +3780,7 @@ size_t QuicFramer::ComputeFrameLength(
     case MESSAGE_FRAME:
       return GetMessageFrameSize(version_.transport_version,
                                  last_frame_in_packet,
-                                 frame.message_frame->message_data.length());
+                                 frame.message_frame->message_length);
     case PADDING_FRAME:
       DCHECK(false);
       return 0;
@@ -4711,12 +4714,15 @@ bool QuicFramer::AppendMessageFrameAndTypeByte(const QuicMessageFrame& frame,
   if (!writer->WriteUInt8(type_byte)) {
     return false;
   }
-  if (!last_frame_in_packet &&
-      !writer->WriteVarInt62(frame.message_data.length())) {
+  if (!last_frame_in_packet && !writer->WriteVarInt62(frame.message_length)) {
     return false;
   }
-  return writer->WriteBytes(frame.message_data.data(),
-                            frame.message_data.length());
+  for (const auto& slice : frame.message_data) {
+    if (!writer->WriteBytes(slice.data(), slice.length())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool QuicFramer::RaiseError(QuicErrorCode error) {

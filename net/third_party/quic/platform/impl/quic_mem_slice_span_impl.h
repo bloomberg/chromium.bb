@@ -13,6 +13,7 @@
 namespace quic {
 
 class QuicStreamSendBuffer;
+struct QuicMessageFrame;
 
 // QuicMemSliceSpanImpl wraps a MemSlice span.
 class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
@@ -31,6 +32,9 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
   // Save IO buffers in buffers_ to |send_buffer| and returns the length of all
   // saved mem slices.
   QuicByteCount SaveMemSlicesInSendBuffer(QuicStreamSendBuffer* send_buffer);
+
+  // Save data buffers as message data in |message_frame|.
+  void SaveMemSlicesAsMessageData(QuicMessageFrame* message_frame);
 
   QuicStringPiece GetData(size_t index) {
     return QuicStringPiece(buffers_[index]->data(), lengths_[index]);

@@ -456,7 +456,7 @@ size_t QuicPacketCreator::ExpansionOnNewFrame() const {
       !queued_frames_.empty() && queued_frames_.back().type == MESSAGE_FRAME;
   if (has_trailing_message_frame) {
     return QuicDataWriter::GetVarInt62Len(
-        queued_frames_.back().message_frame->message_data.length());
+        queued_frames_.back().message_frame->message_length);
   }
   // If the last frame in the packet is a stream frame, then it will expand to
   // include the stream_length field when a new frame is added.

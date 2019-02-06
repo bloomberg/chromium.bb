@@ -1140,5 +1140,18 @@ StreamType DetermineStreamType(QuicStreamId id,
                                     : default_type;
 }
 
+QuicMemSliceSpan MakeSpan(QuicBufferAllocator* allocator,
+                          QuicStringPiece message_data,
+                          QuicMemSliceStorage* storage) {
+  if (message_data.length() == 0) {
+    *storage = QuicMemSliceStorage(nullptr, 0, allocator, kMaxPacketSize);
+    return storage->ToSpan();
+  }
+  struct iovec iov = {const_cast<char*>(message_data.data()),
+                      message_data.length()};
+  *storage = QuicMemSliceStorage(&iov, 1, allocator, kMaxPacketSize);
+  return storage->ToSpan();
+}
+
 }  // namespace test
 }  // namespace quic

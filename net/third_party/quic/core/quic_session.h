@@ -161,11 +161,17 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                                       QuicStreamOffset offset,
                                       StreamSendingState state);
 
-  // Called by application to send |message|. Returns the message result which
-  // includes the message status and message ID (valid if the write succeeds).
-  // SendMessage flushes a message packet even it is not full. If the
-  // application wants to bundle other data in the same packet, please consider
-  // adding a packet flusher around the SendMessage and/or WritevData calls.
+  // Called by application to send |message|. Data copy can be avoided if
+  // |message| is provided in reference counted memory.
+  // Please note, |message| provided in reference counted memory would be moved
+  // internally when message is successfully sent. Thereafter, it would be
+  // undefined behavior if callers try to access the slices through their own
+  // copy of the span object.
+  // Returns the message result which includes the message status and message ID
+  // (valid if the write succeeds). SendMessage flushes a message packet even it
+  // is not full. If the application wants to bundle other data in the same
+  // packet, please consider adding a packet flusher around the SendMessage
+  // and/or WritevData calls.
   //
   // OnMessageAcked and OnMessageLost are called when a particular message gets
   // acked or lost.
@@ -175,7 +181,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // blocked. In this case the caller can retry sending message again when
   // connection becomes available, for example after getting OnCanWrite()
   // callback.
-  MessageResult SendMessage(QuicStringPiece message);
+  MessageResult SendMessage(QuicMemSliceSpan message);
 
   // Called when message with |message_id| gets acked.
   virtual void OnMessageAcked(QuicMessageId message_id);

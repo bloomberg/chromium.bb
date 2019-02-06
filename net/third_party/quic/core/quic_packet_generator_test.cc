@@ -266,6 +266,7 @@ class QuicPacketGeneratorTest : public QuicTest {
   std::vector<SerializedPacket> packets_;
   QuicAckFrame ack_frame_;
   struct iovec iov_;
+  SimpleBufferAllocator allocator_;
 
  private:
   std::unique_ptr<char[]> data_array_;
@@ -1370,6 +1371,7 @@ TEST_F(QuicPacketGeneratorTest, AddMessageFrame) {
   if (framer_.transport_version() <= QUIC_VERSION_44) {
     return;
   }
+  quic::QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   delegate_.SetCanWriteAnything();
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
@@ -1378,21 +1380,29 @@ TEST_F(QuicPacketGeneratorTest, AddMessageFrame) {
   generator_.ConsumeData(
       QuicUtils::GetHeadersStreamId(framer_.transport_version()), &iov_, 1u,
       iov_.iov_len, 0, FIN);
-  EXPECT_EQ(MESSAGE_STATUS_SUCCESS, generator_.AddMessageFrame(1, "message"));
+  EXPECT_EQ(MESSAGE_STATUS_SUCCESS,
+            generator_.AddMessageFrame(
+                1, MakeSpan(&allocator_, "message", &storage)));
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 
   // Add a message which causes the flush of current packet.
-  EXPECT_EQ(MESSAGE_STATUS_SUCCESS,
-            generator_.AddMessageFrame(
-                2, QuicString(generator_.GetLargestMessagePayload(), 'a')));
+  EXPECT_EQ(
+      MESSAGE_STATUS_SUCCESS,
+      generator_.AddMessageFrame(
+          2, MakeSpan(&allocator_,
+                      QuicString(generator_.GetLargestMessagePayload(), 'a'),
+                      &storage)));
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 
   // Failed to send messages which cannot fit into one packet.
   EXPECT_EQ(
       MESSAGE_STATUS_TOO_LARGE,
       generator_.AddMessageFrame(
-          3, QuicString(generator_.GetLargestMessagePayload() + 10, 'a')));
+          3,
+          MakeSpan(&allocator_,
+                   QuicString(generator_.GetLargestMessagePayload() + 10, 'a'),
+                   &storage)));
 }
 
 }  // namespace test

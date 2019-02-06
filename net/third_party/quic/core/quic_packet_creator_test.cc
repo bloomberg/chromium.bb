@@ -256,6 +256,7 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
   TestPacketCreator creator_;
   SerializedPacket serialized_packet_;
   SimpleDataProducer producer_;
+  SimpleBufferAllocator allocator_;
 };
 
 // Run all packet creator tests with all supported versions of QUIC, and with
@@ -1489,22 +1490,29 @@ TEST_P(QuicPacketCreatorTest, AddMessageFrame) {
       .Times(3)
       .WillRepeatedly(
           Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacketForTests));
+  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   // Verify that there is enough room for the largest message payload.
   EXPECT_TRUE(
       creator_.HasRoomForMessageFrame(creator_.GetLargestMessagePayload()));
   QuicString message(creator_.GetLargestMessagePayload(), 'a');
-  EXPECT_TRUE(creator_.AddSavedFrame(
-      QuicFrame(new QuicMessageFrame(1, message)), NOT_RETRANSMISSION));
+  QuicMessageFrame* message_frame = new QuicMessageFrame(1);
+  MakeSpan(&allocator_, message, &storage)
+      .SaveMemSlicesAsMessageData(message_frame);
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(message_frame), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   creator_.Flush();
 
-  EXPECT_TRUE(creator_.AddSavedFrame(
-      QuicFrame(new QuicMessageFrame(2, "message")), NOT_RETRANSMISSION));
+  QuicMessageFrame* frame2 = new QuicMessageFrame(2);
+  MakeSpan(&allocator_, "message", &storage).SaveMemSlicesAsMessageData(frame2);
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(frame2), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   // Verify if a new frame is added, 1 byte message length will be added.
   EXPECT_EQ(1u, creator_.ExpansionOnNewFrame());
-  EXPECT_TRUE(creator_.AddSavedFrame(
-      QuicFrame(new QuicMessageFrame(3, "message2")), NOT_RETRANSMISSION));
+  QuicMessageFrame* frame3 = new QuicMessageFrame(3);
+  MakeSpan(&allocator_, "message2", &storage)
+      .SaveMemSlicesAsMessageData(frame3);
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(frame3), NOT_RETRANSMISSION));
   EXPECT_EQ(1u, creator_.ExpansionOnNewFrame());
   creator_.Flush();
 
@@ -1513,16 +1521,17 @@ TEST_P(QuicPacketCreatorTest, AddMessageFrame) {
   EXPECT_TRUE(creator_.ConsumeData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
       1u, iov_.iov_len, 0u, 0u, false, false, NOT_RETRANSMISSION, &frame));
-  EXPECT_TRUE(creator_.AddSavedFrame(
-      QuicFrame(new QuicMessageFrame(1, "message")), NOT_RETRANSMISSION));
+  QuicMessageFrame* frame4 = new QuicMessageFrame(4);
+  MakeSpan(&allocator_, "message", &storage).SaveMemSlicesAsMessageData(frame4);
+  EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(frame4), NOT_RETRANSMISSION));
   EXPECT_TRUE(creator_.HasPendingFrames());
   // Verify there is not enough room for largest payload.
   EXPECT_FALSE(
       creator_.HasRoomForMessageFrame(creator_.GetLargestMessagePayload()));
   // Add largest message will causes the flush of the stream frame.
-  QuicMessageFrame message_frame(2, message);
-  EXPECT_FALSE(
-      creator_.AddSavedFrame(QuicFrame(&message_frame), NOT_RETRANSMISSION));
+  QuicMessageFrame frame5(5);
+  MakeSpan(&allocator_, message, &storage).SaveMemSlicesAsMessageData(&frame5);
+  EXPECT_FALSE(creator_.AddSavedFrame(QuicFrame(&frame5), NOT_RETRANSMISSION));
   EXPECT_FALSE(creator_.HasPendingFrames());
 }
 
@@ -1532,13 +1541,15 @@ TEST_P(QuicPacketCreatorTest, MessageFrameConsumption) {
   }
   QuicString message_data(kDefaultMaxPacketSize, 'a');
   QuicStringPiece message_buffer(message_data);
+  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   // Test all possible size of message frames.
   for (size_t message_size = 0;
        message_size <= creator_.GetLargestMessagePayload(); ++message_size) {
-    EXPECT_TRUE(creator_.AddSavedFrame(
-        QuicFrame(new QuicMessageFrame(
-            0, QuicStringPiece(message_buffer.data(), message_size))),
-        NOT_RETRANSMISSION));
+    QuicMessageFrame* frame = new QuicMessageFrame(0);
+    MakeSpan(&allocator_, QuicStringPiece(message_buffer.data(), message_size),
+             &storage)
+        .SaveMemSlicesAsMessageData(frame);
+    EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(frame), NOT_RETRANSMISSION));
     EXPECT_TRUE(creator_.HasPendingFrames());
 
     size_t expansion_bytes = message_size >= 64 ? 2 : 1;
