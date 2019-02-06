@@ -2951,7 +2951,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON})
     public void testQuickActionCaptionAndImage() throws InterruptedException, TimeoutException {
-        mPanel.getAnimationHandler().enableTestingMode();
+        mPanel.getAnimationHandler().setTestingMode(true);
 
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
