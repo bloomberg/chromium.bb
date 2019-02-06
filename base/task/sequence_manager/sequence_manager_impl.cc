@@ -123,6 +123,14 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
 
+  // Make sure no Task is running as given that RunLoop does not support the
+  // Delegate being destroyed from a Task and
+  // ThreadControllerWithMessagePumpImpl does not support being destroyed from a
+  // Task. If we are using a ThreadControllerImpl (i.e. no pump) destruction is
+  // fine
+  DCHECK(!controller_->GetBoundMessagePump() ||
+         main_thread_only().task_execution_stack.empty());
+
   // TODO(altimin): restore default task runner automatically when
   // ThreadController is destroyed.
   controller_->RestoreDefaultTaskRunner();

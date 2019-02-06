@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -23,6 +24,7 @@
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/test/mock_time_domain.h"
+#include "base/task/sequence_manager/test/mock_time_message_pump.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/task/sequence_manager/test/test_task_time_observer.h"
@@ -31,6 +33,7 @@
 #include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/null_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -147,6 +150,67 @@ class FixtureWithMockTaskRunner final : public Fixture {
   std::unique_ptr<SequenceManagerForTest> sequence_manager_;
 };
 
+class FixtureWithWithMockMessagePump : public Fixture {
+ public:
+  FixtureWithWithMockMessagePump() {
+    // A null clock triggers some assertions.
+    mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
+
+    auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
+    pump_ = pump.get();
+    sequence_manager_ = SequenceManagerForTest::Create(
+        std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
+                                                              &mock_clock_),
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
+    sequence_manager_->SetDefaultTaskRunner(MakeRefCounted<NullTaskRunner>());
+  }
+
+  void AdvanceMockTickClock(TimeDelta delta) override {
+    mock_clock_.Advance(delta);
+  }
+
+  const TickClock* mock_tick_clock() const override { return &mock_clock_; }
+
+  TimeDelta NextPendingTaskDelay() const override {
+    return pump_->next_wake_up_time() - mock_clock_.NowTicks();
+  }
+
+  void FastForwardBy(TimeDelta delta) override {
+    pump_->SetAllowTimeToAutoAdvanceUntil(mock_clock_.NowTicks() + delta);
+    pump_->SetStopWhenMessagePumpIsIdle(true);
+    RunLoop().Run();
+    pump_->SetStopWhenMessagePumpIsIdle(false);
+  }
+
+  void FastForwardUntilNoTasksRemain() override {
+    pump_->SetAllowTimeToAutoAdvanceUntil(TimeTicks::Max());
+    pump_->SetStopWhenMessagePumpIsIdle(true);
+    RunLoop().Run();
+    pump_->SetStopWhenMessagePumpIsIdle(false);
+    pump_->SetAllowTimeToAutoAdvanceUntil(mock_clock_.NowTicks());
+  }
+
+  void RunDoWorkOnce() override {
+    pump_->SetQuitAfterDoSomeWork(true);
+    RunLoop().Run();
+    pump_->SetQuitAfterDoSomeWork(false);
+  }
+
+  SequenceManagerForTest* sequence_manager() const override {
+    return sequence_manager_.get();
+  }
+
+  void DestroySequenceManager() override {
+    pump_ = nullptr;
+    sequence_manager_.reset();
+  };
+
+ private:
+  MockTimeMessagePump* pump_ = nullptr;
+  SimpleTestTickClock mock_clock_;
+  std::unique_ptr<SequenceManagerForTest> sequence_manager_;
+};
+
 // SequenceManagerImpl uses TestMockTimeTaskRunner which controls
 // both task execution and mock clock.
 // TODO(kraynov): Make this class to support all TestTypes.
@@ -159,6 +223,9 @@ class SequenceManagerTest : public testing::TestWithParam<TestType>,
     switch (GetParam()) {
       case TestType::kUseMockTaskRunner:
         fixture_ = std::make_unique<FixtureWithMockTaskRunner>();
+        break;
+      case TestType::kUseMessagePump:
+        fixture_ = std::make_unique<FixtureWithWithMockMessagePump>();
         break;
       default:
         DCHECK(false);
@@ -228,6 +295,19 @@ class SequenceManagerTest : public testing::TestWithParam<TestType>,
  private:
   std::unique_ptr<Fixture> fixture_;
 };
+
+std::string GetTestNameSuffix(const testing::TestParamInfo<TestType>& info) {
+  switch (info.param) {
+    case TestType::kUseMockTaskRunner:
+      return "MockTaskRunner";
+    case TestType::kUseMessagePump:
+      return "MessagePump";
+    case TestType::kUseMessageLoop:
+      return "MessageLoop";
+    case TestType::kCustom:
+      return "Custom";
+  }
+}
 
 // TODO(carlscab): Remove once the classes below have been migrated to
 // SequenceManagerTest
@@ -312,44 +392,6 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
 };
 
 // TODO(carlscab): Migrate to SequenceManagerTest and remove
-class SequenceManagerTestWithMessagePump : public SequenceManagerTestBase {
- protected:
-  void SetUp() override { SetUpWithMessagePump(); }
-
-  void SetUpWithMessageLoop() {
-    message_loop_.reset(new MessageLoop());
-    // A null clock triggers some assertions.
-    mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
-    start_time_ = mock_clock_.NowTicks();
-
-    manager_ = SequenceManagerForTest::Create(
-        message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
-        &mock_clock_,
-        SequenceManager::Settings{.randomised_sampling_enabled = false});
-  }
-
-  void SetUpWithMessagePump() {
-    mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
-    start_time_ = mock_clock_.NowTicks();
-    manager_ = SequenceManagerForTest::Create(
-        std::make_unique<ThreadControllerWithMessagePumpImpl>(
-            std::make_unique<MessagePumpDefault>(), &mock_clock_),
-        SequenceManager::Settings{.randomised_sampling_enabled = false});
-    // ThreadControllerWithMessagePumpImpl doesn't provide
-    // a default task runner.
-    default_task_queue_ = manager_->CreateTaskQueueWithType<TestTaskQueue>(
-        TaskQueue::Spec("default"));
-    manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
-  }
-
-  const TickClock* GetTickClock() { return &mock_clock_; }
-
-  scoped_refptr<TestTaskQueue> default_task_queue_;
-  std::unique_ptr<MessageLoop> message_loop_;
-  SimpleTestTickClock mock_clock_;
-};
-
-// TODO(carlscab): Migrate to SequenceManagerTest and remove
 class SequenceManagerTestWithCustomInitialization
     : public SequenceManagerTestWithMessageLoop {
  protected:
@@ -357,17 +399,9 @@ class SequenceManagerTestWithCustomInitialization
 };
 
 INSTANTIATE_TEST_CASE_P(,
-                        SequenceManagerTest,
-                        testing::Values(TestType::kUseMockTaskRunner));
-
-INSTANTIATE_TEST_CASE_P(,
                         SequenceManagerTestWithMessageLoop,
                         testing::Values(TestType::kUseMessageLoop,
                                         TestType::kUseMessagePump));
-
-INSTANTIATE_TEST_CASE_P(,
-                        SequenceManagerTestWithMessagePump,
-                        testing::Values(TestType::kUseMessagePump));
 
 INSTANTIATE_TEST_CASE_P(,
                         SequenceManagerTestWithCustomInitialization,
@@ -1262,16 +1296,38 @@ TEST_P(SequenceManagerTest, ReentrantPosting) {
   EXPECT_THAT(run_order, ElementsAre(3u, 2u, 1u));
 }
 
+namespace {
+class RefCountedCallbackFactory {
+ public:
+  OnceCallback<void()> WrapCallback(OnceCallback<void()> cb) {
+    return BindOnce(
+        [](OnceCallback<void()> cb, WeakPtr<bool>) { std::move(cb).Run(); },
+        std::move(cb), task_references_.GetWeakPtr());
+  }
+
+  bool HasReferences() const { return task_references_.HasWeakPtrs(); }
+
+ private:
+  bool dummy_;
+  WeakPtrFactory<bool> task_references_{&dummy_};
+};
+}  // namespace
+
 TEST_P(SequenceManagerTest, NoTasksAfterShutdown) {
   auto queue = CreateTaskQueue();
+  StrictMock<MockTask> task;
+  RefCountedCallbackFactory counter;
 
-  std::vector<EnqueueOrder> run_order;
-  queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
+  EXPECT_CALL(task, Run).Times(0);
+  queue->task_runner()->PostTask(FROM_HERE, counter.WrapCallback(task.Get()));
   DestroySequenceManager();
-  queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
+  queue->task_runner()->PostTask(FROM_HERE, counter.WrapCallback(task.Get()));
 
-  RunLoop().RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());
+  if (GetParam() != TestType::kUseMessagePump) {
+    RunLoop().RunUntilIdle();
+  }
+
+  EXPECT_FALSE(counter.HasReferences());
 }
 
 void PostTaskToRunner(scoped_refptr<TestTaskQueue> runner,
@@ -1539,12 +1595,14 @@ TEST_P(SequenceManagerTest, TimeDomain_NextScheduledRunTime_MultipleQueues) {
                         &lazy_now));
 }
 
-TEST_P(SequenceManagerTest, DeleteSequenceManagerInsideATask) {
-  auto queue = CreateTaskQueue();
+TEST(SequenceManagerWithTaskRunnerTest, DeleteSequenceManagerInsideATask) {
+  FixtureWithMockTaskRunner fixture;
+  auto queue =
+      fixture.sequence_manager()->CreateTaskQueue(TaskQueue::Spec("test"));
 
-  queue->task_runner()->PostTask(
-      FROM_HERE,
-      BindOnce(&SequenceManagerTest::DestroySequenceManager, Unretained(this)));
+  queue->task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                   fixture.DestroySequenceManager();
+                                 }));
 
   // This should not crash, assuming DoWork detects the SequenceManager has
   // been deleted.
@@ -2125,7 +2183,9 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_ImmediateTask) {
 
   // Unless the immediate work queue is emptied.
   sequence_manager()->TakeTask();
+  sequence_manager()->DidRunTask();
   sequence_manager()->TakeTask();
+  sequence_manager()->DidRunTask();
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(queue.get(), _));
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
   sequence_manager()->ReloadEmptyWorkQueues();
@@ -2375,7 +2435,7 @@ class QuadraticTask {
         FROM_HERE, BindOnce(&QuadraticTask::Run, Unretained(this)), delay_);
     task_runner_->PostDelayedTask(
         FROM_HERE, BindOnce(&QuadraticTask::Run, Unretained(this)), delay_);
-    fixture_->FastForwardBy(TimeDelta::FromMilliseconds(5));
+    fixture_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(5));
   }
 
   int Count() const { return count_; }
@@ -2408,7 +2468,7 @@ class LinearTask {
     count_++;
     task_runner_->PostDelayedTask(
         FROM_HERE, BindOnce(&LinearTask::Run, Unretained(this)), delay_);
-    fixture_->FastForwardBy(TimeDelta::FromMilliseconds(5));
+    fixture_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(5));
   }
 
   int Count() const { return count_; }
@@ -3130,7 +3190,9 @@ TEST_P(SequenceManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
-  EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
+  EXPECT_EQ(GetParam() == TestType::kUseMessagePump ? TimeDelta::FromDays(1)
+                                                    : TimeDelta::Max(),
+            NextPendingTaskDelay());
 
   voter->SetQueueEnabled(true);
   EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
@@ -3161,7 +3223,9 @@ TEST_P(SequenceManagerTest, DisablingQueuesChangesDelayTillNextDoWork) {
   EXPECT_EQ(TimeDelta::FromMilliseconds(100), NextPendingTaskDelay());
 
   voter2->SetQueueEnabled(false);
-  EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
+  EXPECT_EQ(GetParam() == TestType::kUseMessagePump ? TimeDelta::FromDays(1)
+                                                    : TimeDelta::Max(),
+            NextPendingTaskDelay());
 }
 
 TEST_P(SequenceManagerTest, GetNextScheduledWakeUp) {
@@ -3417,7 +3481,9 @@ TEST_P(SequenceManagerTest, GracefulShutdown_ManagerDeletedInFlight) {
   // thread.
   DestroySequenceManager();
 
-  FastForwardUntilNoTasksRemain();
+  if (GetParam() != TestType::kUseMessagePump) {
+    FastForwardUntilNoTasksRemain();
+  }
 
   EXPECT_THAT(run_times,
               ElementsAre(kStartTime + TimeDelta::FromMilliseconds(100),
@@ -3430,6 +3496,7 @@ TEST_P(SequenceManagerTest,
   std::vector<TimeTicks> run_times;
   scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
   WeakPtr<TestTaskQueue> main_tq_weak_ptr = main_tq->GetWeakPtr();
+  RefCountedCallbackFactory counter;
 
   EXPECT_EQ(1u, sequence_manager()->ActiveQueuesCount());
   EXPECT_EQ(0u, sequence_manager()->QueuesToShutdownCount());
@@ -3437,7 +3504,9 @@ TEST_P(SequenceManagerTest,
 
   for (int i = 1; i <= 5; ++i) {
     main_tq->task_runner()->PostDelayedTask(
-        FROM_HERE, BindOnce(&RecordTimeTask, &run_times, mock_tick_clock()),
+        FROM_HERE,
+        counter.WrapCallback(
+            BindOnce(&RecordTimeTask, &run_times, mock_tick_clock())),
         TimeDelta::FromMilliseconds(i * 100));
   }
   FastForwardBy(TimeDelta::FromMilliseconds(250));
@@ -3455,11 +3524,14 @@ TEST_P(SequenceManagerTest,
   // Ensure that all queues-to-gracefully-shutdown are properly unregistered.
   DestroySequenceManager();
 
-  FastForwardUntilNoTasksRemain();
+  if (GetParam() != TestType::kUseMessagePump) {
+    FastForwardUntilNoTasksRemain();
+  }
 
   EXPECT_THAT(run_times,
               ElementsAre(kStartTime + TimeDelta::FromMilliseconds(100),
                           kStartTime + TimeDelta::FromMilliseconds(200)));
+  EXPECT_FALSE(counter.HasReferences());
 }
 
 TEST_P(SequenceManagerTestWithCustomInitialization, DefaultTaskRunnerSupport) {
@@ -3990,7 +4062,7 @@ class SMDestructionObserver : public MessageLoopCurrent::DestructionObserver {
 
 }  // namespace
 
-TEST_P(SequenceManagerTestWithMessagePump, DestructionObserverTest) {
+TEST_P(SequenceManagerTest, DestructionObserverTest) {
   auto queue = CreateTaskQueue();
 
   // Verify that the destruction observer gets called at the very end (after
@@ -4001,7 +4073,7 @@ TEST_P(SequenceManagerTestWithMessagePump, DestructionObserverTest) {
   bool destruction_observer_called = false;
 
   SMDestructionObserver observer(&task_destroyed, &destruction_observer_called);
-  manager_->AddDestructionObserver(&observer);
+  sequence_manager()->AddDestructionObserver(&observer);
   queue->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&DestructionObserverProbe::Run,
@@ -4009,7 +4081,7 @@ TEST_P(SequenceManagerTestWithMessagePump, DestructionObserverTest) {
                    &task_destroyed, &destruction_observer_called)),
       kDelay);
 
-  manager_.reset();
+  DestroySequenceManager();
 
   EXPECT_TRUE(observer.task_destroyed_before_message_loop());
   // The task should have been destroyed when we deleted the loop.
