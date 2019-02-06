@@ -87,6 +87,7 @@ class MarkupAccumulator {
   void PopNamespaces();
   void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
   AtomicString LookupNamespaceURI(const AtomicString& prefix);
+  AtomicString GeneratePrefix(const AtomicString& new_namespace);
 
   virtual void AppendCustomAttributes(const Element&);
   virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
@@ -106,6 +107,8 @@ class MarkupAccumulator {
                                     EChildrenOnly children_only);
 
   Vector<Namespaces> namespace_stack_;
+  // https://w3c.github.io/DOM-Parsing/#dfn-generated-namespace-prefix-index
+  uint32_t prefix_index_;
 
   DISALLOW_COPY_AND_ASSIGN(MarkupAccumulator);
 };

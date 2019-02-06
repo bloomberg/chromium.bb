@@ -185,23 +185,17 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
     // Run these steps:
     if (ShouldAddNamespaceAttribute(attribute, element)) {
       if (!candidate_prefix) {
-        // This behavior is in process of being standardized. See
-        // crbug.com/248044 and
-        // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
-        String prefix_prefix("ns", 2u);
-        for (unsigned i = attribute_namespace.Impl()->ExistingHash();; ++i) {
-          AtomicString new_prefix(String(prefix_prefix + String::Number(i)));
-          AtomicString found_uri = LookupNamespaceURI(new_prefix);
-          if (found_uri == attribute_namespace || found_uri == g_null_atom) {
-            // We already generated a prefix for this namespace.
-            candidate_prefix = new_prefix;
-            break;
-          }
-        }
+        // 3.5.3.1. Let candidate prefix be the result of generating a prefix
+        // providing map, attribute namespace, and prefix index as input.
+        candidate_prefix = GeneratePrefix(attribute_namespace);
+        // 3.5.3.2. Append the following to result, in the order listed:
+        MarkupFormatter::AppendAttribute(markup_, g_xmlns_atom,
+                                         candidate_prefix, attribute_namespace,
+                                         false);
+      } else {
+        DCHECK(candidate_prefix);
+        AppendNamespace(candidate_prefix, attribute_namespace);
       }
-      // 3.5.3.2. Append the following to result, in the order listed:
-      DCHECK(candidate_prefix);
-      AppendNamespace(candidate_prefix, attribute_namespace);
     }
   }
   MarkupFormatter::AppendAttribute(markup_, candidate_prefix,
@@ -270,6 +264,20 @@ void MarkupAccumulator::AddPrefix(const AtomicString& prefix,
 
 AtomicString MarkupAccumulator::LookupNamespaceURI(const AtomicString& prefix) {
   return namespace_stack_.back().at(prefix ? prefix : g_empty_atom);
+}
+
+// https://w3c.github.io/DOM-Parsing/#dfn-generating-a-prefix
+AtomicString MarkupAccumulator::GeneratePrefix(
+    const AtomicString& new_namespace) {
+  // 1. Let generated prefix be the concatenation of the string "ns" and the
+  // current numerical value of prefix index.
+  AtomicString generated_prefix = "ns" + String::Number(prefix_index_);
+  // 2. Let the value of prefix index be incremented by one.
+  ++prefix_index_;
+  // 3. Add to map the generated prefix given the new namespace namespace.
+  AddPrefix(generated_prefix, new_namespace);
+  // 4. Return the value of generated prefix.
+  return generated_prefix;
 }
 
 bool MarkupAccumulator::SerializeAsHTMLDocument(const Node& node) const {
@@ -354,6 +362,8 @@ String MarkupAccumulator::SerializeNodes(const Node& target_node,
     namespace_stack_.emplace_back();
     // 3. Add the XML namespace with prefix value "xml" to prefix map.
     AddPrefix(g_xml_atom, xml_names::kNamespaceURI);
+    // 4. Let prefix index be a generated namespace prefix index with value 1.
+    prefix_index_ = 1;
   } else {
     // Need the first item because we refer namespace_stack_.back() in
     // PushNamespaces().
