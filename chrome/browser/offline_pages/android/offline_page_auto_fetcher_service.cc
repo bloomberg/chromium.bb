@@ -215,30 +215,19 @@ void OfflinePageAutoFetcherService::TryScheduleStep3(
 
 void OfflinePageAutoFetcherService::CancelScheduleStep1(const GURL& url,
                                                         TaskToken token) {
-  // Get all requests, and proceed to step 2.
-  request_coordinator_->GetAllRequests(base::BindOnce(
-      &OfflinePageAutoFetcherService::CancelScheduleStep2, GetWeakPtr(),
-      std::move(token), url, request_coordinator_));
+  auto predicate = base::BindRepeating(
+      [](const GURL& url, const SavePageRequest& request) {
+        return request.client_id().name_space == kAutoAsyncNamespace &&
+               URLMatches(request.url(), url);
+      },
+      url);
+  request_coordinator_->RemoveRequestsIf(
+      predicate,
+      base::BindOnce(&OfflinePageAutoFetcherService::CancelScheduleStep2,
+                     GetWeakPtr(), std::move(token)));
 }
 
 void OfflinePageAutoFetcherService::CancelScheduleStep2(
-    TaskToken token,
-    const GURL& url,
-    RequestCoordinator* coordinator,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  // Cancel the request if it's found in the list of all requests.
-  SavePageRequest* matching_request = FindRequest(requests, url);
-  if (matching_request) {
-    coordinator->RemoveRequests(
-        {matching_request->request_id()},
-        base::BindOnce(&OfflinePageAutoFetcherService::CancelScheduleStep3,
-                       GetWeakPtr(), std::move(token)));
-    return;
-  }
-  TaskComplete(std::move(token));
-}
-
-void OfflinePageAutoFetcherService::CancelScheduleStep3(
     TaskToken token,
     const MultipleItemStatuses&) {
   TaskComplete(std::move(token));
