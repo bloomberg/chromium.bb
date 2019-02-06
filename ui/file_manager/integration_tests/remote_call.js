@@ -65,7 +65,17 @@ RemoteCall.prototype.isStepByStepEnabled_ = async function() {
 RemoteCall.prototype.callRemoteTestUtil =
     async function(func, appId, args, opt_callback) {
   const stepByStep = await this.isStepByStepEnabled_();
+  let finishCurrentStep;
   if (stepByStep) {
+    while (window.currentStep) {
+      await window.currentStep;
+    }
+    window.currentStep = new Promise(resolve => {
+      finishCurrentStep = () => {
+        window.currentStep = null;
+        resolve();
+      };
+    });
     console.info('Executing: ' + func + ' on ' + appId + ' with args: ');
     console.info(args);
     if (window.autostep !== true) {
@@ -89,6 +99,7 @@ RemoteCall.prototype.callRemoteTestUtil =
   if (stepByStep) {
     console.info('Returned value:');
     console.info(JSON.stringify(response));
+    finishCurrentStep();
   }
   if (opt_callback) {
     opt_callback(response);
