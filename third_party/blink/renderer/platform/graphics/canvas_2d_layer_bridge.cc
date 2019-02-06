@@ -50,21 +50,12 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
-namespace {
-enum {
-  InvalidMailboxIndex = -1,
-  MaxCanvasAnimationBacklog = 2,  // Make sure the the GPU is never more than
-                                  // two animation frames behind.
-};
-}  // namespace
-
 namespace blink {
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          AccelerationMode acceleration_mode,
                                          const CanvasColorParams& color_params)
     : logger_(std::make_unique<Logger>()),
-      bytes_allocated_(0),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
       is_deferral_enabled_(true),
@@ -86,33 +77,30 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
     recorder_->getRecordingCanvas()->clear(
         color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
                                                   : SK_ColorTRANSPARENT);
-    DidDraw(FloatRect(FloatPoint(0, 0), FloatSize(size_)));
+    DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
   }
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
   UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DLayerBridgeIsDeferred",
                         is_deferral_enabled_);
-
   if (IsHibernating())
     logger_->ReportHibernationEvent(kHibernationEndedWithTeardown);
   ResetResourceProvider();
 
-  if (layer_ && acceleration_mode_ != kDisableAcceleration) {
+  if (!layer_)
+    return;
+
+  if (acceleration_mode_ != kDisableAcceleration) {
     GraphicsLayer::UnregisterContentsLayer(layer_.get());
     layer_->ClearTexture();
-    // Orphaning the layer is required to trigger the recration of a new layer
+    // Orphaning the layer is required to trigger the recreation of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
     // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
     layer_->RemoveFromParent();
   }
-
-  DCHECK(!bytes_allocated_);
-
-  if (layer_) {
-    layer_->ClearClient();
-    layer_ = nullptr;
-  }
+  layer_->ClearClient();
+  layer_ = nullptr;
 }
 
 void Canvas2DLayerBridge::StartRecording() {
@@ -124,21 +112,15 @@ void Canvas2DLayerBridge::StartRecording() {
   // and clip.
   canvas->save();
 
-  if (resource_host_) {
+  if (resource_host_)
     resource_host_->RestoreCanvasMatrixClipStack(canvas);
-  }
 
   recording_pixel_count_ = 0;
 }
 
-void Canvas2DLayerBridge::SetLoggerForTesting(std::unique_ptr<Logger> logger) {
-  logger_ = std::move(logger);
-}
-
 void Canvas2DLayerBridge::ResetResourceProvider() {
-  if (resource_host_) {
+  if (resource_host_)
     resource_host_->ReplaceResourceProvider(nullptr);
-  }
 }
 
 bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
@@ -162,8 +144,9 @@ bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
   if (accelerate && (!context_provider_wrapper ||
                      context_provider_wrapper->ContextProvider()
                              ->ContextGL()
-                             ->GetGraphicsResetStatusKHR() != GL_NO_ERROR))
+                             ->GetGraphicsResetStatusKHR() != GL_NO_ERROR)) {
     accelerate = false;
+  }
   return accelerate;
 }
 
@@ -304,12 +287,14 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   AccelerationHint adjusted_hint =
       want_acceleration ? kPreferAcceleration : kPreferNoAcceleration;
 
-  // We call Impl directly here, to allow HTMLCanvasElement to call us
-  // in GetOrCreateCanvasResourceProvider.
+  // We call GetOrCreateCanvasResourceProviderImpl directly here to prevent a
+  // circular callstack from HTMLCanvasElement.
   resource_provider =
       resource_host_->GetOrCreateCanvasResourceProviderImpl(adjusted_hint);
+  if (!resource_provider)
+    return nullptr;
 
-  if (resource_provider && IsAccelerated() && !layer_) {
+  if (IsAccelerated() && !layer_) {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
@@ -319,49 +304,46 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
-  if (resource_provider && IsHibernating()) {
-    if (resource_provider->IsAccelerated()) {
-      logger_->ReportHibernationEvent(kHibernationEndedNormally);
+  if (!IsHibernating())
+    return resource_provider;
+
+  if (resource_provider->IsAccelerated()) {
+    logger_->ReportHibernationEvent(kHibernationEndedNormally);
+  } else {
+    if (IsHidden()) {
+      logger_->ReportHibernationEvent(
+          kHibernationEndedWithSwitchToBackgroundRendering);
     } else {
-      if (IsHidden()) {
-        logger_->ReportHibernationEvent(
-            kHibernationEndedWithSwitchToBackgroundRendering);
-      } else {
-        logger_->ReportHibernationEvent(kHibernationEndedWithFallbackToSW);
-      }
-    }
-
-    PaintFlags copy_paint;
-    copy_paint.setBlendMode(SkBlendMode::kSrc);
-    PaintImageBuilder builder = PaintImageBuilder::WithDefault();
-    builder.set_image(hibernation_image_, PaintImage::GetNextContentId());
-    builder.set_id(PaintImage::GetNextId());
-    resource_provider->Canvas()->drawImage(builder.TakePaintImage(), 0, 0,
-                                           &copy_paint);
-    hibernation_image_.reset();
-
-    if (resource_host_) {
-      if (!is_deferral_enabled_) {
-        resource_host_->RestoreCanvasMatrixClipStack(
-            resource_provider->Canvas());
-      }
-
-      // shouldBeDirectComposited() may have changed.
-      resource_host_->SetNeedsCompositingUpdate();
+      logger_->ReportHibernationEvent(kHibernationEndedWithFallbackToSW);
     }
   }
 
+  PaintFlags copy_paint;
+  copy_paint.setBlendMode(SkBlendMode::kSrc);
+  PaintImageBuilder builder = PaintImageBuilder::WithDefault();
+  builder.set_image(hibernation_image_, PaintImage::GetNextContentId());
+  builder.set_id(PaintImage::GetNextId());
+  resource_provider->Canvas()->drawImage(builder.TakePaintImage(), 0, 0,
+                                         &copy_paint);
+  hibernation_image_.reset();
+
+  if (resource_host_) {
+    if (!is_deferral_enabled_)
+      resource_host_->RestoreCanvasMatrixClipStack(resource_provider->Canvas());
+
+    // shouldBeDirectComposited() may have changed.
+    resource_host_->SetNeedsCompositingUpdate();
+  }
   return resource_provider;
 }
 
 cc::PaintCanvas* Canvas2DLayerBridge::Canvas() {
   DCHECK(resource_host_);
-  if (!is_deferral_enabled_) {
-    if (GetOrCreateResourceProvider())
-      return ResourceProvider()->Canvas();
-    return nullptr;
-  }
-  return recorder_->getRecordingCanvas();
+  if (is_deferral_enabled_)
+    return recorder_->getRecordingCanvas();
+  if (GetOrCreateResourceProvider())
+    return ResourceProvider()->Canvas();
+  return nullptr;
 }
 
 void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
@@ -450,9 +432,8 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
       resource_host_->ReplaceResourceProvider(std::move(old_resource_provider));
     }
   }
-  if (!IsHidden() && IsHibernating()) {
+  if (!IsHidden() && IsHibernating())
     GetOrCreateResourceProvider();  // Rude awakening
-  }
 }
 
 void Canvas2DLayerBridge::DrawFullImage(const cc::PaintImage& image) {
@@ -466,6 +447,7 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
                                       int y) {
   if (!GetOrCreateResourceProvider())
     return false;
+
   if (x <= 0 && y <= 0 && x + orig_info.width() >= size_.Width() &&
       y + orig_info.height() >= size_.Height()) {
     SkipQueuedDrawCommands();
@@ -477,7 +459,6 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
 
   ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
   DidDraw(FloatRect(x, y, orig_info.width(), orig_info.height()));
-
   return true;
 }
 
@@ -488,37 +469,36 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
     have_recorded_draw_commands_ = false;
   }
 
-  if (is_deferral_enabled_) {
-    if (rate_limiter_)
-      rate_limiter_->Reset();
-  }
+  if (is_deferral_enabled_ && rate_limiter_)
+    rate_limiter_->Reset();
 }
 
 void Canvas2DLayerBridge::FlushRecording() {
-  if (have_recorded_draw_commands_ && GetOrCreateResourceProvider()) {
-    TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
+  if (!have_recorded_draw_commands_ || !GetOrCreateResourceProvider())
+    return;
 
-    cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
-    {
-      sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
-      canvas->drawPicture(recording);
-    }
+  TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
 
-    // Rastering the recording would have locked images, since we've flushed
-    // all recorded ops, we should relase all locked images as well.
-    // A new null check on the resource provider is necessary just in case
-    // the playback crashed the context.
-    if (GetOrCreateResourceProvider())
-      ResourceProvider()->ReleaseLockedImages();
-
-    if (is_deferral_enabled_)
-      StartRecording();
-    have_recorded_draw_commands_ = false;
+  cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
+  {
+    sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
+    canvas->drawPicture(recording);
   }
+
+  // Rastering the recording would have locked images, since we've flushed
+  // all recorded ops, we should release all locked images as well.
+  // A new null check on the resource provider is necessary just in case
+  // the playback crashed the context.
+  if (GetOrCreateResourceProvider())
+    ResourceProvider()->ReleaseLockedImages();
+
+  if (is_deferral_enabled_)
+    StartRecording();
+  have_recorded_draw_commands_ = false;
 }
 
-bool Canvas2DLayerBridge::IsValid() const {
-  return const_cast<Canvas2DLayerBridge*>(this)->CheckResourceProviderValid();
+bool Canvas2DLayerBridge::IsValid() {
+  return CheckResourceProviderValid();
 }
 
 bool Canvas2DLayerBridge::CheckResourceProviderValid() {
@@ -582,12 +562,10 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   DCHECK(layer_);  // This explodes if FinalizeFrame() was not called.
 
   frames_since_last_commit_ = 0;
-  if (rate_limiter_) {
+  if (rate_limiter_)
     rate_limiter_->Reset();
-  }
 
-  // if hibernating but not hidden, we want to wake up from
-  // hibernation
+  // If hibernating but not hidden, we want to wake up from hibernation.
   if ((IsHibernating() || software_rendering_while_hidden_) && IsHidden())
     return false;
 
@@ -620,27 +598,27 @@ cc::Layer* Canvas2DLayerBridge::Layer() {
 void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
   if (snapshot_state_ == kDidAcquireSnapshot)
     snapshot_state_ = kDrawnToAfterSnapshot;
-  if (is_deferral_enabled_) {
-    have_recorded_draw_commands_ = true;
-    IntRect pixel_bounds = EnclosingIntRect(rect);
-    base::CheckedNumeric<int> pixel_bounds_size = pixel_bounds.Width();
-    pixel_bounds_size *= pixel_bounds.Height();
-    recording_pixel_count_ += pixel_bounds_size;
-    if (!recording_pixel_count_.IsValid()) {
-      DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
-      return;
-    }
-    base::CheckedNumeric<int> threshold_size = size_.Width();
-    threshold_size *= size_.Height();
-    threshold_size *= canvas_heuristic_parameters::kExpensiveOverdrawThreshold;
-    if (!threshold_size.IsValid()) {
-      DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
-      return;
-    }
-    if (recording_pixel_count_.ValueOrDie() >= threshold_size.ValueOrDie()) {
-      DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
-    }
+  if (!is_deferral_enabled_)
+    return;
+
+  have_recorded_draw_commands_ = true;
+  IntRect pixel_bounds = EnclosingIntRect(rect);
+  base::CheckedNumeric<int> pixel_bounds_size = pixel_bounds.Width();
+  pixel_bounds_size *= pixel_bounds.Height();
+  recording_pixel_count_ += pixel_bounds_size;
+  if (!recording_pixel_count_.IsValid()) {
+    DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
+    return;
   }
+  base::CheckedNumeric<int> threshold_size = size_.Width();
+  threshold_size *= size_.Height();
+  threshold_size *= canvas_heuristic_parameters::kExpensiveOverdrawThreshold;
+  if (!threshold_size.IsValid()) {
+    DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
+    return;
+  }
+  if (recording_pixel_count_.ValueOrDie() >= threshold_size.ValueOrDie())
+    DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
 }
 
 void Canvas2DLayerBridge::FinalizeFrame() {
@@ -652,20 +630,18 @@ void Canvas2DLayerBridge::FinalizeFrame() {
     return;
 
   ++frames_since_last_commit_;
-
   if (frames_since_last_commit_ >= 2) {
     ResourceProvider()->FlushSkia();
-    if (IsAccelerated()) {
-      if (!rate_limiter_) {
-        rate_limiter_ =
-            SharedContextRateLimiter::Create(MaxCanvasAnimationBacklog);
-      }
+    if (IsAccelerated() && !rate_limiter_) {
+      // Make sure the GPU is never more than two animation frames behind.
+      constexpr unsigned kMaxCanvasAnimationBacklog = 2;
+      rate_limiter_ =
+          SharedContextRateLimiter::Create(kMaxCanvasAnimationBacklog);
     }
   }
 
-  if (rate_limiter_) {
+  if (rate_limiter_)
     rate_limiter_->Tick();
-  }
 }
 
 void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
