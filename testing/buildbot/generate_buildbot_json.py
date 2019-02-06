@@ -884,6 +884,7 @@ class BBJSONGenerator(object):
     for c in milo_configs:
       for l in self.read_file(c).splitlines():
         if (not 'name: "buildbucket/luci.chromium.' in l and
+            not 'name: "buildbucket/luci.chrome.' in l and
             not 'name: "buildbot/chromium.' in l and
             not 'name: "buildbot/tryserver.chromium.' in l):
           continue

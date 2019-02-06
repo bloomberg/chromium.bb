@@ -848,6 +848,13 @@
           'gtest_tests': 'chromium_linux_gtests',
         },
       },
+      # Used on an internal builder.
+      'ToTLinuxOfficial': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'scripts': 'check_gn_headers_script',
+        },
+      },
       'ToTLinuxTSan': {
         'additional_compile_targets': [
           'all',
