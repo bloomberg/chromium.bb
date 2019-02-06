@@ -131,6 +131,9 @@ class BrowserFrame : public views::Widget,
   // Callback for MenuRunner.
   void OnMenuClosed();
 
+  // Returns whether this window should be themed with the user's theme or not.
+  bool ShouldUseTheme() const;
+
   NativeBrowserFrame* native_browser_frame_;
 
   // A weak reference to the root view associated with the window. We save a

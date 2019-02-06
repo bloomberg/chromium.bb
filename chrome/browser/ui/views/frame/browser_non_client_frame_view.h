@@ -143,6 +143,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Whether the frame should be painted with theming.
   // By default, tabbed browser windows are themed but popup and app windows are
   // not.
+  // TODO(https://crbug.com/927381): Dedupe this with
+  // BrowserFrame::ShouldIgnoreTheme().
   virtual bool ShouldPaintAsThemed() const;
 
   // Returns the color to use for text, caption buttons, and other title bar

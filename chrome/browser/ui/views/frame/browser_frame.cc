@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -46,6 +45,18 @@
 #if defined(USE_X11)
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #endif
+
+namespace {
+
+bool IsUsingGtkTheme(Profile* profile) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme();
+#else
+  return false;
+#endif
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
@@ -175,12 +186,9 @@ bool BrowserFrame::GetAccelerator(int command_id,
 const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
   Browser* browser = browser_view_->browser();
   Profile* profile = browser->profile();
-  // Hosted apps are meant to appear stand alone from the main browser so they
-  // do not use the normal browser's configured theme.
-  using HostedAppController = extensions::HostedAppBrowserController;
-  return HostedAppController::IsForExperimentalHostedAppBrowser(browser)
-             ? &ThemeService::GetDefaultThemeProviderForProfile(profile)
-             : &ThemeService::GetThemeProviderForProfile(profile);
+  return ShouldUseTheme()
+             ? &ThemeService::GetThemeProviderForProfile(profile)
+             : &ThemeService::GetDefaultThemeProviderForProfile(profile);
 }
 
 const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
@@ -254,6 +262,20 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
 
 void BrowserFrame::OnMenuClosed() {
   menu_runner_.reset();
+}
+
+bool BrowserFrame::ShouldUseTheme() const {
+  // Main browser windows are always themed.
+  if (browser_view_->IsBrowserTypeNormal())
+    return true;
+
+  // The system GTK theme should always be respected if the user has opted to
+  // use it.
+  if (IsUsingGtkTheme(browser_view_->browser()->profile()))
+    return true;
+
+  // Other window types (popups, hosted apps) on non-GTK use the default theme.
+  return false;
 }
 
 void BrowserFrame::OnTouchUiChanged() {

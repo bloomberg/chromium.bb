@@ -481,9 +481,10 @@ const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
 // static
 const ui::ThemeProvider& ThemeService::GetDefaultThemeProviderForProfile(
     Profile* profile) {
-  DCHECK_NE(profile->GetProfileType(), Profile::INCOGNITO_PROFILE)
-      << "Incognito default theme access not implemented, add if needed.";
-  return ThemeServiceFactory::GetForProfile(profile)->default_theme_provider_;
+  ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
+  bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  return incognito ? service->incognito_theme_provider_
+                   : service->default_theme_provider_;
 }
 
 void ThemeService::SetCustomDefaultTheme(
