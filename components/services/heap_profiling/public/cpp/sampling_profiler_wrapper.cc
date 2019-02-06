@@ -432,11 +432,13 @@ void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
 const void** CaptureStackTrace(const void** frames,
                                size_t max_entries,
                                size_t* count) {
-  // Skip 3 top frames related to the profiler itself, e.g.:
-  //   base::debug::StackTrace::StackTrace
+  // Skip 5 top frames related to the profiler itself, e.g.:
+  //   base::debug::CollectStackTrace
+  //   heap_profiling::CaptureStackTrace
   //   heap_profiling::RecordAndSendAlloc
+  //   SamplingProfilerWrapper::SampleAdded
   //   sampling_heap_profiler::PoissonAllocationSampler::DoRecordAlloc
-  size_t skip_frames = 3;
+  size_t skip_frames = 5;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
   size_t frame_count =
@@ -449,7 +451,6 @@ const void** CaptureStackTrace(const void** frames,
 #else
   // Fall-back to capturing the stack with base::debug::CollectStackTrace,
   // which is likely slower, but more reliable.
-  // TODO(alph): Make CollectStackTrace accept const void** pointer.
   size_t frame_count =
       base::debug::CollectStackTrace(const_cast<void**>(frames), max_entries);
 #endif
@@ -610,13 +611,8 @@ AllocatorType ConvertType(base::PoissonAllocationSampler::AllocatorType type) {
 
 }  // namespace
 
-SamplingProfilerWrapper::SamplingProfilerWrapper() {
-  base::PoissonAllocationSampler::Get()->AddSamplesObserver(this);
-}
-
-SamplingProfilerWrapper::~SamplingProfilerWrapper() {
-  base::PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
-}
+SamplingProfilerWrapper::SamplingProfilerWrapper() = default;
+SamplingProfilerWrapper::~SamplingProfilerWrapper() = default;
 
 SamplingProfilerWrapper::Sample::Sample() = default;
 SamplingProfilerWrapper::Sample::Sample(Sample&&) = default;
@@ -629,12 +625,12 @@ void SamplingProfilerWrapper::StartProfiling(SenderPipe* sender_pipe,
   InitAllocationRecorder(sender_pipe, std::move(params));
   auto* sampler = base::PoissonAllocationSampler::Get();
   sampler->SetSamplingInterval(sampling_rate);
-  sampler->Start();
+  sampler->AddSamplesObserver(this);
   AllocatorHooksHaveBeenInitialized();
 }
 
 void SamplingProfilerWrapper::StopProfiling() {
-  base::PoissonAllocationSampler::Get()->Stop();
+  base::PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
 }
 
 mojom::HeapProfilePtr SamplingProfilerWrapper::RetrieveHeapProfile() {
