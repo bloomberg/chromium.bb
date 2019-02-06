@@ -340,7 +340,20 @@ used when committed.
     install Chromium OS on VMWare.
 *   [User Data Directory](user_data_dir.md) - How the user data and cache
     directories are determined on all platforms.
-*   [Mojo](../mojo/README.md) - IPC mechanism used by services.
+
+### Mojo &amp; Services
+*   [Intro to Mojo &amp; Services](mojo_and_services.md) - Quick introduction
+    to Mojo and services in Chromium, with examples
+*   [Mojo API Reference](/mojo/README.md) - Detailed reference documentation for
+    all things Mojo
+*   [The Service Manager &amp; Services](/services/service_manager/README.md) -
+    Services system overview, API references, example services
+*   [Service Development Guidelines](/services/README.md) - Guidelines for
+    service development in the Chromium tree
+*   [Servicifying Chromium Features](servicification.md) - General advice for
+    integrating new and existing subsystems into Chromium as services
+*   [Converting Legacy IPC to Mojo](mojo_ipc_conversion.md) - Tips and common
+    patterns for practical IPC conversion work
 
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
