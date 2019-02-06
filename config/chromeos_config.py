@@ -3745,6 +3745,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       android_package='android-container-pi',
       android_import_branch=constants.ANDROID_PI_BUILD_BRANCH,
       prebuilts=False,
+      unittests=False,
   )
 
   site_config.AddWithoutTemplate(
