@@ -57,6 +57,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 #include "third_party/webrtc/pc/media_session.h"
+#include "third_party/webrtc/pc/session_description.h"
 
 using webrtc::DataChannelInterface;
 using webrtc::IceCandidateInterface;
@@ -2234,7 +2235,7 @@ RTCPeerConnectionHandler::FirstSessionDescription::FirstSessionDescription(
   DCHECK(sdesc);
 
   for (const auto& content : sdesc->description()->contents()) {
-    if (content.type == cricket::NS_JINGLE_RTP) {
+    if (content.type == cricket::MediaProtocolType::kRtp) {
       const auto* mdesc =
           static_cast<cricket::MediaContentDescription*>(content.description);
       audio = audio || (mdesc->type() == cricket::MEDIA_TYPE_AUDIO);
