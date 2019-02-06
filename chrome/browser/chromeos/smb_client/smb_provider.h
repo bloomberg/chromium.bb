@@ -31,8 +31,10 @@ class SmbProvider : public ProviderInterface {
   using UnmountCallback = base::RepeatingCallback<base::File::Error(
       const std::string&,
       file_system_provider::Service::UnmountReason)>;
-  SmbProvider(UnmountCallback unmount_callback,
-              SmbFileSystem::RequestCredentialsCallback request_creds_callback);
+  SmbProvider(
+      UnmountCallback unmount_callback,
+      SmbFileSystem::RequestCredentialsCallback request_creds_callback,
+      SmbFileSystem::RequestUpdatedSharePathCallback request_path_callback);
   ~SmbProvider() override;
   // ProviderInterface overrides.
   std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
@@ -52,6 +54,7 @@ class SmbProvider : public ProviderInterface {
 
   UnmountCallback unmount_callback_;
   SmbFileSystem::RequestCredentialsCallback request_creds_callback_;
+  SmbFileSystem::RequestUpdatedSharePathCallback request_path_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbProvider);
 };

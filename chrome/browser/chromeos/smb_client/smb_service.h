@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_share_finder.h"
+#include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -46,6 +48,8 @@ class SmbService : public KeyedService,
                    public base::SupportsWeakPtr<SmbService> {
  public:
   using MountResponse = base::OnceCallback<void(SmbMountResult result)>;
+  using StartReadDirIfSuccessfulCallback =
+      base::OnceCallback<void(bool should_retry_start_read_dir)>;
 
   explicit SmbService(Profile* profile);
   ~SmbService() override;
@@ -206,6 +210,13 @@ class SmbService : public KeyedService,
   // is removed from |update_credential_replies_| and the error is logged.
   void OnUpdateCredentialsResponse(int32_t mount_id,
                                    smbprovider::ErrorType error);
+
+  // Requests an updated share path via running
+  // ShareFinder::DiscoverHostsInNetwork. |reply| is stored. Once the share path
+  // has been successfully updated, |reply| is run.
+  void RequestUpdatedSharePath(const std::string& share_path,
+                               int32_t mount_id,
+                               StartReadDirIfSuccessfulCallback reply);
 
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
