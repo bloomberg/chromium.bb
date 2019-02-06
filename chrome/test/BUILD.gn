@@ -4462,6 +4462,10 @@ test("unit_tests") {
       "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
     ]
   }
+  if (is_chromeos) {
+    sources +=
+        [ "../browser/upgrade_detector/upgrade_detector_chromeos_unittest.cc" ]
+  }
   if (toolkit_views) {
     deps += [
       "//components/web_modal:test_support",
