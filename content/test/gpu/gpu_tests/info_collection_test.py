@@ -67,23 +67,25 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Device ID mismatch, expected %s but got %s.' %
           (expected_device_id, detected_device_id))
 
-    os_name = self.browser.platform.GetOSName()
-    if os_name and os_name.lower() == 'win':
-      overlay_bot_config = self.GetOverlayBotConfig()
-
-      aux_attributes = system_info.gpu.aux_attributes
-      if not aux_attributes:
-        self.fail('GPU info does not have aux_attributes.')
-
-      for field, expected in overlay_bot_config.iteritems():
-        detected = aux_attributes.get(field, 'NONE')
-        if  expected != detected:
-          self.fail('%s mismatch, expected %s but got %s.' %
-              (field, self._ValueToStr(expected), self._ValueToStr(detected)))
+    # TODO(crbug.com/927883): uncomment / re-enable when we think the
+    # flakiness is resolved.
+    # os_name = self.browser.platform.GetOSName()
+    # if os_name and os_name.lower() == 'win':
+    #   overlay_bot_config = self.GetOverlayBotConfig()
+    #   aux_attributes = system_info.gpu.aux_attributes
+    #   if not aux_attributes:
+    #     self.fail('GPU info does not have aux_attributes.')
+    #   for field, expected in overlay_bot_config.iteritems():
+    #     detected = aux_attributes.get(field, 'NONE')
+    #     if  expected != detected:
+    #       self.fail('%s mismatch, expected %s but got %s.' %
+    #           (field, self._ValueToStr(expected), self._ValueToStr(detected)))
 
   def _ValueToStr(self, value):
     if type(value) is str:
       return value
+    if type(value) is unicode:
+      return str(value)
     if type(value) is bool:
       return 'supported' if value else 'unsupported'
     assert False
