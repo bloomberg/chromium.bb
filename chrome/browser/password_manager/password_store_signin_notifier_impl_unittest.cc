@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
@@ -25,13 +23,12 @@ namespace {
 class PasswordStoreSigninNotifierImplTest : public testing::Test {
  public:
   PasswordStoreSigninNotifierImplTest() {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
-    testing_profile_.reset(builder.Build().release());
-    fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetForProfile(testing_profile_.get()));
+    testing_profile_ = IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment();
+
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(
+            testing_profile_.get());
     store_ = new MockPasswordStore();
   }
 
@@ -39,10 +36,15 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
     store_->ShutdownOnUIThread();
   }
 
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_adaptor_->identity_test_env();
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<TestingProfile> testing_profile_;
-  FakeSigninManagerForTesting* fake_signin_manager_;  // Weak
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
   scoped_refptr<MockPasswordStore> store_;
 };
 
@@ -51,10 +53,10 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
 TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-  fake_signin_manager_->SignIn("accountid", "username");
+  identity_test_env()->MakePrimaryAccountAvailable("test@example.com");
   testing::Mock::VerifyAndClearExpectations(store_.get());
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
-  fake_signin_manager_->ForceSignOut();
+  identity_test_env()->ClearPrimaryAccount();
   notifier.UnsubscribeFromSigninEvents();
 }
 
@@ -65,8 +67,8 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
   notifier.SubscribeToSigninEvents(store_.get());
   notifier.UnsubscribeFromSigninEvents();
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash()).Times(0);
-  fake_signin_manager_->SignIn("accountid", "username");
-  fake_signin_manager_->ForceSignOut();
+  identity_test_env()->MakePrimaryAccountAvailable("test@example.com");
+  identity_test_env()->ClearPrimaryAccount();
 }
 
 // Checks that if a notifier is unsubscribed on sign-in events, then
@@ -75,42 +77,28 @@ TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
 
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfileIfExists(testing_profile_.get());
-  identity::PrimaryAccountMutator* primary_account_mutator =
-      identity_manager->GetPrimaryAccountMutator();
-  DCHECK(primary_account_mutator);
-  primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      /*refresh_token=*/"refresh_token",
-      /*gaia_id=*/"primary_account_id",
-      /*username=*/"username", base::OnceCallback<void(const std::string&)>());
-  primary_account_mutator->LegacyCompletePendingPrimaryAccountSignin();
-
+  identity_test_env()->MakePrimaryAccountAvailable("username");
   testing::Mock::VerifyAndClearExpectations(store_.get());
-
   EXPECT_CALL(*store_, ClearGaiaPasswordHash("username2"));
-
+  auto* identity_manager = identity_test_env()->identity_manager();
   AccountFetcherService* account_fetcher_service =
       AccountFetcherServiceFactory::GetForProfile(testing_profile_.get());
-  // This call is necessary to ensure that the account removal is fully
-  // processed in this testing context.
-  account_fetcher_service->EnableNetworkFetchesForTest();
   identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       /*gaia_id=*/"secondary_account_id",
       /*email=*/"username2",
       /*refresh_token=*/"refresh_token",
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  // This call is necessary to ensure that the account removal is fully
+  // processed in this testing context.
+  account_fetcher_service->EnableNetworkFetchesForTest();
   identity_manager->GetAccountsMutator()->RemoveAccount(
       "secondary_account_id",
       signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);
   testing::Mock::VerifyAndClearExpectations(store_.get());
 
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
-  primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
-      signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_test_env()->ClearPrimaryAccount();
   notifier.UnsubscribeFromSigninEvents();
 }
 
