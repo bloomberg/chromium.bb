@@ -45,6 +45,7 @@ int HostProcessMain();
 #if defined(OS_WIN)
 int DaemonProcessMain();
 int DesktopProcessMain();
+int FileChooserMain();
 int RdpDesktopSessionMain();
 #endif  // defined(OS_WIN)
 
@@ -132,6 +133,8 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
     main_routine = &DaemonProcessMain;
   } else if (process_type == kProcessTypeDesktop) {
     main_routine = &DesktopProcessMain;
+  } else if (process_type == kProcessTypeFileChooser) {
+    main_routine = &FileChooserMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
 #endif  // defined(OS_WIN)
