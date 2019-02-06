@@ -1259,6 +1259,18 @@ PART_ROOT_B = 'ROOT-B'
 PART_KERN_A = 'KERN-A'
 PART_KERN_B = 'KERN-B'
 
-# Mock build and stage IDs
+# Mock build and stage IDs.
 MOCK_STAGE_ID = 313377
 MOCK_BUILD_ID = 31337
+
+# Topology dictionary copied from CIDB.
+TOPOLOGY_DICT = {
+    '/buildbucket/host':'cr-buildbucket.appspot.com',
+    '/chrome_swarming_proxy/host':'chromeos-swarming.appspot.com',
+    '/datastore/creds_file':('/creds/service_accounts/service-account-chromeos'
+                             '-datastore-writer-prod.json'),
+    '/sheriffomatic/host':'sheriff-o-matic.appspot.com',
+    '/statsd/es_host':'104.154.79.237',
+    '/statsd/host':'104.154.79.237',
+    '/swarming_proxy/host':'chromeos-proxy.appspot.com'
+}

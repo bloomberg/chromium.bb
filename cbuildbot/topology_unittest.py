@@ -8,11 +8,10 @@
 from __future__ import print_function
 
 from chromite.cbuildbot import topology
-from chromite.lib import fake_cidb
 from chromite.lib import cros_test_lib
 
 
-class ToplogyTest(cros_test_lib.TestCase):
+class TopologyTest(cros_test_lib.TestCase):
   """Unit test of topology module."""
 
   def setUp(self):
@@ -20,21 +19,12 @@ class ToplogyTest(cros_test_lib.TestCase):
     # TOPOLOGY_DEFAULTS
     topology.topology = topology.LockedDefaultDict()
 
-  def testWithDB(self):
-    fake_db = fake_cidb.FakeCIDBConnection(fake_keyvals={'/foo': 'bar'})
-    topology.FetchTopologyFromCIDB(fake_db)
-    self.assertEqual(topology.topology.get('/foo'), 'bar')
-
-  def testWithoutDB(self):
-    topology.FetchTopologyFromCIDB(None)
-    self.assertEqual(topology.topology.get('/foo'), None)
-
   def testNotFetched(self):
     with self.assertRaises(topology.LockedDictAccessException):
       topology.topology.get('/foo')
 
 
-def FakeFetchTopologyFromCIDB(keyvals=None):
+def FakeFetchTopology(keyvals=None):
   """Setup topology without the need for a DB
 
   args:
@@ -42,24 +32,24 @@ def FakeFetchTopologyFromCIDB(keyvals=None):
   """
   keyvals = keyvals if keyvals != None else {}
 
-  topology.FetchTopologyFromCIDB(None)
+  topology.FetchTopology()
   topology.topology.update(keyvals)
   topology.topology.unlock()
 
 
-class FakeFetchTopologyFromCIDBTest(cros_test_lib.TestCase):
-  """Test FakeFetchToplogoyFromCIDB unittest helper function"""
+class FakeFetchTopologyTest(cros_test_lib.TestCase):
+  """Test FakeFetchTopologyunittest helper function"""
 
   def setUp(self):
     _resetTopology()
 
-  def testFakeTopologyFromCIDB(self):
+  def testFakeTopology(self):
     data = {1:'one', 2:'two', 3:'three'}
-    FakeFetchTopologyFromCIDB(data)
+    FakeFetchTopology(data)
     self.assertDictContainsSubset(data, topology.topology)
 
-  def testFakeTopologyFromCIDBEmpty(self):
-    FakeFetchTopologyFromCIDB()
+  def testFakeTopologyEmpty(self):
+    FakeFetchTopology()
     # pylint: disable=protected-access
     self.assertFalse(topology.topology._locked)
 

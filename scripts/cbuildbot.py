@@ -812,9 +812,7 @@ def _SetupConnections(options, build_config):
     cidb.CIDBConnectionFactory.SetupNoCidb()
     context = ts_mon_config.TrivialContextManager()
 
-  db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-  topology.FetchTopologyFromCIDB(db)
-
+  topology.FetchTopology()
   return context
 
 

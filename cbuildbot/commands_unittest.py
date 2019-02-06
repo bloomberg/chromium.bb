@@ -420,7 +420,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self.internal_failure_exit_code = 1
     # A random code that's not retriable.
     self.swarming_code = 10
-    topology.FetchTopologyFromCIDB(None)
+    topology.FetchTopology()
 
   def RunHWTestSuite(self, *args, **kwargs):
     """Run the hardware test suite, printing logs to stdout."""
@@ -1178,7 +1178,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
 
   def testAbortHWTests(self):
     """Verifies that HWTests are aborted for a specific non-CQ config."""
-    topology.FetchTopologyFromCIDB(None)
+    topology.FetchTopology()
     commands.AbortHWTests('my_config', 'my_version', debug=False)
     self.assertCommandContains(['-i', 'my_config/my_version'])
 

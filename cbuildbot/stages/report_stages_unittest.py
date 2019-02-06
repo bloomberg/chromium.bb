@@ -229,7 +229,7 @@ class AbstractReportStageTestCase(
 
     # Setup topology for unittests
     keyvals = {topology.DATASTORE_WRITER_CREDS_KEY:'./foo/bar.cert'}
-    topology_unittest.FakeFetchTopologyFromCIDB(keyvals=keyvals)
+    topology_unittest.FakeFetchTopology(keyvals=keyvals)
 
     self._Prepare()
 
