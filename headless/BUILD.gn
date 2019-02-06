@@ -601,27 +601,51 @@ test("headless_unittests") {
 }
 
 if (is_mac) {
-  copy("mac_helpers") {
+  copy("mac_helpers_crashpad_handler") {
     sources = [
-      "$root_out_dir/crashpad_handler",
+      "$root_out_dir/chrome_crashpad_handler",
     ]
 
     deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+      "//components/crash/content/app:chrome_crashpad_handler",
     ]
 
-    if (is_component_build) {
-      sources += [ "$root_out_dir/libbase.dylib" ]
+    outputs = [
+      "$root_out_dir/Helpers/crashpad_handler",
+    ]
+  }
+
+  if (is_component_build) {
+    copy("mac_helpers_libraries") {
+      sources = [
+        "$root_out_dir/libbase.dylib",
+      ]
+
+      deps = [
+        "//base",
+      ]
+
+      outputs = [
+        "$root_out_dir/Helpers/{{source_file_part}}",
+      ]
+
       if (use_custom_libcxx) {
         sources += [ "$root_out_dir/libc++.dylib" ]
         deps += [ "//buildtools/third_party/libc++:libc++" ]
       }
     }
+  }
 
-    outputs = [
-      "$root_out_dir/Helpers/{{source_file_part}}",
+  group("mac_helpers") {
+    data = [
+      "$root_out_dir/Helpers",
     ]
+    deps = [
+      ":mac_helpers_crashpad_handler",
+    ]
+    if (is_component_build) {
+      deps += [ ":mac_helpers_libraries" ]
+    }
   }
 }
 
