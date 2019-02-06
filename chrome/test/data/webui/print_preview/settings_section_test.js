@@ -575,20 +575,21 @@ cr.define('settings_sections_tests', function() {
       assertFalse(pagesElement.hidden);
 
       // Default value is all pages. Print ticket expects this to be empty.
-      const allRadio = pagesElement.$.allRadioButton;
-      const customRadio = pagesElement.$.customRadioButton;
+      const pagesSelect = pagesElement.$$('select');
+      const customInputCollapse = pagesElement.$$('iron-collapse');
       const pagesCrInput = pagesElement.$.pageSettingsCustomInput;
       const pagesInput = pagesCrInput.inputElement;
 
       /**
-       * @param {boolean} allChecked Whether the all pages radio button is
-       *     selected.
+       * @param {boolean} allSelected Whether the all pages option is selected.
        * @param {string} inputString The expected string in the pages input.
        * @param {boolean} valid Whether the input string is valid.
        */
-      const validateInputState = function(allChecked, inputString, valid) {
-        assertEquals(allChecked, allRadio.checked);
-        assertEquals(!allChecked, customRadio.checked);
+      const validateInputState = function(allSelected, inputString, valid) {
+        assertEquals(allSelected, !customInputCollapse.opened);
+        assertEquals(
+            allSelected,
+            pagesSelect.value === pagesElement.pagesValueEnum_.ALL.toString());
         assertEquals(inputString, pagesInput.value);
         assertEquals(valid, !pagesCrInput.invalid);
       };
@@ -598,15 +599,14 @@ cr.define('settings_sections_tests', function() {
       assertTrue(page.settings.pages.valid);
 
       // Set selection of pages 1 and 2.
-      customRadio.click();
+      pagesSelect.value = pagesElement.pagesValueEnum_.CUSTOM.toString();
+      pagesSelect.dispatchEvent(new CustomEvent('change'));
 
-      // Manually set |optionSelected_| since focus may not work correctly on
-      // MacOS. The PageSettingsTests verify this behavior is correct on all
-      // platforms.
-      pagesElement.set('optionSelected_', pagesElement.pagesValueEnum_.CUSTOM);
-
-      print_preview_test_utils.triggerInputEvent(pagesInput, '1-2');
-      return test_util.eventToPromise('input-change', pagesElement)
+      return test_util.eventToPromise('process-select-change', pagesElement)
+          .then(function() {
+            print_preview_test_utils.triggerInputEvent(pagesInput, '1-2');
+            return test_util.eventToPromise('input-change', pagesElement);
+          })
           .then(function() {
             validateInputState(false, '1-2', true);
             assertEquals(1, page.settings.ranges.value.length);

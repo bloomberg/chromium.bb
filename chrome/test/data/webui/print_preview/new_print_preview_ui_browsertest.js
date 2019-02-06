@@ -170,6 +170,39 @@ TEST_F(
           settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
     });
 
+PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/pages_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'pages_settings_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return pages_settings_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewPagesSettingsTest', 'ValidPageRanges', function() {
+  this.runMochaTest(pages_settings_test.TestNames.ValidPageRanges);
+});
+
+TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges', function() {
+  this.runMochaTest(pages_settings_test.TestNames.InvalidPageRanges);
+});
+
+TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
+  this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
+});
+
 PrintPreviewPolicyTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {

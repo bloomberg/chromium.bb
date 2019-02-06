@@ -11,7 +11,10 @@
         --cr-input-row-container: {
           min-height: 38px;
         };
-        --cr-radio-button-size: 16px;
+        --cr-input-container: {
+          margin-top: 3px;
+          margin-bottom: 3px;
+        };
         --md-select-width: calc(100% - 17px);
         --print-preview-settings-border: 1px solid rgb(232, 234, 237);
         --print-preview-dialog-margin: 34px;
@@ -21,16 +24,6 @@
       }
 
       /* Default state ********************************************************/
-      input[type='checkbox'],
-      input[type='radio'] {
-        margin-bottom: 0;
-        margin-inline-end: 1px;
-        margin-inline-start: 0;
-        margin-top: 0;
-        user-select: none;
-      }
-
-      select.md-select,
       select.md-select {
         margin: 2px;
         min-height: 32px;
@@ -46,11 +39,9 @@
         user-select: none;
       }
 
-      .checkbox cr-checkbox,
-      .radio cr-radio-button {
+      .checkbox cr-checkbox {
         min-height: 38px;
         --cr-checkbox-ripple-size: 38px;
-        --cr-radio-button-ink-size: 38px;
         --cr-checkbox-label-container: {
           overflow: hidden;
           padding-inline-start: 15px;
