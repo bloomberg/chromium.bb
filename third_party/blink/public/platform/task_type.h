@@ -12,7 +12,8 @@ namespace blink {
 //
 // For the task type usage guideline, see https://bit.ly/2vMAsQ4
 //
-// When a new task type is created, use kCount value as a new value.
+// When a new task type is created, use kCount value as a new value,
+// the tools/metrics/histograms/enums.xml shall also be updated.
 enum class TaskType : unsigned {
   ///////////////////////////////////////
   // Speced tasks should use one of the following task types
@@ -202,6 +203,9 @@ enum class TaskType : unsigned {
   // Tasks used at IntersectionObserver.
   kInternalIntersectionObserver = 44,
 
+  // Task used for ContentCapture.
+  kInternalContentCapture = 61,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -220,7 +224,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 61,
+  kCount = 62,
 };
 
 }  // namespace blink

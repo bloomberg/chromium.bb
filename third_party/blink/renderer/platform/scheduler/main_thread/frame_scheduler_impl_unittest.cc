@@ -1809,6 +1809,14 @@ TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
           true));
 }
 
+TEST_F(FrameSchedulerImplTest, ContentCaptureHasIdleTaskQueue) {
+  auto task_queue = GetTaskQueue(TaskType::kInternalContentCapture);
+
+  EXPECT_TRUE(task_queue->FixedPriority().has_value());
+  EXPECT_EQ(TaskQueue::QueuePriority::kBestEffortPriority,
+            task_queue->FixedPriority().value());
+}
+
 }  // namespace frame_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

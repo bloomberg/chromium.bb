@@ -129,6 +129,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "WorkerAnimation";
     case TaskType::kInternalTranslation:
       return "InternalTranslation";
+    case TaskType::kInternalContentCapture:
+      return "InternalContentCapture";
     case TaskType::kCount:
       return "Count";
   }

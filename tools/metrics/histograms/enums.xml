@@ -45604,6 +45604,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="57" label="ApplicationLifeCycle"/>
   <int value="58" label="BackgroundFetch"/>
   <int value="59" label="Permission"/>
+  <int value="61" label="InternalContentCapture"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
