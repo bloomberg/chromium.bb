@@ -97,7 +97,7 @@ template("fuchsia_package_runner") {
       # Arguments used at build time by the runner script generator.
       args = [
         "--script-output-path",
-        rebase_path(script_path, root_build_dir, root_out_dir),
+        rebase_path(script_path, root_build_dir),
       ]
 
       if (defined(invoker.use_test_server) && invoker.use_test_server) {
@@ -108,11 +108,11 @@ template("fuchsia_package_runner") {
         foreach(cur_package, invoker.package_deps) {
           deps += [ cur_package[0] ]
           dep_package_path =
-              "$root_out_dir/gen/" + get_label_info(cur_package[0], "dir") +
-              "/" + cur_package[1] + "/" + cur_package[1] + ".far"
+              get_label_info(cur_package[0], "target_gen_dir") + "/" +
+              cur_package[1] + "/" + cur_package[1] + ".far"
           args += [
             "--package-dep",
-            rebase_path(dep_package_path, root_out_dir, root_build_dir),
+            rebase_path(dep_package_path, root_build_dir),
           ]
         }
       }
@@ -120,17 +120,17 @@ template("fuchsia_package_runner") {
       # Arguments used at runtime by the test runner.
       args += [
         "--runner-script",
-        rebase_path(runner_script, root_out_dir),
+        rebase_path(runner_script, root_build_dir),
         "--output-directory",
-        rebase_path(root_build_dir, root_build_dir),
+        ".",
         "--target-cpu",
         target_cpu,
         "--package",
-        rebase_path(_package_path, root_out_dir, root_build_dir),
+        rebase_path(_package_path, root_build_dir),
         "--package-name",
         _pkg_shortname,
         "--package-manifest",
-        rebase_path(_manifest_path),
+        rebase_path(_manifest_path, root_build_dir),
       ]
 
       if (defined(install_only) && install_only) {
