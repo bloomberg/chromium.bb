@@ -6044,4 +6044,4 @@ crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/no-blur-on-pag
 crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
 
 # Sheriff 2019-02-06
-crbug.com/929122 external/wpt/html/dom/interfaces.worker.html [ Failure ]
+crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeout Failure ]
