@@ -14286,6 +14286,26 @@
       This feature is a replacement for the <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME">'Legacy Browser Support'</ph> extension. Configuration from the extension will carry over to this feature, but it is strongly advised to use the Chrome policies instead. This ensures better compatibility in the future.''',
     },
     {
+      'id': 519,
+      'name': 'BrowserSwitcherKeepLastChromeTab',
+      'future': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'example_value': False,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:74-'],
+      'caption': '''Keep last tab open in Chrome.''',
+      'tags': [],
+      'desc': '''This policy controls whether to close Chrome completely when the last tab would switch to another browser.
+
+      When this policy is left unset, or is set to true, Chrome will keep at least one tab open, after switching to an alternate browser.
+
+      When this policy is set to false, Chrome will close the tab after switching to an alternate browser, even if it was the last tab. This will cause Chrome to exit completely.''',
+    },
+    {
       'name': 'DeviceDisplayResolution',
       'type': 'dict',
       'schema': {
@@ -14688,5 +14708,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  518
+  'highest_id_currently_used':  519
 }

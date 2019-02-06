@@ -52,6 +52,9 @@ class BrowserSwitcherPrefs {
   // substitutions. If the pref is not managed, returns the empty string.
   const std::vector<std::string>& GetAlternativeBrowserParameters() const;
 
+  // Returns true if Chrome should keep at least one tab open after switching.
+  bool KeepLastTab() const;
+
   // Returns the sitelist + greylist configured directly through Chrome
   // policies. If the pref is not managed, returns an empty vector.
   const RuleSet& GetRules() const;
@@ -91,6 +94,7 @@ namespace prefs {
 extern const char kEnabled[];
 extern const char kAlternativeBrowserPath[];
 extern const char kAlternativeBrowserParameters[];
+extern const char kKeepLastTab[];
 extern const char kUrlList[];
 extern const char kUrlGreylist[];
 extern const char kExternalSitelistUrl[];
