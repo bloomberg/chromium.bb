@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
-#include "ui/views/controls/menu/menu_listener.h"
 
 AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
     : views::MenuButton(base::string16(), menu_button_listener) {}
@@ -20,28 +20,33 @@ SkColor AppMenuButton::GetInkDropBaseColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
 
+void AppMenuButton::AddObserver(AppMenuButtonObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AppMenuButton::RemoveObserver(AppMenuButtonObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void AppMenuButton::CloseMenu() {
   if (menu_)
     menu_->CloseMenu();
   menu_.reset();
 }
 
+void AppMenuButton::OnMenuClosed() {
+  for (AppMenuButtonObserver& observer : observer_list_)
+    observer.AppMenuClosed();
+}
+
 bool AppMenuButton::IsMenuShowing() const {
   return menu_ && menu_->IsShowing();
 }
 
-void AppMenuButton::AddMenuListener(views::MenuListener* listener) {
-  menu_listeners_.AddObserver(listener);
-}
-
-void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
-  menu_listeners_.RemoveObserver(listener);
-}
-
-void AppMenuButton::InitMenu(std::unique_ptr<AppMenuModel> menu_model,
-                             Browser* browser,
-                             int run_flags,
-                             bool alert_reopen_tab_items) {
+void AppMenuButton::RunMenu(std::unique_ptr<AppMenuModel> menu_model,
+                            Browser* browser,
+                            int run_flags,
+                            bool alert_reopen_tab_items) {
   // |menu_| must be reset before |menu_model_| is destroyed, as per the comment
   // in the class declaration.
   menu_.reset();
@@ -50,6 +55,8 @@ void AppMenuButton::InitMenu(std::unique_ptr<AppMenuModel> menu_model,
   menu_ = std::make_unique<AppMenu>(browser, run_flags, alert_reopen_tab_items);
   menu_->Init(menu_model_.get());
 
-  for (views::MenuListener& observer : menu_listeners_)
-    observer.OnMenuOpened();
+  menu_->RunMenu(this);
+
+  for (AppMenuButtonObserver& observer : observer_list_)
+    observer.AppMenuShown();
 }

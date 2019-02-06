@@ -132,14 +132,12 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   alert_reopen_tab_items = promo_feature_ == InProductHelpFeature::kReopenTab;
 #endif
-  InitMenu(
+  base::TimeTicks menu_open_time = base::TimeTicks::Now();
+  RunMenu(
       std::make_unique<AppMenuModel>(toolbar_view_, browser,
                                      toolbar_view_->app_menu_icon_controller()),
       browser, for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS,
       alert_reopen_tab_items);
-
-  base::TimeTicks menu_open_time = base::TimeTicks::Now();
-  menu()->RunMenu(this);
 
   if (!for_drop) {
     // Record the time-to-action for the menu. We don't record in the case of a

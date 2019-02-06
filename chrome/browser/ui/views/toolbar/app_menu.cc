@@ -29,7 +29,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_observer.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -813,9 +815,6 @@ void AppMenu::RunMenu(views::MenuButton* host) {
   menu_runner_->RunMenuAt(host->GetWidget(), host,
                           host->GetAnchorBoundsInScreen(),
                           views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
-
-  for (AppMenuObserver& observer : observer_list_)
-    observer.AppMenuShown();
 }
 
 void AppMenu::CloseMenu() {
@@ -825,14 +824,6 @@ void AppMenu::CloseMenu() {
 
 bool AppMenu::IsShowing() const {
   return menu_runner_.get() && menu_runner_->IsRunning();
-}
-
-void AppMenu::AddObserver(AppMenuObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void AppMenu::RemoveObserver(AppMenuObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
@@ -1036,8 +1027,8 @@ bool AppMenu::ShouldCloseOnDragComplete() {
 }
 
 void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
-  for (AppMenuObserver& observer : observer_list_)
-    observer.AppMenuClosed();
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  browser_view->toolbar_button_provider()->GetAppMenuButton()->OnMenuClosed();
 
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model =
@@ -1045,6 +1036,7 @@ void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
     if (model)
       model->RemoveObserver(this);
   }
+
   if (selected_menu_model_)
     selected_menu_model_->ActivatedAt(selected_index_);
 }
@@ -1105,8 +1097,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
     switch (model->GetCommandIdAt(i)) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
-        std::unique_ptr<ExtensionToolbarMenuView> extension_toolbar(
-            new ExtensionToolbarMenuView(browser_, this, item));
+        auto extension_toolbar =
+            std::make_unique<ExtensionToolbarMenuView>(browser_, item);
         for (int i = 0; i < extension_toolbar->contents()->child_count(); ++i) {
           View* action_view = extension_toolbar->contents()->child_at(i);
           action_view->SetBackground(std::make_unique<InMenuButtonBackground>(
