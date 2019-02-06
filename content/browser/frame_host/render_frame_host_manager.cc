@@ -1978,8 +1978,15 @@ bool RenderFrameHostManager::InitRenderView(
       frame_tree_node_->devtools_frame_token(),
       frame_tree_node_->current_replication_state());
 
-  if (created && proxy)
+  if (created && proxy) {
     proxy->set_render_frame_proxy_created(true);
+
+    // If this main frame proxy was created for a frame that hasn't yet
+    // finished loading, let the renderer know so it can also mark the proxy as
+    // loading. See https://crbug.com/916137.
+    if (frame_tree_node_->IsLoading())
+      proxy->Send(new FrameMsg_DidStartLoading(proxy->GetRoutingID()));
+  }
 
   return created;
 }
