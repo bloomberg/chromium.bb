@@ -755,6 +755,7 @@ target(link_target_type, "renderer") {
     # Add back the Linux file which Android shares.
     set_sources_assignment_filter([])
     sources += [ "render_view_linux.cc" ]
+    set_sources_assignment_filter(sources_assignment_filter)
 
     deps += [
       "//third_party/android_tools:cpu_features",
