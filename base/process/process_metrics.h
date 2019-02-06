@@ -534,7 +534,7 @@ BASE_EXPORT bool GetSystemPerformanceInfo(SystemPerformanceInfo* info);
 // Collects and holds performance metrics for system memory and disk.
 // Provides functionality to retrieve the data on various platforms and
 // to serialize the stored data.
-class SystemMetrics {
+class BASE_EXPORT SystemMetrics {
  public:
   SystemMetrics();
 

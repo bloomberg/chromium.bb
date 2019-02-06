@@ -1673,6 +1673,8 @@ jumbo_split_static_library("browser") {
     "tracing/crash_service_uploader.h",
     "tracing/navigation_tracing.cc",
     "tracing/navigation_tracing.h",
+    "tracing/trace_event_system_stats_monitor.cc",
+    "tracing/trace_event_system_stats_monitor.h",
     "translate/android/translate_utils.cc",
     "translate/android/translate_utils.h",
     "translate/chrome_translate_client.cc",

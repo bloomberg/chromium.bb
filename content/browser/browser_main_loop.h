@@ -40,9 +40,6 @@ class MessageLoop;
 class PowerMonitor;
 class SingleThreadTaskRunner;
 class SystemMonitor;
-namespace trace_event {
-class TraceEventSystemStatsMonitor;
-}  // namespace trace_event
 }  // namespace base
 
 namespace discardable_memory {
@@ -318,9 +315,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Per-process listener for online state changes.
   std::unique_ptr<BrowserOnlineStateObserver> online_state_observer_;
-
-  std::unique_ptr<base::trace_event::TraceEventSystemStatsMonitor>
-      system_stats_monitor_;
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> env_;

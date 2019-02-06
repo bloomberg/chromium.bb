@@ -2860,6 +2860,7 @@ test("unit_tests") {
     "../browser/sync/sync_startup_tracker_unittest.cc",
     "../browser/thumbnails/thumbnail_utils_unittest.cc",
     "../browser/tracing/background_tracing_field_trial_unittest.cc",
+    "../browser/tracing/trace_event_system_stats_monitor_unittest.cc",
     "../browser/translate/chrome_translate_client_unittest.cc",
     "../browser/translate/translate_fake_page.cc",
     "../browser/translate/translate_service_unittest.cc",
