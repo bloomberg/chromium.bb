@@ -26,6 +26,7 @@ public abstract class NativeBrowserTestActivity extends Activity {
     };
 
     private NativeTest mTest = new NativeTest();
+    private boolean mStarted;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,6 +40,15 @@ public abstract class NativeBrowserTestActivity extends Activity {
 
     @Override
     public void onStart() {
+        // onStart can be called any number of times see:
+        // https://developer.android.com/guide/components/activities/activity-lifecycle#onstart
+        // We only want to run the test once (or bad things can happen) so bail out if we've
+        // already started.
+        if (mStarted) {
+            super.onStart();
+            return;
+        }
+        mStarted = true;
         deletePrivateDataDirectory();
         initializeBrowserProcess();
         super.onStart();
