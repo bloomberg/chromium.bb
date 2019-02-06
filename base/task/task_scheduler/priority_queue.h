@@ -58,6 +58,11 @@ class BASE_EXPORT PriorityQueue {
   // Returns the number of Sequences in the PriorityQueue.
   size_t Size() const;
 
+  // Returns the number of Sequences with |priority|.
+  size_t GetNumSequencesWithPriority(TaskPriority priority) const {
+    return num_sequences_per_priority_[static_cast<int>(priority)];
+  }
+
   // Set the PriorityQueue to empty all its Sequences of Tasks when it is
   // destroyed; needed to prevent memory leaks caused by a reference cycle
   // (Sequence -> Task -> TaskRunner -> Sequence...) during test teardown.
@@ -70,7 +75,13 @@ class BASE_EXPORT PriorityQueue {
 
   using ContainerType = IntrusiveHeap<SequenceAndSortKey>;
 
+  void DecrementNumSequencesForPriority(TaskPriority priority);
+  void IncrementNumSequencesForPriority(TaskPriority priority);
+
   ContainerType container_;
+
+  size_t num_sequences_per_priority_[static_cast<int>(TaskPriority::HIGHEST) +
+                                     1] = {};
 
   // Should only be enabled by EnableFlushSequencesOnDestroyForTesting().
   bool is_flush_sequences_on_destroy_enabled_ = false;
