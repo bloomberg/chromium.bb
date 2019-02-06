@@ -70,27 +70,29 @@ cr.define('pages_settings_test', function() {
       // Set page count.
       pagesSection.pageCount = pageCount;
       Polymer.dom.flush();
-      let input = null;
-      return test_util.waitForRender(pagesSection)
-          .then(() => {
-            input = pagesSection.$.pageSettingsCustomInput.inputElement;
-            const readyForInput = pagesSection.$.customRadioButton.checked ?
-                Promise.resolve() :
-                test_util.eventToPromise('focus', input);
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+      const pagesSelect = pagesSection.$$('select');
+      const isCustomSelected =
+          pagesSelect.value === pagesSection.pagesValueEnum_.CUSTOM.toString();
+      const readyForInput = isCustomSelected ?
+          Promise.resolve() :
+          test_util.eventToPromise('process-select-change', pagesSection);
 
-            // Select custom
-            pagesSection.$.customRadioButton.click();
-            return readyForInput;
-          })
-          .then(() => {
-            // Set input string
-            input.value = inputString;
-            input.dispatchEvent(
-                new CustomEvent('input', {composed: true, bubbles: true}));
+      // Select custom
+      if (!isCustomSelected) {
+        pagesSelect.value = pagesSection.pagesValueEnum_.CUSTOM.toString();
+        pagesSelect.dispatchEvent(new CustomEvent('change'));
+      }
+      return readyForInput.then(() => {
+        input.focus();
+        // Set input string
+        input.value = inputString;
+        input.dispatchEvent(
+            new CustomEvent('input', {composed: true, bubbles: true}));
 
-            // Validate results
-            return test_util.eventToPromise('input-change', pagesSection);
-          });
+        // Validate results
+        return test_util.eventToPromise('input-change', pagesSection);
+      });
     }
 
     /**
@@ -246,142 +248,46 @@ cr.define('pages_settings_test', function() {
     // the "all" radio button.
     test(assert(TestNames.ClearInput), function() {
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const radioGroup = pagesSection.$$('cr-radio-group');
-      assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
+      const select = pagesSection.$$('select');
+      const allValue = pagesSection.pagesValueEnum_.ALL.toString();
+      const customValue = pagesSection.pagesValueEnum_.CUSTOM.toString();
+      assertEquals(allValue, select.value);
       return setupInput('1-2', 3)
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            assertEquals(customValue, select.value);
             validateState([1, 2], '', false);
             return setupInput('', 3);
           })
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            assertEquals(customValue, select.value);
             validateState([1, 2], '', false);
             const whenBlurred = test_util.eventToPromise('blur', input);
             input.blur();
             return whenBlurred;
           })
           .then(function() {
-            assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
-            validateState([1, 2, 3], '', false);
+            // Blurring does not change the state.
+            assertEquals(customValue, select.value);
+            validateState([1, 2], '', false);
+            assertEquals('1-2', input.value);
             return setupInput('5', 3);
           })
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
-            validateState([1, 2, 3], limitError + '3', true);
+            assertEquals(customValue, select.value);
+            validateState([1, 2], limitError + '3', true);
             return setupInput('', 3);
           })
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
-            validateState([1, 2, 3], '', false);
+            assertEquals(customValue, select.value);
+            validateState([1, 2], '', false);
             const whenBlurred = test_util.eventToPromise('blur', input);
             input.blur();
             return whenBlurred;
           })
           .then(function() {
-            assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
-            validateState([1, 2, 3], '', false);
-          });
-    });
-
-    // Tests that the radio buttons and custom input are appropriately
-    // inside/outside the tab order.
-    test(assert(TestNames.TabOrder), function() {
-      pagesSection.pageCount = 3;
-
-      const radioGroup = pagesSection.$$('cr-radio-group');
-      const customRadio = pagesSection.$.customRadioButton;
-      const allRadio = pagesSection.$.allRadioButton;
-      const input = pagesSection.$.pageSettingsCustomInput;
-
-      /** @param {boolean} allSelected Whether all radio button is selected. */
-      const validateTabOrder = function(allSelected) {
-        const expectedSelection = allSelected ?
-            pagesSection.pagesValueEnum_.ALL :
-            pagesSection.pagesValueEnum_.CUSTOM;
-        assertEquals(expectedSelection, radioGroup.selected);
-        assertEquals(allSelected, customRadio.tabIndex === -1);
-        assertEquals(allSelected, input.tabIndex === -1);
-        assertEquals(!allSelected, allRadio.tabIndex === -1);
-      };
-
-      const whenFocused = test_util.eventToPromise('focus', allRadio);
-      // Focus the radio group.
-      radioGroup.focus();
-      return whenFocused
-          .then(() => {
-            // Start out with all selected.
-            validateTabOrder(true);
-
-            // Down arrow, to switch to custom.
-            const whenFocused =
-                test_util.eventToPromise('focus', input.inputElement);
-            MockInteractions.keyEventOn(
-                allRadio, 'keydown', 40, [], 'ArrowDown');
-            return whenFocused;
-          })
-          .then(() => {
-            // Custom selected
-            validateTabOrder(false);
-
-            // Set a custom page range.
-            input.inputElement.value = '1, 2';
-            input.inputElement.dispatchEvent(
-                new CustomEvent('input', {composed: true, bubbles: true}));
-            return test_util.eventToPromise('input-change', pagesSection);
-          })
-          .then(() => {
-            validateTabOrder(false);
-
-            // Shift + tab should focus the custom radio button, not skip it.
-            const whenCustomRadioFocused =
-                test_util.eventToPromise('focus', customRadio);
-            MockInteractions.keyEventOn(
-                input.inputElement, 'keydown', 9, ['shift'], 'Tab');
-            return whenCustomRadioFocused;
-          })
-          .then(function() {
-            validateTabOrder(false);
-
-            // Clear the input.
-            input.inputElement.value = '';
-            input.inputElement.dispatchEvent(
-                new CustomEvent('input', {composed: true, bubbles: true}));
-            return test_util.eventToPromise('input-change', pagesSection);
-          })
-          .then(function() {
-            validateTabOrder(false);
-
-            // Focusing custom radio button does not reselect all.
-            const whenCustomRadioFocused =
-                test_util.eventToPromise('focus', customRadio);
-            MockInteractions.keyEventOn(
-                input.inputElement, 'keydown', 9, ['shift'], 'Tab');
-            return whenCustomRadioFocused;
-          })
-          .then(function() {
-            validateTabOrder(false);
-
-            // Blurring the radio button reselects all
-            const whenCustomRadioBlurred =
-                test_util.eventToPromise('blur', customRadio);
-            customRadio.blur();
-            Polymer.dom.flush();
-            return whenCustomRadioBlurred;
-          })
-          .then(function() {
-            // Send focus back to the radio group. It should now send focus to
-            // all, since it is selected.
-            const whenAllFocused = test_util.eventToPromise('focus', allRadio);
-            radioGroup.focus();
-            return whenAllFocused;
-          })
-          .then(function() {
-            validateTabOrder(true);
+            assertEquals(customValue, select.value);
+            validateState([1, 2], '', false);
+            assertEquals('1-2', input.value);
           });
     });
 
@@ -457,85 +363,46 @@ cr.define('pages_settings_test', function() {
           });
     });
 
-    // Verifies that the arrow keys do not change the radio button selection
-    // when the custom input is the event target.
-    test(assert(TestNames.IgnoreInputKeyEvents), function() {
-      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-
-      /**
-       * @param {number} code The key code
-       * @param {string} key The key
-       * @return {!Promise} Promise that resolves when key event occurs.
-       */
-      const waitForKey = function(code, key) {
-        const whenKeyDown = test_util.eventToPromise(
-            'keydown', pagesSection.$.pageSettingsCustomInput);
-        MockInteractions.keyEventOn(input, 'keydown', code, [], key);
-        return whenKeyDown;
-      };
-
-      // Select a custom input and focus the input section.
-      return setupInput('1', 3)
-          .then(function() {
-            return waitForKey(40, 'ArrowDown');
-          })
-          .then(function() {
-            assertFalse(pagesSection.$.allRadioButton.checked);
-            assertTrue(pagesSection.$.customRadioButton.checked);
-            return waitForKey(37, 'ArrowLeft');
-          })
-          .then(function() {
-            assertFalse(pagesSection.$.allRadioButton.checked);
-            assertTrue(pagesSection.$.customRadioButton.checked);
-            return waitForKey(38, 'ArrowUp');
-          })
-          .then(function() {
-            assertFalse(pagesSection.$.allRadioButton.checked);
-            assertTrue(pagesSection.$.customRadioButton.checked);
-          });
-
-    });
-
     // Verifies that the enter key event is bubbled to the pages settings
     // element, so that it will be bubbled to the print preview app to trigger a
     // print.
     test(assert(TestNames.EnterOnInputTriggersPrint), function() {
+      pagesSection.pageCount = 3;
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const radioGroup = pagesSection.$$('cr-radio-group');
       const whenPrintReceived =
           test_util.eventToPromise('keydown', pagesSection);
 
       // Setup an empty input by clicking on the custom radio button.
+      const customValue = pagesSection.pagesValueEnum_.CUSTOM.toString();
+      const pagesSelect = pagesSection.$$('select');
+      pagesSelect.value = customValue;
+      pagesSelect.dispatchEvent(new CustomEvent('change'));
+
       const inputFocused = test_util.eventToPromise('focus', input);
-      pagesSection.$.customRadioButton.click();
       return inputFocused
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            assertEquals(customValue, pagesSelect.value);
             MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
             return whenPrintReceived;
           })
-          // All gets automatically selected
           .then(function() {
-            assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
-            // Refocus the radio group to reset the focused button to "all".
-            // Normally, enter results in print, so this does not need to
-            // happen.
-            radioGroup.focus();
+            // Keep custom selected, but pages to print should still be all.
+            assertEquals(customValue, pagesSelect.value);
+            assertEquals(3, pagesSection.getSetting('pages').value.length);
+
+            // Select a custom input of 1.
             return setupInput('1', 3);
           })
           // Re-select custom and print again.
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            assertEquals(customValue, pagesSelect.value);
             const whenPrintReceived =
                 test_util.eventToPromise('keydown', pagesSection);
             MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
             return whenPrintReceived;
           })
           .then(function() {
-            assertEquals(
-                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            assertEquals(customValue, pagesSelect.value);
           });
     });
   });

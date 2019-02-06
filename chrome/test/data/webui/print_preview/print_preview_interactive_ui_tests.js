@@ -138,20 +138,12 @@ TEST_F('PrintPreviewPagesSettingsTest', 'ClearInput', function() {
   this.runMochaTest(pages_settings_test.TestNames.ClearInput);
 });
 
-TEST_F('PrintPreviewPagesSettingsTest', 'TabOrder', function() {
-  this.runMochaTest(pages_settings_test.TestNames.TabOrder);
-});
-
 TEST_F(
     'PrintPreviewPagesSettingsTest', 'InputNotDisabledOnValidityChange',
     function() {
       this.runMochaTest(
           pages_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
-
-TEST_F('PrintPreviewPagesSettingsTest', 'IgnoreInputKeyEvents', function() {
-  this.runMochaTest(pages_settings_test.TestNames.IgnoreInputKeyEvents);
-});
 
 TEST_F(
     'PrintPreviewPagesSettingsTest', 'EnterOnInputTriggersPrint', function() {
