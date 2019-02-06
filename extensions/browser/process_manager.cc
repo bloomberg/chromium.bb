@@ -9,15 +9,18 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -25,7 +28,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_host.h"
@@ -119,6 +124,22 @@ void PropagateExtensionWakeResult(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
   std::move(callback).Run(context_info != nullptr);
+}
+
+void StartServiceWorkerExternalRequest(content::ServiceWorkerContext* context,
+                                       int64_t service_worker_version_id,
+                                       const std::string& request_uuid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  context->StartingExternalRequest(service_worker_version_id, request_uuid);
+}
+
+void FinishServiceWorkerExternalRequest(content::ServiceWorkerContext* context,
+                                        int64_t service_worker_version_id,
+                                        const std::string& request_uuid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  bool status =
+      context->FinishedExternalRequest(service_worker_version_id, request_uuid);
+  DCHECK(status);
 }
 
 }  // namespace
@@ -234,6 +255,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
     : extension_registry_(extension_registry),
       site_instance_(content::SiteInstance::Create(context)),
       browser_context_(context),
+      worker_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0),
       weak_ptr_factory_(this) {
@@ -746,6 +769,32 @@ void ProcessManager::ReleaseLazyKeepaliveCountForFrame(
   }
 }
 
+std::string ProcessManager::IncrementServiceWorkerKeepaliveCount(
+    const WorkerId& worker_id,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
+  // TODO(lazyboy): Use |activity_type| and |extra_data|.
+  int64_t service_worker_version_id = worker_id.version_id;
+  DCHECK(!worker_id.extension_id.empty());
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetByID(worker_id.extension_id);
+
+  DCHECK(extension);
+  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
+
+  std::string request_uuid = base::GenerateGUID();
+  content::ServiceWorkerContext* service_worker_context =
+      content::BrowserContext::GetStoragePartitionForSite(browser_context_,
+                                                          extension->url())
+          ->GetServiceWorkerContext();
+
+  content::ServiceWorkerContext::RunTask(
+      worker_task_runner_, FROM_HERE, service_worker_context,
+      base::BindOnce(&StartServiceWorkerExternalRequest, service_worker_context,
+                     service_worker_version_id, request_uuid));
+  return request_uuid;
+}
+
 void ProcessManager::DecrementLazyKeepaliveCount(
     const std::string& extension_id,
     Activity::Type activity_type,
@@ -778,6 +827,32 @@ void ProcessManager::DecrementLazyKeepaliveCount(
           base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
     }
   }
+}
+
+void ProcessManager::DecrementServiceWorkerKeepaliveCount(
+    const WorkerId& worker_id,
+    const std::string& request_uuid,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
+  DCHECK(!worker_id.extension_id.empty());
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetByID(worker_id.extension_id);
+  if (!extension)
+    return;
+
+  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
+
+  int64_t service_worker_version_id = worker_id.version_id;
+  content::ServiceWorkerContext* service_worker_context =
+      content::BrowserContext::GetStoragePartitionForSite(browser_context_,
+                                                          extension->url())
+          ->GetServiceWorkerContext();
+
+  content::ServiceWorkerContext::RunTask(
+      worker_task_runner_, FROM_HERE, service_worker_context,
+      base::BindOnce(&FinishServiceWorkerExternalRequest,
+                     service_worker_context, service_worker_version_id,
+                     request_uuid));
 }
 
 void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,
@@ -887,6 +962,27 @@ void ProcessManager::UnregisterExtension(const std::string& extension_id) {
   }
 
   background_page_data_.erase(extension_id);
+
+  all_extension_workers_.RemoveAllForExtension(extension_id);
+}
+
+void ProcessManager::RegisterServiceWorker(const WorkerId& worker_id) {
+  all_extension_workers_.Add(worker_id);
+}
+
+void ProcessManager::UnregisterServiceWorker(const WorkerId& worker_id) {
+  all_extension_workers_.Remove(worker_id);
+}
+
+bool ProcessManager::HasServiceWorker(const WorkerId& worker_id) const {
+  return all_extension_workers_.Contains(worker_id);
+}
+
+std::vector<WorkerId> ProcessManager::GetServiceWorkers(
+    const ExtensionId& extension_id,
+    int render_process_id) const {
+  return all_extension_workers_.GetAllForExtension(extension_id,
+                                                   render_process_id);
 }
 
 void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
