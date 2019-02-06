@@ -36,19 +36,19 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
 
   if ((authenticator_selection_criteria.authenticator_attachment() ==
            AuthenticatorAttachment::kPlatform &&
-       !opt_options->is_platform_device()) ||
+       !opt_options->is_platform_device) ||
       (authenticator_selection_criteria.authenticator_attachment() ==
            AuthenticatorAttachment::kCrossPlatform &&
-       opt_options->is_platform_device()))
+       opt_options->is_platform_device))
     return false;
 
   if (authenticator_selection_criteria.require_resident_key() &&
-      !opt_options->supports_resident_key())
+      !opt_options->supports_resident_key)
     return false;
 
   return authenticator_selection_criteria.user_verification_requirement() !=
              UserVerificationRequirement::kRequired ||
-         opt_options->user_verification_availability() ==
+         opt_options->user_verification_availability ==
              UvAvailability::kSupportedAndConfigured;
 }
 

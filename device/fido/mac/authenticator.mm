@@ -143,12 +143,11 @@ namespace {
 
 AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
   AuthenticatorSupportedOptions options;
-  options.SetIsPlatformDevice(true);
-  options.SetSupportsResidentKey(true);
-  options.SetUserVerificationAvailability(
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured);
-  options.SetUserPresenceRequired(true);
+  options.is_platform_device = true;
+  options.supports_resident_key = true;
+  options.user_verification_availability = AuthenticatorSupportedOptions::
+      UserVerificationAvailability::kSupportedAndConfigured;
+  options.user_presence_required = true;
   return options;
 }
 

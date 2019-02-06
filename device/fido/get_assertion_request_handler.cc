@@ -72,7 +72,7 @@ bool CheckResponseCredentialIdMatchesRequestAllowList(
   if (!allow_list || allow_list->empty()) {
     // Allow list can't be empty for authenticators w/o resident key support.
     return !authenticator.Options() ||
-           authenticator.Options()->supports_resident_key();
+           authenticator.Options()->supports_resident_key;
   }
   // Credential ID may be omitted if allow list has size 1. Otherwise, it needs
   // to match.
@@ -113,7 +113,7 @@ bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
 
   return request.user_verification() !=
              UserVerificationRequirement::kRequired ||
-         opt_options->user_verification_availability() ==
+         opt_options->user_verification_availability ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured;
 }

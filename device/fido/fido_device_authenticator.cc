@@ -61,7 +61,7 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
 
   // Update the request to the "effective" user verification requirement.
   // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-credential-creation
-  if (Options()->user_verification_availability() ==
+  if (Options()->user_verification_availability ==
       AuthenticatorSupportedOptions::UserVerificationAvailability::
           kSupportedAndConfigured) {
     request.SetUserVerification(UserVerificationRequirement::kRequired);
@@ -84,7 +84,7 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
 
   // Update the request to the "effective" user verification requirement.
   // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
-  if (Options()->user_verification_availability() ==
+  if (Options()->user_verification_availability ==
       AuthenticatorSupportedOptions::UserVerificationAvailability::
           kSupportedAndConfigured) {
     request.SetUserVerification(UserVerificationRequirement::kRequired);

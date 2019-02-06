@@ -217,7 +217,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!option_map_it->second.is_bool())
         return base::nullopt;
 
-      options.SetIsPlatformDevice(option_map_it->second.GetBool());
+      options.is_platform_device = option_map_it->second.GetBool();
     }
 
     option_map_it = option_map.find(CBOR(kResidentKeyMapKey));
@@ -225,7 +225,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!option_map_it->second.is_bool())
         return base::nullopt;
 
-      options.SetSupportsResidentKey(option_map_it->second.GetBool());
+      options.supports_resident_key = option_map_it->second.GetBool();
     }
 
     option_map_it = option_map.find(CBOR(kUserPresenceMapKey));
@@ -233,7 +233,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!option_map_it->second.is_bool())
         return base::nullopt;
 
-      options.SetUserPresenceRequired(option_map_it->second.GetBool());
+      options.user_presence_required = option_map_it->second.GetBool();
     }
 
     option_map_it = option_map.find(CBOR(kUserVerificationMapKey));
@@ -242,13 +242,11 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
         return base::nullopt;
 
       if (option_map_it->second.GetBool()) {
-        options.SetUserVerificationAvailability(
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured);
+        options.user_verification_availability = AuthenticatorSupportedOptions::
+            UserVerificationAvailability::kSupportedAndConfigured;
       } else {
-        options.SetUserVerificationAvailability(
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedButNotConfigured);
+        options.user_verification_availability = AuthenticatorSupportedOptions::
+            UserVerificationAvailability::kSupportedButNotConfigured;
       }
     }
 
@@ -258,13 +256,11 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
         return base::nullopt;
 
       if (option_map_it->second.GetBool()) {
-        options.SetClientPinAvailability(
-            AuthenticatorSupportedOptions::ClientPinAvailability::
-                kSupportedAndPinSet);
+        options.client_pin_availability = AuthenticatorSupportedOptions::
+            ClientPinAvailability::kSupportedAndPinSet;
       } else {
-        options.SetClientPinAvailability(
-            AuthenticatorSupportedOptions::ClientPinAvailability::
-                kSupportedButPinNotSet);
+        options.client_pin_availability = AuthenticatorSupportedOptions::
+            ClientPinAvailability::kSupportedButPinNotSet;
       }
     }
     response.SetOptions(std::move(options));
