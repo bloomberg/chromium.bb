@@ -1280,6 +1280,7 @@ class GClient(GitDependency):
     "android": "android",
     "ios": "ios",
     "fuchsia": "fuchsia",
+    "chromeos": "chromeos",
   }
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
