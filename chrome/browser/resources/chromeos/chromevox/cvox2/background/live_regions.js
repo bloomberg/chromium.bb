@@ -77,7 +77,7 @@ LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
  * @type {boolean}
  * @private
  */
-LiveRegions.announceLiveRegionsFromBackgroundTabs_ = true;
+LiveRegions.announceLiveRegionsFromBackgroundTabs_ = false;
 
 LiveRegions.prototype = {
   /**
