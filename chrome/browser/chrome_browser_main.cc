@@ -313,7 +313,6 @@
 #endif  // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 
 #if defined(USE_AURA)
-#include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/env.h"
 #endif
 
@@ -1172,13 +1171,6 @@ void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
-#if defined(USE_AURA)
-  if (content::ServiceManagerConnection::GetForProcess() &&
-      service_manager::ServiceManagerIsRemote()) {
-    content::ServiceManagerConnection::GetForProcess()->
-        SetConnectionLostClosure(base::Bind(&chrome::SessionEnding));
-  }
-#endif
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");
 
   result_code_ = PreMainMessageLoopRunImpl();

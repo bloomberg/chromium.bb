@@ -27,7 +27,6 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

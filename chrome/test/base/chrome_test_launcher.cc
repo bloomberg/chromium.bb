@@ -33,7 +33,6 @@
 #include "content/public/test/network_service_test_helper.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/runner/common/switches.h"
 #include "ui/base/test/ui_controls.h"
 
 #if defined(OS_MACOSX)

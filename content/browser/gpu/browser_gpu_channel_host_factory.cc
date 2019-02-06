@@ -37,7 +37,6 @@
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)

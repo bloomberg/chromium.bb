@@ -15,8 +15,10 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -26,9 +28,10 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/runner/common/client_util.h"
-#include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/public/cpp/service_executable/switches.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/switches.h"
 
 #if defined(OS_LINUX)
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -138,6 +141,17 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
       std::move(callback));
 
   return client;
+}
+
+// static
+mojom::ServicePtr ServiceProcessLauncher::PassServiceRequestOnCommandLine(
+    mojo::OutgoingInvitation* invitation,
+    base::CommandLine* command_line) {
+  const auto attachment_name = base::NumberToString(base::RandUint64());
+  command_line->AppendSwitchASCII(switches::kServiceRequestAttachmentName,
+                                  attachment_name);
+  return mojom::ServicePtr{
+      mojom::ServicePtrInfo{invitation->AttachMessagePipe(attachment_name), 0}};
 }
 
 base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(

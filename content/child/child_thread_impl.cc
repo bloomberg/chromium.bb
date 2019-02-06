@@ -70,7 +70,6 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(OS_POSIX)

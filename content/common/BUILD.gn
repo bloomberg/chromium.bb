@@ -319,7 +319,6 @@ source_set("common") {
     "//services/network/public/mojom",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
     "//services/service_manager/zygote:zygote_buildflags",
     "//services/video_capture/public/mojom",
     "//services/viz/public/interfaces",

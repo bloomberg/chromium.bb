@@ -18,7 +18,6 @@ source_set("lifecycle") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
     "//testing/gtest",
   ]
 

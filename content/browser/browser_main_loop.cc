@@ -139,7 +139,6 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"

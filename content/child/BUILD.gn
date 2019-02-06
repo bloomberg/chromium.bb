@@ -109,7 +109,6 @@ target(link_target_type, "child") {
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
     "//services/tracing/public/cpp",
     "//skia",
     "//storage/common",

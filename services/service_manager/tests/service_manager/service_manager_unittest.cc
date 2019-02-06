@@ -33,7 +33,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
+#include "services/service_manager/service_process_launcher.h"
 #include "services/service_manager/tests/service_manager/service_manager.test-mojom.h"
 #include "services/service_manager/tests/service_manager/test_manifests.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -265,8 +265,8 @@ class ServiceManagerTest : public testing::Test,
 
     mojo::OutgoingInvitation invitation;
     service_manager::mojom::ServicePtr client =
-        service_manager::PassServiceRequestOnCommandLine(&invitation,
-                                                         &child_command_line);
+        ServiceProcessLauncher::PassServiceRequestOnCommandLine(
+            &invitation, &child_command_line);
     service_manager::mojom::PIDReceiverPtr receiver;
     connector()->RegisterServiceInstance(
         service_manager::Identity(kTestTargetName, kSystemInstanceGroup,
