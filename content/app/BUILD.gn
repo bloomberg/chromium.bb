@@ -30,7 +30,6 @@ template("implement_content_app") {
     "//crypto",
     "//services/service_manager/embedder",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
     "//services/tracing/public/cpp",
     "//mojo/core/embedder",
     "//ppapi/buildflags",

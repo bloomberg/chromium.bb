@@ -25,7 +25,6 @@ source_set("service_manager") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
     "//testing/gtest",
   ]
 
@@ -90,7 +89,5 @@ service_executable("service_manager_unittest_embedder") {
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
   ]
 }

@@ -47,7 +47,6 @@ source_set("service_manager") {
     "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
     "//services/service_manager/sandbox",
   ]
 
@@ -57,7 +56,10 @@ source_set("service_manager") {
       "service_process_launcher.h",
     ]
 
-    deps += [ "//mojo/core/embedder" ]
+    deps += [
+      "//mojo/core/embedder",
+      "//services/service_manager/public/cpp/service_executable:switches",
+    ]
   }
 
   if (is_linux) {

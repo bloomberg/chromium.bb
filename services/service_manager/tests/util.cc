@@ -20,10 +20,10 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_executable/switches.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
-#include "services/service_manager/runner/common/switches.h"
 
 namespace service_manager {
 namespace test {
@@ -66,7 +66,8 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   mojo::OutgoingInvitation invitation;
   auto pipe_name = base::NumberToString(base::RandUint64());
   mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(pipe_name);
-  child_command_line.AppendSwitchASCII(switches::kServicePipeToken, pipe_name);
+  child_command_line.AppendSwitchASCII(switches::kServiceRequestAttachmentName,
+                                       pipe_name);
 
   service_manager::mojom::ServicePtr client;
   client.Bind(mojo::InterfacePtrInfo<service_manager::mojom::Service>(

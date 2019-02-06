@@ -511,7 +511,6 @@ jumbo_split_static_library("ui") {
     "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/mojom",
-    "//services/service_manager/runner/common",
     "//skia",
     "//storage/browser",
     "//storage/common",

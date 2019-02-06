@@ -80,7 +80,6 @@
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_launcher.h"
@@ -529,45 +528,37 @@ ServiceManagerContext::ServiceManagerContext(
   // The |service_manager_thread_task_runner_| must have been created before
   // starting the ServiceManager.
   DCHECK(service_manager_thread_task_runner_);
-  service_manager::mojom::ServiceRequest packaged_services_request;
-  if (service_manager::ServiceManagerIsRemote()) {
-    auto endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-        *base::CommandLine::ForCurrentProcess());
-    auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
-    packaged_services_request =
-        service_manager::GetServiceRequestFromCommandLine(&invitation);
-  } else {
-    std::vector<service_manager::Manifest> manifests{
-        GetContentBrowserManifest(),          GetContentGpuManifest(),
-        GetContentPackagedServicesManifest(), GetContentPluginManifest(),
-        GetContentRendererManifest(),         GetContentUtilityManifest(),
-    };
-    for (auto& manifest : manifests) {
-      base::Optional<service_manager::Manifest> overlay =
-          GetContentClient()->browser()->GetServiceManifestOverlay(
-              manifest.service_name);
-      if (overlay)
-        manifest.Amend(*overlay);
-      if (!manifest.preloaded_files.empty()) {
-        std::map<std::string, base::FilePath> preloaded_files_map;
-        for (const auto& info : manifest.preloaded_files)
-          preloaded_files_map.emplace(info.key, info.path);
-        ChildProcessLauncher::SetRegisteredFilesForService(
-            manifest.service_name, std::move(preloaded_files_map));
-      }
+  std::vector<service_manager::Manifest> manifests{
+      GetContentBrowserManifest(),          GetContentGpuManifest(),
+      GetContentPackagedServicesManifest(), GetContentPluginManifest(),
+      GetContentRendererManifest(),         GetContentUtilityManifest(),
+  };
+  for (auto& manifest : manifests) {
+    base::Optional<service_manager::Manifest> overlay =
+        GetContentClient()->browser()->GetServiceManifestOverlay(
+            manifest.service_name);
+    if (overlay)
+      manifest.Amend(*overlay);
+    if (!manifest.preloaded_files.empty()) {
+      std::map<std::string, base::FilePath> preloaded_files_map;
+      for (const auto& info : manifest.preloaded_files)
+        preloaded_files_map.emplace(info.key, info.path);
+      ChildProcessLauncher::SetRegisteredFilesForService(
+          manifest.service_name, std::move(preloaded_files_map));
     }
-    for (auto& extra_manifest :
-         GetContentClient()->browser()->GetExtraServiceManifests()) {
-      manifests.emplace_back(std::move(extra_manifest));
-    }
-    in_process_context_ =
-        new InProcessServiceManagerContext(service_manager_thread_task_runner_);
-
-    service_manager::mojom::ServicePtr packaged_services_service;
-    packaged_services_request = mojo::MakeRequest(&packaged_services_service);
-    in_process_context_->Start(packaged_services_service.PassInterface(),
-                               std::move(manifests));
   }
+  for (auto& extra_manifest :
+       GetContentClient()->browser()->GetExtraServiceManifests()) {
+    manifests.emplace_back(std::move(extra_manifest));
+  }
+  in_process_context_ =
+      new InProcessServiceManagerContext(service_manager_thread_task_runner_);
+
+  service_manager::mojom::ServicePtr packaged_services_service;
+  service_manager::mojom::ServiceRequest packaged_services_request =
+      mojo::MakeRequest(&packaged_services_service);
+  in_process_context_->Start(packaged_services_service.PassInterface(),
+                             std::move(manifests));
 
   packaged_services_connection_ =
       ServiceManagerConnection::Create(std::move(packaged_services_request),

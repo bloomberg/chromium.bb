@@ -37,9 +37,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
-#include "services/service_manager/runner/common/client_util.h"
-#include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/init.h"
+#include "services/service_manager/public/cpp/service_executable/switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -157,7 +155,14 @@ void CommonSubprocessInit() {
 }
 
 void NonEmbedderProcessInit() {
-  service_manager::InitializeLogging();
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
+  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
+  logging::SetLogItems(true,   // Process ID
+                       true,   // Thread ID
+                       true,   // Timestamp
+                       true);  // Tick count
 
 #if !defined(OFFICIAL_BUILD)
   // Initialize stack dumping before initializing sandbox to make sure symbol
@@ -171,25 +176,6 @@ void NonEmbedderProcessInit() {
 #endif
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("ServiceManagerProcess");
-}
-
-void WaitForDebuggerIfNecessary() {
-  if (!ServiceManagerIsRemote())
-    return;
-
-  const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  const std::string service_name =
-      command_line.GetSwitchValueASCII(switches::kServiceName);
-  if (service_name !=
-      command_line.GetSwitchValueASCII(::switches::kWaitForDebugger)) {
-    return;
-  }
-
-  // Include the pid as logging may not have been initialized yet (the pid
-  // printed out by logging is wrong).
-  LOG(WARNING) << "waiting for debugger to attach for service " << service_name
-               << " pid=" << base::Process::Current().Pid();
-  base::debug::WaitForDebugger(120, true);
 }
 
 int RunServiceManager(MainDelegate* delegate) {
@@ -230,7 +216,6 @@ void InitializeResources() {
 
 int RunService(MainDelegate* delegate) {
   NonEmbedderProcessInit();
-  WaitForDebuggerIfNecessary();
 
   InitializeResources();
 

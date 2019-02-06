@@ -10,7 +10,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/runner/common/client_util.h"
 
 namespace content {
 
@@ -68,10 +67,10 @@ void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
     mojo::core::Configuration* config) {
   // If this is the browser process and there's no remote service manager, we
   // will serve as the global Mojo broker.
-  if (!service_manager::ServiceManagerIsRemote() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kProcessType))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kProcessType)) {
     config->is_broker_process = true;
+  }
 }
 
 std::vector<service_manager::Manifest>

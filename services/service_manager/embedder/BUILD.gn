@@ -48,9 +48,8 @@ if (!is_ios) {
       "//services/service_manager",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/cpp/service_executable:support",
+      "//services/service_manager/public/cpp/service_executable:switches",
       "//services/service_manager/public/mojom",
-      "//services/service_manager/runner:init",
-      "//services/service_manager/runner/common",
     ]
 
     if (!is_nacl) {

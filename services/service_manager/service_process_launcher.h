@@ -19,6 +19,10 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_process_launcher_delegate.h"
 
+namespace mojo {
+class OutgoingInvitation;
+}
+
 namespace service_manager {
 
 class Identity;
@@ -46,6 +50,16 @@ class ServiceProcessLauncher {
   mojom::ServicePtr Start(const Identity& target,
                           SandboxType sandbox_type,
                           ProcessReadyCallback callback);
+
+  // Exposed publicly for use in tests. Creates a new Service pipe, passing the
+  // ServiceRequest end through |*invitation| with an identifier stashed in
+  // |*command_line| that a launched service executable can use to recover it
+  // from the invitation.
+  //
+  // Returns the corresponding ServicePtr endpoint.
+  static mojom::ServicePtr PassServiceRequestOnCommandLine(
+      mojo::OutgoingInvitation* invitation,
+      base::CommandLine* command_line);
 
  private:
   class ProcessState;

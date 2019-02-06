@@ -9,12 +9,11 @@ source_set("support") {
   ]
 
   deps = [
+    ":switches",
     "//mojo/core/embedder",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
     "//services/service_manager/sandbox",
   ]
 
@@ -30,6 +29,13 @@ source_set("support") {
       "//sandbox/linux:seccomp_bpf",
     ]
   }
+}
+
+source_set("switches") {
+  sources = [
+    "switches.cc",
+    "switches.h",
+  ]
 }
 
 # Service executable targets should link against this to get a boilerplate entry
@@ -52,7 +58,7 @@ source_set("main") {
   deps = [
     ":support",
     "//base",
+    "//base:base_static",
     "//base:i18n",
-    "//services/service_manager/runner:init",
   ]
 }
