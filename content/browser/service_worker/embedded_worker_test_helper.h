@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -234,10 +236,13 @@ class EmbeddedWorkerTestHelper {
           callback);
   virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
+  // Writes a dummy script into the given service worker's
+  // ServiceWorkerScriptCacheMap. |callback| is called when done.
+  virtual void PopulateScriptCacheMap(int64_t service_worker_version_id,
+                                      base::OnceClosure callback);
+
   // These functions simulate making Mojo calls to the browser.
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
-  void SimulateWorkerScriptCached(int embedded_worker_id,
-                                  base::OnceClosure callback);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
   void SimulateScriptEvaluationStart(int embedded_worker_id);
   void SimulateWorkerStarted(int embedded_worker_id,
@@ -262,8 +267,8 @@ class EmbeddedWorkerTestHelper {
   class MockServiceWorker;
   class MockRendererInterface;
 
-  void DidSimulateWorkerScriptCached(int embedded_worker_id,
-                                     bool pause_after_download);
+  void DidPopulateScriptCacheMap(int embedded_worker_id,
+                                 bool pause_after_download);
 
   void OnInitializeGlobalScope(
       int embedded_worker_id,
