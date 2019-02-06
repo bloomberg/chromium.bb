@@ -1969,6 +1969,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-sync-uss-passwords",
+    "owners": [ "mamir", "//components/sync/OWNERS" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-sync-uss-sessions",
     "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76

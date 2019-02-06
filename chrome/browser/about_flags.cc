@@ -4293,6 +4293,12 @@ const FeatureEntry kFeatureEntries[] = {
          autofill_assistant::features::kAutofillAssistantChromeEntry)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-sync-uss-passwords",
+     flag_descriptions::kEnableSyncUSSPasswordsName,
+     flag_descriptions::kEnableSyncUSSPasswordsDescription,
+     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -917,6 +917,10 @@ const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
 const char kEnableSyncUSSBookmarksDescription[] =
     "Enables the new, experimental implementation of bookmark sync";
 
+const char kEnableSyncUSSPasswordsName[] = "Enable USS for passwords sync";
+const char kEnableSyncUSSPasswordsDescription[] =
+    "Enables the new, experimental implementation of passwords sync";
+
 const char kEnableSyncUSSSessionsName[] = "Enable USS for sessions sync";
 const char kEnableSyncUSSSessionsDescription[] =
     "Enables the new, experimental implementation of session sync (aka tab "
