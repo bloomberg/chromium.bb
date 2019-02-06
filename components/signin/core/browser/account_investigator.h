@@ -62,13 +62,6 @@ class AccountInvestigator : public KeyedService,
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
-  // Internal implementation of OnAccountsInCookieUpdated. It is public given
-  // that it is called directly by unittests.
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error);
-
  private:
   friend class AccountInvestigatorTest;
 

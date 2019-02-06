@@ -263,30 +263,37 @@ TEST_F(AccountInvestigatorTest, SharedCookieJarReportWithAccount) {
 
 TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedError) {
   const HistogramTester histogram_tester;
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
+      /*accounts_are_fresh=*/true, just_one, no_accounts};
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-  investigator()->OnGaiaAccountsInCookieUpdated(just_one, no_accounts, error);
+  investigator()->OnAccountsInCookieUpdated(accounts_in_cookie_jar_info, error);
   EXPECT_EQ(0u, histogram_tester.GetTotalCountsForPrefix("Signin.").size());
 }
 
 TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedOnChange) {
   const HistogramTester histogram_tester;
-  investigator()->OnGaiaAccountsInCookieUpdated(
-      just_one, no_accounts, GoogleServiceAuthError::AuthErrorNone());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
+      /*accounts_are_fresh=*/true, just_one, no_accounts};
+  investigator()->OnAccountsInCookieUpdated(
+      accounts_in_cookie_jar_info, GoogleServiceAuthError::AuthErrorNone());
   ExpectSharedReportHistograms(ReportingType::ON_CHANGE, histogram_tester,
                                nullptr, 1, 0, 1, nullptr, false);
 }
 
 TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedSigninOnly) {
   // Initial update to simulate the update on first-time-run.
-  investigator()->OnGaiaAccountsInCookieUpdated(
-      no_accounts, no_accounts, GoogleServiceAuthError::AuthErrorNone());
+  investigator()->OnAccountsInCookieUpdated(
+      identity::AccountsInCookieJarInfo(),
+      GoogleServiceAuthError::AuthErrorNone());
 
   const HistogramTester histogram_tester;
   identity_test_env()->SetPrimaryAccount("1@mail.com");
   pref_service()->SetString(prefs::kGaiaCookieHash,
                             Hash(just_one, no_accounts));
-  investigator()->OnGaiaAccountsInCookieUpdated(
-      just_one, no_accounts, GoogleServiceAuthError::AuthErrorNone());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
+      /*accounts_are_fresh=*/true, just_one, no_accounts};
+  investigator()->OnAccountsInCookieUpdated(
+      accounts_in_cookie_jar_info, GoogleServiceAuthError::AuthErrorNone());
   EXPECT_EQ(1u, histogram_tester.GetTotalCountsForPrefix("Signin.").size());
   ExpectRelationReport(ReportingType::ON_CHANGE, histogram_tester,
                        AccountRelation::SINGLE_SIGNED_IN_MATCH_NO_SIGNED_OUT);
@@ -296,15 +303,19 @@ TEST_F(AccountInvestigatorTest,
        OnGaiaAccountsInCookieUpdatedSigninSignOutOfContent) {
   const HistogramTester histogram_tester;
   identity_test_env()->SetPrimaryAccount("1@mail.com");
-  investigator()->OnGaiaAccountsInCookieUpdated(
-      just_one, no_accounts, GoogleServiceAuthError::AuthErrorNone());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
+      /*accounts_are_fresh=*/true, just_one, no_accounts};
+  investigator()->OnAccountsInCookieUpdated(
+      accounts_in_cookie_jar_info, GoogleServiceAuthError::AuthErrorNone());
   ExpectRelationReport(ReportingType::ON_CHANGE, histogram_tester,
                        AccountRelation::SINGLE_SIGNED_IN_MATCH_NO_SIGNED_OUT);
 
   // Simulate a sign out of the content area.
   const HistogramTester histogram_tester2;
-  investigator()->OnGaiaAccountsInCookieUpdated(
-      no_accounts, just_one, GoogleServiceAuthError::AuthErrorNone());
+  accounts_in_cookie_jar_info = {/*accounts_are_fresh=*/true, no_accounts,
+                                 just_one};
+  investigator()->OnAccountsInCookieUpdated(
+      accounts_in_cookie_jar_info, GoogleServiceAuthError::AuthErrorNone());
   const AccountRelation expected_relation =
       AccountRelation::NO_SIGNED_IN_SINGLE_SIGNED_OUT_MATCH;
   ExpectSharedReportHistograms(ReportingType::ON_CHANGE, histogram_tester2,

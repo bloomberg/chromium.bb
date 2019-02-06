@@ -84,20 +84,16 @@ void AccountInvestigator::OnAddAccountToCookieCompleted(
 void AccountInvestigator::OnAccountsInCookieUpdated(
     const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
-  OnGaiaAccountsInCookieUpdated(accounts_in_cookie_jar_info.signed_in_accounts,
-                                accounts_in_cookie_jar_info.signed_out_accounts,
-                                error);
-}
-
-void AccountInvestigator::OnGaiaAccountsInCookieUpdated(
-    const std::vector<ListedAccount>& signed_in_accounts,
-    const std::vector<ListedAccount>& signed_out_accounts,
-    const GoogleServiceAuthError& error) {
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
     // If we are pending periodic reporting, leave the flag set, and we will
     // continue next time the ListAccounts call succeeds.
     return;
   }
+
+  const std::vector<ListedAccount>& signed_in_accounts(
+      accounts_in_cookie_jar_info.signed_in_accounts);
+  const std::vector<ListedAccount>& signed_out_accounts(
+      accounts_in_cookie_jar_info.signed_out_accounts);
 
   // Handling this is tricky. We could be here because there was a change. We
   // could be here because we tried to do periodic reporting but there wasn't
