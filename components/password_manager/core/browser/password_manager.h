@@ -208,11 +208,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   bool IsAutomaticSavePromptAvailable();
 
   // Returns true if there already exists a provisionally saved password form
-  // from the same origin as |form|, but with a different and secure scheme.
+  // from the origin |origin|, but with a different and secure scheme.
   // This prevents a potential attack where users can be tricked into saving
   // unwanted credentials, see http://crbug.com/571580 for details.
   bool ShouldBlockPasswordForSameOriginButDifferentScheme(
-      const autofill::PasswordForm& form) const;
+      const GURL& origin) const;
 
   // Called when the login was deemed successful. It handles the special case
   // when the provisionally saved password is a sync credential, and otherwise
