@@ -37,7 +37,7 @@ def Unpack(pak_path, out_path):
   resources_path = os.path.join(pak_dir, 'grit', pak_id + '.h')
   with open(resources_path) as resources_file:
     for line in resources_file:
-      res = re.match('#define ([^ ]+) (\d+)', line)
+      res = re.match('^#define (\S*).* (\d+)\)?$', line)
       if res:
         resource_ids[int(res.group(2))] = res.group(1)
   assert resource_ids

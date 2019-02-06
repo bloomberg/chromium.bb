@@ -326,7 +326,7 @@
       'GPU Mac Builder (dbg)': 'gpu_tests_debug_trybot',
       'GPU Linux Builder': 'gpu_tests_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_tests_debug_trybot',
-      'GPU Win Builder': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'GPU Win Builder': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'GPU Win Builder (dbg)': 'gpu_tests_debug_trybot_x86_minimal_symbols',
       'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
     },
@@ -506,7 +506,7 @@
       'V8-Blink Linux 64 (dbg)': 'release_bot_v8_debug',
       'V8-Blink Mac': 'release_bot',
       'V8-Blink Win': 'release_bot_x86_minimal_symbols',
-      'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
     },
 
     # TODO(crbug.com/818301): This master is going away.
@@ -763,20 +763,20 @@
       'gpu_manual_try_win7_nvidia_rel': 'gpu_fyi_tests_release_trybot_x86',
       # TODO(crbug.com/888810): Remove this entry once bot named is switched
       # source side.
-      'win7_chromium_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
-      'win7_chromium_rel_loc_exp': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win7_chromium_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
+      'win7_chromium_rel_loc_exp': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_trybot',
-      'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot',
+      'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
       'win-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot',
-      'win7-rel': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win7-rel': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
       'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86_minimal_symbols',
-      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'win_chromium_dbg_ng': 'gpu_tests_debug_trybot_x86_minimal_symbols',
       'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot_minimal_symbols',
       'win_mojo': 'release_trybot_x86',
@@ -794,11 +794,11 @@
     },
 
     'tryserver.webrtc': {
-      'win_chromium_compile': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win_chromium_compile': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'mac_chromium_compile': 'gpu_tests_release_trybot',
       'linux_chromium_compile': 'release_trybot',
       'android_chromium_compile': 'android_release_trybot',
-      'win_chromium_webrtc_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win_chromium_webrtc_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'mac_chromium_webrtc_compile_rel_ng': 'gpu_tests_release_trybot',
       'linux_chromium_webrtc_compile_rel_ng': 'release_trybot',
       'android_webrtc_compile_rel': 'android_release_trybot',
@@ -1486,6 +1486,10 @@
       'gpu_tests', 'release_trybot',
     ],
 
+    'gpu_tests_release_trybot_resource_whitelisting': [
+      'gpu_tests', 'release_trybot', 'resource_whitelisting',
+    ],
+
     'gpu_tests_release_trybot_no_symbols': [
       'gpu_tests', 'release_trybot', 'no_symbols',
     ],
@@ -1507,8 +1511,9 @@
       'gpu_tests', 'release_trybot', 'v8_pointer_compression',
     ],
 
-    'gpu_tests_release_trybot_x86_minimal_symbols': [
+    'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting': [
       'gpu_tests', 'release_trybot', 'x86', 'minimal_symbols',
+      'resource_whitelisting',
     ],
 
     'gpu_tests_release_bot': [
@@ -2282,6 +2287,10 @@
 
     'tcmalloc': {
       'gn_args': 'use_new_tcmalloc=true',
+    },
+
+    'resource_whitelisting': {
+      'gn_args': 'enable_resource_whitelist_generation=true',
     },
 
     'tsan': {

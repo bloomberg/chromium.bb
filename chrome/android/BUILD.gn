@@ -1084,7 +1084,9 @@ if (current_toolchain == default_toolchain) {
           ":${_lib_target}($_fat_lib_toolchain)",
         ]
 
-        input = get_label_info(deps[0], "root_out_dir") + _lib_path
+        inputs = [
+          get_label_info(deps[0], "root_out_dir") + _lib_path,
+        ]
         output = _resource_whitelist_file
       }
 
