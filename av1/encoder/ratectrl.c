@@ -1308,7 +1308,8 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
   }
 }
 
-void av1_estimate_qp_gop(AV1_COMP *cpi) {
+void av1_estimate_qp_gop(AV1_COMP *cpi,
+                         struct EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   int gop_length = cpi->rc.baseline_gf_interval;
   int bottom_index, top_index;
@@ -1323,7 +1324,8 @@ void av1_estimate_qp_gop(AV1_COMP *cpi) {
     cpi->twopass.gf_group.index = idx;
     rc_set_frame_target(cpi, target_rate, cm->width, cm->height);
     av1_configure_buffer_updates(
-        cpi, cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index], 0);
+        cpi, frame_params,
+        cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index], 0);
     tpl_frame->base_qindex = rc_pick_q_and_bounds_two_pass(
         cpi, cm->width, cm->height, &bottom_index, &top_index, &arf_q);
     tpl_frame->base_qindex = AOMMAX(tpl_frame->base_qindex, 1);
@@ -1331,7 +1333,8 @@ void av1_estimate_qp_gop(AV1_COMP *cpi) {
   // Reset the actual index and frame update
   cpi->twopass.gf_group.index = gf_index;
   av1_configure_buffer_updates(
-      cpi, cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index], 0);
+      cpi, frame_params,
+      cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index], 0);
 }
 
 void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {

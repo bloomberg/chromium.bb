@@ -928,8 +928,15 @@ struct EncodeFrameParams {
   int order_offset;
   int show_frame;
 
-  // This is a bitmask of which reference slots can be used in this frame
+  // Bitmask of which reference buffers may be referenced by this frame
   int ref_frame_flags;
+
+  // Flags which determine which reference buffers are refreshed by this frame
+  int refresh_last_frame;
+  int refresh_golden_frame;
+  int refresh_bwd_ref_frame;
+  int refresh_alt2_ref_frame;
+  int refresh_alt_ref_frame;
 
   // Speed level to use for this frame: Bigger number means faster.
   int speed;

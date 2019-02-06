@@ -5471,6 +5471,12 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
   cpi->speed = frame_params->speed;
 
+  cpi->refresh_last_frame = frame_params->refresh_last_frame;
+  cpi->refresh_golden_frame = frame_params->refresh_golden_frame;
+  cpi->refresh_bwd_ref_frame = frame_params->refresh_bwd_ref_frame;
+  cpi->refresh_alt2_ref_frame = frame_params->refresh_alt2_ref_frame;
+  cpi->refresh_alt_ref_frame = frame_params->refresh_alt_ref_frame;
+
   if (current_frame->frame_type == KEY_FRAME && cm->show_frame)
     current_frame->frame_number = 0;
 

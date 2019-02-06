@@ -32,6 +32,7 @@
 #include "av1/encoder/tpl_model.h"
 
 void av1_configure_buffer_updates(AV1_COMP *const cpi,
+                                  EncodeFrameParams *const frame_params,
                                   const FRAME_UPDATE_TYPE type,
                                   int force_refresh_all) {
   // NOTE(weitinglin): Should we define another function to take care of
@@ -45,102 +46,102 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
   switch (type) {
     case KF_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 1;
-      cpi->refresh_bwd_ref_frame = 1;
-      cpi->refresh_alt2_ref_frame = 1;
-      cpi->refresh_alt_ref_frame = 1;
+      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_golden_frame = 1;
+      frame_params->refresh_bwd_ref_frame = 1;
+      frame_params->refresh_alt2_ref_frame = 1;
+      frame_params->refresh_alt_ref_frame = 1;
       break;
 
     case LF_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_golden_frame = 0;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
       break;
 
     case GF_UPDATE:
       // TODO(zoeliu): To further investigate whether 'refresh_last_frame' is
       //               needed.
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 1;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_golden_frame = 1;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
       break;
 
     case OVERLAY_UPDATE:
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 1;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 0;
+      frame_params->refresh_golden_frame = 1;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_src_frame_alt_ref = 1;
       break;
 
     case ARF_UPDATE:
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
+      frame_params->refresh_last_frame = 0;
+      frame_params->refresh_golden_frame = 0;
       // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 1;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 1;
       break;
 
     case BRF_UPDATE:
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 1;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 0;
+      frame_params->refresh_golden_frame = 0;
+      frame_params->refresh_bwd_ref_frame = 1;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_bwd_ref_frame = 1;
       break;
 
     case LAST_BIPRED_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_golden_frame = 0;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_last_bipred_frame = 1;
       break;
 
     case BIPRED_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_golden_frame = 0;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_bipred_frame = 1;
       break;
 
     case INTNL_OVERLAY_UPDATE:
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_golden_frame = 0;
+      frame_params->refresh_bwd_ref_frame = 0;
+      frame_params->refresh_alt2_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_src_frame_alt_ref = 1;
       cpi->rc.is_src_frame_ext_arf = 1;
       break;
 
     case INTNL_ARF_UPDATE:
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
+      frame_params->refresh_last_frame = 0;
+      frame_params->refresh_golden_frame = 0;
       if (cpi->new_bwdref_update_rule == 1 && cpi->oxcf.pass == 2) {
-        cpi->refresh_bwd_ref_frame = 1;
-        cpi->refresh_alt2_ref_frame = 0;
+        frame_params->refresh_bwd_ref_frame = 1;
+        frame_params->refresh_alt2_ref_frame = 0;
       } else {
-        cpi->refresh_bwd_ref_frame = 0;
-        cpi->refresh_alt2_ref_frame = 1;
+        frame_params->refresh_bwd_ref_frame = 0;
+        frame_params->refresh_alt2_ref_frame = 1;
       }
-      cpi->refresh_alt_ref_frame = 0;
+      frame_params->refresh_alt_ref_frame = 0;
       break;
 
     default: assert(0); break;
@@ -148,19 +149,19 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
   if (cpi->ext_refresh_frame_flags_pending &&
       (cpi->oxcf.pass == 0 || cpi->oxcf.pass == 2)) {
-    cpi->refresh_last_frame = cpi->ext_refresh_last_frame;
-    cpi->refresh_golden_frame = cpi->ext_refresh_golden_frame;
-    cpi->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
-    cpi->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
-    cpi->refresh_alt2_ref_frame = cpi->ext_refresh_alt2_ref_frame;
+    frame_params->refresh_last_frame = cpi->ext_refresh_last_frame;
+    frame_params->refresh_golden_frame = cpi->ext_refresh_golden_frame;
+    frame_params->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
+    frame_params->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
+    frame_params->refresh_alt2_ref_frame = cpi->ext_refresh_alt2_ref_frame;
   }
 
   if (force_refresh_all) {
-    cpi->refresh_last_frame = 1;
-    cpi->refresh_golden_frame = 1;
-    cpi->refresh_bwd_ref_frame = 1;
-    cpi->refresh_alt2_ref_frame = 1;
-    cpi->refresh_alt_ref_frame = 1;
+    frame_params->refresh_last_frame = 1;
+    frame_params->refresh_golden_frame = 1;
+    frame_params->refresh_bwd_ref_frame = 1;
+    frame_params->refresh_alt2_ref_frame = 1;
+    frame_params->refresh_alt_ref_frame = 1;
   }
 }
 
@@ -379,13 +380,13 @@ static int get_current_frame_ref_type(
     return REGULAR_FRAME;
   else if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE)
     return EXT_ARF_FRAME;
-  else if (cpi->refresh_alt_ref_frame)
+  else if (frame_params->refresh_alt_ref_frame)
     return ARF_FRAME;
   else if (cpi->rc.is_src_frame_alt_ref)
     return OVERLAY_FRAME;
-  else if (cpi->refresh_golden_frame)
+  else if (frame_params->refresh_golden_frame)
     return GLD_FRAME;
-  else if (cpi->refresh_bwd_ref_frame)
+  else if (frame_params->refresh_bwd_ref_frame)
     return BRF_FRAME;
   else
     return REGULAR_FRAME;
@@ -836,7 +837,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cm->min_qmlevel = cpi->oxcf.qm_minlevel;
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
     if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-      av1_configure_buffer_updates(cpi, frame_update_type, 0);
+      av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
       av1_set_frame_size(cpi, cm->width, cm->height);
       av1_tpl_setup_stats(cpi, &frame_input);
     }
@@ -877,7 +878,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
        frame_params.frame_type == S_FRAME) &&
       !cm->show_existing_frame;
 
-  av1_configure_buffer_updates(cpi, frame_update_type, force_refresh_all);
+  av1_configure_buffer_updates(cpi, &frame_params, frame_update_type,
+                               force_refresh_all);
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     // Work out which reference frame slots may be used.
