@@ -701,9 +701,9 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 }
 
 bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
-    const GURL& script_url) {
+    const url::Origin& script_origin) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return script_url.SchemeIs(extensions::kExtensionScheme);
+  return script_origin.scheme() == extensions::kExtensionScheme;
 #else
   return false;
 #endif

@@ -132,7 +132,8 @@ void ServiceWorkerGlobalScope::ReadyToEvaluateScript() {
 }
 
 bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
-  return Platform::Current()->AllowScriptExtensionForServiceWorker(Url());
+  return Platform::Current()->AllowScriptExtensionForServiceWorker(
+      WebSecurityOrigin(GetSecurityOrigin()));
 }
 
 void ServiceWorkerGlobalScope::ImportModuleScript(
