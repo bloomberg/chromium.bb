@@ -140,28 +140,36 @@ class FetchUrlTest : public testing::Test,
 
 }  // namespace
 
+#if !defined(THREAD_SANITIZER)
 TEST_F(FetchUrlTest, Http200) {
   std::string response("stuff");
   ASSERT_TRUE(DoFetchURL(server_url_, &response));
   ASSERT_STREQ("hello", response.c_str());
 }
+#endif
 
+#if !defined(THREAD_SANITIZER)
 TEST_F(FetchUrlTest, HttpNon200) {
   response_ = kSend404;
   std::string response("stuff");
   ASSERT_FALSE(DoFetchURL(server_url_, &response));
   ASSERT_STREQ("stuff", response.c_str());
 }
+#endif
 
+#if !defined(THREAD_SANITIZER)
 TEST_F(FetchUrlTest, ConnectionClose) {
   response_ = kClose;
   std::string response("stuff");
   ASSERT_FALSE(DoFetchURL(server_url_, &response));
   ASSERT_STREQ("stuff", response.c_str());
 }
+#endif
 
+#if !defined(THREAD_SANITIZER)
 TEST_F(FetchUrlTest, NoServer) {
   std::string response("stuff");
   ASSERT_FALSE(DoFetchURL("http://localhost:33333", &response));
   ASSERT_STREQ("stuff", response.c_str());
 }
+#endif

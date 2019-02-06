@@ -136,7 +136,7 @@ TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
 #endif
 }
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
 // Not implemented on Linux.
 // Fails if tested layouts are not installed on Mac.
 #define MAYBE_NonEnglish DISABLED_NonEnglish
