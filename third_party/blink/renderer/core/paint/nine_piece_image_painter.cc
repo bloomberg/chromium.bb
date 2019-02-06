@@ -17,20 +17,19 @@ namespace blink {
 
 namespace {
 
-std::tuple<bool, float> CalculateSpaceNeeded(const float destination,
-                                             const float source) {
+base::Optional<float> CalculateSpaceNeeded(const float destination,
+                                           const float source) {
   DCHECK_GT(source, 0);
   DCHECK_GT(destination, 0);
 
   float repeat_tiles_count = floorf(destination / source);
   if (!repeat_tiles_count)
-    return std::make_tuple(false, -1);
+    return base::nullopt;
 
   float space = destination;
   space -= source * repeat_tiles_count;
   space /= repeat_tiles_count + 1.0;
-
-  return std::make_tuple(true, space);
+  return space;
 }
 
 struct TileParameters {
@@ -39,50 +38,41 @@ struct TileParameters {
   float spacing;
 };
 
-bool ComputeTileParameters(ENinePieceImageRule tile_rule,
-                           float dst_pos,
-                           float dst_extent,
-                           float src_pos,
-                           float src_extent,
-                           float provided_tile_scale_factor,
-                           TileParameters& tile) {
-  tile.scale_factor = provided_tile_scale_factor;
+base::Optional<TileParameters> ComputeTileParameters(
+    ENinePieceImageRule tile_rule,
+    float dst_pos,
+    float dst_extent,
+    float src_pos,
+    float src_extent,
+    float in_scale_factor) {
   switch (tile_rule) {
     case kRoundImageRule: {
       float repetitions =
-          std::max(1.0f, roundf(dst_extent / (src_extent * tile.scale_factor)));
-      tile.scale_factor = dst_extent / (src_extent * repetitions);
-      tile.phase = src_pos * tile.scale_factor;
-      tile.spacing = 0;
-      break;
+          std::max(1.0f, roundf(dst_extent / (src_extent * in_scale_factor)));
+      float scale_factor = dst_extent / (src_extent * repetitions);
+      return TileParameters{scale_factor, src_pos * scale_factor, 0};
     }
     case kRepeatImageRule: {
-      float scaled_tile_extent = src_extent * tile.scale_factor;
+      float scaled_tile_extent = src_extent * in_scale_factor;
       // We want to construct the phase such that the pattern is centered (when
       // stretch is not set for a particular rule).
-      tile.phase = src_pos * tile.scale_factor;
-      tile.phase -= (dst_extent - scaled_tile_extent) / 2;
-      tile.spacing = 0;
-      break;
+      float phase = src_pos * in_scale_factor;
+      phase -= (dst_extent - scaled_tile_extent) / 2;
+      return TileParameters{in_scale_factor, phase, 0};
     }
     case kSpaceImageRule: {
-      std::tuple<bool, float> space =
+      base::Optional<float> spacing =
           CalculateSpaceNeeded(dst_extent, src_extent);
-      if (!std::get<0>(space))
-        return false;
-      tile.spacing = std::get<1>(space);
-      tile.scale_factor = 1;
-      tile.phase = src_pos - tile.spacing;
-      break;
+      if (!spacing)
+        return base::nullopt;
+      return TileParameters{1, src_pos - *spacing, *spacing};
     }
     case kStretchImageRule:
-      tile.phase = src_pos * tile.scale_factor;
-      tile.spacing = 0;
-      break;
+      return TileParameters{in_scale_factor, src_pos * in_scale_factor, 0};
     default:
       NOTREACHED();
   }
-  return true;
+  return base::nullopt;
 }
 
 void PaintPieces(GraphicsContext& context,
@@ -119,23 +109,21 @@ void PaintPieces(GraphicsContext& context,
                           &draw_info.source);
       } else {
         // TODO(cavalcantii): see crbug.com/662513.
-        TileParameters h_tile, v_tile;
-        if (!ComputeTileParameters(
-                draw_info.tile_rule.horizontal, draw_info.destination.X(),
-                draw_info.destination.Width(), draw_info.source.X(),
-                draw_info.source.Width(), draw_info.tile_scale.Width(), h_tile))
-          continue;
-        if (!ComputeTileParameters(
-                draw_info.tile_rule.vertical, draw_info.destination.Y(),
-                draw_info.destination.Height(), draw_info.source.Y(),
-                draw_info.source.Height(), draw_info.tile_scale.Height(),
-                v_tile))
+        base::Optional<TileParameters> h_tile = ComputeTileParameters(
+            draw_info.tile_rule.horizontal, draw_info.destination.X(),
+            draw_info.destination.Width(), draw_info.source.X(),
+            draw_info.source.Width(), draw_info.tile_scale.Width());
+        base::Optional<TileParameters> v_tile = ComputeTileParameters(
+            draw_info.tile_rule.vertical, draw_info.destination.Y(),
+            draw_info.destination.Height(), draw_info.source.Y(),
+            draw_info.source.Height(), draw_info.tile_scale.Height());
+        if (!h_tile || !v_tile)
           continue;
 
-        FloatSize tile_scale_factor(h_tile.scale_factor, v_tile.scale_factor);
-        FloatPoint tile_phase(draw_info.destination.X() - h_tile.phase,
-                              draw_info.destination.Y() - v_tile.phase);
-        FloatSize tile_spacing(h_tile.spacing, v_tile.spacing);
+        FloatSize tile_scale_factor(h_tile->scale_factor, v_tile->scale_factor);
+        FloatPoint tile_phase(draw_info.destination.X() - h_tile->phase,
+                              draw_info.destination.Y() - v_tile->phase);
+        FloatSize tile_spacing(h_tile->spacing, v_tile->spacing);
 
         // TODO(cavalcantii): see crbug.com/662507.
         base::Optional<ScopedInterpolationQuality> interpolation_quality_scope;
