@@ -75,8 +75,6 @@ class BASE_EXPORT PoissonAllocationSampler {
   void AddSamplesObserver(SamplesObserver*);
   void RemoveSamplesObserver(SamplesObserver*);
 
-  void Start();
-  void Stop();
   void SetSamplingInterval(size_t sampling_interval);
   void SuppressRandomnessForTest(bool suppress);
 

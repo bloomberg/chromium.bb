@@ -131,7 +131,7 @@ TLSKey g_sampling_interval_initialized_tls;
 bool g_deterministic;
 
 // A positive value if profiling is running, otherwise it's zero.
-std::atomic_int g_running;
+std::atomic_bool g_running;
 
 // Pointer to the current |LockFreeAddressHashSet|.
 std::atomic<LockFreeAddressHashSet*> g_sampled_addresses_set;
@@ -390,16 +390,6 @@ void PoissonAllocationSampler::SetHooksInstallCallback(
     g_hooks_install_callback();
 }
 
-void PoissonAllocationSampler::Start() {
-  InstallAllocatorHooksOnce();
-  ++g_running;
-}
-
-void PoissonAllocationSampler::Stop() {
-  int count = --g_running;
-  CHECK_GE(count, 0);
-}
-
 void PoissonAllocationSampler::SetSamplingInterval(size_t sampling_interval) {
   // TODO(alph): Reset the sample being collected if running.
   g_sampling_interval = sampling_interval;
@@ -552,6 +542,8 @@ void PoissonAllocationSampler::AddSamplesObserver(SamplesObserver* observer) {
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   observers_.push_back(observer);
+  InstallAllocatorHooksOnce();
+  g_running = !observers_.empty();
 }
 
 void PoissonAllocationSampler::RemoveSamplesObserver(
@@ -561,6 +553,7 @@ void PoissonAllocationSampler::RemoveSamplesObserver(
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   CHECK(it != observers_.end());
   observers_.erase(it);
+  g_running = !observers_.empty();
 }
 
 }  // namespace base
