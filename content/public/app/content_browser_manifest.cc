@@ -125,11 +125,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("media", "media:media")
           .RequireCapability("*", "app")
           .RequireCapability("content", "navigation")
-          .RequireCapability("resource_coordinator", "coordination_unit")
-          .RequireCapability("resource_coordinator",
-                             "coordination_unit_introspector")
           .RequireCapability("resource_coordinator", "service_callbacks")
-          .RequireCapability("resource_coordinator", "page_signal")
           .RequireCapability("service_manager",
                              "service_manager:service_manager")
           .RequireCapability("chromecast", "multizone")
