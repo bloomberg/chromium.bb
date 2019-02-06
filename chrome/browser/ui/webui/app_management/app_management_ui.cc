@@ -85,6 +85,9 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_CHROME_APP_PERMISSION_VIEW_JS);
   source->AddResourcePath("constants.html", IDR_APP_MANAGEMENT_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_APP_MANAGEMENT_CONSTANTS_JS);
+  source->AddResourcePath("dom_switch.html",
+                          IDR_APP_MANAGEMENT_DOM_SWITCH_HTML);
+  source->AddResourcePath("dom_switch.js", IDR_APP_MANAGEMENT_DOM_SWITCH_JS);
   source->AddResourcePath("fake_page_handler.js",
                           IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);

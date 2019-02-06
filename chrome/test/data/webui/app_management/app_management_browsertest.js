@@ -42,6 +42,20 @@ TEST_F('AppManagementAppTest', 'All', function() {
   mocha.run();
 });
 
+function AppManagementDomSwitchTest() {}
+
+AppManagementDomSwitchTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'dom_switch_test.js',
+  ]),
+};
+
+TEST_F('AppManagementDomSwitchTest', 'All', function() {
+  mocha.run();
+});
+
 function AppManagementMainViewTest() {}
 
 AppManagementMainViewTest.prototype = {

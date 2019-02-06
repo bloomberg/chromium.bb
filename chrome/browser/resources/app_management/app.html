@@ -3,6 +3,7 @@
 <link rel="import" href="actions.html">
 <link rel="import" href="browser_proxy.html">
 <link rel="import" href="chrome_app_permission_view.html">
+<link rel="import" href="dom_switch.html">
 <link rel="import" href="main_view.html">
 <link rel="import" href="notifications_view.html">
 <link rel="import" href="pwa_permission_view.html">
@@ -27,19 +28,20 @@
     </style>
     <cr-toolbar page-name="$i18n{title}" search-prompt="$i18n{searchPrompt}">
     </cr-toolbar>
-    <template is="dom-if" if="[[mainViewSelected_]]">
-      <app-management-main-view></app-management-main-view>
-    </template>
-    <template is="dom-if" if="[[notificationsViewSelected_]]">
-      <app-management-notifications-view></app-management-notifications-view>
-    </template>
-    <template is="dom-if" if="[[pwaPermissionViewSelected_]]">
-      <app-management-pwa-permission-view></app-management-pwa-permission-view>
-    </template>
-    <template is="dom-if" if="[[chromeAppPermissionViewSelected_]]">
-      <app-management-chrome-app-permission-view>
-      </app-management-chrome-app-permission-view>
-    </template>
+    <app-management-dom-switch id="view-selector"
+        route="[[selectedRouteId_(currentPage_)]]">
+      <template>
+        <app-management-main-view route-id="main-view">
+        </app-management-main-view>
+        <app-management-notifications-view route-id="notifications-view">
+        </app-management-notifications-view>
+        <app-management-pwa-permission-view route-id="pwa-permission-view">
+        </app-management-pwa-permission-view>
+        <app-management-chrome-app-permission-view
+            route-id="chrome-app-permission-view">
+        </app-management-chrome-app-permission-view>
+      </template>
+    </app-management-dom-switch>
     <app-management-router></app-management-router>
   </template>
   <script src="app.js"></script>

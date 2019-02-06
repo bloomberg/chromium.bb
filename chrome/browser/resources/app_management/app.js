@@ -11,62 +11,48 @@ Polymer({
 
   properties: {
     /**
-     * @private {boolean}
+     * @private {Page}
      */
-    mainViewSelected_: Boolean,
-
-    /**
-     * @private {boolean}
-     */
-    notificationsViewSelected_: Boolean,
-
-    /**
-     * @private {boolean}
-     */
-    pwaPermissionViewSelected_: Boolean,
-
-    /**
-     * @private {boolean}
-     */
-    chromeAppPermissionViewSelected_: Boolean,
+    currentPage_: {
+      type: Object,
+    },
   },
 
-  /** @override */
+  /**
+   * @override
+   */
   attached: function() {
-    // TODO(ceciliani) Generalize page selection in a nicer way.
-    this.watch('mainViewSelected_', (state) => {
-      return state.currentPage.pageType == PageType.MAIN;
-    });
-
-    this.watch('pwaPermissionViewSelected_', (state) => {
-      return this.appTypeSelected(state, AppType.kWeb);
-    });
-
-    this.watch('chromeAppPermissionViewSelected_', (state) => {
-      return this.appTypeSelected(state, AppType.kExtension);
-    });
-
-    this.watch('notificationsViewSelected_', (state) => {
-      return app_management.util.isNotificationsViewSelected(state);
-    });
-
+    this.watch('currentPage_', state => state.currentPage);
     this.updateFromStore();
   },
 
   /**
-   * Returns true if the current page is the detail page of an app of the
-   * given type.
-   * @param {AppManagementPageState} state
-   * @param {AppType} type
-   * @return {boolean}
+   * @param {Page} currentPage
+   * @private
    */
-  appTypeSelected: function(state, type) {
-    if (!state.currentPage.selectedAppId) {
-      return false;
-    }
+  selectedRouteId_: function(currentPage) {
+    switch (currentPage.pageType) {
+      case (PageType.MAIN):
+        return 'main-view';
 
-    const selectedApp = state.apps[state.currentPage.selectedAppId];
-    return state.currentPage.pageType == PageType.DETAIL &&
-        selectedApp.type == type;
+      case (PageType.NOTIFICATIONS):
+        return 'notifications-view';
+
+      case (PageType.DETAIL):
+        const state = app_management.Store.getInstance().data;
+        const selectedAppType =
+            state.apps[state.currentPage.selectedAppId].type;
+        switch (selectedAppType) {
+          case (AppType.kWeb):
+            return 'pwa-permission-view';
+          case (AppType.kExtension):
+            return 'chrome-app-permission-view';
+          default:
+            assertNotReached();
+        }
+
+      default:
+        assertNotReached();
+    }
   },
 });
