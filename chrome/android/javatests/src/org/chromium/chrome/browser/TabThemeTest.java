@@ -121,9 +121,7 @@ public class TabThemeTest {
         // Navigate to a native page from a themed page.
         mActivityTestRule.loadUrl("chrome://newtab/");
         // WebContents does not set theme color for native pages, so don't wait for the call.
-        int nativePageThemeColor = ThreadUtils.runOnUiThreadBlocking(
-                () -> tab.getNativePage().getThemeColor());
-        assertColorsEqual(nativePageThemeColor, getThemeColor(tab));
+        assertColorsEqual(getDefaultThemeColor(tab), getThemeColor(tab));
 
         // Navigate to a themed page from a native page.
         curCallCount = themeColorHelper.getCallCount();

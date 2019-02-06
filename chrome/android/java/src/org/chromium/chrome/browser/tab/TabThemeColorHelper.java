@@ -72,8 +72,6 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
      * @return The theme color that should be used for this tab.
      */
     private int calculateThemeColor(boolean didWebContentsThemeColorChange) {
-        if (mTab.isNativePage()) return mTab.getNativePage().getThemeColor();
-
         // Start by assuming the current theme color is that one that should be used. This will
         // either be transparent, the last theme color, or the color restored from TabState.
         int themeColor =
@@ -93,6 +91,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
             themeColor = getDefaultColor();
         }
 
+        if (mTab.isNativePage()) themeColor = getDefaultColor();
         if (mTab.isShowingInterstitialPage()) themeColor = getDefaultColor();
 
         if (themeColor == Color.TRANSPARENT) themeColor = getDefaultColor();

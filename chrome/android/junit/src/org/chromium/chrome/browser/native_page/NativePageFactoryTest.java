@@ -72,11 +72,6 @@ public class NativePageFactoryTest {
         }
 
         @Override
-        public int getThemeColor() {
-            return 0;
-        }
-
-        @Override
         public boolean needsToolbarShadow() {
             return true;
         }
