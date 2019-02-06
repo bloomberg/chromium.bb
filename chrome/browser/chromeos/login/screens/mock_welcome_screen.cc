@@ -6,6 +6,9 @@
 
 namespace chromeos {
 
+using ::testing::AtLeast;
+using ::testing::_;
+
 MockWelcomeScreen::MockWelcomeScreen(BaseScreenDelegate* base_screen_delegate,
                                      Delegate* delegate,
                                      WelcomeView* view)
@@ -13,7 +16,9 @@ MockWelcomeScreen::MockWelcomeScreen(BaseScreenDelegate* base_screen_delegate,
 
 MockWelcomeScreen::~MockWelcomeScreen() = default;
 
-MockWelcomeView::MockWelcomeView() = default;
+MockWelcomeView::MockWelcomeView() {
+  EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
+}
 
 MockWelcomeView::~MockWelcomeView() {
   if (screen_)
