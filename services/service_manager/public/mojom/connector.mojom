@@ -25,6 +25,22 @@ enum ConnectResult {
   ACCESS_DENIED
 };
 
+// Used with BindInterface to indicate how the Service Manager should treat an
+// individual interface request.
+enum BindInterfacePriority {
+  // The request is important and the Service Manager should try to keep the
+  // destination service instance alive until it receives the request. This is
+  // generally the default mode of operation that clients want.
+  kImportant,
+
+  // Allows the Service Manager to route the request to a service instance which
+  // may die by the time the request arrives. BindInterface calls which use this
+  // priority may be inherently flaky, but this behavior can be desirable in
+  // cases where a service manages its lifetime independent of whether the given
+  // interface is in use (e.g. for shared client support like tracing).
+  kBestEffort,
+};
+
 // A collection of metadata that disambiguates instances in the service manager.
 struct Identity {
   // A name identifying a service.
@@ -105,7 +121,8 @@ interface Connector {
   // request.
   BindInterface(ServiceFilter filter,
                 string interface_name,
-                handle<message_pipe> interface_pipe)
+                handle<message_pipe> interface_pipe,
+                BindInterfacePriority priority)
       => (ConnectResult result, Identity? identity);
 
   // Asks the Service Manager for details about the service named

@@ -62,6 +62,7 @@ void Connector::QueryService(const std::string& service_name,
 void Connector::BindInterface(const ServiceFilter& filter,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe,
+                              mojom::BindInterfacePriority priority,
                               BindInterfaceCallback callback) {
   auto service_overrides_iter = local_binder_overrides_.find(filter);
   if (service_overrides_iter != local_binder_overrides_.end()) {
@@ -76,7 +77,7 @@ void Connector::BindInterface(const ServiceFilter& filter,
     return;
 
   connector_->BindInterface(filter, interface_name, std::move(interface_pipe),
-                            std::move(callback));
+                            priority, std::move(callback));
 }
 
 std::unique_ptr<Connector> Connector::Clone() {

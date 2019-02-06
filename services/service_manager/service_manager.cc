@@ -258,12 +258,18 @@ class ServiceManager::Instance
 
     params->set_response_data(mojom::ConnectResult::SUCCEEDED, identity_);
 
-    pending_service_connections_++;
+    base::OnceClosure on_bind_interface_complete;
+    if (params->priority() == mojom::BindInterfacePriority::kImportant) {
+      pending_service_connections_++;
+      on_bind_interface_complete =
+          base::BindOnce(&Instance::OnConnectComplete, base::Unretained(this));
+    }
+
     service_->OnBindInterface(
         BindSourceInfo(params->source(),
                        GetRequestedCapabilities(source_spec, identity_)),
         params->interface_name(), params->TakeInterfaceRequestPipe(),
-        base::BindOnce(&Instance::OnConnectComplete, base::Unretained(this)));
+        std::move(on_bind_interface_complete));
     return true;
   }
 
@@ -445,6 +451,7 @@ class ServiceManager::Instance
   void BindInterface(const service_manager::ServiceFilter& target_filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
+                     mojom::BindInterfacePriority priority,
                      BindInterfaceCallback callback) override {
     mojom::ConnectResult result =
         ValidateConnectParams(target_filter, interface_name);
@@ -458,6 +465,7 @@ class ServiceManager::Instance
     params->set_target(target_filter);
     params->set_interface_request_info(interface_name,
                                        std::move(interface_pipe));
+    params->set_priority(priority);
     params->set_connection_callback(std::move(callback));
     service_manager_->Connect(std::move(params));
   }
