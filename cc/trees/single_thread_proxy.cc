@@ -282,19 +282,13 @@ void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
 
   defer_main_frame_update_ = defer_main_frame_update;
 
-  // Force DeferCommits to be always on when DeferBeginMainFrameUpdate is on.
-  // TODO(schenney): defer_commits_ must alway match defer_main_frame_update_.
-  // Right now it's possible for it to not match because SetDeferCommits is
-  // public, but shortly we will correctly handle the case when they are
-  // out of sync.
-  SetDeferCommits(defer_main_frame_update_);
+  // The scheduler needs to know that it should not issue BeginMainFrame.
+  scheduler_on_impl_thread_->SetDeferBeginMainFrame(defer_main_frame_update_);
 }
 
 void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
   DCHECK(task_runner_provider_->IsMainThread());
-  // Deferring commits only makes sense if there's a scheduler.
-  if (!scheduler_on_impl_thread_)
-    return;
+
   if (defer_commits_ == defer_commits)
     return;
 
@@ -304,7 +298,6 @@ void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
     TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
 
   defer_commits_ = defer_commits;
-  scheduler_on_impl_thread_->SetDeferCommits(defer_commits);
 }
 
 bool SingleThreadProxy::CommitRequested() const {

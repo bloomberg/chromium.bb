@@ -173,9 +173,10 @@ void ProxyImpl::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {
   RenewTreePriority();
 }
 
-void ProxyImpl::SetDeferCommitsOnImpl(bool defer_commits) const {
+void ProxyImpl::SetDeferBeginMainFrameOnImpl(
+    bool defer_begin_main_frame) const {
   DCHECK(IsImplThread());
-  scheduler_->SetDeferCommits(defer_commits);
+  scheduler_->SetDeferBeginMainFrame(defer_begin_main_frame);
 }
 
 void ProxyImpl::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {

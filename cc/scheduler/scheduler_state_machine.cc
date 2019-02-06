@@ -223,7 +223,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("video_needs_begin_frames", video_needs_begin_frames_);
-  state->SetBoolean("defer_commits", defer_commits_);
+  state->SetBoolean("defer_begin_main_frame", defer_begin_main_frame_);
   state->SetBoolean("last_commit_had_no_updates", last_commit_had_no_updates_);
   state->SetBoolean("did_draw_in_last_frame", did_draw_in_last_frame_);
   state->SetBoolean("did_submit_in_last_frame", did_submit_in_last_frame_);
@@ -439,8 +439,8 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
   if (begin_frame_source_paused_)
     return false;
 
-  // Do not make a new commits when it is deferred.
-  if (defer_commits_)
+  // Do not send begin main frame when it is deferred.
+  if (defer_begin_main_frame_)
     return false;
 
   return true;
@@ -972,8 +972,9 @@ void SchedulerStateMachine::SetVideoNeedsBeginFrames(
   video_needs_begin_frames_ = video_needs_begin_frames;
 }
 
-void SchedulerStateMachine::SetDeferCommits(bool defer_commits) {
-  defer_commits_ = defer_commits;
+void SchedulerStateMachine::SetDeferBeginMainFrame(
+    bool defer_begin_main_frame) {
+  defer_begin_main_frame_ = defer_begin_main_frame;
 }
 
 // These are the cases where we require a BeginFrame message to make progress
@@ -985,7 +986,7 @@ bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
     return true;
 
   return needs_redraw_ || needs_one_begin_impl_frame_ ||
-         (needs_begin_main_frame_ && !defer_commits_) ||
+         (needs_begin_main_frame_ && !defer_begin_main_frame_) ||
          needs_impl_side_invalidation_;
 }
 
@@ -1010,7 +1011,8 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // load and we want to run lifecycle updates in preparation for the first
   // commit. We probably need another flag to indicate that we are
   // pre-rendering the page or in a page navigation state.
-  if ((begin_main_frame_state_ != BeginMainFrameState::IDLE) && !defer_commits_)
+  if ((begin_main_frame_state_ != BeginMainFrameState::IDLE) &&
+      !defer_begin_main_frame_)
     return true;
 
   // If the pending tree activates quickly, we'll want a BeginImplFrame soon
@@ -1178,9 +1180,10 @@ bool SchedulerStateMachine::ShouldBlockDeadlineIndefinitely() const {
 
   // Wait for main frame to be ready for commits if in full-pipe mode, so that
   // we ensure we block during renderer initialization. In commit_to_active_tree
-  // mode, we cannot block for defer_commits_, as this may negatively
+  // mode, we cannot block for defer_begin_main_frame_, as this may negatively
   // affect animation smoothness during resize or orientation changes.
-  if (defer_commits_ && settings_.wait_for_all_pipeline_stages_before_draw)
+  if (defer_begin_main_frame_ &&
+      settings_.wait_for_all_pipeline_stages_before_draw)
     return true;
 
   // Wait for main frame if one is in progress or about to be started.
@@ -1339,7 +1342,7 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
       // something different because we have updated the main frame, but
       // we have not committed it. So we do not need a begin main frame
       // but we might need a commit.
-      // We might have top split the copmositor commit code from frame updates,
+      // We might have top split the compositor commit code from frame updates,
       // or track a pending commit separately from a pending main frame update.
       begin_main_frame_state_ = BeginMainFrameState::IDLE;
       SetNeedsBeginMainFrame();
