@@ -42,6 +42,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->name.has_value()) {
     state->name = delta->name;
   }
+  if (delta->short_name.has_value()) {
+    state->short_name = delta->short_name;
+  }
   if (!delta->icon_key.is_null()) {
     state->icon_key = delta->icon_key.Clone();
   }
@@ -121,6 +124,21 @@ const std::string& AppUpdate::Name() const {
 bool AppUpdate::NameChanged() const {
   return delta_ && delta_->name.has_value() &&
          (!state_ || (delta_->name != state_->name));
+}
+
+const std::string& AppUpdate::ShortName() const {
+  if (delta_ && delta_->short_name.has_value()) {
+    return delta_->short_name.value();
+  }
+  if (state_ && state_->short_name.has_value()) {
+    return state_->short_name.value();
+  }
+  return base::EmptyString();
+}
+
+bool AppUpdate::ShortNameChanged() const {
+  return delta_ && delta_->short_name.has_value() &&
+         (!state_ || (delta_->short_name != state_->short_name));
 }
 
 apps::mojom::IconKeyPtr AppUpdate::IconKey() const {

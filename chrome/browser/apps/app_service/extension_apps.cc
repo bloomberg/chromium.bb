@@ -431,6 +431,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->app_id = extension->id();
   app->readiness = readiness;
   app->name = extension->name();
+  app->short_name = extension->short_name();
 
   app->icon_key = apps::mojom::IconKey::New();
   app->icon_key->icon_type = apps::mojom::IconType::kExtension;

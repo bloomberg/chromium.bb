@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 #define CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -62,6 +63,9 @@ class AppUpdate {
 
   const std::string& Name() const;
   bool NameChanged() const;
+
+  const std::string& ShortName() const;
+  bool ShortNameChanged() const;
 
   apps::mojom::IconKeyPtr IconKey() const;
   bool IconKeyChanged() const;

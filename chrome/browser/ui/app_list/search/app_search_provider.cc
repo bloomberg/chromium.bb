@@ -287,10 +287,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       // the App Service and use it here, similar to ExtensionDataSource.
 
       apps_vector->emplace_back(std::make_unique<AppSearchProvider::App>(
-          this, update.AppId(),
-          // TODO(crbug.com/826982): add the "short name" concept to the App
-          // Service, and use it here.
-          update.Name(), update.LastLaunchTime(), update.InstallTime(),
+          this, update.AppId(), update.ShortName(), update.LastLaunchTime(),
+          update.InstallTime(),
           update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
     });
   }

@@ -170,6 +170,7 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   app->app_id = app_id;
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = registration.Name();
+  app->short_name = app->name;
 
   if (new_icon_key) {
     app->icon_key = NewIconKey(app_id);
