@@ -1,29 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
 <body onload="runTest()">
+<script src="/js-test-resources/js-test.js"></script>
 <form action="resources/success.txt" method="GET" target="failFrame">
-<button type="submit" id="button" formtarget="passFrame">
+<input type="submit" id="button" formtarget="passFrame">
 </form>
 <script>
-description("Test for the formtarget attribute in a button tag.");
+description("Test for the formtarget attribute in an input tag.");
 
-function runTest()
-{
-    if (window.testRunner) {
-        testRunner.setAllowUniversalAccessFromFileURLs(true);
+function runTest() {
+    if (window.testRunner)
         testRunner.waitUntilDone();
-    }
-
-    // Not dumping as text since the DumpRenderTree does not dump the text content of child frames.                
-    var button = document.getElementById('button');
-    button.click();
+    document.getElementById('button').click();
 }
 
-function passFrameLoaded()
-{
+function passFrameLoaded() {
     if (document.getElementById('pass').contentDocument.URL == "about:blank")
         return;
     testPassed("The formtarget attribute was successfully used.");
@@ -32,8 +23,7 @@ function passFrameLoaded()
         testRunner.notifyDone();
 }
 
-function failFrameLoaded()
-{
+function failFrameLoaded() {
     if (document.getElementById('fail').contentDocument.URL == "about:blank")
         return;
     testFailed("The formtarget attribute was not used.");

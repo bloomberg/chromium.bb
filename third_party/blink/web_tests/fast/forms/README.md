@@ -144,3 +144,9 @@ to fast/dom/HTML*Element/ for HTML forms.
 *   week-multiple-fields/
 
     Inline UI of `<input type=week>` on desktop platforms.
+
+## Other related directories
+
+*   ../../http/tests/forms/
+
+    Test cases that needs to be served through http

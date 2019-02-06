@@ -10,7 +10,7 @@ Some areas have their own directories not under html/.
 
 *   Canvas: ../fast/canvas/ or ../canvas/
 *   Editing: ../editing/
-*   Forms: [../fast/forms/](../fast/forms/README.md)
+*   Forms: [../fast/forms/](../fast/forms/README.md) or ../http/tests/forms
 *   History API: ../fast/history/
 *   Media elements: ../media/
 *   Navigation/loading: ../fast/loader/, ../loader/, or ../http/tests/loading/
