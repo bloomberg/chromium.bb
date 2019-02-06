@@ -56,6 +56,8 @@ jumbo_static_library("test_support") {
     "../browser/service_worker/embedded_worker_test_helper.h",
     "../browser/service_worker/service_worker_test_utils.cc",
     "../browser/service_worker/service_worker_test_utils.h",
+    "../browser/service_worker/test_service_worker_observer.cc",
+    "../browser/service_worker/test_service_worker_observer.h",
     "../browser/web_package/mock_signed_exchange_handler.cc",
     "../browser/web_package/mock_signed_exchange_handler.h",
     "../public/test/audio_service_test_helper.cc",
