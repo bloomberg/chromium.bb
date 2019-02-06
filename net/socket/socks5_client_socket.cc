@@ -33,7 +33,7 @@ static_assert(sizeof(struct in6_addr) == 16, "incorrect system size of IPv6");
 
 SOCKS5ClientSocket::SOCKS5ClientSocket(
     std::unique_ptr<StreamSocket> transport_socket,
-    const HostResolver::RequestInfo& req_info,
+    const HostPortPair& destination,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : io_callback_(base::BindRepeating(&SOCKS5ClientSocket::OnIOComplete,
                                        base::Unretained(this))),
@@ -44,7 +44,7 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
       bytes_received_(0),
       read_header_size(kReadHeaderSize),
       was_ever_used_(false),
-      host_request_info_(req_info),
+      destination_(destination),
       net_log_(transport_socket_->NetLog()),
       traffic_annotation_(traffic_annotation) {}
 
@@ -272,7 +272,7 @@ const char kSOCKS5GreetWriteData[] = { 0x05, 0x01, 0x00 };  // no authentication
 int SOCKS5ClientSocket::DoGreetWrite() {
   // Since we only have 1 byte to send the hostname length in, if the
   // URL has a hostname longer than 255 characters we can't send it.
-  if (0xFF < host_request_info_.hostname().size()) {
+  if (0xFF < destination_.host().size()) {
     net_log_.AddEvent(NetLogEventType::SOCKS_HOSTNAME_TOO_BIG);
     return ERR_SOCKS_CONNECTION_FAILED;
   }
@@ -359,14 +359,13 @@ int SOCKS5ClientSocket::BuildHandshakeWriteBuffer(std::string* handshake)
 
   handshake->push_back(kEndPointDomain);  // The type of the address.
 
-  DCHECK_GE(static_cast<size_t>(0xFF), host_request_info_.hostname().size());
+  DCHECK_GE(static_cast<size_t>(0xFF), destination_.host().size());
 
   // First add the size of the hostname, followed by the hostname.
-  handshake->push_back(static_cast<unsigned char>(
-      host_request_info_.hostname().size()));
-  handshake->append(host_request_info_.hostname());
+  handshake->push_back(static_cast<unsigned char>(destination_.host().size()));
+  handshake->append(destination_.host());
 
-  uint16_t nw_port = base::HostToNet16(host_request_info_.port());
+  uint16_t nw_port = base::HostToNet16(destination_.port());
   handshake->append(reinterpret_cast<char*>(&nw_port), sizeof(nw_port));
   return OK;
 }
@@ -460,13 +459,13 @@ int SOCKS5ClientSocket::DoHandshakeReadComplete(int result) {
     // read, we substract 1 byte from the additional request size.
     SocksEndPointAddressType address_type =
         static_cast<SocksEndPointAddressType>(buffer_[3]);
-    if (address_type == kEndPointDomain)
+    if (address_type == kEndPointDomain) {
       read_header_size += static_cast<uint8_t>(buffer_[4]);
-    else if (address_type == kEndPointResolvedIPv4)
+    } else if (address_type == kEndPointResolvedIPv4) {
       read_header_size += sizeof(struct in_addr) - 1;
-    else if (address_type == kEndPointResolvedIPv6)
+    } else if (address_type == kEndPointResolvedIPv6) {
       read_header_size += sizeof(struct in6_addr) - 1;
-    else {
+    } else {
       net_log_.AddEvent(NetLogEventType::SOCKS_UNKNOWN_ADDRESS_TYPE,
                         NetLog::IntCallback("address_type", buffer_[3]));
       return ERR_SOCKS_CONNECTION_FAILED;

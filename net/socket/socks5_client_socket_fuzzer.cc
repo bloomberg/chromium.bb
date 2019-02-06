@@ -33,8 +33,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       new net::FuzzedSocket(&data_provider, &test_net_log));
   CHECK_EQ(net::OK, fuzzed_socket->Connect(callback.callback()));
 
-  net::HostResolver::RequestInfo request_info(net::HostPortPair("foo", 80));
-  net::SOCKS5ClientSocket socket(std::move(fuzzed_socket), request_info,
+  net::SOCKS5ClientSocket socket(std::move(fuzzed_socket),
+                                 net::HostPortPair("foo", 80),
                                  TRAFFIC_ANNOTATION_FOR_TESTS);
   int result = socket.Connect(callback.callback());
   callback.GetResult(result);
