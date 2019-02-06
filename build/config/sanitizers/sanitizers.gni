@@ -109,6 +109,9 @@ declare_args() {
   # Default value when unset and use_sanitizer_coverage=true:
   #     trace-pc-guard,indirect-calls
   sanitizer_coverage_flags = ""
+
+  # Use blacklists from tools/memory/asan when compiling with asan.
+  asan_use_blacklist = true
 }
 
 # Disable sanitizers for non-default toolchains.
