@@ -36,9 +36,9 @@ String MakeLargeString() {
 
 }  // namespace
 
-class ParkableStringTest : public ::testing::Test {
+class ParkableStringTestBase : public ::testing::Test {
  public:
-  ParkableStringTest()
+  ParkableStringTestBase()
       : ::testing::Test(),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
@@ -47,6 +47,32 @@ class ParkableStringTest : public ::testing::Test {
  protected:
   void RunPostedTasks() { scoped_task_environment_.RunUntilIdle(); }
 
+  bool ParkAndWait(const ParkableString& string) {
+    bool success =
+        string.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
+    RunPostedTasks();
+    return success;
+  }
+
+  void SetUp() override { ParkableStringManager::Instance().ResetForTesting(); }
+
+  void TearDown() override {
+    // No leaks.
+    CHECK_EQ(0u, ParkableStringManager::Instance().Size());
+    // Delayed tasks may remain, clear the queues.
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    RunPostedTasks();
+  }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class ParkableStringTest : public ParkableStringTestBase {
+ public:
+  ParkableStringTest() : ParkableStringTestBase() {}
+
+ protected:
   void WaitForDelayedParking() {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kParkingDelayInSeconds));
@@ -57,13 +83,6 @@ class ParkableStringTest : public ::testing::Test {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kStatisticsRecordingDelayInSeconds));
     RunPostedTasks();
-  }
-
-  bool ParkAndWait(const ParkableString& string) {
-    bool return_value =
-        string.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
-    RunPostedTasks();
-    return return_value;
   }
 
   ParkableString CreateAndParkAll() {
@@ -80,21 +99,10 @@ class ParkableStringTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    ParkableStringManager::Instance().ResetForTesting();
+    ParkableStringTestBase::SetUp();
     scoped_feature_list_.InitAndEnableFeature(
         kCompressParkableStringsInBackground);
   }
-
-  void TearDown() override {
-    // No leaks.
-    CHECK_EQ(0u, ParkableStringManager::Instance().Size());
-    // Delayed tasks may remain, clear the queues.
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
-    RunPostedTasks();
-  }
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // The main aim of this test is to check that the compressed size of a string
@@ -184,6 +192,9 @@ TEST_F(ParkableStringTest, Park) {
     EXPECT_FALSE(parkable.Impl()->is_parked());
     EXPECT_TRUE(
         parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+    // Should not crash, it is allowed to call |Park()| twice in a row.
+    EXPECT_TRUE(
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
     parkable = ParkableString();  // release the reference.
     RunPostedTasks();             // Should not crash.
   }
@@ -222,14 +233,22 @@ TEST_F(ParkableStringTest, AbortParking) {
 
   {
     ParkableString parkable(MakeLargeString().ReleaseImpl());
-    // Transient |Lock()| or |ToString()| doesn't cancel parking.
+    // Transient |Lock()| or |ToString()| cancel parking.
     EXPECT_TRUE(
         parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
     parkable.Impl()->Lock();
     parkable.Impl()->ToString();
     parkable.Impl()->Unlock();
     RunPostedTasks();
+    EXPECT_FALSE(parkable.Impl()->is_parked());
+
+    // In order to test synchronous parking below, need to park the string
+    // first.
+    EXPECT_TRUE(
+        parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+    RunPostedTasks();
     EXPECT_TRUE(parkable.Impl()->is_parked());
+    parkable.ToString();
 
     // Synchronous parking respects locking and external references.
     parkable.ToString();
@@ -248,6 +267,23 @@ TEST_F(ParkableStringTest, AbortParking) {
         parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
     EXPECT_TRUE(parkable.Impl()->is_parked());
   }
+}
+
+TEST_F(ParkableStringTest, AbortedParkingRetainsCompressedData) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  EXPECT_TRUE(parkable.may_be_parked());
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+
+  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  parkable.ToString();  // Cancels parking.
+  RunPostedTasks();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+  // Compressed data is not discarded.
+  EXPECT_TRUE(parkable.Impl()->has_compressed_data());
+
+  // Synchronous parking.
+  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  EXPECT_TRUE(parkable.Impl()->is_parked());
 }
 
 TEST_F(ParkableStringTest, Unpark) {
@@ -669,6 +705,166 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
   MemoryAllocatorDump::Entry metadata("metadata_size", "bytes",
                                       2 * sizeof(ParkableStringImpl));
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(metadata))));
+}
+
+class ParkableStringForegroundParkingTest : public ParkableStringTestBase {
+ public:
+  ParkableStringForegroundParkingTest() : ParkableStringTestBase() {}
+
+ protected:
+  void WaitForAging() {
+    ASSERT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
+        ParkableStringManager::kAgingIntervalInSeconds));
+    RunPostedTasks();
+  }
+
+  void SetUp() override {
+    ParkableStringTestBase::SetUp();
+    scoped_feature_list_.InitAndEnableFeature(
+        kCompressParkableStringsInForeground);
+  }
+
+  void TearDown() override {
+    while (scoped_task_environment_.MainThreadHasPendingTask())
+      WaitForAging();
+
+    ParkableStringTestBase::TearDown();
+  }
+};
+
+TEST_F(ParkableStringForegroundParkingTest, Aging) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  EXPECT_TRUE(parkable.Impl()->is_young());
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_young());
+
+  parkable.Lock();
+  EXPECT_TRUE(parkable.Impl()->is_young());
+  // Locked strings don't age.
+  WaitForAging();
+  EXPECT_TRUE(parkable.Impl()->is_young());
+  parkable.Unlock();
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_young());
+
+  parkable.ToString();
+  EXPECT_TRUE(parkable.Impl()->is_young());
+  // No external reference, can age again.
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_young());
+
+  // External references prevent a string from aging.
+  String retained = parkable.ToString();
+  EXPECT_TRUE(parkable.Impl()->is_young());
+  WaitForAging();
+  EXPECT_TRUE(parkable.Impl()->is_young());
+}
+
+TEST_F(ParkableStringForegroundParkingTest, OldStringsAreParked) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  EXPECT_TRUE(parkable.Impl()->is_young());
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_young());
+  WaitForAging();
+  EXPECT_TRUE(parkable.Impl()->is_parked());
+
+  // Unparked, two aging cycles before parking.
+  parkable.ToString();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+  WaitForAging();
+  EXPECT_TRUE(parkable.Impl()->is_parked());
+
+  // Unparked, two consecutive no-access aging cycles before parking.
+  parkable.ToString();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+  parkable.ToString();
+  WaitForAging();
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+}
+
+TEST_F(ParkableStringForegroundParkingTest, AgingTicksStopsAndRestarts) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  WaitForAging();
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  WaitForAging();
+  // Nothing more to do, the tick is not re-scheduled.
+  WaitForAging();
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  // Unparking, the tick restarts.
+  parkable.ToString();
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  WaitForAging();
+  WaitForAging();
+  // And stops again. 2 ticks to park the string (age, then park), and one
+  // checking that there is nothing left to do.
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  // New string, restarting the tick, temporarily.
+  ParkableString parkable2(MakeLargeString().ReleaseImpl());
+  WaitForAging();
+  WaitForAging();
+  WaitForAging();
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+}
+
+TEST_F(ParkableStringForegroundParkingTest, AgingTicksStopsWithNoProgress) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  String retained = parkable.ToString();
+
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  WaitForAging();
+  // The only string is referenced externally, nothing aging can change.
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  ParkableString parkable2(MakeLargeString().ReleaseImpl());
+  WaitForAging();
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  WaitForAging();
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(parkable2.Impl()->is_parked());
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  WaitForAging();
+  // Once |parkable2| has been parked, back to the case where the only
+  // remaining strings are referenced externally.
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+}
+
+TEST_F(ParkableStringForegroundParkingTest, OnlyOneAgingTask) {
+  ParkableString parkable1(MakeLargeString().ReleaseImpl());
+  ParkableString parkable2(MakeLargeString().ReleaseImpl());
+
+  // Park both, and wait for the tick to stop.
+  WaitForAging();
+  WaitForAging();
+  EXPECT_TRUE(parkable1.Impl()->is_parked());
+  EXPECT_TRUE(parkable2.Impl()->is_parked());
+  WaitForAging();
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  parkable1.ToString();
+  parkable2.ToString();
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+  EXPECT_EQ(1u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+}
+
+TEST_F(ParkableStringForegroundParkingTest, AgingParkingInProgress) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+
+  WaitForAging();
+  parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
+  // Aging should work if the string is being parked.
+  WaitForAging();
+  // The aging task is rescheduled.
+  EXPECT_EQ(1u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+
+  EXPECT_TRUE(parkable.Impl()->is_parked());
 }
 
 }  // namespace blink
