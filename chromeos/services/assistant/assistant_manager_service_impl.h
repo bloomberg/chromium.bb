@@ -97,6 +97,7 @@ class AssistantManagerServiceImpl
   State GetState() const override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
+  void EnableHotword(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
 
   // mojom::Assistant overrides:
@@ -174,8 +175,7 @@ class AssistantManagerServiceImpl
 
  private:
   std::unique_ptr<assistant_client::AssistantManager> StartAssistantInternal(
-      const std::string& access_token,
-      bool enable_hotword);
+      const std::string& access_token);
   void PostInitAssistant(
       base::OnceClosure post_init_callback,
       std::unique_ptr<assistant_client::AssistantManager>* assistant_manager);

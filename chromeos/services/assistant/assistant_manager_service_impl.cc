@@ -133,7 +133,7 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
 
   started_time_ = base::TimeTicks::Now();
 
-  platform_api_->OnHotwordEnabled(enable_hotword);
+  EnableHotword(enable_hotword);
 
   using AssistantManagerPtr =
       std::unique_ptr<assistant_client::AssistantManager>;
@@ -153,7 +153,7 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
           },
           new_assistant_manager,
           base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                         base::Unretained(this), access_token, enable_hotword)),
+                         base::Unretained(this), access_token)),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
                      base::Unretained(this), std::move(post_init_callback),
                      base::Owned(new_assistant_manager)));
@@ -175,6 +175,9 @@ AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
 
 void AssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {
+  if (!assistant_manager_)
+    return;
+
   VLOG(1) << "Set access token.";
   // Push the |access_token| we got as an argument into AssistantManager before
   // starting to ensure that all server requests will be authenticated once
@@ -204,6 +207,11 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
   assistant_manager_->EnableListening(enable);
+  EnableHotword(enable);
+}
+
+void AssistantManagerServiceImpl::EnableHotword(bool enable) {
+  platform_api_->OnHotwordEnabled(enable);
 }
 
 AssistantSettingsManager*
@@ -739,13 +747,12 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 
 std::unique_ptr<assistant_client::AssistantManager>
 AssistantManagerServiceImpl::StartAssistantInternal(
-    const std::string& access_token,
-    bool enable_hotword) {
+    const std::string& access_token) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager;
   assistant_manager.reset(assistant_client::AssistantManager::Create(
-      platform_api_.get(), CreateLibAssistantConfig(!enable_hotword)));
+      platform_api_.get(), CreateLibAssistantConfig()));
   auto* assistant_manager_internal =
       UnwrapAssistantManagerInternal(assistant_manager.get());
 

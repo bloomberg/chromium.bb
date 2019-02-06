@@ -27,7 +27,7 @@ base::FilePath GetRootPath() {
   return home_dir;
 }
 
-std::string CreateLibAssistantConfig(bool disable_hotword) {
+std::string CreateLibAssistantConfig() {
   using Value = base::Value;
   using Type = base::Value::Type;
 

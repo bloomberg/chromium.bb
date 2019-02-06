@@ -31,6 +31,8 @@ void FakeAssistantManagerServiceImpl::SetAccessToken(
 
 void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
 
+void FakeAssistantManagerServiceImpl::EnableHotword(bool enable) {}
+
 AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
     const {
   return state_;
