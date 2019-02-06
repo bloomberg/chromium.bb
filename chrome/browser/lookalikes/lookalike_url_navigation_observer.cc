@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/lookalike_url_navigation_observer.h"
+#include "chrome/browser/lookalikes/lookalike_url_navigation_observer.h"
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
@@ -10,9 +10,9 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
-#include "chrome/browser/ui/omnibox/lookalike_url_service.h"
 #include "chrome/common/chrome_features.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/ukm/content/source_url_recorder.h"
