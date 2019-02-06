@@ -136,7 +136,7 @@ public class GetTitleTest {
 
     /**
      * When the loaded file has empty title, the page title is set to the url it loads from.
-     * It also contains: hostName, portNumber information if its part of the loaded URL.
+     * It also contains: hostName, portNumber information if it's part of the loaded URL.
      * @throws Throwable
      */
     @Test
@@ -149,7 +149,7 @@ public class GetTitleTest {
 
     /**
      * When the loaded file has no title, the page title is set to the urk it loads from.
-     * It also contains: hostName, portNumber information if its part of the loaded URL.
+     * It also contains: hostName, portNumber information if it's part of the loaded URL.
      * @throws Throwable
      */
     @Test

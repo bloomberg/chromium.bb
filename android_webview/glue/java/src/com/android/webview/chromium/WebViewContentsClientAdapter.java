@@ -119,7 +119,7 @@ class WebViewContentsClientAdapter extends SharedWebViewContentsClientAdapter {
                             WebView newWebView = t.getWebView();
                             if (newWebView == mWebView) {
                                 throw new IllegalArgumentException(
-                                        "Parent WebView cannot host it's own popup window. Please "
+                                        "Parent WebView cannot host its own popup window. Please "
                                         + "use WebSettings.setSupportMultipleWindows(false)");
                             }
 

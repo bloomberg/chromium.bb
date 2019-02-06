@@ -263,7 +263,7 @@ public class AwZoomTest {
 
         // Now force an orientation change, and try to display the zoom picker
         // again. Make sure that we don't crash when the ZoomPicker registers
-        // it's receiver.
+        // its receiver.
 
         Activity activity = mActivityTestRule.getActivity();
         int orientation = activity.getRequestedOrientation();
@@ -273,7 +273,7 @@ public class AwZoomTest {
         invokeZoomPickerOnUiThread();
 
         // We may crash shortly (as the zoom picker has a short delay in it before
-        // it tries to register it's BroadcastReceiver), so sleep to verify we don't.
+        // it tries to register its BroadcastReceiver), so sleep to verify we don't.
         // The delay is encoded in ZoomButtonsController#ZOOM_CONTROLS_TIMEOUT,
         // if that changes we may need to update this test.
         Thread.sleep(ViewConfiguration.getZoomControlsTimeout());

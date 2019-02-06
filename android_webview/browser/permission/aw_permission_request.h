@@ -18,7 +18,7 @@ namespace android_webview {
 class AwPermissionRequestDelegate;
 
 // This class wraps a permission request, it works with PermissionRequestHandler
-// and its' Java peer to represent the request to AwContentsClient.
+// and its Java peer to represent the request to AwContentsClient.
 // The specific permission request should implement the
 // AwPermissionRequestDelegate interface, See MediaPermissionRequest.
 // This object is owned by the java peer.
