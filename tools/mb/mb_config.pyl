@@ -214,7 +214,6 @@
       'Linux x64 Goma Latest Client LocalOutputCache': 'release_bot',
 
       'mac-hermetic-upgrade-rel': 'release_bot',
-      'mac-views-rel': 'mac_views_browser_release_bot',
       'Chromium Mac 10.13': 'release_bot',
 
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
@@ -749,7 +748,6 @@
       'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'mac_upload_clang': 'release_bot',
       'mac-rel': 'gpu_tests_release_trybot',
-      'mac-views-rel': 'mac_views_browser_release_trybot',
     },
 
     'tryserver.chromium.perf': {
@@ -1616,14 +1614,6 @@
       'analysis'
     ],
 
-    'mac_views_browser_release_bot': [
-      'mac_views_browser', 'release_bot',
-    ],
-
-    'mac_views_browser_release_trybot': [
-      'mac_views_browser', 'release_trybot',
-    ],
-
     'msan_edge_release_bot': [
       'msan', 'edge', 'release_bot',
     ],
@@ -2148,10 +2138,6 @@
 
     'mac_strip': {
       'gn_args': 'enable_stripping=true',
-    },
-
-    'mac_views_browser': {
-      'gn_args': 'mac_views_browser=true',
     },
 
     'minimal_symbols': {
