@@ -400,6 +400,21 @@ class SmbProviderClientImpl : public SmbProviderClient {
     CallDefaultMethod(&method_call, &callback);
   }
 
+  void UpdateSharePath(int32_t mount_id,
+                       const std::string& share_path,
+                       StatusCallback callback) override {
+    smbprovider::UpdateSharePathOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_path(share_path);
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kUpdateSharePathMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+
+    CallDefaultMethod(&method_call, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
