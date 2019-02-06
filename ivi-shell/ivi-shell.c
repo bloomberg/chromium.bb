@@ -369,7 +369,7 @@ terminate_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 {
 	struct weston_compositor *compositor = data;
 
-	wl_display_terminate(compositor->wl_display);
+	weston_compositor_exit(compositor);
 }
 
 static void
