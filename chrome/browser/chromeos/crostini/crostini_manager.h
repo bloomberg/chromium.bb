@@ -60,6 +60,7 @@ enum class CrostiniResult {
   ATTACH_USB_FAILED,
   DETACH_USB_FAILED,
   LIST_USB_FAILED,
+  CROSTINI_UNINSTALLER_RUNNING,
   UNKNOWN_USB_DEVICE,
   UNKNOWN_ERROR,
 };
@@ -217,6 +218,8 @@ class CrostiniManager : public KeyedService,
   // The type of the callback for CrostiniManager::SearchApp.
   using SearchAppCallback =
       base::OnceCallback<void(const std::vector<std::string>& package_names)>;
+
+  using AbortRestartCallback = base::OnceCallback<void()>;
 
   // Observer class for the Crostini restart flow.
   class RestartObserver {
@@ -454,8 +457,10 @@ class CrostiniManager : public KeyedService,
                             RestartObserver* observer = nullptr);
 
   // Aborts a restart. A "next" restarter with the same <vm_name,
-  // container_name> will run, if there is one.
-  void AbortRestartCrostini(RestartId restart_id);
+  // container_name> will run, if there is one. |callback| will be called once
+  // the restart has finished aborting
+  void AbortRestartCrostini(RestartId restart_id,
+                            AbortRestartCallback callback);
 
   // Returns true if the Restart corresponding to |restart_id| is not yet
   // complete.
@@ -699,6 +704,10 @@ class CrostiniManager : public KeyedService,
 
 
   void FinishRestart(CrostiniRestarter* restarter, CrostiniResult result);
+
+  // Callback for CrostiniManager::AbortRestartCrostini
+  void OnAbortRestartCrostini(RestartId restart_id,
+                              AbortRestartCallback callback);
 
   // Callback for CrostiniManager::RemoveCrostini.
   void OnRemoveCrostini(CrostiniResult result);

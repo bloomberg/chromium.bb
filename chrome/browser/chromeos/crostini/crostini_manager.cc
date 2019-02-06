@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/no_destructor.h"
@@ -106,8 +107,10 @@ class CrostiniManager::CrostiniRestarter
 
   void Restart() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     is_running_ = true;
     // Skip to the end immediately if testing.
     if (crostini_manager_->skip_restart_for_testing()) {
@@ -128,9 +131,10 @@ class CrostiniManager::CrostiniRestarter
 
   void RunCallback(CrostiniResult result) { std::move(callback_).Run(result); }
 
-  void Abort() {
+  void Abort(CrostiniManager::AbortRestartCallback callback) {
     is_aborted_ = true;
     observer_list_.Clear();
+    abort_callback_ = std::move(callback);
   }
 
   void OnContainerDownloading(int download_percent) {
@@ -146,6 +150,7 @@ class CrostiniManager::CrostiniRestarter
   CrostiniManager::RestartId restart_id() const { return restart_id_; }
   std::string vm_name() const { return vm_name_; }
   std::string container_name() const { return container_name_; }
+  bool is_aborted() const { return is_aborted_; }
 
  private:
   friend class base::RefCountedThreadSafe<CrostiniRestarter>;
@@ -165,8 +170,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnComponentLoaded(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       FinishRestart(result);
       return;
@@ -183,8 +190,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnConciergeStarted(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (!is_started) {
       LOG(ERROR) << "Failed to start Concierge service.";
       FinishRestart(result);
@@ -197,8 +206,10 @@ class CrostiniManager::CrostiniRestarter
 
   void ListVmDisksFinished(CrostiniResult result, int64_t disk_space_taken) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to list disk images.";
       FinishRestart(result);
@@ -246,8 +257,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnDiskImageCreated(result, status, disk_size_available);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to create disk image.";
       FinishRestart(result);
@@ -264,8 +277,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnVmStarted(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to Start Termina VM.";
       FinishRestart(result);
@@ -282,8 +297,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnContainerCreated(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to Create Lxd Container.";
       FinishRestart(result);
@@ -301,8 +318,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnContainerStarted(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to Start Lxd Container.";
       FinishRestart(result);
@@ -320,8 +339,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnContainerSetup(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to set up Lxd Container user.";
       FinishRestart(result);
@@ -353,8 +374,10 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnSshKeysFetched(result);
     }
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
     if (result != crostini::CrostiniResult::SUCCESS) {
       LOG(ERROR) << "Failed to get ssh keys.";
       FinishRestart(result);
@@ -413,8 +436,10 @@ class CrostiniManager::CrostiniRestarter
 
     // Abort not checked until end of function.  On abort, do not continue,
     // but still remove observer and add volume as per above.
-    if (is_aborted_)
+    if (is_aborted_) {
+      std::move(abort_callback_).Run();
       return;
+    }
 
     FinishRestart(CrostiniResult::SUCCESS);
   }
@@ -428,6 +453,7 @@ class CrostiniManager::CrostiniRestarter
   std::string container_name_;
   std::string source_path_;
   CrostiniManager::RestartCrostiniCallback callback_;
+  CrostiniManager::AbortRestartCallback abort_callback_;
   base::ObserverList<CrostiniManager::RestartObserver>::Unchecked
       observer_list_;
   CrostiniManager::RestartId restart_id_;
@@ -1465,6 +1491,15 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     RestartCrostiniCallback callback,
     RestartObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Currently, |remove_crostini_callbacks_| is only used just before running
+  // CrostiniRemover. If that changes, then we should check for a currently
+  // running uninstaller in some other way.
+  if (!remove_crostini_callbacks_.empty()) {
+    LOG(ERROR)
+        << "Tried to install crostini while crostini uninstaller is running";
+    std::move(callback).Run(CrostiniResult::CROSTINI_UNINSTALLER_RUNNING);
+    return kUninitializedRestartId;
+  }
 
   auto restarter = base::MakeRefCounted<CrostiniRestarter>(
       profile_, weak_ptr_factory_.GetWeakPtr(), std::move(vm_name),
@@ -1484,7 +1519,8 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
 }
 
 void CrostiniManager::AbortRestartCrostini(
-    CrostiniManager::RestartId restart_id) {
+    CrostiniManager::RestartId restart_id,
+    AbortRestartCallback callback) {
   auto restarter_it = restarters_by_id_.find(restart_id);
   if (restarter_it == restarters_by_id_.end()) {
     // This can happen if a user cancels the install flow at the exact right
@@ -1492,21 +1528,29 @@ void CrostiniManager::AbortRestartCrostini(
     LOG(ERROR) << "Aborting a restarter that already finished";
     return;
   }
-  restarter_it->second->Abort();
+  restarter_it->second->Abort(base::BindOnce(
+      &CrostiniManager::OnAbortRestartCrostini, weak_ptr_factory_.GetWeakPtr(),
+      restart_id, std::move(callback)));
+}
 
+void CrostiniManager::OnAbortRestartCrostini(
+    CrostiniManager::RestartId restart_id,
+    AbortRestartCallback callback) {
+  auto restarter_it = restarters_by_id_.find(restart_id);
   auto key = std::make_pair(restarter_it->second->vm_name(),
                             restarter_it->second->container_name());
-  auto range = restarters_by_container_.equal_range(key);
-  for (auto it = range.first; it != range.second; ++it) {
-    if (it->second == restart_id) {
-      restarters_by_container_.erase(it);
-      break;
+  if (restarter_it != restarters_by_id_.end()) {
+    auto range = restarters_by_container_.equal_range(key);
+    for (auto it = range.first; it != range.second; ++it) {
+      if (it->second == restart_id) {
+        restarters_by_container_.erase(it);
+        break;
+      }
     }
+    // This invalidates the iterator and potentially destroys the restarter, so
+    // those shouldn't be accessed after this.
+    restarters_by_id_.erase(restarter_it);
   }
-
-  // This invalidates the iterator and potentially destroys the restarter, so
-  // those shouldn't be accessed after this.
-  restarters_by_id_.erase(restarter_it);
 
   // Kick off the "next" (in no order) pending Restart() if any.
   auto pending_it = restarters_by_container_.find(key);
@@ -1514,10 +1558,13 @@ void CrostiniManager::AbortRestartCrostini(
     auto restarter = restarters_by_id_[pending_it->second];
     restarter->Restart();
   }
+
+  std::move(callback).Run();
 }
 
 bool CrostiniManager::IsRestartPending(RestartId restart_id) {
-  return restarters_by_id_.find(restart_id) != restarters_by_id_.end();
+  auto it = restarters_by_id_.find(restart_id);
+  return it != restarters_by_id_.end() && !it->second->is_aborted();
 }
 
 void CrostiniManager::AddShutdownContainerCallback(
@@ -2195,11 +2242,19 @@ void CrostiniManager::OnGetContainerSshKeys(
 void CrostiniManager::RemoveCrostini(std::string vm_name,
                                      RemoveCrostiniCallback callback) {
   AddRemoveCrostiniCallback(std::move(callback));
+
   auto crostini_remover = base::MakeRefCounted<CrostiniRemover>(
       profile_, std::move(vm_name),
       base::BindOnce(&CrostiniManager::OnRemoveCrostini,
                      weak_ptr_factory_.GetWeakPtr()));
-  crostini_remover->RemoveCrostini();
+
+  auto abort_callback = base::BarrierClosure(
+      restarters_by_id_.size(),
+      base::BindOnce(&CrostiniRemover::RemoveCrostini, crostini_remover));
+
+  for (auto restarter_it : restarters_by_id_) {
+    AbortRestartCrostini(restarter_it.first, abort_callback);
+  }
 }
 
 void CrostiniManager::OnRemoveCrostini(CrostiniResult result) {
