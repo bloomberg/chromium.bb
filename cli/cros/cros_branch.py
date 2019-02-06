@@ -29,23 +29,6 @@ class BranchError(Exception):
   """Raised whenever any branch operation fails."""
 
 
-def AbsoluteProjectPath(relative_path):
-  """Returns the absolute path of a project on disk.
-
-  Args:
-    relative_path: Relative path to the project, e.g. 'chromite/'
-
-  Returns:
-    The absolute path to the project.
-  """
-  return os.path.join(constants.SOURCE_ROOT, relative_path)
-
-
-def ReadVersionInfo(**kwargs):
-  """Returns VersionInfo for the current checkout."""
-  return manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT, **kwargs)
-
-
 def BranchMode(project):
   """Returns the project's explicit branch mode, if specified."""
   return project.Annotations().get('branch-mode', None)
@@ -91,74 +74,6 @@ def CanPinProject(project):
   return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_PIN
 
 
-def WhichVersionShouldBump():
-  """Returns which version is incremented by builds on a new branch."""
-  vinfo = ReadVersionInfo()
-  if int(vinfo.patch_number):
-    raise BranchError('Cannot bump version with nonzero patch number.')
-  return 'patch' if int(vinfo.branch_build_number) else 'branch'
-
-
-# TODO(evanhernandez): Consider a chromite/lib library for repo_sync_manifest.
-def Sync(manifest_args):
-  """Run repo_sync_manifest command and return the full synced manifest.
-
-  Args:
-    manifest_args: List of args for manifest group of repo_sync_manifest.
-
-  Returns:
-    The full synced manifest as a repo_manifest.Manifest.
-  """
-  cros_build_lib.RunCommand([
-      os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
-      '--repo-root', constants.SOURCE_ROOT
-  ] + manifest_args, quiet=True)
-  return repo_util.Repository(constants.SOURCE_ROOT).Manifest()
-
-
-def SyncBranch(branch):
-  """Sync to the given branch and return the synced manifest.
-
-  Args:
-    branch: Name of branch to sync to.
-
-  Returns:
-    The synced manifest as a repo_manifest.Manifest.
-  """
-  return Sync(['--branch', branch])
-
-
-def SyncVersion(version):
-  """Sync to the given version and return the synced manifest.
-
-  Args:
-    version: Version string to sync to.
-
-  Returns:
-    The synced manifest as a repo_manifest.Manifest.
-  """
-  site_params = config_lib.GetSiteParams()
-  return Sync([
-      '--manifest-versions-int',
-      AbsoluteProjectPath(site_params.INTERNAL_MANIFEST_VERSIONS_PATH),
-      '--manifest-versions-ext',
-      AbsoluteProjectPath(site_params.EXTERNAL_MANIFEST_VERSIONS_PATH),
-      '--version', version
-  ])
-
-
-def SyncFile(path):
-  """Sync to the given manifest file and return the synced manifest.
-
-  Args:
-    path: Path to the manifest file.
-
-  Returns:
-    The synced manifest as a repo_manifest.Manifest.
-  """
-  return Sync(['--manifest-file', path])
-
-
 class CheckoutManager(object):
   """Context manager for checking out a chromiumos project to a revision.
 
@@ -167,13 +82,14 @@ class CheckoutManager(object):
   returns to its initial state once the context exits.
   """
 
-  def __init__(self, project):
+  def __init__(self, checkout, project):
     """Determine whether project needs to be checked out.
 
     Args:
+      checkout: The CrosCheckout containing the project.
       project: A repo_manifest.Project to be checked out.
     """
-    self._path = AbsoluteProjectPath(project.Path())
+    self._path = checkout.AbsoluteProjectPath(project)
     self._remote = project.Remote().GitName()
     self._ref = git.NormalizeRef(project.upstream or project.Revision())
     self._original_ref = git.NormalizeRef(git.GetCurrentBranch(self._path))
@@ -193,19 +109,20 @@ class CheckoutManager(object):
 class ManifestRepository(object):
   """Represents a git repository of manifest XML files."""
 
-  def __init__(self, path):
-    self._path = path
+  def __init__(self, checkout, project):
+    self._checkout = checkout
+    self._project = project
 
-  def ManifestPath(self, name):
+  def AbsoluteManifestPath(self, path):
     """Returns the full path to the manifest.
 
     Args:
-      name: Name of the manifest.
+      path: Relative path to the manifest.
 
     Returns:
       Full path to the manifest.
     """
-    return os.path.join(self._path, name)
+    return self._checkout.AbsoluteProjectPath(self._project, path)
 
   def ReadManifest(self, path):
     """Read the manifest at the given path.
@@ -217,7 +134,8 @@ class ManifestRepository(object):
       repo_manifest.Manifest object.
     """
     return repo_manifest.Manifest.FromFile(
-        path, allow_unsupported_features=True)
+        self.AbsoluteManifestPath(path),
+        allow_unsupported_features=True)
 
   def ListManifests(self, root_manifests):
     """Finds all manifests included directly or indirectly by root manifests.
@@ -233,7 +151,7 @@ class ManifestRepository(object):
     pending = list(root_manifests)
     found = set()
     while pending:
-      path = self.ManifestPath(pending.pop())
+      path = pending.pop()
       if path in found:
         continue
       found.add(path)
@@ -268,11 +186,10 @@ class ManifestRepository(object):
 
     # Update all project revisions.
     for project in manifest.Projects():
-      path = project.Path()
       if CanBranchProject(project):
-        project.revision = git.NormalizeRef(branches[path])
+        project.revision = git.NormalizeRef(branches[project.Path()])
       elif CanPinProject(project):
-        project.revision = git.GetGitRepoRevision(AbsoluteProjectPath(path))
+        project.revision = self._checkout.GitRevision(project)
       else:
         project.revision = git.NormalizeRef('master')
 
@@ -298,6 +215,134 @@ class ManifestRepository(object):
       self.RepairManifest(path, branches).Write(path)
 
 
+class CrosCheckout(object):
+  """Represents a checkout of chromiumos on disk."""
+
+  def __init__(self, root, manifest=None):
+    """Read the checkout manifest.
+
+    Args:
+      root: The repo root.
+      manifest: The checkout manifest. Read from `repo manifest` if None.
+    """
+    self.root = root
+    self.manifest = manifest or repo_util.Repository(root).Manifest()
+
+  def _Sync(self, manifest_args):
+    """Run repo_sync_manifest command and return the full synced manifest.
+
+    Args:
+      manifest_args: List of args for manifest group of repo_sync_manifest.
+
+    Returns:
+      The full synced manifest as a repo_manifest.Manifest.
+    """
+    cros_build_lib.RunCommand([
+        self.AbsolutePath('chromite/scripts/repo_sync_manifest'),
+        '--repo-root', self.root
+    ] + manifest_args, quiet=True)
+    self.manifest = repo_util.Repository(self.root).Manifest()
+
+  def SyncBranch(self, branch):
+    """Sync to the given branch and return the synced manifest.
+
+    Args:
+      branch: Name of branch to sync to.
+
+    Returns:
+      The synced manifest as a repo_manifest.Manifest.
+    """
+    return self._Sync(['--branch', branch])
+
+  def SyncVersion(self, version):
+    """Sync to the given version and return the synced manifest.
+
+    Args:
+      version: Version string to sync to.
+
+    Returns:
+      The synced manifest as a repo_manifest.Manifest.
+    """
+    site_params = config_lib.GetSiteParams()
+    return self._Sync([
+        '--manifest-versions-int',
+        self.AbsolutePath(site_params.INTERNAL_MANIFEST_VERSIONS_PATH),
+        '--manifest-versions-ext',
+        self.AbsolutePath(site_params.EXTERNAL_MANIFEST_VERSIONS_PATH),
+        '--version', version
+    ])
+
+  def SyncFile(self, path):
+    """Sync to the given manifest file and return the synced manifest.
+
+    Args:
+      path: Path to the manifest file.
+
+    Returns:
+      The synced manifest as a repo_manifest.Manifest.
+    """
+    return self._Sync(['--manifest-file', path])
+
+  def ReadVersion(self, **kwargs):
+    """Returns VersionInfo for the current checkout."""
+    return manifest_version.VersionInfo.from_repo(self.root, **kwargs)
+
+  def BumpVersion(self, which, message):
+    """Increment version in chromeos_version.sh and commit it.
+
+    Args:
+      which: Which version should be incremented. One of
+          'chrome_branch', 'build', 'branch, 'patch'.
+      message: The commit message for the version bump.
+    """
+    new_version = self.ReadVersion(incr_type=which)
+    new_version.IncrementVersion()
+    new_version.UpdateVersionFile(message, dry_run=True)
+
+  def AbsolutePath(self, *args):
+    """Joins the path components with the repo root.
+
+    Args:
+      *paths: Arbitrary relative path components, e.g. 'chromite/'
+
+    Returns:
+      The absolute checkout path.
+    """
+    return os.path.join(self.root, *args)
+
+  def AbsoluteProjectPath(self, project, *args):
+    """Joins the path components to the project's root.
+
+    Args:
+      project: The repo_manifest.Project in question.
+      *args: Arbitrary relative path components.
+
+    Returns:
+      The joined project path.
+    """
+    return self.AbsolutePath(project.Path(), *args)
+
+  def RunGit(self, project, cmd):
+    """Run a git command inside the given project.
+
+    Args:
+      project: repo_manifest.Project to run the command in.
+      cmd: Command as a list of arguments. Callers should exclude 'git'.
+    """
+    git.RunGit(self.AbsoluteProjectPath(project), cmd, print_cmd=True)
+
+  def GitRevision(self, project):
+    """Return the project's current git revision on disk.
+
+    Args:
+      project: The repo_manifest.Project in question.
+
+    Returns:
+      Git revision as a string.
+    """
+    return git.GetGitRepoRevision(self.AbsoluteProjectPath(project))
+
+
 class Branch(object):
   """Represents a branch of chromiumos, which may or may not exist yet.
 
@@ -305,15 +350,15 @@ class Branch(object):
   synced to the correct version.
   """
 
-  def __init__(self, name, manifest):
+  def __init__(self, name, checkout):
     """Cache various configuration used by all branch operations.
 
     Args:
       name: The name of the branch.
-      manifest: The currently synced manifest.
+      checkout: The synced CrosCheckout.
     """
     self.name = name
-    self.manifest = manifest
+    self.checkout = checkout
 
   def _ProjectBranchName(self, project):
     """Determine's the git branch name for the project.
@@ -325,8 +370,8 @@ class Branch(object):
       The branch name for the project.
     """
     # If project has only one checkout, the base branch name is fine.
-    checkouts = [p.name for p in self.manifest.Projects()].count(project.name)
-    if checkouts == 1:
+    checkouts = [p.name for p in self.checkout.manifest.Projects()]
+    if checkouts.count(project.name) == 1:
       return self.name
     # Otherwise, the project branch name needs a suffix. We append its
     # upstream or revision to distinguish it from other checkouts.
@@ -343,10 +388,8 @@ class Branch(object):
       Name of the new branch on the project.
     """
     branch = self._ProjectBranchName(project)
-    git.RunGit(
-        AbsoluteProjectPath(project.Path()),
-        ['checkout', '-B', branch, project.Revision()],
-        print_cmd=True)
+    self.checkout.RunGit(project,
+                         ['checkout', '-B', branch, project.Revision()])
     return branch
 
   def _RenameProjectBranch(self, project):
@@ -359,10 +402,7 @@ class Branch(object):
       Name of the new branch on the project.
     """
     branch = self._ProjectBranchName(project)
-    git.RunGit(
-        AbsoluteProjectPath(project.Path()),
-        ['branch', '-m', branch],
-        print_cmd=True)
+    self.checkout.RunGit(project, ['branch', '-m', branch])
     return branch
 
   def _DeleteProjectBranch(self, project):
@@ -375,10 +415,7 @@ class Branch(object):
       Name of the deleted branch on the project.
     """
     branch = self._ProjectBranchName(project)
-    git.RunGit(
-        AbsoluteProjectPath(project.Path()),
-        ['branch', '-D', branch],
-        print_cmd=True)
+    self.checkout.RunGit(project, ['branch', '-D', branch])
     return branch
 
   def _MapBranchableProjects(self, transform):
@@ -391,7 +428,7 @@ class Branch(object):
       Dict mapping (unique) project path to transformation result.
     """
     return {project.Path(): transform(project) for project in
-            filter(CanBranchProject, self.manifest.Projects())}
+            filter(CanBranchProject, self.checkout.manifest.Projects())}
 
   def _RepairManifestRepositories(self, branches):
     """Repair all manifests in all manifest repositories.
@@ -399,26 +436,20 @@ class Branch(object):
     Args:
       branches: Dict mapping project names to branch names.
     """
-    for repo_name in ('manifest', 'manifest-internal'):
-      manifest_repo_path = AbsoluteProjectPath(repo_name)
-      ManifestRepository(manifest_repo_path).RepairManifestsOnDisk(branches)
-      git.RunGit(
-          manifest_repo_path,
+    for project_name in config_lib.GetSiteParams().MANIFEST_PROJECTS:
+      project = self.checkout.manifest.GetUniqueProject(project_name)
+      ManifestRepository(self.checkout, project).RepairManifestsOnDisk(branches)
+      self.checkout.RunGit(
+          project,
           ['commit', '-a', '-m',
            'Manifests point to branch %s.' % self.name])
 
-  def _BumpVersion(self, which):
-    """Increment version in chromeos_version.sh and commit it.
-
-    Args:
-      which: Which version should be incremented. One of
-          'chrome_branch', 'build', 'branch, 'patch'.
-    """
-    message = 'Bump %s number after creating branch %s.' % (which, self.name)
-    logging.info(message)
-    new_version = ReadVersionInfo(incr_type=which)
-    new_version.IncrementVersion()
-    new_version.UpdateVersionFile(message, dry_run=True)
+  def WhichVersionShouldBump(self):
+    """Returns which version is incremented by builds on a new branch."""
+    vinfo = self.checkout.ReadVersion()
+    if int(vinfo.patch_number):
+      raise BranchError('Cannot bump version with nonzero patch number.')
+    return 'patch' if int(vinfo.branch_build_number) else 'branch'
 
   def ReportCreateSuccess(self):
     """Report branch creation successful. Behavior depends on branch type."""
@@ -437,7 +468,10 @@ class Branch(object):
       raise NotImplementedError('--push and --force unavailable.')
     branches = self._MapBranchableProjects(self._CreateProjectBranch)
     self._RepairManifestRepositories(branches)
-    self._BumpVersion(WhichVersionShouldBump())
+    which_version = self.WhichVersionShouldBump()
+    self.checkout.BumpVersion(
+        which_version,
+        'Bump %s number after creating branch %s.' % (which_version, self.name))
     self.ReportCreateSuccess()
 
   def Rename(self, push=False, force=False):
@@ -467,7 +501,7 @@ class Branch(object):
 class StandardBranch(Branch):
   """Branch with a standard name and reporting for branch operations."""
 
-  def __init__(self, prefix, manifest):
+  def __init__(self, prefix, checkout):
     """Determine the name for this branch.
 
     By convention, standard branch names must end with the version from which
@@ -479,53 +513,53 @@ class StandardBranch(Branch):
 
     Args:
       prefix: Any tag that describes the branch type (e.g. 'firmware').
-      manifest: The currently synced manifest.
+      checkout: The synced CrosCheckout.
     """
-    vinfo = ReadVersionInfo()
+    vinfo = checkout.ReadVersion()
     name = '%s-%s' % (prefix, vinfo.build_number)
     if int(vinfo.branch_build_number):
       name += '.%s' % vinfo.branch_build_number
     name += '.B'
-    super(StandardBranch, self).__init__(name, manifest)
+    super(StandardBranch, self).__init__(name, checkout)
 
 
 class ReleaseBranch(StandardBranch):
   """Represents a release branch."""
 
-  def __init__(self, manifest):
+  def __init__(self, checkout):
     super(ReleaseBranch, self).__init__(
-        'release-R%s' % ReadVersionInfo().chrome_branch, manifest)
+        'release-R%s' % checkout.ReadVersion().chrome_branch, checkout)
 
   def ReportCreateSuccess(self):
     # When a release branch has been successfully created, we report it by
     # bumping the milestone on the source branch (usually master).
-    chromiumos_overlay_source = self.manifest.GetUniqueProject(
+    chromiumos_overlay = self.checkout.manifest.GetUniqueProject(
         'chromiumos/overlays/chromiumos-overlay')
-    with CheckoutManager(chromiumos_overlay_source):
-      self._BumpVersion('chrome_branch')
+    with CheckoutManager(self.checkout, chromiumos_overlay):
+      self.checkout.BumpVersion('chrome_branch')
 
 
 class FactoryBranch(StandardBranch):
   """Represents a factory branch."""
 
-  def __init__(self, manifest):
+  def __init__(self, checkout):
     # TODO(evanhernandez): Allow adding device to branch name.
-    super(FactoryBranch, self).__init__('factory', manifest)
+    super(FactoryBranch, self).__init__('factory', checkout)
 
 
 class FirmwareBranch(StandardBranch):
   """Represents a firmware branch."""
 
-  def __init__(self, manifest):
+  def __init__(self, checkout):
     # TODO(evanhernandez): Allow adding device to branch name.
-    super(FirmwareBranch, self).__init__('firmware', manifest)
+    super(FirmwareBranch, self).__init__('firmware', checkout)
 
 
 class StabilizeBranch(StandardBranch):
   """Represents a factory branch."""
 
-  def __init__(self, manifest):
-    super(StabilizeBranch, self).__init__('stabilize', manifest)
+  def __init__(self, checkout):
+    super(StabilizeBranch, self).__init__('stabilize', checkout)
 
 
 @command.CommandDecorator('branch')
@@ -566,6 +600,13 @@ Delete Examples:
     super(BranchCommand, cls).AddParser(parser)
 
     # Common flags.
+    parser.add_argument(
+        '--root',
+        dest='root',
+        default=constants.SOURCE_ROOT,
+        help='Repo root of local checkout to branch. If not specificed, this '
+        'tool will branch the checkout from which it is run. This flag is '
+        'primarily used for testing.')
     parser.add_argument(
         '--push',
         dest='push',
@@ -651,22 +692,25 @@ Delete Examples:
     delete_parser.add_argument('branch', help='Name of the branch to delete.')
 
   def Run(self):
+    checkout = CrosCheckout(self.options.root)
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
-      manifest = (SyncFile(self.options.file) if self.options.file else
-                  SyncVersion(self.options.version))
-      branch = (Branch(self.options.name, manifest) if self.options.name else
-                self.options.cls(manifest))
+      if self.options.file:
+        checkout.SyncFile(self.options.file)
+      else:
+        checkout.SyncVersion(self.options.version)
+      branch = (Branch(self.options.name, checkout) if self.options.name else
+                self.options.cls(checkout))
       branch.Create(push=self.options.push, force=self.options.force)
     elif self.options.subcommand == 'rename':
-      manifest = SyncBranch(self.options.old)
-      Branch(self.options.new, manifest).Rename(
+      checkout.SyncBranch(self.options.old)
+      Branch(self.options.new, checkout).Rename(
           push=self.options.push,
           force=self.options.force)
     elif self.options.subcommand == 'delete':
-      manifest = SyncBranch(self.options.branch)
-      Branch(self.options.branch, manifest).Delete(
+      checkout.SyncBranch(self.options.branch)
+      Branch(self.options.branch, checkout).Delete(
           push=self.options.push,
           force=self.options.force)
     else:
