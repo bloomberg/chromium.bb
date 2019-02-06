@@ -91,7 +91,7 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
   auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
       g_next_command_buffer_id.GetNext() + 1);
   return gpu_service->sync_point_manager()->CreateSyncPointClientState(
-      gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE, command_buffer_id,
+      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE, command_buffer_id,
       gpu_service->skia_output_surface_sequence_id());
 }
 
@@ -101,7 +101,7 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
   auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
       g_next_command_buffer_id.GetNext() + 1);
   return task_executor->sync_point_manager()->CreateSyncPointClientState(
-      gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE, command_buffer_id,
+      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE, command_buffer_id,
       sequence_id);
 }
 
@@ -912,8 +912,9 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseFenceSyncAndPushTextureUpdates(
     // context, PullTextureUpdates(token) will wait the GL fence associated with
     // the give token on the current GL context.
     // Reconstruct sync_token from sync_fence_release.
-    gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
-                              command_buffer_id(), sync_fence_release);
+    gpu::SyncToken sync_token(
+        gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
+        command_buffer_id(), sync_fence_release);
     mailbox_manager_->PushTextureUpdates(sync_token);
   }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);

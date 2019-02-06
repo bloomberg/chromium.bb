@@ -42,6 +42,10 @@ const base::Feature kEnableVizHitTestSurfaceLayer{
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use the SkiaRenderer without DDL.
+const base::Feature kUseSkiaRendererNonDDL{"UseSkiaRendererNonDDL",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the SkiaRenderer to record SkPicture.
 const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -79,6 +83,10 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
 
 bool IsUsingSkiaRenderer() {
   return base::FeatureList::IsEnabled(kUseSkiaRenderer);
+}
+
+bool IsUsingSkiaRendererNonDDL() {
+  return base::FeatureList::IsEnabled(kUseSkiaRendererNonDDL);
 }
 
 bool IsRecordingSkPicture() {
