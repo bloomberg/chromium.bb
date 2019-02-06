@@ -23,6 +23,17 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
+
+namespace {
+
+content::WebContents* GetAuthFrameWebContents(
+    content::WebContents* web_ui_web_contents) {
+  return signin::GetAuthFrameWebContents(web_ui_web_contents, "signin-frame");
+}
+
+}  // namespace
+
 namespace {
 
 const int kModalDialogWidth = 448;
@@ -54,12 +65,18 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     Browser* browser,
     ui::ModalType dialog_modal_type,
     bool wait_for_size)
-    : SigninViewControllerDelegate(signin_view_controller,
-                                   content_view->GetWebContents(),
-                                   browser),
+    : signin_view_controller_(signin_view_controller),
+      web_contents_(content_view->GetWebContents()),
+      browser_(browser),
       content_view_(content_view.release()),
       modal_signin_widget_(nullptr),
       dialog_modal_type_(dialog_modal_type) {
+  DCHECK(web_contents_);
+  DCHECK(browser_);
+  DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
+      << "A tab must be active to present the sign-in modal dialog.";
+  web_contents_->SetDelegate(this);
+
   DCHECK(dialog_modal_type == ui::MODAL_TYPE_CHILD ||
          dialog_modal_type == ui::MODAL_TYPE_WINDOW)
       << "Unsupported dialog modal type " << dialog_modal_type;
@@ -120,16 +137,20 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
   }
 }
 
-bool SigninViewControllerDelegateViews::HandleKeyboardEvent(
-    content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
-  // If this is a MODAL_TYPE_CHILD, then GetFocusManager() will return the focus
-  // manager of the parent window, which has registered accelerators, and the
-  // accelerators will fire. If this is a MODAL_TYPE_WINDOW, then this will have
-  // no effect, since no accelerators have been registered for this standalone
-  // window.
-  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
-      event, GetFocusManager());
+content::WebContents* SigninViewControllerDelegateViews::GetWebContents() {
+  return web_contents_;
+}
+
+void SigninViewControllerDelegateViews::PerformNavigation() {
+  if (CanGoBack(web_contents_))
+    GetAuthFrameWebContents(web_contents_)->GetController().GoBack();
+  else
+    CloseModalSignin();
+}
+
+void SigninViewControllerDelegateViews::CloseModalSignin() {
+  ResetSigninViewControllerDelegate();
+  PerformClose();
 }
 
 void SigninViewControllerDelegateViews::DisplayModal() {
@@ -161,40 +182,40 @@ void SigninViewControllerDelegateViews::DisplayModal() {
   content_view_->RequestFocus();
 }
 
-#if defined(OS_CHROMEOS)
-// static
-std::unique_ptr<views::WebView>
-SigninViewControllerDelegateViews::CreateGaiaWebView(
-    content::WebContentsDelegate* delegate,
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
-  GURL url = signin::GetEmbeddedSigninURLFromBubbleViewMode(browser->profile(),
-                                                            mode, access_point);
-
-  constexpr int kFixedGaiaViewHeight = 612;
-  int max_height = browser
-      ->window()
-      ->GetWebContentsModalDialogHost()
-      ->GetMaximumDialogSize().height();
-  // Adds Gaia signin webview.
-  const gfx::Size pref_size(kModalDialogWidth,
-                            std::min(kFixedGaiaViewHeight, max_height));
-  views::WebView* web_view = new views::WebView(browser->profile());
-  web_view->LoadInitialURL(url);
-
-  if (delegate)
-    web_view->GetWebContents()->SetDelegate(delegate);
-
-  web_view->SetPreferredSize(pref_size);
-  content::RenderWidgetHostView* rwhv =
-      web_view->GetWebContents()->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetBackgroundColor(profiles::kAvatarBubbleGaiaBackgroundColor);
-
-  return std::unique_ptr<views::WebView>(web_view);
+bool SigninViewControllerDelegateViews::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  // If this is a MODAL_TYPE_CHILD, then GetFocusManager() will return the focus
+  // manager of the parent window, which has registered accelerators, and the
+  // accelerators will fire. If this is a MODAL_TYPE_WINDOW, then this will have
+  // no effect, since no accelerators have been registered for this standalone
+  // window.
+  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, GetFocusManager());
 }
-#endif
+
+bool SigninViewControllerDelegateViews::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Discard the context menu
+  return true;
+}
+
+void SigninViewControllerDelegateViews::LoadingStateChanged(
+    content::WebContents* source,
+    bool to_different_document) {
+  // The WebUI object can be missing for an error page, per
+  // https://crbug.com/860409.
+  if (!source->GetWebUI())
+    return;
+
+  if (CanGoBack(source)) {
+    source->GetWebUI()->CallJavascriptFunctionUnsafe(
+        "inline.login.showBackButton");
+  } else {
+    source->GetWebUI()->CallJavascriptFunctionUnsafe(
+        "inline.login.showCloseButton");
+  }
+}
 
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
@@ -238,20 +259,27 @@ SigninViewControllerDelegateViews::CreateDialogWebView(
   return std::unique_ptr<views::WebView>(web_view);
 }
 
-#if defined(OS_CHROMEOS)
-SigninViewControllerDelegate*
-SigninViewControllerDelegate::CreateModalSigninDelegate(
-    SigninViewController* signin_view_controller,
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
-  return new SigninViewControllerDelegateViews(
-      signin_view_controller,
-      SigninViewControllerDelegateViews::CreateGaiaWebView(
-          nullptr, mode, browser, access_point),
-      browser, ui::MODAL_TYPE_CHILD, false);
+web_modal::WebContentsModalDialogHost*
+SigninViewControllerDelegateViews::GetWebContentsModalDialogHost() {
+  return browser()->window()->GetWebContentsModalDialogHost();
 }
-#endif
+
+void SigninViewControllerDelegateViews::ResetSigninViewControllerDelegate() {
+  if (signin_view_controller_) {
+    signin_view_controller_->ResetModalSigninDelegate();
+    signin_view_controller_ = nullptr;
+  }
+}
+
+bool SigninViewControllerDelegateViews::CanGoBack(
+    content::WebContents* web_ui_web_contents) const {
+  auto* auth_web_contents = GetAuthFrameWebContents(web_ui_web_contents);
+  return auth_web_contents && auth_web_contents->GetController().CanGoBack();
+}
+
+// --------------------------------------------------------------------
+// SigninViewControllerDelegate static methods
+// --------------------------------------------------------------------
 
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
