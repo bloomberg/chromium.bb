@@ -876,6 +876,7 @@ if (is_chromeos) {
 
     if (use_v4l2_codec || use_vaapi) {
       deps += [
+        "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
 
         # TODO(https://crbug.com/879065): remove once tests have been migrated
