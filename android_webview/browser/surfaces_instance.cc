@@ -22,6 +22,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -65,7 +66,8 @@ SurfacesInstance::SurfacesInstance()
   // Webview does not own the surface so should not clear it.
   settings.should_clear_root_render_pass = false;
 
-  settings.use_skia_renderer = features::IsUsingSkiaRenderer();
+  settings.use_skia_renderer =
+      features::IsUsingSkiaRenderer() || features::IsUsingSkiaRendererNonDDL();
 
   // The SharedBitmapManager is null as we do not support or use software
   // compositing on Android.
@@ -100,9 +102,16 @@ SurfacesInstance::SurfacesInstance()
                                            .enabled_gpu_driver_bug_workarounds),
           nullptr /* gr_shader_cache */);
     }
-    output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-        task_executor, base::MakeRefCounted<AwGLSurface>(),
-        shared_context_state_);
+    if (features::IsUsingSkiaRendererNonDDL()) {
+      output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
+          base::MakeRefCounted<AwGLSurface>(), shared_context_state_,
+          task_executor->mailbox_manager(),
+          task_executor->sync_point_manager());
+    } else {
+      output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+          task_executor, base::MakeRefCounted<AwGLSurface>(),
+          shared_context_state_);
+    }
     skia_output_surface =
         static_cast<viz::SkiaOutputSurface*>(output_surface.get());
   } else {

@@ -533,9 +533,9 @@ gpu::SyncToken SkiaOutputSurfaceImpl::ReleasePromiseSkImages(
     std::vector<sk_sp<SkImage>> images) {
   if (images.empty())
     return gpu::SyncToken();
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
-                            impl_on_gpu_->command_buffer_id(),
-                            ++sync_fence_release_);
+  gpu::SyncToken sync_token(
+      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
+      impl_on_gpu_->command_buffer_id(), ++sync_fence_release_);
   sync_token.SetVerifyFlush();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -585,9 +585,9 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
   // Otherwise we are painting a frame.
   bool painting_render_pass = current_render_pass_id_ != 0;
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
-                            impl_on_gpu_->command_buffer_id(),
-                            ++sync_fence_release_);
+  gpu::SyncToken sync_token(
+      gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
+      impl_on_gpu_->command_buffer_id(), ++sync_fence_release_);
   sync_token.SetVerifyFlush();
 
   auto ddl = recorder_->detach();

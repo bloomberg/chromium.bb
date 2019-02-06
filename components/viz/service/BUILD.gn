@@ -307,6 +307,8 @@ viz_source_set("gpu_service_dependencies") {
   sources = [
     "display_embedder/skia_output_surface_impl.cc",
     "display_embedder/skia_output_surface_impl.h",
+    "display_embedder/skia_output_surface_impl_non_ddl.cc",
+    "display_embedder/skia_output_surface_impl_non_ddl.h",
     "display_embedder/skia_output_surface_impl_on_gpu.cc",
     "display_embedder/skia_output_surface_impl_on_gpu.h",
     "gl/gpu_service_impl.cc",
