@@ -263,8 +263,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
 // ConstrainedWebDialogBrowserTest.ContentResizeInAutoResizingDialog but
 // has the surface synchronization flag turned on. Once surface synchronization
 // is on by default, this test can be deleted.
-// TODO(fsamuel): Fix tis for Mac too.
+// TODO(fsamuel): Fix this for Mac too.
 #if defined(USE_AURA)
+// Flaky on CrOS: http://crbug.com/928924
+#if defined(OS_CHROMEOS)
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  DISABLED_ContentResizeInAutoResizingDialog
+#else
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  ContentResizeInAutoResizingDialog
+#endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
                        ContentResizeInAutoResizingDialog) {
   // During auto-resizing, dialogs size to (WebContents size) + 16.
