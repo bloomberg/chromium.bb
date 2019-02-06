@@ -120,16 +120,9 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void InstallLinuxPackageCallback(base::OnceClosure closure,
-                                   CrostiniResult expected_result,
-                                   CrostiniResult result) {
-    EXPECT_EQ(expected_result, result);
-    std::move(closure).Run();
-  }
-
-  void UninstallPackageOwningFileCallback(base::OnceClosure closure,
-                                          CrostiniResult expected_result,
-                                          CrostiniResult result) {
+  void CrostiniResultCallback(base::OnceClosure closure,
+                              CrostiniResult expected_result,
+                              CrostiniResult result) {
     EXPECT_EQ(expected_result, result);
     std::move(closure).Run();
   }
@@ -378,7 +371,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalNotConnectedError) {
       false);
   crostini_manager()->InstallLinuxPackage(
       kVmName, kContainerName, "/tmp/package.deb",
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
   run_loop()->Run();
@@ -390,7 +383,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalSuccess) {
   fake_cicerone_client_->set_install_linux_package_response(response);
   crostini_manager()->InstallLinuxPackage(
       kVmName, kContainerName, "/tmp/package.deb",
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
@@ -404,7 +397,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalFailure) {
   fake_cicerone_client_->set_install_linux_package_response(response);
   crostini_manager()->InstallLinuxPackage(
       kVmName, kContainerName, "/tmp/package.deb",
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
   run_loop()->Run();
@@ -417,7 +410,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalOperationBlocked) {
   fake_cicerone_client_->set_install_linux_package_response(response);
   crostini_manager()->InstallLinuxPackage(
       kVmName, kContainerName, "/tmp/package.deb",
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
   run_loop()->Run();
@@ -427,7 +420,7 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalNotConnectedError) {
   fake_cicerone_client_->set_uninstall_package_progress_signal_connected(false);
   crostini_manager()->UninstallPackageOwningFile(
       kVmName, kContainerName, "emacs",
-      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::UNINSTALL_PACKAGE_FAILED));
   run_loop()->Run();
@@ -440,7 +433,7 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalSuccess) {
   fake_cicerone_client_->set_uninstall_package_owning_file_response(response);
   crostini_manager()->UninstallPackageOwningFile(
       kVmName, kContainerName, "emacs",
-      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
@@ -454,7 +447,7 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalFailure) {
   fake_cicerone_client_->set_uninstall_package_owning_file_response(response);
   crostini_manager()->UninstallPackageOwningFile(
       kVmName, kContainerName, "emacs",
-      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::UNINSTALL_PACKAGE_FAILED));
   run_loop()->Run();
@@ -467,7 +460,7 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalOperationBlocked) {
   fake_cicerone_client_->set_uninstall_package_owning_file_response(response);
   crostini_manager()->UninstallPackageOwningFile(
       kVmName, kContainerName, "emacs",
-      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
   run_loop()->Run();
@@ -1033,7 +1026,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalNotConnectedError) {
       false);
   crostini_manager()->InstallLinuxPackageFromApt(
       kVmName, kContainerName, kPackageID,
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
   run_loop()->Run();
@@ -1045,7 +1038,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalSuccess) {
   fake_cicerone_client_->set_install_linux_package_response(response);
   crostini_manager()->InstallLinuxPackageFromApt(
       kVmName, kContainerName, kPackageID,
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
@@ -1059,7 +1052,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalFailure) {
   fake_cicerone_client_->set_install_linux_package_response(response);
   crostini_manager()->InstallLinuxPackageFromApt(
       kVmName, kContainerName, kPackageID,
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
   run_loop()->Run();
@@ -1072,7 +1065,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalOperationBlocked) {
   fake_cicerone_client_->set_install_linux_package_response(response);
   crostini_manager()->InstallLinuxPackageFromApt(
       kVmName, kContainerName, kPackageID,
-      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
   run_loop()->Run();
@@ -1254,6 +1247,182 @@ TEST_F(CrostiniManagerRestartTest, UninstallThenRestart) {
 
   EXPECT_EQ(2, restart_crostini_callback_count_);
   EXPECT_EQ(1, remove_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerTest, ExportContainerSuccess) {
+  crostini_manager()->ExportLxdContainer(
+      kVmName, kContainerName, base::FilePath("export_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  // Send signals, TAR, COMPRESS, DOWNLOAD, DONE.
+  vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(vm_tools::cicerone::
+                        ExportLxdContainerProgressSignal_Status_EXPORTING_TAR);
+  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
+
+  signal.set_status(
+      vm_tools::cicerone::
+          ExportLxdContainerProgressSignal_Status_EXPORTING_COMPRESS);
+  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
+
+  signal.set_status(
+      vm_tools::cicerone::
+          ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD);
+  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
+
+  signal.set_status(
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
+  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ExportContainerFailInProgress) {
+  // 1st call succeeds.
+  crostini_manager()->ExportLxdContainer(
+      kVmName, kContainerName, base::FilePath("export_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  // 2nd call fails since 1st call is in progress.
+  crostini_manager()->ExportLxdContainer(
+      kVmName, kContainerName, base::FilePath("export_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), base::DoNothing::Once(),
+                     CrostiniResult::CONTAINER_EXPORT_FAILED));
+
+  // Send signal to indicate 1st call is done.
+  vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
+  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ExportContainerFailFromSignal) {
+  crostini_manager()->ExportLxdContainer(
+      kVmName, kContainerName, base::FilePath("export_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_EXPORT_FAILED));
+
+  // Send signal with FAILED.
+  vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
+  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ExportContainerFailOnVmStop) {
+  crostini_manager()->AddRunningVmForTesting(kVmName);
+  crostini_manager()->ExportLxdContainer(
+      kVmName, kContainerName, base::FilePath("export_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_EXPORT_FAILED));
+  crostini_manager()->StopVm(kVmName, base::DoNothing());
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ImortContainerSuccess) {
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  // Send signals, UPLOAD, UNPACK, DONE.
+  vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::
+          ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD);
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  signal.set_status(
+      vm_tools::cicerone::
+          ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK);
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  signal.set_status(
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ImportContainerFailInProgress) {
+  // 1st call succeeds.
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  // 2nd call fails since 1st call is in progress.
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), base::DoNothing::Once(),
+                     CrostiniResult::CONTAINER_IMPORT_FAILED));
+
+  // Send signal to indicate 1st call is done.
+  vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ImportContainerFailFromSignal) {
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_IMPORT_FAILED));
+
+  // Send signal with FAILED.
+  vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED);
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ImportContainerFailOnVmStop) {
+  crostini_manager()->AddRunningVmForTesting(kVmName);
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_IMPORT_FAILED));
+  crostini_manager()->StopVm(kVmName, base::DoNothing());
+  run_loop()->Run();
 }
 
 }  // namespace crostini

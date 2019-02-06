@@ -63,6 +63,10 @@ enum class CrostiniResult {
   CROSTINI_UNINSTALLER_RUNNING,
   UNKNOWN_USB_DEVICE,
   UNKNOWN_ERROR,
+  CONTAINER_EXPORT_EXPORTING,
+  CONTAINER_EXPORT_FAILED,
+  CONTAINER_IMPORT_IMPORTING,
+  CONTAINER_IMPORT_FAILED,
 };
 
 enum class InstallLinuxPackageProgressStatus {
@@ -82,6 +86,17 @@ enum class UninstallPackageProgressStatus {
   SUCCEEDED,
   FAILED,
   UNINSTALLING,  // In progress
+};
+
+enum class ExportContainerProgressStatus {
+  TAR,
+  COMPRESS,
+  DOWNLOAD,
+};
+
+enum class ImportContainerProgressStatus {
+  UPLOAD,
+  UNPACK,
 };
 
 struct VmInfo {
@@ -145,6 +160,30 @@ class LinuxPackageOperationProgressObserver {
                                           const std::string& container_name,
                                           UninstallPackageProgressStatus status,
                                           int progress_percent) = 0;
+};
+
+class ExportContainerProgressObserver {
+ public:
+  // A successfully started container export will continually fire progress
+  // events until the original callback from ExportLxdContainer is invoked with
+  // a status of SUCCESS or CONTAINER_EXPORT_FAILED.
+  virtual void OnExportContainerProgress(const std::string& vm_name,
+                                         const std::string& container_name,
+                                         ExportContainerProgressStatus status,
+                                         int progress_percent,
+                                         uint64_t progress_speed) = 0;
+};
+
+class ImportContainerProgressObserver {
+ public:
+  // A successfully started container import will continually fire progress
+  // events until the original callback from ImportLxdContainer is invoked with
+  // a status of SUCCESS or CONTAINER_IMPORT_FAILED.
+  virtual void OnImportContainerProgress(const std::string& vm_name,
+                                         const std::string& container_name,
+                                         ImportContainerProgressStatus status,
+                                         int progress_percent,
+                                         uint64_t progress_speed) = 0;
 };
 
 // CrostiniManager is a singleton which is used to check arguments for
@@ -343,6 +382,22 @@ class CrostiniManager : public KeyedService,
                              std::string container_username,
                              CrostiniResultCallback callback);
 
+  // Checks the arguments for exporting an Lxd container via
+  // CiceroneClient::ExportLxdContainer. |callback| is called immediately if the
+  // arguments are bad, or after the method call finishes.
+  void ExportLxdContainer(std::string vm_name,
+                          std::string container_name,
+                          base::FilePath export_path,
+                          CrostiniResultCallback callback);
+
+  // Checks the arguments for importing an Lxd container via
+  // CiceroneClient::ImportLxdContainer. |callback| is called immediately if the
+  // arguments are bad, or after the method call finishes.
+  void ImportLxdContainer(std::string vm_name,
+                          std::string container_name,
+                          base::FilePath import_path,
+                          CrostiniResultCallback callback);
+
   // Asynchronously launches an app as specified by its desktop file id.
   // |callback| is called with SUCCESS when the relevant process is started
   // or LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
@@ -481,6 +536,16 @@ class CrostiniManager : public KeyedService,
   void RemoveLinuxPackageOperationProgressObserver(
       LinuxPackageOperationProgressObserver* observer);
 
+  // Add/remove observers for container export/import.
+  void AddExportContainerProgressObserver(
+      ExportContainerProgressObserver* observer);
+  void RemoveExportContainerProgressObserver(
+      ExportContainerProgressObserver* observer);
+  void AddImportContainerProgressObserver(
+      ImportContainerProgressObserver* observer);
+  void RemoveImportContainerProgressObserver(
+      ImportContainerProgressObserver* observer);
+
   // ConciergeClient::Observer:
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
@@ -504,6 +569,12 @@ class CrostiniManager : public KeyedService,
       const vm_tools::cicerone::TremplinStartedSignal& signal) override;
   void OnLxdContainerStarting(
       const vm_tools::cicerone::LxdContainerStartingSignal& signal) override;
+  void OnExportLxdContainerProgress(
+      const vm_tools::cicerone::ExportLxdContainerProgressSignal& signal)
+      override;
+  void OnImportLxdContainerProgress(
+      const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal)
+      override;
 
   void RemoveCrostini(std::string vm_name,
                       RemoveCrostiniCallback callback);
@@ -621,6 +692,18 @@ class CrostiniManager : public KeyedService,
       std::string container_name,
       CrostiniResultCallback callback,
       base::Optional<vm_tools::cicerone::SetUpLxdContainerUserResponse> reply);
+
+  // Callback for CiceroneClient::ExportLxdContainer.
+  void OnExportLxdContainer(
+      std::string vm_name,
+      std::string container_name,
+      base::Optional<vm_tools::cicerone::ExportLxdContainerResponse> reply);
+
+  // Callback for CiceroneClient::ImportLxdContainer.
+  void OnImportLxdContainer(
+      std::string vm_name,
+      std::string container_name,
+      base::Optional<vm_tools::cicerone::ImportLxdContainerResponse> reply);
 
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
@@ -749,6 +832,18 @@ class CrostiniManager : public KeyedService,
   std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
       start_lxd_container_callbacks_;
 
+  // Pending ExportLxdContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs. They are invoked once ExportLxdContainerProgressSignal signal
+  // indicates that export is finished.
+  std::map<std::pair<std::string, std::string>, CrostiniResultCallback>
+      export_lxd_container_callbacks_;
+
+  // Pending ImportLxdContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs. They are invoked once ImportLxdContainerProgressSignal signal
+  // indicates that import is finished.
+  std::map<std::pair<std::string, std::string>, CrostiniResultCallback>
+      import_lxd_container_callbacks_;
+
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are
   // used if StartTerminaVm completes but we need to wait from Tremplin to
   // start.
@@ -763,6 +858,11 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<LinuxPackageOperationProgressObserver>::Unchecked
       linux_package_operation_progress_observers_;
+
+  base::ObserverList<ExportContainerProgressObserver>::Unchecked
+      export_container_progress_observers_;
+  base::ObserverList<ImportContainerProgressObserver>::Unchecked
+      import_container_progress_observers_;
 
   // Restarts by <vm_name, container_name>. Only one restarter flow is actually
   // running for a given container, other restarters will just have their

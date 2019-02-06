@@ -36,6 +36,12 @@ FakeCiceroneClient::FakeCiceroneClient() {
   vm_tools::cicerone::AppSearchResponse::AppSearchResult* app =
       search_app_response_.add_packages();
   app->set_package_name("fake app");
+
+  export_lxd_container_response_.set_status(
+      vm_tools::cicerone::ExportLxdContainerResponse::EXPORTING);
+
+  import_lxd_container_response_.set_status(
+      vm_tools::cicerone::ImportLxdContainerResponse::IMPORTING);
 }
 
 FakeCiceroneClient::~FakeCiceroneClient() = default;
@@ -78,6 +84,14 @@ bool FakeCiceroneClient::IsInstallLinuxPackageProgressSignalConnected() {
 
 bool FakeCiceroneClient::IsUninstallPackageProgressSignalConnected() {
   return is_uninstall_package_progress_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsExportLxdContainerProgressSignalConnected() {
+  return is_export_lxd_container_progress_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsImportLxdContainerProgressSignalConnected() {
+  return is_import_lxd_container_progress_signal_connected_;
 }
 
 void FakeCiceroneClient::LaunchContainerApplication(
@@ -221,6 +235,24 @@ void FakeCiceroneClient::SearchApp(
       FROM_HERE, base::BindOnce(std::move(callback), search_app_response_));
 }
 
+void FakeCiceroneClient::ExportLxdContainer(
+    const vm_tools::cicerone::ExportLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::ExportLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), export_lxd_container_response_));
+}
+
+void FakeCiceroneClient::ImportLxdContainer(
+    const vm_tools::cicerone::ImportLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::ImportLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), import_lxd_container_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {
@@ -246,6 +278,20 @@ void FakeCiceroneClient::NotifyLxdContainerStarting(
     const vm_tools::cicerone::LxdContainerStartingSignal& proto) {
   for (auto& observer : observer_list_) {
     observer.OnLxdContainerStarting(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyExportLxdContainerProgress(
+    const vm_tools::cicerone::ExportLxdContainerProgressSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnExportLxdContainerProgress(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyImportLxdContainerProgress(
+    const vm_tools::cicerone::ImportLxdContainerProgressSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnImportLxdContainerProgress(proto);
   }
 }
 
