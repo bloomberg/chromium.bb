@@ -288,6 +288,7 @@ class WebSettings {
   virtual void SetLazyImageLoadingDistanceThresholdPx2G(int) = 0;
   virtual void SetLazyImageLoadingDistanceThresholdPx3G(int) = 0;
   virtual void SetLazyImageLoadingDistanceThresholdPx4G(int) = 0;
+  virtual void SetForceDarkModeEnabled(bool) = 0;
 
  protected:
   ~WebSettings() = default;

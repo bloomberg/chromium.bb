@@ -107,6 +107,12 @@ java_cpp_enum("aw_safe_browsing_action") {
   ]
 }
 
+java_cpp_enum("aw_settings_force_dark_mode") {
+  sources = [
+    "browser/aw_settings.h",
+  ]
+}
+
 jinja_template("system_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
   output = system_webview_android_manifest
@@ -988,6 +994,7 @@ android_library("android_webview_java") {
     ":android_webview_java_enums_srcjar",
     ":aw_error_ui",
     ":aw_safe_browsing_action",
+    ":aw_settings_force_dark_mode",
     "//components/safe_browsing/db:sb_threat_values",
   ]
 

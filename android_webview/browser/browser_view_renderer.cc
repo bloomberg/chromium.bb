@@ -269,6 +269,11 @@ void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
   UpdateMemoryPolicy();
 }
 
+void BrowserViewRenderer::OnViewTreeForceDarkStateChanged(
+    bool view_tree_force_dark_state) {
+  client_->OnViewTreeForceDarkStateChanged(view_tree_force_dark_state);
+}
+
 void BrowserViewRenderer::RemoveCompositorFrameConsumer(
     CompositorFrameConsumer* consumer) {
   ReturnUncommittedFrames(consumer->PassUncommittedFrameOnUI());

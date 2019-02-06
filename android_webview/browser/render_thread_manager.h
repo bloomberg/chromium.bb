@@ -53,6 +53,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
       uint32_t layer_tree_frame_sink_id);
 
   void CommitFrameOnRT();
+  void UpdateViewTreeForceDarkStateOnRT(bool view_tree_force_dark_state);
   void DrawOnRT(bool save_restore, HardwareRendererDrawParams* params);
   void DestroyHardwareRendererOnRT(bool save_restore);
 
@@ -79,6 +80,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // UI thread methods.
   void UpdateParentDrawConstraintsOnUI();
+  void ViewTreeForceDarkStateChangedOnUI(bool view_tree_force_dark_state);
   void CheckUiCallsAllowed() const {
 #if DCHECK_IS_ON()
     DCHECK(ui_calls_allowed_);
@@ -98,6 +100,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // Accessed by RT thread.
   std::unique_ptr<HardwareRenderer> hardware_renderer_;
+  bool view_tree_force_dark_state_ = false;
 
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;

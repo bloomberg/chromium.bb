@@ -217,6 +217,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetLazyImageLoadingDistanceThresholdPx3G(int) override;
   void SetLazyImageLoadingDistanceThresholdPx4G(int) override;
 
+  void SetForceDarkModeEnabled(bool) override;
+
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;
   }

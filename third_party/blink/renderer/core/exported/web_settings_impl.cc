@@ -754,6 +754,10 @@ void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPx4G(
   settings_->SetLazyImageLoadingDistanceThresholdPx4G(distance_px);
 }
 
+void WebSettingsImpl::SetForceDarkModeEnabled(bool enabled) {
+  settings_->SetForceDarkModeEnabled(enabled);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,

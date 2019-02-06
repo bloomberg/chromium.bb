@@ -260,6 +260,9 @@ struct CONTENT_EXPORT WebPreferences {
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).
   bool scroll_top_left_interop_enabled;
+  // Enable forcibly modifying content rendering to result in a light on dark
+  // colour scheme.
+  bool force_dark_mode_enabled = false;
 #else  // defined(OS_ANDROID)
 #endif  // defined(OS_ANDROID)
 

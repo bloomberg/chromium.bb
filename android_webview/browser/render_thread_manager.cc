@@ -44,6 +44,16 @@ void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   }
 }
 
+void RenderThreadManager::ViewTreeForceDarkStateChangedOnUI(
+    bool view_tree_force_dark_state) {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  CheckUiCallsAllowed();
+  if (producer_weak_ptr_) {
+    producer_weak_ptr_->OnViewTreeForceDarkStateChanged(
+        view_tree_force_dark_state);
+  }
+}
+
 void RenderThreadManager::SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   CheckUiCallsAllowed();
@@ -143,6 +153,17 @@ void RenderThreadManager::InsertReturnedResourcesOnRT(
 void RenderThreadManager::CommitFrameOnRT() {
   if (hardware_renderer_)
     hardware_renderer_->CommitFrame();
+}
+
+void RenderThreadManager::UpdateViewTreeForceDarkStateOnRT(
+    bool view_tree_force_dark_state) {
+  if (view_tree_force_dark_state_ == view_tree_force_dark_state)
+    return;
+  view_tree_force_dark_state_ = view_tree_force_dark_state;
+  ui_loop_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RenderThreadManager::ViewTreeForceDarkStateChangedOnUI,
+                     ui_thread_weak_ptr_, view_tree_force_dark_state_));
 }
 
 void RenderThreadManager::DrawOnRT(bool save_restore,

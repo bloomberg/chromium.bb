@@ -153,6 +153,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                            uint32_t layer_tree_frame_sink_id) override;
   void OnParentDrawConstraintsUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) override;
+  void OnViewTreeForceDarkStateChanged(
+      bool view_tree_force_dark_state) override;
 
   void SetActiveCompositorID(const CompositorID& compositor_id);
 

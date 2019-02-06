@@ -52,6 +52,10 @@ class BrowserViewRendererClient {
   // Create a text selection handle on demand.
   virtual ui::TouchHandleDrawable* CreateDrawable() = 0;
 
+  // Called when the view tree force dark state changes
+  virtual void OnViewTreeForceDarkStateChanged(
+      bool view_tree_force_dark_state) = 0;
+
  protected:
   virtual ~BrowserViewRendererClient() {}
 };
