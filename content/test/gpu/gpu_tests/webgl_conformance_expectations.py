@@ -532,6 +532,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=844311)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', 'no_passthrough'], bug=599272)
+    self.Flaky('conformance/ogles/GL/abs/abs_001_to_006.html', ['mac'],
+        bug=928926)
 
     # Mac AMD failures
     self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
