@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 // Higher values produce more debugging output.
-#define DEBUG_AUDIONODE_REFERENCES 1
+#define DEBUG_AUDIONODE_REFERENCES 0
 
 namespace blink {
 
