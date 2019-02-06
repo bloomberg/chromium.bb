@@ -26,8 +26,7 @@ void ExtensionPort::PostExtensionMessage(std::unique_ptr<Message> message) {
   // out for service workers.
   if (!render_frame)
     return;
-  render_frame->Send(new ExtensionHostMsg_PostMessage(
-      render_frame->GetRoutingID(), id_, *message));
+  render_frame->Send(new ExtensionHostMsg_PostMessage(id_, *message));
 }
 
 void ExtensionPort::Close(bool close_channel) {

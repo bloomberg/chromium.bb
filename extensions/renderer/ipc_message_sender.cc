@@ -195,11 +195,9 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         routing_id, port_id, close_channel));
   }
 
-  void SendPostMessageToPort(int routing_id,
-                             const PortId& port_id,
+  void SendPostMessageToPort(const PortId& port_id,
                              const Message& message) override {
-    render_thread_->Send(
-        new ExtensionHostMsg_PostMessage(routing_id, port_id, message));
+    render_thread_->Send(new ExtensionHostMsg_PostMessage(port_id, message));
   }
 
  private:
@@ -348,8 +346,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     NOTIMPLEMENTED();
   }
 
-  void SendPostMessageToPort(int routing_id,
-                             const PortId& port_id,
+  void SendPostMessageToPort(const PortId& port_id,
                              const Message& message) override {
     NOTIMPLEMENTED();
   }

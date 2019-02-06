@@ -281,9 +281,9 @@ TEST_F(NativeRendererMessagingServiceTest, PostMessageFromJS) {
       FunctionFromString(context, kDispatchMessage);
   v8::Local<v8::Value> args[] = {port_object};
 
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id,
-                                    Message(R"({"data":"hello"})", false)));
+  EXPECT_CALL(
+      *ipc_message_sender(),
+      SendPostMessageToPort(port_id, Message(R"({"data":"hello"})", false)));
   RunFunctionOnGlobal(post_message, context, base::size(args), args);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 }
@@ -354,8 +354,7 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessage) {
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessageChannel(script_context(), port_id, target,
                                      kChannel, include_tls_channel_id));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
+  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
   messaging_service()->SendOneTimeMessage(script_context(), target, kChannel,
                                           include_tls_channel_id, message,
                                           response_callback);
@@ -425,9 +424,9 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
 
   // Post the message to the receiver. The receiver should respond, and the
   // port should close.
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(MSG_ROUTING_NONE, port_id,
-                                    Message(R"({"data":"hi"})", false)));
+  EXPECT_CALL(
+      *ipc_message_sender(),
+      SendPostMessageToPort(port_id, Message(R"({"data":"hi"})", false)));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
   messaging_service()->DeliverMessage(*script_context_set(), port_id,

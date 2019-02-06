@@ -816,9 +816,9 @@ IPC_MESSAGE_CONTROL3(ExtensionHostMsg_CloseMessagePort,
 
 // Send a message to an extension process.  The handle is the value returned
 // by ExtensionHostMsg_OpenChannelTo*.
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_PostMessage,
-                    extensions::PortId /* port_id */,
-                    extensions::Message)
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_PostMessage,
+                     extensions::PortId /* port_id */,
+                     extensions::Message)
 
 // Used to get the extension message bundle.
 IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
