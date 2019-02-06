@@ -25,8 +25,5 @@ class TraceTestExpectations(GpuTestExpectations):
     self.Skip('VideoTraceTest_*',
         ['mac', 'linux', 'android', 'chromeos', 'win7'], bug=867136)
 
-    self.Flaky('VideoTraceTest_DirectComposition_ComplexOverlays',
-        ['win10'], bug=928006)
-
-    self.Flaky('VideoTraceTest_DirectComposition_Nonroot',
-        ['win10'], bug=928166)
+    # Skip until flakiness is resolved.
+    self.Skip('VideoTraceTest_DirectComposition*', ['win10'], bug=928166)
