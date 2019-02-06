@@ -371,7 +371,7 @@ foreach t : tests_weston_plugin
 
 	# FIXME: Get this from the array ... ?
 	if t.get(0).startswith('ivi-')
-		args_t += [ '--config=@0@/../ivi-shell/weston-ivi-test.ini'.format(meson.current_build_dir()) ]
+		args_t += [ '--no-config' ]
 		args_t += [ '--modules=@1@,@0@'.format(exe_plugin_test.full_path(),exe_t.full_path()) ]
 		args_t += [ '--shell=ivi-shell.so' ]
 	else
