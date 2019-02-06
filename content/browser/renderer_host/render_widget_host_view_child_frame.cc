@@ -293,11 +293,11 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
       // offset.
       rect.Offset(parent_view->GetViewBounds().OffsetFromOrigin());
     }
-    // TODO(fsamuel): GetViewBounds is a bit of a mess. It's used to determine
+    // TODO(wjmaclean): GetViewBounds is a bit of a mess. It's used to determine
     // the size of the renderer content and where to place context menus and so
     // on. We want the location of the frame in screen coordinates to place
     // popups but we want the size in local coordinates to produce the right-
-    // sized CompositorFrames.
+    // sized CompositorFrames. https://crbug.com/928825.
     rect.set_size(frame_connector_->local_frame_size_in_dip());
   }
   return rect;
