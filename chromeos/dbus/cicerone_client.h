@@ -63,6 +63,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnLxdContainerStarting(
         const vm_tools::cicerone::LxdContainerStartingSignal& signal) = 0;
 
+    // OnExportLxdContainerProgress is signalled from Cicerone while a container
+    // is being exported via ExportLxdContainer.
+    virtual void OnExportLxdContainerProgress(
+        const vm_tools::cicerone::ExportLxdContainerProgressSignal& signal) = 0;
+
+    // OnImportLxdContainerProgress is signalled from Cicerone while a container
+    // is being imported via ImportLxdContainer.
+    virtual void OnImportLxdContainerProgress(
+        const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -101,8 +111,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   // StartLxdContainer.
   virtual bool IsTremplinStartedSignalConnected() = 0;
 
-  // This should be true prior to calling StartLxdContainer in async mode
+  // This should be true prior to calling StartLxdContainer in async mode.
   virtual bool IsLxdContainerStartingSignalConnected() = 0;
+
+  // This should be true prior to calling ExportLxdContainer.
+  virtual bool IsExportLxdContainerProgressSignalConnected() = 0;
+
+  // This should be true prior to calling ImportLxdContainer.
+  virtual bool IsImportLxdContainerProgressSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
@@ -189,6 +205,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   virtual void SearchApp(
       const vm_tools::cicerone::AppSearchRequest& request,
       DBusMethodCallback<vm_tools::cicerone::AppSearchResponse> callback) = 0;
+
+  // Exports the Lxd container.
+  // |callback| is called when the method completes.
+  virtual void ExportLxdContainer(
+      const vm_tools::cicerone::ExportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ExportLxdContainerResponse>
+          callback) = 0;
+
+  // Imports the Lxd container.
+  // |callback| is called when the method completes.
+  virtual void ImportLxdContainer(
+      const vm_tools::cicerone::ImportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ImportLxdContainerResponse>
+          callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-

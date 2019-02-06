@@ -48,8 +48,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   // StartLxdContainer.
   bool IsTremplinStartedSignalConnected() override;
 
-  // This should be true prior to calling StartLxdContainer in async mode
+  // This should be true prior to calling StartLxdContainer in async mode.
   bool IsLxdContainerStartingSignalConnected() override;
+
+  // This should be true prior to calling ExportLxdContainer.
+  bool IsExportLxdContainerProgressSignalConnected() override;
+
+  // This should be true prior to calling ImportLxdContainer.
+  bool IsImportLxdContainerProgressSignalConnected() override;
 
   // Fake version of the method that launches an application inside a running
   // Container. |callback| is called after the method call finishes.
@@ -138,6 +144,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
                  DBusMethodCallback<vm_tools::cicerone::AppSearchResponse>
                      callback) override;
 
+  // Fake version of the method that exports the container.
+  // |callback| is called when the method completes.
+  void ExportLxdContainer(
+      const vm_tools::cicerone::ExportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ExportLxdContainerResponse>
+          callback) override;
+
+  // Fake version of the method that imports the container.
+  // |callback| is called when the method completes.
+  void ImportLxdContainer(
+      const vm_tools::cicerone::ImportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ImportLxdContainerResponse>
+          callback) override;
+
   // Fake version of the method that waits for the Cicerone service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -187,6 +207,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   // Set LxdContainerStartingSignalConnected state
   void set_lxd_container_starting_signal_connected(bool connected) {
     is_lxd_container_starting_signal_connected_ = connected;
+  }
+
+  // Set ExportLxdContainerProgressSignalConnected state
+  void set_export_lxd_container_progress_signal_connected(bool connected) {
+    is_export_lxd_container_progress_signal_connected_ = connected;
+  }
+
+  // Set ImportLxdContainerProgressSignalConnected state
+  void set_import_lxd_container_progress_signal_connected(bool connected) {
+    is_import_lxd_container_progress_signal_connected_ = connected;
   }
 
   void set_launch_container_application_response(
@@ -250,6 +280,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     search_app_response_ = search_app_response;
   }
 
+  void set_export_lxd_container_response(
+      const vm_tools::cicerone::ExportLxdContainerResponse&
+          export_lxd_container_response) {
+    export_lxd_container_response_ = export_lxd_container_response;
+  }
+
+  void set_import_lxd_container_response(
+      const vm_tools::cicerone::ImportLxdContainerResponse&
+          import_lxd_container_response) {
+    import_lxd_container_response_ = import_lxd_container_response;
+  }
+
   // Additional functions to allow tests to trigger Signals.
   void NotifyLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
@@ -259,6 +301,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::TremplinStartedSignal& signal);
   void NotifyLxdContainerStarting(
       const vm_tools::cicerone::LxdContainerStartingSignal& signal);
+  void NotifyExportLxdContainerProgress(
+      const vm_tools::cicerone::ExportLxdContainerProgressSignal& signal);
+  void NotifyImportLxdContainerProgress(
+      const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal);
 
  protected:
   void Init(dbus::Bus* bus) override {}
@@ -272,6 +318,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   bool is_lxd_container_downloading_signal_connected_ = true;
   bool is_tremplin_started_signal_connected_ = true;
   bool is_lxd_container_starting_signal_connected_ = true;
+  bool is_export_lxd_container_progress_signal_connected_ = true;
+  bool is_import_lxd_container_progress_signal_connected_ = true;
 
   vm_tools::cicerone::LxdContainerCreatedSignal_Status
       lxd_container_created_signal_status_ =
@@ -295,6 +343,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   vm_tools::cicerone::SetUpLxdContainerUserResponse
       setup_lxd_container_user_response_;
   vm_tools::cicerone::AppSearchResponse search_app_response_;
+  vm_tools::cicerone::ExportLxdContainerResponse export_lxd_container_response_;
+  vm_tools::cicerone::ImportLxdContainerResponse import_lxd_container_response_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
