@@ -187,7 +187,7 @@ void FeedImageManager::FetchImageFromNetwork(size_t url_index,
   }
 
   image_fetcher_->FetchImageData(
-      url.spec(), url,
+      url,
       base::BindOnce(&FeedImageManager::OnImageFetchedFromNetwork,
                      weak_ptr_factory_.GetWeakPtr(), url_index, std::move(urls),
                      width_px, height_px, std::move(callback)),

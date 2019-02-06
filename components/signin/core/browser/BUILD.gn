@@ -296,6 +296,7 @@ source_set("unit_tests") {
     "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx:test_support",
   ]
 
   if (is_chromeos) {

@@ -38,7 +38,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<PrefetchBackgroundTaskHandler>
         prefetch_background_task_handler,
     std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
-    std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher)
+    image_fetcher::ImageFetcher* thumbnail_image_fetcher)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
       prefetch_gcm_handler_(std::move(gcm_handler)),
@@ -51,7 +51,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
           std::move(prefetch_background_task_handler)),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       thumbnail_fetcher_(std::move(thumbnail_fetcher)),
-      thumbnail_image_fetcher_(std::move(thumbnail_image_fetcher)) {
+      thumbnail_image_fetcher_(thumbnail_image_fetcher) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
   prefetch_gcm_handler_->SetService(this);
@@ -152,7 +152,7 @@ ThumbnailFetcher* PrefetchServiceImpl::GetThumbnailFetcher() {
 }
 
 image_fetcher::ImageFetcher* PrefetchServiceImpl::GetThumbnailImageFetcher() {
-  return thumbnail_image_fetcher_.get();
+  return thumbnail_image_fetcher_;
 }
 
 void PrefetchServiceImpl::Shutdown() {

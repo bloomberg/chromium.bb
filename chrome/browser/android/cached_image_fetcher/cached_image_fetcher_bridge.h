@@ -16,15 +16,13 @@
 
 namespace image_fetcher {
 
-class CachedImageFetcher;
+class ImageFetcher;
 
-// Native counterpart of CachedImageFetcherBridge.java. Owns an instance of
-// CachedImageFetcher.
+// Native counterpart of CachedImageFetcherBridge.java.
 class CachedImageFetcherBridge {
  public:
-  explicit CachedImageFetcherBridge(
-      std::unique_ptr<CachedImageFetcher> cached_image_fetcher,
-      base::FilePath base_file_path);
+  CachedImageFetcherBridge(ImageFetcher* cached_image_fetcher,
+                           base::FilePath base_file_path);
   ~CachedImageFetcherBridge();
 
   void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
@@ -51,11 +49,11 @@ class CachedImageFetcherBridge {
 
  private:
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
-                      const std::string& id,
                       const gfx::Image& image,
                       const RequestMetadata& request_metadata);
 
-  std::unique_ptr<CachedImageFetcher> cached_image_fetcher_;
+  // Owned by CachedImageFetcherService.
+  ImageFetcher* cached_image_fetcher_;
   base::FilePath base_file_path_;
 
   base::WeakPtrFactory<CachedImageFetcherBridge> weak_ptr_factory_;

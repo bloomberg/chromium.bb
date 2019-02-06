@@ -77,7 +77,6 @@ void GotNTPCategoriesFromJson(
 
 void OnGetIconDone(std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
                    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
-                   const std::string& id,
                    const gfx::Image& image,
                    const image_fetcher::RequestMetadata& metadata) {
   ScopedJavaLocalRef<jobject> j_bitmap;
@@ -132,7 +131,7 @@ static void JNI_ExploreSitesBridgeExperimental_GetIcon(
   // of the callback.
   image_fetcher::ImageFetcher* image_fetcher_ptr = image_fetcher.get();
   image_fetcher_ptr->FetchImage(
-      icon_url.spec(), icon_url,
+      icon_url,
       base::BindOnce(&OnGetIconDone, std::move(image_fetcher),
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)),
       kTrafficAnnotation);

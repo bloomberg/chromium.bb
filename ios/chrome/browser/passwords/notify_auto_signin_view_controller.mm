@@ -145,15 +145,16 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   // Fetch user's avatar and update displayed image.
   if (self.iconURL.is_valid()) {
     __weak NotifyUserAutoSigninViewController* weakSelf = self;
+    image_fetcher::ImageFetcherParams params(kTrafficAnnotation);
     _imageFetcher->FetchImage(
-        _iconURL.spec(), _iconURL,
-        base::BindOnce(^(const std::string& id, const gfx::Image& image,
+        _iconURL,
+        base::BindOnce(^(const gfx::Image& image,
                          const image_fetcher::RequestMetadata& metadata) {
           if (!image.IsEmpty()) {
             weakSelf.avatarView.image = [image.ToUIImage() copy];
           }
         }),
-        kTrafficAnnotation);
+        params);
   }
 }
 

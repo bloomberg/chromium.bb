@@ -364,11 +364,11 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
                                  const GURL& thumbnail_url) {
     ASSERT_TRUE(thumbnail_image_fetcher_) << "Not configured in kFeed mode";
     EXPECT_CALL(*thumbnail_image_fetcher_,
-                FetchImageAndData_(std::string(), thumbnail_url, _, _, _))
-        .WillOnce([=](const std::string& id, const GURL& image_url,
+                FetchImageAndData_(thumbnail_url, _, _, _))
+        .WillOnce([=](const GURL& image_url,
                       image_fetcher::ImageDataFetcherCallback* data_callback,
                       image_fetcher::ImageFetcherCallback* image_callback,
-                      const net::NetworkTrafficAnnotationTag&) {
+                      image_fetcher::ImageFetcherParams params) {
           ASSERT_TRUE(image_callback->is_null());
           std::move(*data_callback)
               .Run(thumbnail_data, image_fetcher::RequestMetadata());

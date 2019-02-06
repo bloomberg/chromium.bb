@@ -80,11 +80,6 @@ IconCacherImpl::IconCacherImpl(
       large_icon_service_(large_icon_service),
       image_fetcher_(std::move(image_fetcher)),
       weak_ptr_factory_(this) {
-  image_fetcher_->SetDataUseServiceName(
-      data_use_measurement::DataUseUserData::NTP_TILES);
-  // For images with multiple frames, prefer one of size 128x128px.
-  image_fetcher_->SetDesiredImageFrameSize(
-      gfx::Size(kDesiredFrameSize, kDesiredFrameSize));
 }
 
 IconCacherImpl::~IconCacherImpl() = default;
@@ -138,18 +133,20 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification: "Not implemented."
         })");
+  image_fetcher::ImageFetcherParams params(traffic_annotation);
+  // For images with multiple frames, prefer one of size 128x128px.
+  params.set_frame_size(gfx::Size(kDesiredFrameSize, kDesiredFrameSize));
   image_fetcher_->FetchImage(
-      std::string(), IconURL(site),
+      IconURL(site),
       base::BindOnce(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
                      base::Unretained(this), site,
                      std::move(preliminary_callback)),
-      traffic_annotation);
+      params);
 }
 
 void IconCacherImpl::OnPopularSitesFaviconDownloaded(
     PopularSites::Site site,
     std::unique_ptr<CancelableImageCallback> preliminary_callback,
-    const std::string& id,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
   if (fetched_image.IsEmpty()) {

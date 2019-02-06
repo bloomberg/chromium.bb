@@ -28,32 +28,17 @@ ImageFetcherImpl::ImageRequest::ImageRequest(ImageRequest&& other) = default;
 
 ImageFetcherImpl::ImageRequest::~ImageRequest() {}
 
-void ImageFetcherImpl::SetDataUseServiceName(
-    DataUseServiceName data_use_service_name) {
-  image_data_fetcher_->SetDataUseServiceName(data_use_service_name);
-}
-
-void ImageFetcherImpl::SetDesiredImageFrameSize(const gfx::Size& size) {
-  desired_image_frame_size_ = size;
-}
-
-void ImageFetcherImpl::SetImageDownloadLimit(
-    base::Optional<int64_t> max_download_bytes) {
-  image_data_fetcher_->SetImageDownloadLimit(max_download_bytes);
-}
-
 void ImageFetcherImpl::FetchImageAndData(
-    const std::string& id,
     const GURL& image_url,
     ImageDataFetcherCallback image_data_callback,
     ImageFetcherCallback image_callback,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    ImageFetcherParams params) {
   // Before starting to fetch the image. Look for a request in progress for
   // |image_url|, and queue if appropriate.
   auto it = pending_net_requests_.find(image_url);
   if (it == pending_net_requests_.end()) {
     ImageRequest request;
-    request.id = id;
+    request.id = image_url.spec();
     if (image_callback) {
       request.image_callbacks.push_back(std::move(image_callback));
     }
@@ -62,11 +47,12 @@ void ImageFetcherImpl::FetchImageAndData(
     }
     pending_net_requests_.emplace(image_url, std::move(request));
 
+    image_data_fetcher_->SetImageDownloadLimit(params.max_download_size());
     image_data_fetcher_->FetchImageData(
         image_url,
         base::BindOnce(&ImageFetcherImpl::OnImageURLFetched,
-                       base::Unretained(this), image_url),
-        traffic_annotation);
+                       base::Unretained(this), image_url, std::move(params)),
+        params.traffic_annotation());
   } else {
     ImageRequest* request = &it->second;
     // Request in progress. Register as an interested callback.
@@ -91,6 +77,7 @@ void ImageFetcherImpl::FetchImageAndData(
 }
 
 void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
+                                         ImageFetcherParams params,
                                          const std::string& image_data,
                                          const RequestMetadata& metadata) {
   auto it = pending_net_requests_.find(image_url);
@@ -106,7 +93,7 @@ void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
 
   if (image_data.empty() || request->image_callbacks.empty()) {
     for (auto& callback : request->image_callbacks) {
-      std::move(callback).Run(request->id, gfx::Image(), metadata);
+      std::move(callback).Run(gfx::Image(), metadata);
     }
     pending_net_requests_.erase(it);
     return;
@@ -114,7 +101,7 @@ void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
   request->image_data = image_data;
   request->request_metadata = metadata;
   image_decoder_->DecodeImage(
-      image_data, desired_image_frame_size_,
+      image_data, params.frame_size(),
       base::BindRepeating(&ImageFetcherImpl::OnImageDecoded,
                           base::Unretained(this), image_url, metadata));
 }
@@ -129,7 +116,7 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
 
   // Run all image callbacks.
   for (auto& callback : request->image_callbacks) {
-    std::move(callback).Run(request->id, image, metadata);
+    std::move(callback).Run(image, metadata);
   }
 
   // Erase the completed ImageRequest.

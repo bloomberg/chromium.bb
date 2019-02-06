@@ -18,12 +18,9 @@ class SharedURLLoaderFactory;
 
 namespace image_fetcher {
 
-class CachedImageFetcher;
+class ImageFetcher;
 class ImageCache;
 class ImageDecoder;
-
-using CreateImageDecoderCallback =
-    base::RepeatingCallback<std::unique_ptr<ImageDecoder>()>;
 
 // Keyed service responsible for managing the lifetime of CachedImageFetcher.
 // Persists the ImageCache, and uses it to create instances of the
@@ -31,25 +28,21 @@ using CreateImageDecoderCallback =
 class CachedImageFetcherService : public KeyedService {
  public:
   explicit CachedImageFetcherService(
-      CreateImageDecoderCallback create_image_decoder_callback,
+      std::unique_ptr<ImageDecoder> image_decoder,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<ImageCache> image_cache,
       bool read_only);
   ~CachedImageFetcherService() override;
 
   // Create an instance of CachedImageFetcher based on the ImageCache.
-  std::unique_ptr<CachedImageFetcher> CreateCachedImageFetcher();
+  ImageFetcher* GetCachedImageFetcher();
 
   scoped_refptr<ImageCache> ImageCacheForTesting() const;
 
  private:
-  CreateImageDecoderCallback create_image_decoder_callback_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  scoped_refptr<ImageCache> image_cache_;
+  std::unique_ptr<ImageFetcher> cached_image_fetcher_;
 
-  // If true, the CachedImageFetcher will be started in read-only mode. Read-
-  // only mode doesn't perform write operations on the cache.
-  bool read_only_;
+  scoped_refptr<ImageCache> image_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherService);
 };

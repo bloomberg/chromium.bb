@@ -37,12 +37,13 @@
 #include "ui/gfx/image/image_unittest_util.h"
 
 using base::Bucket;
+using image_fetcher::ImageFetcherParams;
 using ::image_fetcher::MockImageFetcher;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Invoke;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -84,7 +85,7 @@ class MockResourceDelegate : public ui::ResourceBundle::Delegate {
 
 ACTION(FailFetch) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(*arg3), arg0, gfx::Image(),
+      FROM_HERE, base::BindOnce(std::move(*arg2), gfx::Image(),
                                 image_fetcher::RequestMetadata()));
 }
 
@@ -95,9 +96,9 @@ ACTION_P2(DecodeSuccessfully, width, height) {
 
 ACTION_P2(PassFetch, width, height) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(*arg3), arg0,
-                                gfx::test::CreateImage(width, height),
-                                image_fetcher::RequestMetadata()));
+      FROM_HERE,
+      base::BindOnce(std::move(*arg2), gfx::test::CreateImage(width, height),
+                     image_fetcher::RequestMetadata()));
 }
 
 ACTION_P(Quit, run_loop) {
@@ -221,14 +222,7 @@ TEST_F(IconCacherTestPopularSites, LargeCached) {
   base::HistogramTester histogram_tester;
   base::MockCallback<base::Closure> done;
   EXPECT_CALL(done, Run()).Times(0);
-  base::RunLoop loop;
-  {
-    InSequence s;
-    EXPECT_CALL(*image_fetcher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-  }
+
   PreloadIcon(site_.url, site_.large_icon_url,
               favicon_base::IconType::kTouchIcon, 128, 128);
   IconCacherImpl cacher(&favicon_service_, nullptr, std::move(image_fetcher_));
@@ -248,11 +242,7 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchSucceeded) {
   {
     InSequence s;
     EXPECT_CALL(*image_fetcher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-    EXPECT_CALL(*image_fetcher_,
-                FetchImageAndData_(_, site_.large_icon_url, _, _, _))
+                FetchImageAndData_(site_.large_icon_url, _, _, _))
         .WillOnce(PassFetch(128, 128));
     EXPECT_CALL(done, Run()).WillOnce(Quit(&loop));
   }
@@ -274,12 +264,7 @@ TEST_F(IconCacherTestPopularSites, SmallNotCachedAndFetchSucceeded) {
   base::RunLoop loop;
   {
     InSequence s;
-    EXPECT_CALL(*image_fetcher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-    EXPECT_CALL(*image_fetcher_,
-                FetchImageAndData_(_, site_.favicon_url, _, _, _))
+    EXPECT_CALL(*image_fetcher_, FetchImageAndData_(site_.favicon_url, _, _, _))
         .WillOnce(PassFetch(128, 128));
     EXPECT_CALL(done, Run()).WillOnce(Quit(&loop));
   }
@@ -298,11 +283,7 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchFailed) {
   {
     InSequence s;
     EXPECT_CALL(*image_fetcher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-    EXPECT_CALL(*image_fetcher_,
-                FetchImageAndData_(_, site_.large_icon_url, _, _, _))
+                FetchImageAndData_(site_.large_icon_url, _, _, _))
         .WillOnce(FailFetch());
   }
 
@@ -318,9 +299,7 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchFailed) {
 
 TEST_F(IconCacherTestPopularSites, HandlesEmptyCallbacksNicely) {
   base::HistogramTester histogram_tester;
-  EXPECT_CALL(*image_fetcher_, SetDataUseServiceName(_));
-  EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(_));
-  EXPECT_CALL(*image_fetcher_, FetchImageAndData_(_, _, _, _, _))
+  EXPECT_CALL(*image_fetcher_, FetchImageAndData_(_, _, _, _))
       .WillOnce(PassFetch(128, 128));
   IconCacherImpl cacher(&favicon_service_, nullptr, std::move(image_fetcher_));
   cacher.StartFetchPopularSites(site_, base::Closure(), base::Closure());
@@ -353,11 +332,7 @@ TEST_F(IconCacherTestPopularSites, ProvidesDefaultIconAndSucceedsWithFetching) {
   {
     InSequence s;
     EXPECT_CALL(*image_fetcher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-    EXPECT_CALL(*image_fetcher_,
-                FetchImageAndData_(_, site_.large_icon_url, _, _, _))
+                FetchImageAndData_(site_.large_icon_url, _, _, _))
         .WillOnce(PassFetch(128, 128));
 
     // Both callback are called async after the request but preliminary has to
@@ -394,13 +369,8 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchPerformedOnlyOnce) {
   base::RunLoop loop;
   {
     InSequence s;
-    // Image fetcher is used only once.
     EXPECT_CALL(*image_fetcher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
-    EXPECT_CALL(*image_fetcher_,
-                FetchImageAndData_(_, site_.large_icon_url, _, _, _))
+                FetchImageAndData_(site_.large_icon_url, _, _, _))
         .WillOnce(PassFetch(128, 128));
     // Success will be notified to both requests.
     EXPECT_CALL(done, Run()).WillOnce(Return()).WillOnce(Quit(&loop));
@@ -420,16 +390,7 @@ class IconCacherTestMostLikely : public IconCacherTestBase {
       : fetcher_for_large_icon_service_(
             std::make_unique<::testing::StrictMock<MockImageFetcher>>()),
         fetcher_for_icon_cacher_(
-            std::make_unique<::testing::StrictMock<MockImageFetcher>>()) {
-    // Expect uninteresting calls here, |fetcher_for_icon_cacher_| is not
-    // related to these tests. Keep it strict to make sure we do not use it in
-    // any other way.
-    EXPECT_CALL(*fetcher_for_icon_cacher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*fetcher_for_icon_cacher_,
-                SetDesiredImageFrameSize(gfx::Size(128, 128)));
-  }
+            std::make_unique<::testing::StrictMock<MockImageFetcher>>()) {}
 
   std::unique_ptr<MockImageFetcher> fetcher_for_large_icon_service_;
   std::unique_ptr<MockImageFetcher> fetcher_for_icon_cacher_;
@@ -467,11 +428,9 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
   base::RunLoop loop;
   {
     InSequence s;
+
     EXPECT_CALL(*fetcher_for_large_icon_service_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE));
-    EXPECT_CALL(*fetcher_for_large_icon_service_,
-                FetchImageAndData_(_, _, _, _, _))
+                FetchImageAndData_(_, _, _, _))
         .WillOnce(PassFetch(128, 128));
     EXPECT_CALL(done, Run()).WillOnce(Quit(&loop));
   }
@@ -505,11 +464,9 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
   base::MockCallback<base::Closure> done;
   {
     InSequence s;
+
     EXPECT_CALL(*fetcher_for_large_icon_service_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE));
-    EXPECT_CALL(*fetcher_for_large_icon_service_,
-                FetchImageAndData_(_, _, _, _, _))
+                FetchImageAndData_(_, _, _, _))
         .WillOnce(FailFetch());
     EXPECT_CALL(done, Run()).Times(0);
   }
@@ -539,9 +496,7 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
 TEST_F(IconCacherTestMostLikely, HandlesEmptyCallbacksNicely) {
   GURL page_url("http://www.site.com");
 
-  EXPECT_CALL(*fetcher_for_large_icon_service_, SetDataUseServiceName(_));
-  EXPECT_CALL(*fetcher_for_large_icon_service_,
-              FetchImageAndData_(_, _, _, _, _))
+  EXPECT_CALL(*fetcher_for_large_icon_service_, FetchImageAndData_(_, _, _, _))
       .WillOnce(PassFetch(128, 128));
 
   favicon::LargeIconServiceImpl large_icon_service(
@@ -574,12 +529,9 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchPerformedOnlyOnce) {
   base::RunLoop loop;
   {
     InSequence s;
-    // Image fetcher is used only once.
+
     EXPECT_CALL(*fetcher_for_large_icon_service_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE));
-    EXPECT_CALL(*fetcher_for_large_icon_service_,
-                FetchImageAndData_(_, _, _, _, _))
+                FetchImageAndData_(_, _, _, _))
         .WillOnce(PassFetch(128, 128));
     // Success will be notified to both requests.
     EXPECT_CALL(done, Run()).WillOnce(Return()).WillOnce(Quit(&loop));

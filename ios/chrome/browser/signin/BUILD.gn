@@ -65,6 +65,7 @@ source_set("signin") {
     "//base",
     "//components/browser_sync",
     "//components/content_settings/core/browser",
+    "//components/image_fetcher/core",
     "//components/image_fetcher/ios",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",

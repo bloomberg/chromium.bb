@@ -69,7 +69,6 @@ class IconCacherImpl : public IconCacher {
   void OnPopularSitesFaviconDownloaded(
       PopularSites::Site site,
       std::unique_ptr<CancelableImageCallback> preliminary_callback,
-      const std::string& id,
       const gfx::Image& fetched_image,
       const image_fetcher::RequestMetadata& metadata);
 
