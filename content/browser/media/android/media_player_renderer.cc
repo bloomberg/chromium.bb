@@ -121,9 +121,6 @@ void MediaPlayerRenderer::CreateMediaPlayer(
       url_params.site_for_cookies, user_agent,
       false,  // hide_url_log
       this,
-      base::Bind(&MediaPlayerRenderer::OnDecoderResourcesReleased,
-                 weak_factory_.GetWeakPtr()),
-      GURL(),  // frame_url
       true));  // allow_crendentials
 
   media_player_->Initialize();
@@ -240,10 +237,6 @@ media::MediaUrlInterceptor* MediaPlayerRenderer::GetMediaUrlInterceptor() {
   return g_media_url_interceptor;
 }
 
-void MediaPlayerRenderer::OnTimeUpdate(int player_id,
-                                       base::TimeDelta current_timestamp,
-                                       base::TimeTicks current_time_ticks) {}
-
 void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
                                                  base::TimeDelta duration,
                                                  int width,
@@ -268,19 +261,12 @@ void MediaPlayerRenderer::OnPlaybackComplete(int player_id) {
   renderer_client_->OnEnded();
 }
 
-void MediaPlayerRenderer::OnMediaInterrupted(int player_id) {}
-
-void MediaPlayerRenderer::OnBufferingUpdate(int player_id, int percentage) {}
-
-void MediaPlayerRenderer::OnSeekComplete(int player_id,
-                                         const base::TimeDelta& current_time) {}
-
 void MediaPlayerRenderer::OnError(int player_id, int error) {
   // Some errors are forwarded to the MediaPlayerListener, but are of no
   // importance to us. Ignore these errors, which are reported as
   // MEDIA_ERROR_INVALID_CODE by MediaPlayerListener.
   if (error ==
-      media::MediaPlayerAndroid::MediaErrorType::MEDIA_ERROR_INVALID_CODE) {
+      media::MediaPlayerBridge::MediaErrorType::MEDIA_ERROR_INVALID_CODE) {
     return;
   }
 
@@ -302,11 +288,6 @@ void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
   }
 }
 
-media::MediaPlayerAndroid* MediaPlayerRenderer::GetPlayer(int player_id) {
-  NOTREACHED();
-  return nullptr;
-}
-
 bool MediaPlayerRenderer::RequestPlay(int player_id,
                                       base::TimeDelta duration,
                                       bool has_audio) {
@@ -320,11 +301,6 @@ void MediaPlayerRenderer::OnUpdateAudioMutingState(bool muted) {
 
 void MediaPlayerRenderer::OnWebContentsDestroyed() {
   web_contents_observer_ = nullptr;
-}
-
-void MediaPlayerRenderer::OnDecoderResourcesReleased(int player_id) {
-  // Since we are not using a pool of MediaPlayerAndroid instances, this
-  // function is not relevant.
 }
 
 // static

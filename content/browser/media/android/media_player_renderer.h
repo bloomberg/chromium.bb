@@ -71,22 +71,14 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   // media::MediaPlayerManager implementation
   media::MediaResourceGetter* GetMediaResourceGetter() override;
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
-  void OnTimeUpdate(int player_id,
-                    base::TimeDelta current_timestamp,
-                    base::TimeTicks current_time_ticks) override;
   void OnMediaMetadataChanged(int player_id,
                               base::TimeDelta duration,
                               int width,
                               int height,
                               bool success) override;
   void OnPlaybackComplete(int player_id) override;
-  void OnMediaInterrupted(int player_id) override;
-  void OnBufferingUpdate(int player_id, int percentage) override;
-  void OnSeekComplete(int player_id,
-                      const base::TimeDelta& current_time) override;
   void OnError(int player_id, int error) override;
   void OnVideoSizeChanged(int player_id, int width, int height) override;
-  media::MediaPlayerAndroid* GetPlayer(int player_id) override;
   bool RequestPlay(int player_id,
                    base::TimeDelta duration,
                    bool has_audio) override;
@@ -107,9 +99,6 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
  private:
   void CreateMediaPlayer(const media::MediaUrlParams& params,
                          const media::PipelineStatusCB& init_cb);
-
-  // Used when creating |media_player_|.
-  void OnDecoderResourcesReleased(int player_id);
 
   // Cancels the pending request started by InitiateScopedSurfaceRequest(), if
   // it exists. No-ops otherwise.

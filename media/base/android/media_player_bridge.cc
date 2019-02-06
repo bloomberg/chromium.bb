@@ -4,6 +4,7 @@
 
 #include "media/base/android/media_player_bridge.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/android/jni_android.h"
@@ -13,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_manager.h"
@@ -35,23 +37,18 @@ enum UMAExitStatus {
   UMA_EXIT_STATUS_MAX = UMA_EXIT_ERROR,
 };
 
+const double kDefaultVolume = 1.0;
+
 }  // namespace
 
-MediaPlayerBridge::MediaPlayerBridge(
-    int player_id,
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const std::string& user_agent,
-    bool hide_url_log,
-    MediaPlayerManager* manager,
-    const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
-    const GURL& frame_url,
-    bool allow_credentials)
-    : MediaPlayerAndroid(player_id,
-                         manager,
-                         on_decoder_resources_released_cb,
-                         frame_url),
-      prepared_(false),
+MediaPlayerBridge::MediaPlayerBridge(int player_id,
+                                     const GURL& url,
+                                     const GURL& site_for_cookies,
+                                     const std::string& user_agent,
+                                     bool hide_url_log,
+                                     MediaPlayerManager* manager,
+                                     bool allow_credentials)
+    : prepared_(false),
       pending_play_(false),
       should_seek_on_prepare_(false),
       url_(url),
@@ -63,11 +60,16 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_pause_(true),
       can_seek_forward_(true),
       can_seek_backward_(true),
+      volume_(kDefaultVolume),
       allow_credentials_(allow_credentials),
       is_active_(false),
       has_error_(false),
       has_ever_started_(false),
-      weak_factory_(this) {}
+      manager_(manager),
+      weak_factory_(this) {
+  listener_ = std::make_unique<MediaPlayerListener>(
+      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
+}
 
 MediaPlayerBridge::~MediaPlayerBridge() {
   if (!j_media_player_bridge_.is_null()) {
@@ -109,7 +111,7 @@ void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
   j_media_player_bridge_.Reset(Java_MediaPlayerBridge_create(
       env, reinterpret_cast<intptr_t>(this)));
 
-  UpdateEffectiveVolume();
+  UpdateVolumeInternal();
 
   AttachListener(j_media_player_bridge_);
 }
@@ -354,11 +356,9 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
 void MediaPlayerBridge::Release() {
   is_active_ = false;
 
-  on_decoder_resources_released_cb_.Run(player_id());
   if (j_media_player_bridge_.is_null())
     return;
 
-  time_update_timer_.Stop();
   if (prepared_) {
     pending_seek_ = GetCurrentTime();
     should_seek_on_prepare_ = true;
@@ -373,7 +373,12 @@ void MediaPlayerBridge::Release() {
   DetachListener();
 }
 
-void MediaPlayerBridge::UpdateEffectiveVolumeInternal(double effective_volume) {
+void MediaPlayerBridge::SetVolume(double volume) {
+  volume_ = std::max(0.0, std::min(volume, 1.0));
+  UpdateVolumeInternal();
+}
+
+void MediaPlayerBridge::UpdateVolumeInternal() {
   if (j_media_player_bridge_.is_null()) {
     return;
   }
@@ -381,14 +386,13 @@ void MediaPlayerBridge::UpdateEffectiveVolumeInternal(double effective_volume) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  Java_MediaPlayerBridge_setVolume(env, j_media_player_bridge_,
-                                   effective_volume);
+  Java_MediaPlayerBridge_setVolume(env, j_media_player_bridge_, volume_);
 }
 
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
   width_ = width;
   height_ = height;
-  MediaPlayerAndroid::OnVideoSizeChanged(width, height);
+  manager()->OnVideoSizeChanged(player_id(), width, height);
 }
 
 void MediaPlayerBridge::OnMediaError(int error_type) {
@@ -404,17 +408,11 @@ void MediaPlayerBridge::OnMediaError(int error_type) {
   if (error_type == MEDIA_ERROR_SERVER_DIED)
     error_type = MEDIA_ERROR_INVALID_CODE;
 
-  MediaPlayerAndroid::OnMediaError(error_type);
+  manager()->OnError(player_id(), error_type);
 }
 
 void MediaPlayerBridge::OnPlaybackComplete() {
-  time_update_timer_.Stop();
-  MediaPlayerAndroid::OnPlaybackComplete();
-}
-
-void MediaPlayerBridge::OnMediaInterrupted() {
-  time_update_timer_.Stop();
-  MediaPlayerAndroid::OnMediaInterrupted();
+  manager()->OnPlaybackComplete(player_id());
 }
 
 void MediaPlayerBridge::OnMediaPrepared() {
@@ -454,6 +452,18 @@ ScopedJavaLocalRef<jobject> MediaPlayerBridge::GetAllowedOperations() {
                                                      j_media_player_bridge_);
 }
 
+void MediaPlayerBridge::AttachListener(const JavaRef<jobject>& j_media_player) {
+  listener_->CreateMediaPlayerListener(j_media_player);
+}
+
+void MediaPlayerBridge::DetachListener() {
+  listener_->ReleaseMediaPlayerListenerResources();
+}
+
+base::WeakPtr<MediaPlayerBridge> MediaPlayerBridge::WeakPtrForUIThread() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void MediaPlayerBridge::UpdateAllowedOperations() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
@@ -475,21 +485,14 @@ void MediaPlayerBridge::StartInternal() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_start(env, j_media_player_bridge_);
-  if (!time_update_timer_.IsRunning()) {
-    time_update_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kTimeUpdateInterval),
-        this, &MediaPlayerBridge::OnTimeUpdateTimerFired);
-  }
 }
 
 void MediaPlayerBridge::PauseInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_pause(env, j_media_player_bridge_);
-  time_update_timer_.Stop();
 }
 
-void MediaPlayerBridge::PendingSeekInternal(const base::TimeDelta& time) {
+void MediaPlayerBridge::PendingSeekInternal(base::TimeDelta time) {
   SeekInternal(GetCurrentTime(), time);
 }
 
@@ -518,15 +521,6 @@ bool MediaPlayerBridge::SeekInternal(base::TimeDelta current_time,
   int time_msec = static_cast<int>(time.InMilliseconds());
   Java_MediaPlayerBridge_seekTo(env, j_media_player_bridge_, time_msec);
   return true;
-}
-
-void MediaPlayerBridge::OnTimeUpdateTimerFired() {
-  base::TimeDelta current_timestamp = GetCurrentTime();
-  if (last_time_update_timestamp_ == current_timestamp)
-    return;
-  manager()->OnTimeUpdate(player_id(), current_timestamp,
-                          base::TimeTicks::Now());
-  last_time_update_timestamp_ = current_timestamp;
 }
 
 bool MediaPlayerBridge::CanPause() {
