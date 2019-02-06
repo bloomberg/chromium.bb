@@ -593,5 +593,23 @@ TEST_F(PipWindowResizerTest, PipWindowInsideExternalDisplay) {
   EXPECT_TRUE(secondary_display.bounds().Contains(rect_in_screen));
 }
 
+TEST_F(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
+  UpdateWorkArea("400x400");
+  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
+    Fling(std::move(resizer), 3000.f, 3000.f);
+  }
+
+  wm::WindowState* window_state = wm::GetWindowState(window());
+  EXPECT_TRUE(window_state->HasRestoreBounds());
+  EXPECT_EQ(gfx::Rect(292, 292, 100, 100),
+            window_state->GetRestoreBoundsInScreen());
+}
+
 }  // namespace wm
 }  // namespace ash
