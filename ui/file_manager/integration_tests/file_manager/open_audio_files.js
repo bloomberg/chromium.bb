@@ -15,13 +15,15 @@
  *     object containing {title:string, artist:string}.
  */
 async function getTrackText(audioAppId, track) {
-  const titleElement = audioPlayerApp.callRemoteTestUtil(
+  await audioPlayerApp.waitForElement(audioAppId, trackListQuery(track));
+
+  const title = await audioPlayerApp.callRemoteTestUtil(
       'deepQueryAllElements', audioAppId,
       [trackListQuery(track + ' > .data > .data-title')]);
-  const artistElement = audioPlayerApp.callRemoteTestUtil(
+  const artist = await audioPlayerApp.callRemoteTestUtil(
       'deepQueryAllElements', audioAppId,
       [trackListQuery(track + ' > .data > .data-artist')]);
-  const [title, artist] = await Promise.all([titleElement, artistElement]);
+
   return {
     title: title[0] && title[0].text,
     artist: artist[0] && artist[0].text,
