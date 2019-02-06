@@ -370,6 +370,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.Visible.Bytes.AdFrames.PerFrame.Total", 0);
 }
 
+// TODO(https://crbug.com/929136): Investigate why setting display: none on the
+// frame will cause size updates to not be received. Verify that we record the
+// correct sizes for display: none iframes.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   base::HistogramTester histogram_tester;
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -397,20 +400,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
              "frame = createAdIframe(); frame.width=10; frame.height = 1000; "
              "frame.src = '/ads_observer/pixel.png';"));
 
-  // Create a 300x300 iframe with display none that should also be recorded.
-  ASSERT_TRUE(ExecJs(web_contents,
-                     "frame = createAdIframe(); frame.width=300; frame.height "
-                     "= 300; frame.src "
-                     "= '/ads_observer/pixel.png';"));
-
-  // Set the frame to display none.
-  // TODO(johnidel): Investigate why setting display: none on the frame will
-  // cause size updates to not be received.
-  ASSERT_TRUE(ExecJs(web_contents, "frame.style.display = 'none';"));
-
   // Wait for each frames resource to load so that they will have non-zero
   // bytes.
-  waiter->AddMinimumCompleteResourcesExpectation(7);
+  waiter->AddMinimumCompleteResourcesExpectation(6);
   waiter->Wait();
 
   // Navigate away to force the histogram recording.
@@ -420,10 +412,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 0, 1);
   histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 10, 1);
   histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 100, 1);
-
-  // Verify the display: none frame is recorded.
-  histogram_tester.ExpectBucketCount(kSqrtNumberOfPixelsHistogramId, 300, 1);
-  histogram_tester.ExpectBucketCount(kSmallestDimensionHistogramId, 300, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
