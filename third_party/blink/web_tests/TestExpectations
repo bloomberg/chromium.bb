@@ -6042,3 +6042,6 @@ crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/no-blur-on-pag
 
 # Recently became flaky on multiple platforms (Linux and Windows primarily)
 crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
+
+# Sheriff 2019-02-06
+crbug.com/929122 external/wpt/html/dom/interfaces.worker.html [ Failure ]
