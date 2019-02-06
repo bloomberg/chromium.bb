@@ -14,15 +14,8 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
-class Browser;
-class URLPattern;
-
 namespace content {
 class WebContents;
-}
-
-namespace extensions {
-class Extension;
 }
 
 class LauncherContextMenu;
@@ -42,7 +35,9 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
   static std::unique_ptr<AppShortcutLauncherItemController> Create(
       const ash::ShelfID& shelf_id);
 
-  std::vector<content::WebContents*> GetRunningApplications();
+  static std::vector<content::WebContents*> GetRunningApplications(
+      const std::string& app_id,
+      const GURL& refocus_url = GURL());
 
   // ash::ShelfItemDelegate overrides:
   void ItemSelected(std::unique_ptr<ui::Event> event,
@@ -58,6 +53,8 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
                       int64_t display_id) override;
   void Close() override;
 
+  std::vector<content::WebContents*> GetRunningApplications();
+
   // Get the refocus url pattern, which can be used to identify this application
   // from a URL link.
   const GURL& refocus_url() const { return refocus_url_; }
@@ -70,16 +67,6 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
  private:
   // Get the last running application.
   content::WebContents* GetLRUApplication();
-
-  // Returns true if this app matches the given |web_contents|. To accelerate
-  // the matching, the app managing |extension| as well as the parsed
-  // |refocus_pattern| get passed. If |is_app| is true, the application gets
-  // first checked against its original URL since a windowed app might have
-  // navigated away from its app domain.
-  bool WebContentMatchesApp(const extensions::Extension* extension,
-                            const URLPattern& refocus_pattern,
-                            content::WebContents* web_contents,
-                            Browser* browser);
 
   // Activate the browser with the given |content| and show the associated tab.
   // Returns the action performed by activating the content.
