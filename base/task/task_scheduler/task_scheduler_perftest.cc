@@ -122,10 +122,14 @@ class TaskSchedulerPerfTest : public testing::Test {
                           base::RepeatingClosure post_action) {
     constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
     constexpr int kMaxNumBackgroundThreads = 1;
+    constexpr int kMaxNumBackgroundBlockingThreads = 1;
+    constexpr int kMaxNumForegroundBlockingThreads = 1;
 
     TaskScheduler::GetInstance()->Start(
         {{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
-         {num_running_threads, kSuggestedReclaimTime}},
+         {kMaxNumBackgroundBlockingThreads, kSuggestedReclaimTime},
+         {num_running_threads, kSuggestedReclaimTime},
+         {kMaxNumForegroundBlockingThreads, kSuggestedReclaimTime}},
         nullptr);
 
     base::RepeatingClosure done = BarrierClosure(

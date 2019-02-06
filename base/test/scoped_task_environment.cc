@@ -334,7 +334,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
   CHECK(base::ThreadTaskRunnerHandle::IsSet())
       << "ThreadTaskRunnerHandle should've been set now.";
 
-  // Instantiate a TaskScheduler with 2 threads in each of its pools. Threads
+  // Instantiate a TaskScheduler with 2 threads in each of its 4 pools. Threads
   // stay alive even when they don't have work.
   // Each pool uses two threads to prevent deadlocks in unit tests that have a
   // sequence that uses WithBaseSyncPrimitives() to wait on the result of
@@ -350,7 +350,8 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
       "ScopedTaskEnvironment", WrapUnique(task_tracker_)));
   task_scheduler_ = TaskScheduler::GetInstance();
   TaskScheduler::GetInstance()->Start({
-    worker_pool_params, worker_pool_params
+    worker_pool_params, worker_pool_params, worker_pool_params,
+        worker_pool_params
 #if defined(OS_WIN)
         ,
         // Enable the MTA in unit tests to match the browser process'

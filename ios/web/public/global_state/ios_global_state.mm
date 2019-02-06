@@ -23,29 +23,19 @@ base::MessageLoopForUI* g_message_loop = nullptr;
 net::NetworkChangeNotifier* g_network_change_notifer = nullptr;
 
 base::TaskScheduler::InitParams GetDefaultTaskSchedulerInitParams() {
-  constexpr int kMinBackgroundThreads = 4;
-  constexpr int kMaxBackgroundThreads = 16;
-  constexpr double kCoreMultiplierBackgroundThreads = 0.2;
-  constexpr int kOffsetBackgroundThreads = 0;
-  constexpr int kReclaimTimeBackground = 30;
-
-  constexpr int kMinForegroundThreads = 6;
-  constexpr int kMaxForegroundThreads = 16;
-  constexpr double kCoreMultiplierForegroundThreads = 0.6;
-  constexpr int kOffsetForegroundThreads = 0;
-  constexpr int kReclaimTimeForeground = 30;
-
   return base::TaskScheduler::InitParams(
       base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(
-              kMinBackgroundThreads, kMaxBackgroundThreads,
-              kCoreMultiplierBackgroundThreads, kOffsetBackgroundThreads),
-          base::TimeDelta::FromSeconds(kReclaimTimeBackground)),
+          base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+          base::TimeDelta::FromSeconds(30)),
       base::SchedulerWorkerPoolParams(
-          base::RecommendedMaxNumberOfThreadsInPool(
-              kMinForegroundThreads, kMaxForegroundThreads,
-              kCoreMultiplierForegroundThreads, kOffsetForegroundThreads),
-          base::TimeDelta::FromSeconds(kReclaimTimeForeground)));
+          base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+          base::TimeDelta::FromSeconds(30)),
+      base::SchedulerWorkerPoolParams(
+          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+          base::TimeDelta::FromSeconds(30)),
+      base::SchedulerWorkerPoolParams(
+          base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+          base::TimeDelta::FromSeconds(60)));
 }
 
 }  // namespace

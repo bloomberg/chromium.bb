@@ -87,7 +87,8 @@ void TestWebThreadBundle::Init(int options) {
       std::make_unique<base::internal::TaskSchedulerImpl>(
           "ScopedTaskEnvironment"));
   base::TaskScheduler::GetInstance()->Start(
-      {worker_pool_params, worker_pool_params});
+      {worker_pool_params, worker_pool_params, worker_pool_params,
+       worker_pool_params});
 }
 
 }  // namespace web
