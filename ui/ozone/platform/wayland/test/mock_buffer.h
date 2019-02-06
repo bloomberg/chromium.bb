@@ -12,7 +12,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 
-struct wl_client;
 struct wl_resource;
 
 namespace wl {
@@ -24,8 +23,6 @@ class MockBuffer : public ServerObject {
  public:
   MockBuffer(wl_resource* resource, std::vector<base::ScopedFD>&& fds);
   ~MockBuffer() override;
-
-  MOCK_METHOD2(Destroy, void(wl_client* client, wl_resource* resource));
 
  private:
   std::vector<base::ScopedFD> fds_;

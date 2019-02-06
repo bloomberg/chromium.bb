@@ -11,11 +11,6 @@ const struct wl_buffer_interface kMockWlBufferImpl = {&DestroyResource};
 MockBuffer::MockBuffer(wl_resource* resource, std::vector<base::ScopedFD>&& fds)
     : ServerObject(resource), fds_(std::move(fds)) {}
 
-MockBuffer::~MockBuffer() {
-  for (auto& fd : fds_) {
-    LOG(WARNING) << "Will close FD: " << fd.get();
-    fd.reset();
-  }
-}
+MockBuffer::~MockBuffer() {}
 
 }  // namespace wl
