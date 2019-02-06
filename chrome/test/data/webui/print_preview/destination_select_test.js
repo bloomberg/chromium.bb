@@ -15,6 +15,7 @@ cr.define('destination_select_test', function() {
     NoPrintersShowsError: 'no printers shows error',
     UnreachableRecentCloudPrinter: 'unreachable recent cloud printer',
     RecentSaveAsPdf: 'recent save as pdf',
+    MultipleRecentDestinationsAccounts: 'multiple recent destinations accounts',
   };
 
   const suiteName = 'DestinationSelectTests';
@@ -30,6 +31,9 @@ cr.define('destination_select_test', function() {
 
     /** @type {!Array<!print_preview.LocalDestinationInfo>} */
     let localDestinations = [];
+
+    /** @type {!Array<!print_preview.Destination>} */
+    let cloudDestinations = [];
 
     /** @type {!Array<!print_preview.Destination>} */
     let destinations = [];
@@ -60,21 +64,28 @@ cr.define('destination_select_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       const cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
       cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
-      print_preview.DestinationStore.AUTO_SELECT_TIMEOUT_ = 0;
+      cloudDestinations.forEach(cloudDestination => {
+        cloudPrintInterface.setPrinter(cloudDestination);
+      });
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
+      page.destinationStore_.addEventListener(
+          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+          function() {
+            numPrintersSelected++;
+          });
+      const whenCapabilitiesReady = test_util.eventToPromise(
+          print_preview.DestinationStore.EventType
+              .SELECTED_DESTINATION_CAPABILITIES_READY,
+          page.destinationStore_);
 
       return nativeLayer.whenCalled('getInitialSettings').then(() => {
-        page.destinationStore_.addEventListener(
-            print_preview.DestinationStore.EventType.DESTINATION_SELECT,
-            function() {
-              numPrintersSelected++;
-            });
-        return opt_expectPrinterFailure ?
-            Promise.resolve() :
-            nativeLayer.whenCalled('getPrinterCapabilities');
+        return opt_expectPrinterFailure ? Promise.resolve() : Promise.race([
+          nativeLayer.whenCalled('getPrinterCapabilities'),
+          whenCapabilitiesReady
+        ]);
       });
     }
 
@@ -344,6 +355,7 @@ cr.define('destination_select_test', function() {
         recentDestinations: [recentDestination],
       });
 
+      print_preview.DestinationStore.AUTO_SELECT_TIMEOUT_ = 0;
       return setInitialSettings()
           .then(function() {
             assertEquals(print_preview_new.State.READY, page.state);
@@ -359,6 +371,64 @@ cr.define('destination_select_test', function() {
             assertEquals(print_preview_new.State.INVALID_TICKET, page.state);
           });
     });
+
+    /**
+     * Tests that if there are recent destinations from different accounts, only
+     * destinations associated with the most recent account are fetched.
+     */
+    test(assert(TestNames.MultipleRecentDestinationsAccounts), function() {
+      const account1 = 'foo@chromium.org';
+      const account2 = 'bar@chromium.org';
+      const driveUser1 =
+          print_preview_test_utils.getGoogleDriveDestination(account1);
+      const driveUser2 =
+          print_preview_test_utils.getGoogleDriveDestination(account2);
+      const cloudPrinterUser1 = new print_preview.Destination(
+          'FooCloud', print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.COOKIES, 'FooCloudName',
+          print_preview.DestinationConnectionStatus.ONLINE,
+          {account: account1});
+      const recentDestinations = [
+        print_preview.makeRecentDestination(driveUser1),
+        print_preview.makeRecentDestination(driveUser2),
+        print_preview.makeRecentDestination(cloudPrinterUser1),
+      ];
+      cloudDestinations = [driveUser1, driveUser2, cloudPrinterUser1];
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        recentDestinations: recentDestinations,
+      });
+
+      return setInitialSettings()
+          .then(() => {
+            // Should have loaded Google Drive as the selected printer, since it
+            // was most recent.
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.DOCS,
+                page.destination_.id);
+            assertPrinterDisplay('Save to Google Drive', false);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(previewArgs) {
+            const ticket = JSON.parse(previewArgs.printTicket);
+            assertEquals(0, ticket.requestID);
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.DOCS,
+                ticket.deviceName);
+
+            // Only the other cloud destination for the same user account should
+            // have been prefetched.
+            const loadedPrinters = page.destinationStore_.destinations();
+            assertEquals(3, loadedPrinters.length);
+            cloudDestinations.forEach((destination) => {
+              assertEquals(
+                  destination.account === account1,
+                  loadedPrinters.some(p => p.key == destination.key));
+            });
+            assertEquals(1, numPrintersSelected);
+          });
+    });
+
   });
 
   return {

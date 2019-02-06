@@ -17,6 +17,9 @@ cr.define('print_preview', function() {
 
       /** @private {!Map<string, !print_preview.Destination>} */
       this.cloudPrintersMap_ = new Map();
+
+      /** @private {boolean} */
+      this.initialized_ = false;
     }
 
     /** @override */
@@ -76,6 +79,22 @@ cr.define('print_preview', function() {
     printer(printerId, origin, account) {
       const printer = this.cloudPrintersMap_.get(
           print_preview.createDestinationKey(printerId, origin, account));
+
+      if (!this.initialized_) {
+        const users = [];
+        this.cloudPrintersMap_.forEach((printer, key) => {
+          if (!users.includes(printer.account)) {
+            users.push(printer.account);
+          }
+        });
+        const activeUser = users.includes(account) ? account : (users[0] || '');
+        if (activeUser) {
+          this.eventTarget_.dispatchEvent(new CustomEvent(
+              cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
+              {detail: {users: users, activeUser: activeUser}}));
+          this.initialized_ = true;
+        }
+      }
       if (!!printer) {
         printer.capabilities =
             print_preview_test_utils.getCddTemplate(printerId);
