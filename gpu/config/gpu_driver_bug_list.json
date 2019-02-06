@@ -3102,6 +3102,15 @@
       "features": [
         "disable_copy_tex_image_2d_rgb10_a2_tegra"
       ]
+    },
+    {
+      "id": 289,
+      "description": "Fake entry for testing command buffer init failures on ES 2.0",
+      "cr_bugs": [923134],
+      "test_group": 3,
+      "features": [
+        "disable_es3_gl_context_for_testing"
+      ]
     }
   ]
 }

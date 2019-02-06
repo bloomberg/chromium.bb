@@ -1877,6 +1877,8 @@ INSTANTIATE_TEST_SUITE_P(Service,
 
 INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest, ::testing::Bool());
 
+INSTANTIATE_TEST_SUITE_P(Service, WebGL2DecoderTest, ::testing::Bool());
+
 INSTANTIATE_TEST_SUITE_P(Service,
                          GLES3DecoderWithShaderTest,
                          ::testing::Bool());

@@ -174,6 +174,15 @@ gpu::ContextResult ContextGroup::Initialize(
   feature_info_->Initialize(context_type, use_passthrough_cmd_decoder_,
                             adjusted_disallowed_features);
 
+  // Fail early if ES3 is requested and driver does not support it.
+  if ((context_type == CONTEXT_TYPE_WEBGL2 ||
+       context_type == CONTEXT_TYPE_OPENGLES3) &&
+      !feature_info_->IsES3Capable()) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+               << "ES3 is blacklisted/disabled/unsupported by driver.";
+    return gpu::ContextResult::kFatalFailure;
+  }
+
   const GLint kMinRenderbufferSize = 512;  // GL says 1 pixel!
   GLint max_renderbuffer_size = 0;
   if (!QueryGLFeature(

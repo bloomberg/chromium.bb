@@ -18,6 +18,8 @@ bool DesktopCoreCommonCheck(
            major_version > 3));
 }
 
+static bool disable_es3_for_testing = false;
+
 }  // namespace
 
 namespace gl {
@@ -63,6 +65,21 @@ void GLVersionInfo::Initialize(const char* version_str,
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
       !gfx::HasExtension(extensions, "GL_ARB_compatibility");
   is_es3_capable = IsES3Capable(extensions);
+
+  // Post-fixup in case the user requested disabling ES3 capability
+  // for testing purposes.
+  if (disable_es3_for_testing) {
+    is_es3_capable = false;
+    if (is_es) {
+      major_version = 2;
+      minor_version = 0;
+      is_es2 = true;
+      is_es3 = false;
+    } else {
+      major_version = 3;
+      minor_version = 0;
+    }
+  }
 }
 
 void GLVersionInfo::ParseVersionString(const char* version_str) {
@@ -192,6 +209,10 @@ bool GLVersionInfo::IsES3Capable(const gfx::ExtensionSet& extensions) const {
   // TODO(cwallez) check for texture related extensions. See crbug.com/623577
 
   return (has_transform_feedback && has_tex_storage);
+}
+
+void GLVersionInfo::DisableES3ForTesting() {
+  disable_es3_for_testing = true;
 }
 
 }  // namespace gl

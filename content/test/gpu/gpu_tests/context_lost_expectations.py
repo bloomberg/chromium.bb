@@ -42,6 +42,12 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('ContextLost_WebGLContextLostFromSelectElement',
               ['lion', 'debug'], bug=498149)
 
+    # Too difficult to make this test work on Mac and Android for now.
+    # Disabling GLES3 support at the GL bindings level doesn't work
+    # there yet.
+    self.Skip('ContextLost_WebGL2Blocked', ['mac'], bug=923134)
+    self.Skip('ContextLost_WebGL2Blocked', ['android'], bug=923134)
+
     # 'Browser must support tab control' raised on Android
     self.Skip('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
               ['android'], bug=609629)
