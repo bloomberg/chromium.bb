@@ -117,7 +117,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   ErrorCacheForTests(const mojom::blink::CacheStorageError error)
       : error_(error),
         expected_url_(nullptr),
-        expected_query_params_(nullptr),
+        expected_query_options_(nullptr),
         expected_batch_operations_(nullptr) {}
 
   std::string GetAndClearLastErrorWebCacheMethodCalled() {
@@ -132,9 +132,9 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   void SetExpectedUrl(const String* expected_url) {
     expected_url_ = expected_url;
   }
-  void SetExpectedQueryParams(
-      const mojom::blink::QueryParamsPtr* expected_query_params) {
-    expected_query_params_ = expected_query_params;
+  void SetExpectedCacheQueryOptions(
+      const mojom::blink::CacheQueryOptionsPtr* expected_query_options) {
+    expected_query_options_ = expected_query_options;
   }
   void SetExpectedBatchOperations(const Vector<mojom::blink::BatchOperationPtr>*
                                       expected_batch_operations) {
@@ -142,34 +142,34 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
 
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
-             mojom::blink::QueryParamsPtr query_params,
+             mojom::blink::CacheQueryOptionsPtr query_options,
              MatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatch";
     CheckUrlIfProvided(fetch_api_request->url);
-    CheckQueryParamsIfProvided(query_params);
+    CheckCacheQueryOptionsIfProvided(query_options);
     mojom::blink::MatchResultPtr result = mojom::blink::MatchResult::New();
     result->set_status(error_);
     std::move(callback).Run(std::move(result));
   }
   void MatchAll(mojom::blink::FetchAPIRequestPtr fetch_api_request,
-                mojom::blink::QueryParamsPtr query_params,
+                mojom::blink::CacheQueryOptionsPtr query_options,
                 MatchAllCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatchAll";
     if (fetch_api_request)
       CheckUrlIfProvided(fetch_api_request->url);
-    CheckQueryParamsIfProvided(query_params);
+    CheckCacheQueryOptionsIfProvided(query_options);
     mojom::blink::MatchAllResultPtr result =
         mojom::blink::MatchAllResult::New();
     result->set_status(error_);
     std::move(callback).Run(std::move(result));
   }
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
-            mojom::blink::QueryParamsPtr query_params,
+            mojom::blink::CacheQueryOptionsPtr query_options,
             KeysCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchKeys";
     if (fetch_api_request && !fetch_api_request->url.IsEmpty()) {
       CheckUrlIfProvided(fetch_api_request->url);
-      CheckQueryParamsIfProvided(query_params);
+      CheckCacheQueryOptionsIfProvided(query_options);
     }
     mojom::blink::CacheKeysResultPtr result =
         mojom::blink::CacheKeysResult::New();
@@ -198,11 +198,11 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     EXPECT_EQ(*expected_url_, url);
   }
 
-  void CheckQueryParamsIfProvided(
-      const mojom::blink::QueryParamsPtr& query_params) {
-    if (!expected_query_params_)
+  void CheckCacheQueryOptionsIfProvided(
+      const mojom::blink::CacheQueryOptionsPtr& query_options) {
+    if (!expected_query_options_)
       return;
-    CompareQueryParamsForTest(*expected_query_params_, query_params);
+    CompareCacheQueryOptionsForTest(*expected_query_options_, query_options);
   }
 
   void CheckBatchOperationsIfProvided(
@@ -229,29 +229,30 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
                     batch_operations[i]->response->url_list[j]);
         }
       }
-      if (expected_batch_operations[i]->match_params ||
-          batch_operations[i]->match_params) {
-        CompareQueryParamsForTest(expected_batch_operations[i]->match_params,
-                                  batch_operations[i]->match_params);
+      if (expected_batch_operations[i]->match_options ||
+          batch_operations[i]->match_options) {
+        CompareCacheQueryOptionsForTest(
+            expected_batch_operations[i]->match_options,
+            batch_operations[i]->match_options);
       }
     }
   }
 
  private:
-  static void CompareQueryParamsForTest(
-      const mojom::blink::QueryParamsPtr& expected_query_params,
-      const mojom::blink::QueryParamsPtr& query_params) {
-    EXPECT_EQ(expected_query_params->ignore_search,
-              query_params->ignore_search);
-    EXPECT_EQ(expected_query_params->ignore_method,
-              query_params->ignore_method);
-    EXPECT_EQ(expected_query_params->ignore_vary, query_params->ignore_vary);
+  static void CompareCacheQueryOptionsForTest(
+      const mojom::blink::CacheQueryOptionsPtr& expected_query_options,
+      const mojom::blink::CacheQueryOptionsPtr& query_options) {
+    EXPECT_EQ(expected_query_options->ignore_search,
+              query_options->ignore_search);
+    EXPECT_EQ(expected_query_options->ignore_method,
+              query_options->ignore_method);
+    EXPECT_EQ(expected_query_options->ignore_vary, query_options->ignore_vary);
   }
 
   const mojom::blink::CacheStorageError error_;
 
   const String* expected_url_;
-  const mojom::blink::QueryParamsPtr* expected_query_params_;
+  const mojom::blink::CacheQueryOptionsPtr* expected_query_options_;
   const Vector<mojom::blink::BatchOperationPtr>* expected_batch_operations_;
 
   std::string last_error_web_cache_method_called_;
@@ -444,10 +445,10 @@ TEST_F(CacheStorageTest, BasicArguments) {
   const String url = "http://www.cache.arguments.test/";
   test_cache()->SetExpectedUrl(&url);
 
-  mojom::blink::QueryParamsPtr expected_query_params =
-      mojom::blink::QueryParams::New();
-  expected_query_params->ignore_vary = true;
-  test_cache()->SetExpectedQueryParams(&expected_query_params);
+  mojom::blink::CacheQueryOptionsPtr expected_query_options =
+      mojom::blink::CacheQueryOptions::New();
+  expected_query_options->ignore_vary = true;
+  test_cache()->SetExpectedCacheQueryOptions(&expected_query_options);
 
   CacheQueryOptions* options = CacheQueryOptions::Create();
   options->setIgnoreVary(1);
@@ -513,9 +514,9 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
 
-  mojom::blink::QueryParamsPtr expected_query_params =
-      mojom::blink::QueryParams::New();
-  test_cache()->SetExpectedQueryParams(&expected_query_params);
+  mojom::blink::CacheQueryOptionsPtr expected_query_options =
+      mojom::blink::CacheQueryOptions::New();
+  test_cache()->SetExpectedCacheQueryOptions(&expected_query_options);
 
   CacheQueryOptions* options = CacheQueryOptions::Create();
 
@@ -535,7 +536,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
     auto& delete_operation = expected_delete_operations.back();
     delete_operation->operation_type = mojom::blink::OperationType::kDelete;
     delete_operation->request = request->CreateFetchAPIRequest();
-    delete_operation->match_params = expected_query_params->Clone();
+    delete_operation->match_options = expected_query_options->Clone();
   }
   test_cache()->SetExpectedBatchOperations(&expected_delete_operations);
 
@@ -587,7 +588,7 @@ class MatchTestCache : public NotImplementedErrorCache {
 
   // From WebServiceWorkerCache:
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
-             mojom::blink::QueryParamsPtr query_params,
+             mojom::blink::CacheQueryOptionsPtr query_options,
              MatchCallback callback) override {
     mojom::blink::MatchResultPtr result = mojom::blink::MatchResult::New();
     result->set_response(std::move(response_));
@@ -632,7 +633,7 @@ class KeysTestCache : public NotImplementedErrorCache {
       : requests_(std::move(requests)) {}
 
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
-            mojom::blink::QueryParamsPtr query_params,
+            mojom::blink::CacheQueryOptionsPtr query_options,
             KeysCallback callback) override {
     mojom::blink::CacheKeysResultPtr result =
         mojom::blink::CacheKeysResult::New();
@@ -688,7 +689,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
       : responses_(std::move(responses)) {}
 
   void MatchAll(mojom::blink::FetchAPIRequestPtr fetch_api_request,
-                mojom::blink::QueryParamsPtr query_params,
+                mojom::blink::CacheQueryOptionsPtr query_options,
                 MatchAllCallback callback) override {
     mojom::blink::MatchAllResultPtr result =
         mojom::blink::MatchAllResult::New();

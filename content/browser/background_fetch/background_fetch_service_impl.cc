@@ -161,16 +161,16 @@ void BackgroundFetchServiceImpl::MatchRequests(
     const std::string& developer_id,
     const std::string& unique_id,
     blink::mojom::FetchAPIRequestPtr request_to_match,
-    blink::mojom::QueryParamsPtr cache_query_params,
+    blink::mojom::CacheQueryOptionsPtr cache_query_options,
     bool match_all,
     MatchRequestsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundFetchRegistrationId registration_id(
       service_worker_registration_id, origin_, developer_id, unique_id);
 
-  // Create BackgroundFetchMatchRequestParams.
+  // Create BackgroundFetchMatchRequestMatchParams.
   auto match_params = std::make_unique<BackgroundFetchRequestMatchParams>(
-      std::move(request_to_match), std::move(cache_query_params), match_all);
+      std::move(request_to_match), std::move(cache_query_options), match_all);
 
   background_fetch_context_->MatchRequests(
       registration_id, std::move(match_params), std::move(callback));

@@ -115,14 +115,14 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Returns ERROR_TYPE_NOT_FOUND if not found.
   void Match(blink::mojom::FetchAPIRequestPtr request,
-             blink::mojom::QueryParamsPtr match_params,
+             blink::mojom::CacheQueryOptionsPtr match_options,
              ResponseCallback callback);
 
   // Returns blink::mojom::CacheStorageError::kSuccess and matched
   // responses in this cache. If there are no responses, returns
   // blink::mojom::CacheStorageError::kSuccess and an empty vector.
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
-                blink::mojom::QueryParamsPtr match_params,
+                blink::mojom::CacheQueryOptionsPtr match_options,
                 ResponsesCallback callback);
 
   // Writes the side data (ex: V8 code cache) for the specified cache entry.
@@ -179,7 +179,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Returns blink::mojom::CacheStorageError::kSuccess and a vector of
   // requests if there are no errors.
   void Keys(blink::mojom::FetchAPIRequestPtr request,
-            blink::mojom::QueryParamsPtr options,
+            blink::mojom::CacheQueryOptionsPtr options,
             RequestsCallback callback);
 
   // Closes the backend. Future operations that require the backend
@@ -203,7 +203,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Similar to MatchAll, but returns the associated requests as well.
   void GetAllMatchedEntries(blink::mojom::FetchAPIRequestPtr request,
-                            blink::mojom::QueryParamsPtr match_params,
+                            blink::mojom::CacheQueryOptionsPtr match_options,
                             CacheEntriesCallback callback);
 
   // Async operations in progress will cancel and not run their callbacks.
@@ -294,7 +294,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // REQUESTS_AND_RESPONSES then only out_requests, out_responses, and
   // out_blob_data_handles are valid.
   void QueryCache(blink::mojom::FetchAPIRequestPtr request,
-                  blink::mojom::QueryParamsPtr options,
+                  blink::mojom::CacheQueryOptionsPtr options,
                   QueryTypes query_types,
                   QueryCacheCallback callback);
   void QueryCacheDidOpenFastPath(
@@ -316,7 +316,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Match callbacks
   void MatchImpl(blink::mojom::FetchAPIRequestPtr request,
-                 blink::mojom::QueryParamsPtr match_params,
+                 blink::mojom::CacheQueryOptionsPtr match_options,
                  ResponseCallback callback);
   void MatchDidMatchAll(
       ResponseCallback callback,
@@ -325,7 +325,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // MatchAll callbacks
   void MatchAllImpl(blink::mojom::FetchAPIRequestPtr request,
-                    blink::mojom::QueryParamsPtr options,
+                    blink::mojom::CacheQueryOptionsPtr options,
                     ResponsesCallback callback);
   void MatchAllDidQueryCache(
       ResponsesCallback callback,
@@ -411,7 +411,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // GetAllMatchedEntries callbacks.
   void GetAllMatchedEntriesImpl(blink::mojom::FetchAPIRequestPtr request,
-                                blink::mojom::QueryParamsPtr options,
+                                blink::mojom::CacheQueryOptionsPtr options,
                                 CacheEntriesCallback callback);
   void GetAllMatchedEntriesDidQueryCache(
       CacheEntriesCallback callback,
@@ -422,7 +422,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void Delete(blink::mojom::BatchOperationPtr operation,
               ErrorCallback callback);
   void DeleteImpl(blink::mojom::FetchAPIRequestPtr request,
-                  blink::mojom::QueryParamsPtr match_params,
+                  blink::mojom::CacheQueryOptionsPtr match_options,
                   ErrorCallback callback);
   void DeleteDidQueryCache(
       ErrorCallback callback,
@@ -431,7 +431,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Keys callbacks.
   void KeysImpl(blink::mojom::FetchAPIRequestPtr request,
-                blink::mojom::QueryParamsPtr options,
+                blink::mojom::CacheQueryOptionsPtr options,
                 RequestsCallback callback);
   void KeysDidQueryCache(
       RequestsCallback callback,

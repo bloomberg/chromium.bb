@@ -62,7 +62,7 @@ class CacheStorageDispatcherHost::CacheImpl
 
   // blink::mojom::CacheStorageCache implementation:
   void Match(blink::mojom::FetchAPIRequestPtr request,
-             blink::mojom::QueryParamsPtr match_params,
+             blink::mojom::CacheQueryOptionsPtr match_options,
              MatchCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -72,7 +72,7 @@ class CacheStorageDispatcherHost::CacheImpl
     }
 
     cache->Match(
-        std::move(request), std::move(match_params),
+        std::move(request), std::move(match_options),
         base::BindOnce(&CacheImpl::OnCacheMatchCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -91,7 +91,7 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
-                blink::mojom::QueryParamsPtr match_params,
+                blink::mojom::CacheQueryOptionsPtr match_options,
                 MatchAllCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -101,7 +101,7 @@ class CacheStorageDispatcherHost::CacheImpl
     }
 
     cache->MatchAll(
-        std::move(request), std::move(match_params),
+        std::move(request), std::move(match_options),
         base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -121,7 +121,7 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   void Keys(blink::mojom::FetchAPIRequestPtr request,
-            blink::mojom::QueryParamsPtr match_params,
+            blink::mojom::CacheQueryOptionsPtr match_options,
             KeysCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -131,7 +131,7 @@ class CacheStorageDispatcherHost::CacheImpl
     }
 
     cache->Keys(
-        std::move(request), std::move(match_params),
+        std::move(request), std::move(match_options),
         base::BindOnce(&CacheImpl::OnCacheKeysCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -270,7 +270,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   }
 
   void Match(blink::mojom::FetchAPIRequestPtr request,
-             blink::mojom::MultiQueryParamsPtr match_params,
+             blink::mojom::MultiCacheQueryOptionsPtr match_options,
              blink::mojom::CacheStorage::MatchCallback callback) override {
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -294,15 +294,15 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
         },
         std::move(callback));
 
-    if (!match_params->cache_name) {
+    if (!match_options->cache_name) {
       cache_storage->MatchAllCaches(std::move(request),
-                                    std::move(match_params->query_params),
+                                    std::move(match_options->query_options),
                                     std::move(on_match));
       return;
     }
-    std::string cache_name = base::UTF16ToUTF8(*match_params->cache_name);
+    std::string cache_name = base::UTF16ToUTF8(*match_options->cache_name);
     cache_storage->MatchCache(std::move(cache_name), std::move(request),
-                              std::move(match_params->query_params),
+                              std::move(match_options->query_options),
                               std::move(on_match));
   }
 

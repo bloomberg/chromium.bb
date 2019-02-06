@@ -49,12 +49,12 @@ void BackgroundFetchBridge::MatchRequests(
     const String& developer_id,
     const String& unique_id,
     mojom::blink::FetchAPIRequestPtr request_to_match,
-    mojom::blink::QueryParamsPtr cache_query_params,
+    mojom::blink::CacheQueryOptionsPtr cache_query_options,
     bool match_all,
     mojom::blink::BackgroundFetchService::MatchRequestsCallback callback) {
   GetService()->MatchRequests(
       GetSupplementable()->RegistrationId(), developer_id, unique_id,
-      std::move(request_to_match), std::move(cache_query_params), match_all,
+      std::move(request_to_match), std::move(cache_query_options), match_all,
       std::move(callback));
 }
 

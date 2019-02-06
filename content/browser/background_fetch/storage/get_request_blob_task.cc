@@ -46,7 +46,7 @@ void GetRequestBlobTask::DidOpenCache(CacheStorageCacheHandle handle,
                                     request_info_->request_index());
 
   handle.value()->GetAllMatchedEntries(
-      std::move(request), /* match_params= */ nullptr,
+      std::move(request), /* match_options= */ nullptr,
       base::BindOnce(&GetRequestBlobTask::DidMatchRequest,
                      weak_factory_.GetWeakPtr(), handle.Clone()));
 }

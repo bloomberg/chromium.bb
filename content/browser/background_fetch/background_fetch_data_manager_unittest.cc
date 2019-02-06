@@ -394,7 +394,7 @@ class BackgroundFetchDataManagerTest
   // BackgroundFetchDataManager::MatchRequests().
   void MatchRequests(const BackgroundFetchRegistrationId& registration_id,
                      blink::mojom::FetchAPIRequestPtr request_to_match,
-                     blink::mojom::QueryParamsPtr cache_query_params,
+                     blink::mojom::CacheQueryOptionsPtr cache_query_options,
                      bool match_all,
                      blink::mojom::BackgroundFetchError* out_error,
                      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>*
@@ -404,7 +404,7 @@ class BackgroundFetchDataManagerTest
 
     base::RunLoop run_loop;
     auto match_params = std::make_unique<BackgroundFetchRequestMatchParams>(
-        std::move(request_to_match), std::move(cache_query_params), match_all);
+        std::move(request_to_match), std::move(cache_query_options), match_all);
     background_fetch_data_manager_->MatchRequests(
         registration_id, std::move(match_params),
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchRequests,
@@ -471,11 +471,11 @@ class BackgroundFetchDataManagerTest
     CacheStorageHandle cache_storage =
         background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
             origin(), CacheStorageOwner::kBackgroundFetch);
-    auto match_params = blink::mojom::QueryParams::New();
-    match_params->ignore_search = true;
+    auto match_options = blink::mojom::CacheQueryOptions::New();
+    match_options->ignore_search = true;
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
-        std::move(match_params),
+        std::move(match_options),
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -509,8 +509,9 @@ class BackgroundFetchDataManagerTest
           blink::mojom::OperationType::kDelete;
       operation_ptr_vec[0]->request =
           BackgroundFetchSettledFetch::CloneRequest(request);
-      operation_ptr_vec[0]->match_params = blink::mojom::QueryParams::New();
-      operation_ptr_vec[0]->match_params->ignore_search = true;
+      operation_ptr_vec[0]->match_options =
+          blink::mojom::CacheQueryOptions::New();
+      operation_ptr_vec[0]->match_options->ignore_search = true;
       handle.value()->BatchOperation(
           std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
@@ -1810,7 +1811,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
   // Nothing is downloaded yet.
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), num_requests);
@@ -1833,7 +1834,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
                           /* completed_requests= */ num_requests}));
 
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
 
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1865,7 +1866,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(settled_fetches.size(), 2u);
@@ -1901,7 +1902,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   // Nothing is downloaded yet.
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(settled_fetches.size(), requests.size());
@@ -1920,7 +1921,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
   RestartDataManagerFromPersistentStorage();
 
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(settled_fetches.size(), requests.size());
@@ -1976,7 +1977,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForASpecificRequest) {
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   MatchRequests(registration_id, /* request_to_match= */ std::move(requests[0]),
-                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                /* cache_query_options= */ nullptr, /* match_all= */ false,
                 &error, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
@@ -1987,7 +1988,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForASpecificRequest) {
   non_existing_request->url = GURL("https://example.com/missing-file.txt");
   MatchRequests(registration_id,
                 /* request_to_match= */ std::move(non_existing_request),
-                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                /* cache_query_options= */ nullptr, /* match_all= */ false,
                 &error, &settled_fetches);
   EXPECT_TRUE(settled_fetches.empty());
 }
@@ -2028,7 +2029,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForAnIncompleteRequest) {
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   MatchRequests(registration_id, /* request_to_match= */ std::move(requests[2]),
-                /* cache_query_params= */ nullptr, /* match_all= */ false,
+                /* cache_query_options= */ nullptr, /* match_all= */ false,
                 &error, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(settled_fetches.size(), 1u);
@@ -2073,11 +2074,11 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
                           /* completed_requests= */ requests.size()}));
 
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
-  blink::mojom::QueryParamsPtr cache_query_params =
-      blink::mojom::QueryParams::New();
-  cache_query_params->ignore_method = true;
+  blink::mojom::CacheQueryOptionsPtr cache_query_options =
+      blink::mojom::CacheQueryOptions::New();
+  cache_query_options->ignore_method = true;
   MatchRequests(registration_id, /* request_to_match= */ std::move(requests[0]),
-                std::move(cache_query_params), /* match_all= */ true, &error,
+                std::move(cache_query_options), /* match_all= */ true, &error,
                 &settled_fetches);
 
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -2139,29 +2140,29 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithDuplicates) {
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   auto request_to_match =
       BackgroundFetchSettledFetch::CloneRequest(requests[0]);
-  auto query_params = blink::mojom::QueryParams::New();
+  auto query_options = blink::mojom::CacheQueryOptions::New();
 
   MatchRequests(registration_id,
                 BackgroundFetchSettledFetch::CloneRequest(request_to_match),
-                query_params->Clone(), /* match_all= */ true, &error,
+                query_options->Clone(), /* match_all= */ true, &error,
                 &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // Match only the GETs with the same url.
   EXPECT_EQ(settled_fetches.size(), 2u);
 
-  query_params->ignore_search = true;
+  query_options->ignore_search = true;
   MatchRequests(registration_id,
                 BackgroundFetchSettledFetch::CloneRequest(request_to_match),
-                query_params->Clone(), /* match_all= */ true, &error,
+                query_options->Clone(), /* match_all= */ true, &error,
                 &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // Match only the GETs with the same url path.
   EXPECT_EQ(settled_fetches.size(), 5u);
 
-  query_params->ignore_method = true;
+  query_options->ignore_method = true;
   MatchRequests(registration_id,
                 BackgroundFetchSettledFetch::CloneRequest(request_to_match),
-                query_params->Clone(), /* match_all= */ true, &error,
+                query_options->Clone(), /* match_all= */ true, &error,
                 &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // Match everything.
@@ -2436,7 +2437,7 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
 
   {
     MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                  /* cache_query_params= */ nullptr, /* match_all= */ false,
+                  /* cache_query_options= */ nullptr, /* match_all= */ false,
                   &error, &settled_fetches);
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -2451,7 +2452,7 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   {
     base::HistogramTester histogram_tester;
     MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                  /* cache_query_params= */ nullptr, /* match_all= */ true,
+                  /* cache_query_options= */ nullptr, /* match_all= */ true,
                   &error, &settled_fetches);
 
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
@@ -2576,7 +2577,7 @@ TEST_F(BackgroundFetchDataManagerTest, CacheUrlMigration) {
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches;
   blink::mojom::BackgroundFetchError error;
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
-                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(settled_fetches.size(), requests.size());

@@ -55,7 +55,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
                      const std::string& developer_id,
                      const std::string& unique_id,
                      blink::mojom::FetchAPIRequestPtr request_to_match,
-                     blink::mojom::QueryParamsPtr cache_query_params,
+                     blink::mojom::CacheQueryOptionsPtr cache_query_options,
                      bool match_all,
                      MatchRequestsCallback callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
