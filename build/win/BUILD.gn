@@ -144,6 +144,10 @@ if (is_win) {
         "$root_out_dir/api-ms-win-crt-utility-l1-1-0.dll",
         "$root_out_dir/ucrtbase${vcrt_suffix}.dll",
       ]
+      if (is_debug) {
+        # For debug builds we also need ucrtbase.dll for d3dcompiler_47.dll
+        data += [ "$root_out_dir/ucrtbase.dll" ]
+      }
       if (is_asan) {
         if (current_cpu == "x64") {
           data += [ "$clang_base_path/lib/clang/$clang_version/lib/windows/clang_rt.asan_dynamic-x86_64.dll" ]
