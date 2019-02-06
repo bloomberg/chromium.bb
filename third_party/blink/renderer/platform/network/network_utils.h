@@ -42,8 +42,6 @@ PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 
 PLATFORM_EXPORT bool IsCertificateTransparencyRequiredError(int);
 
-PLATFORM_EXPORT bool IsLegacySymantecCertError(int);
-
 PLATFORM_EXPORT String GenerateAcceptLanguageHeader(const String&);
 
 PLATFORM_EXPORT Vector<char> ParseMultipartBoundary(

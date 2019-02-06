@@ -208,13 +208,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // The frame ran content with certificate errors with the given URL.
   virtual void DidRunContentWithCertificateErrors() = 0;
 
-  // The frame loaded a resource with a legacy Symantec certificate that is
-  // slated for distrust (indicated by |did_fail| being false) or has already
-  // been distrusted (indicated by |did_fail| being true). Prints a console
-  // message (possibly overridden by the embedder) to warn about the
-  // certificate.
-  virtual void ReportLegacySymantecCert(const KURL&, bool did_fail) {}
-
   // The frame loaded a resource with a legacy TLS version that will be removed
   // in the future. Prints a console message to warn about this.
   virtual void ReportLegacyTLSVersion(const KURL&) {}

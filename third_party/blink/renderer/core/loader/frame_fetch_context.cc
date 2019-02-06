@@ -508,12 +508,6 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                                                 request.GetRequestContext());
   }
 
-  if (response.IsLegacySymantecCert()) {
-    UseCounter::Count(GetFrame(), WebFeature::kLegacySymantecCertInSubresource);
-    GetLocalFrameClient()->ReportLegacySymantecCert(
-        response.CurrentRequestUrl(), false /* did_fail */);
-  }
-
   if (response.IsLegacyTLSVersion()) {
     UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
     GetLocalFrameClient()->ReportLegacyTLSVersion(response.CurrentRequestUrl());
@@ -593,12 +587,6 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
       loader->GetUseCounter().Count(
           WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad,
           GetFrame());
-    }
-
-    if (network_utils::IsLegacySymantecCertError(error.ErrorCode())) {
-      loader->GetUseCounter().Count(
-          WebFeature::kDistrustedLegacySymantecSubresource, GetFrame());
-      GetLocalFrameClient()->ReportLegacySymantecCert(url, true /* did_fail */);
     }
   }
 

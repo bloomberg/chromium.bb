@@ -146,7 +146,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidDispatchPingLoader(const KURL&) override;
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunContentWithCertificateErrors() override;
-  void ReportLegacySymantecCert(const KURL&, bool) override;
   void ReportLegacyTLSVersion(const KURL&) override;
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;

@@ -122,10 +122,6 @@ bool IsCertificateTransparencyRequiredError(int error_code) {
   return error_code == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
 }
 
-bool IsLegacySymantecCertError(int error_code) {
-  return error_code == net::ERR_CERT_SYMANTEC_LEGACY;
-}
-
 String GenerateAcceptLanguageHeader(const String& lang) {
   CString cstring(lang.Utf8());
   std::string string(cstring.data(), cstring.length());

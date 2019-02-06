@@ -25,7 +25,6 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
-#include "net/cert/symantec_certs.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
@@ -90,10 +89,6 @@ void PopulateResourceResponse(net::URLRequest* request,
   if (request->ssl_info().cert.get()) {
     response->head.ct_policy_compliance =
         request->ssl_info().ct_policy_compliance;
-    response->head.is_legacy_symantec_cert =
-        (!net::IsCertStatusError(response->head.cert_status) ||
-         net::IsCertStatusMinorError(response->head.cert_status)) &&
-        net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
     response->head.cert_status = request->ssl_info().cert_status;
     net::SSLVersion ssl_version = net::SSLConnectionStatusToVersion(
         request->ssl_info().connection_status);

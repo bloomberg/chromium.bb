@@ -3438,15 +3438,6 @@ void RenderFrameImpl::CommitFailedNavigation(
                                                   commit_params);
   sync_navigation_callback_.Cancel();
 
-  // Log a console message for subframe loads that failed due to a legacy
-  // Symantec certificate that has been distrusted or is slated for distrust
-  // soon. Most failed resource loads are logged in Blink, but Blink doesn't get
-  // notified when a subframe resource fails to load like other resources, so
-  // log it here.
-  if (frame_->Parent() && error_code == net::ERR_CERT_SYMANTEC_LEGACY) {
-    ReportLegacySymantecCert(common_params.url, true /* did_fail */);
-  }
-
   GetContentClient()->SetActiveURL(
       common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
@@ -5146,81 +5137,6 @@ void RenderFrameImpl::DidDisplayContentWithCertificateErrors() {
 
 void RenderFrameImpl::DidRunContentWithCertificateErrors() {
   Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_));
-}
-
-void RenderFrameImpl::ReportLegacySymantecCert(const blink::WebURL& url,
-                                               bool did_fail) {
-  url::Origin origin = url::Origin::Create(GURL(url));
-  // To prevent log spam, only log the message once per origin.
-  if (base::ContainsKey(certificate_warning_origins_, origin))
-    return;
-
-  size_t num_warnings = certificate_warning_origins_.size();
-  // After |kMaxSecurityWarningMessages| warnings, stop printing messages to the
-  // console. At exactly |kMaxSecurityWarningMessages| warnings, print a message
-  // that additional resources on the page use legacy certificates without
-  // specifying which exact resources. Before |kMaxSecurityWarningMessages|
-  // messages, print the exact resource URL in the message to help the developer
-  // pinpoint the problematic resources.
-  if (num_warnings > kMaxSecurityWarningMessages)
-    return;
-
-  std::string console_message;
-
-  if (num_warnings == kMaxSecurityWarningMessages) {
-    if (did_fail) {
-      console_message =
-          "Additional resources on this page were loaded with "
-          "SSL certificates that have been "
-          "distrusted. See "
-          "https://g.co/chrome/symantecpkicerts for "
-          "more information.";
-    } else {
-      console_message =
-          "Additional resources on this page were loaded with "
-          "SSL certificates that will be "
-          "distrusted in the future. "
-          "Once distrusted, users will be prevented from "
-          "loading these resources. See "
-          "https://g.co/chrome/symantecpkicerts for "
-          "more information.";
-    }
-  } else {
-    // The embedder is given a chance to override the message for certs that
-    // will be distrusted in future, but not for certs that have already been
-    // distrusted. (This is because there is no embedder-specific release
-    // information in the message for certs that have already been distrusted.)
-    if (did_fail) {
-      console_message = base::StringPrintf(
-          "The SSL certificate used to load resources from %s"
-          " has been distrusted. See "
-          "https://g.co/chrome/symantecpkicerts for "
-          "more information.",
-          origin.Serialize().c_str());
-    } else if (!GetContentClient()
-                    ->renderer()
-                    ->OverrideLegacySymantecCertConsoleMessage(
-                        GURL(url), &console_message)) {
-      console_message = base::StringPrintf(
-          "The SSL certificate used to load resources from %s"
-          " will be "
-          "distrusted in the future. "
-          "Once distrusted, users will be prevented from "
-          "loading these resources. See "
-          "https://g.co/chrome/symantecpkicerts for "
-          "more information.",
-          origin.Serialize().c_str());
-    }
-  }
-  certificate_warning_origins_.insert(origin);
-  // To avoid spamming the console, use Verbose message level for subframe
-  // resources and for certificates that will be distrusted in future, and only
-  // use the warning level for main-frame resources or resources that have
-  // already been distrusted.
-  AddMessageToConsole((frame_->Parent() && !did_fail)
-                          ? CONSOLE_MESSAGE_LEVEL_VERBOSE
-                          : CONSOLE_MESSAGE_LEVEL_WARNING,
-                      console_message);
 }
 
 void RenderFrameImpl::ReportLegacyTLSVersion(const blink::WebURL& url) {

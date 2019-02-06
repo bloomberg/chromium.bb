@@ -201,9 +201,6 @@ class ChromeContentRendererClient
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
       override;
-  bool OverrideLegacySymantecCertConsoleMessage(
-      const GURL& url,
-      std::string* console_messsage) override;
   void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) override;
   std::unique_ptr<content::URLLoaderThrottleProvider>

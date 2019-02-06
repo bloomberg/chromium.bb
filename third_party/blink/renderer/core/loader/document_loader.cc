@@ -1301,17 +1301,8 @@ void DocumentLoader::DidCommitNavigation(
   frame_->GetPage()->DidCommitLoad(frame_);
   GetUseCounter().DidCommitLoad(frame_);
 
-  // Report legacy Symantec certificates and TLS versions after
-  // Page::DidCommitLoad, because the latter clears the console.
-  if (response_.IsLegacySymantecCert()) {
-    UseCounter::Count(
-        this, frame_->Tree().Parent()
-                  ? WebFeature::kLegacySymantecCertInSubframeMainResource
-                  : WebFeature::kLegacySymantecCertMainFrameResource);
-    GetLocalFrameClient().ReportLegacySymantecCert(
-        response_.CurrentRequestUrl(), false /* did_fail */);
-  }
-
+  // Report legacy TLS versions after Page::DidCommitLoad, because the latter
+  // clears the console.
   if (response_.IsLegacyTLSVersion()) {
     UseCounter::Count(this,
                       frame_->Tree().Parent()
