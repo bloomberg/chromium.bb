@@ -473,8 +473,15 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     {
       auto callback_it =
           navigation_client_commit_failed_callback_.find(navigation_id);
-      if (callback_it != navigation_client_commit_failed_callback_.end())
-        std::move(callback_it->second).Run(result);
+      if (callback_it != navigation_client_commit_failed_callback_.end()) {
+        std::move(callback_it->second)
+            .Run(std::move(params),
+                 mojom::DidCommitProvisionalLoadInterfaceParams::New(
+                     std::move(interface_provider_request),
+                     std::move(document_interface_broker_content_request),
+                     std::move(document_interface_broker_blink_request)));
+        did_commit = true;
+      }
     }
   }
 

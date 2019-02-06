@@ -4809,7 +4809,7 @@ void RenderFrameHostImpl::FailedNavigation(
   }
 
   mojom::NavigationClient* navigation_client = nullptr;
-  if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
+  if (IsPerNavigationMojoInterfaceEnabled())
     navigation_client = navigation_request->GetCommitNavigationClient();
 
   SendCommitFailedNavigation(
@@ -6530,9 +6530,8 @@ RenderFrameHostImpl::BuildNavigationClientCommitFailedNavigationCallback(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
   return base::BindOnce(
-      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-      base::Unretained(this),
-      navigation_request->navigation_handle()->GetNavigationId());
+      &RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation,
+      base::Unretained(this), navigation_request);
 }
 
 }  // namespace content
