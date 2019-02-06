@@ -424,6 +424,20 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".mkv"),      // 339
     FILE_PATH_LITERAL(".wav"),      // 340
     FILE_PATH_LITERAL(".mov"),      // 341
+    FILE_PATH_LITERAL(".dot"),      // 342
+    FILE_PATH_LITERAL(".dotx"),     // 343
+    FILE_PATH_LITERAL(".xlsb"),     // 344
+    FILE_PATH_LITERAL(".xlt"),      // 345
+    FILE_PATH_LITERAL(".xlm"),      // 346
+    FILE_PATH_LITERAL(".xldm"),     // 347
+    FILE_PATH_LITERAL(".xla"),      // 348
+    FILE_PATH_LITERAL(".xlam"),     // 349
+    FILE_PATH_LITERAL(".xll"),      // 350
+    FILE_PATH_LITERAL(".xlw"),      // 351
+    FILE_PATH_LITERAL(".pot"),      // 352
+    FILE_PATH_LITERAL(".potm"),     // 353
+    FILE_PATH_LITERAL(".ppsm"),     // 354
+    FILE_PATH_LITERAL(".pps"),      // 355
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
