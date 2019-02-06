@@ -174,8 +174,7 @@ void RecordFetchValidHistogram(bool valid) {
 
 // static
 void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping);
   registry->RegisterBooleanPref(prefs::kNetworkTimeQueriesEnabled, true);
 }
 
