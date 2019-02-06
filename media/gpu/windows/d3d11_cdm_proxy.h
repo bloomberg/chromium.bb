@@ -75,6 +75,9 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
 
   void NotifyHardwareContentProtectionTeardown();
 
+  // Reset the state of this instance to be reinitializable.
+  void Reset();
+
   const GUID crypto_type_;
   const CdmProxy::Protocol protocol_;
   const FunctionIdMap function_id_map_;
@@ -90,6 +93,8 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   // Counter for assigning IDs to crypto sessions.
   uint32_t next_crypto_session_id_ = 1;
 
+  // Everything from here until weak ptr factory (which must be at the end)
+  // should be reset in Reset().
   Client* client_ = nullptr;
   bool initialized_ = false;
 
