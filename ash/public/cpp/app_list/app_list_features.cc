@@ -25,7 +25,7 @@ const base::Feature kEnableHomeLauncherGestures{
 const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateSuggestions{
-    "EnableZeroStateSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppSearchResultRanker{
