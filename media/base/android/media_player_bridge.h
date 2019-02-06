@@ -26,7 +26,8 @@
 
 namespace media {
 
-class MediaPlayerManager;
+class MediaResourceGetter;
+class MediaUrlInterceptor;
 
 // This class serves as a bridge between the native code and Android MediaPlayer
 // Java class. For more information on Android MediaPlayer, check
@@ -39,6 +40,27 @@ class MediaPlayerManager;
 // the Android MediaPlayer instance.
 class MEDIA_EXPORT MediaPlayerBridge {
  public:
+  class Client {
+   public:
+    // Returns a pointer to the MediaResourceGetter object.
+    virtual MediaResourceGetter* GetMediaResourceGetter() = 0;
+
+    // Returns a pointer to the MediaUrlInterceptor object or null.
+    virtual MediaUrlInterceptor* GetMediaUrlInterceptor() = 0;
+
+    // Called when media duration is first detected or changes.
+    virtual void OnMediaDurationChanged(base::TimeDelta duration) = 0;
+
+    // Called when playback completed.
+    virtual void OnPlaybackComplete() = 0;
+
+    // Called when error happens.
+    virtual void OnError(int error) = 0;
+
+    // Called when video size has changed.
+    virtual void OnVideoSizeChanged(int width, int height) = 0;
+  };
+
   // Error types for MediaErrorCB.
   enum MediaErrorType {
     MEDIA_ERROR_FORMAT,
@@ -53,12 +75,11 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // |manager| to track unused resources and free them when needed.
   // MediaPlayerBridge also forwards Android MediaPlayer callbacks to
   // the |manager| when needed.
-  MediaPlayerBridge(int player_id,
-                    const GURL& url,
+  MediaPlayerBridge(const GURL& url,
                     const GURL& site_for_cookies,
                     const std::string& user_agent,
                     bool hide_url_log,
-                    MediaPlayerManager* manager,
+                    Client* client,
                     bool allow_credentials);
   virtual ~MediaPlayerBridge();
 
@@ -67,19 +88,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
 
   // Methods to partially expose the underlying MediaPlayer.
   void SetVideoSurface(gl::ScopedJavaSurface surface);
-  void Pause(bool is_media_related_action);
+  void Pause();
   void SeekTo(base::TimeDelta timestamp);
-  bool HasVideo() const;
-  bool HasAudio() const;
-  int GetVideoWidth();
-  int GetVideoHeight();
   base::TimeDelta GetCurrentTime();
-  base::TimeDelta GetDuration();
-  bool IsPlaying();
-  bool CanPause();
-  bool CanSeekForward();
-  bool CanSeekBackward();
-  bool IsPlayerReady();
 
   // Starts media playback.
   // The first call to this method will call Prepare() and create the underlying
@@ -101,21 +112,17 @@ class MEDIA_EXPORT MediaPlayerBridge {
       const base::android::JavaParamRef<jobject>& obj,
       jboolean success);
 
-  // Releases the resources such as the underlying MediaPlayer and
-  // MediaPlayerListener.
-  void Release();
-
-  // TODO(tguilbert): Remove MediaPlayerManager interface.
-  // This is unused by the only caller, and returning an abitrary value is safe.
-  int player_id() { return 1; }
-
  private:
   friend class MediaPlayerListener;
   friend class MediaPlayerBridgeTest;
 
-  void SetDuration(base::TimeDelta time);
+  // Releases the resources such as the underlying MediaPlayer and
+  // MediaPlayerListener.
+  void Release();
 
-  void PendingSeekInternal(base::TimeDelta time);
+  base::TimeDelta GetDuration();
+  void PropagateDuration(base::TimeDelta time);
+  bool IsPlaying();
 
   // Prepare the player for playback, asynchronously. When succeeds,
   // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
@@ -140,8 +147,6 @@ class MEDIA_EXPORT MediaPlayerBridge {
   void AttachListener(const base::android::JavaRef<jobject>& j_media_player);
   void DetachListener();
 
-  MediaPlayerManager* manager() { return manager_; }
-
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
 
@@ -149,8 +154,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
   void StartInternal();
   void PauseInternal();
 
-  // Returns true if the Java MediaPlayerBridge's seekTo method is called
-  bool SeekInternal(base::TimeDelta current_time, base::TimeDelta time);
+  // Calls Java MediaPlayerBridge's seekTo method, or no-ops if the operation
+  // is not allowed (based off of |can_seek_forward_| and |can_seek_backward_|).
+  void SeekInternal(base::TimeDelta time);
 
   // Update allowed operations from the player.
   void UpdateAllowedOperations();
@@ -213,8 +219,6 @@ class MEDIA_EXPORT MediaPlayerBridge {
   int width_;
   int height_;
 
-  // Meta data about actions can be taken.
-  bool can_pause_;
   bool can_seek_forward_;
   bool can_seek_backward_;
 
@@ -244,8 +248,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // The flag is set if Start() has been called at least once.
   bool has_ever_started_;
 
-  // TODO(tguilbert): Remove MediaPlayerManager interface.
-  MediaPlayerManager* manager_;
+  // A reference to the owner of |this|.
+  Client* client_;
 
   // Listener object that listens to all the media player events.
   std::unique_ptr<MediaPlayerListener> listener_;

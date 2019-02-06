@@ -24,10 +24,6 @@
 #include "media/base/android/media_service_throttler.h"
 #include "media/base/timestamp_constants.h"
 
-// TODO(tguilbert): Remove this ID once MediaPlayerManager has been deleted
-// and MediaPlayerBridge updated. See comment in header file.
-constexpr int kUnusedAndIrrelevantPlayerId = 0;
-
 namespace content {
 
 namespace {
@@ -117,8 +113,7 @@ void MediaPlayerRenderer::CreateMediaPlayer(
   const std::string user_agent = GetContentClient()->browser()->GetUserAgent();
 
   media_player_.reset(new media::MediaPlayerBridge(
-      kUnusedAndIrrelevantPlayerId, url_params.media_url,
-      url_params.site_for_cookies, user_agent,
+      url_params.media_url, url_params.site_for_cookies, user_agent,
       false,  // hide_url_log
       this,
       true));  // allow_crendentials
@@ -166,7 +161,7 @@ void MediaPlayerRenderer::SetPlaybackRate(double playback_rate) {
     return;
 
   if (playback_rate == 0) {
-    media_player_->Pause(true);
+    media_player_->Pause();
   } else {
     // MediaPlayerBridge's Start() is idempotent.
     media_player_->Start();
@@ -237,15 +232,7 @@ media::MediaUrlInterceptor* MediaPlayerRenderer::GetMediaUrlInterceptor() {
   return g_media_url_interceptor;
 }
 
-void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
-                                                 base::TimeDelta duration,
-                                                 int width,
-                                                 int height,
-                                                 bool success) {
-  // Always try to propage the video size.
-  // This call will no-op if |video_size_| is already current.
-  OnVideoSizeChanged(kUnusedAndIrrelevantPlayerId, width, height);
-
+void MediaPlayerRenderer::OnMediaDurationChanged(base::TimeDelta duration) {
   // For HLS streams, the reported duration may be zero for infinite streams.
   // See http://crbug.com/501213.
   if (duration.is_zero())
@@ -257,11 +244,11 @@ void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
   }
 }
 
-void MediaPlayerRenderer::OnPlaybackComplete(int player_id) {
+void MediaPlayerRenderer::OnPlaybackComplete() {
   renderer_client_->OnEnded();
 }
 
-void MediaPlayerRenderer::OnError(int player_id, int error) {
+void MediaPlayerRenderer::OnError(int error) {
   // Some errors are forwarded to the MediaPlayerListener, but are of no
   // importance to us. Ignore these errors, which are reported as
   // MEDIA_ERROR_INVALID_CODE by MediaPlayerListener.
@@ -275,9 +262,7 @@ void MediaPlayerRenderer::OnError(int player_id, int error) {
   renderer_client_->OnError(media::PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED);
 }
 
-void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
-                                             int width,
-                                             int height) {
+void MediaPlayerRenderer::OnVideoSizeChanged(int width, int height) {
   // This method is called when we find a video size from metadata or when
   // |media_player|'s size actually changes.
   // We therefore may already have the latest video size.
@@ -286,12 +271,6 @@ void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
     video_size_ = new_size;
     renderer_client_->OnVideoNaturalSizeChange(video_size_);
   }
-}
-
-bool MediaPlayerRenderer::RequestPlay(int player_id,
-                                      base::TimeDelta duration,
-                                      bool has_audio) {
-  return true;
 }
 
 void MediaPlayerRenderer::OnUpdateAudioMutingState(bool muted) {
