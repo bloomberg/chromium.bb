@@ -273,6 +273,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                             int render_process_host_id,
                             int render_view_routing_id,
                             int render_frame_routing_id,
+                            int frame_tree_node_id,
                             PreviewsState previews_state,
                             ResourceContext* context);
 
@@ -601,13 +602,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
-  ResourceRequestInfoImpl* CreateRequestInfo(
-      int child_id,
-      int render_view_route_id,
-      int render_frame_route_id,
-      PreviewsState previews_state,
-      bool download,
-      ResourceContext* context);
+  ResourceRequestInfoImpl* CreateRequestInfo(int child_id,
+                                             int render_view_route_id,
+                                             int render_frame_route_id,
+                                             int frame_tree_node_id,
+                                             PreviewsState previews_state,
+                                             bool download,
+                                             ResourceContext* context);
 
   // Relationship of resource being authenticated with the top level page.
   enum HttpAuthRelationType {

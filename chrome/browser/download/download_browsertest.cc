@@ -3563,6 +3563,67 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FileExistenceCheckOpeningDownloadsPage) {
       .WaitForEvent();
 }
 
+// Checks that the navigation resulting from a cross origin download navigates
+// the correct iframe.
+IN_PROC_BROWSER_TEST_F(DownloadTest, CrossOriginDownloadNavigatesIframe) {
+  EmbeddedTestServer origin_one;
+  EmbeddedTestServer origin_two;
+  EmbeddedTestServer origin_three;
+
+  origin_one.ServeFilesFromDirectory(GetTestDataDirectory());
+  origin_two.ServeFilesFromDirectory(GetTestDataDirectory());
+  origin_three.ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
+  ASSERT_TRUE(origin_three.InitializeAndListen());
+
+  // We load a page on origin_one which iframes a page from origin_two which
+  // downloads a file that redirects to origin_three.
+  GURL download_url =
+      origin_two.GetURL(std::string("/redirect?") +
+                        origin_three.GetURL("/downloads/message.html").spec());
+  GURL referrer_url = origin_two.GetURL(
+      std::string("/downloads/download-attribute.html?target=") +
+      download_url.spec());
+  GURL main_url =
+      origin_one.GetURL(std::string("/downloads/page-with-frame.html?url=") +
+                        referrer_url.spec());
+
+  origin_two.RegisterRequestHandler(
+      base::BindRepeating(&ServerRedirectRequestHandler));
+
+  origin_one.StartAcceptingConnections();
+  origin_two.StartAcceptingConnections();
+  origin_three.StartAcceptingConnections();
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents != NULL);
+  content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+  ASSERT_TRUE(render_frame_host != NULL);
+
+  // Clicking the <a download> in the iframe should navigate the iframe,
+  // not the main frame.
+  base::string16 expected_title(base::UTF8ToUTF16("Loaded as iframe"));
+  base::string16 failed_title(base::UTF8ToUTF16("Loaded as main frame"));
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  title_watcher.AlsoWaitForTitle(failed_title);
+  render_frame_host->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("runTest();"));
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Also verify that there's no download.
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(0u, downloads.size());
+
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_three.ShutdownAndWaitUntilComplete());
+}
+
 #if defined(FULL_SAFE_BROWSING)
 
 namespace {

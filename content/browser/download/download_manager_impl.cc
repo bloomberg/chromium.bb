@@ -505,6 +505,9 @@ bool DownloadManagerImpl::InterceptDownload(
           info.referrer_url, Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
                                  info.referrer_policy));
       params.redirect_chain = url_chain;
+      params.frame_tree_node_id =
+          RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
+              info.render_process_id, info.render_frame_id);
       web_contents->GetController().LoadURLWithParams(params);
     }
     if (info.request_handle)
@@ -803,7 +806,8 @@ download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
                    params->referrer_policy())),
       true,  // download.
       params->render_process_host_id(), params->render_view_host_routing_id(),
-      params->render_frame_host_routing_id(), PREVIEWS_OFF, resource_context);
+      params->render_frame_host_routing_id(), params->frame_tree_node_id(),
+      PREVIEWS_OFF, resource_context);
 
   // We treat a download as a main frame load, and thus update the policy URL on
   // redirects.
@@ -914,6 +918,8 @@ void DownloadManagerImpl::DownloadUrl(
       params->download_source());
   auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
                                       params->render_frame_host_routing_id());
+  if (rfh)
+    params->set_frame_tree_node_id(rfh->GetFrameTreeNodeId());
   BeginDownloadInternal(std::move(params), std::move(blob_data_handle),
                         std::move(blob_url_loader_factory), true,
                         rfh ? rfh->GetSiteInstance()->GetSiteURL() : GURL());
