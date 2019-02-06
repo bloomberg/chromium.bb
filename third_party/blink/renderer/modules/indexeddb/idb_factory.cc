@@ -219,7 +219,7 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
         mojo::MakeRequest(&web_idb_factory_host_info));
     web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
         std::move(web_idb_factory_host_info),
-        execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
+        execution_context->GetTaskRunner(TaskType::kDatabaseAccess));
   }
   return web_idb_factory_.get();
 }

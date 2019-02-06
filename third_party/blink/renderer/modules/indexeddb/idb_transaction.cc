@@ -92,7 +92,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       scope_(scope),
       state_(kActive),
       event_queue_(
-          EventQueue::Create(execution_context, TaskType::kInternalIndexedDB)) {
+          EventQueue::Create(execution_context, TaskType::kDatabaseAccess)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Observer transactions must operate "
                                "on a well-defined set of stores";
@@ -110,7 +110,7 @@ IDBTransaction::IDBTransaction(ScriptState* script_state,
       mode_(mode),
       scope_(scope),
       event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
-                                      TaskType::kInternalIndexedDB)) {
+                                      TaskType::kDatabaseAccess)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
                                "on a well-defined set of stores";
@@ -139,7 +139,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       state_(kInactive),
       old_database_metadata_(old_metadata),
       event_queue_(
-          EventQueue::Create(execution_context, TaskType::kInternalIndexedDB)) {
+          EventQueue::Create(execution_context, TaskType::kDatabaseAccess)) {
   DCHECK(database_);
   DCHECK(open_db_request_);
   DCHECK(scope_.IsEmpty());
