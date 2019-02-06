@@ -13,7 +13,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.ntp.TitleUtil;
 import org.chromium.chrome.browser.widget.tile.TileWithTextView;
 
@@ -81,11 +81,10 @@ public class ExploreSitesCategoryTileView extends TileWithTextView {
     }
 
     private void fadeThumbnailIn(Drawable thumbnail) {
-        int duration =
-                (int) (FADE_ANIMATION_TIME_MS * ChromeAnimation.Animation.getAnimationMultiplier());
+        int duration = FADE_ANIMATION_TIME_MS;
 
         // If animations are disabled, just show the thumbnail.
-        if (duration == 0) {
+        if (CompositorAnimationHandler.isInTestingMode()) {
             setIconDrawable(thumbnail);
             return;
         }

@@ -30,7 +30,7 @@ import org.chromium.base.Promise;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -336,9 +336,8 @@ public class SuggestionsBinder {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
         if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
-        int duration = (int) (FADE_IN_ANIMATION_TIME_MS
-                * ChromeAnimation.Animation.getAnimationMultiplier());
-        if (duration == 0) {
+        int duration = FADE_IN_ANIMATION_TIME_MS;
+        if (CompositorAnimationHandler.isInTestingMode()) {
             mThumbnailView.setImageDrawable(thumbnail);
             return;
         }

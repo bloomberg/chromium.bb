@@ -164,10 +164,8 @@ public class TabsTest {
             return;
         }
         mActivityTestRule.startMainActivityOnBlankPage();
-        mActivityTestRule.getActivity()
-                .getLayoutManager()
-                .getAnimationHandler()
-                .enableTestingMode();
+        mActivityTestRule.getActivity().getLayoutManager().getAnimationHandler().setTestingMode(
+                true);
     }
 
 
