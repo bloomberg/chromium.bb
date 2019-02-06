@@ -2554,7 +2554,6 @@ void BrowserView::InitViews() {
                             toolbar_,
                             infobar_container_,
                             contents_container_,
-                            GetContentsLayoutManager(),
                             immersive_mode_controller_.get());
   SetLayoutManager(std::move(browser_view_layout));
 

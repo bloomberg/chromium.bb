@@ -7,7 +7,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <limits>
 #include <memory>
+#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -55,7 +58,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_targeter.h"
@@ -2123,7 +2125,7 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     // Make screens sufficiently wide to host 2 browsers side by side.
     command_line->AppendSwitchASCII("ash-host-window-bounds",
-                                    "0+0-600x600,600+0-600x600");
+                                    "0+0-800x600,800+0-800x600");
   }
 
  private:
@@ -2158,8 +2160,14 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   // Move to the first tab and drag it enough so that it detaches.
   // Then drag it to the final destination on the second screen.
-  const gfx::Point target = GetCenterInScreenCoordinates(tab_strip->tab_at(0)) +
-                            gfx::Vector2d(600, GetDetachY(tab_strip));
+  display::Screen* const screen = display::Screen::GetScreen();
+  display::Display second_display = ui_test_utils::GetSecondaryDisplay(screen);
+  const gfx::Point start = GetCenterInScreenCoordinates(tab_strip->tab_at(0));
+  ASSERT_FALSE(second_display.bounds().Contains(start));
+  const gfx::Point target(second_display.bounds().x() + 1,
+                          start.y() + GetDetachY(tab_strip));
+  ASSERT_TRUE(second_display.bounds().Contains(target));
+
   DragTabAndNotify(
       tab_strip,
       base::BindOnce(&DragSingleTabToSeparateWindowInSecondDisplayStep2, this,
@@ -2180,7 +2188,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   // With the touch input the browser cannot be dragged from one screen
   // to another and the window stays on the first screen.
   if (input_source() == INPUT_SOURCE_MOUSE) {
-    display::Screen* screen = display::Screen::GetScreen();
     EXPECT_EQ(
         ui_test_utils::GetSecondaryDisplay(screen).id(),
         screen
@@ -2351,7 +2358,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   gfx::Rect work_area = second_display.work_area();
   work_area.set_width(work_area.width() / 2);
   browser()->window()->SetBounds(work_area);
-  work_area.set_x(work_area.right());
+  // It's possible the window will not fit in half the screen, in which case we
+  // will position the windows as well as we can.
+  work_area.set_x(browser()->window()->GetBounds().right());
+  // Sanity check: second browser should still be on the second display.
+  ASSERT_LT(work_area.x(), second_display.work_area().right());
   browser2->window()->SetBounds(work_area);
   // Wait for the display changes. See the earlier comments for the details.
   aura::test::WaitForAllChangesToComplete();
@@ -2363,6 +2374,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
       second_display.id(),
       screen->GetDisplayNearestWindow(browser2->window()->GetNativeWindow())
           .id());
+
+  // Sanity check: make sure the target position is also within in the screen
+  // bounds:
+  ASSERT_LT(GetCenterInScreenCoordinates(tab_strip2->tab_at(0)).x(),
+            second_display.work_area().right());
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -2543,7 +2559,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
-                                    "400x400,400+0-800x800*2");
+                                    "800x600,800+0-800x600*2");
   }
 
   float GetCursorDeviceScaleFactor() const {
@@ -2635,7 +2651,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
-                                    "0+0-250x250,250+0-250x250");
+                                    "0+0-800x600,800+0-800x600");
   }
 
  private:
