@@ -21,12 +21,18 @@ group("updater") {
 
 source_set("common") {
   sources = [
+    "configurator.cc",
+    "configurator.h",
     "updater.cc",
     "updater.h",
   ]
 
   deps = [
     "//base",
+    "//components/update_client",
+    "//components/version_info",
+    "//mojo/core/embedder",
+    "//net",
   ]
 }
 

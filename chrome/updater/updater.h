@@ -7,7 +7,7 @@
 
 namespace updater {
 
-int UpdaterMain();
+int UpdaterMain(int argc, const char* const* argv);
 
 }  // namespace updater
 

@@ -17,20 +17,19 @@
 #define EXECUTABLE_EXTENSION ""
 #endif
 
-// Tests the updater process returns 0 when run with no arguments.
+// Tests the updater process returns 0 when run with --test argument.
 TEST(UpdaterTest, UpdaterExitCode) {
   base::FilePath this_executable_path;
-
   ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &this_executable_path));
-
   const base::FilePath updater = this_executable_path.DirName().Append(
       FILE_PATH_LITERAL("updater" EXECUTABLE_EXTENSION));
   base::LaunchOptions options;
-
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  auto process = base::LaunchProcess(base::CommandLine(updater), options);
+  base::CommandLine command_line(updater);
+  command_line.AppendSwitch("test");
+  auto process = base::LaunchProcess(command_line, options);
   ASSERT_TRUE(process.IsValid());
   int exit_code = -1;
   EXPECT_TRUE(process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(60),

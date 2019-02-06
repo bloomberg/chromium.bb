@@ -7,5 +7,5 @@
 #include "chrome/updater/updater.h"
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
-  return updater::UpdaterMain();
+  return updater::UpdaterMain(0, nullptr);
 }

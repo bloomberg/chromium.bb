@@ -5,5 +5,5 @@
 #include "chrome/updater/updater.h"
 
 int main(int argc, const char* argv[]) {
-  return updater::UpdaterMain();
+  return updater::UpdaterMain(argc, argv);
 }
