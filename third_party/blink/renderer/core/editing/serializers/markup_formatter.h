@@ -103,7 +103,7 @@ class MarkupFormatter final {
 
   bool SerializeAsHTMLDocument(const Node&) const;
 
-  void AppendText(StringBuilder&, Text&);
+  void AppendText(StringBuilder&, const Text&);
   // Serialize '<' and the element name.
   void AppendStartTagOpen(StringBuilder&, const Element&);
   // Serialize '>' or '/>'

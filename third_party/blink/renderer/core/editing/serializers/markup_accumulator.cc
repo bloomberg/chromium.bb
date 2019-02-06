@@ -60,7 +60,7 @@ void MarkupAccumulator::AppendEndTag(const Element& element) {
   AppendEndMarkup(element);
 }
 
-void MarkupAccumulator::AppendStartMarkup(Node& node) {
+void MarkupAccumulator::AppendStartMarkup(const Node& node) {
   switch (node.getNodeType()) {
     case Node::kTextNode:
       formatter_.AppendText(markup_, ToText(node));
@@ -297,7 +297,7 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
 
 template <typename Strategy>
 void MarkupAccumulator::SerializeNodesWithNamespaces(
-    Node& target_node,
+    const Node& target_node,
     EChildrenOnly children_only) {
   if (target_node.IsElementNode() &&
       ShouldIgnoreElement(ToElement(target_node))) {
@@ -345,7 +345,7 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
 }
 
 template <typename Strategy>
-String MarkupAccumulator::SerializeNodes(Node& target_node,
+String MarkupAccumulator::SerializeNodes(const Node& target_node,
                                          EChildrenOnly children_only) {
   if (!SerializeAsHTMLDocument(target_node)) {
     // https://w3c.github.io/DOM-Parsing/#dfn-xml-serialization
@@ -366,7 +366,7 @@ String MarkupAccumulator::SerializeNodes(Node& target_node,
 }
 
 template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
-    Node&,
+    const Node&,
     EChildrenOnly);
 
 }  // namespace blink

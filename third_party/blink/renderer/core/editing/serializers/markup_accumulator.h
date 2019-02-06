@@ -51,11 +51,11 @@ class MarkupAccumulator {
   virtual ~MarkupAccumulator();
 
   template <typename Strategy>
-  String SerializeNodes(Node&, EChildrenOnly);
+  String SerializeNodes(const Node&, EChildrenOnly);
 
  protected:
   // Serialize a Node, without its children and its end tag.
-  virtual void AppendStartMarkup(Node&);
+  virtual void AppendStartMarkup(const Node&);
   virtual void AppendElement(const Element&);
   virtual void AppendAttribute(const Element&, const Attribute&);
 
@@ -102,7 +102,7 @@ class MarkupAccumulator {
   virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
 
   template <typename Strategy>
-  void SerializeNodesWithNamespaces(Node& target_node,
+  void SerializeNodesWithNamespaces(const Node& target_node,
                                     EChildrenOnly children_only);
 
   Vector<Namespaces> namespace_stack_;
@@ -111,7 +111,7 @@ class MarkupAccumulator {
 };
 
 extern template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
-    Node&,
+    const Node&,
     EChildrenOnly);
 
 }  // namespace blink

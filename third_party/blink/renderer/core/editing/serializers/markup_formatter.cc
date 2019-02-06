@@ -221,7 +221,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
   result.Append('"');
 }
 
-void MarkupFormatter::AppendText(StringBuilder& result, Text& text) {
+void MarkupFormatter::AppendText(StringBuilder& result, const Text& text) {
   const String& str = text.data();
   AppendCharactersReplacingEntities(result, str, 0, str.length(),
                                     EntityMaskForText(text));
