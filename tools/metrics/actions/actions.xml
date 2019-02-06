@@ -19892,8 +19892,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tab.Screenshot.WithoutStoragePermission">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when the user takes a screenshot of a chrome tab when chrome
+    doesn't have storage permissions.
+  </description>
 </action>
 
 <action name="Tab_DropURLBetweenTabs">
