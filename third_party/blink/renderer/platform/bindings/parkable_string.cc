@@ -151,7 +151,32 @@ struct CompressionTaskParams final {
 //
 // See |Park()| for (1), |OnParkingCompleteOnMainThread()| for 2-3, and
 // |Unpark()| for (4).
+//
+// Each state can be combined with a string that is either old or
+// young. Examples below:
+// - kUnParked:
+//   - Old: old strings are not necessarily parked
+//   - Young: a string starts young and unparked.
+// - kParkingInProgress:
+//   - Old: The string wasn't touched since parking started
+//   - Young: The string was either touched or locked since parking started
+// - kParked:
+//   - Old: Parked, and not touched nor locked since then
+//   - Young: Lock() makes a string young but doesn't unpark it.
 enum class ParkableStringImpl::State { kUnparked, kParkingInProgress, kParked };
+
+// Current "ownership" status of the underlying data.
+//
+// - kUnreferencedExternally: |string_| is not referenced externally, and the
+//   class is free to change it.
+// - kTooManyReferences: |string_| has multiple references pointing to it,
+//   cannot change it.
+// - kLocked: |this| is locked.
+enum class ParkableStringImpl::Status {
+  kUnreferencedExternally,
+  kTooManyReferences,
+  kLocked
+};
 
 ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
                                        ParkableState parkable)
@@ -160,6 +185,7 @@ ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
       state_(State::kUnparked),
       string_(std::move(impl)),
       compressed_(nullptr),
+      is_young_(true),
       may_be_parked_(parkable == ParkableState::kParkable),
       is_8bit_(string_.Is8Bit()),
       length_(string_.length())
@@ -189,7 +215,19 @@ ParkableStringImpl::~ParkableStringImpl() {
 void ParkableStringImpl::Lock() {
   MutexLocker locker(mutex_);
   lock_depth_ += 1;
+  // Make young as this is a strong (but not certain) indication that the string
+  // will be accessed soon.
+  MakeYoung();
 }
+
+#if defined(ADDRESS_SANITIZER)
+
+void ParkableStringImpl::LockWithoutMakingYoung() {
+  MutexLocker locker(mutex_);
+  lock_depth_ += 1;
+}
+
+#endif  // defined(ADDRESS_SANITIZER)
 
 void ParkableStringImpl::Unlock() {
   MutexLocker locker(mutex_);
@@ -205,9 +243,10 @@ void ParkableStringImpl::Unlock() {
   // to use the string until the end of the current owning thread task.
   // Requires DCHECK_IS_ON() for the |owning_thread_| check.
   //
-  // Checking the owning thread first as CanParkNow() can only be called from
-  // the owning thread.
-  if (owning_thread_ == CurrentThread() && CanParkNow()) {
+  // Checking the owning thread first as |CurrentStatus()| can only be called
+  // from the owning thread.
+  if (owning_thread_ == CurrentThread() && may_be_parked() &&
+      CurrentStatus() == Status::kUnreferencedExternally) {
     AsanPoisonString(string_);
   }
 #endif  // defined(ADDRESS_SANITIZER) && DCHECK_IS_ON()
@@ -219,9 +258,15 @@ void ParkableStringImpl::PurgeMemory() {
     compressed_ = nullptr;
 }
 
+void ParkableStringImpl::MakeYoung() {
+  mutex_.AssertAcquired();
+  is_young_ = true;
+}
+
 const String& ParkableStringImpl::ToString() {
   AssertOnValidThread();
   MutexLocker locker(mutex_);
+  MakeYoung();
   AsanUnpoisonString(string_);
 
   Unpark();
@@ -233,49 +278,101 @@ unsigned ParkableStringImpl::CharactersSizeInBytes() const {
   return length_ * (is_8bit() ? sizeof(LChar) : sizeof(UChar));
 }
 
-bool ParkableStringImpl::Park(ParkingMode mode) {
-  AssertOnValidThread();
+ParkableStringImpl::AgeOrParkResult ParkableStringImpl::MaybeAgeOrParkString() {
   MutexLocker locker(mutex_);
-  DCHECK(may_be_parked_);
-  if (state_ == State::kUnparked && CanParkNow()) {
-    // Parking can proceed synchronously.
-    if (has_compressed_data()) {
-      RecordParkingAction(ParkingAction::kParkedInBackground);
-      state_ = State::kParked;
-      ParkableStringManager::Instance().OnParked(this, string_.Impl());
+  AssertOnValidThread();
+  DCHECK(may_be_parked());
+  DCHECK(!is_parked());
 
-      // Must unpoison the memory before releasing it.
-      AsanUnpoisonString(string_);
-      string_ = String();
-    } else if (mode == ParkingMode::kAlways) {
-      // |string_|'s data should not be touched except in the compression task.
-      AsanPoisonString(string_);
-      // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
-      auto params = std::make_unique<CompressionTaskParams>(
-          this, string_.Bytes(), string_.CharactersSizeInBytes(),
-          Thread::Current()->GetTaskRunner());
-      background_scheduler::PostOnBackgroundThread(
-          FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
-                                     WTF::Passed(std::move(params))));
-      state_ = State::kParkingInProgress;
+  Status status = CurrentStatus();
+  if (is_young()) {
+    if (status == Status::kUnreferencedExternally)
+      is_young_ = false;
+  } else {
+    if (state_ == State::kParkingInProgress)
+      return AgeOrParkResult::kSuccessOrTransientFailure;
+
+    if (CanParkNow()) {
+      ParkInternal(ParkingMode::kAlways);
+      return AgeOrParkResult::kSuccessOrTransientFailure;
     }
   }
 
-  return state_ == State::kParked || state_ == State::kParkingInProgress;
+  // External references to a string can be long-lived, cannot provide a
+  // progress guarantee for this string.
+  return status == Status::kTooManyReferences
+             ? AgeOrParkResult::kNonTransientFailure
+             : AgeOrParkResult::kSuccessOrTransientFailure;
+}
+
+bool ParkableStringImpl::Park(ParkingMode mode) {
+  MutexLocker locker(mutex_);
+  AssertOnValidThread();
+  DCHECK(may_be_parked());
+
+  if (state_ == State::kParkingInProgress || state_ == State::kParked)
+    return true;
+
+  // Making the string old to cancel parking if it is accessed/locked before
+  // parking is complete.
+  is_young_ = false;
+  if (!CanParkNow())
+    return false;
+
+  ParkInternal(mode);
+  return true;
+}
+
+void ParkableStringImpl::ParkInternal(ParkingMode mode) {
+  mutex_.AssertAcquired();
+  DCHECK_EQ(State::kUnparked, state_);
+  DCHECK(!is_young());
+  DCHECK(CanParkNow());
+
+  // Parking can proceed synchronously.
+  if (has_compressed_data()) {
+    RecordParkingAction(ParkingAction::kParkedInBackground);
+    state_ = State::kParked;
+    ParkableStringManager::Instance().OnParked(this, string_.Impl());
+
+    // Must unpoison the memory before releasing it.
+    AsanUnpoisonString(string_);
+    string_ = String();
+  } else if (mode == ParkingMode::kAlways) {
+    // |string_|'s data should not be touched except in the compression task.
+    AsanPoisonString(string_);
+    // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
+    auto params = std::make_unique<CompressionTaskParams>(
+        this, string_.Bytes(), string_.CharactersSizeInBytes(),
+        Thread::Current()->GetTaskRunner());
+    background_scheduler::PostOnBackgroundThread(
+        FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
+                                   WTF::Passed(std::move(params))));
+    state_ = State::kParkingInProgress;
+  }
 }
 
 bool ParkableStringImpl::is_parked() const {
   return state_ == State::kParked;
 }
 
-bool ParkableStringImpl::CanParkNow() const {
+ParkableStringImpl::Status ParkableStringImpl::CurrentStatus() const {
+  AssertOnValidThread();
   mutex_.AssertAcquired();
+  DCHECK(may_be_parked());
   // Can park iff:
-  // - the string is eligible to parking
-  // - There are no external reference to |string_|. Since |this| holds a
-  //   reference to it, then we are the only one.
   // - |this| is not locked.
-  return may_be_parked_ && string_.Impl()->HasOneRef() && lock_depth_ == 0;
+  // - There are no external reference to |string_|. Since |this| holds a
+  //   reference to |string_|, it must the only one.
+  if (lock_depth_ != 0)
+    return Status::kLocked;
+  if (!string_.Impl()->HasOneRef())
+    return Status::kTooManyReferences;
+  return Status::kUnreferencedExternally;
+}
+
+bool ParkableStringImpl::CanParkNow() const {
+  return CurrentStatus() == Status::kUnreferencedExternally && !is_young();
 }
 
 void ParkableStringImpl::Unpark() {
@@ -333,21 +430,23 @@ void ParkableStringImpl::OnParkingCompleteOnMainThread(
     std::unique_ptr<Vector<uint8_t>> compressed) {
   MutexLocker locker(mutex_);
   DCHECK_EQ(State::kParkingInProgress, state_);
+
+  // Always keep the compressed data. Compression is expensive, so even if the
+  // uncompressed representation cannot be discarded now, avoid compressing
+  // multiple times. This will allow synchronous parking next time.
+  DCHECK(!compressed_);
+  if (compressed)
+    compressed_ = std::move(compressed);
+
   // Between |Park()| and now, things may have happened:
   // 1. |ToString()| or
   // 2. |Lock()| may have been called.
   //
-  // We only care about "surviving" calls, that is iff the string returned by
-  // |ToString()| is still alive, or whether we are still locked. Since this
-  // function is protected by the lock, no concurrent modifications can occur.
-  //
-  // Finally, since this is a distinct task from any one that can call
-  // |ToString()|, the invariant that the pointer stays valid until the next
-  // task is preserved.
-  if (CanParkNow() && compressed) {
+  // Both of these will make the string young again, and if so we don't
+  // discard the compressed representation yet.
+  if (CanParkNow() && compressed_) {
     RecordParkingAction(ParkingAction::kParkedInBackground);
     state_ = State::kParked;
-    compressed_ = std::move(compressed);
     ParkableStringManager::Instance().OnParked(this, string_.Impl());
 
     // Must unpoison the memory before releasing it.
@@ -368,7 +467,12 @@ void ParkableStringImpl::CompressInBackground(
 #if defined(ADDRESS_SANITIZER)
   // Lock the string to prevent a concurrent |Unlock()| on the main thread from
   // poisoning the string in the meantime.
-  params->string->Lock();
+  //
+  // Don't make the string young at the same time, otherwise parking would
+  // always be cancelled on the main thread with address sanitizer, since the
+  // |OnParkingCompleteOnMainThread()| callback would be executed on a young
+  // string.
+  params->string->LockWithoutMakingYoung();
 #endif  // defined(ADDRESS_SANITIZER)
   // Compression touches the string.
   AsanUnpoisonString(params->string->string_);

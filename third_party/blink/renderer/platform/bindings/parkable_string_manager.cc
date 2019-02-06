@@ -36,6 +36,17 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
   }
 };
 
+Vector<ParkableStringImpl*> GetUnparkedStrings(
+    const HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>&
+        unparked_strings) {
+  WTF::Vector<ParkableStringImpl*> unparked;
+  unparked.ReserveCapacity(unparked_strings.size());
+  for (ParkableStringImpl* str : unparked_strings.Values())
+    unparked.push_back(str);
+
+  return unparked;
+}
+
 }  // namespace
 
 // static
@@ -172,12 +183,14 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
   auto new_parkable_string = base::MakeRefCounted<ParkableStringImpl>(
       std::move(string), ParkableStringImpl::ParkableState::kParkable);
   unparked_strings_.insert(raw_ptr, new_parkable_string.get());
+  ScheduleAgingTaskIfNeeded();
   return new_parkable_string;
 }
 
 void ParkableStringManager::Remove(ParkableStringImpl* string,
                                    StringImpl* maybe_unparked_string) {
   DCHECK(IsMainThread());
+  DCHECK(string->may_be_parked());
   if (string->is_parked()) {
     auto it = parked_strings_.find(string);
     DCHECK(it != parked_strings_.end());
@@ -193,6 +206,7 @@ void ParkableStringManager::Remove(ParkableStringImpl* string,
 void ParkableStringManager::OnParked(ParkableStringImpl* newly_parked_string,
                                      StringImpl* previous_unparked_string) {
   DCHECK(IsMainThread());
+  DCHECK(newly_parked_string->may_be_parked());
   DCHECK(newly_parked_string->is_parked());
   auto it = unparked_strings_.find(previous_unparked_string);
   DCHECK(it != unparked_strings_.end());
@@ -203,11 +217,13 @@ void ParkableStringManager::OnParked(ParkableStringImpl* newly_parked_string,
 void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
                                        StringImpl* new_unparked_string) {
   DCHECK(IsMainThread());
+  DCHECK(was_parked_string->may_be_parked());
   DCHECK(!was_parked_string->is_parked());
   auto it = parked_strings_.find(was_parked_string);
   DCHECK(it != parked_strings_.end());
   parked_strings_.erase(it);
   unparked_strings_.insert(new_unparked_string, was_parked_string);
+  ScheduleAgingTaskIfNeeded();
 }
 
 void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
@@ -227,10 +243,8 @@ void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   // and |unparked_strings_| can contain a few 10s of strings (and we will
   // trigger expensive compression), or this is a subsequent one, and
   // |unparked_strings_| will have few entries.
-  WTF::Vector<ParkableStringImpl*> unparked;
-  unparked.ReserveCapacity(unparked_strings_.size());
-  for (ParkableStringImpl* str : unparked_strings_.Values())
-    unparked.push_back(str);
+  WTF::Vector<ParkableStringImpl*> unparked =
+      GetUnparkedStrings(unparked_strings_);
 
   for (ParkableStringImpl* str : unparked) {
     str->Park(mode);
@@ -302,6 +316,53 @@ void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
   }
 }
 
+void ParkableStringManager::AgeStringsAndPark() {
+  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
+    return;
+
+  has_pending_aging_task_ = false;
+
+  WTF::Vector<ParkableStringImpl*> unparked =
+      GetUnparkedStrings(unparked_strings_);
+
+  bool can_make_progress = false;
+  for (ParkableStringImpl* str : unparked) {
+    if (str->MaybeAgeOrParkString() ==
+        ParkableStringImpl::AgeOrParkResult::kSuccessOrTransientFailure)
+      can_make_progress = true;
+  }
+
+  // Some strings will never be parkable because there are lasting external
+  // references to them. Don't endlessely reschedule the aging task if we are
+  // not making progress (that is, no new string was either aged or parked).
+  //
+  // This ensures that the tasks will stop getting scheduled, assuming that
+  // the renderer is otherwise idle. Note that we cannot use "idle" tasks as
+  // we need to age and park strings after the renderer becomes idle, meaning
+  // that this has to run when the idle tasks are not. As a consequence, it
+  // is important to make sure that this will not reschedule tasks forever.
+  bool reschedule = !unparked_strings_.IsEmpty() && can_make_progress;
+  if (reschedule)
+    ScheduleAgingTaskIfNeeded();
+}
+
+void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
+  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
+    return;
+
+  if (has_pending_aging_task_)
+    return;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      Thread::Current()->GetTaskRunner();
+  task_runner->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ParkableStringManager::AgeStringsAndPark,
+                     base::Unretained(this)),
+      base::TimeDelta::FromSeconds(kAgingIntervalInSeconds));
+  has_pending_aging_task_ = true;
+}
+
 void ParkableStringManager::PurgeMemory() {
   DCHECK(IsMainThread());
   DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
@@ -322,6 +383,7 @@ void ParkableStringManager::PurgeMemory() {
 void ParkableStringManager::ResetForTesting() {
   backgrounded_ = false;
   waiting_to_record_stats_ = false;
+  has_pending_aging_task_ = false;
   should_record_stats_ = false;
   unparked_strings_.clear();
   parked_strings_.clear();
@@ -330,6 +392,7 @@ void ParkableStringManager::ResetForTesting() {
 ParkableStringManager::ParkableStringManager()
     : backgrounded_(false),
       waiting_to_record_stats_(false),
+      has_pending_aging_task_(false),
       should_record_stats_(false),
       unparked_strings_(),
       parked_strings_() {

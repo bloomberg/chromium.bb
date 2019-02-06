@@ -23,6 +23,8 @@ class ParkableString;
 
 const base::Feature kCompressParkableStringsInBackground{
     "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCompressParkableStringsInForeground{
+    "CompressParkableStringsInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
 
 class PLATFORM_EXPORT ParkableStringManagerDumpProvider
     : public base::trace_event::MemoryDumpProvider {
@@ -63,6 +65,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   static bool ShouldPark(const StringImpl& string);
 
   // Public for testing.
+  constexpr static int kAgingIntervalInSeconds = 2;
   constexpr static int kParkingDelayInSeconds = 10;
   constexpr static int kStatisticsRecordingDelayInSeconds = 30;
 
@@ -79,18 +82,22 @@ class PLATFORM_EXPORT ParkableStringManager {
   void ParkAll(ParkableStringImpl::ParkingMode mode);
   void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
   void DropStringsWithCompressedDataAndRecordStatistics();
+  void AgeStringsAndPark();
+  void ScheduleAgingTaskIfNeeded();
+
   void ResetForTesting();
 
   ParkableStringManager();
 
   bool backgrounded_;
   bool waiting_to_record_stats_;
+  bool has_pending_aging_task_;
   bool should_record_stats_;
   HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>
       unparked_strings_;
   HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
 
-  friend class ParkableStringTest;
+  friend class ParkableStringTestBase;
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);
   DISALLOW_COPY_AND_ASSIGN(ParkableStringManager);
 };
