@@ -8,26 +8,78 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_stats.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
 namespace tracing {
 
-// A TracingSession is used to wrap all the associated
-// state of an on-going tracing session, for easy setup
-// and cleanup.
-class PerfettoTracingCoordinator::TracingSession {
+// A TracingSession acts as a perfetto consumer and is used to wrap all the
+// associated state of an on-going tracing session, for easy setup and cleanup.
+//
+// TODO(eseckler): Make it possible to have multiple active sessions
+// concurrently. Also support configuring the output format of a session (JSON
+// vs. proto).
+class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
  public:
   TracingSession(const std::string& config,
                  base::OnceClosure tracing_over_callback)
-      : tracing_over_callback_(std::move(tracing_over_callback)) {
-    json_trace_exporter_ = std::make_unique<JSONTraceExporter>(
-        config, PerfettoService::GetInstance()->GetService());
+      : json_trace_exporter_(std::make_unique<JSONTraceExporter>(
+            base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
+                                base::Unretained(this)))),
+        tracing_over_callback_(std::move(tracing_over_callback)) {
+    perfetto::TracingService* service =
+        PerfettoService::GetInstance()->GetService();
+    consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
+
+    // Start tracing.
+    perfetto::TraceConfig trace_config;
+    trace_config.add_buffers()->set_size_kb(4096 * 100);
+
+    // Perfetto uses clock_gettime for its internal snapshotting, which gets
+    // blocked by the sandboxed and isn't needed for Chrome regardless.
+    trace_config.set_disable_clock_snapshotting(true);
+
+    auto* trace_event_config =
+        trace_config.add_data_sources()->mutable_config();
+    trace_event_config->set_name(mojom::kTraceEventDataSourceName);
+    trace_event_config->set_target_buffer(0);
+    auto* chrome_config = trace_event_config->mutable_chrome_config();
+    chrome_config->set_trace_config(config);
+
+// Only CrOS and Cast support system tracing.
+#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
+    auto* system_trace_config =
+        trace_config.add_data_sources()->mutable_config();
+    system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
+    system_trace_config->set_target_buffer(0);
+    auto* system_chrome_config = system_trace_config->mutable_chrome_config();
+    system_chrome_config->set_trace_config(config);
+#endif
+
+#if defined(OS_CHROMEOS)
+    auto* arc_trace_config = trace_config.add_data_sources()->mutable_config();
+    arc_trace_config->set_name(mojom::kArcTraceDataSourceName);
+    arc_trace_config->set_target_buffer(0);
+    auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
+    arc_chrome_config->set_trace_config(config);
+#endif
+
+    auto* trace_metadata_config =
+        trace_config.add_data_sources()->mutable_config();
+    trace_metadata_config->set_name(mojom::kMetaDataSourceName);
+    trace_metadata_config->set_target_buffer(0);
+
+    consumer_endpoint_->EnableTracing(trace_config);
   }
 
-  ~TracingSession() {
+  ~TracingSession() override {
     if (!stop_and_flush_callback_.is_null()) {
       base::ResetAndReturn(&stop_and_flush_callback_)
           .Run(base::Value(base::Value::Type::DICTIONARY));
@@ -40,9 +92,7 @@ class PerfettoTracingCoordinator::TracingSession {
                     StopAndFlushCallback callback) {
     stream_ = std::move(stream);
     stop_and_flush_callback_ = std::move(callback);
-
-    json_trace_exporter_->StopAndFlush(base::BindRepeating(
-        &TracingSession::OnJSONTraceEventCallback, base::Unretained(this)));
+    consumer_endpoint_->DisableTracing();
   }
 
   void OnJSONTraceEventCallback(const std::string& json,
@@ -70,11 +120,31 @@ class PerfettoTracingCoordinator::TracingSession {
       return;
     }
     request_buffer_usage_callback_ = std::move(callback);
-    json_trace_exporter_->GetTraceStats(
-        base::BindOnce(&TracingSession::OnTraceStats, base::Unretained(this)));
+    consumer_endpoint_->GetTraceStats();
   }
 
-  void OnTraceStats(bool success, const perfetto::TraceStats& stats) {
+  // perfetto::Consumer implementation.
+  // This gets called by the Perfetto service as control signals,
+  // and to send finished protobufs over.
+  void OnConnect() override {}
+
+  void OnDisconnect() override {}
+
+  void OnTracingDisabled() override { consumer_endpoint_->ReadBuffers(); }
+
+  void OnTraceData(std::vector<perfetto::TracePacket> packets,
+                   bool has_more) override {
+    json_trace_exporter_->OnTraceData(std::move(packets), has_more);
+  }
+
+  // Consumer Detach / Attach is not used in Chrome.
+  void OnDetach(bool success) override { NOTREACHED(); }
+
+  void OnAttach(bool success, const perfetto::TraceConfig&) override {
+    NOTREACHED();
+  }
+
+  void OnTraceStats(bool success, const perfetto::TraceStats& stats) override {
     DCHECK(request_buffer_usage_callback_);
     if (!success) {
       std::move(request_buffer_usage_callback_).Run(false, 0.0f, 0);
@@ -101,6 +171,10 @@ class PerfettoTracingCoordinator::TracingSession {
   StopAndFlushCallback stop_and_flush_callback_;
   base::OnceClosure tracing_over_callback_;
   RequestBufferUsageCallback request_buffer_usage_callback_;
+
+  // Keep last to avoid edge-cases where its callbacks come in mid-destruction.
+  std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
+      consumer_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingSession);
 };

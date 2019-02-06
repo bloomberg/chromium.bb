@@ -14,10 +14,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
-#include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
@@ -282,76 +278,13 @@ void AppendProtoDictAsJSON(std::string* out,
   out->append("}");
 }
 
-JSONTraceExporter::JSONTraceExporter(const std::string& config,
-                                     perfetto::TracingService* service)
-    : config_(config), metadata_(std::make_unique<base::DictionaryValue>()) {
-  consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
-
-  // Start tracing.
-  perfetto::TraceConfig trace_config;
-  trace_config.add_buffers()->set_size_kb(4096 * 100);
-
-  // Perfetto uses clock_gettime for its internal snapshotting, which gets
-  // blocked by the sandboxed and isn't needed for Chrome regardless.
-  trace_config.set_disable_clock_snapshotting(true);
-
-  auto* trace_event_config = trace_config.add_data_sources()->mutable_config();
-  trace_event_config->set_name(mojom::kTraceEventDataSourceName);
-  trace_event_config->set_target_buffer(0);
-  auto* chrome_config = trace_event_config->mutable_chrome_config();
-  chrome_config->set_trace_config(config_);
-
-// Only CrOS and Cast support system tracing.
-#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
-  auto* system_trace_config = trace_config.add_data_sources()->mutable_config();
-  system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
-  system_trace_config->set_target_buffer(0);
-  auto* system_chrome_config = system_trace_config->mutable_chrome_config();
-  system_chrome_config->set_trace_config(config_);
-#endif
-
-#if defined(OS_CHROMEOS)
-  auto* arc_trace_config = trace_config.add_data_sources()->mutable_config();
-  arc_trace_config->set_name(mojom::kArcTraceDataSourceName);
-  arc_trace_config->set_target_buffer(0);
-  auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
-  arc_chrome_config->set_trace_config(config_);
-#endif
-
-  auto* trace_metadata_config =
-      trace_config.add_data_sources()->mutable_config();
-  trace_metadata_config->set_name(mojom::kMetaDataSourceName);
-  trace_metadata_config->set_target_buffer(0);
-
-  consumer_endpoint_->EnableTracing(trace_config);
+JSONTraceExporter::JSONTraceExporter(OnTraceEventJSONCallback callback)
+    : json_callback_(callback),
+      metadata_(std::make_unique<base::DictionaryValue>()) {
+  DCHECK(json_callback_);
 }
 
 JSONTraceExporter::~JSONTraceExporter() = default;
-
-void JSONTraceExporter::OnConnect() {}
-
-void JSONTraceExporter::OnDisconnect() {}
-
-void JSONTraceExporter::OnTracingDisabled() {
-  consumer_endpoint_->ReadBuffers();
-}
-
-// This is called by the Coordinator interface, mainly used by the
-// TracingController which in turn is used by the tracing UI etc
-// to start/stop tracing.
-void JSONTraceExporter::StopAndFlush(OnTraceEventJSONCallback callback) {
-  DCHECK(!json_callback_ && callback);
-  json_callback_ = callback;
-
-  consumer_endpoint_->DisableTracing();
-}
-
-void JSONTraceExporter::GetTraceStats(OnTraceStatsCallback callback) {
-  DCHECK(!stats_callback_ && callback);
-  stats_callback_ = std::move(callback);
-
-  consumer_endpoint_->GetTraceStats();
-}
 
 void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
                                     bool has_more) {
@@ -477,21 +410,6 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   }
 
   json_callback_.Run(out, metadata_.get(), has_more);
-}
-
-// Consumer Detach / Attach is not used in Chrome.
-void JSONTraceExporter::OnDetach(bool) {
-  NOTREACHED();
-}
-
-void JSONTraceExporter::OnAttach(bool, const perfetto::TraceConfig&) {
-  NOTREACHED();
-}
-
-void JSONTraceExporter::OnTraceStats(bool success,
-                                     const perfetto::TraceStats& stats) {
-  DCHECK(stats_callback_);
-  std::move(stats_callback_).Run(success, stats);
 }
 
 }  // namespace tracing
