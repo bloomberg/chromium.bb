@@ -199,6 +199,17 @@ class IdlSchemaTest(unittest.TestCase):
     expected = None
     self.assertEquals(expected, schema['platforms'])
 
+  def testGenerateErrorMessages(self):
+    schema = idl_schema.Load('test/idl_generate_error_messages.idl')[0]
+    self.assertEquals('idl_generate_error_messages', schema['namespace'])
+    self.assertTrue(schema['compiler_options'].get('generate_error_messages',
+                    False))
+
+    schema = idl_schema.Load('test/idl_basics.idl')[0]
+    self.assertEquals('idl_basics', schema['namespace'])
+    self.assertFalse(schema['compiler_options'].get('generate_error_messages',
+                     False))
+
   def testSpecificImplementNamespace(self):
     schema = idl_schema.Load('test/idl_namespace_specific_implement.idl')[0]
     self.assertEquals('idl_namespace_specific_implement',
