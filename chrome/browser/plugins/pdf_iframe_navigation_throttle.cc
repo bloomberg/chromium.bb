@@ -33,13 +33,13 @@
 namespace {
 
 // Used to scope the posted navigation task to the lifetime of |web_contents|.
-class WebContentsLifetimeHelper
-    : public content::WebContentsUserData<WebContentsLifetimeHelper> {
+class PdfWebContentsLifetimeHelper
+    : public content::WebContentsUserData<PdfWebContentsLifetimeHelper> {
  public:
-  explicit WebContentsLifetimeHelper(content::WebContents* web_contents)
+  explicit PdfWebContentsLifetimeHelper(content::WebContents* web_contents)
       : web_contents_(web_contents) {}
 
-  base::WeakPtr<WebContentsLifetimeHelper> GetWeakPtr() {
+  base::WeakPtr<PdfWebContentsLifetimeHelper> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -48,15 +48,15 @@ class WebContentsLifetimeHelper
   }
 
  private:
-  friend class content::WebContentsUserData<WebContentsLifetimeHelper>;
+  friend class content::WebContentsUserData<PdfWebContentsLifetimeHelper>;
 
   content::WebContents* const web_contents_;
-  base::WeakPtrFactory<WebContentsLifetimeHelper> weak_factory_{this};
+  base::WeakPtrFactory<PdfWebContentsLifetimeHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsLifetimeHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper)
 
 }  // namespace
 
@@ -141,12 +141,12 @@ PDFIFrameNavigationThrottle::WillProcessResponse() {
   // an antipattern. Use a helper object scoped to the WebContents lifetime to
   // scope the navigation task to the WebContents lifetime.
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
-  WebContentsLifetimeHelper::CreateForWebContents(web_contents);
-  WebContentsLifetimeHelper* helper =
-      WebContentsLifetimeHelper::FromWebContents(web_contents);
+  PdfWebContentsLifetimeHelper::CreateForWebContents(web_contents);
+  PdfWebContentsLifetimeHelper* helper =
+      PdfWebContentsLifetimeHelper::FromWebContents(web_contents);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&WebContentsLifetimeHelper::NavigateIFrameToPlaceholder,
+      base::BindOnce(&PdfWebContentsLifetimeHelper::NavigateIFrameToPlaceholder,
                      helper->GetWeakPtr(), params));
 
   return content::NavigationThrottle::CANCEL_AND_IGNORE;

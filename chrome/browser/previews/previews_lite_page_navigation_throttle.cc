@@ -109,11 +109,11 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
 
 }  // namespace
 
-class WebContentsLifetimeHelper
+class PreviewsWebContentsLifetimeHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<WebContentsLifetimeHelper> {
+      public content::WebContentsUserData<PreviewsWebContentsLifetimeHelper> {
  public:
-  explicit WebContentsLifetimeHelper(content::WebContents* web_contents)
+  explicit PreviewsWebContentsLifetimeHelper(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
         web_contents_(web_contents),
         weak_factory_(this) {}
@@ -220,7 +220,7 @@ class WebContentsLifetimeHelper
     std::move(fallback_callback).Run();
   }
 
-  base::WeakPtr<WebContentsLifetimeHelper> GetWeakPtr() {
+  base::WeakPtr<PreviewsWebContentsLifetimeHelper> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -240,7 +240,7 @@ class WebContentsLifetimeHelper
   }
 
  private:
-  friend class content::WebContentsUserData<WebContentsLifetimeHelper>;
+  friend class content::WebContentsUserData<PreviewsWebContentsLifetimeHelper>;
   // The url to monitor for. When it is seen, |info_| will be attached to that
   // navigation.
   GURL restarted_navigation_url_;
@@ -251,11 +251,11 @@ class WebContentsLifetimeHelper
 
   content::WebContents* web_contents_;
   std::unordered_set<content::NavigationHandle*> navigations_;
-  base::WeakPtrFactory<WebContentsLifetimeHelper> weak_factory_;
+  base::WeakPtrFactory<PreviewsWebContentsLifetimeHelper> weak_factory_;
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsLifetimeHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PreviewsWebContentsLifetimeHelper)
 
 bool HandlePreviewsLitePageURLRewrite(
     GURL* url,
@@ -448,9 +448,9 @@ void PreviewsLitePageNavigationThrottle::LoadAndBypass(
 
   manager->AddSingleBypass(params.url.spec());
 
-  WebContentsLifetimeHelper::CreateForWebContents(web_contents);
-  WebContentsLifetimeHelper* helper =
-      WebContentsLifetimeHelper::FromWebContents(web_contents);
+  PreviewsWebContentsLifetimeHelper::CreateForWebContents(web_contents);
+  PreviewsWebContentsLifetimeHelper* helper =
+      PreviewsWebContentsLifetimeHelper::FromWebContents(web_contents);
 
   if (!use_post_task) {
     helper->PostNewNavigation(params, std::move(info));
@@ -459,7 +459,7 @@ void PreviewsLitePageNavigationThrottle::LoadAndBypass(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
+      base::BindOnce(&PreviewsWebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(), params, std::move(info)));
 }
 
@@ -499,9 +499,9 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   }
 
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
-  WebContentsLifetimeHelper::CreateForWebContents(web_contents);
-  WebContentsLifetimeHelper* helper =
-      WebContentsLifetimeHelper::FromWebContents(web_contents);
+  PreviewsWebContentsLifetimeHelper::CreateForWebContents(web_contents);
+  PreviewsWebContentsLifetimeHelper* helper =
+      PreviewsWebContentsLifetimeHelper::FromWebContents(web_contents);
 
   // Post a delayed task to the WebContents helper. This task will check after a
   // timeout whether the previews navigation has finished (either in success or
@@ -516,7 +516,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
-            &WebContentsLifetimeHelper::CheckForHungNavigation,
+            &PreviewsWebContentsLifetimeHelper::CheckForHungNavigation,
             helper->GetWeakPtr(), GetPreviewsURL(),
             base::BindOnce(
                 &PreviewsLitePageNavigationThrottle::LoadAndBypass,
@@ -533,7 +533,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   // destroyed when the WebContents is and the task will not be executed.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
+      base::BindOnce(&PreviewsWebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(),
                      MakeOpenURLParams(navigation_handle(), GetPreviewsURL(),
                                        request_headers.ToString()),
@@ -565,15 +565,15 @@ PreviewsLitePageNavigationThrottle::WillStartRequest() {
       navigation_handle()->GetReloadType() != content::ReloadType::NONE &&
       !GetServerLitePageInfo()) {
     // Don't use |LoadAndBypass| because we might not want to bypass.
-    WebContentsLifetimeHelper::CreateForWebContents(
+    PreviewsWebContentsLifetimeHelper::CreateForWebContents(
         navigation_handle()->GetWebContents());
-    WebContentsLifetimeHelper* helper =
-        WebContentsLifetimeHelper::FromWebContents(
+    PreviewsWebContentsLifetimeHelper* helper =
+        PreviewsWebContentsLifetimeHelper::FromWebContents(
             navigation_handle()->GetWebContents());
 
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
+        base::BindOnce(&PreviewsWebContentsLifetimeHelper::PostNewNavigation,
                        helper->GetWeakPtr(),
                        MakeOpenURLParams(navigation_handle(),
                                          GURL(original_url), std::string()),
