@@ -4,6 +4,7 @@
 
 package org.chromium.base.task;
 
+import android.os.Process;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
@@ -21,7 +22,6 @@ import java.util.List;
  */
 @JNINamespace("base")
 public class TaskRunnerImpl implements TaskRunner {
-    @Nullable
     private final TaskTraits mTaskTraits;
     private final String mTraceEvent;
     private final @TaskRunnerType int mTaskRunnerType;
@@ -30,6 +30,9 @@ public class TaskRunnerImpl implements TaskRunner {
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
     private boolean mIsDestroying;
     private final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
+    private static final ChromeThreadPoolExecutor THREAD_POOL_EXECUTOR =
+            new ChromeThreadPoolExecutor();
+
     @Nullable
     protected LinkedList<Runnable> mPreNativeTasks = new LinkedList<>();
     @Nullable
@@ -103,7 +106,7 @@ public class TaskRunnerImpl implements TaskRunner {
      * time.
      */
     protected void schedulePreNativeTask() {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(mRunPreNativeTaskClosure);
+        THREAD_POOL_EXECUTOR.execute(mRunPreNativeTaskClosure);
     }
 
     /**
@@ -115,6 +118,17 @@ public class TaskRunnerImpl implements TaskRunner {
             synchronized (mLock) {
                 if (mPreNativeTasks == null) return;
                 task = mPreNativeTasks.poll();
+            }
+            switch (mTaskTraits.mPriority) {
+                case TaskPriority.USER_VISIBLE:
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
+                    break;
+                case TaskPriority.HIGHEST:
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE);
+                    break;
+                default:
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    break;
             }
             task.run();
         }
