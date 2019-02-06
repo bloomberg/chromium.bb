@@ -217,6 +217,15 @@ Polymer({
     return this.languages != undefined && this.languages.enabled.length <= 1;
   },
 
+  /**
+   * @param {string} languageCode The language code identifying a language.
+   * @return {boolean} True iff this language is the one used when translating
+   *     pages.
+   */
+  isTranslationTarget_: function(languageCode) {
+    return languageCode == this.languages.translateTarget;
+  },
+
   // <if expr="chromeos">
   /**
    * Applies Chrome OS session tweaks to the menu.

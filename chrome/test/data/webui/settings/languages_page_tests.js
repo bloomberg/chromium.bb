@@ -302,6 +302,61 @@ cr.define('languages_page_tests', function() {
         assertTrue(newToggleValue);
       });
 
+      test('test translate target language is labelled', function() {
+        // Translate target language disabled.
+        const targetLanguageCode = languageHelper.languages.translateTarget;
+        assertFalse(languageHelper.languages.enabled.some(
+            l => l.language.code == targetLanguageCode));
+        let translateTargetLabel = null;
+        let item = null;
+
+        let listItems = languagesCollapse.querySelectorAll('.list-item');
+        let domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+
+        Array.from(listItems).forEach(function(el) {
+          item = domRepeat.itemForElement(el);
+          if (item) {
+            translateTargetLabel = el.querySelector('div.secondary');
+            assertTrue(
+                translateTargetLabel.hidden,
+                'Translate target label should be hidden for ' +
+                    item.language.code);
+          }
+        });
+
+        // Enable the target language.
+        languageHelper.enableLanguage(targetLanguageCode);
+        assertTrue(languageHelper.languages.enabled.some(
+            l => l.language.code == targetLanguageCode));
+
+        // Update the dom-repeat in the UI.
+        Polymer.dom.flush();
+        domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+
+        listItems = languagesCollapse.querySelectorAll('.list-item');
+        Array.from(listItems).forEach(function(el) {
+          item = domRepeat.itemForElement(el);
+          if (item) {
+            translateTargetLabel = el.querySelector('div.secondary');
+            // Check that translate target label is shown only for the target
+            // language.
+            if (item.language.code == targetLanguageCode) {
+              assertFalse(
+                  translateTargetLabel.hidden,
+                  'Translate target label should be shown for ' +
+                      item.language.code);
+            } else {
+              assertTrue(
+                  translateTargetLabel.hidden,
+                  'Translate target label should be hidden for ' +
+                      item.language.code);
+            }
+          }
+        });
+      });
+
       test('toggle translate for a specific language', function(done) {
         // Open options for 'sw'.
         const languageOptionsDropdownTrigger =
