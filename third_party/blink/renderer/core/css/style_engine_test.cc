@@ -1510,7 +1510,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangePrefersReducedMotion) {
-  RuntimeEnabledFeatures::SetMediaQueryPrefersReducedMotionEnabled(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
       body { color: red }
