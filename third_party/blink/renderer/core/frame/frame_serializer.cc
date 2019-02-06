@@ -89,12 +89,12 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   ~SerializerMarkupAccumulator() override;
 
  protected:
-  void AppendCustomAttributes(const Element&, Namespaces&) override;
+  void AppendCustomAttributes(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) const override;
   bool ShouldIgnoreElement(const Element&) const override;
-  void AppendElement(const Element&, Namespaces&) override;
-  void AppendAttribute(const Element&, const Attribute&, Namespaces&) override;
-  void AppendStartMarkup(Node&, Namespaces&) override;
+  void AppendElement(const Element&) override;
+  void AppendAttribute(const Element&, const Attribute&) override;
+  void AppendStartMarkup(Node&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
@@ -128,11 +128,10 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator() = default;
 
 void SerializerMarkupAccumulator::AppendCustomAttributes(
-    const Element& element,
-    Namespaces& namespaces) {
+    const Element& element) {
   Vector<Attribute> attributes = delegate_.GetCustomAttributes(element);
   for (const auto& attribute : attributes)
-    AppendAttribute(element, attribute, namespaces);
+    AppendAttribute(element, attribute);
 }
 
 bool SerializerMarkupAccumulator::ShouldIgnoreAttribute(
@@ -154,9 +153,8 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
   return delegate_.ShouldIgnoreElement(element);
 }
 
-void SerializerMarkupAccumulator::AppendElement(const Element& element,
-                                                Namespaces& namespaces) {
-  MarkupAccumulator::AppendElement(element, namespaces);
+void SerializerMarkupAccumulator::AppendElement(const Element& element) {
+  MarkupAccumulator::AppendElement(element);
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // element like this, without special cases for XHTML
@@ -176,8 +174,7 @@ void SerializerMarkupAccumulator::AppendElement(const Element& element,
 }
 
 void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
-                                                  const Attribute& attribute,
-                                                  Namespaces& namespaces) {
+                                                  const Attribute& attribute) {
   // Check if link rewriting can affect the attribute.
   bool is_link_attribute = element.HasLegalLinkAttribute(attribute.GetName());
   bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
@@ -204,12 +201,11 @@ void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
   }
 
   // Fallback to appending the original attribute.
-  MarkupAccumulator::AppendAttribute(element, attribute, namespaces);
+  MarkupAccumulator::AppendAttribute(element, attribute);
 }
 
-void SerializerMarkupAccumulator::AppendStartMarkup(Node& node,
-                                                    Namespaces& namespaces) {
-  MarkupAccumulator::AppendStartMarkup(node, namespaces);
+void SerializerMarkupAccumulator::AppendStartMarkup(Node& node) {
+  MarkupAccumulator::AppendStartMarkup(node);
   nodes_.push_back(&node);
 }
 
