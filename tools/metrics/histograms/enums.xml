@@ -12750,20 +12750,6 @@ Called by update_net_error_codes.py.-->
   <int value="339" label="mkv"/>
   <int value="340" label="wav"/>
   <int value="341" label="mov"/>
-  <int value="342" label="dot"/>
-  <int value="343" label="dotx"/>
-  <int value="344" label="xlsb"/>
-  <int value="345" label="xlt"/>
-  <int value="346" label="xlm"/>
-  <int value="347" label="xldm"/>
-  <int value="348" label="xla"/>
-  <int value="349" label="xlam"/>
-  <int value="350" label="xll"/>
-  <int value="351" label="xlw"/>
-  <int value="352" label="pot"/>
-  <int value="353" label="potm"/>
-  <int value="354" label="ppsm"/>
-  <int value="355" label="pps"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -47047,20 +47033,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="339" label="MKV"/>
   <int value="340" label="WAV"/>
   <int value="341" label="MOV"/>
-  <int value="342" label="DOT"/>
-  <int value="343" label="DOTX"/>
-  <int value="344" label="XLSB"/>
-  <int value="345" label="XLT"/>
-  <int value="346" label="XLM"/>
-  <int value="347" label="XLDM"/>
-  <int value="348" label="XLA"/>
-  <int value="349" label="XLAM"/>
-  <int value="350" label="XLL"/>
-  <int value="351" label="XLW"/>
-  <int value="352" label="POT"/>
-  <int value="353" label="POTM"/>
-  <int value="354" label="PPSM"/>
-  <int value="355" label="PPS"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
