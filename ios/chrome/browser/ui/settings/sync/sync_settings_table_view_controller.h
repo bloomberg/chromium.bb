@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -18,8 +18,7 @@ extern NSString* const kSwitchAccountWillStartNotification;
 // Notification when a switch account operation did finish.
 extern NSString* const kSwitchAccountDidFinishNotification;
 
-@interface SyncSettingsCollectionViewController
-    : SettingsRootCollectionViewController
+@interface SyncSettingsTableViewController : SettingsRootTableViewController
 
 // |browserState| must not be nil.
 // |allowSwitchSyncAccount| indicates whether switching sync account is allowed
@@ -27,13 +26,14 @@ extern NSString* const kSwitchAccountDidFinishNotification;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
               allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
-                         style:(CollectionViewControllerStyle)style
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
 @end
 
-@interface SyncSettingsCollectionViewController (UsedForTesting)
+@interface SyncSettingsTableViewController (UsedForTesting)
 // Returns YES if a sync error cell should be displayed.
 - (BOOL)shouldDisplaySyncError;
 // Return YES if the Sync settings should be disabled because of a Sync error.
@@ -42,4 +42,4 @@ extern NSString* const kSwitchAccountDidFinishNotification;
 - (BOOL)shouldDisplayEncryptionError;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_

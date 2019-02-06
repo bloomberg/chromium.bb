@@ -87,7 +87,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self loadModel];
 }
 
-#pragma mark - SettingsRootCollectionViewController
+#pragma mark - SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];

@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -95,8 +95,8 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
      newSyncController:(ios::ChromeBrowserState*)browserState
 allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount
               delegate:(id<SettingsNavigationControllerDelegate>)delegate {
-  SyncSettingsCollectionViewController* controller =
-      [[SyncSettingsCollectionViewController alloc]
+  SyncSettingsTableViewController* controller =
+      [[SyncSettingsTableViewController alloc]
             initWithBrowserState:browserState
           allowSwitchSyncAccount:allowSwitchSyncAccount];
   controller.dispatcher = [delegate dispatcherForSettings];
@@ -399,8 +399,8 @@ initWithRootViewController:(UIViewController*)rootViewController
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController {
-  SyncSettingsCollectionViewController* controller =
-      [[SyncSettingsCollectionViewController alloc]
+  SyncSettingsTableViewController* controller =
+      [[SyncSettingsTableViewController alloc]
             initWithBrowserState:mainBrowserState_
           allowSwitchSyncAccount:YES];
   controller.dispatcher = [delegate_ dispatcherForSettings];

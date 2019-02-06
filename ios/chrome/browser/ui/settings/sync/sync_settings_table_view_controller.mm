@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 
 #include <memory>
 
@@ -27,22 +27,24 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -91,7 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface SyncSettingsCollectionViewController () <
+@interface SyncSettingsTableViewController () <
     ChromeIdentityServiceObserver,
     IdentityManagerObserverBridgeDelegate,
     SettingsControllerProtocol,
@@ -113,7 +115,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ResizedAvatarCache* _avatarCache;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   // Enable lookup of item corresponding to a given identity GAIA ID string.
-  NSDictionary<NSString*, CollectionViewItem*>* _identityMap;
+  NSDictionary<NSString*, TableViewItem*>* _identityMap;
 }
 
 // Stops observing browser state services.
@@ -123,21 +125,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)popViewIfSignedOut;
 
 // Returns a switch item for sync, set to on if |isOn| is YES.
-- (CollectionViewItem*)syncSwitchItem:(BOOL)isOn;
+- (TableViewItem*)syncSwitchItem:(BOOL)isOn;
 // Returns an item for sync errors other than sync encryption.
-- (CollectionViewItem*)syncErrorItem;
+- (TableViewItem*)syncErrorItem;
 // Returns a switch item for sync everything, set to on if |isOn| is YES.
-- (CollectionViewItem*)syncEverythingSwitchItem:(BOOL)isOn;
+- (TableViewItem*)syncEverythingSwitchItem:(BOOL)isOn;
 // Returns a switch item for the syncable data type |dataType|, set to on if
 // |IsDataTypePreferred| for that type returns true.
-- (CollectionViewItem*)switchItemForDataType:
+- (TableViewItem*)switchItemForDataType:
     (SyncSetupService::SyncableDatatype)dataType;
 // Returns a switch item for the Autofill wallet import setting.
-- (CollectionViewItem*)switchItemForAutofillWalletImport;
+- (TableViewItem*)switchItemForAutofillWalletImport;
 // Returns an item for Encryption.
-- (CollectionViewItem*)encryptionCellItem;
+- (TableViewItem*)encryptionCellItem;
 // Returns an item to open a link to manage the synced data.
-- (CollectionViewItem*)manageSyncedDataItem;
+- (TableViewItem*)manageSyncedDataItem;
 
 // Action method for sync switch.
 - (void)changeSyncStatusToOn:(UISwitch*)sender;
@@ -159,7 +161,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Updates the visual status of the screen (i.e. whether cells are enabled,
 // whether errors are displayed, ...).
-- (void)updateCollectionView;
+- (void)updateTableView;
 // Ensures the Sync error cell is shown when there is an error.
 - (void)updateSyncError;
 // Updates the Autofill wallet import cell (i.e. whether it is enabled and on).
@@ -167,7 +169,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Ensures the encryption cell displays an error if needed.
 - (void)updateEncryptionCell;
 // Updates the account item so it can reflect the latest state of the identity.
-- (void)updateAccountItem:(CollectionViewAccountItem*)item
+- (void)updateAccountItem:(TableViewAccountItem*)item
              withIdentity:(ChromeIdentity*)identity;
 
 // Returns whether the Sync Settings screen has an Accounts section, allowing
@@ -204,16 +206,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @end
 
-@implementation SyncSettingsCollectionViewController
+@implementation SyncSettingsTableViewController
 
 #pragma mark Initialization
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
               allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self = [super initWithLayout:layout
-                         style:CollectionViewControllerStyleDefault];
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _allowSwitchSyncAccount = allowSwitchSyncAccount;
     _browserState = browserState;
@@ -225,13 +229,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     _identityManagerObserver.reset(new identity::IdentityManagerObserverBridge(
         IdentityManagerFactory::GetForBrowserState(_browserState), self));
-    self.collectionViewAccessibilityIdentifier = kSettingsSyncId;
     _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
@@ -260,16 +260,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark View lifecycle
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.accessibilityIdentifier = kSettingsSyncId;
+  [self loadModel];
+}
+
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self updateEncryptionCell];
 }
 
-#pragma mark SettingsRootCollectionViewController
+#pragma mark SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   // SyncError section.
   if ([self shouldDisplaySyncError]) {
@@ -286,14 +292,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Sync to Section.
   if ([self hasAccountsSection]) {
-    NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
+    NSMutableDictionary<NSString*, TableViewItem*>* mutableIdentityMap =
         [[NSMutableDictionary alloc] init];
     // Accounts section. Cells enabled if sync is on.
     [model addSectionWithIdentifier:SectionIdentifierSyncAccounts];
-    SettingsTextItem* syncToHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+    TableViewTextHeaderFooterItem* syncToHeader =
+        [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
     syncToHeader.text = l10n_util::GetNSString(IDS_IOS_SYNC_TO_TITLE);
-    syncToHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:syncToHeader
         forSectionWithIdentifier:SectionIdentifierSyncAccounts];
     auto* identity_manager =
@@ -304,7 +309,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                      ->GetChromeIdentityService()
                                      ->GetIdentityWithGaiaID(account.gaia);
-      CollectionViewItem* accountItem = [self accountItem:identity];
+      TableViewItem* accountItem = [self accountItem:identity];
       [model addItem:accountItem
           toSectionWithIdentifier:SectionIdentifierSyncAccounts];
       [mutableIdentityMap setObject:accountItem forKey:identity.gaiaID];
@@ -314,11 +319,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Data Types to sync. Enabled if sync is on.
   [model addSectionWithIdentifier:SectionIdentifierSyncServices];
-  SettingsTextItem* syncServicesHeader =
-      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+  TableViewTextHeaderFooterItem* syncServicesHeader =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
   syncServicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_DATA_TYPES_TITLE);
-  syncServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:syncServicesHeader
       forSectionWithIdentifier:SectionIdentifierSyncServices];
   BOOL syncEverythingEnabled = _syncSetupService->IsSyncingAllDataTypes();
@@ -345,8 +349,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Model items
 
-- (CollectionViewItem*)syncSwitchItem:(BOOL)isOn {
-  LegacySyncSwitchItem* syncSwitchItem = [self
+- (TableViewItem*)syncSwitchItem:(BOOL)isOn {
+  SyncSwitchItem* syncSwitchItem = [self
       switchItemWithType:ItemTypeSyncSwitch
                    title:l10n_util::GetNSString(IDS_IOS_SYNC_SETTING_TITLE)
                 subTitle:l10n_util::GetNSString(
@@ -355,21 +359,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return syncSwitchItem;
 }
 
-- (CollectionViewItem*)syncErrorItem {
+- (TableViewItem*)syncErrorItem {
   DCHECK([self shouldDisplaySyncError]);
-  CollectionViewAccountItem* syncErrorItem =
-      [[CollectionViewAccountItem alloc] initWithType:ItemTypeSyncError];
-  syncErrorItem.cellStyle = CollectionViewCellStyle::kUIKit;
+  TableViewAccountItem* syncErrorItem =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeSyncError];
   syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.image = [UIImage imageNamed:@"settings_error"];
   syncErrorItem.detailText = GetSyncErrorMessageForBrowserState(_browserState);
   return syncErrorItem;
 }
 
-- (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
-  CollectionViewAccountItem* identityAccountItem =
-      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
-  identityAccountItem.cellStyle = CollectionViewCellStyle::kUIKit;
+- (TableViewItem*)accountItem:(ChromeIdentity*)identity {
+  TableViewAccountItem* identityAccountItem =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:identityAccountItem withIdentity:identity];
 
   identityAccountItem.enabled = _syncSetupService->IsSyncEnabled();
@@ -377,13 +379,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
       AuthenticationServiceFactory::GetForBrowserState(_browserState)
           ->GetAuthenticatedIdentity();
   if (identity == authenticatedIdentity) {
-    identityAccountItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+    identityAccountItem.accessoryType = UITableViewCellAccessoryCheckmark;
   }
   return identityAccountItem;
 }
 
-- (CollectionViewItem*)syncEverythingSwitchItem:(BOOL)isOn {
-  LegacySyncSwitchItem* syncSwitchItem = [self
+- (TableViewItem*)syncEverythingSwitchItem:(BOOL)isOn {
+  SyncSwitchItem* syncSwitchItem = [self
       switchItemWithType:ItemTypeSyncEverything
                    title:l10n_util::GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE)
                 subTitle:nil];
@@ -392,12 +394,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return syncSwitchItem;
 }
 
-- (CollectionViewItem*)switchItemForDataType:
+- (TableViewItem*)switchItemForDataType:
     (SyncSetupService::SyncableDatatype)dataType {
   syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
   BOOL isOn = _syncSetupService->IsDataTypePreferred(modelType);
 
-  LegacySyncSwitchItem* syncDataTypeItem =
+  SyncSwitchItem* syncDataTypeItem =
       [self switchItemWithType:ItemTypeSyncableDataType
                          title:l10n_util::GetNSString(
                                    [self titleIdForSyncableDataType:dataType])
@@ -408,10 +410,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return syncDataTypeItem;
 }
 
-- (CollectionViewItem*)switchItemForAutofillWalletImport {
+- (TableViewItem*)switchItemForAutofillWalletImport {
   NSString* title = l10n_util::GetNSString(
       IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
-  LegacySyncSwitchItem* autofillWalletImportItem =
+  SyncSwitchItem* autofillWalletImportItem =
       [self switchItemWithType:ItemTypeAutofillWalletImport
                          title:title
                       subTitle:nil];
@@ -420,21 +422,27 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return autofillWalletImportItem;
 }
 
-- (CollectionViewItem*)encryptionCellItem {
-  TextAndErrorItem* encryptionCellItem =
-      [[TextAndErrorItem alloc] initWithType:ItemTypeEncryption];
-  encryptionCellItem.text =
+- (TableViewItem*)encryptionCellItem {
+  TableViewImageItem* encryptionCellItem =
+      [[TableViewImageItem alloc] initWithType:ItemTypeEncryption];
+  encryptionCellItem.title =
       l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
   encryptionCellItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
-  encryptionCellItem.shouldDisplayError = [self shouldDisplayEncryptionError];
+      UITableViewCellAccessoryDisclosureIndicator;
+  encryptionCellItem.image = [self shouldDisplayEncryptionError]
+                                 ? [UIImage imageNamed:@"settings_error"]
+                                 : nil;
   encryptionCellItem.enabled = [self shouldEncryptionItemBeEnabled];
+  encryptionCellItem.textColor =
+      encryptionCellItem.enabled
+          ? UIColor.blackColor
+          : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   return encryptionCellItem;
 }
 
-- (CollectionViewItem*)manageSyncedDataItem {
-  SettingsTextItem* manageSyncedDataItem =
-      [[SettingsTextItem alloc] initWithType:ItemTypeManageSyncedData];
+- (TableViewItem*)manageSyncedDataItem {
+  TableViewTextItem* manageSyncedDataItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeManageSyncedData];
   manageSyncedDataItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_RESET_GOOGLE_DASHBOARD_NO_LINK);
   manageSyncedDataItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -443,44 +451,42 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark Item Constructors
 
-- (LegacySyncSwitchItem*)switchItemWithType:(NSInteger)type
-                                      title:(NSString*)title
-                                   subTitle:(NSString*)detailText {
-  LegacySyncSwitchItem* switchItem =
-      [[LegacySyncSwitchItem alloc] initWithType:type];
+- (SyncSwitchItem*)switchItemWithType:(NSInteger)type
+                                title:(NSString*)title
+                             subTitle:(NSString*)detailText {
+  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:type];
   switchItem.text = title;
   switchItem.detailText = detailText;
   return switchItem;
 }
 
-#pragma mark - UICollectionViewDataSource
+#pragma mark - UITableViewDataSource
 
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell = [super collectionView:collectionView
-                              cellForItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
   switch (itemType) {
     case ItemTypeSyncError: {
-      CollectionViewAccountCell* accountCell =
-          base::mac::ObjCCastStrict<CollectionViewAccountCell>(cell);
-      accountCell.textLabel.textColor = [[MDCPalette redPalette] tint700];
+      TableViewAccountCell* accountCell =
+          base::mac::ObjCCastStrict<TableViewAccountCell>(cell);
+      accountCell.textLabel.textColor = UIColor.redColor;
       accountCell.detailTextLabel.numberOfLines = 1;
       break;
     }
     case ItemTypeSyncSwitch: {
-      LegacySyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(changeSyncStatusToOn:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
     case ItemTypeSyncEverything: {
-      LegacySyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView
                  addTarget:self
                     action:@selector(changeSyncEverythingStatusToOn:)
@@ -488,8 +494,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSyncableDataType: {
-      LegacySyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(changeDataTypeSyncStatusToOn:)
                       forControlEvents:UIControlEventValueChanged];
@@ -497,8 +503,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeAutofillWalletImport: {
-      LegacySyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(autofillWalletImportChanged:)
                       forControlEvents:UIControlEventValueChanged];
@@ -510,22 +516,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
-#pragma mark UICollectionViewDelegate
+#pragma mark UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSyncError:
       [self fixSyncErrorIfPossible];
       break;
     case ItemTypeAccount: {
-      CollectionViewAccountItem* accountItem =
-          base::mac::ObjCCastStrict<CollectionViewAccountItem>(
-              [self.collectionViewModel itemAtIndexPath:indexPath]);
+      TableViewAccountItem* accountItem =
+          base::mac::ObjCCastStrict<TableViewAccountItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath]);
       if (!accountItem.accessoryType) {
         [self startSwitchAccountForIdentity:accountItem.chromeIdentity
                            postSignInAction:POST_SIGNIN_ACTION_NONE];
@@ -546,40 +551,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
     default:
       break;
-  }
-}
-
-#pragma mark MDCCollectionViewStylingDelegate
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch (item.type) {
-    case ItemTypeAccount:
-      return MDCCellDefaultTwoLineHeight;
-    case ItemTypeSyncSwitch:
-    case ItemTypeAutofillWalletImport:
-      return [MDCCollectionViewCell
-          cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                             forItem:item];
-    case ItemTypeSyncError:
-      return MDCCellDefaultOneLineWithAvatarHeight;
-    default:
-      return MDCCellDefaultOneLineHeight;
-  }
-}
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  switch (type) {
-    case ItemTypeSyncSwitch:
-    case ItemTypeSyncEverything:
-    case ItemTypeSyncableDataType:
-      return YES;
-    default:
-      return NO;
   }
 }
 
@@ -606,16 +577,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
                   << ") failed.";
     // This shouldn't happen, but in case there was an underlying sync problem,
     // make sure the UI reflects sync's reality.
-    NSIndexPath* indexPath = [self.collectionViewModel
-        indexPathForItemType:ItemTypeSyncSwitch
-           sectionIdentifier:SectionIdentifierEnableSync];
+    NSIndexPath* indexPath =
+        [self.tableViewModel indexPathForItemType:ItemTypeSyncSwitch
+                                sectionIdentifier:SectionIdentifierEnableSync];
 
-    LegacySyncSwitchItem* item =
-        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
-            [self.collectionViewModel itemAtIndexPath:indexPath]);
+    SyncSwitchItem* item = base::mac::ObjCCastStrict<SyncSwitchItem>(
+        [self.tableViewModel itemAtIndexPath:indexPath]);
     item.on = isNowOn;
   }
-  [self updateCollectionView];
+  [self updateTableView];
 }
 
 - (void)fixSyncErrorIfPossible {
@@ -671,7 +641,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       presentingViewController:self];
   _authenticationFlow.dispatcher = self.dispatcher;
 
-  __weak SyncSettingsCollectionViewController* weakSelf = self;
+  __weak SyncSettingsTableViewController* weakSelf = self;
   [_authenticationFlow startSignInWithCompletion:^(BOOL success) {
     [weakSelf didSwitchAccountWithSuccess:success];
   }];
@@ -710,15 +680,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // No change - there was a sync-level problem that didn't allow the change.
     // This really shouldn't happen, but just in case, make sure the UI reflects
     // sync's reality.
-    NSIndexPath* indexPath = [self.collectionViewModel
+    NSIndexPath* indexPath = [self.tableViewModel
         indexPathForItemType:ItemTypeSyncEverything
            sectionIdentifier:SectionIdentifierSyncServices];
-    LegacySyncSwitchItem* item =
-        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
-            [self.collectionViewModel itemAtIndexPath:indexPath]);
+    SyncSwitchItem* item = base::mac::ObjCCastStrict<SyncSwitchItem>(
+        [self.tableViewModel itemAtIndexPath:indexPath]);
     item.on = isNowOn;
   }
-  [self updateCollectionView];
+  [self updateTableView];
 }
 
 - (void)changeDataTypeSyncStatusToOn:(UISwitch*)sender {
@@ -729,9 +698,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   BOOL isOn = sender.isOn;
 
-  LegacySyncSwitchItem* syncSwitchItem =
-      base::mac::ObjCCastStrict<LegacySyncSwitchItem>([self.collectionViewModel
-          itemAtIndexPath:[self indexPathForTag:sender.tag]]);
+  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
+      [self.tableViewModel itemAtIndexPath:[self indexPathForTag:sender.tag]]);
   SyncSetupService::SyncableDatatype dataType =
       (SyncSetupService::SyncableDatatype)syncSwitchItem.dataType;
   syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
@@ -742,7 +710,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Set value of Autofill wallet import accordingly if Autofill Sync changed.
   if (dataType == SyncSetupService::kSyncAutofill) {
     [self setAutofillWalletImportOn:isOn];
-    [self updateCollectionView];
+    [self updateTableView];
   }
 }
 
@@ -777,41 +745,39 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark Updates
 
-- (void)updateCollectionView {
-  __weak SyncSettingsCollectionViewController* weakSelf = self;
-  [self.collectionView
+- (void)updateTableView {
+  __weak SyncSettingsTableViewController* weakSelf = self;
+  [self.tableView
       performBatchUpdates:^{
-        [weakSelf updateCollectionViewInternal];
+        [weakSelf updateTableViewInternal];
       }
                completion:nil];
 }
 
-- (void)updateCollectionViewInternal {
-  NSIndexPath* indexPath = [self.collectionViewModel
-      indexPathForItemType:ItemTypeSyncSwitch
-         sectionIdentifier:SectionIdentifierEnableSync];
+- (void)updateTableViewInternal {
+  NSIndexPath* indexPath =
+      [self.tableViewModel indexPathForItemType:ItemTypeSyncSwitch
+                              sectionIdentifier:SectionIdentifierEnableSync];
 
-  LegacySyncSwitchItem* syncItem =
-      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:indexPath]);
+  SyncSwitchItem* syncItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
   syncItem.on = _syncSetupService->IsSyncEnabled();
   [self reconfigureCellsForItems:@[ syncItem ]];
 
   // Update Sync Accounts section.
   if ([self hasAccountsSection]) {
-    NSInteger section = [self.collectionViewModel
+    NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:SectionIdentifierSyncAccounts];
-    NSInteger itemsCount =
-        [self.collectionViewModel numberOfItemsInSection:section];
+    NSInteger itemsCount = [self.tableViewModel numberOfItemsInSection:section];
     NSMutableArray* accountsToReconfigure = [[NSMutableArray alloc] init];
     for (NSInteger item = 0; item < itemsCount; ++item) {
-      NSIndexPath* indexPath = [self.collectionViewModel
+      NSIndexPath* indexPath = [self.tableViewModel
           indexPathForItemType:ItemTypeAccount
              sectionIdentifier:SectionIdentifierSyncAccounts
                        atIndex:item];
-      CollectionViewAccountItem* accountItem =
-          base::mac::ObjCCastStrict<CollectionViewAccountItem>(
-              [self.collectionViewModel itemAtIndexPath:indexPath]);
+      TableViewAccountItem* accountItem =
+          base::mac::ObjCCastStrict<TableViewAccountItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath]);
       accountItem.enabled = _syncSetupService->IsSyncEnabled();
       [accountsToReconfigure addObject:accountItem];
     }
@@ -819,12 +785,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   // Update Sync Services section.
-  indexPath = [self.collectionViewModel
-      indexPathForItemType:ItemTypeSyncEverything
-         sectionIdentifier:SectionIdentifierSyncServices];
-  LegacySyncSwitchItem* syncEverythingItem =
-      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:indexPath]);
+  indexPath =
+      [self.tableViewModel indexPathForItemType:ItemTypeSyncEverything
+                              sectionIdentifier:SectionIdentifierSyncServices];
+  SyncSwitchItem* syncEverythingItem =
+      base::mac::ObjCCastStrict<SyncSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:indexPath]);
   syncEverythingItem.on = _syncSetupService->IsSyncingAllDataTypes();
   syncEverythingItem.enabled = [self shouldSyncEverythingItemBeEnabled];
   [self reconfigureCellsForItems:@[ syncEverythingItem ]];
@@ -835,13 +801,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
        index < SyncSetupService::kNumberOfSyncableDatatypes; ++index) {
     SyncSetupService::SyncableDatatype dataType =
         static_cast<SyncSetupService::SyncableDatatype>(index);
-    NSIndexPath* indexPath = [self.collectionViewModel
-        indexPathForItemType:ItemTypeSyncableDataType
-           sectionIdentifier:SectionIdentifierSyncServices
-                     atIndex:index];
-    LegacySyncSwitchItem* syncSwitchItem =
-        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
-            [self.collectionViewModel itemAtIndexPath:indexPath]);
+    NSIndexPath* indexPath =
+        [self.tableViewModel indexPathForItemType:ItemTypeSyncableDataType
+                                sectionIdentifier:SectionIdentifierSyncServices
+                                          atIndex:index];
+    SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
+        [self.tableViewModel itemAtIndexPath:indexPath]);
     DCHECK_EQ(index, syncSwitchItem.dataType);
     syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
     syncSwitchItem.on = _syncSetupService->IsDataTypePreferred(modelType);
@@ -857,7 +822,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateEncryptionCell];
 
   // Add/Remove the Sync Error. This is the only update that can change index
-  // paths. It is done last because self.collectionViewModel isn't aware of
+  // paths. It is done last because self.tableViewModel isn't aware of
   // the performBatchUpdates:completion: order of update/remove/delete.
   [self updateSyncError];
 }
@@ -865,23 +830,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)updateSyncError {
   BOOL shouldDisplayError = [self shouldDisplaySyncError];
   BOOL isDisplayingError =
-      [self.collectionViewModel hasItemForItemType:ItemTypeSyncError
-                                 sectionIdentifier:SectionIdentifierSyncError];
+      [self.tableViewModel hasItemForItemType:ItemTypeSyncError
+                            sectionIdentifier:SectionIdentifierSyncError];
   if (shouldDisplayError && !isDisplayingError) {
-    [self.collectionViewModel
-        insertSectionWithIdentifier:SectionIdentifierSyncError
-                            atIndex:0];
-    [self.collectionViewModel addItem:[self syncErrorItem]
-              toSectionWithIdentifier:SectionIdentifierSyncError];
-    NSInteger section = [self.collectionViewModel
+    [self.tableViewModel insertSectionWithIdentifier:SectionIdentifierSyncError
+                                             atIndex:0];
+    [self.tableViewModel addItem:[self syncErrorItem]
+         toSectionWithIdentifier:SectionIdentifierSyncError];
+    NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:SectionIdentifierSyncError];
-    [self.collectionView insertSections:[NSIndexSet indexSetWithIndex:section]];
+    [self.tableView insertSections:[NSIndexSet indexSetWithIndex:section]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
   } else if (!shouldDisplayError && isDisplayingError) {
-    NSInteger section = [self.collectionViewModel
+    NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:SectionIdentifierSyncError];
-    [self.collectionViewModel
+    [self.tableViewModel
         removeSectionWithIdentifier:SectionIdentifierSyncError];
-    [self.collectionView deleteSections:[NSIndexSet indexSetWithIndex:section]];
+    [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
   }
 }
 
@@ -892,12 +858,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self setAutofillWalletImportOn:isSyncingEverything];
   }
 
-  NSIndexPath* indexPath = [self.collectionViewModel
-      indexPathForItemType:ItemTypeAutofillWalletImport
-         sectionIdentifier:SectionIdentifierSyncServices];
-  LegacySyncSwitchItem* syncSwitchItem =
-      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:indexPath]);
+  NSIndexPath* indexPath =
+      [self.tableViewModel indexPathForItemType:ItemTypeAutofillWalletImport
+                              sectionIdentifier:SectionIdentifierSyncServices];
+  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
   syncSwitchItem.on = [self isAutofillWalletImportOn];
   syncSwitchItem.enabled = [self isAutofillWalletImportItemEnabled];
   [self reconfigureCellsForItems:@[ syncSwitchItem ]];
@@ -905,17 +870,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateEncryptionCell {
   BOOL shouldDisplayEncryptionError = [self shouldDisplayEncryptionError];
-  NSIndexPath* indexPath = [self.collectionViewModel
+  NSIndexPath* indexPath = [self.tableViewModel
       indexPathForItemType:ItemTypeEncryption
          sectionIdentifier:SectionIdentifierEncryptionAndFooter];
-  TextAndErrorItem* item = base::mac::ObjCCastStrict<TextAndErrorItem>(
-      [self.collectionViewModel itemAtIndexPath:indexPath]);
-  item.shouldDisplayError = shouldDisplayEncryptionError;
+  TableViewImageItem* item = base::mac::ObjCCastStrict<TableViewImageItem>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
+  item.image = shouldDisplayEncryptionError
+                   ? [UIImage imageNamed:@"settings_error"]
+                   : nil;
   item.enabled = [self shouldEncryptionItemBeEnabled];
+  item.textColor =
+      item.enabled ? UIColor.blackColor
+                   : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   [self reconfigureCellsForItems:@[ item ]];
 }
 
-- (void)updateAccountItem:(CollectionViewAccountItem*)item
+- (void)updateAccountItem:(TableViewAccountItem*)item
              withIdentity:(ChromeIdentity*)identity {
   item.image = [_avatarCache resizedAvatarForIdentity:identity];
   item.text = identity.userEmail;
@@ -1016,19 +986,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (NSInteger)tagForIndexPath:(NSIndexPath*)indexPath {
   DCHECK(indexPath.section ==
-         [self.collectionViewModel
+         [self.tableViewModel
              sectionForSectionIdentifier:SectionIdentifierSyncServices]);
-  NSInteger index =
-      [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
+  NSInteger index = [self.tableViewModel indexInItemTypeForIndexPath:indexPath];
   return index + kTagShift;
 }
 
 - (NSIndexPath*)indexPathForTag:(NSInteger)shiftedTag {
   NSInteger unshiftedTag = shiftedTag - kTagShift;
-  return [self.collectionViewModel
-      indexPathForItemType:ItemTypeSyncableDataType
-         sectionIdentifier:SectionIdentifierSyncServices
-                   atIndex:unshiftedTag];
+  return [self.tableViewModel indexPathForItemType:ItemTypeSyncableDataType
+                                 sectionIdentifier:SectionIdentifierSyncServices
+                                           atIndex:unshiftedTag];
 }
 
 #pragma mark SyncObserverModelBridge
@@ -1037,7 +1005,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (_ignoreSyncStateChanges || _authenticationOperationInProgress) {
     return;
   }
-  [self updateCollectionView];
+  [self updateTableView];
 }
 
 #pragma mark identity::IdentityManagerObserverBridgeDelegate
@@ -1062,9 +1030,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - ChromeIdentityServiceObserver
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
-  CollectionViewAccountItem* item =
-      base::mac::ObjCCastStrict<CollectionViewAccountItem>(
-          [_identityMap objectForKey:identity.gaiaID]);
+  TableViewAccountItem* item = base::mac::ObjCCastStrict<TableViewAccountItem>(
+      [_identityMap objectForKey:identity.gaiaID]);
   if (!item) {
     // Ignoring unknown identity.
     return;

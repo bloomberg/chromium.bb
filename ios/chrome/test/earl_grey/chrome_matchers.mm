@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -305,10 +305,10 @@ id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> LegacySyncSwitchCell(NSString* accessibilityLabel,
-                                     BOOL is_toggled_on) {
+id<GREYMatcher> SyncSwitchCell(NSString* accessibility_label,
+                               BOOL is_toggled_on) {
   return grey_allOf(
-      grey_accessibilityLabel(accessibilityLabel),
+      grey_accessibilityLabel(accessibility_label),
       grey_accessibilityValue(
           is_toggled_on ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                         : l10n_util::GetNSString(IDS_IOS_SETTING_OFF)),
