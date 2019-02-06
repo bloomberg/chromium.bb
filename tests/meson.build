@@ -232,6 +232,7 @@ endif
 env_test_weston = [
 	'WESTON_TEST_REFERENCE_PATH=@0@/reference'.format(meson.current_source_dir()),
 	'WESTON_MODULE_MAP=@0@'.format(env_modmap),
+	'WESTON_DATA_DIR=' + join_paths(meson.current_source_dir(), '..', 'data'),
 ]
 
 # FIXME: the multiple loops is lame. rethink this.
