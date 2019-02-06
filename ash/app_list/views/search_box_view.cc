@@ -384,12 +384,10 @@ void SearchBoxView::ProcessAutocomplete() {
   // Current non-autocompleted text.
   const base::string16& user_typed_text =
       search_box()->text().substr(0, highlight_range_.start());
-  if (last_key_pressed_ == ui::VKEY_BACK || last_key_pressed_ == ui::VKEY_UP ||
-      last_key_pressed_ == ui::VKEY_DOWN ||
-      last_key_pressed_ == ui::VKEY_LEFT ||
-      last_key_pressed_ == ui::VKEY_RIGHT || !first_visible_result ||
+  if (last_key_pressed_ == ui::VKEY_BACK ||
+      last_key_pressed_ == ui::VKEY_DELETE || !first_visible_result ||
       user_typed_text.length() < kMinimumLengthToAutocomplete) {
-    // Backspace or arrow keys were pressed, no results exist, or current text
+    // If the suggestion was rejected, no results exist, or current text
     // is too short for a confident autocomplete suggestion.
     return;
   }
@@ -512,6 +510,11 @@ void SearchBoxView::SetAutocompleteText(
   search_box()->SetCompositionText(composition_text);
   search_box()->set_controller(this);
 
+  // The controller was null briefly, so it was unaware of a highlight change.
+  // As a result, we need to manually declare the range to allow for proper
+  // selection behavior.
+  search_box()->SelectRange(highlight_range_);
+
   // Send an event to alert ChromeVox that an autocomplete has occurred.
   // The |kValueChanged| type lets ChromeVox know that it should scan
   // |node_data| for "Value".
@@ -548,28 +551,9 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   if (!is_search_box_active())
     return false;
 
-  // Handles autocomplete text confirmation/deletion
-  // TODO(ginko) fix logic for arrow keys in autocomplete
-  if (search_box()->HasFocus() && !search_box()->text().empty() &&
-      ShouldProcessAutocomplete()) {
-    // If the search box has no text in it currently, autocomplete should not
-    // work.
+  // Record the |last_key_pressed_| for autocomplete.
+  if (!search_box()->text().empty() && ShouldProcessAutocomplete())
     last_key_pressed_ = key_event.key_code();
-    if (key_event.type() == ui::ET_KEY_PRESSED &&
-        key_event.key_code() != ui::VKEY_BACK) {
-      if (key_event.key_code() == ui::VKEY_TAB && HasAutocompleteText()) {
-        AcceptAutocompleteText();
-        return true;
-      } else if ((key_event.key_code() == ui::VKEY_UP ||
-                  key_event.key_code() == ui::VKEY_DOWN ||
-                  key_event.key_code() == ui::VKEY_LEFT ||
-                  key_event.key_code() == ui::VKEY_RIGHT) &&
-                 HasAutocompleteText()) {
-        ClearAutocompleteText();
-        return true;
-      }
-    }
-  }
 
   // Only arrow key events intended for traversal within search results should
   // be handled from here.
