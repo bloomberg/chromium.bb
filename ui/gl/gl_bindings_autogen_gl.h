@@ -1783,6 +1783,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_blend_func_extended;
   bool b_GL_ARB_draw_buffers;
   bool b_GL_ARB_draw_instanced;
+  bool b_GL_ARB_ES2_compatibility;
   bool b_GL_ARB_framebuffer_object;
   bool b_GL_ARB_get_program_binary;
   bool b_GL_ARB_instanced_arrays;
