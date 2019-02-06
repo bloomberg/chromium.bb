@@ -278,14 +278,18 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Trace markers for GPU category %s were not found' % category)
     return _TEST_DONE
 
+  def _EvaluateSuccess_CheckVideoModeYUY2(self, category, event_iterator):
+    return self._CheckVideoModeHelper(category, event_iterator,
+                                      expect_yuy2=True)
+
   def _EvaluateSuccess_CheckVideoModeNoOverlay(self, category, event_iterator):
     return self._CheckVideoModeHelper(category, event_iterator, no_overlay=True)
 
   def _EvaluateSuccess_CheckVideoMode(self, category, event_iterator):
-    return self._CheckVideoModeHelper(category, event_iterator,
-                                      no_overlay=False)
+    return self._CheckVideoModeHelper(category, event_iterator)
 
-  def _CheckVideoModeHelper(self, category, event_iterator, no_overlay):
+  def _CheckVideoModeHelper(self, category, event_iterator, no_overlay=False,
+                            expect_yuy2=False):
     os_name = self.browser.platform.GetOSName()
     assert os_name and os_name.lower() == 'win'
 
@@ -306,7 +310,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       assert supports_yuy2 or supports_nv12
       if not no_overlay:
         expected_presentation_mode = _SWAP_CHAIN_PRESENTATION_MODE_OVERLAY
-      if not supports_nv12:
+      if expect_yuy2 or not supports_nv12:
         expected_pixel_format = _SWAP_CHAIN_PIXEL_FORMAT_YUY2
 
     pixel_format_history = []

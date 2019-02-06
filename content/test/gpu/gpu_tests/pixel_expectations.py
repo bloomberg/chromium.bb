@@ -152,3 +152,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=913223)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker', bug=913223)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=913223)
+
+    # Skip on platforms where DXVA vs D3D11 decoder doesn't matter.
+    self.Skip('Pixel_Video_MP4_DXVA', ['linux', 'android', 'mac', 'chromeos'],
+              bug=927901)
+    self.Skip('Pixel_Video_VP9_DXVA', ['linux', 'android', 'mac', 'chromeos'],
+              bug=927901)
