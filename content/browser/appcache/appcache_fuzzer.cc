@@ -48,7 +48,8 @@ struct Env {
 
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter =
         base::MakeRefCounted<URLLoaderFactoryGetter>();
-    loader_factory_getter->SetNetworkFactoryForTesting(mock_url_loader_factory);
+    loader_factory_getter->SetNetworkFactoryForTesting(
+        mock_url_loader_factory, /* is_corb_enabled = */ true);
     appcache_service->set_url_loader_factory_getter(
         loader_factory_getter.get());
 

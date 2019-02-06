@@ -748,7 +748,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     if (!loader_factory_getter_.get())
       return;
     loader_factory_getter_->SetNetworkFactoryForTesting(
-        &mock_url_loader_factory_);
+        &mock_url_loader_factory_, /* is_corb_enabled = */ true);
   }
 
   void StartCacheAttemptTest() {

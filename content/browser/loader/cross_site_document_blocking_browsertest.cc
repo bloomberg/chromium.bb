@@ -736,7 +736,13 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
   EXPECT_EQ(0u, interceptor.response_head().content_length);
 }
 
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache) {
+// Tests what happens in a page covered by AppCache (where the AppCache manifest
+// doesn't cover any cross-origin resources).  In particular, requests from the
+// web page that get proxied by the AppCache to the network (falling back to the
+// network because they are not covered by the AppCache manifest) should still
+// be subject to CORB.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       AppCache_NetworkFallback) {
   embedded_test_server()->StartAcceptingConnections();
 
   // Prepare to intercept the network request at the IPC layer.
@@ -801,6 +807,38 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache) {
   }
 }
 
+// Tests what happens in a page covered by AppCache, where the AppCache manifest
+// covers cross-origin resources.  In this case the cross-origin resource
+// requests will be triggered by AppCache-manifest-processing code (rather than
+// triggered directly by the web page / renderer process as in
+// AppCache_NetworkFallback).  Such manifest-triggered requests need to be
+// subject to CORB.
+//
+// This is a regression test for https://crbug.com/927471.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache_InManifest) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Load the AppCached page and wait until the AppCache is populated (this will
+  // include the cross-origin
+  // http://cross-origin.com/site_isolation/nosniff.json from
+  // site_isolation/appcached_cross_origin_resource.manifest.
+  base::HistogramTester histograms;
+  GURL main_url = embedded_test_server()->GetURL(
+      "/site_isolation/appcached_cross_origin_resource.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Verify that the request for nosniff.json was covered by CORB.
+  FetchHistogramsFromChildProcesses();
+  EXPECT_EQ(1, histograms.GetBucketCount(
+                   "SiteIsolation.XSD.Browser.Action",
+                   static_cast<int>(Action::kBlockedWithoutSniffing)));
+}
+
+// Tests that renderer will be terminated if it asks AppCache to initiate a
+// request with an invalid |request_initiator|.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        AppCache_InitiatorEnforcement) {
   embedded_test_server()->StartAcceptingConnections();

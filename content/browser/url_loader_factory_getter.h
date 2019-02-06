@@ -87,7 +87,8 @@ class URLLoaderFactoryGetter
   // Overrides the network URLLoaderFactory for subsequent requests. Passing a
   // null pointer will restore the default behavior.
   CONTENT_EXPORT void SetNetworkFactoryForTesting(
-      network::mojom::URLLoaderFactory* test_factory);
+      network::mojom::URLLoaderFactory* test_factory,
+      bool is_corb_enabled = false);
 
   CONTENT_EXPORT network::mojom::URLLoaderFactoryPtr*
   original_network_factory_for_testing() {
@@ -149,6 +150,7 @@ class URLLoaderFactoryGetter
   network::mojom::URLLoaderFactoryPtr network_factory_;
   network::mojom::URLLoaderFactoryPtr network_factory_corb_enabled_;
   network::mojom::URLLoaderFactory* test_factory_ = nullptr;
+  network::mojom::URLLoaderFactory* test_factory_corb_enabled_ = nullptr;
 
   // Used to re-create |network_factory_| when connection error happens. Can
   // only be accessed on UI thread. Must be cleared by |StoragePartitionImpl|

@@ -200,11 +200,9 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
   if (g_get_network_factory_callback.Get() && !test_factory_)
     g_get_network_factory_callback.Get().Run(this);
 
-  // The |is_corb_enabled| case will only be hit for AppCache scenarios, where
-  // the URLLoaderInterceptor's test hooks are sufficiently covered at the
-  // RenderFrameHostImpl level (e.g. intercepting requests coming from the
-  // renderer, rather than requests generated within
-  // AppCacheSubresourceURLFactory.
+  if (is_corb_enabled && test_factory_corb_enabled_)
+    return test_factory_corb_enabled_;
+
   if (!is_corb_enabled && test_factory_)
     return test_factory_;
 
@@ -218,10 +216,16 @@ void URLLoaderFactoryGetter::CloneNetworkFactory(
 }
 
 void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
-    network::mojom::URLLoaderFactory* test_factory) {
+    network::mojom::URLLoaderFactory* test_factory,
+    bool is_corb_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!test_factory_ || !test_factory);
-  test_factory_ = test_factory;
+  if (is_corb_enabled) {
+    DCHECK(!test_factory_corb_enabled_ || !test_factory);
+    test_factory_corb_enabled_ = test_factory;
+  } else {
+    DCHECK(!test_factory_ || !test_factory);
+    test_factory_ = test_factory;
+  }
 }
 
 void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
