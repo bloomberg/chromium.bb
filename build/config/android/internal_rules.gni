@@ -1106,11 +1106,19 @@ if (enable_java_templates) {
         _proguard_enabled && (!defined(invoker.proguard_jar_path) || use_r8)
     _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
+    _enable_main_dex_list =
+        _enable_multidex &&
+        (!defined(invoker.min_sdk_version) || invoker.min_sdk_version < 21)
+    if (!_enable_main_dex_list) {
+      if (defined(invoker.negative_main_dex_globs)) {
+        not_needed(invoker, [ "negative_main_dex_globs" ])
+      }
+    }
 
     assert(!(defined(invoker.input_jars) && _proguard_enabled),
            "input_jars can't be specified when proguarding a dex.")
 
-    if (_enable_multidex) {
+    if (_enable_main_dex_list) {
       _main_dex_rules = "//build/android/main_dex_classes.flags"
     }
 
@@ -1122,11 +1130,6 @@ if (enable_java_templates) {
     }
 
     if (_proguard_enabled) {
-      if (defined(invoker.enable_multidex)) {
-        if (defined(invoker.negative_main_dex_globs)) {
-          assert(invoker.negative_main_dex_globs != [])
-        }
-      }
       if (_proguarding_with_r8) {
         _proguard_output_path = invoker.output
         _proguard_target_name = target_name
@@ -1179,8 +1182,7 @@ if (enable_java_templates) {
         }
 
         if (_enable_multidex && _proguarding_with_r8) {
-          if (!defined(invoker.min_sdk_version) ||
-              invoker.min_sdk_version < 21) {
+          if (_enable_main_dex_list) {
             if (defined(invoker.extra_main_dex_proguard_config)) {
               args += [
                 "--main-dex-rules-path",
@@ -1195,8 +1197,9 @@ if (enable_java_templates) {
             ]
             inputs += [ _main_dex_rules ]
           } else {
-            not_needed(invoker, [ "extra_main_dex_proguard_config" ])
-            not_needed([ "_main_dex_rules" ])
+            if (defined(invoker.extra_main_dex_proguard_config)) {
+              not_needed(invoker, [ "extra_main_dex_proguard_config" ])
+            }
           }
         }
 
@@ -1208,7 +1211,7 @@ if (enable_java_templates) {
     }
 
     if (!_proguarding_with_r8) {
-      if (_enable_multidex) {
+      if (_enable_main_dex_list) {
         _main_dex_list_path = invoker.output + ".main_dex_list"
         _main_dex_list_target_name = "${target_name}__main_dex_list"
         action_with_pydeps(_main_dex_list_target_name) {
@@ -1316,13 +1319,15 @@ if (enable_java_templates) {
         }
 
         if (_enable_multidex) {
-          args += [
-            "--multi-dex",
-            "--main-dex-list-path",
-            rebase_path(_main_dex_list_path, root_build_dir),
-          ]
-          deps += [ ":${_main_dex_list_target_name}" ]
-          inputs += [ _main_dex_list_path ]
+          args += [ "--multi-dex" ]
+          if (_enable_main_dex_list) {
+            args += [
+              "--main-dex-list-path",
+              rebase_path(_main_dex_list_path, root_build_dir),
+            ]
+            deps += [ ":${_main_dex_list_target_name}" ]
+            inputs += [ _main_dex_list_path ]
+          }
         }
 
         if (defined(invoker.input_dex_classpath)) {
