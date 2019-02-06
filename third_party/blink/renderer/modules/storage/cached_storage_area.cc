@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -423,6 +424,13 @@ void CachedStorageArea::OnGetAllComplete(bool success) {
 void CachedStorageArea::EnsureLoaded() {
   if (map_)
     return;
+  // TODO(dmurph): Change this back to non-sync after the cause of the renderer
+  // hang is discovered. http://crbug.com/927534
+  static base::debug::CrashKeyString* dom_storage_type =
+      base::debug::AllocateCrashKeyString("dom_storage_type",
+                                          base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString auto_clear(
+      dom_storage_type, IsSessionStorage() ? "ss" : "ls");
 
   // There might be something weird happening during the sync call that destroys
   // this object. Keep a reference to either fix or rule out that this is the

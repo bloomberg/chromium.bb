@@ -1067,9 +1067,10 @@ class StoragePartitonInterceptor
   // renderer process sending incorrect data to the browser process, so
   // security checks can be tested.
   void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request) override {
-    GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
-                                               std::move(request));
+                        blink::mojom::StorageAreaRequest request,
+                        OpenLocalStorageCallback done) override {
+    GetForwardingInterface()->OpenLocalStorage(
+        origin_to_inject_, std::move(request), std::move(done));
   }
 
  private:

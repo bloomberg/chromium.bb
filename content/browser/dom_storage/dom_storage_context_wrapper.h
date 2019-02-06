@@ -88,11 +88,13 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request);
+                        blink::mojom::StorageAreaRequest request,
+                        base::OnceClosure bind_done);
   void OpenSessionStorage(int process_id,
                           const std::string& namespace_id,
                           mojo::ReportBadMessageCallback bad_message_callback,
-                          blink::mojom::SessionStorageNamespaceRequest request);
+                          blink::mojom::SessionStorageNamespaceRequest request,
+                          base::OnceClosure bind_done);
 
   void SetLocalStorageDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
