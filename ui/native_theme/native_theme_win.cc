@@ -432,6 +432,14 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
 }
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
+  // Win32 system colors currently don't support Dark Mode. As a result,
+  // fallback on the Aura colors. Inverted color schemes can be ignored here
+  // as it's only true when Chrome is running on a high-contrast AND when the
+  // relative luminance of COLOR_WINDOWTEXT is greater than COLOR_WINDOW (e.g.
+  // white on black), which is basically like dark mode.
+  if (SystemDarkModeEnabled())
+    return GetAuraColor(color_id, this);
+
   // TODO: Obtain the correct colors for these using GetSysColor.
   // Button:
   constexpr SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
