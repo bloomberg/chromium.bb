@@ -189,8 +189,8 @@ void ProxyMain::BeginMainFrame(
                        CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE,
                        begin_main_frame_start_time,
                        base::Passed(&empty_swap_promises)));
-    // When we stop deferring commits, we should resume any previously requested
-    // pipeline stages.
+    // When we stop deferring main frame updates, we should resume any
+    // previously requested pipeline stages.
     deferred_final_pipeline_stage_ =
         std::max(final_pipeline_stage_, deferred_final_pipeline_stage_);
     return;
@@ -231,11 +231,8 @@ void ProxyMain::BeginMainFrame(
   layer_tree_host_->RequestMainFrameUpdate();
 
   // At this point the main frame may have deferred commits to avoid committing
-  // right now, or we may have been deferring commits but not deferring main
+  // right now, or we may be deferring commits but not deferring main
   // frame updates.
-  // TODO(schenney): Why does RequestMainFrameUpdate defer commits?
-  // If that could happen when we have done an earlier uncommitted update, we
-  // need to change it.
   skip_commit |= defer_main_frame_update_ || defer_commits_;
 
   if (skip_commit) {
@@ -458,13 +455,11 @@ void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   else
     TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
 
-  // TODO(schenney): defer_commits_ must alway match defer_main_frame_update_.
-  // Right now it's possible for it to not match because SetDeferCommits is
-  // public, but shortly we will correctly handle the case when they are
-  // out of sync.
-  SetDeferCommits(defer_main_frame_update);
-
-  DCHECK_EQ(defer_main_frame_update_, defer_commits_);
+  // The impl thread needs to know that it should not issue BeginMainFrame.
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetDeferBeginMainFrameOnImpl,
+                                base::Unretained(proxy_impl_.get()),
+                                defer_main_frame_update));
 }
 
 void ProxyMain::SetDeferCommits(bool defer_commits) {
@@ -477,13 +472,6 @@ void ProxyMain::SetDeferCommits(bool defer_commits) {
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits", this);
   else
     TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
-
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProxyImpl::SetDeferCommitsOnImpl,
-                     base::Unretained(proxy_impl_.get()), defer_commits));
-
-  DCHECK_EQ(defer_main_frame_update_, defer_commits_);
 }
 
 bool ProxyMain::CommitRequested() const {

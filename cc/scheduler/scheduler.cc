@@ -747,10 +747,10 @@ void Scheduler::DrawForced() {
       client_->CurrentFrameHadRAF(), client_->NextFrameHasPendingRAF());
 }
 
-void Scheduler::SetDeferCommits(bool defer_commits) {
-  TRACE_EVENT1("cc", "Scheduler::SetDeferCommits", "defer_commits",
-               defer_commits);
-  state_machine_.SetDeferCommits(defer_commits);
+void Scheduler::SetDeferBeginMainFrame(bool defer_begin_main_frame) {
+  TRACE_EVENT1("cc", "Scheduler::SetDeferBeginMainFrame",
+               "defer_begin_main_frame", defer_begin_main_frame);
+  state_machine_.SetDeferBeginMainFrame(defer_begin_main_frame);
   ProcessScheduledActions();
 }
 

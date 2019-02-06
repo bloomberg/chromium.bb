@@ -194,9 +194,9 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   base::TimeTicks LastBeginImplFrameTime();
 
-  // Deferring commits prevents all compositor commits of new layer tree state,
-  // but main frame updates may still be occurring in the renderer.
-  void SetDeferCommits(bool defer_commits);
+  // Deferring begin main frame prevents all document lkifecycle updates and
+  // updates of new layer tree state.
+  void SetDeferBeginMainFrame(bool defer_begin_main_frame);
 
   // Controls whether the BeginMainFrameNotExpected messages should be sent to
   // the main thread by the cc scheduler.

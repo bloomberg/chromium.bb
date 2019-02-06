@@ -43,7 +43,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void InitializePaintWorkletLayerPainterOnImpl(
       std::unique_ptr<PaintWorkletLayerPainter> painter);
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
-  void SetDeferCommitsOnImpl(bool defer_commits) const;
+  void SetDeferBeginMainFrameOnImpl(bool defer_begin_main_frame) const;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
   void SetNeedsCommitOnImpl();
   void BeginMainFrameAbortedOnImpl(

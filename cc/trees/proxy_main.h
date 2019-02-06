@@ -145,8 +145,8 @@ class CC_EXPORT ProxyMain : public Proxy {
   // stopped using Proxy::Stop().
   bool started_;
 
-  // defer_commits_ must be true when defer_main_frame_update_ is true, but not
-  // vice versa.
+  // defer_main_frame_update_ will also cause commits to be deferred, regardless
+  // of the setting for defer_commits_.
   bool defer_main_frame_update_;
   bool defer_commits_;
 

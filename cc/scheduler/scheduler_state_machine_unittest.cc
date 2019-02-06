@@ -270,7 +270,7 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   state.SetNeedsRedraw(false);
   state.SetNeedsOneBeginImplFrame(false);
   state.SetNeedsBeginMainFrameForTest(true);
-  state.SetDeferCommits(true);
+  state.SetDeferBeginMainFrame(true);
   EXPECT_FALSE(state.BeginFrameNeeded());
 }
 
@@ -1188,7 +1188,7 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
   // When commits are deferred, we don't block the deadline.
-  state.SetDeferCommits(true);
+  state.SetDeferBeginMainFrame(true);
   state.OnBeginImplFrame(0, 13, kAnimateOnly);
   EXPECT_NE(SchedulerStateMachine::BeginImplFrameDeadlineMode::BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
@@ -2101,12 +2101,12 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
-TEST(SchedulerStateMachineTest, TestDeferCommit) {
+TEST(SchedulerStateMachineTest, TestDeferBeginMainFrame) {
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state)
 
-  state.SetDeferCommits(true);
+  state.SetDeferBeginMainFrame(true);
 
   state.SetNeedsBeginMainFrame();
   EXPECT_FALSE(state.BeginFrameNeeded());
@@ -2118,7 +2118,7 @@ TEST(SchedulerStateMachineTest, TestDeferCommit) {
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
-  state.SetDeferCommits(false);
+  state.SetDeferBeginMainFrame(false);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
@@ -2543,10 +2543,10 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
             state.CurrentBeginImplFrameDeadlineMode());
 
   // Even if main thread defers commits, we still need to wait for it.
-  state.SetDeferCommits(true);
+  state.SetDeferBeginMainFrame(true);
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
-  state.SetDeferCommits(false);
+  state.SetDeferBeginMainFrame(false);
 
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
