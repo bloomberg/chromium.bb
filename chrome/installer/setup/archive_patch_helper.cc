@@ -63,15 +63,11 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
 }
 
 bool ArchivePatchHelper::ApplyPatch() {
-  // TODO(ckitagawa): Swap ordering back to Zucchini first once we ship
-  // Zucchini based patches by default.
-  if (CourgetteEnsemblePatch() || BinaryPatch())
-    return true;
 #if BUILDFLAG(ZUCCHINI)
   if (ZucchiniEnsemblePatch())
     return true;
 #endif  // BUILDFLAG(ZUCCHINI)
-  return false;
+  return CourgetteEnsemblePatch() || BinaryPatch();
 }
 
 bool ArchivePatchHelper::CourgetteEnsemblePatch() {
