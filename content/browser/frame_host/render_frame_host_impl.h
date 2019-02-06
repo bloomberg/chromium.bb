@@ -807,6 +807,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return active_sandbox_flags_;
   }
 
+  bool is_mhtml_document() { return is_mhtml_document_; }
+
   // Notifies the render frame about a user activation from the browser side.
   void NotifyUserActivation();
 
@@ -1973,6 +1975,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;
+
+  // Whether the currently committed document is MHTML or not. It is set at
+  // commit time based on the MIME type of the NavigationRequest that resulted
+  // in the navigation commit. Setting the value should be based only on
+  // browser side state as this value is used in security checks.
+  bool is_mhtml_document_ = false;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

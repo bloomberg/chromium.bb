@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
@@ -180,6 +181,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   }
 
   int net_error() { return net_error_; }
+
+  const std::string& GetMimeType() {
+    return response_ ? response_->head.mime_type : base::EmptyString();
+  }
 
   void SetWaitingForRendererResponse();
 
