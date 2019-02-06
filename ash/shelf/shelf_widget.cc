@@ -389,7 +389,6 @@ int ShelfWidget::GetBackgroundAlphaValue(
 void ShelfWidget::OnShelfAlignmentChanged() {
   // Check added for http://crbug.com/738011.
   CHECK(status_area_widget_);
-  shelf_view_->OnShelfAlignmentChanged();
   status_area_widget_->UpdateAfterShelfAlignmentChange();
   // This call will in turn trigger a call to delegate_view_->SchedulePaint().
   delegate_view_->UpdateOpaqueBackground();

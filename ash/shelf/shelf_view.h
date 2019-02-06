@@ -18,12 +18,14 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/shell_observer.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/context_menu_controller.h"
@@ -111,6 +113,7 @@ enum ShelfAlignmentUmaEnumValue {
 
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
+                             public ShellObserver,
                              public InkDropButtonListener,
                              public views::ContextMenuController,
                              public views::FocusTraversable,
@@ -126,8 +129,6 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfModel* model() const { return model_; }
 
   void Init();
-
-  void OnShelfAlignmentChanged();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know. If the item is in an overflow shelf, the overflow icon location
@@ -409,6 +410,9 @@ class ASH_EXPORT ShelfView : public views::View,
                               const gfx::Point& location,
                               bool context_menu) const;
 
+  void AnnounceShelfAlignment();
+  void AnnounceShelfAutohideBehavior();
+
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
@@ -422,6 +426,10 @@ class ASH_EXPORT ShelfView : public views::View,
                                 ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
   void ShelfItemStatusChanged(const ShelfID& id) override;
+
+  // Overridden from ShellObserver:
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
 
   // Handles the result when querying ShelfItemDelegates for context menu items.
   // Shows a default shelf context menu with optional extra custom |menu_items|.
@@ -621,6 +629,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // A view to draw a background behind the app list and back buttons.
   // Owned by the view hierarchy.
   views::View* back_and_app_list_background_ = nullptr;
+
+  // A view used to make accessibility announcements (changes in the shelf's
+  // alignment or auto-hide state).
+  views::View* announcement_view_ = nullptr;  // Owned by ShelfView
 
   // For dragging: -1 if scrolling back, 1 if scrolling forward, 0 if neither.
   int drag_scroll_dir_ = 0;

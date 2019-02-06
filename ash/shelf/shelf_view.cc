@@ -54,6 +54,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
@@ -331,8 +332,12 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
   DCHECK(shelf_widget_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
+
+  announcement_view_ = new views::View();
+  AddChildView(announcement_view_);
 }
 
 ShelfView::~ShelfView() {
@@ -340,6 +345,7 @@ ShelfView::~ShelfView() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
 }
@@ -378,24 +384,6 @@ void ShelfView::Init() {
   AddChildView(separator_);
 
   // We'll layout when our bounds change.
-}
-
-void ShelfView::OnShelfAlignmentChanged() {
-  LayoutToIdealBounds();
-  for (int i = 0; i < view_model_->view_size(); ++i) {
-    if (i >= first_visible_index_ && i <= last_visible_index_)
-      view_model_->view_at(i)->Layout();
-  }
-  tooltip_.Close();
-  if (overflow_bubble_)
-    overflow_bubble_->Hide();
-  // For crbug.com/587931, because AppListButton layout logic is in OnPaint.
-  AppListButton* app_list_button = GetAppListButton();
-  if (app_list_button)
-    app_list_button->SchedulePaint();
-
-  GetFocusManager()->set_arrow_key_traversal_enabled(
-      !shelf_->IsHorizontalAlignment());
 }
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
@@ -1759,7 +1747,8 @@ void ShelfView::ToggleOverflowBubble() {
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
-  overflow_view->OnShelfAlignmentChanged();
+  overflow_view->OnShelfAlignmentChanged(
+      GetWidget()->GetNativeWindow()->GetRootWindow());
   overflow_view->main_shelf_ = this;
   UpdateOverflowRange(overflow_view);
 
@@ -1820,6 +1809,41 @@ gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
       break;
   }
   return gfx::Rect(origin, gfx::Size());
+}
+
+void ShelfView::AnnounceShelfAlignment() {
+  base::string16 announcement;
+  switch (shelf_->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_BOTTOM);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_LEFT);
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_RIGHT);
+      break;
+  }
+  announcement_view_->GetViewAccessibility().OverrideName(announcement);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+}
+
+void ShelfView::AnnounceShelfAutohideBehavior() {
+  base::string16 announcement;
+  switch (shelf_->auto_hide_behavior()) {
+    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      announcement = l10n_util::GetStringUTF16(IDS_SHELF_STATE_AUTO_HIDE);
+      break;
+    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      announcement = l10n_util::GetStringUTF16(IDS_SHELF_STATE_ALWAYS_SHOWN);
+      break;
+    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+      announcement = l10n_util::GetStringUTF16(IDS_SHELF_STATE_ALWAYS_HIDDEN);
+      break;
+  }
+  announcement_view_->GetViewAccessibility().OverrideName(announcement);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
@@ -2078,6 +2102,30 @@ void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
   ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
   button->ReflectItemStatus(item);
   button->SchedulePaint();
+}
+
+void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
+  LayoutToIdealBounds();
+  for (int i = 0; i < view_model_->view_size(); ++i) {
+    if (i >= first_visible_index_ && i <= last_visible_index_)
+      view_model_->view_at(i)->Layout();
+  }
+  tooltip_.Close();
+  if (overflow_bubble_)
+    overflow_bubble_->Hide();
+  // For crbug.com/587931, because AppListButton layout logic is in OnPaint.
+  AppListButton* app_list_button = GetAppListButton();
+  if (app_list_button)
+    app_list_button->SchedulePaint();
+
+  GetFocusManager()->set_arrow_key_traversal_enabled(
+      !shelf_->IsHorizontalAlignment());
+
+  AnnounceShelfAlignment();
+}
+
+void ShelfView::OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {
+  AnnounceShelfAutohideBehavior();
 }
 
 void ShelfView::AfterItemSelected(
