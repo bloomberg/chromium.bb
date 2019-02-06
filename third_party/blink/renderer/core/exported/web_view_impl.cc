@@ -1289,14 +1289,11 @@ void WebViewImpl::Close() {
   // means the main frame's WebWidget remains valid while the main frame is
   // being detached (and in particular while its unload handlers run).
   {
-    // TODO(danakj): We should close the widget client too not just the view
-    // client.
-    // AsWidget().client = nullptr;
+    AsWidget().client = nullptr;
 
     if (does_composite_)
       GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
 
-    SetRootLayer(nullptr);
     animation_host_ = nullptr;
     mutator_dispatcher_ = nullptr;
     layer_tree_view_ = nullptr;
