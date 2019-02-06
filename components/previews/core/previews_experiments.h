@@ -116,6 +116,10 @@ bool LitePagePreviewsOverridePageHints();
 // a blacklist.
 int LitePageRedirectPreviewMaxServerBlacklistByteSize();
 
+// The maximum number of times that a Lite Page Redirect preview should restart
+// a navigation.
+size_t LitePageRedirectPreviewMaxNavigationRestarts();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 

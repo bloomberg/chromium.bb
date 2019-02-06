@@ -9,7 +9,6 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
@@ -103,17 +102,6 @@ bool IsPreviewType(const net::HttpResponseHeaders& headers,
          IsPreviewTypeInHeaderValue(value, transform_type);
 }
 
-// Returns true if there is a cycle in |url_chain|.
-bool HasURLRedirectCycle(const std::vector<GURL>& url_chain) {
-  if (url_chain.size() <= 1)
-    return false;
-
-  // If the last entry occurs earlier in the |url_chain|, then very likely there
-  // is a redirect cycle.
-  return std::find(url_chain.rbegin() + 1, url_chain.rend(),
-                   url_chain.back()) != url_chain.rend();
-}
-
 data_reduction_proxy::TransformDirective ParsePagePolicyDirective(
     const std::string chrome_proxy_header_value) {
   for (const auto& directive : base::SplitStringPiece(
@@ -176,6 +164,16 @@ const char* compressed_video_directive() {
 
 const char* page_policies_directive() {
   return kChromeProxyPagePoliciesDirective;
+}
+
+bool HasURLRedirectCycle(const std::vector<GURL>& url_chain) {
+  if (url_chain.size() <= 1)
+    return false;
+
+  // If the last entry occurs earlier in the |url_chain|, then very likely there
+  // is a redirect cycle.
+  return std::find(url_chain.rbegin() + 1, url_chain.rend(),
+                   url_chain.back()) != url_chain.rend();
 }
 
 TransformDirective ParseRequestTransform(
