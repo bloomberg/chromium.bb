@@ -3429,7 +3429,46 @@ void RenderFrameImpl::CommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
-    CommitFailedNavigationCallback callback) {
+    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback) {
+  DCHECK(!navigation_client_impl_);
+  DCHECK(!IsPerNavigationMojoInterfaceEnabled());
+  CommitFailedNavigationInternal(
+      common_params, commit_params, has_stale_copy_in_cache, error_code,
+      error_page_content, std::move(subresource_loader_factories),
+      std::move(callback),
+      mojom::NavigationClient::CommitFailedNavigationCallback());
+}
+
+void RenderFrameImpl::CommitFailedPerNavigationMojoInterfaceNavigation(
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params,
+    bool has_stale_copy_in_cache,
+    int error_code,
+    const base::Optional<std::string>& error_page_content,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
+    mojom::NavigationClient::CommitFailedNavigationCallback
+        per_navigation_mojo_interface_callback) {
+  DCHECK(navigation_client_impl_);
+  DCHECK(IsPerNavigationMojoInterfaceEnabled());
+  CommitFailedNavigationInternal(
+      common_params, commit_params, has_stale_copy_in_cache, error_code,
+      error_page_content, std::move(subresource_loader_factories),
+      mojom::FrameNavigationControl::CommitFailedNavigationCallback(),
+      std::move(per_navigation_mojo_interface_callback));
+}
+
+void RenderFrameImpl::CommitFailedNavigationInternal(
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params,
+    bool has_stale_copy_in_cache,
+    int error_code,
+    const base::Optional<std::string>& error_page_content,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
+    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback,
+    mojom::NavigationClient::CommitFailedNavigationCallback
+        per_navigation_mojo_interface_callback) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
   DCHECK(
@@ -3551,7 +3590,7 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks(), std::move(callback),
-      mojom::NavigationClient::CommitNavigationCallback(), nullptr,
+      std::move(per_navigation_mojo_interface_callback), nullptr,
       std::move(navigation_client_impl_));
 
   // The load of the error page can result in this frame being removed.
