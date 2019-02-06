@@ -868,7 +868,7 @@ public class AwContents implements SmartClipProvider {
 
             mBrowserContext = browserContext;
 
-            // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+            // setWillNotDraw(false) is required since WebView draws its own contents using its
             // container view. If this is ever not the case we should remove this, as it removes
             // Android's gatherTransparentRegion optimization for the view.
             mContainerView = containerView;
@@ -1057,7 +1057,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     private void setContainerView(ViewGroup newContainerView) {
-        // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+        // setWillNotDraw(false) is required since WebView draws its own contents using its
         // container view. If this is ever not the case we should remove this, as it removes
         // Android's gatherTransparentRegion optimization for the view.
         mContainerView = newContainerView;
