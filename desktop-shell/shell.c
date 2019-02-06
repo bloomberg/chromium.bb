@@ -3536,7 +3536,7 @@ terminate_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 {
 	struct weston_compositor *compositor = data;
 
-	wl_display_terminate(compositor->wl_display);
+	weston_compositor_exit(compositor);
 }
 
 static void
@@ -4289,7 +4289,8 @@ check_desktop_shell_crash_too_early(struct desktop_shell *shell)
 		weston_log("Error: %s apparently cannot run at all.\n",
 			   shell->client);
 		weston_log_continue(STAMP_SPACE "Quitting...");
-		wl_display_terminate(shell->compositor->wl_display);
+		weston_compositor_exit_with_code(shell->compositor,
+						 EXIT_FAILURE);
 
 		return true;
 	}
