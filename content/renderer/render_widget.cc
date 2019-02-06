@@ -402,7 +402,9 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       webwidget_internal_(nullptr),
       auto_resize_mode_(false),
       is_hidden_(hidden),
-      compositor_never_visible_(never_visible),
+      // When there's no RenderThreadImpl we can't start the compositor without
+      // crashing, so just behave like a never-visible widget.
+      compositor_never_visible_(never_visible || !RenderThreadImpl::current()),
       is_fullscreen_granted_(false),
       display_mode_(display_mode),
       ime_event_guard_(nullptr),
@@ -1673,20 +1675,12 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);
   layer_tree_view_->SetContentSourceId(current_content_source_id_);
-  // For background pages and certain tests, we don't want to trigger
-  // LayerTreeFrameSink creation.
-  bool should_generate_frame_sink =
-      !compositor_never_visible_ && RenderThreadImpl::current();
-  if (!should_generate_frame_sink) {
-    // Prevents SetVisible() from blink from doing anything.
-    layer_tree_view_->SetNeverVisible();
-  } else if (!is_frozen_) {
-    // Begins the compositor's scheduler to start producing frames.
-    // Don't do this if the RenderWidget is attached to a RenderViewImpl for a
-    // proxy main frame, as this RenderWidget is frozen then, and won't be
-    // used for compositing until a WebFrameWidget is attached.
-    StartCompositor();
-  }
+  // If the widget is hidden, delay starting the compositor until the user shows
+  // it. Also if the RenderWidget is frozen, we delay starting the compositor
+  // until we expect to use the widget, which will be signaled through
+  // WarmupCompositor().
+  if (!is_frozen_ && !is_hidden_)
+    StartStopCompositor();
 
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
   layer_tree_view_->SetFrameSinkId(
@@ -1696,40 +1690,43 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   if (render_thread) {
     input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
         this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
-        render_thread->GetWebMainThreadScheduler(), should_generate_frame_sink);
+        render_thread->GetWebMainThreadScheduler(),
+        /*allow_raf_aligned_input=*/!compositor_never_visible_);
   }
 
   return layer_tree_view_.get();
 }
 
-void RenderWidget::StartCompositor() {
-  if (!is_hidden_)
-    layer_tree_view_->SetVisible(true);
-}
+void RenderWidget::StartStopCompositor() {
+  if (compositor_never_visible_)
+    return;
 
-void RenderWidget::StopCompositor() {
-  layer_tree_view_->SetVisible(false);
-  // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
-  // but we don't expect to use this RenderWidget again until some possible
-  // future navigation. This brings us a bit closer to emulating deleting the
-  // RenderWidget instead of just stopping the compositor.
-  layer_tree_view_->ReleaseLayerTreeFrameSink();
+  if (is_frozen_) {
+    layer_tree_view_->SetVisible(false);
+    // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
+    // but we don't expect to use this RenderWidget again until some possible
+    // future navigation. This brings us a bit closer to emulating deleting the
+    // RenderWidget instead of just stopping the compositor.
+    layer_tree_view_->ReleaseLayerTreeFrameSink();
+  } else if (is_hidden_) {
+    layer_tree_view_->SetVisible(false);
+  } else {
+    layer_tree_view_->SetVisible(true);
+  }
 }
 
 void RenderWidget::SetIsFrozen(bool is_frozen) {
   DCHECK_NE(is_frozen, is_frozen_);
   is_frozen_ = is_frozen;
-  if (is_frozen)
-    StopCompositor();
-  else
-    StartCompositor();
+  // If hidden, then frozen changing doesn't change anything with the
+  // compositor since when hidden the compositor is always stopped.
+  if (!is_hidden_)
+    StartStopCompositor();
 }
 
 void RenderWidget::WarmupCompositor() {
   DCHECK(is_frozen_);
-
-  // Tests have no RenderThreadImpl /o\.
-  if (!RenderThreadImpl::current())
+  if (compositor_never_visible_)
     return;
 
   // Keeping things simple. This would cancel any outstanding warmup if we
@@ -2427,15 +2424,15 @@ void RenderWidget::SetHidden(bool hidden) {
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
 
-  // When the RenderWidget is frozen, visibility of the compositor is overridden
-  // to always be hidden to prevent it from using resources that are not needed.
-  // Unfortunately the main RenderWidget for a RenderView must be marked visible
-  // even if the RenderView has a proxy main frame (and the RenderWidget is
-  // frozen), in order for the RenderView to use the visibility signal from the
-  // RenderWidget. This is bad. But we don't need to show the compositor to
-  // satisfy that requirement.
+  // TODO(danakj): Frozen RenderWidgets become visible with the RenderView but
+  // they don't need to anymore, since the RenderView's visibility is controlled
+  // separately. However even if they become visible, we don't need to start the
+  // compositor in this case.
+  // If frozen, then hidden changing doesn't change anything with the
+  // compositor since when frozen the compositor is always stopped (until
+  // we WarmupCompositor()).
   if (!is_frozen_)
-    layer_tree_view_->SetVisible(!is_hidden_);
+    StartStopCompositor();
 }
 
 void RenderWidget::SetIsFullscreen(bool fullscreen) {

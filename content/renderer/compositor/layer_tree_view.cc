@@ -210,15 +210,7 @@ void LayerTreeView::Initialize(
   }
 }
 
-void LayerTreeView::SetNeverVisible() {
-  DCHECK(!layer_tree_host_->IsVisible());
-  never_visible_ = true;
-}
-
 void LayerTreeView::SetVisible(bool visible) {
-  if (never_visible_)
-    return;
-
   layer_tree_host_->SetVisible(visible);
 
   if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
