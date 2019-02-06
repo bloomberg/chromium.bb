@@ -146,6 +146,7 @@
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "skia/ext/skia_memory_dump_provider.h"
+#include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
@@ -752,6 +753,8 @@ void RenderThreadImpl::Init() {
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(registry.get());
+
+  is_backgrounded_ = blink::kLaunchingProcessIsBackgrounded;
 
   // In single process the single process is all there is.
   widget_count_ = 0;
@@ -1673,6 +1676,7 @@ void RenderThreadImpl::SetProcessBackgrounded(bool backgrounded) {
   } else {
     process_foregrounded_count_++;
   }
+  is_backgrounded_ = backgrounded;
 }
 
 void RenderThreadImpl::ProcessPurgeAndSuspend() {
@@ -1722,6 +1726,16 @@ void RenderThreadImpl::SetIsLockedToSite() {
 void RenderThreadImpl::EnableV8LowMemoryMode() {
   if (!low_memory_mode_controller_)
     low_memory_mode_controller_.reset(new LowMemoryModeController());
+}
+
+void RenderThreadImpl::RequestPurgeMemory() {
+  if (base::FeatureList::IsEnabled(
+          features::kFreezePurgeMemoryBackgroundedOnly) &&
+      !is_backgrounded_)
+    return;
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::MemoryPressureListener::SetNotificationsSuppressed(true);
 }
 
 bool RenderThreadImpl::GetRendererMemoryMetrics(

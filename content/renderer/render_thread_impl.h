@@ -477,6 +477,8 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
+  void RequestPurgeMemory();
+
   struct RendererMemoryMetrics {
     size_t partition_alloc_kb;
     size_t blink_gc_kb;
@@ -622,6 +624,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
+
+  // Used to keep track of the renderer's backgrounded state.
+  bool is_backgrounded_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

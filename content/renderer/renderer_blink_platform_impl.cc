@@ -1053,8 +1053,11 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
 
 //------------------------------------------------------------------------------
 void RendererBlinkPlatformImpl::RequestPurgeMemory() {
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  auto* render_thread = RenderThreadImpl::current();
+  // RenderThreadImpl is null in some tests.
+  if (!render_thread)
+    return;
+  render_thread->RequestPurgeMemory();
 }
 
 void RendererBlinkPlatformImpl::SetMemoryPressureNotificationsSuppressed(
