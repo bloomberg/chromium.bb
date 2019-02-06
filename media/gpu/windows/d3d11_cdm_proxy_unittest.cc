@@ -24,6 +24,7 @@ using Microsoft::WRL::ComPtr;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
+using ::testing::AtMost;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
@@ -51,8 +52,13 @@ class MockProxyClient : public CdmProxy::Client {
 
 class MockPowerMonitorSource : public base::PowerMonitorSource {
  public:
-  // Use this method to send a power suspend event.
-  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
+  // Use this method to send a power resume event.
+  void Resume() {
+    // Due to how ProcessPowerEvent() works, it has to be suspended first to
+    // resume.
+    ProcessPowerEvent(SUSPEND_EVENT);
+    ProcessPowerEvent(RESUME_EVENT);
+  }
 
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(IsOnBatteryPowerImpl, bool());
@@ -92,7 +98,7 @@ class D3D11CdmProxyTest : public ::testing::Test {
     function_id_map[kTestFunction] = kTestFunctionId;
 
     // Use NiceMock because we don't care about base::PowerMonitorSource events
-    // other than calling Suspend() directly.
+    // other than calling Resume() directly.
     auto mock_power_monitor_source =
         std::make_unique<NiceMock<MockPowerMonitorSource>>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
@@ -189,8 +195,8 @@ class D3D11CdmProxyTest : public ::testing::Test {
                              Return(S_OK)));
   }
 
-  // Helper method to do Initialize(). Only useful if the test doesn't require
-  // access to the mocks later.
+  // Helper method to do Initialize(). The returned mock objects are accessible
+  // thru member variables.
   void Initialize(CdmProxy::Client* client, CdmProxy::InitializeCB callback) {
     EXPECT_CALL(create_device_mock_,
                 Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _));
@@ -235,10 +241,33 @@ class D3D11CdmProxyTest : public ::testing::Test {
     Mock::VerifyAndClearExpectations(video_context1_mock_.Get());
   }
 
+  // Test case where the proxy is initialized and then hardware content
+  // protection teardown is notified.
+  void HardwareContentProtectionTeardown() {
+    base::RunLoop run_loop;
+
+    EXPECT_CALL(callback_mock_,
+                InitializeCallback(CdmProxy::Status::kOk, _, _));
+    ASSERT_NO_FATAL_FAILURE(Initialize(
+        &client_, base::BindOnce(&CallbackMock::InitializeCallback,
+                                 base::Unretained(&callback_mock_))));
+
+    EXPECT_CALL(client_, NotifyHardwareReset());
+
+    base::MockCallback<CdmContext::EventCB> event_cb;
+    auto callback_registration =
+        proxy_->GetCdmContext()->RegisterEventCB(event_cb.Get());
+    EXPECT_CALL(event_cb, Run(CdmContext::Event::kHardwareContextLost))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+
+    SetEvent(teardown_event_);
+    run_loop.Run();
+  }
+
   MockProxyClient client_;
   std::unique_ptr<D3D11CdmProxy> proxy_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
-  // Owned by power_monitor_. Use this to simulate a power-suspend.
+  // Owned by power_monitor_. Use this to simulate a power-resume.
   MockPowerMonitorSource* mock_power_monitor_source_;
 
   D3D11CreateDeviceMock create_device_mock_;
@@ -291,22 +320,16 @@ TEST_F(D3D11CdmProxyTest, Initialize) {
 // Hardware content protection teardown is notified to the proxy.
 // Verify that the client is notified.
 TEST_F(D3D11CdmProxyTest, HardwareContentProtectionTeardown) {
-  base::RunLoop run_loop;
+  EXPECT_NO_FATAL_FAILURE(HardwareContentProtectionTeardown());
+}
 
-  EXPECT_CALL(client_, NotifyHardwareReset());
-
-  base::MockCallback<CdmContext::EventCB> event_cb;
-  auto callback_registration =
-      proxy_->GetCdmContext()->RegisterEventCB(event_cb.Get());
-  EXPECT_CALL(event_cb, Run(CdmContext::Event::kHardwareContextLost))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-
+// Verify that initialization after hardware content protection teardown works..
+TEST_F(D3D11CdmProxyTest, HardwareContentProtectionTeardownThenInitialize) {
+  ASSERT_NO_FATAL_FAILURE(HardwareContentProtectionTeardown());
   EXPECT_CALL(callback_mock_, InitializeCallback(CdmProxy::Status::kOk, _, _));
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  SetEvent(teardown_event_);
-  run_loop.Run();
 }
 
 // Verify that failing to register to hardware content protection teardown
@@ -326,18 +349,41 @@ TEST_F(D3D11CdmProxyTest, FailedToRegisterForContentProtectionTeardown) {
 }
 
 // Verify that the client is notified on power suspend.
-TEST_F(D3D11CdmProxyTest, PowerSuspend) {
+TEST_F(D3D11CdmProxyTest, PowerResume) {
   base::RunLoop run_loop;
-
-  EXPECT_CALL(client_, NotifyHardwareReset()).WillOnce(Invoke([&run_loop]() {
-    run_loop.Quit();
-  }));
 
   EXPECT_CALL(callback_mock_, InitializeCallback(CdmProxy::Status::kOk, _, _));
   ASSERT_NO_FATAL_FAILURE(
       Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
                                           base::Unretained(&callback_mock_))));
-  mock_power_monitor_source_->Suspend();
+
+  EXPECT_CALL(client_, NotifyHardwareReset()).WillOnce(Invoke([&run_loop]() {
+    run_loop.Quit();
+  }));
+
+  mock_power_monitor_source_->Resume();
+  run_loop.Run();
+}
+
+// IRL power resume is notified and then hardware content protection teardown
+// is notified. Make sure that the two notifications don't signal the clients
+// more than once (without being reinitialized in between the notifications).
+// Note that this test uses QuitWhenIdle(). If both notifications are processed
+// this test will run forever.
+TEST_F(D3D11CdmProxyTest, PowerResumeAndHardwareContentProtectionTeardown) {
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(callback_mock_, InitializeCallback(CdmProxy::Status::kOk, _, _));
+  ASSERT_NO_FATAL_FAILURE(
+      Initialize(&client_, base::BindOnce(&CallbackMock::InitializeCallback,
+                                          base::Unretained(&callback_mock_))));
+
+  EXPECT_CALL(client_, NotifyHardwareReset())
+      .Times(1)
+      .WillOnce(Invoke([&run_loop]() { run_loop.QuitWhenIdle(); }));
+
+  mock_power_monitor_source_->Resume();
+  SetEvent(teardown_event_);
   run_loop.Run();
 }
 
@@ -744,14 +790,6 @@ TEST_F(D3D11CdmProxyTest, SetKeyAndGetDecryptContext) {
 TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(client_, NotifyHardwareReset()).WillOnce(Invoke([&run_loop]() {
-    run_loop.Quit();
-  }));
-
-  base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();
-  ASSERT_TRUE(context);
-  CdmProxyContext* proxy_context = context->GetCdmProxyContext();
-
   uint32_t crypto_session_id_from_initialize = 0;
   EXPECT_CALL(callback_mock_,
               InitializeCallback(CdmProxy::Status::kOk, kTestProtocol, _))
@@ -775,8 +813,16 @@ TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
                  base::BindOnce(&CallbackMock::SetKeyCallback,
                                 base::Unretained(&callback_mock_)));
 
+  EXPECT_CALL(client_, NotifyHardwareReset()).WillOnce(Invoke([&run_loop]() {
+    run_loop.Quit();
+  }));
+
   SetEvent(teardown_event_);
   run_loop.Run();
+
+  base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();
+  ASSERT_TRUE(context);
+  CdmProxyContext* proxy_context = context->GetCdmProxyContext();
 
   std::string key_id_str(kKeyId.begin(), kKeyId.end());
   auto decrypt_context =

@@ -163,7 +163,7 @@ class D3D11CdmProxy::HardwareEventWatcher
   // Return true on success.
   bool RegisterHardwareContentProtectionTeardown(ComPtr<ID3D11Device> device);
 
-  // Regiesters for power events, specifically power suspend event.
+  // Regiesters for power events, specifically power resume event.
   // Returns true on success.
   bool RegisterPowerEvents();
 
@@ -172,7 +172,7 @@ class D3D11CdmProxy::HardwareEventWatcher
 
   // base::PowerObserver implementation. Other power events are not relevant to
   // this class.
-  void OnSuspend() override;
+  void OnResume() override;
 
   // Stops watching for events. Good for clean up.
   void StopWatching();
@@ -543,6 +543,26 @@ void D3D11CdmProxy::SetCreateDeviceCallbackForTesting(
 void D3D11CdmProxy::NotifyHardwareContentProtectionTeardown() {
   cdm_context_->OnHardwareReset();
   client_->NotifyHardwareReset();
+  Reset();
+}
+
+void D3D11CdmProxy::Reset() {
+  client_ = nullptr;
+  initialized_ = false;
+  crypto_session_map_.clear();
+  device_.Reset();
+  device_context_.Reset();
+  video_device_.Reset();
+  video_device1_.Reset();
+  video_context_.Reset();
+  video_context1_.Reset();
+  // Note that this deregisters hardware reset event watcher. It shouldn't
+  // notify the clients until this is reinitialized. Also the client is set to
+  // null in this method.
+  hardware_event_watcher_ = nullptr;
+  crypto_session_map_.clear();
+  private_input_size_ = 0;
+  private_output_size_ = 0;
 }
 
 D3D11CdmProxy::HardwareEventWatcher::~HardwareEventWatcher() {
@@ -627,7 +647,7 @@ void D3D11CdmProxy::HardwareEventWatcher::OnObjectSignaled(HANDLE object) {
   teardown_callback_.Run();
 }
 
-void D3D11CdmProxy::HardwareEventWatcher::OnSuspend() {
+void D3D11CdmProxy::HardwareEventWatcher::OnResume() {
   teardown_callback_.Run();
 }
 
