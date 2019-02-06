@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
+#include "chrome/browser/performance_manager/process_resource_coordinator.h"
 
 namespace content {
 
