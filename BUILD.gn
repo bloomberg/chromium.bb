@@ -698,7 +698,6 @@ group("gn_all") {
       "//third_party/opus:test_opus_decode",
       "//third_party/opus:test_opus_encode",
       "//third_party/opus:test_opus_padding",
-      "//third_party/pffft:pffft_benchmark",
       "//ui/display/types",
       "//ui/shell_dialogs:shell_dialogs_unittests",
     ]
