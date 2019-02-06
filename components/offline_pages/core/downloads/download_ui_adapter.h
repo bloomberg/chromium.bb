@@ -129,9 +129,6 @@ class DownloadUIAdapter : public OfflineContentProvider,
       std::unique_ptr<offline_items_collection::OfflineItemVisuals>)>;
 
   // Task callbacks.
-  void CancelDownloadContinuation(
-      const std::string& guid,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
   void PauseDownloadContinuation(
       const std::string& guid,
       std::vector<std::unique_ptr<SavePageRequest>> requests);

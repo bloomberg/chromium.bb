@@ -137,12 +137,7 @@ class OfflinePageAutoFetcherService : public KeyedService,
                         AddRequestResult result);
 
   void CancelScheduleStep1(const GURL& url, TaskToken token);
-  void CancelScheduleStep2(
-      TaskToken token,
-      const GURL& url,
-      RequestCoordinator* coordinator,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
-  void CancelScheduleStep3(TaskToken token, const MultipleItemStatuses&);
+  void CancelScheduleStep2(TaskToken token, const MultipleItemStatuses&);
 
   void CancelAllStep1(base::OnceClosure callback, TaskToken token);
   void CancelAllStep2(TaskToken token,

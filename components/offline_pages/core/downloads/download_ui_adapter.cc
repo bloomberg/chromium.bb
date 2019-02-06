@@ -30,17 +30,22 @@ namespace offline_pages {
 
 namespace {
 
+bool RequestsMatchesGuid(const std::string& guid,
+                         ClientPolicyController* policy_controller,
+                         const SavePageRequest& request) {
+  return request.client_id().id == guid &&
+         policy_controller->IsSupportedByDownload(
+             request.client_id().name_space);
+}
+
 std::vector<int64_t> FilterRequestsByGuid(
     std::vector<std::unique_ptr<SavePageRequest>> requests,
     const std::string& guid,
     ClientPolicyController* policy_controller) {
   std::vector<int64_t> request_ids;
   for (const auto& request : requests) {
-    if (request->client_id().id == guid &&
-        policy_controller->IsSupportedByDownload(
-            request->client_id().name_space)) {
+    if (RequestsMatchesGuid(guid, policy_controller, *request))
       request_ids.push_back(request->request_id());
-    }
   }
   return request_ids;
 }
@@ -389,19 +394,12 @@ void DownloadUIAdapter::RemoveItem(const ContentId& id) {
 }
 
 void DownloadUIAdapter::CancelDownload(const ContentId& id) {
-  // TODO(fgorski): Clean this up in a way where 2 round trips + GetAllRequests
-  // is not necessary. E.g. CancelByGuid(guid) might do the trick.
-  request_coordinator_->GetAllRequests(
-      base::BindOnce(&DownloadUIAdapter::CancelDownloadContinuation,
-                     weak_ptr_factory_.GetWeakPtr(), id.id));
-}
-
-void DownloadUIAdapter::CancelDownloadContinuation(
-    const std::string& guid,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  std::vector<int64_t> request_ids = FilterRequestsByGuid(
-      std::move(requests), guid, request_coordinator_->GetPolicyController());
-  request_coordinator_->RemoveRequests(request_ids, base::DoNothing());
+  auto predicate =
+      base::BindRepeating(&RequestsMatchesGuid, id.id,
+                          // Since RequestCoordinator is calling us back,
+                          // binding its policy controller is safe.
+                          request_coordinator_->GetPolicyController());
+  request_coordinator_->RemoveRequestsIf(predicate, base::DoNothing());
 }
 
 void DownloadUIAdapter::PauseDownload(const ContentId& id) {
