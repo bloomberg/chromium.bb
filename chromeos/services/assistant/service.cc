@@ -125,7 +125,7 @@ void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
     return;
 
   power_source_connected_ = power_source_connected;
-  MaybeRestartAssistantManager();
+  UpdateAssistantManagerState();
 }
 
 void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
@@ -166,8 +166,7 @@ void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
 }
 
 void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
-  // Hotword status change requires restarting assistant manager.
-  MaybeRestartAssistantManager();
+  UpdateAssistantManagerState();
 }
 
 void Service::OnLocaleChanged(const std::string& locale) {
@@ -179,25 +178,6 @@ void Service::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
   if (power_source_connected_)
     return;
 
-  MaybeRestartAssistantManager();
-}
-
-void Service::MaybeRestartAssistantManager() {
-  if (assistant_manager_service_) {
-    switch (assistant_manager_service_->GetState()) {
-      case AssistantManagerService::State::RUNNING:
-        StopAssistantManagerService();
-        break;
-      case AssistantManagerService::State::STARTED:
-        // A previous instance of assistant manager is still in the process
-        // of starting. We need to wait for that to finish before trying to
-        // restart a new one to avoid potentially multiple instances running.
-        pending_restart_assistant_manager_ = true;
-        return;
-      case AssistantManagerService::State::STOPPED:
-        break;
-    }
-  }
   UpdateAssistantManagerState();
 }
 
@@ -230,14 +210,13 @@ void Service::UpdateAssistantManagerState() {
       }
       break;
     case AssistantManagerService::State::RUNNING:
-      if (assistant_state_.settings_enabled().value())
-        assistant_manager_service_->SetAccessToken(access_token_.value());
-      else
-        StopAssistantManagerService();
-      break;
     case AssistantManagerService::State::STARTED:
-      if (!assistant_state_.settings_enabled().value())
+      if (assistant_state_.settings_enabled().value()) {
+        assistant_manager_service_->SetAccessToken(access_token_.value());
+        assistant_manager_service_->EnableHotword(ShouldEnableHotword());
+      } else {
         StopAssistantManagerService();
+      }
       break;
   }
 }
@@ -366,12 +345,6 @@ void Service::FinalizeAssistantManagerService() {
   client_->OnAssistantStatusChanged(true /* running */);
   UpdateListeningState();
   DVLOG(1) << "Assistant is running";
-
-  if (pending_restart_assistant_manager_) {
-    pending_restart_assistant_manager_ = false;
-    StopAssistantManagerService();
-    UpdateAssistantManagerState();
-  }
 }
 
 void Service::StopAssistantManagerService() {

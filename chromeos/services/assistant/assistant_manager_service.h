@@ -47,8 +47,11 @@ class AssistantManagerService : public mojom::Assistant {
   // Set access token for assistant.
   virtual void SetAccessToken(const std::string& access_token) = 0;
 
-  // Turn on / off hotword listening.
+  // Turn on / off all listening, including hotword and voice query.
   virtual void EnableListening(bool enable) = 0;
+
+  // Turn on / off hotword listening.
+  virtual void EnableHotword(bool enable) = 0;
 
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;

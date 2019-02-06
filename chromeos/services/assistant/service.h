@@ -131,7 +131,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
 
-  void MaybeRestartAssistantManager();
   void UpdateAssistantManagerState();
   void BindAssistantSettingsManager(
       mojom::AssistantSettingsManagerRequest request);
@@ -188,8 +187,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   bool session_active_ = false;
   // Whether the lock screen is on.
   bool locked_ = false;
-  // Whether there is a pending run for updating AssistantManagerService
-  bool pending_restart_assistant_manager_ = false;
   // Whether the power source is connected.
   bool power_source_connected_ = false;
 
