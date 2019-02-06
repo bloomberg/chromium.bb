@@ -369,37 +369,6 @@ because the ARM toolchain doesn't exist for this configuration:
 $ sudo install-build-deps.sh --no-arm
 ```
 
-### Debian
-
-Some tests require the `ttf-mscorefonts-installer` package from the `contrib`
-component. `contrib` packages may have dependencies on non-free software.
-
-If you need to run tests requiring MS TTF fonts, you can edit your apt
-`sources.list` by adding `contrib` to the end of each line beginning with `deb`.
-You might end up with something like this:
-
-```
-deb http://ftp.us.debian.org/debian/ jessie main contrib
-deb-src http://ftp.us.debian.org/debian/ jessie main contrib
-
-deb http://security.debian.org/ jessie/updates main contrib
-deb-src http://security.debian.org/ jessie/updates main contrib
-
-# jessie-updates, previously known as 'volatile'
-deb http://ftp.us.debian.org/debian/ jessie-updates main contrib
-deb-src http://ftp.us.debian.org/debian/ jessie-updates main contrib
-```
-
-Next, run:
-
-``` shell
-$ sudo apt-get update
-$ sudo apt-get install ttf-mscorefonts-installer
-```
-
-If you already have the `contrib` component enabled, `install-build-deps.sh`
-will install `ttf-mscorefonts-installer` for you.
-
 ### Fedora
 
 Instead of running `build/install-build-deps.sh`, run:
