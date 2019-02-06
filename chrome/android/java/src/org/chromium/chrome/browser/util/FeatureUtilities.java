@@ -480,6 +480,13 @@ public class FeatureUtilities {
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
     }
 
+    /**
+     * @return Whether no-touch-mode is enabled.
+     */
+    public static boolean isNoTouchModeEnabled() {
+        return CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_TOUCH_MODE);
+    }
+
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
 }
