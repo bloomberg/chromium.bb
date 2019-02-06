@@ -98,11 +98,11 @@ void TraceEventMetadataSource::GenerateMetadata(
 
 void TraceEventMetadataSource::StartTracing(
     ProducerClient* producer_client,
-    const mojom::DataSourceConfig& data_source_config) {
+    const perfetto::DataSourceConfig& data_source_config) {
   // TODO(eseckler): Once we support streaming of trace data, it would make
   // sense to emit the metadata on startup, so the UI can display it right away.
   trace_writer_ =
-      producer_client->CreateTraceWriter(data_source_config.target_buffer);
+      producer_client->CreateTraceWriter(data_source_config.target_buffer());
 }
 
 void TraceEventMetadataSource::StopTracing(
@@ -497,26 +497,27 @@ void TraceEventDataSource::SetupStartupTracing() {
 
 void TraceEventDataSource::StartTracing(
     ProducerClient* producer_client,
-    const mojom::DataSourceConfig& data_source_config) {
+    const perfetto::DataSourceConfig& data_source_config) {
   std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
   {
     base::AutoLock lock(lock_);
 
     DCHECK(!producer_client_);
     producer_client_ = producer_client;
-    target_buffer_ = data_source_config.target_buffer;
+    target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
   }
 
   if (unbound_writer_registry) {
     producer_client->BindStartupTraceWriterRegistry(
-        std::move(unbound_writer_registry), data_source_config.target_buffer);
+        std::move(unbound_writer_registry), data_source_config.target_buffer());
   } else {
     RegisterWithTraceLog();
   }
 
-  auto trace_config = TraceConfig(data_source_config.trace_config);
+  auto trace_config =
+      TraceConfig(data_source_config.chrome_config().trace_config());
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   ResetHistograms(trace_config);
 }

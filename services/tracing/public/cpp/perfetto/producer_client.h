@@ -50,13 +50,14 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     explicit DataSourceBase(const std::string& name);
     virtual ~DataSourceBase();
 
-    void StartTracingWithID(uint64_t data_source_id,
-                            ProducerClient* producer_client,
-                            const mojom::DataSourceConfig& data_source_config);
+    void StartTracingWithID(
+        uint64_t data_source_id,
+        ProducerClient* producer_client,
+        const perfetto::DataSourceConfig& data_source_config);
 
     virtual void StartTracing(
         ProducerClient* producer_client,
-        const mojom::DataSourceConfig& data_source_config) = 0;
+        const perfetto::DataSourceConfig& data_source_config) = 0;
     virtual void StopTracing(
         base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
 
@@ -108,8 +109,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // Called through Mojo by the ProducerHost on the service-side to control
   // tracing and toggle specific DataSources.
   void OnTracingStart(mojo::ScopedSharedBufferHandle shared_memory) override;
-  void StartDataSource(uint64_t id,
-                       mojom::DataSourceConfigPtr data_source_config) override;
+  void StartDataSource(
+      uint64_t id,
+      const perfetto::DataSourceConfig& data_source_config) override;
 
   void StopDataSource(uint64_t id, StopDataSourceCallback callback) override;
   void Flush(uint64_t flush_request_id,

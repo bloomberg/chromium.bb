@@ -68,14 +68,9 @@ void ProducerHost::SetupDataSource(perfetto::DataSourceInstanceID,
 
 void ProducerHost::StartDataSource(perfetto::DataSourceInstanceID id,
                                    const perfetto::DataSourceConfig& config) {
-  // TODO(oysteine): Send full DataSourceConfig, not just the name/target_buffer
-  // and Chrome Tracing string.
-  auto data_source_config = mojom::DataSourceConfig::New();
-  data_source_config->name = config.name();
-  data_source_config->target_buffer = config.target_buffer();
-
-  data_source_config->trace_config = config.chrome_config().trace_config();
-  producer_client_->StartDataSource(id, std::move(data_source_config));
+  // The type traits will send the base fields in the DataSourceConfig and also
+  // the ChromeConfig other configs are dropped.
+  producer_client_->StartDataSource(id, config);
 }
 
 void ProducerHost::StopDataSource(perfetto::DataSourceInstanceID id) {
