@@ -239,20 +239,20 @@ EntityMask MarkupAccumulator::EntityMaskForText(const Text& text) const {
   return formatter_.EntityMaskForText(text);
 }
 
-void MarkupAccumulator::PushNamespaces() {
-  // TODO(tkent): Avoid to push in HTML serialization
-  // TODO(tkent): Avoid to push for non-Element nodes
-  // TODO(tkent): Avoid to copy the whole map.
+void MarkupAccumulator::PushNamespaces(const Node& node) {
+  if (!node.IsElementNode() || SerializeAsHTMLDocument(node))
+    return;
   DCHECK_GT(namespace_stack_.size(), 0u);
+  // TODO(tkent): Avoid to copy the whole map.
   // We can't do |namespace_stack_.emplace_back(namespace_stack_.back())|
   // because back() returns a reference in the vector backing, and
   // emplace_back() can reallocate it.
   namespace_stack_.push_back(Namespaces(namespace_stack_.back()));
 }
 
-void MarkupAccumulator::PopNamespaces() {
-  // TODO(tkent): Avoid to pop in HTML serialization
-  // TODO(tkent): Avoid to pop for non-Element nodes
+void MarkupAccumulator::PopNamespaces(const Node& node) {
+  if (!node.IsElementNode() || SerializeAsHTMLDocument(node))
+    return;
   namespace_stack_.pop_back();
 }
 
@@ -312,7 +312,7 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
     return;
   }
 
-  PushNamespaces();
+  PushNamespaces(target_node);
 
   if (!children_only)
     AppendStartMarkup(target_node);
@@ -349,7 +349,7 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
       !(SerializeAsHTMLDocument(target_node) &&
         ElementCannotHaveEndTag(target_node)))
     AppendEndTag(ToElement(target_node));
-  PopNamespaces();
+  PopNamespaces(target_node);
 }
 
 template <typename Strategy>
@@ -364,11 +364,6 @@ String MarkupAccumulator::SerializeNodes(const Node& target_node,
     AddPrefix(g_xml_atom, xml_names::kNamespaceURI);
     // 4. Let prefix index be a generated namespace prefix index with value 1.
     prefix_index_ = 1;
-  } else {
-    // Need the first item because we refer namespace_stack_.back() in
-    // PushNamespaces().
-    // TODO(tkent): Remove this by updating PushNamespaces().
-    namespace_stack_.emplace_back();
   }
 
   SerializeNodesWithNamespaces<Strategy>(target_node, children_only);
