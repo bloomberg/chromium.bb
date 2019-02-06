@@ -37,6 +37,8 @@ class TestPatchOrderFile(unittest.TestCase):
     self.assertRaises(AssertionError, patch_orderfile._GetMaxOutlinedIndex,
                       {'OUTLINED_FUNCTION_{}'.format(idx): None
                        for idx in [1, 200, 3, 11]})
+    self.assertEquals(None, patch_orderfile._GetMaxOutlinedIndex(
+        {'a': None, 'b': None}))
 
   def testPatchedSymbols(self):
     # From input symbols a b c d, symbols a and d match themselves, symbol
