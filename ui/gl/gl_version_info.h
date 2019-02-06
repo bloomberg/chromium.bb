@@ -62,6 +62,8 @@ struct GL_EXPORT GLVersionInfo {
   std::string driver_vendor;
   std::string driver_version;
 
+  static void DisableES3ForTesting();
+
  private:
   void Initialize(const char* version_str,
                   const char* renderer_str,

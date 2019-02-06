@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_initializer.h"
 
 namespace gl {
@@ -37,6 +38,10 @@ bool InitializeGLOneOffHelper(bool init_extensions) {
                           kGLImplementationDesktopGLCoreProfile);
     if (iter != allowed_impls.end())
       allowed_impls.erase(iter);
+  }
+
+  if (cmd->HasSwitch(switches::kDisableES3GLContextForTesting)) {
+    GLVersionInfo::DisableES3ForTesting();
   }
 
   if (allowed_impls.empty()) {

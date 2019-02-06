@@ -3595,12 +3595,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       group_->max_transform_feedback_separate_attribs(), needs_emulation));
 
   if (feature_info_->IsWebGL2OrES3Context()) {
-    if (!feature_info_->IsES3Capable()) {
-      Destroy(true);
-      LOG(ERROR) << "ContextResult::kFatalFailure: "
-                    "ES3 is blacklisted/disabled/unsupported by driver.";
-      return gpu::ContextResult::kFatalFailure;
-    }
+    // Verified in ContextGroup.
+    DCHECK(feature_info_->IsES3Capable());
     feature_info_->EnableES3Validators();
 
     frag_depth_explicitly_enabled_ = true;

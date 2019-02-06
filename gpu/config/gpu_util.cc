@@ -232,6 +232,10 @@ void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_ES3_GL_CONTEXT)) {
     command_line->AppendSwitch(switches::kDisableES3GLContext);
   }
+  if (gpu_feature_info.IsWorkaroundEnabled(
+          DISABLE_ES3_GL_CONTEXT_FOR_TESTING)) {
+    command_line->AppendSwitch(switches::kDisableES3GLContextForTesting);
+  }
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION)) {
     command_line->AppendSwitch(switches::kDisableDirectComposition);
   }
