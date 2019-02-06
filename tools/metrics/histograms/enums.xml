@@ -44993,6 +44993,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="118" label="QUIC_STREAM_ID_BLOCKED_ERROR"/>
   <int value="119" label="QUIC_MAX_STREAM_ID_ERROR"/>
   <int value="120" label="QUIC_HTTP_DECODER_ERROR"/>
+  <int value="121" label="QUIC_STALE_CONNECTION_CANCELLED"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason">
