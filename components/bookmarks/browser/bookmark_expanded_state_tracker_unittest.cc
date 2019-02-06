@@ -44,8 +44,7 @@ BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest() {}
 BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
-  prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
-                                      std::make_unique<base::ListValue>());
+  prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes);
   prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
   model_.reset(new BookmarkModel(std::make_unique<TestBookmarkClient>()));
   model_->Load(&prefs_, base::FilePath(),
