@@ -35,7 +35,7 @@ template("fuchsia_package") {
 
   _pm_tool_path = "${fuchsia_sdk}/tools/pm"
 
-  _pkg_out_dir = "$root_out_dir/gen/" + get_label_info(pkg.package_name, "dir")
+  _pkg_out_dir = "${target_gen_dir}/${pkg.package_name}"
   _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
   _archive_manifest = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
   _component_manifest = "$_pkg_out_dir/${pkg.package_name}.cmx"
@@ -122,7 +122,7 @@ template("fuchsia_package") {
 
     inputs = [
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      rebase_path("$fuchsia_sdk/.hash"),
+      "${fuchsia_sdk}/.hash",
     ]
 
     outputs = [
@@ -132,7 +132,7 @@ template("fuchsia_package") {
     args = [
       rebase_path(_pm_tool_path, root_build_dir),
       "-k",
-      rebase_path(_key_file),
+      rebase_path(_key_file, root_build_dir),
       "genkey",
     ]
   }
@@ -150,7 +150,7 @@ template("fuchsia_package") {
 
     inputs = [
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      rebase_path("$fuchsia_sdk/.hash"),
+      "${fuchsia_sdk}/.hash",
       _key_file,
     ]
 
@@ -161,11 +161,11 @@ template("fuchsia_package") {
     args = [
       rebase_path(_pm_tool_path, root_build_dir),
       "-o",
-      rebase_path(_pkg_out_dir),
+      rebase_path(_pkg_out_dir, root_build_dir),
       "-k",
-      rebase_path(_key_file),
+      rebase_path(_key_file, root_build_dir),
       "-m",
-      rebase_path(_archive_manifest),
+      rebase_path(_archive_manifest, root_build_dir),
       "build",
     ]
   }
@@ -183,7 +183,7 @@ template("fuchsia_package") {
 
     inputs = [
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      rebase_path("$fuchsia_sdk/.hash"),
+      "${fuchsia_sdk}/.hash",
       _meta_far_file,
       _archive_manifest,
     ]
@@ -195,9 +195,9 @@ template("fuchsia_package") {
     args = [
       rebase_path(_pm_tool_path, root_build_dir),
       "-o",
-      rebase_path(_pkg_out_dir),
+      rebase_path(_pkg_out_dir, root_build_dir),
       "-m",
-      rebase_path(_archive_manifest),
+      rebase_path(_archive_manifest, root_build_dir),
       "archive",
     ]
   }
