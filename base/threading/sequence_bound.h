@@ -110,8 +110,9 @@ class SequenceBound {
   // constructed, except by posting such a access to |impl_task_runner_| after
   // posting construction there as well.
   template <typename... Args>
+  NO_SANITIZE("cfi-unrelated-cast")
   SequenceBound(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                Args&&... args) NO_SANITIZE("cfi-unrelated-cast")
+                Args&&... args)
       : impl_task_runner_(std::move(task_runner)) {
     // Allocate space for but do not construct an instance of |T|.
     storage_ = AlignedAlloc(sizeof(T), alignof(T));
@@ -159,7 +160,7 @@ class SequenceBound {
   // non-virtual base classes are allowed before construction by the standard.
   // See http://eel.is/c++draft/basic.life#6 for more information.
   template <typename From>
-  void MoveRecordFrom(From&& other) NO_SANITIZE("cfi-unrelated-cast") {
+  void NO_SANITIZE("cfi-unrelated-cast") MoveRecordFrom(From&& other) {
     // |other| might be is_null(), but that's okay.
     impl_task_runner_ = std::move(other.impl_task_runner_);
 
