@@ -19,6 +19,7 @@
 #include <fstream>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/core/embedder/embedder.h"
@@ -26,44 +27,22 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 namespace {
 
 scoped_refptr<SharedBuffer> ReadFile(const char* name) {
-  std::ifstream file(name, std::ios::in | std::ios::binary);
-  if (!file) {
-    fprintf(stderr, "Cannot open file %s\n", name);
-    exit(2);
-  }
-
-  file.seekg(0, std::ios::end);
-  std::streampos file_size = file.tellg();
-  file.seekg(0, std::ios::beg);
-
-  if (!file || file_size <= 0) {
-    fprintf(stderr, "Error seeking file %s\n", name);
-    exit(2);
-  }
-
-  if (file_size > std::numeric_limits<wtf_size_t>::max()) {
-    fprintf(stderr, "File size too large %s\n", name);
-    exit(2);
-  }
-
-  Vector<char> buffer(static_cast<wtf_size_t>(file_size));
-  if (!file.read(buffer.data(), file_size)) {
-    fprintf(stderr, "Error reading file %s\n", name);
-    exit(2);
-  }
-
-  return SharedBuffer::AdoptVector(buffer);
+  std::string file;
+  if (base::ReadFileToString(base::FilePath::FromUTF8Unsafe(name), &file))
+    return SharedBuffer::Create(file.data(), file.size());
+  perror(name);
+  exit(2);
+  return SharedBuffer::Create();
 }
 
 struct ImageMeta {
-  char* name;
+  const char* name;
   int width;
   int height;
   int frames;
@@ -77,16 +56,15 @@ void DecodeFailure(ImageMeta* image) {
 }
 
 void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
-  const bool data_complete = true;
+  const bool all_data_received = true;
+
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      data, all_data_received, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore());
 
   auto start = CurrentTimeTicks();
 
-  bool all_data_received = true;
   decoder->SetData(data, all_data_received);
-
   size_t frame_count = decoder->FrameCount();
   for (size_t index = 0; index < frame_count; ++index) {
     if (!decoder->DecodeFrameBufferAtIndex(index))
