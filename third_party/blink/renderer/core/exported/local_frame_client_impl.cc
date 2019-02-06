@@ -706,12 +706,6 @@ void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
     web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
-void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
-                                                    bool did_fail) {
-  if (web_frame_->Client())
-    web_frame_->Client()->ReportLegacySymantecCert(url, did_fail);
-}
-
 void LocalFrameClientImpl::ReportLegacyTLSVersion(const KURL& url) {
   if (web_frame_->Client())
     web_frame_->Client()->ReportLegacyTLSVersion(url);

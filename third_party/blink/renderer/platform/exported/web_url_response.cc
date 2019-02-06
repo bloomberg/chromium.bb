@@ -240,10 +240,6 @@ void WebURLResponse::SetCTPolicyCompliance(
   };
 }
 
-void WebURLResponse::SetIsLegacySymantecCert(bool value) {
-  resource_response_->SetIsLegacySymantecCert(value);
-}
-
 void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
   resource_response_->SetIsLegacyTLSVersion(value);
 }

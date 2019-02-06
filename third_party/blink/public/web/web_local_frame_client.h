@@ -618,11 +618,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // connection with certificate errors.
   virtual void DidRunContentWithCertificateErrors() {}
 
-  // This frame loaded a resource with an otherwise-valid legacy Symantec
-  // certificate that is slated for distrust (|did_fail|=false) or has already
-  // been distrusted (|did_fail|=true).
-  virtual void ReportLegacySymantecCert(const WebURL&, bool did_fail) {}
-
   // The frame loaded a resource with a legacy TLS version that will be removed
   // in the future. Prints a console message to warn about this.
   virtual void ReportLegacyTLSVersion(const WebURL&) {}

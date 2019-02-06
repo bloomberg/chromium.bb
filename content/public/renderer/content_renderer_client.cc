@@ -240,12 +240,6 @@ bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
 }
 
-bool ContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
-    const GURL& url,
-    std::string* console_messsage) {
-  return false;
-}
-
 bool ContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
   return false;
 }

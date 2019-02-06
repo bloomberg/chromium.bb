@@ -55,10 +55,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // The resource's compliance with the Certificate Transparency policy.
   net::ct::CTPolicyCompliance ct_policy_compliance;
 
-  // True if the resource was loaded with an otherwise-valid legacy Symantec
-  // certificate which will be distrusted in future.
-  bool is_legacy_symantec_cert;
-
   // Content length if available. -1 if not available
   int64_t content_length;
 

@@ -257,11 +257,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   }
   void SetCTPolicyCompliance(CTPolicyCompliance);
 
-  bool IsLegacySymantecCert() const { return is_legacy_symantec_cert_; }
-  void SetIsLegacySymantecCert(bool is_legacy_symantec_cert) {
-    is_legacy_symantec_cert_ = is_legacy_symantec_cert;
-  }
-
   bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
   void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
 
@@ -453,10 +448,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // The Certificate Transparency policy compliance status of the resource.
   CTPolicyCompliance ct_policy_compliance_ =
       kCTPolicyComplianceDetailsNotAvailable;
-
-  // True if the resource was retrieved with a legacy Symantec certificate which
-  // is slated for distrust in future.
-  bool is_legacy_symantec_cert_ = false;
 
   // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
   // will be removed in the future.

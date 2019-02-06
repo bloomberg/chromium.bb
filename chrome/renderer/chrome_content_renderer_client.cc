@@ -1576,18 +1576,6 @@ ChromeContentRendererClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::GetTaskSchedulerInitParamsForRenderer();
 }
 
-bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
-    const GURL& url,
-    std::string* console_message) {
-  *console_message = base::StringPrintf(
-      "The SSL certificate used to load resources from %s"
-      " will be distrusted very soon. Once distrusted, users will be prevented"
-      " from loading these resources. See https://g.co/chrome/symantecpkicerts"
-      " for more information.",
-      url::Origin::Create(url).Serialize().c_str());
-  return true;
-}
-
 void ChromeContentRendererClient::CreateRendererService(
     service_manager::mojom::ServiceRequest service_request) {
   DCHECK(!service_binding_.is_bound());
