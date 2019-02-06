@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_PLUGIN_LIST_H_
-#define CONTENT_COMMON_PLUGIN_LIST_H_
+#ifndef CONTENT_BROWSER_PLUGIN_LIST_H_
+#define CONTENT_BROWSER_PLUGIN_LIST_H_
 
 #include <set>
 #include <string>
@@ -51,8 +51,7 @@ class CONTENT_EXPORT PluginList {
   // be loaded using PluginList::LoadPlugin().
   // If |add_at_beginning| is true the plugin will be added earlier in
   // the list so that it can override the MIME types of older registrations.
-  void RegisterInternalPlugin(const WebPluginInfo& info,
-                              bool add_at_beginning);
+  void RegisterInternalPlugin(const WebPluginInfo& info, bool add_at_beginning);
 
   // Removes a specified internal plugin from the list. The search will match
   // on the path from the version info previously registered.
@@ -167,4 +166,4 @@ class CONTENT_EXPORT PluginList {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_PLUGIN_LIST_H_
+#endif  // CONTENT_BROWSER_PLUGIN_LIST_H_
