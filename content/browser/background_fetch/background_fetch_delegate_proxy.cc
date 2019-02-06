@@ -429,10 +429,11 @@ void BackgroundFetchDelegateProxy::OnJobCancelled(
       reason_to_abort ==
           blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED);
 
-  DCHECK(controller_map_.count(job_unique_id));
-  auto& controller = controller_map_[job_unique_id];
+  auto it = controller_map_.find(job_unique_id);
+  if (it == controller_map_.end())
+    return;
 
-  if (controller)
+  if (const auto& controller = it->second)
     controller->AbortFromDelegate(reason_to_abort);
 }
 
@@ -442,10 +443,11 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
     std::unique_ptr<BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(controller_map_.count(job_unique_id));
-  auto& controller = controller_map_[job_unique_id];
+  auto it = controller_map_.find(job_unique_id);
+  if (it == controller_map_.end())
+    return;
 
-  if (controller)
+  if (const auto& controller = it->second)
     controller->DidStartRequest(guid, std::move(response));
 }
 
@@ -458,9 +460,10 @@ void BackgroundFetchDelegateProxy::DidActivateUI(
 void BackgroundFetchDelegateProxy::DidUpdateUI(
     const std::string& job_unique_id) {
   auto it = update_ui_callback_map_.find(job_unique_id);
-  DCHECK(it != update_ui_callback_map_.end());
-  DCHECK(it->second);
+  if (it == update_ui_callback_map_.end())
+    return;
 
+  DCHECK(it->second);
   std::move(it->second).Run(blink::mojom::BackgroundFetchError::NONE);
   update_ui_callback_map_.erase(it);
 }
@@ -472,12 +475,12 @@ void BackgroundFetchDelegateProxy::OnDownloadUpdated(
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(controller_map_.count(job_unique_id));
-  auto& controller = controller_map_[job_unique_id];
+  auto it = controller_map_.find(job_unique_id);
+  if (it == controller_map_.end())
+    return;
 
-  if (controller) {
+  if (const auto& controller = it->second)
     controller->DidUpdateRequest(guid, bytes_uploaded, bytes_downloaded);
-  }
 }
 
 void BackgroundFetchDelegateProxy::OnDownloadComplete(
@@ -486,10 +489,11 @@ void BackgroundFetchDelegateProxy::OnDownloadComplete(
     std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(controller_map_.count(job_unique_id));
-  auto& controller = controller_map_[job_unique_id];
+  auto it = controller_map_.find(job_unique_id);
+  if (it == controller_map_.end())
+    return;
 
-  if (controller)
+  if (const auto& controller = it->second)
     controller->DidCompleteRequest(guid, std::move(result));
 }
 
@@ -497,10 +501,13 @@ void BackgroundFetchDelegateProxy::GetUploadData(
     const std::string& job_unique_id,
     const std::string& download_guid,
     BackgroundFetchDelegate::GetUploadDataCallback callback) {
-  DCHECK(controller_map_.count(job_unique_id));
-  auto& controller = controller_map_[job_unique_id];
+  auto it = controller_map_.find(job_unique_id);
+  if (it == controller_map_.end()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
-  if (controller)
+  if (const auto& controller = it->second)
     controller->GetUploadData(download_guid, std::move(callback));
   else
     std::move(callback).Run(nullptr);
