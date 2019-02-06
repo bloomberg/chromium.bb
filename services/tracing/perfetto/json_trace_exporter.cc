@@ -257,6 +257,49 @@ void OutputJSONFromTraceEventProto(
   *out += "}}";
 }
 
+std::unique_ptr<base::DictionaryValue> ConvertTraceStatsToDict(
+    const perfetto::protos::TraceStats& trace_stats) {
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetInteger("producers_connected", trace_stats.producers_connected());
+  dict->SetInteger("producers_seen", trace_stats.producers_seen());
+  dict->SetInteger("data_sources_registered",
+                   trace_stats.data_sources_registered());
+  dict->SetInteger("data_sources_seen", trace_stats.data_sources_seen());
+  dict->SetInteger("tracing_sessions", trace_stats.tracing_sessions());
+  dict->SetInteger("total_buffers", trace_stats.total_buffers());
+  auto buf_list = std::make_unique<base::ListValue>();
+  for (const auto& buf_stats : trace_stats.buffer_stats()) {
+    base::Value buf_value(base::Value::Type::DICTIONARY);
+    base::DictionaryValue* buf_dict;
+    buf_value.GetAsDictionary(&buf_dict);
+    buf_dict->SetInteger("buffer_size", buf_stats.buffer_size());
+    buf_dict->SetInteger("bytes_written", buf_stats.bytes_written());
+    buf_dict->SetInteger("bytes_overwritten", buf_stats.bytes_overwritten());
+    buf_dict->SetInteger("bytes_read", buf_stats.bytes_read());
+    buf_dict->SetInteger("padding_bytes_written",
+                         buf_stats.padding_bytes_written());
+    buf_dict->SetInteger("padding_bytes_cleared",
+                         buf_stats.padding_bytes_cleared());
+    buf_dict->SetInteger("chunks_written", buf_stats.chunks_written());
+    buf_dict->SetInteger("chunks_rewritten", buf_stats.chunks_rewritten());
+    buf_dict->SetInteger("chunks_overwritten", buf_stats.chunks_overwritten());
+    buf_dict->SetInteger("chunks_discarded", buf_stats.chunks_discarded());
+    buf_dict->SetInteger("chunks_read", buf_stats.chunks_read());
+    buf_dict->SetInteger("chunks_committed_out_of_order",
+                         buf_stats.chunks_committed_out_of_order());
+    buf_dict->SetInteger("write_wrap_count", buf_stats.write_wrap_count());
+    buf_dict->SetInteger("patches_succeeded", buf_stats.patches_succeeded());
+    buf_dict->SetInteger("patches_failed", buf_stats.patches_failed());
+    buf_dict->SetInteger("readaheads_succeeded",
+                         buf_stats.readaheads_succeeded());
+    buf_dict->SetInteger("readaheads_failed", buf_stats.readaheads_failed());
+    buf_dict->SetInteger("abi_violations", buf_stats.abi_violations());
+    buf_list->GetList().push_back(std::move(buf_value));
+  }
+  dict->SetList("buffer_stats", std::move(buf_list));
+  return dict;
+}
+
 }  // namespace
 
 void AppendProtoDictAsJSON(std::string* out,
@@ -307,6 +350,12 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
     perfetto::protos::ChromeTracePacket packet;
     bool decoded = encoded_packet.Decode(&packet);
     DCHECK(decoded);
+
+    if (packet.has_trace_stats()) {
+      metadata_->SetDictionary("perfetto_trace_stats",
+                               ConvertTraceStatsToDict(packet.trace_stats()));
+      continue;
+    }
 
     if (!packet.has_chrome_events()) {
       continue;
