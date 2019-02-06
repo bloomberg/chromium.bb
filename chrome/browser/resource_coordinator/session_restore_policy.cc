@@ -91,12 +91,9 @@ class SysInfoDelegate : public SessionRestorePolicy::Delegate {
 }  // namespace
 
 SessionRestorePolicy::SessionRestorePolicy()
-    : policy_enabled_(
-          base::FeatureList::IsEnabled(features::kInfiniteSessionRestore)),
+    : policy_enabled_(true),
       delegate_(SysInfoDelegate::Get()),
-      parsed_params_(GetInfiniteSessionRestoreParams()),
-      params_(&parsed_params_),
-      simultaneous_tab_loads_(CalculateSimultaneousTabLoadsFromParams()),
+      simultaneous_tab_loads_(CalculateSimultaneousTabLoads()),
       weak_factory_(this) {}
 
 SessionRestorePolicy::~SessionRestorePolicy() = default;
@@ -198,18 +195,17 @@ bool SessionRestorePolicy::ShouldLoad(content::WebContents* contents) const {
   if (!policy_enabled_)
     return true;
 
-  if (tab_loads_started_ < params_->min_tabs_to_restore)
+  if (tab_loads_started_ < min_tabs_to_restore_)
     return true;
 
-  if (params_->max_tabs_to_restore != 0 &&
-      tab_loads_started_ >= params_->max_tabs_to_restore) {
+  if (max_tabs_to_restore_ != 0 && tab_loads_started_ >= max_tabs_to_restore_) {
     return false;
   }
 
   // If there is a free memory constraint then enforce it.
-  if (params_->mb_free_memory_per_tab_to_restore != 0) {
+  if (mb_free_memory_per_tab_to_restore_ != 0) {
     size_t free_mem_mb = delegate_->GetFreeMemoryMiB();
-    if (free_mem_mb < params_->mb_free_memory_per_tab_to_restore)
+    if (free_mem_mb < mb_free_memory_per_tab_to_restore_)
       return false;
   }
 
@@ -218,15 +214,15 @@ bool SessionRestorePolicy::ShouldLoad(content::WebContents* contents) const {
   const TabData& tab_data = it->second;
 
   // Enforce a max time since use if one is specified.
-  if (!params_->max_time_since_last_use_to_restore.is_zero()) {
+  if (!max_time_since_last_use_to_restore_.is_zero()) {
     base::TimeDelta time_since_active =
         delegate_->NowTicks() - contents->GetLastActiveTime();
-    if (time_since_active > params_->max_time_since_last_use_to_restore)
+    if (time_since_active > max_time_since_last_use_to_restore_)
       return false;
   }
 
   // Enforce a minimum site engagement score.
-  if (tab_data.site_engagement < params_->min_site_engagement_to_restore)
+  if (tab_data.site_engagement < min_site_engagement_to_restore_)
     return false;
 
   return true;
@@ -236,14 +232,11 @@ void SessionRestorePolicy::NotifyTabLoadStarted() {
   ++tab_loads_started_;
 }
 
-SessionRestorePolicy::SessionRestorePolicy(
-    bool policy_enabled,
-    const Delegate* delegate,
-    const InfiniteSessionRestoreParams* params)
+SessionRestorePolicy::SessionRestorePolicy(bool policy_enabled,
+                                           const Delegate* delegate)
     : policy_enabled_(policy_enabled),
       delegate_(delegate),
-      params_(params),
-      simultaneous_tab_loads_(CalculateSimultaneousTabLoadsFromParams()),
+      simultaneous_tab_loads_(CalculateSimultaneousTabLoads()),
       weak_factory_(this) {}
 
 // static
@@ -273,14 +266,14 @@ size_t SessionRestorePolicy::CalculateSimultaneousTabLoads(
   return loads;
 }
 
-size_t SessionRestorePolicy::CalculateSimultaneousTabLoadsFromParams() const {
+size_t SessionRestorePolicy::CalculateSimultaneousTabLoads() const {
   // If the policy is disabled then there are no limits on the simultaneous tab
   // loads.
   if (!policy_enabled_)
     return std::numeric_limits<size_t>::max();
   return CalculateSimultaneousTabLoads(
-      params_->min_simultaneous_tab_loads, params_->max_simultaneous_tab_loads,
-      params_->cores_per_simultaneous_tab_load, delegate_->GetNumberOfCores());
+      min_simultaneous_tab_loads_, max_simultaneous_tab_loads_,
+      cores_per_simultaneous_tab_load_, delegate_->GetNumberOfCores());
 }
 
 // static

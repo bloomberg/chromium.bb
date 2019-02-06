@@ -71,6 +71,9 @@ class TabLoaderDelegate {
   // Notifies the delegate that a tab load has been initiated.
   virtual void NotifyTabLoadStarted() = 0;
 
+  // Returns the policy engine that is in use.
+  virtual resource_coordinator::SessionRestorePolicy* GetPolicyForTesting() = 0;
+
   // Testing seam to inject a custom SessionRestorePolicy.
   static void SetSessionRestorePolicyForTesting(
       resource_coordinator::SessionRestorePolicy* policy);

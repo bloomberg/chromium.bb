@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SESSIONS_TAB_LOADER_TESTER_H_
 
 #include "base/timer/timer.h"
+#include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/sessions/tab_loader.h"
 
 // Wraps a TabLoader and exposes helper functions for testing. See tab_loader.h
@@ -43,6 +44,9 @@ class TabLoaderTester {
   const TabVector& tabs_to_load() const;
   size_t scheduled_to_load_count() const;
   static TabLoader* shared_tab_loader();
+
+  // Returns the session restore policy engine that is currently being used.
+  resource_coordinator::SessionRestorePolicy* GetPolicy();
 
   // Additional helper functions.
   bool IsSharedTabLoader() const;

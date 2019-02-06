@@ -83,6 +83,10 @@ TabLoader* TabLoaderTester::shared_tab_loader() {
   return TabLoader::shared_tab_loader_;
 }
 
+resource_coordinator::SessionRestorePolicy* TabLoaderTester::GetPolicy() {
+  return tab_loader_->delegate_->GetPolicyForTesting();
+}
+
 bool TabLoaderTester::IsSharedTabLoader() const {
   return tab_loader_ == TabLoader::shared_tab_loader_;
 }

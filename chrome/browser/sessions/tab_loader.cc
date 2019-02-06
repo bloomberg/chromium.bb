@@ -130,7 +130,7 @@ void TabLoader::SetConstructionCallbackForTesting(
 
 void TabLoader::SetMaxSimultaneousLoadsForTesting(size_t loading_slots) {
   DCHECK_EQ(0u, reentry_depth_);  // Should never be called reentrantly.
-  max_simultaneous_loads_ = loading_slots;
+  max_simultaneous_loads_for_testing_ = loading_slots;
 }
 
 void TabLoader::SetTickClockForTesting(base::TickClock* tick_clock) {
@@ -279,8 +279,6 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   bool delegate_existed = true;
   if (!delegate_) {
     delegate_ = TabLoaderDelegate::Create(this);
-    if (max_simultaneous_loads_ == 0)
-      max_simultaneous_loads_ = delegate_->GetMaxSimultaneousTabLoads();
     delegate_existed = false;
   }
 
@@ -404,8 +402,8 @@ size_t TabLoader::GetMaxNewTabLoads() const {
 
   // Determine the number of free loading slots available.
   size_t tabs_to_load = 0;
-  if (loading_tab_count < max_simultaneous_loads_)
-    tabs_to_load = max_simultaneous_loads_ - loading_tab_count;
+  if (loading_tab_count < MaxSimultaneousLoads())
+    tabs_to_load = MaxSimultaneousLoads() - loading_tab_count;
 
   // Cap the number of loads by the actual number of tabs remaining.
   tabs_to_load = std::min(tabs_to_load, tabs_to_load_.size());
@@ -757,4 +755,10 @@ void TabLoader::MoveToSortedPosition(TabVector::iterator it) {
       it = it_right;
     }
   }
+}
+
+size_t TabLoader::MaxSimultaneousLoads() const {
+  if (max_simultaneous_loads_for_testing_ != 0)
+    return max_simultaneous_loads_for_testing_;
+  return delegate_->GetMaxSimultaneousTabLoads();
 }
