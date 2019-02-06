@@ -16,6 +16,7 @@ struct App {
 
   Readiness readiness;
   string? name;
+  string? short_name;
   IconKey? icon_key;
   mojo_base.mojom.Time? last_launch_time;
   mojo_base.mojom.Time? install_time;

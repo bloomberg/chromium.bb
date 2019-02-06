@@ -32,6 +32,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->app_id = internal_app.app_id;
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = l10n_util::GetStringUTF8(internal_app.name_string_resource_id);
+  app->short_name = app->name;
 
   app->icon_key = apps::mojom::IconKey::New();
   app->icon_key->icon_type = apps::mojom::IconType::kResource;

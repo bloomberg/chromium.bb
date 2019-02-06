@@ -20,6 +20,9 @@ class AppUpdateTest : public testing::Test {
   std::string expect_name_;
   bool expect_name_changed_;
 
+  std::string expect_short_name_;
+  bool expect_short_name_changed_;
+
   apps::mojom::IconKeyPtr expect_icon_key_;
   bool expect_icon_key_changed_;
 
@@ -56,6 +59,7 @@ class AppUpdateTest : public testing::Test {
   void ExpectNoChange() {
     expect_readiness_changed_ = false;
     expect_name_changed_ = false;
+    expect_short_name_changed_ = false;
     expect_icon_key_changed_ = false;
     expect_last_launch_time_changed_ = false;
     expect_install_time_changed_ = false;
@@ -71,6 +75,9 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_name_, u.Name());
     EXPECT_EQ(expect_name_changed_, u.NameChanged());
+
+    EXPECT_EQ(expect_short_name_, u.ShortName());
+    EXPECT_EQ(expect_short_name_changed_, u.ShortNameChanged());
 
     EXPECT_EQ(expect_icon_key_, u.IconKey());
     EXPECT_EQ(expect_icon_key_changed_, u.IconKeyChanged());
@@ -104,6 +111,7 @@ class AppUpdateTest : public testing::Test {
 
     expect_readiness_ = apps::mojom::Readiness::kUnknown;
     expect_name_ = "";
+    expect_short_name_ = "";
     expect_icon_key_ = nullptr;
     expect_last_launch_time_ = base::Time();
     expect_install_time_ = base::Time();
@@ -153,6 +161,28 @@ class AppUpdateTest : public testing::Test {
       delta->name = test_name_1;
       expect_name_ = test_name_1;
       expect_name_changed_ = true;
+      CheckExpects(u);
+    }
+
+    // ShortName tests.
+
+    if (state) {
+      state->short_name = "Kate";
+      expect_short_name_ = "Kate";
+      expect_short_name_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->short_name = "Bob";
+      expect_short_name_ = "Bob";
+      expect_short_name_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
       CheckExpects(u);
     }
 

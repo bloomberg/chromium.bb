@@ -386,6 +386,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   // corresponding 'suspended' apps::mojom::Readiness enum value??
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = app_info.name;
+  app->short_name = app->name;
 
   app->icon_key = NewIconKey(app_id);
 
