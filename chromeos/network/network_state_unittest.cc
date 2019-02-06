@@ -250,12 +250,14 @@ TEST_F(NetworkStateTest, ConnectionState) {
   EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
   EXPECT_TRUE(network_state_.IsConnectingState());
   EXPECT_TRUE(network_state_.IsConnectingOrConnected());
+  EXPECT_TRUE(network_state_.IsActive());
   EXPECT_FALSE(network_state_.IsReconnecting());
 
   network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateOnline);
   EXPECT_TRUE(network_state_.IsConnectedState());
   EXPECT_TRUE(network_state_.IsConnectingOrConnected());
+  EXPECT_TRUE(network_state_.IsActive());
   EXPECT_FALSE(network_state_.IsReconnecting());
 
   network_state_.SetConnectionState(shill::kStateConfiguration);
@@ -268,6 +270,14 @@ TEST_F(NetworkStateTest, ConnectionState) {
   EXPECT_FALSE(network_state_.IsConnectedState());
   EXPECT_FALSE(network_state_.IsConnectingState());
   EXPECT_FALSE(network_state_.IsConnectingOrConnected());
+  EXPECT_FALSE(network_state_.IsActive());
+
+  EXPECT_TRUE(SetStringProperty(shill::kActivationStateProperty,
+                                shill::kActivationStateActivating));
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsConnectingOrConnected());
+  EXPECT_TRUE(network_state_.IsActive());
 }
 
 TEST_F(NetworkStateTest, ConnectRequested) {

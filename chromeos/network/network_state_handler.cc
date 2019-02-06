@@ -97,11 +97,13 @@ class NetworkStateHandler::ActiveNetworkState {
  public:
   explicit ActiveNetworkState(const NetworkState* network)
       : guid_(network->guid()),
-        connection_state_(network->connection_state()) {}
+        connection_state_(network->connection_state()),
+        activation_state_(network->activation_state()) {}
 
   bool MatchesNetworkState(const NetworkState* network) {
     return guid_ == network->guid() &&
-           connection_state_ == network->connection_state();
+           connection_state_ == network->connection_state() &&
+           activation_state_ == network->activation_state();
   }
 
  private:
@@ -110,6 +112,9 @@ class NetworkStateHandler::ActiveNetworkState {
   // Active networks have a connected or connecting |connection_state_|, see
   // NetworkState::Is{Connected|Connecting}State.
   const std::string connection_state_;
+  // Activating Cellular networks are frequently treated like connecting
+  // networks in the UI, so we also track changes to Cellular activation state.
+  const std::string activation_state_;
 };
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -528,8 +533,8 @@ void NetworkStateHandler::GetNetworkListByTypeImpl(
     DCHECK(network);
     if (!network->update_received() || !network->Matches(type))
       continue;
-    if (!network->IsConnectingOrConnected())
-      break;  // Shill lists active networks first.
+    if (!network->IsActive())
+      break;  // Active networks are listed first.
     if (!ShouldIncludeNetworkInList(network, configured_only, visible_only))
       continue;
 
@@ -558,7 +563,7 @@ void NetworkStateHandler::GetNetworkListByTypeImpl(
     DCHECK(network);
     if (!network->update_received() || !network->Matches(type))
       continue;
-    if (network->IsConnectingOrConnected())
+    if (network->IsActive())
       continue;
     if (!ShouldIncludeNetworkInList(network, configured_only, visible_only))
       continue;
@@ -1323,6 +1328,10 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       // may have changed, so request a full update.
       request_update = true;
     }
+  } else if (key == shill::kActivationStateProperty) {
+    // Activation state may affect "connecting" state in the UI.
+    notify_connection_state = true;
+    network_list_sorted_ = false;
   }
 
   if (request_update)
@@ -1337,7 +1346,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     // Uninteresting update. This includes 'Device' property changes to "/"
     // (occurs before just a service is removed).
     // For non active networks do not log or send any notifications.
-    if (!network->IsConnectingOrConnected())
+    if (!network->IsActive())
       return;
     // Otherwise do not trigger 'default network changed'.
     notify_default = false;
@@ -1402,7 +1411,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     NotifyNetworkPropertiesUpdated(network);
     if (network->path() == default_network_path_)
       NotifyDefaultNetworkChanged();
-    if (network->IsConnectingOrConnected())
+    if (network->IsActive())
       NotifyIfActiveNetworksChanged();
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     DeviceState* device = GetModifiableDeviceState(path);
@@ -1481,7 +1490,7 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
       if ((*iter)->AsNetworkState()->IsDefaultCellular())
         have_default_cellular = true;
     }
-    if (network->IsConnectingOrConnected()) {
+    if (network->IsActive()) {
       active.push_back(std::move(*iter));
       continue;
     }

@@ -415,7 +415,7 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStubActiveNetworks) {
       NetworkTypePattern::Default(), &active_networks);
   std::vector<std::string> active_network_paths =
       GetNetworkPaths(active_networks);
-  const std::vector<std::string> expected_active_network_paths = {
+  std::vector<std::string> expected_active_network_paths = {
       kShillManagerClientStubDefaultService,
       kShillManagerClientStubDefaultWifi};
   EXPECT_EQ(expected_active_network_paths, active_network_paths);
@@ -432,6 +432,19 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStubActiveNetworks) {
       kShillManagerClientStubDefaultWifi,
       network_state_handler_->ActiveNetworkByType(NetworkTypePattern::WiFi())
           ->path());
+
+  // Activating Cellular should show up in the active list.
+  service_test_->SetServiceProperty(
+      kShillManagerClientStubCellular, shill::kActivationStateProperty,
+      base::Value(shill::kActivationStateActivating));
+  base::RunLoop().RunUntilIdle();
+  expected_active_network_paths = {kShillManagerClientStubDefaultService,
+                                   kShillManagerClientStubDefaultWifi,
+                                   kShillManagerClientStubCellular};
+  network_state_handler_->GetActiveNetworkListByType(
+      NetworkTypePattern::Default(), &active_networks);
+  active_network_paths = GetNetworkPaths(active_networks);
+  EXPECT_EQ(expected_active_network_paths, active_network_paths);
 }
 
 TEST_F(NetworkStateHandlerTest, GetNetworkList) {

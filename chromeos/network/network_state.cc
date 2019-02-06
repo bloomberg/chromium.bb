@@ -434,6 +434,11 @@ bool NetworkState::IsConnectingOrConnected() const {
           StateIsConnected(connection_state_));
 }
 
+bool NetworkState::IsActive() const {
+  return IsConnectingOrConnected() ||
+         activation_state() == shill::kActivationStateActivating;
+}
+
 bool NetworkState::IsReconnecting() const {
   return visible() && StateIsConnecting(connection_state_) &&
          StateIsConnected(last_connection_state_);
