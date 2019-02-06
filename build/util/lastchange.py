@@ -49,19 +49,22 @@ def RunGitCommand(directory, command):
     return None
 
 
-def FetchGitRevision(directory, filter):
+def FetchGitRevision(directory, git_log_filter):
   """
   Fetch the Git hash (and Cr-Commit-Position if any) for a given directory.
 
   Errors are swallowed.
+
+  Args:
+    git_log_filter: a string to be used for filtering git log result.
 
   Returns:
     A VersionInfo object or None on error.
   """
   hsh = ''
   git_args = ['log', '-1', '--format=%H %ct']
-  if filter is not None:
-    git_args.append('--grep=' + filter)
+  if git_log_filter is not None:
+    git_args.append('--grep=' + git_log_filter)
   proc = RunGitCommand(directory, git_args)
   if proc:
     output = proc.communicate()[0].strip()
@@ -84,12 +87,12 @@ def FetchGitRevision(directory, filter):
   return VersionInfo(hsh, '%s-%s' % (hsh, pos), int(ct))
 
 
-def FetchVersionInfo(directory=None, filter=None):
+def FetchVersionInfo(directory=None, git_log_filter=None):
   """
   Returns the last change (as a VersionInfo object)
   from some appropriate revision control system.
   """
-  version_info = FetchGitRevision(directory, filter)
+  version_info = FetchGitRevision(directory, git_log_filter)
   if not version_info:
     version_info = VersionInfo('0', '0', 0)
   return version_info
@@ -186,7 +189,7 @@ def main(argv=None):
 
   out_file = args.output
   header = args.header
-  filter=args.filter
+  git_log_filter=args.filter
 
   while len(extras) and out_file is None:
     if out_file is None:
@@ -201,7 +204,8 @@ def main(argv=None):
   else:
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
-  version_info = FetchVersionInfo(directory=src_dir, filter=filter)
+  version_info = FetchVersionInfo(directory=src_dir,
+                                  git_log_filter=git_log_filter)
   revision_string = version_info.revision
   if args.revision_id_only:
     revision_string = version_info.revision_id
