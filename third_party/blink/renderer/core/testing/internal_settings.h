@@ -51,6 +51,8 @@ class InternalSettings final : public InternalSettingsGenerated,
  public:
   static const char kSupplementName[];
 
+  static void PrepareForLeakDetection();
+
   class Backup {
     DISALLOW_NEW();
 

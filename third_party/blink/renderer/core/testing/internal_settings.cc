@@ -549,4 +549,12 @@ void InternalSettings::setAutoplayPolicy(const String& policy_str,
   GetSettings()->SetAutoplayPolicy(policy);
 }
 
+void InternalSettings::PrepareForLeakDetection() {
+  // Prepares for leak detection by removing all InternalSetting objects from
+  // Pages.
+  for (Page* page : Page::OrdinaryPages()) {
+    page->RemoveSupplement<InternalSettings>();
+  }
+}
+
 }  // namespace blink
