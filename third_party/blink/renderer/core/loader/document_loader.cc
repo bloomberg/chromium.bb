@@ -1170,14 +1170,21 @@ void DocumentLoader::StartLoadingInternal() {
     return;
   }
 
+  bool use_isolated_code_cache =
+      RuntimeEnabledFeatures::CacheInlineScriptCodeEnabled() &&
+      ShouldUseIsolatedCodeCache(mojom::RequestContextType::HYPERLINK,
+                                 response_);
+
+  // The |cached_metadata_handler_| is created, even when
+  // |use_isolated_code_cache| is false to support the parts that don't
+  // go throught the site-isolated-code-cache.
   auto cached_metadata_sender = CachedMetadataSender::Create(
       response_, blink::mojom::CodeCacheType::kJavascript, requestor_origin_);
   cached_metadata_handler_ =
       MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::move(cached_metadata_sender));
-  body_loader_->StartLoadingBody(
-      this, ShouldUseIsolatedCodeCache(mojom::RequestContextType::HYPERLINK,
-                                       response_));
+
+  body_loader_->StartLoadingBody(this, use_isolated_code_cache);
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
