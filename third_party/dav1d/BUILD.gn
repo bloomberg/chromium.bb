@@ -4,21 +4,40 @@
 
 import("dav1d_generated.gni")
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//third_party/nasm/nasm_assemble.gni")
 
+# MemorySanitizer can't handle assembly, https://crbug.com/928357.
+enable_nasm = (current_cpu == "x86" || current_cpu == "x64") && !is_msan
+
 if (is_win) {
-  enable_x64_asm = true
   platform_config_root = "config/win/$current_cpu"
 } else if (is_msan) {
-  # MemorySanitizer can't handle assembly, https://crbug.com/928357.
-  enable_x64_asm = false
   assert(current_cpu == "x64" && is_linux, "Only Linux X64 MSAN is supported")
   platform_config_root = "config/linux-noasm/$current_cpu"
 } else {
   # Linux configuration files seem to work on Mac, so just reuse them.
-  enable_x64_asm = true
   platform_config_root = "config/linux/$current_cpu"
+}
+
+# Clang LTO doesn't respect stack alignment and clang-cl doesn't support setting
+# the stack alignment, so we must use the platform's default alignment in those
+# cases; https://crbug.com/928743.
+if (current_cpu == "x86" || current_cpu == "x64") {
+  if (use_thin_lto || is_win) {
+    needs_stack_alignment = false
+    # The defaults are stack_alignment=4 for x86 and stack_alignment=16 for x64.
+  } else {
+    needs_stack_alignment = true
+    if (current_cpu == "x86") {
+      stack_alignment = 16
+    } else if (current_cpu == "x64") {
+      stack_alignment = 32
+    }
+  }
+} else {
+  needs_stack_alignment = false
 }
 
 config("dav1d_config") {
@@ -37,6 +56,10 @@ config("dav1d_config") {
     defines = [ "CONFIG_LOG=1" ]
   }
 
+  if (needs_stack_alignment) {
+    defines += [ "STACK_ALIGNMENT=$stack_alignment" ]
+  }
+
   # Don't let dav1d export any symbols. Otherwise the verify_order step on macOS
   # can fail since these exports end up in the final Chromium binary.
   defines += [ "DAV1D_API=" ]
@@ -49,15 +72,12 @@ dav1d_copts = [
 
 if (!is_win) {
   dav1d_copts += [ "-std=c99" ]
-
-  if (current_cpu == "x64") {
-    dav1d_copts += [ "-mstack-alignment=32" ]
-  } else if (current_cpu == "x86") {
-    dav1d_copts += [ "-mstack-alignment=16" ]
+  if (needs_stack_alignment) {
+    dav1d_copts += [ "-mstack-alignment=$stack_alignment" ]
   }
 }
 
-if (enable_x64_asm && (current_cpu == "x86" || current_cpu == "x64")) {
+if (enable_nasm) {
   nasm_assemble("dav1d_asm") {
     sources = x86_asm_sources
 
@@ -76,9 +96,13 @@ if (enable_x64_asm && (current_cpu == "x86" || current_cpu == "x64")) {
       rebase_path("$platform_config_root/config.asm", root_build_dir),
     ]
 
+    if (needs_stack_alignment) {
+      defines = [ "STACK_ALIGNMENT=$stack_alignment" ]
+    }
+
     # Necessary to ensure macOS symbols end up with a _ prefix.
     if (is_mac) {
-      defines = [ "PREFIX" ]
+      defines += [ "PREFIX" ]
     }
   }
 }
@@ -94,10 +118,12 @@ static_library("dav1d_entrypoints") {
 
   # TODO(dalecurtis): Fix arm compiler options...
   cflags = dav1d_copts
-  if (!is_win) {
-    cflags += [ "-mstackrealign" ]
-  } else {
+  if (is_win) {
     sources += [ "libdav1d/src/win32/thread.c" ]
+  }
+
+  if (needs_stack_alignment) {
+    cflags += [ "-mstackrealign" ]
   }
 }
 
@@ -191,7 +217,7 @@ static_library("dav1d") {
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     deps += [ ":dav1d_x86" ]
-    if (enable_x64_asm) {
+    if (enable_nasm) {
       deps += [ ":dav1d_asm" ]
     }
   } else if (current_cpu == "arm" || current_cpu == "arm64") {

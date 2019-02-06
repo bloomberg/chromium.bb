@@ -19,7 +19,7 @@
 
 #define CONFIG_8BPC 1
 
-/* #define CONFIG_LOG 1 -- logging is controlled by the Chrome build */
+// #define CONFIG_LOG 1 -- Logging is controlled by Chromium
 
 #define HAVE_ASM 1
 
@@ -27,4 +27,4 @@
 
 #define HAVE_UNISTD_H 1
 
-#define STACK_ALIGNMENT 32
+// #define STACK_ALIGNMENT 32 -- Stack alignment is controlled by Chromium

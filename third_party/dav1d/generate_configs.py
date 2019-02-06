@@ -103,7 +103,7 @@ def CopyConfigsAndCleanup(config_dir, dest_dir):
   # The .asm file will not be present for all configurations.
   asm_file = os.path.join(config_dir, 'config.asm')
   if os.path.exists(asm_file):
-    shutil.copy(os.path.join(config_dir, 'config.asm'), dest_dir)
+    shutil.copy(asm_file, dest_dir)
 
   shutil.rmtree(config_dir)
 
@@ -114,10 +114,25 @@ def GenerateConfig(config_dir, env, special_args=[]):
       MESON + DEFAULT_BUILD_ARGS + special_args + [temp_dir],
       cwd='libdav1d',
       env=env)
+
+  # We don't want non-visible log strings polluting the official binary.
   RewriteFile(
       os.path.join(temp_dir, 'config.h'),
       [(r'(#define CONFIG_LOG .*)',
-        r'/* \1 -- logging is controlled by the Chrome build */')])
+        r'// \1 -- Logging is controlled by Chromium')])
+
+  # Clang LTO doesn't respect stack alignment, so we must use the platform's
+  # default stack alignment in that case; https://crbug.com/928743.
+  RewriteFile(
+      os.path.join(temp_dir, 'config.h'),
+      [(r'(#define STACK_ALIGNMENT \d{1,2})',
+        r'// \1 -- Stack alignment is controlled by Chromium')])
+  if (os.path.exists(os.path.join(config_dir, 'config.asm'))):
+    RewriteFile(
+        os.path.join(temp_dir, 'config.asm'),
+        [(r'(%define STACK_ALIGNMENT \d{1,2})',
+          r'; \1 -- Stack alignment is controlled by Chromium')])
+
   CopyConfigsAndCleanup(temp_dir, config_dir)
 
 
@@ -128,7 +143,7 @@ def main():
   GenerateConfig('config/linux/x64', linux_env)
   GenerateConfig('config/linux/x86', linux_env,
                  ['--cross-file', '../crossfiles/linux32.crossfile'])
-  GenerateConfig('config/linux-noasm/x64', linux_env, ["-Dbuild_asm=false"])
+  GenerateConfig('config/linux-noasm/x64', linux_env, ['-Dbuild_asm=false'])
 
   win_x86_env = SetupWindowsCrossCompileToolchain('x86')
   GenerateConfig(
