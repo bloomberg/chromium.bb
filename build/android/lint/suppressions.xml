@@ -296,6 +296,7 @@ Still reading?
   <issue id="StringFormatInvalid" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-cs/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-da/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-et/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pt-rBR/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-sv/android_chrome_strings.xml"/>
@@ -319,6 +320,7 @@ Still reading?
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-ja/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-ko/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-lt/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-ms/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-sk/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-th/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-vi/android_chrome_strings.xml"/>
