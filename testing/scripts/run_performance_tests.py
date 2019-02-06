@@ -177,15 +177,9 @@ def execute_telemetry_benchmark(
   per_benchmark_args = (rest_args[:1] + [benchmark] + rest_args[1:])
   benchmark_name = benchmark
   if is_reference:
-    # Need to parse out the browser to replace browser flag with
-    # reference build so we run it reference build as well
-    browser_index = 0
-    for arg in per_benchmark_args:
-      if "browser" in arg:
-        break
-      browser_index = browser_index + 1
-    per_benchmark_args[browser_index] = '--browser=reference'
-    # Now we need to add in the rest of the reference build args
+    # Telemetry uses the last argument for --browser, so it's okay
+    # to not check for an existing browser argument. See crbug.com/928928.
+    per_benchmark_args.append('--browser=reference')
     per_benchmark_args.append('--max-failures=5')
     per_benchmark_args.append('--output-trace-tag=_ref')
     benchmark_name = benchmark + '.reference'
