@@ -38,6 +38,8 @@ import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests for the BluetoothChooserDialog class.
  */
@@ -135,18 +137,7 @@ public class BluetoothChooserDialogTest {
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return items.getChildAt(0) != null;
-            }
-        });
-
-        Assert.assertEquals("Not all items have a view; positions may be incorrect.",
-                items.getChildCount(), items.getAdapter().getCount());
-
-        // Verify first item selected gets selected.
-        TouchCommon.singleClickView(items.getChildAt(position - 1));
+        clickItemAtPosition(items, position - 1);
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -162,6 +153,26 @@ public class BluetoothChooserDialogTest {
             public boolean isSatisfied() {
                 return chooserDialog.mFinishedEventType != -1;
             }
+        });
+    }
+
+    private static void clickItemAtPosition(ListView listView, int position) {
+        CriteriaHelper.pollUiThread(() -> listView.getChildAt(0) != null);
+
+        Callable<Boolean> isVisible = () -> {
+            int visibleStart = listView.getFirstVisiblePosition();
+            int visibleEnd = visibleStart + listView.getChildCount() - 1;
+            return position >= visibleStart && position <= visibleEnd;
+        };
+
+        if (!ThreadUtils.runOnUiThreadBlockingNoException(isVisible)) {
+            ThreadUtils.runOnUiThreadBlocking(() -> listView.setSelection(position));
+            CriteriaHelper.pollUiThread(isVisible);
+        }
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            TouchCommon.singleClickView(
+                    listView.getChildAt(position - listView.getFirstVisiblePosition()));
         });
     }
 
