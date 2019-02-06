@@ -105,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_account_picker"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 android:textAppearance="@style/TextAppearance.BlackTitle1"
                 tools:text="@string/signin_sync_title"/>
@@ -123,7 +123,7 @@
                 style="@style/HorizontalDivider"
                 android:layout_below="@id/signin_sync_description"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"/>
             <TextView
                 android:id="@+id/signin_details_description"
