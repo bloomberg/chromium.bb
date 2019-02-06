@@ -210,7 +210,7 @@ void PipWindowResizer::CompleteDrag() {
     // TODO(edcourtney): This may not be the best place for this. Consider
     // doing this a different way or saving these bounds at a later point when
     // the work area changes.
-    window_state()->SaveCurrentBoundsForRestore();
+    window_state()->SetRestoreBoundsInParent(bounds);
   }
 }
 
