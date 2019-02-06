@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/interfaces/bindings/native_struct.mojom.h"
+#include "mojo/public/interfaces/bindings/native_struct.mojom-forward.h"
 
 namespace IPC {
 

@@ -201,6 +201,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/profiling.h"
 #include "content/public/common/webplugininfo.h"
+#include "content/public/common/window_container_type.mojom-shared.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"

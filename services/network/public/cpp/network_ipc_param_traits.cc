@@ -9,6 +9,8 @@
 #include "ipc/ipc_platform_file.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 
 namespace IPC {

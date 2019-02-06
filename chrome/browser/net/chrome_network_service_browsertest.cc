@@ -15,6 +15,7 @@
 #include "content/public/test/browser_test.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

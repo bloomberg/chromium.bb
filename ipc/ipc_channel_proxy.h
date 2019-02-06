@@ -19,6 +19,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"

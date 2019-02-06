@@ -17,7 +17,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "storage/browser/quota/quota_client.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 namespace url {
 class Origin;

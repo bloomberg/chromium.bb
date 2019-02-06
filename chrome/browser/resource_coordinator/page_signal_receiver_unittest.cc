@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {

@@ -4,6 +4,8 @@
 
 #include "ipc/message_view.h"
 
+#include "mojo/public/interfaces/bindings/native_struct.mojom.h"
+
 namespace IPC {
 
 MessageView::MessageView() = default;

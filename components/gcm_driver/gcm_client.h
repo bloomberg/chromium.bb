@@ -16,7 +16,7 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/registration_info.h"
-#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom-forward.h"
 
 namespace base {
 class FilePath;

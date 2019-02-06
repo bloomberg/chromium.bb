@@ -14,8 +14,8 @@
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom-forward.h"
+#include "services/service_manager/public/mojom/service_manager.mojom-forward.h"
 
 namespace service_manager {
 

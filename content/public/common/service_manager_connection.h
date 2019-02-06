@@ -11,7 +11,8 @@
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/connector.mojom-forward.h"
+#include "services/service_manager/public/mojom/service.mojom-forward.h"
 
 namespace service_manager {
 class Connector;

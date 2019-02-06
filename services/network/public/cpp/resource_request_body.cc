@@ -4,6 +4,9 @@
 
 #include "services/network/public/cpp/resource_request_body.h"
 
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
+
 namespace network {
 
 ResourceRequestBody::ResourceRequestBody()

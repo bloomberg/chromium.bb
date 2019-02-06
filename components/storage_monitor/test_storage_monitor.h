@@ -12,6 +12,10 @@
 #include "build/build_config.h"
 #include "components/storage_monitor/storage_monitor.h"
 
+#if defined(OS_CHROMEOS)
+#include "services/device/public/mojom/mtp_manager.mojom.h"
+#endif
+
 namespace storage_monitor {
 
 class TestStorageMonitor : public StorageMonitor {

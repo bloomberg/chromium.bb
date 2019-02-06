@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "url/gurl.h"
 
 namespace ukm {

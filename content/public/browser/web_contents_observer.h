@@ -16,7 +16,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/resource_load_info.mojom.h"
+#include "content/public/common/resource_load_info.mojom-forward.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/system/message_pipe.h"

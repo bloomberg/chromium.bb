@@ -12,7 +12,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
-#include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "services/network/public/mojom/referrer_policy.mojom-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "ui/base/page_transition_types.h"
 

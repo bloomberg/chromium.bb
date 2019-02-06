@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/runner/common/switches.h"
 

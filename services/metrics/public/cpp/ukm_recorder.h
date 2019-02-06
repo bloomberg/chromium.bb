@@ -14,7 +14,7 @@
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 #include "url/gurl.h"
 
 class BackgroundFetchDelegateImpl;

@@ -15,8 +15,11 @@
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
-#include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/ssl_config.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom-forward.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
+#include "services/network/public/mojom/ssl_config.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
 class PrefRegistrySimple;
 class PrefService;

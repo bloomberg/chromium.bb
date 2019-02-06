@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_storage_partition.h"
 
+#include "services/network/public/mojom/cookie_manager.mojom.h"
+
 namespace content {
 
 TestStoragePartition::TestStoragePartition() {}

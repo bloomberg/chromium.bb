@@ -20,6 +20,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace {
 

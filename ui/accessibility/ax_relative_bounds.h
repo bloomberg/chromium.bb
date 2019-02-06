@@ -10,7 +10,7 @@
 #include <memory>
 #include <ostream>
 
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"

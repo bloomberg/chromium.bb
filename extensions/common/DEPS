@@ -7,6 +7,7 @@ include_rules = [
   "+grit/extensions_strings.h",
   "+libxml",
   "+net",
+  "+services/network/public/mojom/cors_origin_pattern.mojom-forward.h",
   "+services/network/public/mojom/cors_origin_pattern.mojom.h",
   "+third_party/libxml",
   "+third_party/re2",

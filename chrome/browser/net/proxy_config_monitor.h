@@ -14,8 +14,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/proxy_config.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
+#include "services/network/public/mojom/proxy_config.mojom-forward.h"
+#include "services/network/public/mojom/proxy_config_with_annotation.mojom.h"
 
 namespace net {
 class ProxyConfigWithAnnotation;
