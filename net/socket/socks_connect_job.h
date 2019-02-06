@@ -12,15 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/dns/host_resolver.h"
 #include "net/socket/connect_job.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
-class HostPortPair;
 class StreamSocket;
 class TransportSocketParams;
 
@@ -35,7 +34,7 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
   const scoped_refptr<TransportSocketParams>& transport_params() const {
     return transport_params_;
   }
-  const HostResolver::RequestInfo& destination() const { return destination_; }
+  const HostPortPair& destination() const { return destination_; }
   bool is_socks_v5() const { return socks_v5_; }
 
   const NetworkTrafficAnnotationTag traffic_annotation() {
@@ -49,7 +48,7 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
   // The transport (likely TCP) connection must point toward the proxy server.
   const scoped_refptr<TransportSocketParams> transport_params_;
   // This is the HTTP destination.
-  HostResolver::RequestInfo destination_;
+  const HostPortPair destination_;
   const bool socks_v5_;
 
   NetworkTrafficAnnotationTag traffic_annotation_;

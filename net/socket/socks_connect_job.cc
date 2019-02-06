@@ -4,8 +4,9 @@
 
 #include "net/socket/socks_connect_job.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"

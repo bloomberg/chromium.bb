@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
@@ -28,10 +29,10 @@ namespace net {
 // The SOCKS client socket implementation
 class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
  public:
-  // |req_info| contains the hostname and port to which the socket above will
+  // |destination| contains the hostname and port to which the socket above will
   // communicate to via the socks layer. For testing the referrer is optional.
   SOCKSClientSocket(std::unique_ptr<StreamSocket> transport_socket,
-                    const HostResolver::RequestInfo& req_info,
+                    const HostPortPair& destination,
                     RequestPriority priority,
                     HostResolver* host_resolver,
                     const NetworkTrafficAnnotationTag& traffic_annotation);
@@ -135,9 +136,8 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
 
   // Used to resolve the hostname to which the SOCKS proxy will connect.
   HostResolver* host_resolver_;
-  std::unique_ptr<HostResolver::Request> request_;
-  AddressList addresses_;
-  HostResolver::RequestInfo host_request_info_;
+  std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
+  const HostPortPair destination_;
   RequestPriority priority_;
 
   NetLogWithSource net_log_;
