@@ -449,6 +449,20 @@ class FakeCIDBConnection(object):
 
     return build_stages
 
+  def GetBuildsStagesWithBuildbucketIds(self, buildbucket_ids):
+    """Quick implementation of fake GetBuildsStagesWithBuildbucketIds."""
+    build_stages = []
+    build_statuses = {b['id']: b for b in self.buildTable
+                      if b['buildbucket_id'] in buildbucket_ids}
+    for _id in self.buildStageTable:
+      build_id = self.buildStageTable[_id]['build_id']
+      if build_id in build_statuses:
+        stage = self.buildStageTable[_id].copy()
+        stage['build_config'] = build_statuses[build_id]['build_config']
+        build_stages.append(stage)
+
+    return build_stages
+
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       milestone_version=None, platform_version=None,

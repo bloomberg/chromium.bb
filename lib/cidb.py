@@ -1215,6 +1215,43 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     columns = bs_table_columns + b_table_columns
     return [dict(zip(columns, values)) for values in results]
 
+  @minimum_schema(30)
+  def GetBuildsStagesWithBuildbucketIds(self, buildbucket_ids):
+    """Gets all the stages for all listed buildbucket_ids.
+
+    This function is a modified copy of GetBuildsStages().
+
+    Args:
+      buildbucket_ids: list of buildbucket ids of the builds to fetch the
+        stages for.
+
+    Returns:
+      A list containing, for each stage of the builds found, a dictionary with
+      keys (id, build_id, name, board, status, last_updated, start_time,
+      finish_time, final).
+    """
+    if not buildbucket_ids:
+      return []
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+
+    b_table_columns = ['build_config', 'important']
+    b_prepended_columns = ['b.' + x for x in b_table_columns]
+
+    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
+             'buildTable b ON bs.build_id=b.id' %
+             (', '.join(bs_prepended_columns),
+              ', '.join(b_prepended_columns)))
+
+    query += (' WHERE b.buildbucket_id IN (%s)' %
+              (','.join('"%s"' % x for x in buildbucket_ids)))
+
+    results = self._Execute(query).fetchall()
+
+    columns = bs_table_columns + b_table_columns
+    return [dict(zip(columns, values)) for values in results]
+
   @minimum_schema(65)
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the statuses of slave builders to given build.

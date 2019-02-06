@@ -289,6 +289,27 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
 
+  def testGetBuildsStages(self):
+    """Tests the redirect for GetBuildsStages function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    build_ids = ['build 1', 'build 2']
+    buildbucket_ids = ['bucket 1', 'bucket 2']
+    # Test for buildbucket_ids.
+    bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
+    bs.cidb_conn.GetBuildsStagesWithBuildbucketIds.assert_called_once_with(
+        buildbucket_ids)
+    # Test for build_ids.
+    bs.GetBuildsStages(build_ids=build_ids)
+    bs.cidb_conn.GetBuildsStages.assert_called_once_with(build_ids)
+    # Test for neither arguments.
+    self.assertEqual(bs.GetBuildsStages(), [])
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.GetBuildsStages(build_ids=build_ids)
+
   def testExtendDeadline(self):
     """Tests the redirect for ExtendDeadline function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

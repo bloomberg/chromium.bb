@@ -729,13 +729,12 @@ class ReportStage(generic_stages.BuilderStage,
     logging.PrintBuildbotLink('Artifacts[%s]' % links_build_description,
                               artifacts_url)
 
-  def _UploadBuildStagesTimeline(self, builder_run, build_id, db):
+  def _UploadBuildStagesTimeline(self, builder_run, build_id):
     """Upload an HTML timeline for the build stages at remote archive location.
 
     Args:
       builder_run: BuilderRun object for this run.
       build_id: CIDB id for the current build.
-      db: CIDBConnection instance.
 
     Returns:
       If an index file is uploaded then a dict is returned where each value
@@ -758,7 +757,7 @@ class ReportStage(generic_stages.BuilderStage,
     timeline = os.path.join(archive_path, timeline_file)
 
     # Gather information about this build from CIDB.
-    stages = db.GetBuildsStages([build_id])
+    stages = self.buildstore.GetBuildsStages(build_ids=[build_id])
     # Many stages are started in parallel after the build finishes. Stages are
     # sorted by start_time first bceause it shows that progression most
     # clearly. Sort by finish_time secondarily to display those paralllel
@@ -889,7 +888,7 @@ class ReportStage(generic_stages.BuilderStage,
     # or multiple child builder runs.
     for builder_run in self._run.GetUngroupedBuilderRuns():
       if db is not None:
-        timeline = self._UploadBuildStagesTimeline(builder_run, build_id, db)
+        timeline = self._UploadBuildStagesTimeline(builder_run, build_id)
         logging.PrintBuildbotLink('Build stages timeline', timeline)
 
         timeline = self._UploadSlavesTimeline(builder_run, build_id, db)

@@ -315,7 +315,7 @@ class TriageRelevantChanges(object):
 
     Returns:
       A dict mapping all child config names (strings) to their stages (a list
-        of dicts, see cidb.CIDBConnection.GetBuildsStages for details.)
+        of dicts, see BuildStore.GetBuildsStages for details.)
     """
     slave_stages_dict = {}
     slave_buildbucket_ids = []
@@ -326,10 +326,8 @@ class TriageRelevantChanges(object):
         slave_stages_dict.setdefault(slave_config, [])
         slave_buildbucket_ids.append(bb_info.buildbucket_id)
 
-    child_build_ids = [
-        c['id']
-        for c in self.buildstore.GetBuildStatuses(slave_buildbucket_ids)]
-    stages = self.db.GetBuildsStages(child_build_ids)
+    stages = self.buildstore.GetBuildsStages(
+        buildbucket_ids=slave_buildbucket_ids)
 
     for stage in stages:
       slave_stages_dict[stage['build_config']].append(stage)

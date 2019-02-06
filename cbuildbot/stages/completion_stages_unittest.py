@@ -891,10 +891,11 @@ class PublishUprevChangesStageTest(
         '_GetSlaveConfigs',
         return_value=slave_configs_a)
     self.PatchObject(FakeBuildStore, 'GetBuildStatuses', return_value=[])
-    self.PatchObject(mock_cidb, 'GetBuildsStages', return_value=slave_stages_a)
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages',
+                     return_value=slave_stages_a)
 
     # All important slaves are covered
-    self.assertTrue(stage.CheckSlaveUploadPrebuiltsTest(mock_cidb))
+    self.assertTrue(stage.CheckSlaveUploadPrebuiltsTest())
 
     slave_stages_b = [{'name': stage_name,
                        'build_config': slave_a,
@@ -906,20 +907,22 @@ class PublishUprevChangesStageTest(
         completion_stages.PublishUprevChangesStage,
         '_GetSlaveConfigs',
         return_value=slave_configs_a)
-    self.PatchObject(mock_cidb, 'GetBuildsStages', return_value=slave_stages_b)
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages',
+                     return_value=slave_stages_b)
 
     # Slave_a didn't pass the stage
-    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(mock_cidb))
+    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest())
 
     slave_configs_b = [{'name': slave_a}, {'name': slave_b}, {'name': slave_c}]
     self.PatchObject(
         completion_stages.PublishUprevChangesStage,
         '_GetSlaveConfigs',
         return_value=slave_configs_b)
-    self.PatchObject(mock_cidb, 'GetBuildsStages', return_value=slave_stages_a)
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages',
+                     return_value=slave_stages_a)
 
     # No stage information for slave_c
-    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(mock_cidb))
+    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest())
 
   def testAndroidPush(self):
     """Test values for PublishUprevChanges with Android PFQ."""

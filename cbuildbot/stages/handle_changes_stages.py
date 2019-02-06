@@ -84,12 +84,11 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
       m.increment_by(elapsed_seconds, fields=fields)
 
-  def _GetBuildsPassedSyncStage(self, build_id, db, slave_buildbucket_ids):
+  def _GetBuildsPassedSyncStage(self, build_id, slave_buildbucket_ids):
     """Get builds which passed the sync stages.
 
     Args:
       build_id: The build id of the master build.
-      db: An instance of cidb.CIDBConnection.
       slave_buildbucket_ids: A list of buildbucket_ids of the slave builds.
 
     Returns:
@@ -100,17 +99,13 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     build_stages_dict = {}
 
     # Get slave stages.
-    child_build_ids = [
-        c['id']
-        for c in self.buildstore.GetBuildStatuses(
-            buildbucket_ids=slave_buildbucket_ids)]
-
-    child_stages = db.GetBuildsStages(child_build_ids)
+    child_stages = self.buildstore.GetBuildsStages(
+        buildbucket_ids=slave_buildbucket_ids)
     for stage in child_stages:
       build_stages_dict.setdefault(stage['build_config'], []).append(stage)
 
     # Get master stages.
-    master_stages = db.GetBuildsStages([build_id])
+    master_stages = self.buildstore.GetBuildsStages(build_ids=[build_id])
     for stage in master_stages:
       build_stages_dict.setdefault(self._run.config.name, []).append(stage)
 
@@ -179,7 +174,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     if db:
       build_id = build_identifier.cidb_id
       builds_passed_sync_stage = self._GetBuildsPassedSyncStage(
-          build_id, db, slave_buildbucket_ids)
+          build_id, slave_buildbucket_ids)
       builds_not_passed_sync_stage = failing.union(inflight).union(
           no_stat).difference(builds_passed_sync_stage)
       changes_by_config = (

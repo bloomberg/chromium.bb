@@ -205,7 +205,6 @@ class AbstractReportStageTestCase(
   """Base class for testing the Report stage."""
 
   def setUp(self):
-    self.buildstore = FakeBuildStore()
     for cmd in ((osutils, 'WriteFile'),
                 (commands, 'UploadArchivedFile'),
                 (alerts, 'SendEmail')):
@@ -225,6 +224,7 @@ class AbstractReportStageTestCase(
     # mock requirements can replace this with a separate call to
     # SetupMockCidb
     self.mock_cidb = mock.MagicMock()
+    self.buildstore = FakeBuildStore(self.mock_cidb)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
 
     # Setup topology for unittests
@@ -296,7 +296,7 @@ class ReportStageTest(AbstractReportStageTestCase):
             'status': constants.BUILDER_STATUS_PASSED,
         },
     ]
-    self.mock_cidb.GetBuildsStages = mock.Mock(return_value=stages)
+    self.buildstore.GetBuildsStages = mock.Mock(return_value=stages)
     self.mock_cidb.GetSlaveStatuses = mock.Mock(return_value=statuses)
     self._SetupUpdateStreakCounter()
     self.PatchObject(report_stages.ReportStage, '_LinkArtifacts')

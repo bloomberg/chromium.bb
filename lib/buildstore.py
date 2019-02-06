@@ -335,6 +335,28 @@ class BuildStore(object):
       buildbucket_v2.UpdateBuildMetadata(metadata)
     return update_status
 
+  def GetBuildsStages(self, build_ids=None, buildbucket_ids=None):
+    """Gets all the stages for all listed build_ids.
+
+    Args:
+      build_ids: list of CIDB ids of the builds to fetch the stages for.
+      buildbucket_ids: list of Buildbucket IDs to query for.
+
+    Returns:
+      A list containing, for each stage of the builds found, a dictionary with
+      keys (id, build_id, name, board, status, last_updated, start_time,
+      finish_time, final).
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if not self._read_from_bb:
+      if build_ids:
+        return self.cidb_conn.GetBuildsStages(build_ids)
+      elif buildbucket_ids:
+        return self.cidb_conn.GetBuildsStagesWithBuildbucketIds(buildbucket_ids)
+      else:
+        return []
+
   def ExtendDeadline(self, build_id, timeout):
     """Extend the deadline for the given metadata row in the database.
 
@@ -452,6 +474,14 @@ class FakeBuildStore(object):
 
   def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument
     return
+
+  def GetBuildsStages(self, buildbucket_ids=None, build_ids=None):
+    if buildbucket_ids:
+      return self.fake_cidb.GetBuildsStagesWithBuildbucketIds(buildbucket_ids)
+    elif build_ids:
+      return self.fake_cidb.GetBuildsStages(build_ids)
+    else:
+      return []
 
   def ExtendDeadline(self, build_id, timeout): #pylint: disable=unused-argument
     return

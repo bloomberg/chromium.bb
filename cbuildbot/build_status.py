@@ -301,9 +301,9 @@ class SlaveStatus(object):
           logging.info('Not retriable build %s started already.', build)
           continue
 
-        assert self.db is not None
+        assert self.buildstore.AreClientsReady()
 
-        build_stages = self.db.GetBuildsStages([
+        build_stages = self.buildstore.GetBuildsStages(build_ids=[
             self.new_cidb_status_dict[build].build_id])
         accepted_stages = {stage['name'] for stage in build_stages
                            if stage['status'] in self.ACCEPTED_STATUSES}
