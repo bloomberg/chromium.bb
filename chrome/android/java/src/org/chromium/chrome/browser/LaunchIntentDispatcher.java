@@ -442,7 +442,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         Intent newIntent = new Intent(mIntent);
         Class<?> tabbedActivityClass = null;
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_TOUCH_MODE)) {
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
             // When in No Touch Mode we don't support tabs, and replace the TabbedActivity with the
             // NoTouchActivity.
             tabbedActivityClass = NoTouchActivity.class;
