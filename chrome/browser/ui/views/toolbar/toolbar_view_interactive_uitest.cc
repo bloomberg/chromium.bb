@@ -22,8 +22,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
@@ -32,7 +34,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
@@ -40,14 +41,14 @@
 
 using bookmarks::BookmarkModel;
 
-class ToolbarViewInteractiveUITest : public extensions::ExtensionBrowserTest,
-                                     public views::MenuListener {
+class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
+                                     public extensions::ExtensionBrowserTest {
  public:
   ToolbarViewInteractiveUITest() = default;
   ~ToolbarViewInteractiveUITest() override = default;
 
-  // views::MenuListener:
-  void OnMenuOpened() override;
+  // AppMenuButtonObserver:
+  void AppMenuShown() override;
 
  protected:
   AppMenuButton* app_menu_button() { return app_menu_button_; }
@@ -65,12 +66,12 @@ class ToolbarViewInteractiveUITest : public extensions::ExtensionBrowserTest,
 
   AppMenuButton* app_menu_button_ = nullptr;
   BrowserActionsContainer* browser_actions_ = nullptr;
-  bool menu_opened_ = false;
+  bool menu_shown_ = false;
   base::OnceClosure quit_closure_;
 };
 
-void ToolbarViewInteractiveUITest::OnMenuOpened() {
-  menu_opened_ = true;
+void ToolbarViewInteractiveUITest::AppMenuShown() {
+  menu_shown_ = true;
   ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT, ui_controls::UP,
                                              std::move(quit_closure_));
 }
@@ -83,7 +84,8 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
   // TODO(devlin): In a perfect world, this would be factored better.
 
   // Begin listening for the app menu to open.
-  app_menu_button()->AddMenuListener(this);
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver> observer(this);
+  observer.Add(app_menu_button());
 
   // Send the mouse to |start|, and click.  The event queue must be flushed
   // after processing the click, or the next mouse move sent may get processed
@@ -111,12 +113,10 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitWhenIdleClosure();
   run_loop.Run();
-  EXPECT_TRUE(menu_opened_);
+  EXPECT_TRUE(menu_shown_);
 
   // The app menu should have closed once the drag-and-drop completed.
   EXPECT_FALSE(app_menu_button()->IsMenuShowing());
-
-  app_menu_button()->RemoveMenuListener(this);
 }
 
 void ToolbarViewInteractiveUITest::SetUpCommandLine(

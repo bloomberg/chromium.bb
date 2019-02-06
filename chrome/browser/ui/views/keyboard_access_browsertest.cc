@@ -20,7 +20,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -29,7 +31,6 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -67,7 +68,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   }
 
  private:
-  // Inherited from FocusChangeListener
+  // views::FocusChangeListener:
   void OnWillChangeFocus(views::View* focused_before,
                          views::View* focused_now) override {}
 
@@ -86,51 +87,46 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   DISALLOW_COPY_AND_ASSIGN(ViewFocusChangeWaiter);
 };
 
-class SendKeysMenuListener : public views::MenuListener {
+class SendKeysMenuListener : public AppMenuButtonObserver {
  public:
   SendKeysMenuListener(AppMenuButton* app_menu_button,
                        Browser* browser,
                        bool test_dismiss_menu)
-      : app_menu_button_(app_menu_button),
-        browser_(browser),
+      : browser_(browser),
         menu_open_count_(0),
         test_dismiss_menu_(test_dismiss_menu) {
-    app_menu_button_->AddMenuListener(this);
+    observer_.Add(app_menu_button);
   }
 
-  ~SendKeysMenuListener() override {
-    if (test_dismiss_menu_)
-      app_menu_button_->RemoveMenuListener(this);
-  }
+  ~SendKeysMenuListener() override = default;
 
-  int menu_open_count() const {
-    return menu_open_count_;
-  }
-
- private:
-  // Overridden from views::MenuListener:
-  void OnMenuOpened() override {
+  // AppMenuButtonObserver:
+  void AppMenuShown() override {
     menu_open_count_++;
-    if (!test_dismiss_menu_) {
-      app_menu_button_->RemoveMenuListener(this);
-      // Press DOWN to select the first item, then RETURN to select it.
-      SendKeyPress(browser_, ui::VKEY_DOWN);
-      SendKeyPress(browser_, ui::VKEY_RETURN);
-    } else {
+    if (test_dismiss_menu_) {
       SendKeyPress(browser_, ui::VKEY_ESCAPE);
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
           base::TimeDelta::FromMilliseconds(200));
+    } else {
+      observer_.RemoveAll();
+      // Press DOWN to select the first item, then RETURN to select it.
+      SendKeyPress(browser_, ui::VKEY_DOWN);
+      SendKeyPress(browser_, ui::VKEY_RETURN);
     }
   }
 
-  AppMenuButton* app_menu_button_;
+  int menu_open_count() const { return menu_open_count_; }
+
+ private:
   Browser* browser_;
   // Keeps track of the number of times the menu was opened.
   int menu_open_count_;
   // If this is set then on receiving a notification that the menu was opened
   // we dismiss it by sending the ESC key.
   bool test_dismiss_menu_;
+
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SendKeysMenuListener);
 };

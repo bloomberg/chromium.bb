@@ -70,10 +70,8 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
   Browser* browser = browser_view_->browser();
-  InitMenu(std::make_unique<HostedAppMenuModel>(browser_view_, browser),
-           browser, AppMenu::NO_FLAGS, false);
-
-  menu()->RunMenu(this);
+  RunMenu(std::make_unique<HostedAppMenuModel>(browser_view_, browser), browser,
+          AppMenu::NO_FLAGS, false);
 
   // Add UMA for how many times the hosted app menu button are clicked.
   base::RecordAction(

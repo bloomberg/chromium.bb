@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -29,7 +30,6 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/menu_test_utils.h"
 
@@ -41,35 +41,30 @@ AppMenuButton* GetAppMenuButtonFromBrowser(Browser* browser) {
       ->GetAppMenuButton();
 }
 
-class AppMenuShowingWaiter : public views::MenuListener {
+class AppMenuShowingWaiter : public AppMenuButtonObserver {
  public:
   explicit AppMenuShowingWaiter(AppMenuButton* button);
-  ~AppMenuShowingWaiter() override;
+  ~AppMenuShowingWaiter() override = default;
 
-  // views::MenuListener:
-  void OnMenuOpened() override;
+  // AppMenuButtonObserver:
+  void AppMenuShown() override;
 
   void Wait();
 
  private:
   bool observed_ = false;
-  AppMenuButton* button_;
   base::RunLoop run_loop_;
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver> observer_{this};
 };
 
-AppMenuShowingWaiter::AppMenuShowingWaiter(AppMenuButton* button)
-    : button_(button) {
-  DCHECK(button_);
-  if (button_->IsMenuShowing())
+AppMenuShowingWaiter::AppMenuShowingWaiter(AppMenuButton* button) {
+  DCHECK(button);
+  if (button->IsMenuShowing())
     observed_ = true;
-  button_->AddMenuListener(this);
+  observer_.Add(button);
 }
 
-AppMenuShowingWaiter::~AppMenuShowingWaiter() {
-  button_->RemoveMenuListener(this);
-}
-
-void AppMenuShowingWaiter::OnMenuOpened() {
+void AppMenuShowingWaiter::AppMenuShown() {
   observed_ = true;
   if (run_loop_.running())
     run_loop_.Quit();

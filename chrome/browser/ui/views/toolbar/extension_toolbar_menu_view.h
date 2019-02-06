@@ -9,10 +9,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_observer.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "ui/views/controls/scroll_view.h"
 
 class AppMenu;
+class AppMenuButton;
 class Browser;
 class BrowserActionsContainer;
 class ToolbarActionsBar;
@@ -26,13 +27,11 @@ class MenuItemView;
 // the app menu.
 // In the event that the app menu was opened for an Extension Action drag-and-
 // drop, this will also close the menu upon completion.
-class ExtensionToolbarMenuView : public AppMenuObserver,
+class ExtensionToolbarMenuView : public AppMenuButtonObserver,
                                  public views::ScrollView,
                                  public ToolbarActionsBarObserver {
  public:
-  ExtensionToolbarMenuView(Browser* browser,
-                           AppMenu* app_menu,
-                           views::MenuItemView* menu_item);
+  ExtensionToolbarMenuView(Browser* browser, views::MenuItemView* menu_item);
   ~ExtensionToolbarMenuView() override;
 
   BrowserActionsContainer* container_for_testing() {
@@ -54,7 +53,7 @@ class ExtensionToolbarMenuView : public AppMenuObserver,
   void OnToolbarActionsBarDestroyed() override;
   void OnToolbarActionDragDone() override;
 
-  // AppMenuObserver:
+  // AppMenuButtonObserver:
   void AppMenuShown() override;
 
   // Closes the |app_menu_|.
@@ -70,7 +69,7 @@ class ExtensionToolbarMenuView : public AppMenuObserver,
   Browser* const browser_;
 
   // The app menu, which may need to be closed after a drag-and-drop.
-  AppMenu* app_menu_;
+  AppMenu* app_menu_ = nullptr;
 
   // The MenuItemView this view is contained within.
   views::MenuItemView* menu_item_;
@@ -82,15 +81,11 @@ class ExtensionToolbarMenuView : public AppMenuObserver,
   int max_height_ = 0;
 
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
-      toolbar_actions_bar_observer_;
+      toolbar_actions_bar_observer_{this};
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver>
+      app_menu_button_observer_{this};
 
-  // Instances of this class are always indirectly owned by |AppMenu|, as part
-  // of the |MenuItemView| tree owned by the |MenuRunner|. Therefore, this is
-  // safe and we don't have to worry about the |AppMenu| being destroyed before
-  // us.
-  ScopedObserver<AppMenu, AppMenuObserver> app_menu_observer_;
-
-  base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_;
+  base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarMenuView);
 };

@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
@@ -20,7 +19,6 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
-class AppMenuObserver;
 class BookmarkMenuDelegate;
 class Browser;
 class ExtensionToolbarMenuView;
@@ -60,9 +58,6 @@ class AppMenu : public views::MenuDelegate,
   bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
 
   views::MenuItemView* root_menu_item() { return root_; }
-
-  void AddObserver(AppMenuObserver* observer);
-  void RemoveObserver(AppMenuObserver* observer);
 
   // MenuDelegate overrides:
   void GetLabelStyle(int command_id, LabelStyle* style) const override;
@@ -198,8 +193,6 @@ class AppMenu : public views::MenuDelegate,
 
   // Whether to show items relating to reopening the last-closed tab as alerted.
   const bool alert_reopen_tab_items_;
-
-  base::ObserverList<AppMenuObserver>::Unchecked observer_list_;
 
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;

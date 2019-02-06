@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -27,21 +28,18 @@ int g_close_menu_delay = 300;
 
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(
     Browser* browser,
-    AppMenu* app_menu,
     views::MenuItemView* menu_item)
-    : browser_(browser),
-      app_menu_(app_menu),
-      menu_item_(menu_item),
-      toolbar_actions_bar_observer_(this),
-      app_menu_observer_(this),
-      weak_factory_(this) {
+    : browser_(browser), menu_item_(menu_item) {
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  auto* toolbar_button_provider = browser_view->toolbar_button_provider();
+  auto* app_menu_button = toolbar_button_provider->GetAppMenuButton();
+  app_menu_ = app_menu_button->app_menu();
+
   // Use a transparent background so that the menu's background shows through.
   // None of the children use layers, so this should be ok.
   SetBackgroundColor(SK_ColorTRANSPARENT);
   BrowserActionsContainer* main =
-      BrowserView::GetBrowserViewForBrowser(browser_)
-          ->toolbar_button_provider()
-          ->GetBrowserActionsContainer();
+      toolbar_button_provider->GetBrowserActionsContainer();
   container_ = new BrowserActionsContainer(browser_, main, main->delegate());
   SetContents(container_);
 
@@ -49,7 +47,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
   toolbar_actions_bar_observer_.Add(main->toolbar_actions_bar());
 
   // Observe app menu so we know when RunMenu() is called.
-  app_menu_observer_.Add(app_menu_);
+  app_menu_button_observer_.Add(app_menu_button);
 
   // In *very* extreme cases, it's possible that there are so many overflowed
   // actions, we won't be able to show them all. Cap the height so that the
