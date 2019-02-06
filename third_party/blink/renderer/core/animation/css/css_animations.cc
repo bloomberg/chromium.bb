@@ -1234,6 +1234,19 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     }
   }
 
+  if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
+    if (current_phase == AnimationEffect::kPhaseNone) {
+      double cancel_iteration_time =
+          animation_node.Progress().has_value()
+              ? animation_node.Progress().value() *
+                    animation_node.SpecifiedTiming()
+                        .iteration_duration->InSecondsF()
+              : StartTimeFromDelay(
+                    animation_node.SpecifiedTiming().start_delay);
+      EnqueueEvent(event_type_names::kTransitioncancel, cancel_iteration_time);
+    }
+  }
+
   previous_phase_ = current_phase;
 }
 
