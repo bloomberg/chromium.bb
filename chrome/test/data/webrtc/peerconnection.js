@@ -47,6 +47,12 @@ var gDefaultVideoCodec = null;
 var gDefaultVideoCodecProfile = null;
 
 /**
+ * The default video target bitrate that should be used when creating an offer.
+ * @private
+ */
+var gDefaultVideoTargetBitrate = null;
+
+/**
  * Flag to indicate if HW or SW video codec is preferred.
  * @private
  */
@@ -158,6 +164,16 @@ function setDefaultVideoCodec(videoCodec, preferHwVideoCodec, profile) {
 }
 
 /**
+ * Sets the default video target bitrate to be used when creating an offer and
+ * returns "ok" to test.
+ * @param {int} modifies "b=AS:" line with the given value.
+ */
+function setDefaultVideoTargetBitrate(bitrate) {
+  gDefaultVideoTargetBitrate = bitrate;
+  returnToTest('ok');
+}
+
+/**
  * Creates a data channel with the specified label.
  * Returns 'ok-created' to test.
  */
@@ -190,6 +206,10 @@ function createLocalOffer(constraints) {
         }
         if (gOpusDtx) {
           localOffer.sdp = setOpusDtxEnabled(localOffer.sdp);
+        }
+        if (gDefaultVideoTargetBitrate !== null) {
+          localOffer.sdp = setSdpVideoTargetBitrate(localOffer.sdp,
+                                                    gDefaultVideoTargetBitrate);
         }
         returnToTest('ok-' + JSON.stringify(localOffer));
       },

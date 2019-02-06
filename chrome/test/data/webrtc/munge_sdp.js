@@ -54,6 +54,40 @@ function setOpusDtxEnabled(sdp) {
 }
 
 /**
+ * See |setSdpTargetBitrate|.
+ */
+function setSdpVideoTargetBitrate(sdp, bitrate) {
+  return setSdpTargetBitrate(sdp, 'video', bitrate);
+}
+
+/**
+ * Returns a modified version of |sdp| where the |bitrate| has been set as
+ * target, i.e. on the 'b=AS:|bitrate|' line, where |type| is 'audio' or
+ * 'video'.
+ * @private
+ */
+function setSdpTargetBitrate(sdp, type, bitrate) {
+  var sdpLines = splitSdpLines(sdp);
+
+  // Find 'm=|type|' line, e.g. 'm=video 9 UDP/TLS/RTP/SAVPF 100 101 107 116'.
+  var mLineNo = findLine(sdpLines, 'm=' + type);
+
+  // Find 'b=AS:' line.
+  var bLineNo = findLine(sdpLines, 'b=AS:' + type, mLineNo);
+  if (bLineNo === null) {
+    var cLineNo = findLine(sdpLines, 'c=', mLineNo) + 1;
+    var newLines = sdpLines.slice(0, cLineNo)
+    newLines.push("b=AS:" + bitrate);
+    newLines = newLines.concat(sdpLines.slice(cLineNo, sdpLines.length));
+    sdpLines = newLines;
+  } else {
+    sdpLines[bLineNo] = "b=AS:" + bitrate;
+  }
+
+  return mergeSdpLines(sdpLines);
+}
+
+/**
  * Returns a modified version of |sdp| where the |codec| with |profile| has been
  * promoted to be the default codec, i.e. the codec whose ID is first in the
  * list of codecs on the 'm=|type|' line, where |type| is 'audio' or 'video'.
