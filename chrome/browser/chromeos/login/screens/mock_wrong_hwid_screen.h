@@ -18,9 +18,6 @@ class MockWrongHWIDScreen : public WrongHWIDScreen {
   MockWrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
                       WrongHWIDScreenView* view);
   ~MockWrongHWIDScreen() override;
-
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
 };
 
 class MockWrongHWIDScreenView : public WrongHWIDScreenView {
@@ -35,7 +32,7 @@ class MockWrongHWIDScreenView : public WrongHWIDScreenView {
   MOCK_METHOD1(MockSetDelegate, void(Delegate*));
 
  private:
-  Delegate* delegate_ = nullptr;
+  Delegate* delegate_;
 };
 
 }  // namespace chromeos

@@ -19,9 +19,6 @@ class MockEnrollmentScreen : public EnrollmentScreen {
   MockEnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                        EnrollmentScreenView* view);
   ~MockEnrollmentScreen() override;
-
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
 };
 
 class MockEnrollmentScreenView : public EnrollmentScreenView {

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/screens/mock_demo_preferences_screen.h"
 
+using ::testing::AtLeast;
+using ::testing::NotNull;
+
 namespace chromeos {
 
 MockDemoPreferencesScreen::MockDemoPreferencesScreen(
@@ -13,7 +16,9 @@ MockDemoPreferencesScreen::MockDemoPreferencesScreen(
 
 MockDemoPreferencesScreen::~MockDemoPreferencesScreen() = default;
 
-MockDemoPreferencesScreenView::MockDemoPreferencesScreenView() = default;
+MockDemoPreferencesScreenView::MockDemoPreferencesScreenView() {
+  EXPECT_CALL(*this, MockBind(NotNull())).Times(AtLeast(1));
+}
 
 MockDemoPreferencesScreenView::~MockDemoPreferencesScreenView() {
   if (screen_)
