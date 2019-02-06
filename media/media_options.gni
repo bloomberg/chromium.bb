@@ -86,8 +86,7 @@ declare_args() {
   is_cast_using_cma_backend = true
 
   # Dav1d is only enabled when av1 decoding is enabled.
-  # TODO(dalecurtis): Re-enable once bugs fixed. https://crbug.com/924370.
-  enable_dav1d_decoder = false
+  enable_dav1d_decoder = enable_av1_decoder
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
