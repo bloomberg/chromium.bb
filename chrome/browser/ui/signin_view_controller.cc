@@ -274,5 +274,5 @@ void SigninViewController::ShowDiceAddAccountTab(
 content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {
   DCHECK(delegate_);
-  return delegate_->web_contents();
+  return delegate_->GetWebContents();
 }

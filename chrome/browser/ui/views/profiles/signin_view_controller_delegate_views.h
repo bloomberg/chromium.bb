@@ -6,19 +6,15 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_SIGNIN_VIEW_CONTROLLER_DELEGATE_VIEWS_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class Browser;
-
 namespace content {
 class WebContentsDelegate;
-}
-
-namespace signin_metrics {
-enum class AccessPoint;
 }
 
 namespace views {
@@ -29,8 +25,11 @@ class WebView;
 // managing the Signin and Sync Confirmation tab-modal dialogs.
 // Instances of this class delete themselves when the window they're managing
 // closes (in the DeleteDelegate callback).
-class SigninViewControllerDelegateViews : public views::DialogDelegateView,
-                                          public SigninViewControllerDelegate {
+class SigninViewControllerDelegateViews
+    : public views::DialogDelegateView,
+      public SigninViewControllerDelegate,
+      public content::WebContentsDelegate,
+      public ChromeWebModalDialogManagerDelegate {
  public:
 
   static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
@@ -48,19 +47,26 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
 
+  // SigninViewControllerDelegate:
+  void CloseModalSignin() override;
+  void PerformNavigation() override;
+  void ResizeNativeView(int height) override;
+  content::WebContents* GetWebContents() override;
+
+  // content::WebContentsDelegate:
+  void LoadingStateChanged(content::WebContents* source,
+                           bool to_different_document) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+
+  // ChromeWebModalDialogManagerDelegate:
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
+
  private:
   friend SigninViewControllerDelegate;
-
-#if defined(OS_CHROMEOS)
-  // Creates the web view that contains the signin flow in |mode| using
-  // |profile| as the web content's profile, then sets |delegate| as the created
-  // web content's delegate.
-  static std::unique_ptr<views::WebView> CreateGaiaWebView(
-      content::WebContentsDelegate* delegate,
-      profiles::BubbleViewMode mode,
-      Browser* browser,
-      signin_metrics::AccessPoint access_point);
-#endif
 
   // Creates and displays a constrained window containing |web_contents|. If
   // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
@@ -73,16 +79,6 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
       bool wait_for_size);
   ~SigninViewControllerDelegateViews() override;
 
-  void PerformClose() override;
-  void ResizeNativeView(int height) override;
-
-  // content::WebContentsDelegate:
-  bool HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
-
-  void DisplayModal();
-
   // Creates a WebView for a dialog with the specified URL.
   static std::unique_ptr<views::WebView> CreateDialogWebView(
       Browser* browser,
@@ -90,6 +86,25 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
       int dialog_height,
       base::Optional<int> dialog_width);
 
+  // Notifies the SigninViewController that this instance is being deleted.
+  void ResetSigninViewControllerDelegate();
+
+  // Displays the modal dialog.
+  void DisplayModal();
+
+  // Returns true if |web_ui_web_contents| can go back.
+  bool CanGoBack(content::WebContents* web_ui_web_contents) const;
+
+  // Close the platform-specific dialog window. Note that this
+  // method may destroy this object, so the caller should no longer use this
+  // object after calling this method.
+  void PerformClose();
+
+  Browser* browser() { return browser_; }
+
+  SigninViewController* signin_view_controller_;  // Not owned.
+  content::WebContents* const web_contents_;      // Not owned.
+  Browser* const browser_;                        // Not owned.
   views::WebView* content_view_;
   views::Widget* modal_signin_widget_;  // Not owned.
   ui::ModalType dialog_modal_type_;
