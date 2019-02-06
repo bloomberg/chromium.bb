@@ -126,7 +126,7 @@ class SuggestionViewProperties {
      * The first item is the unit of size (e.g. TypedValue.COMPLEX_UNIT_PX), and the second item
      * is the size itself.
      */
-    public static final WritableObjectPropertyKey<Pair<Integer, Float>> TEXT_LINE_1_SIZING =
+    public static final WritableObjectPropertyKey<Pair<Integer, Integer>> TEXT_LINE_1_SIZING =
             new WritableObjectPropertyKey<>();
     /** The maximum number of lines to be shown for the first line of text. */
     public static final WritableIntPropertyKey TEXT_LINE_1_MAX_LINES = new WritableIntPropertyKey();
@@ -146,7 +146,7 @@ class SuggestionViewProperties {
      * The first item is the unit of size (e.g. TypedValue.COMPLEX_UNIT_PX), and the second item
      * is the size itself.
      */
-    public static final WritableObjectPropertyKey<Pair<Integer, Float>> TEXT_LINE_2_SIZING =
+    public static final WritableObjectPropertyKey<Pair<Integer, Integer>> TEXT_LINE_2_SIZING =
             new WritableObjectPropertyKey<>();
     /** The maximum number of lines to be shown for the second line of text. */
     public static final WritableIntPropertyKey TEXT_LINE_2_MAX_LINES = new WritableIntPropertyKey();

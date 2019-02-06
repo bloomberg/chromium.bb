@@ -126,7 +126,7 @@ public class SuggestionViewViewBinder {
             view.setSuggestionIconDrawable(
                     drawableId, model.get(SuggestionCommonProperties.USE_DARK_COLORS), allowTint);
         } else if (SuggestionViewProperties.TEXT_LINE_1_SIZING.equals(propertyKey)) {
-            Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
+            Pair<Integer, Integer> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
             view.getTextLine1().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_1_MAX_LINES.equals(propertyKey)) {
             updateSuggestionLayoutType(view, model);
@@ -141,7 +141,7 @@ public class SuggestionViewViewBinder {
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
             view.getTextLine1().setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT).text);
         } else if (SuggestionViewProperties.TEXT_LINE_2_SIZING.equals(propertyKey)) {
-            Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING);
+            Pair<Integer, Integer> sizing = model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING);
             view.getTextLine2().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_2_MAX_LINES.equals(propertyKey)) {
             updateSuggestionLayoutType(view, model);

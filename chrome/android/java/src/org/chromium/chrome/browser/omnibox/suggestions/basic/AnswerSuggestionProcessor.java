@@ -136,36 +136,27 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         if (numAnswerLines == -1) numAnswerLines = 1;
         model.set(SuggestionViewProperties.IS_ANSWER, true);
 
-        // New answer layout is specific to all definitions except dictionary.
-        // There are few changes when compared to classic layout, most notably the order
-        // of the items on the card is reverse.
-        boolean applyNewLayout =
-                mEnableNewAnswerLayout && answer.getType() != AnswerType.DICTIONARY;
-        if (applyNewLayout) {
-            SuggestionAnswer.ImageLine temp = firstLine;
-            firstLine = secondLine;
-            secondLine = temp;
+        AnswerText[] details;
+        if (mEnableNewAnswerLayout) {
+            details = AnswerTextNewLayout.from(mContext, answer);
+        } else {
+            details = AnswerTextClassic.from(mContext, answer, density);
         }
 
         model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                        (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
+                Pair.create(TypedValue.COMPLEX_UNIT_SP, details[0].mHeightSp));
         model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                        (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
+                Pair.create(TypedValue.COMPLEX_UNIT_SP, details[1].mHeightSp));
 
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                new SuggestionTextContainer(
-                        AnswerTextBuilder.buildSpannable(firstLine, density, applyNewLayout)));
+                new SuggestionTextContainer(details[0].mText));
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                new SuggestionTextContainer(
-                        AnswerTextBuilder.buildSpannable(secondLine, density, applyNewLayout)));
+                new SuggestionTextContainer(details[1].mText));
 
-        model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES,
-                applyNewLayout ? 1 : numAnswerLines);
-        model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES,
-                applyNewLayout ? numAnswerLines : 1);
+        model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
+        model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
 
+        // TODO(ender): The color setting here is likely redundant; details include attributes.
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT_COLOR,
                 SuggestionViewViewBinder.getStandardFontColor(
                         mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
