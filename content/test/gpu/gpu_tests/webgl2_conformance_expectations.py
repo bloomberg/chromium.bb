@@ -445,6 +445,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['sierra', 'amd'], bug=870856)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['sierra', 'amd'], bug=870856)
+    # Flaky on 10.13 as well.
+    self.Flaky('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['highsierra', 'amd'], bug=870856)
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
