@@ -36,6 +36,12 @@ const char kContentDatabaseFolder[] = "content";
 const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
 const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
 
+leveldb::ReadOptions CreateReadOptions() {
+  leveldb::ReadOptions opts;
+  opts.fill_cache = false;
+  return opts;
+}
+
 bool DatabaseKeyFilter(const std::unordered_set<std::string>& key_set,
                        const std::string& key) {
   return key_set.find(key) != key_set.end();
@@ -97,6 +103,7 @@ void FeedContentDatabase::LoadContent(const std::vector<std::string>& keys,
 
   storage_database_->LoadEntriesWithFilter(
       base::BindRepeating(&DatabaseKeyFilter, std::move(key_set)),
+      CreateReadOptions(), /* target_prefix */ "",
       base::BindOnce(&FeedContentDatabase::OnLoadEntriesForLoadContent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                      std::move(callback)));
@@ -108,6 +115,7 @@ void FeedContentDatabase::LoadContentByPrefix(const std::string& prefix,
 
   storage_database_->LoadEntriesWithFilter(
       base::BindRepeating(&DatabasePrefixFilter, std::move(prefix)),
+      CreateReadOptions(), /* target_prefix */ "",
       base::BindOnce(&FeedContentDatabase::OnLoadEntriesForLoadContent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                      std::move(callback)));
