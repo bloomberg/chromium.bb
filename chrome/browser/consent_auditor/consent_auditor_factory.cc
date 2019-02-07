@@ -57,7 +57,7 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
+  std::unique_ptr<consent_auditor::ConsentSyncBridge> consent_sync_bridge;
   syncer::OnceModelTypeStoreFactory store_factory =
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
 
@@ -66,8 +66,9 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
           syncer::USER_CONSENTS,
           base::BindRepeating(&syncer::ReportUnrecoverableError,
                               chrome::GetChannel()));
-  consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-      std::move(store_factory), std::move(change_processor));
+  consent_sync_bridge =
+      std::make_unique<consent_auditor::ConsentSyncBridgeImpl>(
+          std::move(store_factory), std::move(change_processor));
 
   return new consent_auditor::ConsentAuditorImpl(
       profile->GetPrefs(), std::move(consent_sync_bridge),

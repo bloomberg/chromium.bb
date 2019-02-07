@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 
-namespace syncer {
+namespace consent_auditor {
 
 class ConsentSyncBridge {
  public:
@@ -23,8 +23,11 @@ class ConsentSyncBridge {
   // Returns the delegate for the controller, i.e. sync integration point.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetControllerDelegate() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConsentSyncBridge);
 };
 
-}  // namespace syncer
+}  // namespace consent_auditor
 
 #endif  // COMPONENTS_CONSENT_AUDITOR_CONSENT_SYNC_BRIDGE_H_

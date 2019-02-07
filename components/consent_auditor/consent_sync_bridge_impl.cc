@@ -22,9 +22,20 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace consent_auditor {
 
 using sync_pb::UserConsentSpecifics;
+using syncer::EntityChange;
+using syncer::EntityChangeList;
+using syncer::EntityData;
+using syncer::MetadataBatch;
+using syncer::MetadataChangeList;
+using syncer::ModelError;
+using syncer::ModelTypeChangeProcessor;
+using syncer::ModelTypeStore;
+using syncer::ModelTypeSyncBridge;
+using syncer::MutableDataBatch;
+using syncer::OnceModelTypeStoreFactory;
 using IdList = ModelTypeStore::IdList;
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
@@ -59,8 +70,9 @@ ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     : ModelTypeSyncBridge(std::move(change_processor)),
       weak_ptr_factory_(this) {
   std::move(store_factory)
-      .Run(USER_CONSENTS, base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
-                                         weak_ptr_factory_.GetWeakPtr()));
+      .Run(syncer::USER_CONSENTS,
+           base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ConsentSyncBridgeImpl::~ConsentSyncBridgeImpl() {
@@ -311,4 +323,4 @@ void ConsentSyncBridgeImpl::OnReadAllData(
   std::move(callback).Run(std::move(batch));
 }
 
-}  // namespace syncer
+}  // namespace consent_auditor

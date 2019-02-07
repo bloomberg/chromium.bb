@@ -46,7 +46,7 @@ std::unique_ptr<sync_pb::UserConsentSpecifics> CreateUserConsentSpecifics(
 
 ConsentAuditorImpl::ConsentAuditorImpl(
     PrefService* pref_service,
-    std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
+    std::unique_ptr<ConsentSyncBridge> consent_sync_bridge,
     const std::string& app_version,
     const std::string& app_locale,
     base::Clock* clock)

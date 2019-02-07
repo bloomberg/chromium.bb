@@ -67,7 +67,7 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* ios_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
 
-  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
+  std::unique_ptr<consent_auditor::ConsentSyncBridge> consent_sync_bridge;
   syncer::OnceModelTypeStoreFactory store_factory =
       ModelTypeStoreServiceFactory::GetForBrowserState(ios_browser_state)
           ->GetStoreFactory();
@@ -76,8 +76,9 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
           syncer::USER_CONSENTS,
           base::BindRepeating(&syncer::ReportUnrecoverableError,
                               ::GetChannel()));
-  consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-      std::move(store_factory), std::move(change_processor));
+  consent_sync_bridge =
+      std::make_unique<consent_auditor::ConsentSyncBridgeImpl>(
+          std::move(store_factory), std::move(change_processor));
 
   return std::make_unique<consent_auditor::ConsentAuditorImpl>(
       ios_browser_state->GetPrefs(), std::move(consent_sync_bridge),

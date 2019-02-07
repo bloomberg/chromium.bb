@@ -19,10 +19,20 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace consent_auditor {
 namespace {
 
 using sync_pb::UserConsentSpecifics;
+using syncer::DataBatch;
+using syncer::EntityChange;
+using syncer::EntityChangeList;
+using syncer::EntityData;
+using syncer::MetadataChangeList;
+using syncer::MockModelTypeChangeProcessor;
+using syncer::ModelTypeStore;
+using syncer::ModelTypeStoreTestUtil;
+using syncer::ModelTypeSyncBridge;
+using syncer::OnceModelTypeStoreFactory;
 using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
@@ -412,4 +422,4 @@ TEST_F(ConsentSyncBridgeImplTest,
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace consent_auditor
