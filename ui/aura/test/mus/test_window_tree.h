@@ -146,6 +146,13 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return value;
   }
 
+  bool last_can_focus() const { return last_can_focus_; }
+  size_t get_and_clear_can_focus_count() {
+    const int value = can_focus_count_;
+    can_focus_count_ = 0u;
+    return value;
+  }
+
   int last_move_hit_test() const { return last_move_hit_test_; }
 
   size_t get_and_clear_window_resize_shadow_count() {
@@ -336,6 +343,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ws::Id last_transfer_new_ = 0u;
   bool last_transfer_should_cancel_ = false;
   bool last_accepts_drops_ = false;
+  size_t can_focus_count_ = 0u;
+  bool last_can_focus_ = false;
 
   size_t accepts_drops_count_ = 0u;
 

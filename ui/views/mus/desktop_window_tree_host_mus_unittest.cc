@@ -1075,6 +1075,30 @@ TEST_F(DesktopWindowTreeHostMusTest, MinMaxSize) {
   EXPECT_FALSE(window->GetProperty(aura::client::kMaximumSize));
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, SetCanFocus) {
+  auto* delegate = new WidgetDelegateView;
+  std::unique_ptr<Widget> widget = CreateWidget(delegate);
+  // Swap the WindowTree implementation to verify SetCanFocus() is called when
+  // the active state changes.
+  aura::TestWindowTree test_window_tree;
+  aura::WindowTreeClientTestApi window_tree_client_private(
+      MusClient::Get()->window_tree_client());
+  ws::mojom::WindowTree* old_tree =
+      window_tree_client_private.SwapTree(&test_window_tree);
+
+  delegate->SetCanActivate(false);
+  EXPECT_FALSE(delegate->CanActivate());
+  EXPECT_FALSE(test_window_tree.last_can_focus());
+  EXPECT_EQ(1u, test_window_tree.get_and_clear_can_focus_count());
+
+  delegate->SetCanActivate(true);
+  EXPECT_TRUE(delegate->CanActivate());
+  EXPECT_TRUE(test_window_tree.last_can_focus());
+  EXPECT_EQ(1u, test_window_tree.get_and_clear_can_focus_count());
+
+  window_tree_client_private.SwapTree(old_tree);
+}
+
 // DesktopWindowTreeHostMusTest with --force-device-scale-factor=1.25.
 class DesktopWindowTreeHostMusTestFractionalDPI
     : public DesktopWindowTreeHostMusTest {
