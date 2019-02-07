@@ -106,7 +106,7 @@ void DataOffer::RemoveObserver(DataOfferObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DataOffer::Accept(const std::string& mime_type) {}
+void DataOffer::Accept(const std::string* mime_type) {}
 
 void DataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
   const auto data_it = data_.find(mime_type);
