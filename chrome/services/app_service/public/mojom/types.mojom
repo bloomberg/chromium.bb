@@ -31,6 +31,10 @@ struct App {
   // Whether the app was installed by sync, policy or as a default app.
   OptionalBool installed_internally;
 
+  // Whether the app is an extensions::Extensions where is_platform_app()
+  // returns true.
+  OptionalBool is_platform_app;
+
   // TODO(nigeltao): be more principled, instead of ad hoc show_in_xxx and
   // show_in_yyy fields?
   OptionalBool show_in_launcher;

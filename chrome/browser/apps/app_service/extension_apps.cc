@@ -43,11 +43,6 @@
 // TODO(crbug.com/826982): do we also need to watch prefs, the same as
 // ExtensionAppModelBuilder?
 
-// TODO(crbug.com/826982): support the is_platform_app bit. We might not need
-// to plumb this all the way through the Mojo methods, as AFAICT it's only used
-// for populating the context menu, which is done on the app publisher side
-// (i.e. in this C++ file) and not at all on the app subscriber side.
-
 namespace {
 
 // Only supporting important permissions for now.
@@ -463,6 +458,10 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->installed_internally = installed_internally
                                   ? apps::mojom::OptionalBool::kTrue
                                   : apps::mojom::OptionalBool::kFalse;
+
+  app->is_platform_app = extension->is_platform_app()
+                             ? apps::mojom::OptionalBool::kTrue
+                             : apps::mojom::OptionalBool::kFalse;
 
   auto show = app_list::ShouldShowInLauncher(extension, profile_)
                   ? apps::mojom::OptionalBool::kTrue

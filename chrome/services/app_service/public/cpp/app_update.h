@@ -82,6 +82,9 @@ class AppUpdate {
   apps::mojom::OptionalBool InstalledInternally() const;
   bool InstalledInternallyChanged() const;
 
+  apps::mojom::OptionalBool IsPlatformApp() const;
+  bool IsPlatformAppChanged() const;
+
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 

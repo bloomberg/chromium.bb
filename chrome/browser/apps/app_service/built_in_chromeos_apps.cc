@@ -42,6 +42,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->install_time = base::Time();
 
   app->installed_internally = apps::mojom::OptionalBool::kTrue;
+  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;

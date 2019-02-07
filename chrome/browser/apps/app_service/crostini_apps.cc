@@ -180,6 +180,7 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   app->install_time = registration.InstallTime();
 
   app->installed_internally = apps::mojom::OptionalBool::kFalse;
+  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
 
   // TODO(crbug.com/826982): if Crostini isn't enabled, don't show the Terminal
   // item until it becomes enabled.
