@@ -272,7 +272,7 @@ void Controller::OnGetScripts(const GURL& url,
     return;
 
   if (!result) {
-    LOG(ERROR) << "Failed to get assistant scripts for URL " << url.spec();
+    DVLOG(1) << "Failed to get assistant scripts for URL " << url.spec();
     // TODO(crbug.com/806868): Terminate Autofill Assistant.
     return;
   }
@@ -307,7 +307,7 @@ void Controller::ExecuteScript(const std::string& script_path) {
 void Controller::OnScriptExecuted(const std::string& script_path,
                                   const ScriptExecutor::Result& result) {
   if (!result.success) {
-    LOG(ERROR) << "Failed to execute script " << script_path;
+    DVLOG(1) << "Failed to execute script " << script_path;
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
                  Metrics::SCRIPT_FAILED);
     return;
@@ -351,7 +351,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       break;
 
     default:
-      DLOG(ERROR) << "Unexpected value for at_end: " << result.at_end;
+      DVLOG(1) << "Unexpected value for at_end: " << result.at_end;
       break;
   }
   EnterState(AutofillAssistantState::PROMPT);
@@ -360,6 +360,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
 void Controller::OnFatalError(const std::string& error_message,
                               Metrics::DropOutReason reason) {
+  LOG(ERROR) << "Autofill Assistant has encountered an error and is shutting "
+                "down. Reason: "
+             << static_cast<int>(reason);
   if (state_ == AutofillAssistantState::STOPPED)
     return;
 

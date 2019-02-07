@@ -253,7 +253,7 @@ void WebController::ElementPositionGetter::GetAndWaitBoxModelStable() {
 void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
     std::unique_ptr<dom::GetBoxModelResult> result) {
   if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
-    DLOG(ERROR) << "Failed to get box model.";
+    DVLOG(1) << "Failed to get box model.";
     OnError();
     return;
   }
@@ -324,7 +324,7 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
 void WebController::ElementPositionGetter::OnScrollIntoView(
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    DLOG(ERROR) << "Failed to scroll the element.";
+    DVLOG(1) << "Failed to scroll the element.";
     OnError();
     return;
   }
@@ -415,7 +415,7 @@ void WebController::OnFindElementForClickOrTap(
     std::unique_ptr<FindElementResult> result) {
   // Found element must belong to a frame.
   if (!result->container_frame_host || result->object_id.empty()) {
-    DLOG(ERROR) << "Failed to find the element to click or tap.";
+    DVLOG(1) << "Failed to find the element to click or tap.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -449,7 +449,7 @@ void WebController::OnScrollIntoView(
     bool is_a_click,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    DLOG(ERROR) << "Failed to scroll the element.";
+    DVLOG(1) << "Failed to scroll the element.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -472,7 +472,7 @@ void WebController::TapOrClickOnCoordinates(
     int x,
     int y) {
   if (!has_coordinates) {
-    DLOG(ERROR) << "Failed to get element position.";
+    DVLOG(1) << "Failed to get element position.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -511,7 +511,7 @@ void WebController::OnDispatchPressMouseEvent(
     int y,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
   if (!result) {
-    DLOG(ERROR) << "Failed to dispatch mouse left button pressed event.";
+    DVLOG(1) << "Failed to dispatch mouse left button pressed event.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -538,7 +538,7 @@ void WebController::OnDispatchTouchEventStart(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<input::DispatchTouchEventResult> result) {
   if (!result) {
-    DLOG(ERROR) << "Failed to dispatch touch start event.";
+    DVLOG(1) << "Failed to dispatch touch start event.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -621,7 +621,7 @@ void WebController::OnGetDocumentElement(
   element_result->container_frame_selector_index = 0;
   element_result->object_id = "";
   if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
-    DLOG(ERROR) << "Failed to get document root element.";
+    DVLOG(1) << "Failed to get document root element.";
     std::move(callback).Run(std::move(element_result));
     return;
   }
@@ -716,7 +716,7 @@ void WebController::OnDescribeNodeForPseudoElement(
     FindElementCallback callback,
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
-    DLOG(ERROR) << "Failed to describe the node for pseudo element.";
+    DVLOG(1) << "Failed to describe the node for pseudo element.";
     std::move(callback).Run(std::move(element_result));
     return;
   }
@@ -762,7 +762,7 @@ void WebController::OnDescribeNode(
     FindElementCallback callback,
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
-    DLOG(ERROR) << "Failed to describe the node.";
+    DVLOG(1) << "Failed to describe the node.";
     std::move(callback).Run(std::move(element_result));
     return;
   }
@@ -793,13 +793,13 @@ void WebController::OnDescribeNode(
     element_result->container_frame_host = FindCorrespondingRenderFrameHost(
         frame_name, node->GetContentDocument()->GetDocumentURL());
     if (!element_result->container_frame_host) {
-      DLOG(ERROR) << "Failed to find corresponding owner frame.";
+      DVLOG(1) << "Failed to find corresponding owner frame.";
       std::move(callback).Run(std::move(element_result));
       return;
     }
   } else if (node->HasFrameId()) {
     // TODO(crbug.com/806868): Support out-of-process iframe.
-    DLOG(WARNING) << "The element is inside an OOPIF.";
+    DVLOG(3) << "Warning (unsupported): the element is inside an OOPIF.";
     std::move(callback).Run(std::move(element_result));
     return;
   }
@@ -834,7 +834,7 @@ void WebController::OnResolveNode(
     FindElementCallback callback,
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
-    DLOG(ERROR) << "Failed to resolve object id from backend id.";
+    DVLOG(1) << "Failed to resolve object id from backend id.";
     std::move(callback).Run(std::move(element_result));
     return;
   }
@@ -875,7 +875,7 @@ void WebController::OnFindElementForFocusElement(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> element_result) {
   if (element_result->object_id.empty()) {
-    DLOG(ERROR) << "Failed to find the element to focus on.";
+    DVLOG(1) << "Failed to find the element to focus on.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -899,7 +899,7 @@ void WebController::OnFocusElement(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    DLOG(ERROR) << "Failed to focus on element.";
+    DVLOG(1) << "Failed to focus on element.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -926,7 +926,7 @@ void WebController::OnFindElementForFillingForm(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> element_result) {
   if (element_result->object_id.empty()) {
-    DLOG(ERROR) << "Failed to find the element for filling the form.";
+    DVLOG(1) << "Failed to find the element for filling the form.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -952,7 +952,7 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
     const autofill::FormData& form_data,
     const autofill::FormFieldData& form_field) {
   if (form_data.fields.empty()) {
-    DLOG(ERROR) << "Failed to get form data to fill form.";
+    DVLOG(1) << "Failed to get form data to fill form.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -960,7 +960,7 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
   ContentAutofillDriver* driver =
       ContentAutofillDriver::GetForRenderFrameHost(container_frame_host);
   if (!driver) {
-    DLOG(ERROR) << "Failed to get the autofill driver.";
+    DVLOG(1) << "Failed to get the autofill driver.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -1008,7 +1008,7 @@ void WebController::OnFindElementForSelectOption(
     std::unique_ptr<FindElementResult> element_result) {
   const std::string object_id = element_result->object_id;
   if (object_id.empty()) {
-    DLOG(ERROR) << "Failed to find the element to select an option.";
+    DVLOG(1) << "Failed to find the element to select an option.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -1033,7 +1033,7 @@ void WebController::OnSelectOption(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    DLOG(ERROR) << "Failed to select option.";
+    DVLOG(1) << "Failed to select option.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -1057,7 +1057,7 @@ void WebController::OnFindElementForHighlightElement(
     std::unique_ptr<FindElementResult> element_result) {
   const std::string object_id = element_result->object_id;
   if (object_id.empty()) {
-    DLOG(ERROR) << "Failed to find the element to highlight.";
+    DVLOG(1) << "Failed to find the element to highlight.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -1080,7 +1080,7 @@ void WebController::OnHighlightElement(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    DLOG(ERROR) << "Failed to highlight element.";
+    DVLOG(1) << "Failed to highlight element.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -1153,7 +1153,7 @@ void WebController::SetFieldValue(const Selector& selector,
       wchar_t wide_char = iter.get();
       std::string utf8_char;
       if (!base::WideToUTF8(&wide_char, 1, &utf8_char)) {
-        DLOG(ERROR) << "Failed to convert character to UTF-8: " << wide_char;
+        DVLOG(1) << "Failed to convert character to UTF-8: " << wide_char;
         OnResult(false, std::move(callback));
         return;
       }

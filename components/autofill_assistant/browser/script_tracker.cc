@@ -108,8 +108,8 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
 void ScriptTracker::ExecuteScript(const std::string& script_path,
                                   ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
-    DLOG(ERROR) << "Do not expect executing the script (" << script_path
-                << " when there is a script running.";
+    DVLOG(1) << "Do not expect executing the script (" << script_path
+             << " when there is a script running.";
     ScriptExecutor::Result result;
     result.success = false;
     std::move(callback).Run(result);

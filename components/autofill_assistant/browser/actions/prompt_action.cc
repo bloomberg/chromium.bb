@@ -136,7 +136,7 @@ void PromptAction::OnSuggestionChosen(const std::string& payload) {
   batch_element_checker_.reset();
   PromptProto::Choice choice;
   if (!choice.ParseFromString(payload)) {
-    DLOG(ERROR) << "Invalid result.";
+    DVLOG(1) << "Invalid result.";
     UpdateProcessedAction(OTHER_ACTION_STATUS);
   } else {
     UpdateProcessedAction(ACTION_APPLIED);
