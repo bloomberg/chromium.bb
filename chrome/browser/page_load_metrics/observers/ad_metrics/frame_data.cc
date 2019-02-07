@@ -26,7 +26,8 @@ FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
       user_activation_status_(UserActivationStatus::kNoActivation),
       is_display_none_(false),
       visibility_(FrameVisibility::kVisible),
-      frame_size_(gfx::Size()) {}
+      frame_size_(gfx::Size()),
+      size_intervention_status_(FrameSizeInterventionStatus::kNone) {}
 
 FrameData::~FrameData() = default;
 
@@ -56,6 +57,11 @@ void FrameData::ProcessResourceLoadInFrame(
   // Report cached resource body bytes to overall frame bytes.
   if (resource->is_complete && resource->was_fetched_via_cache)
     frame_bytes_ += resource->encoded_body_length;
+
+  if (frame_bytes_ > kFrameSizeInterventionByteThreshold &&
+      user_activation_status_ == UserActivationStatus::kNoActivation) {
+    size_intervention_status_ = FrameSizeInterventionStatus::kTriggered;
+  }
 }
 
 void FrameData::SetFrameSize(gfx::Size frame_size) {

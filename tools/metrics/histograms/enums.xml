@@ -576,6 +576,11 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Timeout during installability check, site status unknown"/>
 </enum>
 
+<enum name="AdFrameSizeInterventionStatus">
+  <int value="0" label="None"/>
+  <int value="1" label="Triggered"/>
+</enum>
+
 <enum name="AdFrameVisibility">
   <int value="0" label="Display none"/>
   <int value="1" label="Visible"/>
@@ -21525,6 +21530,7 @@ Called by update_net_error_codes.py.-->
   <int value="2781" label="V8RemotePlayback_Prompt_Method"/>
   <int value="2782" label="LayoutJankExplicitlyRequested"/>
   <int value="2783" label="MediaSessionSkipAd"/>
+  <int value="2784" label="AdFrameSizeIntervention"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

@@ -38,6 +38,15 @@ class AdsPageLoadMetricsObserver
     kMaxValue = kOther,
   };
 
+  // Whether or not the adframe size intervention would have triggered on
+  // this frame.  These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  enum class AdFrameSizeInterventionStatus {
+    kNone = 0,
+    kTriggered = 1,
+    kMaxValue = kTriggered,
+  };
+
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded();
@@ -165,6 +174,9 @@ class AdsPageLoadMetricsObserver
   // load. Only contains resources that have not completed loading.
   std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
       page_resources_;
+
+  // The web contents associated with this page load.
+  content::WebContents* web_contents_ = nullptr;
 
   // Tallies for bytes and counts observed in resource data updates for the
   // entire page.
