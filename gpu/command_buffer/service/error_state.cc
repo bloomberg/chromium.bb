@@ -172,9 +172,9 @@ void ErrorStateImpl::SetGLErrorInvalidParami(
   } else {
     SetGLError(
         filename, line, error, function_name,
-        (std::string("trying to set ") +
-         GLES2Util::GetStringEnum(pname) + " to " +
-         base::IntToString(param)).c_str());
+        (std::string("trying to set ") + GLES2Util::GetStringEnum(pname) +
+         " to " + base::NumberToString(param))
+            .c_str());
   }
 }
 

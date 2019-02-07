@@ -43,10 +43,10 @@ void RecurseDiagnosticTree(DxDiagNode* output,
         if (SUCCEEDED(hr)) {
           switch (variant.vt) {
             case VT_UI4:
-              output->values[prop_name8] = base::UintToString(variant.ulVal);
+              output->values[prop_name8] = base::NumberToString(variant.ulVal);
               break;
             case VT_I4:
-              output->values[prop_name8] = base::IntToString(variant.lVal);
+              output->values[prop_name8] = base::NumberToString(variant.lVal);
               break;
             case VT_BOOL:
               output->values[prop_name8] = variant.boolVal ? "true" : "false";

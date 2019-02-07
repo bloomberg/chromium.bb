@@ -3774,7 +3774,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoCHROMIUM(
     if (size > 1 || parsed_service_name.IsArrayName()) {
       for (GLint location_index = 1; location_index < size; location_index++) {
         std::string array_element_name = parsed_service_name.base_name() + "[" +
-                                         base::IntToString(location_index) +
+                                         base::NumberToString(location_index) +
                                          "]";
         int32_t element_location = api()->glGetUniformLocationFn(
             service_program, array_element_name.c_str());

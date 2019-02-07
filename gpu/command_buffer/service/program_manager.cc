@@ -987,7 +987,7 @@ bool Program::UpdateUniforms() {
     if (size > 1) {
       for (GLsizei ii = 1; ii < size; ++ii) {
         std::string element_name(service_base_name + "[" +
-                                 base::IntToString(ii) + "]");
+                                 base::NumberToString(ii) + "]");
         service_locations[ii] =
             glGetUniformLocation(service_id_, element_name.c_str());
       }
@@ -1111,7 +1111,7 @@ void Program::UpdateFragmentInputs() {
     }
 
     for (GLsizei jj = 1; jj < size; ++jj) {
-      std::string array_spec(std::string("[") + base::IntToString(jj) + "]");
+      std::string array_spec(std::string("[") + base::NumberToString(jj) + "]");
       std::string client_element_name =
           parsed_client_name.base_name() + array_spec;
 
@@ -1177,15 +1177,16 @@ void Program::UpdateProgramOutputs() {
       if (color_name >= 0) {
         GLint index = 0;
         for (size_t ii = 0; ii < output_var.getOutermostArraySize(); ++ii) {
-          std::string array_spec(
-              std::string("[") + base::IntToString(ii) + "]");
+          std::string array_spec(std::string("[") + base::NumberToString(ii) +
+                                 "]");
           program_output_infos_.push_back(ProgramOutputInfo(
               color_name + ii, index, client_name + array_spec));
         }
       }
     } else {
       for (size_t ii = 0; ii < output_var.getOutermostArraySize(); ++ii) {
-        std::string array_spec(std::string("[") + base::IntToString(ii) + "]");
+        std::string array_spec(std::string("[") + base::NumberToString(ii) +
+                               "]");
         std::string service_element_name(service_name + array_spec);
         GLint color_name =
             glGetFragDataLocation(service_id_, service_element_name.c_str());
@@ -1266,7 +1267,7 @@ void Program::ExecuteProgramOutputBindCalls() {
         std::string name = output_var.name;
         std::string array_spec;
         if (is_array) {
-          array_spec = std::string("[") + base::IntToString(jj) + "]";
+          array_spec = std::string("[") + base::NumberToString(jj) + "]";
           name += array_spec;
         }
         auto it = bind_program_output_location_index_map_.find(name);
@@ -2082,7 +2083,7 @@ bool Program::DetectProgramOutputLocationBindingConflicts() const {
     for (size_t jj = 0; jj < count; ++jj) {
       std::string name = output_var.name;
       if (is_array)
-        name += std::string("[") + base::IntToString(jj) + "]";
+        name += std::string("[") + base::NumberToString(jj) + "]";
 
       auto it = bind_program_output_location_index_map_.find(name);
       if (it == bind_program_output_location_index_map_.end())

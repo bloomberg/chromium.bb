@@ -215,7 +215,7 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
       gfx::HasExtension(extension_set, "GL_NV_framebuffer_multisample")) {
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
-  gpu_info->max_msaa_samples = base::IntToString(max_samples);
+  gpu_info->max_msaa_samples = base::NumberToString(max_samples);
   base::UmaHistogramSparse("GPU.MaxMSAASampleCount", max_samples);
 
 #if defined(OS_ANDROID)
