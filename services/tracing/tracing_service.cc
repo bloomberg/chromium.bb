@@ -46,7 +46,8 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     mojom::TracedProcessPtr traced_process;
     connector_->BindInterface(
         service_manager::ServiceFilter::ForExactIdentity(identity),
-        &traced_process);
+        mojo::MakeRequest(&traced_process),
+        service_manager::mojom::BindInterfacePriority::kBestEffort);
 
     auto new_connection_request = mojom::ConnectToTracingRequest::New();
 
