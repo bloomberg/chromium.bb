@@ -101,7 +101,6 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-hmtx-table.hh",
       "src/src/hb-ot-kern-table.hh",
       "src/src/hb-ot-layout-base-table.hh",
-      "src/src/hb-ot-layout-base-table.hh",
       "src/src/hb-ot-layout-common.hh",
       "src/src/hb-ot-layout-gdef-table.hh",
       "src/src/hb-ot-layout-gpos-table.hh",
