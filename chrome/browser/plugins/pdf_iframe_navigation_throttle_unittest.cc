@@ -6,12 +6,8 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pdf_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -25,7 +21,15 @@
 
 namespace {
 
+const char kHeader[] = "HTTP/1.1 200 OK\r\n";
 const char kExampleURL[] = "http://example.com";
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void PluginsLoadedCallback(base::OnceClosure callback,
+                           const std::vector<content::WebPluginInfo>& plugins) {
+  std::move(callback).Run();
+}
+#endif
 
 }  // namespace
 
@@ -41,15 +45,10 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
 #endif
   }
 
-  scoped_refptr<net::HttpResponseHeaders> GetHeaderWithMimeType(
-      const std::string& mime_type) {
-    std::string raw_response_headers =
-        "HTTP/1.1 200 OK\r\n"
-        "content-type: " +
-        mime_type + "\r\n";
-    return base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(raw_response_headers.c_str(),
-                                          raw_response_headers.size()));
+  std::string GetHeaderWithMimeType(const std::string& mime_type) {
+    return "HTTP/1.1 200 OK\r\n"
+           "content-type: " +
+           mime_type + "\r\n";
   }
 
   content::RenderFrameHost* subframe() { return subframe_; }
@@ -59,21 +58,13 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-    content::PluginService* plugin_service =
-        content::PluginService::GetInstance();
-    plugin_service->Init();
-    plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
+    content::PluginService::GetInstance()->Init();
 
-    // Register a fake PDF Viewer plugin into our plugin service.
-    content::WebPluginInfo info;
-    info.name =
-        base::ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName);
-    info.mime_types.push_back(content::WebPluginMimeType(
-        kPDFMimeType, "pdf", "Fake PDF description"));
-    plugin_service->RegisterInternalPlugin(info, true);
-
-    // Set the plugin list as dirty, like when the browser first starts.
-    plugin_service->RefreshPlugins();
+    // Load plugins.
+    base::RunLoop run_loop;
+    content::PluginService::GetInstance()->GetPlugins(
+        base::BindOnce(&PluginsLoadedCallback, run_loop.QuitClosure()));
+    run_loop.Run();
 #endif
 
     content::RenderFrameHostTester::For(main_rfh())
@@ -93,56 +84,62 @@ TEST_F(PDFIFrameNavigationThrottleTest, OnlyCreateThrottleForSubframes) {
   SetAlwaysOpenPdfExternallyForTests(true);
 
   // Never create throttle for main frames.
+  std::string raw_response_headers =
+      net::HttpUtil::AssembleRawHeaders(kHeader, strlen(kHeader));
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(raw_response_headers);
   content::MockNavigationHandle handle(GURL(kExampleURL), main_rfh());
-  handle.set_response_headers(GetHeaderWithMimeType(""));
-  ASSERT_EQ(nullptr,
-            PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle));
+  handle.set_response_headers(headers.get());
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_EQ(nullptr, throttle);
 
   // Create a throttle for subframes.
   handle.set_render_frame_host(subframe());
-  ASSERT_NE(nullptr,
-            PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle));
+  throttle = PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_NE(nullptr, throttle);
 }
 
 TEST_F(PDFIFrameNavigationThrottleTest, InterceptPDFOnly) {
   // Setup
   SetAlwaysOpenPdfExternallyForTests(true);
 
-  // Load plugins to keep this test synchronous.
-#if BUILDFLAG(ENABLE_PLUGINS)
-  base::RunLoop run_loop;
-  content::PluginService::GetInstance()->GetPlugins(base::BindRepeating(
-      [](base::RunLoop* run_loop,
-         const std::vector<content::WebPluginInfo>& plugins) {
-        run_loop->Quit();
-      },
-      base::Unretained(&run_loop)));
-  run_loop.Run();
-#endif
-
+  std::string raw_response_headers = GetHeaderWithMimeType("application/pdf");
+  raw_response_headers = net::HttpUtil::AssembleRawHeaders(
+      raw_response_headers.c_str(), raw_response_headers.size());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(raw_response_headers);
   content::MockNavigationHandle handle(GURL(kExampleURL), subframe());
-  handle.set_response_headers(GetHeaderWithMimeType("application/pdf"));
+  handle.set_response_headers(headers.get());
 
   // Verify that we CANCEL for PDF mime type.
   std::unique_ptr<content::NavigationThrottle> throttle =
       PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
+
   ASSERT_NE(nullptr, throttle);
   ASSERT_EQ(content::NavigationThrottle::CANCEL_AND_IGNORE,
             throttle->WillProcessResponse().action());
 
   // Verify that we PROCEED for other mime types.
   // Blank mime type
-  handle.set_response_headers(GetHeaderWithMimeType(""));
+  raw_response_headers =
+      net::HttpUtil::AssembleRawHeaders(kHeader, strlen(kHeader));
+  headers = new net::HttpResponseHeaders(raw_response_headers);
+  handle.set_response_headers(headers.get());
   ASSERT_EQ(content::NavigationThrottle::PROCEED,
             throttle->WillProcessResponse().action());
 
   // HTML
-  handle.set_response_headers(GetHeaderWithMimeType("text/html"));
+  raw_response_headers = GetHeaderWithMimeType("text/html");
+  headers = new net::HttpResponseHeaders(raw_response_headers);
+  handle.set_response_headers(headers.get());
   ASSERT_EQ(content::NavigationThrottle::PROCEED,
             throttle->WillProcessResponse().action());
 
   // PNG
-  handle.set_response_headers(GetHeaderWithMimeType("image/png"));
+  raw_response_headers = GetHeaderWithMimeType("image/png");
+  headers = new net::HttpResponseHeaders(raw_response_headers);
+  handle.set_response_headers(headers.get());
   ASSERT_EQ(content::NavigationThrottle::PROCEED,
             throttle->WillProcessResponse().action());
 }
@@ -170,54 +167,26 @@ TEST_F(PDFIFrameNavigationThrottleTest, AllowPDFAttachments) {
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-TEST_F(PDFIFrameNavigationThrottleTest, ProceedIfPDFViewerIsEnabled) {
+TEST_F(PDFIFrameNavigationThrottleTest, CancelOnlyIfPDFViewerIsDisabled) {
+  // Setup
+  std::string raw_response_headers = GetHeaderWithMimeType("application/pdf");
+  raw_response_headers = net::HttpUtil::AssembleRawHeaders(
+      raw_response_headers.c_str(), raw_response_headers.size());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(raw_response_headers);
   content::MockNavigationHandle handle(GURL(kExampleURL), subframe());
-  handle.set_response_headers(GetHeaderWithMimeType("application/pdf"));
+  handle.set_response_headers(headers.get());
 
+  // Test PDF Viewer enabled.
   SetAlwaysOpenPdfExternallyForTests(false);
-
-  // First time should asynchronously Resume the navigation.
   std::unique_ptr<content::NavigationThrottle> throttle =
       PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
-  ASSERT_NE(nullptr, throttle);
-  ASSERT_EQ(content::NavigationThrottle::DEFER,
-            throttle->WillProcessResponse().action());
-  base::RunLoop run_loop;
-  throttle->set_resume_callback_for_testing(run_loop.QuitClosure());
-  run_loop.Run();
+  ASSERT_EQ(nullptr, throttle);
 
-  // Subsequent times should synchronously PROCEED the navigation.
-  throttle = PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
-  ASSERT_NE(nullptr, throttle);
-  ASSERT_EQ(content::NavigationThrottle::PROCEED,
-            throttle->WillProcessResponse().action());
-}
-
-TEST_F(PDFIFrameNavigationThrottleTest, CancelIfPDFViewerIsDisabled) {
-  content::MockNavigationHandle handle(GURL(kExampleURL), subframe());
-  handle.set_response_headers(GetHeaderWithMimeType("application/pdf"));
-
+  // Test PDF Viewer disabled.
   SetAlwaysOpenPdfExternallyForTests(true);
-
-  // First time should asynchronously Cancel the navigation.
-  std::unique_ptr<content::NavigationThrottle> throttle =
-      PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
-  ASSERT_NE(nullptr, throttle);
-  ASSERT_EQ(content::NavigationThrottle::DEFER,
-            throttle->WillProcessResponse().action());
-  base::RunLoop run_loop;
-  throttle->set_cancel_deferred_navigation_callback_for_testing(
-      base::BindRepeating(
-          [](base::RunLoop* run_loop,
-             content::NavigationThrottle::ThrottleCheckResult result) {
-            ASSERT_EQ(content::NavigationThrottle::CANCEL_AND_IGNORE, result);
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop)));
-  run_loop.Run();
-
-  // Subsequent times should synchronously CANCEL the navigation.
   throttle = PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(&handle);
+
   ASSERT_NE(nullptr, throttle);
   ASSERT_EQ(content::NavigationThrottle::CANCEL_AND_IGNORE,
             throttle->WillProcessResponse().action());
