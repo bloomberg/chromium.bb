@@ -46,6 +46,8 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   void requestCachedResponse(
       const String& cache_id,
       const String& request_url,
+      const std::unique_ptr<protocol::Array<protocol::CacheStorage::Header>>
+          request_headers,
       std::unique_ptr<RequestCachedResponseCallback>) override;
 
  private:

@@ -36,9 +36,13 @@
         // Note: tesrCache1, testCache2 both have entries from '.../T' but these two entries have different blob types intentionally
         .then(ApplicationTestRunner.addCacheEntryWithBlobType.bind(this, 'testCache2', 'http://fake.request.com/T', 'text/javascript'))
         .then(ApplicationTestRunner.addCacheEntryWithNoCorsRequest.bind(this, 'testCache3', TestRunner.url('../resources/image.png')))
+        .then(ApplicationTestRunner.addCacheEntryWithVarsResponse.bind(this, 'testCache3', 'http://fake.request.com/vars'))
         .then(ApplicationTestRunner.dumpCacheTree)
         .then(ApplicationTestRunner.dumpCacheTree.bind(this, '2'))
         .then(ApplicationTestRunner.dumpCacheTree.bind(this, 'image'))
+        .then(ApplicationTestRunner.dumpCachedEntryContent.bind(this, 'testCache2', 'http://fake.request.com/1', false))
+        .then(ApplicationTestRunner.dumpCachedEntryContent.bind(this, 'testCache3', 'http://fake.request.com/vars', true))
+        .then(ApplicationTestRunner.dumpCachedEntryContent.bind(this, 'testCache3', 'http://fake.request.com/vars', false))
         .then(ApplicationTestRunner.clearAllCaches)
         .then(TestRunner.completeTest)
         .catch(errorAndExit);

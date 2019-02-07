@@ -648,6 +648,8 @@ void InspectorCacheStorageAgent::deleteEntry(
 void InspectorCacheStorageAgent::requestCachedResponse(
     const String& cache_id,
     const String& request_url,
+    const std::unique_ptr<protocol::Array<protocol::CacheStorage::Header>>
+        request_headers,
     std::unique_ptr<RequestCachedResponseCallback> callback) {
   String cache_name;
   mojom::blink::CacheStorage* cache_storage = nullptr;
@@ -660,6 +662,10 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   auto request = mojom::blink::FetchAPIRequest::New();
   request->url = KURL(request_url);
   request->method = String("GET");
+  for (size_t i = 0, len = request_headers->length(); i < len; ++i) {
+    auto* header = request_headers->get(i);
+    request->headers.insert(header->getName(), header->getValue());
+  }
 
   auto multi_query_options = mojom::blink::MultiCacheQueryOptions::New();
   multi_query_options->query_options = mojom::blink::CacheQueryOptions::New();
