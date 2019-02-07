@@ -34,8 +34,8 @@
 
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/modules/eventsource/event_source_parser.h"
@@ -89,7 +89,7 @@ class MODULES_EXPORT EventSource final
 
   // ContextLifecycleObserver
   //
-  // Note: We don't need to inherit from PausableObject since
+  // Note: We don't need to inherit from ContextLifecycleStateObserver since
   // ScopedPageLoadDeferrer calls Page::setDefersLoading() and
   // it defers delivery of events from the loader, and therefore
   // the methods of this class for receiving asynchronous events

@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {

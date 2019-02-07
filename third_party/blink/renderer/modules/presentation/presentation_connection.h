@@ -8,8 +8,8 @@
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

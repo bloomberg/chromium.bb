@@ -3714,7 +3714,7 @@ bool LayoutObject::WillRenderImage() {
   if (StyleRef().Visibility() != EVisibility::kVisible)
     return false;
 
-  // We will not render a new image when PausableObjects is paused
+  // We will not render a new image when ExecutionContext is paused
   if (GetDocument().IsContextPaused())
     return false;
 

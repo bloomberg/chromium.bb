@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/long_task_detector.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"

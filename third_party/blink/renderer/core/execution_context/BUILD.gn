@@ -6,6 +6,10 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("execution_context") {
   sources = [
+    "context_lifecycle_notifier.cc",
+    "context_lifecycle_notifier.h",
+    "context_lifecycle_observer.cc",
+    "context_lifecycle_observer.h",
     "execution_context.cc",
     "execution_context.h",
     "pausable_object.cc",

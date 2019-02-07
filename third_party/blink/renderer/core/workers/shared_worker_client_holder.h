@@ -40,8 +40,8 @@
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 

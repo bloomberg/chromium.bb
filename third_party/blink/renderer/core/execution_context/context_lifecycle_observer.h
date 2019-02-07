@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_OBSERVER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -51,10 +51,11 @@ class LocalFrame;
 //   need to stop or suspend any activity, it should be a ContextClient.
 // * If an object associated with an ExecutionContext has shutdown logic to
 //   perform, such as halting activity or disconnecting from longer-lived
-//   objects, it should be a ContextLifecycleObserver.
+//   objects, it should be a PausableObject.
 // * If an object additionally must suspend its activity during pause (see
-//   pausable_object.h), it should be a PausableObject (and thus, transitively,
-//   also a ContextLifecycleObserver).
+//   context_lifecycle_state_observer.h), it should be a
+//   PausableObject (and thus, transitively, also a
+//   PausableObject).
 //
 // If your object has activity which requires that it be kept alive, even if no
 // other object has a reference to it, consider whether your object should also
@@ -92,11 +93,12 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 // Execution context associated objects which have ongoing activity,
 // registration with objects which outlive the context, or resources which
 // should be promptly released, should consider deriving from
-// ContextLifecycleObserver. As a rule of thumb: if the destructor contains
+// PausableObject. As a rule of thumb: if the destructor contains
 // non-trivial logic, that logic may belong in ContextDestroyed() instead.
 //
 // If there is ongoing activity associated with the object, consider whether it
-// needs to be paused when execution is suspended (see PausableObject).
+// needs to be paused when execution is suspended (see
+// PausableObject).
 //
 // If none of the above applies, prefer the simpler ContextClient.
 class CORE_EXPORT ContextLifecycleObserver
@@ -167,4 +169,4 @@ class CORE_EXPORT DOMWindowClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_

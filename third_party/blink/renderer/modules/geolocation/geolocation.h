@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_watchers.h"

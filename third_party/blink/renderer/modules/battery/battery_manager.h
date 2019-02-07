@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/battery/battery_status.h"

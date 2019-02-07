@@ -25,7 +25,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/execution_context/pausable_object.h"

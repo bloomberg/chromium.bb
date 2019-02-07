@@ -7,8 +7,8 @@
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
