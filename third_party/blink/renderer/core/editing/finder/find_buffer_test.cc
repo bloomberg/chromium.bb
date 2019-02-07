@@ -546,4 +546,68 @@ TEST_F(FindBufferTest, KanaDecomposed) {
             buffer.FindMatches("ﾊ ゛", kCaseInsensitive)->CountForTesting());
 }
 
+TEST_F(FindBufferTest, FindPlainTextInvalidTarget1) {
+  static const char* body_content = "<div>foo bar test</div>";
+  SetBodyContent(body_content);
+
+  // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
+  static const UChar kInvalid1[] = {0x1461u, 0x2130u, 0x129bu, 0xd711u, 0xd6feu,
+                                    0xccadu, 0x7064u, 0xd6a0u, 0x4e3bu, 0x03abu,
+                                    0x17dcu, 0xb8b7u, 0xbf55u, 0xfca0u, 0x07fau,
+                                    0x0427u, 0xda0au, 0};
+
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches(String(kInvalid1), 0);
+  EXPECT_TRUE(results->IsEmpty());
+}
+
+TEST_F(FindBufferTest, FindPlainTextInvalidTarget2) {
+  static const char* body_content = "<div>foo bar test</div>";
+  SetBodyContent(body_content);
+
+  // A lone trailing surrogate (U+DC01).
+  static const UChar kInvalid2[] = {0x1461u, 0x2130u, 0x129bu, 0xdc01u,
+                                    0xd6feu, 0xccadu, 0};
+
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches(String(kInvalid2), 0);
+  EXPECT_TRUE(results->IsEmpty());
+}
+
+TEST_F(FindBufferTest, FindPlainTextInvalidTarget3) {
+  static const char* body_content = "<div>foo bar test</div>";
+  SetBodyContent(body_content);
+
+  // A trailing surrogate followed by a lead surrogate (U+DC03 U+D901).
+  static const UChar kInvalid3[] = {0xd800u, 0xdc00u, 0x0061u, 0xdc03u,
+                                    0xd901u, 0xccadu, 0};
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches(String(kInvalid3), 0);
+  EXPECT_TRUE(results->IsEmpty());
+}
+
+TEST_F(FindBufferTest, DisplayInline) {
+  SetBodyContent("<span>fi</span>nd");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("find", 0);
+  ASSERT_EQ(1u, results->CountForTesting());
+  EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results->front());
+}
+
+TEST_F(FindBufferTest, DisplayBlock) {
+  SetBodyContent("<div>fi</div>nd");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("find", 0);
+  ASSERT_EQ(0u, results->CountForTesting())
+      << "We should not match across block.";
+}
+
+TEST_F(FindBufferTest, DisplayContents) {
+  SetBodyContent("<div style='display: contents'>fi</div>nd");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("find", 0);
+  ASSERT_EQ(1u, results->CountForTesting());
+  EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results->front());
+}
+
 }  // namespace blink
