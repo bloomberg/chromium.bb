@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
@@ -38,63 +39,9 @@ namespace mswr = Microsoft::WRL;
 
 namespace content {
 
+using namespace dwrite_font_uma_logging;
+
 namespace {
-
-// This enum is used to define the buckets for an enumerated UMA histogram.
-// Hence,
-//   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
-enum DirectWriteFontLoaderType {
-  FILE_SYSTEM_FONT_DIR = 0,
-  FILE_OUTSIDE_SANDBOX = 1,
-  OTHER_LOADER = 2,
-  FONT_WITH_MISSING_REQUIRED_STYLES = 3,
-
-  FONT_LOADER_TYPE_MAX_VALUE
-};
-
-// This enum is used to define the buckets for an enumerated UMA histogram.
-// Hence,
-//   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
-enum MessageFilterError {
-  LAST_RESORT_FONT_GET_FONT_FAILED = 0,
-  LAST_RESORT_FONT_ADD_FILES_FAILED = 1,
-  LAST_RESORT_FONT_GET_FAMILY_FAILED = 2,
-  ERROR_NO_COLLECTION = 3,
-  MAP_CHARACTERS_NO_FAMILY = 4,
-  ADD_FILES_FOR_FONT_CREATE_FACE_FAILED = 5,
-  ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED = 6,
-  ADD_FILES_FOR_FONT_GET_FILES_FAILED = 7,
-  ADD_FILES_FOR_FONT_GET_LOADER_FAILED = 8,
-  ADD_FILES_FOR_FONT_QI_FAILED = 9,
-  ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED = 10,
-  ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED = 11,
-  ADD_LOCAL_FILE_GET_PATH_FAILED = 12,
-  GET_FILE_COUNT_INVALID_NUMBER_OF_FILES = 13,
-
-  MESSAGE_FILTER_ERROR_MAX_VALUE
-};
-
-void LogLoaderType(DirectWriteFontLoaderType loader_type) {
-  UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoaderType", loader_type,
-                            FONT_LOADER_TYPE_MAX_VALUE);
-}
-
-void LogLastResortFontCount(size_t count) {
-  UMA_HISTOGRAM_COUNTS_100("DirectWrite.Fonts.Proxy.LastResortFontCount",
-                           count);
-}
-
-void LogLastResortFontFileCount(size_t count) {
-  UMA_HISTOGRAM_COUNTS_100("DirectWrite.Fonts.Proxy.LastResortFontFileCount",
-                           count);
-}
-
-void LogMessageFilterError(MessageFilterError error) {
-  UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.MessageFilterError", error,
-                            MESSAGE_FILTER_ERROR_MAX_VALUE);
-}
 
 base::string16 GetWindowsFontsPath() {
   std::vector<base::char16> font_path_chars;
@@ -163,7 +110,8 @@ bool CheckRequiredStylesPresent(IDWriteFontCollection* collection,
         // Not really a loader type, but good to have telemetry on how often
         // fonts like these are encountered, and the data can be compared with
         // the other loader types.
-        LogLoaderType(FONT_WITH_MISSING_REQUIRED_STYLES);
+        LogLoaderType(
+            DirectWriteFontLoaderType::FONT_WITH_MISSING_REQUIRED_STYLES);
         return false;
       }
       break;
@@ -181,14 +129,16 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
   if (FAILED(hr)) {
     base::UmaHistogramSparse("DirectWrite.Fonts.Proxy.CreateFontFaceResult",
                              hr);
-    LogMessageFilterError(ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
+    LogMessageFilterError(
+        MessageFilterError::ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
     return false;
   }
 
   UINT32 file_count;
   hr = font_face->GetFiles(&file_count, nullptr);
   if (FAILED(hr)) {
-    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED);
+    LogMessageFilterError(
+        MessageFilterError::ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED);
     return false;
   }
 
@@ -201,21 +151,24 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
   // files.
   DCHECK_EQ(file_count, 1u);
   if (file_count > 1) {
-    LogMessageFilterError(GET_FILE_COUNT_INVALID_NUMBER_OF_FILES);
+    LogMessageFilterError(
+        MessageFilterError::GET_FILE_COUNT_INVALID_NUMBER_OF_FILES);
     return false;
   }
 
   mswr::ComPtr<IDWriteFontFile> font_file;
   hr = font_face->GetFiles(&file_count, &font_file);
   if (FAILED(hr)) {
-    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILES_FAILED);
+    LogMessageFilterError(
+        MessageFilterError::ADD_FILES_FOR_FONT_GET_FILES_FAILED);
     return false;
   }
 
   mswr::ComPtr<IDWriteFontFileLoader> loader;
   hr = font_file->GetLoader(&loader);
   if (FAILED(hr)) {
-    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_LOADER_FAILED);
+    LogMessageFilterError(
+        MessageFilterError::ADD_FILES_FOR_FONT_GET_LOADER_FAILED);
     return false;
   }
 
@@ -232,11 +185,11 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
     // happens, we can implement this by exposing the loader via ipc. That
     // will likely be by loading the font data into shared memory, although
     // we could proxy the stream reads directly instead.
-    LogLoaderType(OTHER_LOADER);
+    LogLoaderType(DirectWriteFontLoaderType::OTHER_LOADER);
     DCHECK(false);
     return false;
   } else if (FAILED(hr)) {
-    LogMessageFilterError(ADD_FILES_FOR_FONT_QI_FAILED);
+    LogMessageFilterError(MessageFilterError::ADD_FILES_FOR_FONT_QI_FAILED);
     return false;
   }
 
@@ -244,14 +197,16 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
   UINT32 key_size;
   hr = font_file->GetReferenceKey(&key, &key_size);
   if (FAILED(hr)) {
-    LogMessageFilterError(ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED);
+    LogMessageFilterError(
+        MessageFilterError::ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED);
     return false;
   }
 
   UINT32 path_length = 0;
   hr = local_loader->GetFilePathLengthFromKey(key, key_size, &path_length);
   if (FAILED(hr)) {
-    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED);
+    LogMessageFilterError(
+        MessageFilterError::ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED);
     return false;
   }
   base::string16 retrieve_file_path;
@@ -260,7 +215,7 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
   hr = local_loader->GetFilePathFromKey(key, key_size, &retrieve_file_path[0],
                                         path_length);
   if (FAILED(hr)) {
-    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_FAILED);
+    LogMessageFilterError(MessageFilterError::ADD_LOCAL_FILE_GET_PATH_FAILED);
     return false;
   }
   // No need for the null-terminator in base::string16.
@@ -294,10 +249,10 @@ bool AddFilesForFont(IDWriteFont* font,
 
   if (!base::StartsWith(file_path_folded, windows_fonts_path,
                         base::CompareCase::SENSITIVE)) {
-    LogLoaderType(FILE_OUTSIDE_SANDBOX);
+    LogLoaderType(DirectWriteFontLoaderType::FILE_OUTSIDE_SANDBOX);
     custom_font_path_set->insert(file_path);
   } else {
-    LogLoaderType(FILE_SYSTEM_FONT_DIR);
+    LogLoaderType(DirectWriteFontLoaderType::FILE_SYSTEM_FONT_DIR);
     path_set->insert(file_path);
   }
   return true;
@@ -469,7 +424,8 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
   if (FAILED(hr)) {
     if (IsLastResortFallbackFont(family_index))
-      LogMessageFilterError(LAST_RESORT_FONT_GET_FAMILY_FAILED);
+      LogMessageFilterError(
+          MessageFilterError::LAST_RESORT_FONT_GET_FAMILY_FAILED);
     return;
   }
 
@@ -485,7 +441,8 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
     hr = family->GetFont(font_index, &font);
     if (FAILED(hr)) {
       if (IsLastResortFallbackFont(family_index))
-        LogMessageFilterError(LAST_RESORT_FONT_GET_FONT_FAILED);
+        LogMessageFilterError(
+            MessageFilterError::LAST_RESORT_FONT_GET_FONT_FAILED);
       return;
     }
 
@@ -493,7 +450,8 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
     if (!AddFilesForFont(font.Get(), windows_fonts_path_, &path_set,
                          &custom_font_path_set, &dummy_ttc_index)) {
       if (IsLastResortFallbackFont(family_index))
-        LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
+        LogMessageFilterError(
+            MessageFilterError::LAST_RESORT_FONT_ADD_FILES_FAILED);
     }
   }
 
@@ -623,7 +581,7 @@ void DWriteFontProxyImpl::MapCharacters(
   }
 
   // Could not find a matching family
-  LogMessageFilterError(MAP_CHARACTERS_NO_FAMILY);
+  LogMessageFilterError(MessageFilterError::MAP_CHARACTERS_NO_FAMILY);
   DCHECK_EQ(result->family_index, UINT32_MAX);
   DCHECK_GT(result->mapped_length, 0u);
 }
@@ -667,7 +625,8 @@ bool DWriteFontProxyImpl::EnsureFontUniqueNameTable() {
       hr = family->GetFont(font_index, &font);
       if (FAILED(hr)) {
         if (IsLastResortFallbackFont(family_index))
-          LogMessageFilterError(LAST_RESORT_FONT_GET_FONT_FAILED);
+          LogMessageFilterError(
+              MessageFilterError::LAST_RESORT_FONT_GET_FONT_FAILED);
         return false;
       }
 
@@ -680,7 +639,8 @@ bool DWriteFontProxyImpl::EnsureFontUniqueNameTable() {
       if (!AddFilesForFont(font.Get(), windows_fonts_path_, &path_set,
                            &custom_font_path_set, &ttc_index)) {
         if (IsLastResortFallbackFont(family_index))
-          LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
+          LogMessageFilterError(
+              MessageFilterError::LAST_RESORT_FONT_ADD_FILES_FAILED);
 
         // It's possible to not be able to retrieve a font file for a font that
         // is in the system font collection, see https://crbug.com/922183. If we
@@ -816,7 +776,7 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
   if (!collection_) {
     base::UmaHistogramSparse(
         "DirectWrite.Fonts.Proxy.GetSystemFontCollectionResult", hr);
-    LogMessageFilterError(ERROR_NO_COLLECTION);
+    LogMessageFilterError(MessageFilterError::ERROR_NO_COLLECTION);
     return;
   }
 
