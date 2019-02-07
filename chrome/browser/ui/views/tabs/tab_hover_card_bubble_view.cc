@@ -21,7 +21,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(views::View* anchor_view,
   // Set so that when hovering over a tab in a inactive window that window will
   // not become active. Setting this to false creates the need to explicitly
   // hide the hovercard on press, touch, and keyboard events.
-  set_can_activate(false);
+  SetCanActivate(false);
 
   title_label_ =
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,

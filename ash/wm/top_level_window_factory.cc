@@ -196,7 +196,7 @@ aura::Window* CreateAndParentTopLevelWindow(
         NonClientFrameController::Get(window);
     window->SetProperty(ws::kCanFocus, can_focus);
     if (non_client_frame_controller)
-      non_client_frame_controller->set_can_activate(can_focus);
+      non_client_frame_controller->SetCanActivate(can_focus);
     // No need to persist this value.
     properties->erase(focusable_iter);
   }

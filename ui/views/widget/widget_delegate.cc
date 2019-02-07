@@ -23,6 +23,19 @@ WidgetDelegate::~WidgetDelegate() {
   CHECK(can_delete_this_) << "A WidgetDelegate must outlive its Widget";
 }
 
+void WidgetDelegate::SetCanActivate(bool can_activate) {
+  if (can_activate == can_activate_)
+    return;
+
+  const bool previous_value = CanActivate();
+  can_activate_ = can_activate;
+  if (previous_value != CanActivate()) {
+    Widget* widget = GetWidget();
+    if (widget)
+      widget->OnCanActivateChanged();
+  }
+}
+
 void WidgetDelegate::OnWidgetMove() {
 }
 

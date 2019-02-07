@@ -492,7 +492,7 @@ void WindowState::OnActivationLost() {
   if (IsPip()) {
     views::Widget::GetWidgetForNativeWindow(window())
         ->widget_delegate()
-        ->set_can_activate(false);
+        ->SetCanActivate(false);
   }
 }
 
@@ -687,7 +687,7 @@ void WindowState::UpdatePipState(bool was_pip) {
     // widget may not exit in some unit tests.
     // TODO(oshima): Fix unit tests and add DCHECK.
     if (widget) {
-      widget->widget_delegate()->set_can_activate(false);
+      widget->widget_delegate()->SetCanActivate(false);
       if (widget->IsActive())
         widget->Deactivate();
       Shell::Get()->focus_cycler()->AddWidget(widget);
@@ -696,7 +696,7 @@ void WindowState::UpdatePipState(bool was_pip) {
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
   } else if (was_pip) {
     if (widget) {
-      widget->widget_delegate()->set_can_activate(true);
+      widget->widget_delegate()->SetCanActivate(true);
       Shell::Get()->focus_cycler()->RemoveWidget(widget);
     }
     ::wm::SetWindowVisibilityAnimationType(

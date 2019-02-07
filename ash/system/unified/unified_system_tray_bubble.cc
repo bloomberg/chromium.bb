@@ -158,7 +158,7 @@ void UnifiedSystemTrayBubble::ActivateBubble() {
 
   if (bubble_widget_->IsClosed())
     return;
-  bubble_widget_->widget_delegate()->set_can_activate(true);
+  bubble_widget_->widget_delegate()->SetCanActivate(true);
   bubble_widget_->Activate();
 }
 

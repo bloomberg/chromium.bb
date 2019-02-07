@@ -329,7 +329,7 @@ void Widget::Init(const InitParams& in_params) {
 
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this);
-  widget_delegate_->set_can_activate(can_activate);
+  widget_delegate_->SetCanActivate(can_activate);
 
   // Henceforth, ensure the delegate outlives the Widget.
   widget_delegate_->can_delete_this_ = false;
@@ -1026,6 +1026,11 @@ void Widget::OnSizeConstraintsChanged() {
 }
 
 void Widget::OnOwnerClosing() {}
+
+void Widget::OnCanActivateChanged() {
+  if (native_widget_)
+    native_widget_->OnCanActivateChanged();
+}
 
 std::string Widget::GetName() const {
   return native_widget_->GetName();

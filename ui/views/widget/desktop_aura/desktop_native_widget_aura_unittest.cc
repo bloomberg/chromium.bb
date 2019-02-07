@@ -731,7 +731,7 @@ TEST_F(DesktopWidgetTest, WindowModalityActivationTest) {
 
   // We should be able to activate the window even if the WidgetDelegate
   // says no, when a modal dialog is active.
-  widget_delegate.set_can_activate(false);
+  widget_delegate.SetCanActivate(false);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate, NULL, top_level_widget->GetNativeView());

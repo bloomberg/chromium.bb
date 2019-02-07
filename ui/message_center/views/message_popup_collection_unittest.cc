@@ -161,7 +161,7 @@ class MockMessagePopupView : public MessagePopupView {
   }
 
   void Activate() {
-    set_can_activate(true);
+    SetCanActivate(true);
     GetWidget()->Activate();
   }
 

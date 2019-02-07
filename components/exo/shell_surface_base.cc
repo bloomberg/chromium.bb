@@ -1108,7 +1108,7 @@ void ShellSurfaceBase::CommitWidget() {
     // Prevent window from being activated when hit test region is empty.
     bool activatable = activatable_ && HasHitTestRegion();
     if (activatable != CanActivate()) {
-      set_can_activate(activatable);
+      SetCanActivate(activatable);
       // Activate or deactivate window if activation state changed.
       if (activatable) {
         // Automatically activate only if the window is modal.

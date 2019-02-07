@@ -37,7 +37,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
   WelcomeBubbleView(views::View* anchor, views::BubbleBorder::Arrow arrow)
       : views::BubbleDialogDelegateView(anchor, arrow) {
     set_close_on_deactivate(true);
-    set_can_activate(false);
+    SetCanActivate(false);
     set_accept_events(true);
     set_parent_window(
         anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(

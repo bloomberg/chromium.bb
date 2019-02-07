@@ -1699,7 +1699,7 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
                    canBecomeMainWindow]);
 
   // Disabling activation should prevent key and main status.
-  regular_widget->widget_delegate()->set_can_activate(false);
+  regular_widget->widget_delegate()->SetCanActivate(false);
   EXPECT_FALSE([regular_widget->GetNativeWindow().GetNativeNSWindow()
                     canBecomeKeyWindow]);
   EXPECT_FALSE([regular_widget->GetNativeWindow().GetNativeNSWindow()

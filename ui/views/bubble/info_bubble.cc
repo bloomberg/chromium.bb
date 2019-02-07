@@ -51,7 +51,7 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
 
   set_margins(LayoutProvider::Get()->GetInsetsMetric(
       InsetsMetric::INSETS_TOOLTIP_BUBBLE));
-  set_can_activate(false);
+  SetCanActivate(false);
 
   SetLayoutManager(std::make_unique<FillLayout>());
   Label* label = new Label(message);

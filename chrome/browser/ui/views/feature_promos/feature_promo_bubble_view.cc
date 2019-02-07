@@ -92,7 +92,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   AddChildView(label);
 
   if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {
-    set_can_activate(activation_action == ActivationAction::ACTIVATE);
+    SetCanActivate(activation_action == ActivationAction::ACTIVATE);
     set_shadow(views::BubbleBorder::BIG_SHADOW);
   }
 

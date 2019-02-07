@@ -171,7 +171,7 @@ void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
       (key_code == ui::VKEY_ESCAPE && flags == ui::EF_NONE)) {
     // Make TrayBubbleView activatable as the following Widget::OnKeyEvent might
     // try to activate it.
-    tray_bubble_view_->set_can_activate(true);
+    tray_bubble_view_->SetCanActivate(true);
 
     tray_bubble_view_->GetWidget()->OnKeyEvent(event);
 
@@ -218,7 +218,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   if (init_params.corner_radius)
     bubble_border_->SetCornerRadius(init_params.corner_radius.value());
   set_parent_window(params_.parent_window);
-  set_can_activate(false);
+  SetCanActivate(false);
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
@@ -480,7 +480,7 @@ void TrayBubbleView::FocusDefaultIfNeeded() {
 
   // No need to explicitly activate the widget. View::RequestFocus will activate
   // it if necessary.
-  set_can_activate(true);
+  SetCanActivate(true);
 
   view->RequestFocus();
 }

@@ -32,9 +32,7 @@ class VIEWS_EXPORT WidgetDelegate {
   WidgetDelegate();
 
   // Sets the return value of CanActivate(). Default is true.
-  void set_can_activate(bool can_activate) {
-    can_activate_ = can_activate;
-  }
+  void SetCanActivate(bool can_activate);
 
   // Called whenever the widget's position changes.
   virtual void OnWidgetMove();
