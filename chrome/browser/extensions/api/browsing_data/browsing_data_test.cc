@@ -96,8 +96,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
   void RunBrowsingDataRemoveFunctionAndCompareRemovalMask(
       const std::string& data_types,
       int expected_mask) {
-    scoped_refptr<BrowsingDataRemoveFunction> function =
-        new BrowsingDataRemoveFunction();
+    auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
     SCOPED_TRACE(data_types);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         function.get(),
@@ -117,8 +116,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
   void RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       const std::string& protectedStr,
       int expected_mask) {
-    scoped_refptr<BrowsingDataRemoveFunction> function =
-        new BrowsingDataRemoveFunction();
+    auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
     SCOPED_TRACE(protectedStr);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         function.get(),
@@ -296,8 +294,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
   // The kAllowDeletingBrowserHistory pref must be set to false before this
   // is called.
   void CheckRemovalPermitted(const std::string& data_types, bool permitted) {
-    scoped_refptr<BrowsingDataRemoveFunction> function =
-        new BrowsingDataRemoveFunction();
+    auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
     std::string args = "[{\"since\": 1}," + data_types + "]";
 
     if (permitted) {
@@ -377,8 +374,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
-  scoped_refptr<BrowsingDataRemoveFunction> function =
-      new BrowsingDataRemoveFunction();
+  auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(function.get(),
                                                    kRemoveEverythingArguments,
                                                    browser()));
@@ -430,8 +426,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
       sync_ui_util::GetStatus(profile, sync_service, identity_manager);
   ASSERT_EQ(sync_ui_util::SYNCED, sync_status);
   // Clear browsing data.
-  scoped_refptr<BrowsingDataRemoveFunction> function =
-      new BrowsingDataRemoveFunction();
+  auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
                       function.get(), kRemoveEverythingArguments, browser()));
   // Check that the Sync token was not revoked.
@@ -469,8 +464,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SyncError) {
       identity_manager);
   ASSERT_NE(sync_ui_util::SYNCED, sync_status);
   // Clear browsing data.
-  scoped_refptr<BrowsingDataRemoveFunction> function =
-      new BrowsingDataRemoveFunction();
+  auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
                       function.get(), kRemoveEverythingArguments, browser()));
   // Check that the account was not removed and Sync was paused.
@@ -495,8 +489,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, NotSyncing) {
   AccountInfo account_info =
       identity::MakeAccountAvailable(identity_manager, kAccountEmail);
   // Clear browsing data.
-  scoped_refptr<BrowsingDataRemoveFunction> function =
-      new BrowsingDataRemoveFunction();
+  auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
                       function.get(), kRemoveEverythingArguments, browser()));
   // Check that the account was removed.
@@ -612,8 +605,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
     EXPECT_TRUE(serializer.Serialize(*data_to_remove));
   }
   {
-    scoped_refptr<BrowsingDataRemoveFunction> remove_function =
-        new BrowsingDataRemoveFunction();
+    auto remove_function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
     SCOPED_TRACE("remove_json");
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         remove_function.get(),
