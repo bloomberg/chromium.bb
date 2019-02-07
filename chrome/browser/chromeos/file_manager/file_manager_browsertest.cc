@@ -500,6 +500,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickViewAndroid"),
                       TestCase("openQuickViewCrostini"),
                       TestCase("openQuickViewUsb"),
+                      TestCase("openQuickViewRemovablePartitions"),
                       TestCase("openQuickViewMtp"),
                       TestCase("pressEnterOnInfoBoxToOpenClose"),
                       TestCase("closeQuickView"),
