@@ -9,8 +9,9 @@ class FileSelection {
   /**
    * @param {!Array<number>} indexes
    * @param {!Array<Entry>} entries
+   * @param {!VolumeManager} volumeManager
    */
-  constructor(indexes, entries) {
+  constructor(indexes, entries, volumeManager) {
     /**
      * @public {!Array<number>}
      * @const
@@ -63,6 +64,9 @@ class FileSelection {
      */
     this.additionalPromise_ = null;
 
+    /** @private {boolean} If the current selection has any read-only entry. */
+    this.hasReadOnlyEntry_ = false;
+
     entries.forEach(entry => {
       if (this.iconType == null) {
         this.iconType = FileType.getIcon(entry);
@@ -79,7 +83,21 @@ class FileSelection {
         this.directoryCount += 1;
       }
       this.totalCount++;
+
+      if (!this.hasReadOnlyEntry_) {
+        const locationInfo = volumeManager.getLocationInfo(entry);
+        this.hasReadOnlyEntry_ = !!(locationInfo && locationInfo.isReadOnly);
+      }
     });
+  }
+
+  /**
+   * @return {boolean} True if there is any read-only entry in the current
+   * selection.
+   * @public
+   */
+  hasReadOnlyEntry() {
+    return this.hasReadOnlyEntry_;
   }
 
   computeAdditional(metadataModel) {
@@ -147,7 +165,7 @@ class FileSelectionHandler extends cr.EventTarget {
     this.metadataModel_ = metadataModel;
 
     /**
-     * @private {VolumeManager}
+     * @private {!VolumeManager}
      * @const
      */
     this.volumeManager_ = volumeManager;
@@ -155,7 +173,7 @@ class FileSelectionHandler extends cr.EventTarget {
     /**
      * @type {FileSelection}
      */
-    this.selection = new FileSelection([], []);
+    this.selection = new FileSelection([], [], volumeManager);
 
     /**
      * @private {?number}
@@ -190,7 +208,7 @@ class FileSelectionHandler extends cr.EventTarget {
       return /** @type {!Entry} */ (
           this.directoryModel_.getFileList().item(index));
     });
-    this.selection = new FileSelection(indexes, entries);
+    this.selection = new FileSelection(indexes, entries, this.volumeManager_);
 
     if (this.selectionUpdateTimer_) {
       clearTimeout(this.selectionUpdateTimer_);
@@ -200,7 +218,6 @@ class FileSelectionHandler extends cr.EventTarget {
     // The rest of the selection properties are computed via (sometimes lengthy)
     // asynchronous calls. We initiate these calls after a timeout. If the
     // selection is changing quickly we only do this once when it slows down.
-
     let updateDelay = FileSelectionHandler.UPDATE_DELAY;
     const now = Date.now();
 
