@@ -17,7 +17,6 @@ enum BluetoothAvailability {
   // On OSX 10.6, if the Link Manager Protocol version supports Low Energy,
   // there is no further indication of whether Low Energy is supported.
   BLUETOOTH_AVAILABLE_LE_UNKNOWN = 4,
-  BLUETOOTH_NOT_SUPPORTED = 5,
   BLUETOOTH_AVAILABILITY_COUNT,
 };
 
