@@ -14543,6 +14543,46 @@
 
       If this policy is set to ''Disallow users to manage certificates'', users will not be able to manage certificates, they can only view certificates.''',
     },
+    {
+      'id': 520,
+      'name': 'DeviceRebootAfterUserSignout',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Never',
+          'value': 0,
+          'caption': '''Do not reboot after user sign out.''',
+        },
+        {
+          'name': 'ArcSession',
+          'value': 1,
+          'caption': '''Reboot after user sign out if Android has started.''',
+        },
+        {
+          'name': 'Always',
+          'value': 2,
+          'caption': '''Always reboot after user sign out.''',
+        },
+      ],
+      'device_only': True,
+      'example_value': 0,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome_os:74-'],
+      'caption': '''Force device reboot after user sign out''',
+      'tags': ['system-security'],
+      'desc': '''
+      This policy, when set to ArcSession, forces the device to reboot after user sign out if Android has started.
+      When set to Always, it forces the device to reboot after every user sign out.
+      If left unset, it has no effect and no reboot is forced after user sign out. The same applies if set to Never.
+      ''',
+    },
   ],
 
   'messages': {
@@ -14708,5 +14748,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  519
+  'highest_id_currently_used':  520
 }

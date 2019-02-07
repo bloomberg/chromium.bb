@@ -386,6 +386,18 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_device_reboot_after_user_signout()) {
+    const em::DeviceRebootAfterUserSignoutProto& container(
+        policy.device_reboot_after_user_signout());
+    if (container.has_reboot_after_signout_mode()) {
+      policies->Set(
+          key::kDeviceRebootAfterUserSignout, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.reboot_after_signout_mode()),
+          nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
