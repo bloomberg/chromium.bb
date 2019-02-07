@@ -1158,36 +1158,10 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad, SkPaint* paint) {
 }
 
 void SkiaRenderer::CopyDrawnRenderPass(
+    const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
   // TODO(weiliangc): Make copy request work. (crbug.com/644851)
   TRACE_EVENT0("viz", "SkiaRenderer::CopyDrawnRenderPass");
-
-  // Finalize the source subrect, as the entirety of the RenderPass's output
-  // optionally clamped to the requested copy area. Then, compute the result
-  // rect, which is the selection clamped to the maximum possible result bounds.
-  // If there will be zero pixels of output or the scaling ratio was not
-  // reasonable, do not proceed.
-  gfx::Rect output_rect = current_frame()->current_render_pass->output_rect;
-  if (request->has_area())
-    output_rect.Intersect(request->area());
-  const gfx::Rect result_bounds =
-      request->is_scaled() ? copy_output::ComputeResultRect(
-                                 gfx::Rect(output_rect.size()),
-                                 request->scale_from(), request->scale_to())
-                           : gfx::Rect(output_rect.size());
-  gfx::Rect result_rect = result_bounds;
-  if (request->has_result_selection())
-    result_rect.Intersect(request->result_selection());
-  if (result_rect.IsEmpty())
-    return;
-
-  gfx::Rect copy_rect;
-  if (request->is_scaled()) {
-    copy_rect = MoveFromDrawToWindowSpace(output_rect);
-  } else {
-    copy_rect =
-        MoveFromDrawToWindowSpace(result_rect + output_rect.OffsetFromOrigin());
-  }
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
@@ -1197,8 +1171,8 @@ void SkiaRenderer::CopyDrawnRenderPass(
       if (render_pass != current_frame()->root_render_pass) {
         render_pass_id = render_pass->id;
       }
-      skia_output_surface_->CopyOutput(render_pass_id, copy_rect,
-                                       render_pass->color_space, result_rect,
+      skia_output_surface_->CopyOutput(render_pass_id, geometry,
+                                       render_pass->color_space,
                                        std::move(request));
       break;
     }
@@ -1206,8 +1180,7 @@ void SkiaRenderer::CopyDrawnRenderPass(
     case DrawMode::VULKAN: {
       if (request->result_format() != CopyOutputResult::Format::RGBA_BITMAP ||
           request->is_scaled() ||
-          (request->has_result_selection() &&
-           request->result_selection() == gfx::Rect(copy_rect.size()))) {
+          geometry.result_bounds != geometry.result_selection) {
         // TODO(crbug.com/644851): Complete the implementation for all request
         // types, scaling, etc.
         NOTIMPLEMENTED();
@@ -1215,7 +1188,7 @@ void SkiaRenderer::CopyDrawnRenderPass(
       }
       sk_sp<SkImage> copy_image =
           current_surface_->makeImageSnapshot()->makeSubset(
-              RectToSkIRect(copy_rect));
+              RectToSkIRect(geometry.sampling_bounds));
 
       // Send copy request by copying into a bitmap.
       SkBitmap bitmap;
@@ -1231,8 +1204,8 @@ void SkiaRenderer::CopyDrawnRenderPass(
                   ->current_render_pass->color_space.ToSkColorSpace()),
           bitmap.rowBytes());
       bitmap.setPixelRef(std::move(pixels), origin.x(), origin.y());
-      request->SendResult(
-          std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
+      request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
+          geometry.result_bounds, bitmap));
       break;
     }
     case DrawMode::SKPRECORD: {

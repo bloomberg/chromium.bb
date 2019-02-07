@@ -381,9 +381,8 @@ void SkiaOutputSurfaceImplNonDDL::RemoveRenderPassResource(
 
 void SkiaOutputSurfaceImplNonDDL::CopyOutput(
     RenderPassId id,
-    const gfx::Rect& copy_rect,
+    const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
-    const gfx::Rect& result_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();

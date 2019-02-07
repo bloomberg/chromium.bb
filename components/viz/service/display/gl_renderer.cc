@@ -316,10 +316,7 @@ GLRenderer::GLRenderer(
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_deleter_(current_task_runner),
-      copier_(output_surface->context_provider(),
-              &texture_deleter_,
-              base::BindRepeating(&GLRenderer::MoveFromDrawToWindowSpace,
-                                  base::Unretained(this))),
+      copier_(output_surface->context_provider(), &texture_deleter_),
       sync_queries_(gl_),
       bound_geometry_(NO_BINDING),
       color_lut_cache_(gl_,
@@ -2589,6 +2586,7 @@ void GLRenderer::EnsureScissorTestDisabled() {
 }
 
 void GLRenderer::CopyDrawnRenderPass(
+    const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
   TRACE_EVENT0("viz", "GLRenderer::CopyDrawnRenderPass");
 
@@ -2602,9 +2600,8 @@ void GLRenderer::CopyDrawnRenderPass(
     framebuffer_texture_size = current_framebuffer_texture_->size();
   }
   copier_.CopyFromTextureOrFramebuffer(
-      std::move(request), current_frame()->current_render_pass->output_rect,
-      GetFramebufferCopyTextureFormat(), framebuffer_texture,
-      framebuffer_texture_size, FlippedFramebuffer(),
+      std::move(request), geometry, GetFramebufferCopyTextureFormat(),
+      framebuffer_texture, framebuffer_texture_size, FlippedFramebuffer(),
       current_frame()->current_render_pass->color_space);
 
   // The copier modified texture/framebuffer bindings, shader programs, and

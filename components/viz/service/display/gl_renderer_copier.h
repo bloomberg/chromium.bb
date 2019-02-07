@@ -39,6 +39,10 @@ class GLI420Converter;
 class GLScaler;
 class TextureDeleter;
 
+namespace copy_output {
+struct RenderPassGeometry;
+}  // namespace copy_output
+
 // Helper class for GLRenderer that executes CopyOutputRequests using GL, to
 // perform texture copies/transformations and read back bitmaps. Also manages
 // the caching of resources needed to ensure efficient video performance.
@@ -57,14 +61,9 @@ class TextureDeleter;
 // "source" has ended.
 class VIZ_SERVICE_EXPORT GLRendererCopier {
  public:
-  // A callback that calls GLRenderer::MoveFromDrawToWindowSpace().
-  using ComputeWindowRectCallback =
-      base::RepeatingCallback<gfx::Rect(const gfx::Rect&)>;
-
   // |texture_deleter| must outlive this instance.
   GLRendererCopier(scoped_refptr<ContextProvider> context_provider,
-                   TextureDeleter* texture_deleter,
-                   ComputeWindowRectCallback window_rect_callback);
+                   TextureDeleter* texture_deleter);
 
   ~GLRendererCopier();
 
@@ -82,13 +81,14 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // and framebuffer bindings, shader programs, and related attributes; and so
   // the caller must not make any assumptions about the state of the GL context
   // after this call.
-  void CopyFromTextureOrFramebuffer(std::unique_ptr<CopyOutputRequest> request,
-                                    const gfx::Rect& output_rect,
-                                    GLenum internal_format,
-                                    GLuint framebuffer_texture,
-                                    const gfx::Size& framebuffer_texture_size,
-                                    bool flipped_source,
-                                    const gfx::ColorSpace& color_space);
+  void CopyFromTextureOrFramebuffer(
+      std::unique_ptr<CopyOutputRequest> request,
+      const copy_output::RenderPassGeometry& geometry,
+      GLenum internal_format,
+      GLuint framebuffer_texture,
+      const gfx::Size& framebuffer_texture_size,
+      bool flipped_source,
+      const gfx::ColorSpace& color_space);
 
   // Checks whether cached resources should be freed because recent copy
   // activity is no longer using them. This should be called after a frame has
@@ -245,7 +245,6 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // Injected dependencies.
   const scoped_refptr<ContextProvider> context_provider_;
   TextureDeleter* const texture_deleter_;
-  const ComputeWindowRectCallback window_rect_callback_;
 
   // This increments by one for every call to FreeUnusedCachedResources(). It
   // is meant to determine when cached resources should be freed because they

@@ -70,5 +70,8 @@ gfx::Rect ComputeResultRect(const gfx::Rect& area,
                    static_cast<int>(w), static_cast<int>(h));
 }
 
+RenderPassGeometry::RenderPassGeometry() = default;
+RenderPassGeometry::~RenderPassGeometry() = default;
+
 }  // namespace copy_output
 }  // namespace viz

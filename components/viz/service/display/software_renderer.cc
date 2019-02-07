@@ -541,26 +541,8 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 }
 
 void SoftwareRenderer::CopyDrawnRenderPass(
+    const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
-  // Finalize the source subrect, as the entirety of the RenderPass's output
-  // optionally clamped to the requested copy area. Then, compute the result
-  // rect, which is the selection clamped to the maximum possible result bounds.
-  // If there will be zero pixels of output or the scaling ratio was not
-  // reasonable, do not proceed.
-  gfx::Rect output_rect = current_frame()->current_render_pass->output_rect;
-  if (request->has_area())
-    output_rect.Intersect(request->area());
-  const gfx::Rect result_bounds =
-      request->is_scaled() ? copy_output::ComputeResultRect(
-                                 gfx::Rect(output_rect.size()),
-                                 request->scale_from(), request->scale_to())
-                           : gfx::Rect(output_rect.size());
-  gfx::Rect result_rect = result_bounds;
-  if (request->has_result_selection())
-    result_rect.Intersect(request->result_selection());
-  if (result_rect.IsEmpty())
-    return;
-
   sk_sp<SkColorSpace> color_space =
       current_frame()->current_render_pass->color_space.ToSkColorSpace();
   DCHECK(color_space);
@@ -574,12 +556,13 @@ void SoftwareRenderer::CopyDrawnRenderPass(
     if (!current_canvas_->peekPixels(&render_pass_output))
       return;
     {
-      const gfx::Rect subrect = MoveFromDrawToWindowSpace(output_rect);
       render_pass_output =
           SkPixmap(render_pass_output.info()
-                       .makeWH(subrect.width(), subrect.height())
+                       .makeWH(geometry.sampling_bounds.width(),
+                               geometry.sampling_bounds.height())
                        .makeColorSpace(std::move(color_space)),
-                   render_pass_output.addr(subrect.x(), subrect.y()),
+                   render_pass_output.addr(geometry.sampling_bounds.x(),
+                                           geometry.sampling_bounds.y()),
                    render_pass_output.rowBytes());
     }
 
@@ -595,18 +578,17 @@ void SoftwareRenderer::CopyDrawnRenderPass(
         is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
                                         : ImageOperations::RESIZE_BEST;
     bitmap = ImageOperations::Resize(
-        render_pass_output, method, result_bounds.width(),
-        result_bounds.height(),
-        SkIRect{result_rect.x(), result_rect.y(), result_rect.right(),
-                result_rect.bottom()});
+        render_pass_output, method, geometry.result_bounds.width(),
+        geometry.result_bounds.height(),
+        SkIRect{geometry.result_selection.x(), geometry.result_selection.y(),
+                geometry.result_selection.right(),
+                geometry.result_selection.bottom()});
   } else /* if (!request->is_scaled()) */ {
-    const gfx::Rect window_copy_rect =
-        MoveFromDrawToWindowSpace(result_rect + output_rect.OffsetFromOrigin());
-    bitmap.allocPixels(SkImageInfo::MakeN32Premul(window_copy_rect.width(),
-                                                  window_copy_rect.height(),
-                                                  std::move(color_space)));
-    if (!current_canvas_->readPixels(bitmap, window_copy_rect.x(),
-                                     window_copy_rect.y()))
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+        geometry.result_selection.width(), geometry.result_selection.height(),
+        std::move(color_space)));
+    if (!current_canvas_->readPixels(bitmap, geometry.readback_offset.x(),
+                                     geometry.readback_offset.y()))
       return;
   }
 
@@ -623,7 +605,7 @@ void SoftwareRenderer::CopyDrawnRenderPass(
   // Note: The CopyOutputSkBitmapResult automatically provides I420 format
   // conversion, if needed.
   request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
-      result_format, result_rect, bitmap));
+      result_format, geometry.result_selection, bitmap));
 }
 
 void SoftwareRenderer::SetEnableDCLayers(bool enable) {
