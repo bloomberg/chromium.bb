@@ -165,11 +165,11 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
 void NetworkServiceProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                              int net_error) {}
 
-void NetworkServiceProxyDelegate::OnBeforeTunnelRequest(
+void NetworkServiceProxyDelegate::OnBeforeHttp1TunnelRequest(
     const net::ProxyServer& proxy_server,
     net::HttpRequestHeaders* extra_headers) {}
 
-net::Error NetworkServiceProxyDelegate::OnTunnelHeadersReceived(
+net::Error NetworkServiceProxyDelegate::OnHttp1TunnelHeadersReceived(
     const net::ProxyServer& proxy_server,
     const net::HttpResponseHeaders& response_headers) {
   return net::OK;

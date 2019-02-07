@@ -386,8 +386,8 @@ int HttpProxyClientSocket::DoSendRequest() {
 
     if (proxy_delegate_) {
       HttpRequestHeaders proxy_delegate_headers;
-      proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
-                                             &proxy_delegate_headers);
+      proxy_delegate_->OnBeforeHttp1TunnelRequest(proxy_server_,
+                                                  &proxy_delegate_headers);
       extra_headers.MergeFrom(proxy_delegate_headers);
     }
 
@@ -440,8 +440,8 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
 
   if (proxy_delegate_) {
-    int rv = proxy_delegate_->OnTunnelHeadersReceived(proxy_server_,
-                                                      *response_.headers);
+    int rv = proxy_delegate_->OnHttp1TunnelHeadersReceived(proxy_server_,
+                                                           *response_.headers);
     if (rv != OK) {
       DCHECK_NE(ERR_IO_PENDING, rv);
       return rv;
