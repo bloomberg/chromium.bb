@@ -96,57 +96,57 @@ SHIM_ALWAYS_EXPORT void operator delete[](void* p, size_t) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void* ALIGN_NEW(std::size_t size,
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void* ALIGN_NEW(std::size_t size,
                                                  ALIGN_VAL_T alignment) {
   return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void* ALIGN_NEW_NOTHROW(
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void* ALIGN_NEW_NOTHROW(
     std::size_t size,
     ALIGN_VAL_T alignment,
     const std::nothrow_t&) __THROW {
   return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void ALIGN_DEL(void* p, ALIGN_VAL_T) __THROW {
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void ALIGN_DEL(void* p, ALIGN_VAL_T) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void ALIGN_DEL_SIZED(void* p,
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void ALIGN_DEL_SIZED(void* p,
                                                       std::size_t size,
                                                       ALIGN_VAL_T) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void
 ALIGN_DEL_NOTHROW(void* p, ALIGN_VAL_T, const std::nothrow_t&) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void* ALIGN_NEW_ARR(std::size_t size,
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void* ALIGN_NEW_ARR(std::size_t size,
                                                      ALIGN_VAL_T alignment) {
   return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void* ALIGN_NEW_ARR_NOTHROW(
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void* ALIGN_NEW_ARR_NOTHROW(
     std::size_t size,
     ALIGN_VAL_T alignment,
     const std::nothrow_t&) __THROW {
   return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void ALIGN_DEL_ARR(void* p,
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void ALIGN_DEL_ARR(void* p,
                                                     ALIGN_VAL_T) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void ALIGN_DEL_ARR_SIZED(void* p,
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void ALIGN_DEL_ARR_SIZED(void* p,
                                                           std::size_t size,
                                                           ALIGN_VAL_T) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void
+ALIGN_LINKAGE SHIM_ALWAYS_EXPORT void
 ALIGN_DEL_ARR_NOTHROW(void* p, ALIGN_VAL_T, const std::nothrow_t&) __THROW {
   ShimCppDelete(p);
 }
