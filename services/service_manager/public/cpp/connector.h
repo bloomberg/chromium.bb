@@ -169,11 +169,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   }
 
   template <typename Interface>
-  void BindInterface(const std::string& service_name,
+  void BindInterface(const ServiceFilter& filter,
                      mojo::InterfaceRequest<Interface> request,
                      mojom::BindInterfacePriority priority) {
-    return BindInterface(ServiceFilter::ByName(service_name), Interface::Name_,
-                         request.PassMessagePipe(), priority, nullptr);
+    return BindInterface(filter, Interface::Name_, request.PassMessagePipe(),
+                         priority, {});
   }
 
   void BindInterface(const ServiceFilter& filter,
