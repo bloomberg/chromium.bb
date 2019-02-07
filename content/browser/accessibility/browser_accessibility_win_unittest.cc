@@ -2353,7 +2353,8 @@ TEST_F(BrowserAccessibilityWinTest, AccChildOnlyReturnsDescendants) {
                       child_unique_id_variant, result.GetAddressOf()));
 }
 
-TEST_F(BrowserAccessibilityWinTest, TestIAccessible2Relations) {
+// TODO(crbug.com/929563): Disabled due to flakiness.
+TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
