@@ -11,6 +11,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/origin_trial_features_for_core.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_object.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/core/context_features/context_feature_settings.h"
@@ -57,6 +58,12 @@ void InstallOriginTrialFeaturesForCore(
   }
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
+  if (wrapper_type_info == V8TestInterface::GetWrapperTypeInfo()) {
+    if (origin_trials::TestFeatureEnabled(execution_context)) {
+      V8TestInterface::InstallTestFeature(
+          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+    }
+  }
   if (wrapper_type_info == V8TestObject::GetWrapperTypeInfo()) {
     if (origin_trials::FeatureNameEnabled(execution_context)) {
       V8TestObject::InstallFeatureName(
@@ -80,6 +87,13 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
     if (context_data->GetExistingConstructorAndPrototypeForType(
             V8TestObject::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
       V8TestObject::InstallFeatureName(
+          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+    }
+  }
+  if (feature == origin_trials::kTestFeatureTrialName) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            V8TestInterface::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
+      V8TestInterface::InstallTestFeature(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }

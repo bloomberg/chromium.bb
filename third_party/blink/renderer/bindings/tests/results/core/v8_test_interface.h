@@ -27,6 +27,8 @@
 
 namespace blink {
 
+class ScriptState;
+
 CORE_EXPORT extern WrapperTypeInfo v8_test_interface_wrapper_type_info;
 
 class V8TestInterface {
@@ -68,6 +70,10 @@ class V8TestInterface {
   CORE_EXPORT static void RegisterStaticPromiseMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
   CORE_EXPORT static void RegisterPartial2VoidMethodMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
   CORE_EXPORT static void RegisterPartial2StaticVoidMethodMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+
+  static void InstallTestFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void InstallTestFeature(ScriptState*, v8::Local<v8::Object> instance);
+  static void InstallTestFeature(ScriptState*);
 
   // Callback functions
 
@@ -193,6 +199,7 @@ class V8TestInterface {
   CORE_EXPORT static void AlwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void OriginTrialWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void AlwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WorkerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void WindowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

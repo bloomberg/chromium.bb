@@ -32,11 +32,13 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
@@ -1741,6 +1743,12 @@ static void WindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   impl->windowExposedMethod();
+}
+
+static void OriginTrialWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  impl->originTrialWindowExposedMethod();
 }
 
 static void AlwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3482,6 +3490,12 @@ void V8TestInterface::WindowExposedMethodMethodCallback(const v8::FunctionCallba
   test_interface_implementation_v8_internal::WindowExposedMethodMethod(info);
 }
 
+void V8TestInterface::OriginTrialWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_originTrialWindowExposedMethod");
+
+  test_interface_implementation_v8_internal::OriginTrialWindowExposedMethodMethod(info);
+}
+
 void V8TestInterface::AlwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_alwaysExposedStaticMethod");
 
@@ -4173,6 +4187,45 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
       }
     }
   }
+}
+
+void V8TestInterface::InstallTestFeature(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    v8::Local<v8::Function> interface) {
+  v8::Local<v8::FunctionTemplate> interface_template =
+      V8TestInterface::GetWrapperTypeInfo()->DomTemplate(isolate, world);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
+  ALLOW_UNUSED_LOCAL(signature);
+  ExecutionContext* execution_context = ToExecutionContext(isolate->GetCurrentContext());
+  if (execution_context && (execution_context->IsDocument())) {
+    static constexpr V8DOMConfiguration::MethodConfiguration
+    kOriginTrialWindowExposedMethodConfigurations[] = {
+        {"originTrialWindowExposedMethod", V8TestInterface::OriginTrialWindowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+    };
+    for (const auto& config : kOriginTrialWindowExposedMethodConfigurations) {
+      V8DOMConfiguration::InstallMethod(
+          isolate, world, instance, prototype,
+          interface, signature, config);
+    }
+  }
+}
+
+void V8TestInterface::InstallTestFeature(
+    ScriptState* script_state, v8::Local<v8::Object> instance) {
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
+      V8TestInterface::GetWrapperTypeInfo());
+  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
+      V8TestInterface::GetWrapperTypeInfo());
+  ALLOW_UNUSED_LOCAL(interface);
+  InstallTestFeature(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
+}
+
+void V8TestInterface::InstallTestFeature(ScriptState* script_state) {
+  InstallTestFeature(script_state, v8::Local<v8::Object>());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterface::DomTemplate(

@@ -869,8 +869,10 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
   {% endif %}
-  {% if feature.needs_secure_context %}
+  {% if feature.needs_context %}
   ExecutionContext* execution_context = ToExecutionContext(isolate->GetCurrentContext());
+  {% endif %}{# needs context #}
+  {% if feature.needs_secure_context %}
   bool is_secure_context = (execution_context && execution_context->IsSecureContext());
   {% endif %}{# needs secure context #}
   {# Origin-Trial-enabled attributes #}
@@ -905,6 +907,7 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
   {% endfor %}
   {# Origin-Trial-enabled methods (no overloads) #}
   {% for method in feature.methods %}
+  {% filter exposed(method.exposed_test) %}
   {% filter secure_context(method.secure_context_test) %}
   static constexpr V8DOMConfiguration::MethodConfiguration
   k{{method.camel_case_name}}Configurations[] = {
@@ -916,6 +919,7 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
         interface, signature, config);
   }
   {% endfilter %}{# secure_context #}
+  {% endfilter %}{# exposed_test #}
   {% endfor %}
 }
 
