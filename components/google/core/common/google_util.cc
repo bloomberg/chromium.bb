@@ -288,6 +288,49 @@ bool IsYoutubeDomainUrl(const GURL& url,
                          nullptr);
 }
 
+bool IsGoogleAssociatedDomainUrl(const GURL& url) {
+  if (IsGoogleDomainUrl(url, ALLOW_SUBDOMAIN, ALLOW_NON_STANDARD_PORTS))
+    return true;
+
+  if (IsYoutubeDomainUrl(url, ALLOW_SUBDOMAIN, ALLOW_NON_STANDARD_PORTS))
+    return true;
+
+  // Some domains don't have international TLD extensions, so testing for them
+  // is very straightforward.
+  static const char* kSuffixesToSetHeadersFor[] = {
+      ".android.com",
+      ".doubleclick.com",
+      ".doubleclick.net",
+      ".ggpht.com",
+      ".googleadservices.com",
+      ".googleapis.com",
+      ".googlesyndication.com",
+      ".googleusercontent.com",
+      ".googlevideo.com",
+      ".gstatic.com",
+      ".litepages.googlezip.net",
+      ".ytimg.com",
+  };
+  const std::string host = url.host();
+  for (size_t i = 0; i < base::size(kSuffixesToSetHeadersFor); ++i) {
+    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+  }
+
+  // Exact hostnames in lowercase to set headers for.
+  static const char* kHostsToSetHeadersFor[] = {
+      "googleweblight.com",
+  };
+  for (size_t i = 0; i < base::size(kHostsToSetHeadersFor); ++i) {
+    if (base::LowerCaseEqualsASCII(host, kHostsToSetHeadersFor[i]))
+      return true;
+  }
+
+  return false;
+}
+
 const std::vector<std::string>& GetGoogleRegistrableDomains() {
   static base::NoDestructor<std::vector<std::string>>
       kGoogleRegisterableDomains([]() {

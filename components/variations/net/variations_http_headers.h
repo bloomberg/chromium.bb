@@ -109,9 +109,8 @@ bool IsVariationsHeader(const std::string& header_name);
 // Checks if |request| contains the variations header.
 bool HasVariationsHeader(const network::ResourceRequest& request);
 
-// Checks whether variation headers should be appended to requests to the
-// specified |url|. Returns true for Google's hosts served over secure schemes.
-bool ShouldAppendVariationsHeader(const GURL& url);
+// Calls the internal ShouldAppendVariationsHeader() for testing.
+bool ShouldAppendVariationsHeaderForTesting(const GURL& url);
 
 }  // namespace variations
 

@@ -154,7 +154,8 @@ TEST(VariationsHttpHeadersTest, ShouldAppendVariationsHeader) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     const GURL url(cases[i].url);
-    EXPECT_EQ(cases[i].should_append_headers, ShouldAppendVariationsHeader(url))
+    EXPECT_EQ(cases[i].should_append_headers,
+              ShouldAppendVariationsHeaderForTesting(url))
         << url;
   }
 }
