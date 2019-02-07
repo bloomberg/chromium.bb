@@ -76,13 +76,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
-      let solarSystem = new Gltf2Node({url: 'media/gltf/space/space.gltf'});
+      let solarSystem = new Gltf2Node({url: '../media/gltf/space/space.gltf'});
       scene.addNode(solarSystem);
 
       if (arMode) {
         solarSystem.scale = [0.2, 0.2, 0.2];
       } else {
-        scene.addNode(new SkyboxNode({url: 'media/textures/milky-way-4k.png'}));
+        scene.addNode(new SkyboxNode({url: '../media/textures/milky-way-4k.png'}));
       }
 
       function initXR() {

@@ -72,7 +72,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
-      scene.addNode(new Gltf2Node({url: '../media/gltf/garage/garage.gltf'}));
+      scene.addNode(new Gltf2Node({url: '../../media/gltf/garage/garage.gltf'}));
       scene.enableStats(false);
       scene._resetInputEndFrame = false;
 
@@ -118,7 +118,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../../media/gltf/controller/controller.gltf'}));
       }
 
       function onRequestSession() {

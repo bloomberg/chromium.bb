@@ -81,11 +81,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
-      scene.addNode(new Gltf2Node({url: '../media/gltf/cube-room/cube-room.gltf'}));
+      scene.addNode(new Gltf2Node({url: '../../media/gltf/cube-room/cube-room.gltf'}));
       scene.enableStats(false);
 
-      let checkTexture = new UrlTexture('../media/textures/check-button.png');
-      let xTexture = new UrlTexture('../media/textures/x-button.png');
+      let checkTexture = new UrlTexture('../../media/textures/check-button.png');
+      let xTexture = new UrlTexture('../../media/textures/x-button.png');
 
       function initXR() {
         xrButton = new XRDeviceButton({
@@ -129,7 +129,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../../media/gltf/controller/controller.gltf'}));
 
         function addPermissionButton(iconUrl, callback, yAngle, yOffset) {
           let button = new ButtonNode(new UrlTexture(iconUrl), () => {
@@ -164,25 +164,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         addPermissionButtons([
           {
-            icon: '../media/textures/camera-button.png',
+            icon: '../../media/textures/camera-button.png',
             callback: (success, fail) => {
               navigator.getUserMedia({ video: true }, success, fail);
             }
           },
           {
-            icon: '../media/textures/mic-button.png',
+            icon: '../../media/textures/mic-button.png',
             callback: (success, fail) => {
               navigator.getUserMedia({ audio: true }, success, fail);
             }
           },
           {
-            icon: '../media/textures/location-button.png',
+            icon: '../../media/textures/location-button.png',
             callback: (success, fail) => {
               navigator.geolocation.getCurrentPosition(success, fail);
             }
           },
           {
-            icon: '../media/textures/bluetooth-button.png',
+            icon: '../../media/textures/bluetooth-button.png',
             callback: (success, fail) => {
               navigator.bluetooth.requestDevice({
                 // filters: [...] <- Prefer filters to save energy & show relevant devices.
@@ -194,7 +194,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           },
           {
-            icon: '../media/textures/usb-button.png',
+            icon: '../../media/textures/usb-button.png',
             callback: (success, fail) => {
               navigator.usb.requestDevice({filters: [{}]})
               .then(success, fail);

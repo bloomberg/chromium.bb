@@ -74,8 +74,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
-      scene.addNode(new Gltf2Node({url: '../media/gltf/space/space.gltf'}));
-      scene.addNode(new SkyboxNode({url: '../media/textures/milky-way-4k.png'}));
+      scene.addNode(new Gltf2Node({url: '../../media/gltf/space/space.gltf'}));
+      scene.addNode(new SkyboxNode({url: '../../media/textures/milky-way-4k.png'}));
 
       function initXR() {
         xrButton = new XRDeviceButton({
@@ -111,7 +111,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../../media/gltf/controller/controller.gltf'}));
       }
 
       function onRequestSession() {
