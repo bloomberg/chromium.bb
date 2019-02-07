@@ -2271,20 +2271,34 @@ enum class ShowTabSwitcherSnapshotResult {
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
 
   Tab* currentTabInTargetBVC = [[targetBVC tabModel] currentTab];
+
+  // Don't call loadWithParams for chrome://newtab when it's already loaded.
+  // Note that it's safe to use -GetVisibleURL here, as it doesn't matter if the
+  // NTP hasn't finished loading.
+  if (currentTabInTargetBVC.webState &&
+      IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()) &&
+      IsURLNtp(URL)) {
+    if (tabOpenedCompletion) {
+      tabOpenedCompletion();
+    }
+    return currentTabInTargetBVC;
+  }
+
+  // If the current tab isn't an NTP, open a new tab.  Be sure to use
+  // -GetLastCommittedURL incase the NTP is still loading.
   if (!(currentTabInTargetBVC.webState &&
-        IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
+        IsURLNtp(currentTabInTargetBVC.webState->GetLastCommittedURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     return [targetBVC addSelectedTabWithURL:URL
                                     atIndex:targetBVC.tabModel.count
                                  transition:transition];
   }
 
+  // Otherwise, load |url| in the current tab.
   Tab* newTab = currentTabInTargetBVC;
-  // Don't call loadWithParams for chrome://newtab, it's already loaded.
-  if (!(IsURLNtp(URL))) {
-    web::NavigationManager::WebLoadParams params(URL);
-    [newTab webState]->GetNavigationManager()->LoadURLWithParams(params);
-  }
+  web::NavigationManager::WebLoadParams params(URL);
+  params.virtual_url = virtualURL;
+  newTab.webState->GetNavigationManager()->LoadURLWithParams(params);
   if (tabOpenedCompletion) {
     tabOpenedCompletion();
   }
