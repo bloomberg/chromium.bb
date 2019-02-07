@@ -42,17 +42,14 @@ class CastRunnerIntegrationTest : public testing::Test,
   CastRunnerIntegrationTest()
       : run_timeout_(TestTimeouts::action_timeout()),
         cast_channel_binding_(this) {
-    // Create a new test ServiceDirectory, and a test ComponentContext
-    // connected to it, for the test to use to drive the CastRunner.
-    zx::channel service_directory_request, service_directory_client;
-    zx_status_t status = zx::channel::create(0, &service_directory_client,
-                                             &service_directory_request);
-    ZX_CHECK(status == ZX_OK, status) << "zx_channel_create";
-
-    test_service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-        std::move(service_directory_request));
-    test_component_context_ = std::make_unique<base::fuchsia::ComponentContext>(
-        std::move(service_directory_client));
+    // Create a new test ServiceDirectory, and ServiceDirectoryClient connected
+    // to it, for tests to use to drive the CastRunner.
+    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+    test_services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
+        directory.NewRequest());
+    test_services_client_ =
+        std::make_unique<base::fuchsia::ServiceDirectoryClient>(
+            std::move(directory));
 
     // Create the AppConfigManager.
     app_config_binding_ = std::make_unique<
@@ -61,16 +58,15 @@ class CastRunnerIntegrationTest : public testing::Test,
     chromium::cast::ApplicationConfigManagerPtr app_config_manager_interface;
     app_config_binding_->Bind(app_config_manager_interface.NewRequest());
 
-    // Create the CastRunner, published into |test_service_directory_|.
+    // Create the CastRunner, published into |test_services_|.
     cast_runner_ = std::make_unique<CastRunner>(
-        test_service_directory_.get(),
-        WebContentRunner::CreateDefaultWebContext(),
+        test_services_.get(), WebContentRunner::CreateDefaultWebContext(),
         std::move(app_config_manager_interface),
         cast_runner_run_loop_.QuitClosure());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     cast_runner_ptr_ =
-        test_component_context_->ConnectToService<fuchsia::sys::Runner>();
+        test_services_client_->ConnectToService<fuchsia::sys::Runner>();
     cast_runner_ptr_.set_error_handler([this](zx_status_t status) {
       ZX_LOG(ERROR, status) << "CastRunner closed channel.";
       ADD_FAILURE();
@@ -131,8 +127,8 @@ class CastRunnerIntegrationTest : public testing::Test,
   fidl::Binding<chromium::cast::CastChannel> cast_channel_binding_;
 
   // ServiceDirectory into which the CastRunner will publish itself.
-  std::unique_ptr<base::fuchsia::ServiceDirectory> test_service_directory_;
-  std::unique_ptr<base::fuchsia::ComponentContext> test_component_context_;
+  std::unique_ptr<base::fuchsia::ServiceDirectory> test_services_;
+  std::unique_ptr<base::fuchsia::ComponentContext> test_services_client_;
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
@@ -151,7 +147,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
 
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
-  base::fuchsia::ComponentContext component_services(StartCastComponent(
+  base::fuchsia::ServiceDirectoryClient services_client(StartCastComponent(
       base::StringPrintf("cast:%s", kBlankAppId), &cast_runner_ptr_,
       component_controller_ptr.NewRequest(), &cast_channel_binding_));
   component_controller_ptr.set_error_handler(&ComponentErrorHandler);
@@ -193,7 +189,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
 TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
-  base::fuchsia::ComponentContext component_services(StartCastComponent(
+  base::fuchsia::ServiceDirectoryClient services_client(StartCastComponent(
       "cast:99999999", &cast_runner_ptr_, component_controller_ptr.NewRequest(),
       &cast_channel_binding_));
   component_controller_ptr.set_error_handler(&ComponentErrorHandler);
@@ -214,7 +210,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
 
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
-  base::fuchsia::ComponentContext component_services(StartCastComponent(
+  base::fuchsia::ServiceDirectoryClient services_client(StartCastComponent(
       base::StringPrintf("cast:%s", kCastChannelAppId), &cast_runner_ptr_,
       component_controller_ptr.NewRequest(), &cast_channel_binding_));
   component_controller_ptr.set_error_handler(&ComponentErrorHandler);
@@ -274,7 +270,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannelConsumerDropped) {
 
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
-  base::fuchsia::ComponentContext component_services(StartCastComponent(
+  base::fuchsia::ServiceDirectoryClient services_client(StartCastComponent(
       base::StringPrintf("cast:%s", kCastChannelAppId), &cast_runner_ptr_,
       component_controller_ptr.NewRequest(), &cast_channel_binding_));
 
@@ -297,7 +293,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannelComponentControllerDropped) {
 
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
-  base::fuchsia::ComponentContext component_services(StartCastComponent(
+  base::fuchsia::ServiceDirectoryClient services_client(StartCastComponent(
       base::StringPrintf("cast:%s", kCastChannelAppId), &cast_runner_ptr_,
       component_controller_ptr.NewRequest(), &cast_channel_binding_));
 

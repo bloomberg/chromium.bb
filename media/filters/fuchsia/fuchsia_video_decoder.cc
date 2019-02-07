@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -402,7 +402,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   codec_params.require_hw = !enable_sw_decoding_;
 
   auto codec_factory =
-      base::fuchsia::ComponentContext::GetDefault()
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<fuchsia::mediacodec::CodecFactory>();
   codec_factory->CreateDecoder(std::move(codec_params), codec_.NewRequest());
 

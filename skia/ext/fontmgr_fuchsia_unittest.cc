@@ -5,7 +5,7 @@
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 
-#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -19,7 +19,7 @@ class FuchsiaFontManagerTest : public testing::Test {
  public:
   FuchsiaFontManagerTest() {
     font_manager_ = SkFontMgr_New_Fuchsia(
-        base::fuchsia::ComponentContext::GetDefault()
+        base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
             ->ConnectToServiceSync<fuchsia::fonts::Provider>());
   }
 

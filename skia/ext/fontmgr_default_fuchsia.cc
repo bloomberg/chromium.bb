@@ -6,7 +6,7 @@
 
 #include <fuchsia/fonts/cpp/fidl.h>
 
-#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_fuchsia.h"
 
@@ -14,7 +14,7 @@ namespace skia {
 
 SK_API sk_sp<SkFontMgr> CreateDefaultSkFontMgr() {
   return SkFontMgr_New_Fuchsia(
-      base::fuchsia::ComponentContext::GetDefault()
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToServiceSync<fuchsia::fonts::Provider>());
 }
 

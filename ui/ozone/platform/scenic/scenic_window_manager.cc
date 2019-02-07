@@ -4,8 +4,8 @@
 
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "ui/ozone/platform/scenic/ozone_platform_scenic.h"
 
 namespace ui {
@@ -22,7 +22,7 @@ std::unique_ptr<PlatformScreen> ScenicWindowManager::CreateScreen() {
 
 fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
   if (!view_manager_) {
-    view_manager_ = base::fuchsia::ComponentContext::GetDefault()
+    view_manager_ = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
                         ->ConnectToService<fuchsia::ui::viewsv1::ViewManager>();
     view_manager_.set_error_handler([](zx_status_t status) {
       ZX_LOG(FATAL, status) << " ViewManager lost.";
@@ -34,7 +34,7 @@ fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
 
 fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
   if (!scenic_) {
-    scenic_ = base::fuchsia::ComponentContext::GetDefault()
+    scenic_ = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
                   ->ConnectToService<fuchsia::ui::scenic::Scenic>();
     scenic_.set_error_handler(
         [](zx_status_t status) { ZX_LOG(FATAL, status) << " Scenic lost."; });

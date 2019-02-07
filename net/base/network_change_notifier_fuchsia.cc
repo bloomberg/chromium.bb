@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "net/base/network_interfaces.h"
@@ -41,7 +41,7 @@ std::function<R(Args...)> WrapCallbackAsFunction(
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     uint32_t required_features)
     : NetworkChangeNotifierFuchsia(
-          base::fuchsia::ComponentContext::GetDefault()
+          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
               ->ConnectToService<fuchsia::netstack::Netstack>(),
           required_features) {}
 

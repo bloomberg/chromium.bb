@@ -8,8 +8,8 @@
 #include <lib/zx/channel.h>
 #include <memory>
 
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/message_loop/message_loop.h"
