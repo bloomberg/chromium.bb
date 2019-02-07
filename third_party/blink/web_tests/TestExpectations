@@ -6039,6 +6039,9 @@ crbug.com/927862 [ Win10 ] virtual/user-activation-v2/fast/events/no-blur-on-pag
 # Recently became flaky on multiple platforms (Linux and Windows primarily)
 crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
 
+# Flay probably due to outstanding work for FeaturePolicyForSandbox.
+crbug.com/929678 [ Mac ] virtual/feature-policy-for-sandbox/http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Failure ]
+
 # Sheriff 2019-02-06
 crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeout Failure ]
 crbug.com/929355 [ Linux ] external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Pass Failure ]
