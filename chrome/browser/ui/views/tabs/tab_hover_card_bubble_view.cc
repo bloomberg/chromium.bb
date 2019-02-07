@@ -4,18 +4,29 @@
 
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
-TabHoverCardBubbleView::TabHoverCardBubbleView(views::View* anchor_view,
-                                               TabRendererData data)
-    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
+namespace {
+
+constexpr base::TimeDelta kMinimumTriggerDelay =
+    base::TimeDelta::FromMilliseconds(50);
+constexpr base::TimeDelta kMaximumTriggerDelay =
+    base::TimeDelta::FromMilliseconds(1000);
+}  // namespace
+
+TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
+    : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   // Set so that when hovering over a tab in a inactive window that window will
@@ -28,7 +39,6 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(views::View* anchor_view,
                        views::style::STYLE_PRIMARY);
   domain_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
                                    ChromeTextStyle::STYLE_SECONDARY);
-  UpdateCardContent(data);
 
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(false);
@@ -42,12 +52,64 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(views::View* anchor_view,
 
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 
-void TabHoverCardBubbleView::Show() {
-  widget_->Show();
+void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
+  UpdateCardContent(tab->data());
+
+  views::BubbleDialogDelegateView::SetAnchorView(tab);
+
+  // Start trigger timer if necessary.
+  if (widget_->IsVisible()) {
+    ShowImmediately();
+  } else {
+    // Note that this will restart the timer if it is already running. If the
+    // hover cards are not yet visible, moving the cursor within the tabstrip
+    // will not trigger the hover cards.
+    delayed_show_timer_.Start(FROM_HERE, GetDelay(tab->width()), this,
+                              &TabHoverCardBubbleView::ShowImmediately);
+  }
 }
 
 void TabHoverCardBubbleView::Hide() {
+  delayed_show_timer_.Stop();
   widget_->Hide();
+}
+
+int TabHoverCardBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
+base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
+  // Delay is calculated as a logarithmic scale and bounded by a minimum width
+  // based on the width of a pinned tab and a maximum of the standard width.
+  //
+  //  delay (ms)
+  //           |
+  // max delay-|                                    *
+  //           |                          *
+  //           |                    *
+  //           |                *
+  //           |            *
+  //           |         *
+  //           |       *
+  //           |     *
+  //           |    *
+  // min delay-|****
+  //           |___________________________________________ tab width
+  //               |                                |
+  //       pinned tab width               standard tab width
+  double logarithmic_fraction =
+      std::log(tab_width - TabStyle::GetPinnedWidth() + 1) /
+      std::log(TabStyle::GetStandardWidth() - TabStyle::GetPinnedWidth() + 1);
+  base::TimeDelta scaling_factor = kMaximumTriggerDelay - kMinimumTriggerDelay;
+  base::TimeDelta delay =
+      logarithmic_fraction * scaling_factor + kMinimumTriggerDelay;
+  if (delay < kMinimumTriggerDelay)
+    delay = kMinimumTriggerDelay;
+  return delay;
+}
+
+void TabHoverCardBubbleView::ShowImmediately() {
+  widget_->Show();
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
@@ -63,14 +125,6 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
           url_formatter::kFormatUrlTrimAfterHost,
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   domain_label_->SetText(domain);
-}
-
-void TabHoverCardBubbleView::UpdateCardAnchor(View* tab) {
-  views::BubbleDialogDelegateView::SetAnchorView(tab);
-}
-
-int TabHoverCardBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
