@@ -1118,7 +1118,7 @@ void AppsGridView::SetSelectedItemByIndex(const GridIndex& index) {
   EnsureViewVisible(index);
   selected_view_ = new_selection;
   selected_view_->SchedulePaint();
-  selected_view_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  selected_view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 GridIndex AppsGridView::GetIndexOfView(const AppListItemView* view) const {
