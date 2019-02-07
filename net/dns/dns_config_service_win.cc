@@ -216,8 +216,8 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
   base::char16 buffer[MAX_PATH];
   DWORD size = MAX_PATH;
   std::string localname;
-  if (!GetComputerNameExW(ComputerNameDnsHostname, base::wdata(buffer),
-                          &size) ||
+  if (!GetComputerNameExW(ComputerNameDnsHostname,
+                          base::as_writable_wcstr(buffer), &size) ||
       !ParseDomainASCII(buffer, &localname)) {
     return HOSTS_PARSE_WIN_COMPUTER_NAME_FAILED;
   }
@@ -323,7 +323,7 @@ bool IsStatelessDiscoveryAddress(const IPAddress& address) {
 // Returns the path to the HOSTS file.
 base::FilePath GetHostsPath() {
   base::char16 buffer[MAX_PATH];
-  UINT rc = GetSystemDirectory(base::wdata(buffer), MAX_PATH);
+  UINT rc = GetSystemDirectory(base::as_writable_wcstr(buffer), MAX_PATH);
   DCHECK(0 < rc && rc < MAX_PATH);
   return base::FilePath(buffer).Append(
       FILE_PATH_LITERAL("drivers\\etc\\hosts"));
@@ -535,10 +535,8 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
     // obtained via DHCP (regkey: Tcpip\Parameters\Interfaces\{XXX}\DhcpDomain)
     // or specified by the user (regkey: Tcpip\Parameters\Domain).
     std::string dns_suffix;
-    if (ParseDomainASCII(base::CastToStringPiece16(adapter->DnsSuffix),
-                         &dns_suffix)) {
+    if (ParseDomainASCII(base::as_u16cstr(adapter->DnsSuffix), &dns_suffix))
       config->search.push_back(dns_suffix);
-    }
   }
 
   if (config->nameservers.empty())

@@ -320,8 +320,9 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
 
     // Get the device ID.
     char16 device_id[MAX_DEVICE_ID_LEN];
-    CONFIGRET status = CM_Get_Device_ID(device_info_data.DevInst,
-                                        wdata(device_id), MAX_DEVICE_ID_LEN, 0);
+    CONFIGRET status =
+        CM_Get_Device_ID(device_info_data.DevInst, as_writable_wcstr(device_id),
+                         MAX_DEVICE_ID_LEN, 0);
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.

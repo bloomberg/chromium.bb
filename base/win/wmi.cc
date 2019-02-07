@@ -97,7 +97,7 @@ bool WmiLaunchProcess(const string16& command_line, int* process_id) {
     return false;
   }
 
-  ScopedVariant b_command_line(wdata(command_line));
+  ScopedVariant b_command_line(as_wcstr(command_line));
 
   if (FAILED(process_create->Put(L"CommandLine", 0, b_command_line.AsInput(),
                                  0))) {

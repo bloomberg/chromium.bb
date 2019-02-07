@@ -33,11 +33,13 @@ void ValidatePathsAreEqual(const FilePath& expected_path,
   }
 
   // Proceed with LongPathName matching which will also confirm the paths exist.
-  EXPECT_NE(0U, ::GetLongPathName(wdata(expected_path.value()),
-                                  wdata(long_expected_path_chars), MAX_PATH))
+  EXPECT_NE(0U, ::GetLongPathName(as_wcstr(expected_path.value()),
+                                  as_writable_wcstr(long_expected_path_chars),
+                                  MAX_PATH))
       << "Failed to get LongPathName of " << expected_path.value();
-  EXPECT_NE(0U, ::GetLongPathName(wdata(actual_path.value()),
-                                  wdata(long_actual_path_chars), MAX_PATH))
+  EXPECT_NE(0U, ::GetLongPathName(as_wcstr(actual_path.value()),
+                                  as_writable_wcstr(long_actual_path_chars),
+                                  MAX_PATH))
       << "Failed to get LongPathName of " << actual_path.value();
 
   FilePath long_expected_path(long_expected_path_chars);
@@ -76,38 +78,38 @@ void ValidateShortcut(const FilePath& shortcut_path,
 
   // Load the shortcut.
   EXPECT_TRUE(
-      SUCCEEDED(hr = i_persist_file->Load(wdata(shortcut_path.value()), 0)))
+      SUCCEEDED(hr = i_persist_file->Load(as_wcstr(shortcut_path.value()), 0)))
       << "Failed to load shortcut at " << shortcut_path.value();
   if (FAILED(hr))
     return;
 
   if (properties.options & ShortcutProperties::PROPERTIES_TARGET) {
-    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetPath(wdata(read_target), MAX_PATH,
-                                                NULL, SLGP_SHORTPATH)));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetPath(
+        as_writable_wcstr(read_target), MAX_PATH, NULL, SLGP_SHORTPATH)));
     ValidatePathsAreEqual(properties.target, FilePath(read_target));
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_WORKING_DIR) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetWorkingDirectory(wdata(read_working_dir), MAX_PATH)));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetWorkingDirectory(
+        as_writable_wcstr(read_working_dir), MAX_PATH)));
     ValidatePathsAreEqual(properties.working_dir, FilePath(read_working_dir));
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_ARGUMENTS) {
-    EXPECT_TRUE(
-        SUCCEEDED(i_shell_link->GetArguments(wdata(read_arguments), MAX_PATH)));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetArguments(
+        as_writable_wcstr(read_arguments), MAX_PATH)));
     EXPECT_EQ(properties.arguments, read_arguments);
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_DESCRIPTION) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetDescription(wdata(read_description), MAX_PATH)));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetDescription(
+        as_writable_wcstr(read_description), MAX_PATH)));
     EXPECT_EQ(properties.description, read_description);
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_ICON) {
     EXPECT_TRUE(SUCCEEDED(i_shell_link->GetIconLocation(
-        wdata(read_icon), MAX_PATH, &read_icon_index)));
+        as_writable_wcstr(read_icon), MAX_PATH, &read_icon_index)));
     ValidatePathsAreEqual(properties.icon, FilePath(read_icon));
     EXPECT_EQ(properties.icon_index, read_icon_index);
   }

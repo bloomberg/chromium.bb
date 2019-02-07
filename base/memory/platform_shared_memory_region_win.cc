@@ -296,7 +296,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   // Ask for the file mapping with reduced permisions to avoid passing the
   // access control permissions granted by default into unpriviledged process.
   HANDLE h = CreateFileMappingWithReducedPermissions(
-      &sa, rounded_size, name.empty() ? nullptr : wdata(name));
+      &sa, rounded_size, name.empty() ? nullptr : as_wcstr(name));
   if (h == nullptr) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
     return {};

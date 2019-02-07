@@ -88,13 +88,13 @@ bool MessageWindow::Create(MessageCallback message_callback) {
 
 bool MessageWindow::CreateNamed(MessageCallback message_callback,
                                 const string16& window_name) {
-  return DoCreate(std::move(message_callback), wdata(window_name));
+  return DoCreate(std::move(message_callback), as_wcstr(window_name));
 }
 
 // static
 HWND MessageWindow::FindWindow(const string16& window_name) {
   return FindWindowEx(HWND_MESSAGE, NULL, kMessageWindowClassName,
-                      wdata(window_name));
+                      as_wcstr(window_name));
 }
 
 bool MessageWindow::DoCreate(MessageCallback message_callback,

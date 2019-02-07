@@ -65,9 +65,10 @@ TEST_F(StartupInformationTest, InheritStdOut) {
       MakeCmdLine("FireInheritedEvents").GetCommandLineString();
 
   PROCESS_INFORMATION temp_process_info = {};
-  ASSERT_TRUE(::CreateProcess(NULL, base::wdata(cmd_line), NULL, NULL, true,
-                              EXTENDED_STARTUPINFO_PRESENT, NULL, NULL,
-                              startup_info.startup_info(), &temp_process_info))
+  ASSERT_TRUE(::CreateProcess(NULL, base::as_writable_wcstr(cmd_line), NULL,
+                              NULL, true, EXTENDED_STARTUPINFO_PRESENT, NULL,
+                              NULL, startup_info.startup_info(),
+                              &temp_process_info))
       << ::GetLastError();
   base::win::ScopedProcessInformation process_info(temp_process_info);
 

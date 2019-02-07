@@ -166,8 +166,7 @@ void ProxyConfigServiceWin::SetFromIEConfig(
     }
   }
   if (ie_config.lpszAutoConfigUrl)
-    config->set_pac_url(
-        GURL(base::CastToStringPiece16(ie_config.lpszAutoConfigUrl)));
+    config->set_pac_url(GURL(base::as_u16cstr(ie_config.lpszAutoConfigUrl)));
 }
 
 }  // namespace net

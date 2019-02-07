@@ -40,7 +40,7 @@ bool GetDiskSpaceInfo(const base::FilePath& path,
   ULARGE_INTEGER available;
   ULARGE_INTEGER total;
   ULARGE_INTEGER free;
-  if (!GetDiskFreeSpaceExW(base::wdata(path.value()), &available, &total,
+  if (!GetDiskFreeSpaceExW(base::as_wcstr(path.value()), &available, &total,
                            &free))
     return false;
 

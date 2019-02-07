@@ -82,11 +82,11 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
       InitializeShortcutInterfaces(NULL, &i_shell_link, &i_persist_file);
       break;
     case SHORTCUT_UPDATE_EXISTING:
-      InitializeShortcutInterfaces(wdata(shortcut_path.value()), &i_shell_link,
-                                   &i_persist_file);
+      InitializeShortcutInterfaces(as_wcstr(shortcut_path.value()),
+                                   &i_shell_link, &i_persist_file);
       break;
     case SHORTCUT_REPLACE_EXISTING:
-      InitializeShortcutInterfaces(wdata(shortcut_path.value()),
+      InitializeShortcutInterfaces(as_wcstr(shortcut_path.value()),
                                    &old_i_shell_link, &old_i_persist_file);
       // Confirm |shortcut_path| exists and is a shortcut by verifying
       // |old_i_persist_file| was successfully initialized in the call above. If
@@ -104,18 +104,18 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
     return false;
 
   if ((properties.options & ShortcutProperties::PROPERTIES_TARGET) &&
-      FAILED(i_shell_link->SetPath(wdata(properties.target.value())))) {
+      FAILED(i_shell_link->SetPath(as_wcstr(properties.target.value())))) {
     return false;
   }
 
   if ((properties.options & ShortcutProperties::PROPERTIES_WORKING_DIR) &&
       FAILED(i_shell_link->SetWorkingDirectory(
-          wdata(properties.working_dir.value())))) {
+          as_wcstr(properties.working_dir.value())))) {
     return false;
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_ARGUMENTS) {
-    if (FAILED(i_shell_link->SetArguments(wdata(properties.arguments))))
+    if (FAILED(i_shell_link->SetArguments(as_wcstr(properties.arguments))))
       return false;
   } else if (old_i_persist_file.Get()) {
     wchar_t current_arguments[MAX_PATH] = {0};
@@ -126,12 +126,12 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
   }
 
   if ((properties.options & ShortcutProperties::PROPERTIES_DESCRIPTION) &&
-      FAILED(i_shell_link->SetDescription(wdata(properties.description)))) {
+      FAILED(i_shell_link->SetDescription(as_wcstr(properties.description)))) {
     return false;
   }
 
   if ((properties.options & ShortcutProperties::PROPERTIES_ICON) &&
-      FAILED(i_shell_link->SetIconLocation(wdata(properties.icon.value()),
+      FAILED(i_shell_link->SetIconLocation(as_wcstr(properties.icon.value()),
                                            properties.icon_index))) {
     return false;
   }
@@ -150,7 +150,7 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
       return false;
 
     if (has_app_id && !SetAppIdForPropertyStore(property_store.Get(),
-                                                wdata(properties.app_id))) {
+                                                as_wcstr(properties.app_id))) {
       return false;
     }
     if (has_dual_mode &&
@@ -172,7 +172,7 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
   old_i_persist_file.Reset();
   old_i_shell_link.Reset();
 
-  HRESULT result = i_persist_file->Save(wdata(shortcut_path.value()), TRUE);
+  HRESULT result = i_persist_file->Save(as_wcstr(shortcut_path.value()), TRUE);
 
   // Release the interfaces in case the SHChangeNotify call below depends on
   // the operations above being fully completed.
@@ -219,7 +219,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
     return false;
 
   // Load the shell link.
-  if (FAILED(persist->Load(wdata(shortcut_path.value()), STGM_READ)))
+  if (FAILED(persist->Load(as_wcstr(shortcut_path.value()), STGM_READ)))
     return false;
 
   // Reset |properties|.
@@ -227,7 +227,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
 
   char16 temp[MAX_PATH];
   if (options & ShortcutProperties::PROPERTIES_TARGET) {
-    if (FAILED(i_shell_link->GetPath(wdata(temp), MAX_PATH, NULL,
+    if (FAILED(i_shell_link->GetPath(as_writable_wcstr(temp), MAX_PATH, NULL,
                                      SLGP_UNCPRIORITY))) {
       return false;
     }
@@ -235,27 +235,28 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
   }
 
   if (options & ShortcutProperties::PROPERTIES_WORKING_DIR) {
-    if (FAILED(i_shell_link->GetWorkingDirectory(wdata(temp), MAX_PATH)))
+    if (FAILED(i_shell_link->GetWorkingDirectory(as_writable_wcstr(temp),
+                                                 MAX_PATH)))
       return false;
     properties->set_working_dir(FilePath(temp));
   }
 
   if (options & ShortcutProperties::PROPERTIES_ARGUMENTS) {
-    if (FAILED(i_shell_link->GetArguments(wdata(temp), MAX_PATH)))
+    if (FAILED(i_shell_link->GetArguments(as_writable_wcstr(temp), MAX_PATH)))
       return false;
     properties->set_arguments(temp);
   }
 
   if (options & ShortcutProperties::PROPERTIES_DESCRIPTION) {
     // Note: description length constrained by MAX_PATH.
-    if (FAILED(i_shell_link->GetDescription(wdata(temp), MAX_PATH)))
+    if (FAILED(i_shell_link->GetDescription(as_writable_wcstr(temp), MAX_PATH)))
       return false;
     properties->set_description(temp);
   }
 
   if (options & ShortcutProperties::PROPERTIES_ICON) {
     int temp_index;
-    if (FAILED(i_shell_link->GetIconLocation(wdata(temp), MAX_PATH,
+    if (FAILED(i_shell_link->GetIconLocation(as_writable_wcstr(temp), MAX_PATH,
                                              &temp_index))) {
       return false;
     }
@@ -364,7 +365,7 @@ bool PinShortcutToTaskbar(const FilePath& shortcut) {
   DCHECK(CanPinShortcutToTaskbar());
 
   intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
-      NULL, L"taskbarpin", wdata(shortcut.value()), NULL, NULL, 0));
+      NULL, L"taskbarpin", as_wcstr(shortcut.value()), NULL, NULL, 0));
   return result > 32;
 }
 
@@ -372,7 +373,7 @@ bool UnpinShortcutFromTaskbar(const FilePath& shortcut) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
-      NULL, L"taskbarunpin", wdata(shortcut.value()), NULL, NULL, 0));
+      NULL, L"taskbarunpin", as_wcstr(shortcut.value()), NULL, NULL, 0));
   return result > 32;
 }
 

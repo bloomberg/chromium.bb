@@ -97,16 +97,16 @@ bool GetUserDefaultUILanguage(base::string16* language,
     const LCID locale_id = MAKELCID(lang_id, SORT_DEFAULT);
     // max size for LOCALE_SISO639LANGNAME and LOCALE_SISO3166CTRYNAME is 9
     base::char16 result_buffer[9];
-    int result_length =
-        GetLocaleInfo(locale_id, LOCALE_SISO639LANGNAME,
-                      base::wdata(result_buffer), base::size(result_buffer));
+    int result_length = GetLocaleInfo(locale_id, LOCALE_SISO639LANGNAME,
+                                      base::as_writable_wcstr(result_buffer),
+                                      base::size(result_buffer));
     DPCHECK(0 != result_length) << "Failed getting language id";
     if (1 < result_length) {
       language->assign(&result_buffer[0], result_length - 1);
       region->clear();
       if (SUBLANG_NEUTRAL != SUBLANGID(lang_id)) {
         result_length = GetLocaleInfo(locale_id, LOCALE_SISO3166CTRYNAME,
-                                      base::wdata(result_buffer),
+                                      base::as_writable_wcstr(result_buffer),
                                       base::size(result_buffer));
         DPCHECK(0 != result_length) << "Failed getting region id";
         if (1 < result_length)

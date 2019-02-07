@@ -235,7 +235,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   shm_ = SharedMemoryHandle(
       CreateFileMappingWithReducedPermissions(
-          &sa, rounded_size, name_.empty() ? nullptr : wdata(name_)),
+          &sa, rounded_size, name_.empty() ? nullptr : as_wcstr(name_)),
       rounded_size, UnguessableToken::Create());
   if (!shm_.IsValid()) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
@@ -286,7 +286,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   // We pass the size |0|, which is a dummy size and wrong, but otherwise
   // harmless.
   shm_ = SharedMemoryHandle(
-      OpenFileMapping(access, false, name_.empty() ? nullptr : wdata(name_)),
+      OpenFileMapping(access, false, name_.empty() ? nullptr : as_wcstr(name_)),
       0u, UnguessableToken::Create());
   if (!shm_.IsValid())
     return false;

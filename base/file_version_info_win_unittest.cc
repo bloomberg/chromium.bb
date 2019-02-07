@@ -51,7 +51,7 @@ class FileVersionInfoForModuleFactory {
   explicit FileVersionInfoForModuleFactory(const FilePath& path)
       // Load the library with LOAD_LIBRARY_AS_IMAGE_RESOURCE since it shouldn't
       // be executed.
-      : library_(::LoadLibraryEx(base::wdata(path.value()),
+      : library_(::LoadLibraryEx(base::as_wcstr(path.value()),
                                  nullptr,
                                  LOAD_LIBRARY_AS_IMAGE_RESOURCE)) {
     EXPECT_TRUE(library_.is_valid());
