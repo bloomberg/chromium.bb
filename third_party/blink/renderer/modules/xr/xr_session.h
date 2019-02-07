@@ -24,6 +24,7 @@
 namespace blink {
 
 class Element;
+class ExceptionState;
 class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
@@ -31,9 +32,10 @@ class XR;
 class XRCanvasInputProvider;
 class XRSpace;
 class XRInputSourceEvent;
-class XRLayer;
 class XRPresentationContext;
 class XRReferenceSpaceOptions;
+class XRRenderState;
+class XRRenderStateInit;
 class XRView;
 
 class XRSession final : public EventTargetWithInlineData,
@@ -72,19 +74,9 @@ class XRSession final : public EventTargetWithInlineData,
   bool environmentIntegration() const { return environment_integration_; }
   XRPresentationContext* outputContext() const { return output_context_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
+  XRRenderState* renderState() const { return render_state_; }
 
   bool immersive() const;
-
-  // Near and far depths are used when computing projection matrices for this
-  // Session's views. Changes will propegate to the appropriate matrices on the
-  // next frame after these values are updated.
-  double depthNear() const { return depth_near_; }
-  void setDepthNear(double value);
-  double depthFar() const { return depth_far_; }
-  void setDepthFar(double value);
-
-  XRLayer* baseLayer() const { return base_layer_; }
-  void setBaseLayer(XRLayer* value);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(blur, kBlur);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(focus, kFocus);
@@ -95,6 +87,7 @@ class XRSession final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect);
 
+  void updateRenderState(XRRenderStateInit*, ExceptionState&);
   ScriptPromise requestReferenceSpace(ScriptState*,
                                       const XRReferenceSpaceOptions*);
 
@@ -203,7 +196,8 @@ class XRSession final : public EventTargetWithInlineData,
   const bool environment_integration_;
   const Member<XRPresentationContext> output_context_;
   String blend_mode_string_;
-  Member<XRLayer> base_layer_;
+  Member<XRRenderState> render_state_;
+  HeapVector<Member<XRRenderStateInit>> pending_render_state_;
   HeapVector<Member<XRView>> views_;
   InputSourceMap input_sources_;
   Member<ResizeObserver> resize_observer_;
@@ -221,8 +215,6 @@ class XRSession final : public EventTargetWithInlineData,
 
   WTF::Vector<float> non_immersive_projection_matrix_;
 
-  double depth_near_ = 0.1;
-  double depth_far_ = 1000.0;
   bool blurred_;
   bool ended_ = false;
   bool pending_frame_ = false;

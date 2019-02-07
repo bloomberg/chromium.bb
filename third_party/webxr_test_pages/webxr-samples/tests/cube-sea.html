@@ -332,7 +332,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        session.baseLayer = new XRWebGLLayer(session, gl, {
+        session.renderState.baseLayer = new XRWebGLLayer(session, gl, {
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
 
@@ -380,7 +380,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
         }
 
-        session.baseLayer.requestViewportScaling(appSettings.viewportScale);
+        session.renderState.baseLayer.requestViewportScaling(appSettings.viewportScale);
 
         session.requestAnimationFrame(onXRFrame);
 

@@ -22,7 +22,7 @@ let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
-  session.baseLayer = webglLayer;
+  session.updateRenderState({ baseLayer: webglLayer });
 
   let xrFramebuffer = webglLayer.framebuffer;
 

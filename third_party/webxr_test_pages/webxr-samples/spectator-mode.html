@@ -166,7 +166,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        session.baseLayer = new XRWebGLLayer(session, gl);
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
@@ -267,7 +267,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
           // Set up a sensible projection matrix for the canvas
-          mat4.perspective(spectatorProjectionMatrix, Math.PI*0.4, gl.drawingBufferWidth / gl.drawingBufferHeight, session.depthNear, session.depthFar);
+          mat4.perspective(spectatorProjectionMatrix, Math.PI*0.4, gl.drawingBufferWidth / gl.drawingBufferHeight, session.renderState.depthNear, session.renderState.depthFar);
 
           // Set up a view matrix that gives us a 3rd-person view of the scene.
           // In this case it's positioned in a corner of the garage scene near

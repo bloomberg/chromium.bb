@@ -65,7 +65,7 @@ let testFunction = function(session, t, fakeDeviceController) {
   session.addEventListener("select", onSessionSelect, false);
 
   // Session must have a baseLayer or frame requests will be ignored.
-  session.baseLayer = new XRWebGLLayer(session, gl);
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
   let input_source = new MockXRInputSource();
 

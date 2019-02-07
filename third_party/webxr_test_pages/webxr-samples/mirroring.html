@@ -127,13 +127,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.setRenderer(renderer);
         }
 
-        session.baseLayer = new XRWebGLLayer(session, gl);
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
         // Set the mirroring context to be the same size as one eye on the
         // layer context.
         let outputCanvas = document.querySelector('#mirror-canvas');
-        outputCanvas.width = session.baseLayer.framebufferWidth / 2;
-        outputCanvas.height = session.baseLayer.framebufferHeight;
+        outputCanvas.width = session.renderState.baseLayer.framebufferWidth / 2;
+        outputCanvas.height = session.renderState.baseLayer.framebufferHeight;
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           xrRefSpace = refSpace;
@@ -165,11 +165,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let pose = frame.getViewerPose(xrRefSpace);
 
         if (pose) {
-          gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
           for (let view of pose.views) {
-            let viewport = session.baseLayer.getViewport(view);
+            let viewport = session.renderState.baseLayer.getViewport(view);
             gl.viewport(viewport.x, viewport.y,
                         viewport.width, viewport.height);
 

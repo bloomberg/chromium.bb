@@ -144,7 +144,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        session.baseLayer = new XRWebGLLayer(session, gl);
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
@@ -179,7 +179,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         session.requestAnimationFrame(onXRFrame);
 
         if (pose) {
-          gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
           // This is a different rendering pattern than the previous samples
@@ -239,7 +239,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // values internally.
             renderView.projectionMatrix = view.projectionMatrix;
             renderView.viewMatrix = view.viewMatrix;
-            renderView.viewport = session.baseLayer.getViewport(view);
+            renderView.viewport = session.renderState.baseLayer.getViewport(view);
             views.push(renderView);
           }
 

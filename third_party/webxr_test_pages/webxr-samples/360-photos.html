@@ -141,7 +141,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        session.baseLayer = new XRWebGLLayer(session, gl);
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
         // When rendering 360 photos/videos you want to ensure that the user's
         // head is always at the center of the rendered media. Otherwise users
@@ -183,7 +183,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         session.requestAnimationFrame(onXRFrame);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (pose) {
@@ -192,7 +192,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             let renderView = new WebXRView();
             renderView.projectionMatrix = view.projectionMatrix;
             renderView.viewMatrix = view.viewMatrix;
-            renderView.viewport = session.baseLayer.getViewport(view);
+            renderView.viewport = session.renderState.baseLayer.getViewport(view);
 
             // It's important to take into account which eye the view is
             // associated with in cases like this, since it informs which half

@@ -22,7 +22,7 @@ let requestSessionOptions = [
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
-  session.baseLayer = new XRWebGLLayer(session, gl);
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
   fakeDeviceController.setStageTransform(null);
   fakeDeviceController.setXRPresentationFrameData(ORIGIN_POSE, [{
