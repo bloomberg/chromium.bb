@@ -294,6 +294,9 @@ void TabletModeController::OnShellInitialized() {
 }
 
 void TabletModeController::OnDisplayConfigurationChanged() {
+  if (!AllowUiModeChange())
+    return;
+
   if (!HasActiveInternalDisplay()) {
     AttemptLeaveTabletMode();
   } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {

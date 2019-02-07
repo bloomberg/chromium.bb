@@ -1080,6 +1080,29 @@ TEST_F(TabletModeControllerForceTabletModeTest, ForceTabletModeTest) {
   EXPECT_TRUE(AreEventsBlocked());
 }
 
+TEST_F(TabletModeControllerForceTabletModeTest, DockInForcedTabletMode) {
+  UpdateDisplay("800x600, 800x600");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Still expect tablet mode.
+  EXPECT_TRUE(IsTabletModeStarted());
+}
+
 class TabletModeControllerForceClamshellModeTest
     : public TabletModeControllerTest {
  public:
