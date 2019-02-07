@@ -141,10 +141,13 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual void BlockParser() = 0;
   virtual void ResumeParser() = 0;
 
-  // Returns info about whether the document is an MHTML archive.
-  virtual bool IsArchive() const = 0;
-  // Returns archive info for the archive.  Should never be called if
-  // IsArchive returns false.
+  // Returns true if the document is an MHTML archive. When true,
+  // GetArchiveInfo() may be called to find the result of loading and, if
+  // loading was successful, more information about the archive. Note that this
+  // can return true even if archive loading ended up failing.
+  virtual bool HasBeenLoadedAsWebArchive() const = 0;
+
+  // Returns archive info for the archive.
   virtual WebArchiveInfo GetArchiveInfo() const = 0;
 
   // Whether this load was started with a user gesture.

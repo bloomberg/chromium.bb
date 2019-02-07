@@ -80,7 +80,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   WebServiceWorkerNetworkProvider* GetServiceWorkerNetworkProvider() override;
   void BlockParser() override;
   void ResumeParser() override;
-  bool IsArchive() const override;
+  bool HasBeenLoadedAsWebArchive() const override;
   WebArchiveInfo GetArchiveInfo() const override;
   bool HadUserGesture() const override;
   bool IsListingFtpDirectory() const override;

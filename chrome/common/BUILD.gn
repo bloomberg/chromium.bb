@@ -721,6 +721,8 @@ mojom("mojo_bindings") {
     "renderer_configuration.mojom",
   ]
 
+  deps = []
+
   if (is_android) {
     sources += [ "sandbox_status_extension_android.mojom" ]
   }
@@ -735,6 +737,7 @@ mojom("mojo_bindings") {
 
   if (enable_offline_pages) {
     sources += [ "mhtml_page_notifier.mojom" ]
+    deps += [ "//third_party/blink/public/mojom:mojom_mhtml_load_result" ]
   }
 
   public_deps = [

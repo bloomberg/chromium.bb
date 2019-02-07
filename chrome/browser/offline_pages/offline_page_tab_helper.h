@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -53,16 +54,18 @@ enum class OfflinePageTrustedState {
 class OfflinePageTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OfflinePageTabHelper>,
-      public mojom::MhtmlPageNotifier {
+      public offline_pages::mojom::MhtmlPageNotifier {
  public:
   ~OfflinePageTabHelper() override;
 
   // Creates the Mojo service that can listen to the renderer's archive events.
-  void CreateMhtmlPageNotifier(mojom::MhtmlPageNotifierRequest request);
+  void CreateMhtmlPageNotifier(
+      offline_pages::mojom::MhtmlPageNotifierRequest request);
 
   // MhtmlPageNotifier overrides.
-  void NotifyIsMhtmlPage(const GURL& main_frame_url,
-                         base::Time date_header_time) override;
+  void NotifyMhtmlPageLoadAttempted(blink::mojom::MHTMLLoadResult result,
+                                    const GURL& main_frame_url,
+                                    base::Time date) override;
 
   void SetOfflinePage(const OfflinePageItem& offline_page,
                       const OfflinePageHeader& offline_header,
@@ -71,9 +74,7 @@ class OfflinePageTabHelper
 
   void ClearOfflinePage();
 
-  const OfflinePageItem* offline_page() {
-    return offline_info_.offline_page.get();
-  }
+  OfflinePageItem* offline_page() { return offline_info_.offline_page.get(); }
 
   const OfflinePageHeader& offline_header() const {
     return offline_info_.offline_header;

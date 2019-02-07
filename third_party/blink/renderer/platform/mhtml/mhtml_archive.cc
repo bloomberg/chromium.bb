@@ -52,6 +52,8 @@ namespace blink {
 
 namespace {
 
+using blink::mojom::MHTMLLoadResult;
+
 const wtf_size_t kMaximumLineLength = 76;
 
 const char kRFC2047EncodingPrefix[] = "=?utf-8?Q?";
@@ -197,40 +199,49 @@ String ConvertToPrintableCharacters(const String& text) {
 
 }  // namespace
 
-const char* MHTMLArchive::kLoadResultUmaName =
-    "PageSerialization.MhtmlLoading.LoadResult";
-
-MHTMLArchive::MHTMLArchive() = default;
+MHTMLArchive::MHTMLArchive() : load_result_(MHTMLLoadResult::kInvalidArchive) {}
 
 // static
-void MHTMLArchive::ReportLoadResult(MHTMLArchive::LoadResult result) {
-  UMA_HISTOGRAM_ENUMERATION(kLoadResultUmaName, result);
+void MHTMLArchive::ReportLoadResult(MHTMLLoadResult result) {
+  UMA_HISTOGRAM_ENUMERATION("PageSerialization.MhtmlLoading.LoadResult",
+                            result);
 }
 
+// static
 MHTMLArchive* MHTMLArchive::Create(const KURL& url,
                                    scoped_refptr<const SharedBuffer> data) {
+  MHTMLArchive* archive = CreateArchive(url, data);
+  ReportLoadResult(archive->LoadResult());
+  return archive;
+}
+
+// static
+MHTMLArchive* MHTMLArchive::CreateArchive(
+    const KURL& url,
+    scoped_refptr<const SharedBuffer> data) {
+  MHTMLArchive* archive = MakeGarbageCollected<MHTMLArchive>();
+
   // |data| may be null if archive file is empty.
   if (!data || data->IsEmpty()) {
-    ReportLoadResult(LoadResult::kEmptyFile);
-    return nullptr;
+    archive->load_result_ = MHTMLLoadResult::kEmptyFile;
+    return archive;
   }
 
   // MHTML pages can only be loaded from local URLs, http/https URLs, and
   // content URLs(Android specific).  The latter is now allowed due to full
   // sandboxing enforcement on MHTML pages.
   if (!CanLoadArchive(url)) {
-    ReportLoadResult(LoadResult::kUrlSchemeNotAllowed);
-    return nullptr;
+    archive->load_result_ = MHTMLLoadResult::kUrlSchemeNotAllowed;
+    return archive;
   }
 
   MHTMLParser parser(std::move(data));
   HeapVector<Member<ArchiveResource>> resources = parser.ParseArchive();
   if (resources.IsEmpty()) {
-    ReportLoadResult(LoadResult::kInvalidArchive);
-    return nullptr;  // Invalid MHTML file.
+    archive->load_result_ = MHTMLLoadResult::kInvalidArchive;
+    return archive;
   }
 
-  MHTMLArchive* archive = MakeGarbageCollected<MHTMLArchive>();
   archive->date_ = parser.CreationDate();
 
   size_t resources_count = resources.size();
@@ -261,13 +272,12 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
     else
       archive->AddSubresource(resource);
   }
-  if (archive->MainResource()) {
-    ReportLoadResult(LoadResult::kSuccess);
-    return archive;
-  }
+  if (archive->MainResource())
+    archive->load_result_ = MHTMLLoadResult::kSuccess;
+  else
+    archive->load_result_ = MHTMLLoadResult::kMissingMainResource;
 
-  ReportLoadResult(LoadResult::kMissingMainResource);
-  return nullptr;
+  return archive;
 }
 
 bool MHTMLArchive::CanLoadArchive(const KURL& url) {

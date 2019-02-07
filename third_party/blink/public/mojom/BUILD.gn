@@ -102,6 +102,7 @@ mojom("mojom_platform") {
 
   public_deps = [
     ":android_mojo_bindings",
+    ":mojom_mhtml_load_result",
     ":speech_recognition_error_code",
     "//components/payments/mojom",
     "//components/services/filesystem/public/interfaces",
@@ -262,4 +263,14 @@ mojom("mojom_modules") {
   export_class_attribute_blink = "MODULES_EXPORT"
   export_define_blink = "BLINK_MODULES_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/modules/modules_export.h"
+}
+
+mojom("mojom_mhtml_load_result") {
+  sources = [
+    "loader/mhtml_load_result.mojom",
+  ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
 }

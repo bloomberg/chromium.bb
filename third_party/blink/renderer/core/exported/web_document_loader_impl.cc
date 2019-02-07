@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -160,13 +161,20 @@ void WebDocumentLoaderImpl::ResumeParser() {
   DocumentLoader::ResumeParser();
 }
 
-bool WebDocumentLoaderImpl::IsArchive() const {
-  return Fetcher()->Archive();
+bool WebDocumentLoaderImpl::HasBeenLoadedAsWebArchive() const {
+  return Fetcher()->Archive() ||
+         (Fetcher()->ArchiveLoadResult() != mojom::MHTMLLoadResult::kSuccess);
 }
 
 WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {
   const MHTMLArchive* archive = Fetcher()->Archive();
-  return {archive->MainResource()->Url(), archive->Date()};
+  const mojom::MHTMLLoadResult load_result = Fetcher()->ArchiveLoadResult();
+
+  if (archive) {
+    DCHECK(archive->MainResource());
+    return {load_result, archive->MainResource()->Url(), archive->Date()};
+  }
+  return {load_result, WebURL(), base::Time()};
 }
 
 bool WebDocumentLoaderImpl::HadUserGesture() const {
