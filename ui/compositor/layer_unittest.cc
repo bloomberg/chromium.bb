@@ -1117,6 +1117,110 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_TRUE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 }
 
+// Various visible/drawn assertions.
+TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
+  std::unique_ptr<Layer> l1(new Layer(LAYER_TEXTURED));
+  std::unique_ptr<Layer> l2(new Layer(LAYER_TEXTURED));
+  std::unique_ptr<Layer> l2_mirror = l2->Mirror();
+  l1->Add(l2.get());
+  l1->Add(l2_mirror.get());
+
+  NullLayerDelegate delegate;
+  l1->set_delegate(&delegate);
+  l2->set_delegate(&delegate);
+  l2_mirror->set_delegate(&delegate);
+
+  // Layers should initially be drawn.
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_TRUE(l2->IsDrawn());
+  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  compositor()->SetRootLayer(l1.get());
+
+  Draw();
+
+  // Hiding the root layer should hide that specific layer and its subtree.
+  l1->SetVisible(false);
+
+  // Since the entire subtree is hidden, no layer should be drawn.
+  EXPECT_FALSE(l1->IsDrawn());
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_FALSE(l2_mirror->IsDrawn());
+
+  // The visibitily property for the subtree is rooted at |l1|.
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Hiding |l2| should also set the visibility on its mirror layer. In this
+  // case the visibility of |l2| will be mirrored by |l2_mirror|.
+  l2->SetVisible(false);
+
+  // None of the layers are drawn since the visibility is false at every node.
+  EXPECT_FALSE(l1->IsDrawn());
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_FALSE(l2_mirror->IsDrawn());
+
+  // Visibility property is set on every node and hence their subtree is also
+  // hidden.
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Setting visibility on the root layer should make that layer visible and its
+  // subtree ready for visibility.
+  l1->SetVisible(true);
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_FALSE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Setting visibility on the mirrored layer should not effect its source
+  // layer.
+  l2_mirror->SetVisible(true);
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Setting visibility on the source layer should keep the mirror layer in
+  // sync and not cause any invalid state.
+  l2->SetVisible(true);
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_TRUE(l2->IsDrawn());
+  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Setting visibility on the mirrored layer should not effect its source
+  // layer.
+  l2_mirror->SetVisible(false);
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_TRUE(l2->IsDrawn());
+  EXPECT_FALSE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+
+  // Setting source layer's visibility to true should update the mirror layer
+  // even if the source layer did not change in the process.
+  l2->SetVisible(true);
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_TRUE(l2->IsDrawn());
+  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
+}
+
 // Checks that stacking-related methods behave as advertised.
 TEST_F(LayerWithNullDelegateTest, Stacking) {
   std::unique_ptr<Layer> root(new Layer(LAYER_NOT_DRAWN));

@@ -249,8 +249,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetMaskLayer(Layer* layer_mask);
   Layer* layer_mask_layer() { return layer_mask_; }
 
-  // Sets the visibility of the Layer. A Layer may be visible but not
-  // drawn. This happens if any ancestor of a Layer is not visible.
+  // Sets the visibility of the Layer. A Layer may be visible but not drawn.
+  // This happens if any ancestor of a Layer is not visible.
+  // Any changes made to this in the source layer will override the visibility
+  // of its mirror layer.
   void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
