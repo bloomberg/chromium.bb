@@ -65,7 +65,7 @@ GetParamsForNetworkQualityContainer() {
     if (!base::StringToSizeT(base::GetFieldTrialParamValueByFeature(
                                  features::kThrottleDelayable,
                                  kMaxDelayableRequestsBase +
-                                     base::IntToString(config_param_index)),
+                                     base::NumberToString(config_param_index)),
                              &max_delayable_requests)) {
       break;
     }
@@ -75,12 +75,13 @@ GetParamsForNetworkQualityContainer() {
             base::GetFieldTrialParamValueByFeature(
                 features::kThrottleDelayable,
                 kEffectiveConnectionTypeBase +
-                    base::IntToString(config_param_index)));
+                    base::NumberToString(config_param_index)));
     DCHECK(effective_connection_type.has_value());
 
     double non_delayable_weight = base::GetFieldTrialParamByFeatureAsDouble(
         features::kThrottleDelayable,
-        kNonDelayableWeightBase + base::IntToString(config_param_index), 0.0);
+        kNonDelayableWeightBase + base::NumberToString(config_param_index),
+        0.0);
 
     // Check if the entry is already present. This will happen if the default
     // params are being overridden by the field trial.

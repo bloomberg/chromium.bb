@@ -32,7 +32,7 @@ const uint32_t kMaxLineSize = 4096;
 base::ScopedFD OpenStatm(base::ProcessId pid) {
   std::string name =
       "/proc/" +
-      (pid == base::kNullProcessId ? "self" : base::IntToString(pid)) +
+      (pid == base::kNullProcessId ? "self" : base::NumberToString(pid)) +
       "/statm";
   base::ScopedFD fd = base::ScopedFD(open(name.c_str(), O_RDONLY));
   return fd;
@@ -253,7 +253,7 @@ std::vector<VmRegionPtr> OSMetrics::GetProcessMemoryMaps(base::ProcessId pid) {
   } else {
     std::string file_name =
         "/proc/" +
-        (pid == base::kNullProcessId ? "self" : base::IntToString(pid)) +
+        (pid == base::kNullProcessId ? "self" : base::NumberToString(pid)) +
         "/smaps";
     base::ScopedFILE smaps_file(fopen(file_name.c_str(), "r"));
     res = ReadLinuxProcSmapsFile(smaps_file.get(), &maps);

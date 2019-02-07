@@ -20,9 +20,9 @@ namespace audio {
 namespace {
 
 #if defined(OS_WIN)
-#define IntToStringType base::IntToString16
+#define NumberToStringType base::NumberToString16
 #else
-#define IntToStringType base::IntToString
+#define NumberToStringType base::NumberToString
 #endif
 
 const base::FilePath::CharType* StreamTypeToStringType(
@@ -61,7 +61,7 @@ void DebugRecordingSession::DebugRecordingFileProvider::CreateWavFile(
                                              base::File::FLAG_WRITE);
           },
           file_name_base_.AddExtension(StreamTypeToStringType(stream_type))
-              .AddExtension(IntToStringType(id))
+              .AddExtension(NumberToStringType(id))
               .AddExtension(FILE_PATH_LITERAL("wav"))),
       std::move(reply_callback));
 }

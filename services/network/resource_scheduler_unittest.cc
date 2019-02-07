@@ -289,7 +289,7 @@ class ResourceSchedulerTest : public testing::Test {
     // Queue the maximum number of delayable requests that should be started
     // before the resource scheduler starts throttling delayable requests.
     for (int i = 0; i < kOverriddenNumRequests; ++i) {
-      std::string url = "http://host/low" + base::IntToString(i);
+      std::string url = "http://host/low" + base::NumberToString(i);
       lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
       EXPECT_TRUE(lows_singlehost[i]->started());
     }
@@ -456,11 +456,11 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
 
   histogram_tester.ExpectTotalCount(
       "ResourceScheduler.RequestQueuingDuration.Priority" +
-          base::IntToString(net::HIGHEST),
+          base::NumberToString(net::HIGHEST),
       1);
   histogram_tester.ExpectTotalCount(
       "ResourceScheduler.RequestQueuingDuration.Priority" +
-          base::IntToString(net::LOWEST),
+          base::NumberToString(net::LOWEST),
       2);
 }
 
@@ -535,7 +535,7 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
   // Queue up to the per-host limit (we subtract the current high-pri request).
   for (int i = 0; i < kMaxNumDelayableRequestsPerHost - 1; ++i) {
-    string url = "http://host/low" + base::IntToString(i);
+    string url = "http://host/low" + base::NumberToString(i);
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(lows_singlehost[i]->started());
   }
@@ -563,7 +563,7 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   std::vector<std::unique_ptr<TestRequest>> lows_different_host;
   base::RunLoop().RunUntilIdle();
   for (int i = 0; i < expected_slots_left; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
+    string url = "http://host" + base::NumberToString(i) + "/low";
     lows_different_host.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(lows_different_host[i]->started());
   }
@@ -610,7 +610,7 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   const int kDefaultMaxNumDelayableRequestsPerClient = 10;
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
-    string url = "http://host/low" + base::IntToString(i);
+    string url = "http://host/low" + base::NumberToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
@@ -647,7 +647,7 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
   const int kNumFillerRequests = kDefaultMaxNumDelayableRequestsPerClient - 2;
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kNumFillerRequests; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
+    string url = "http://host" + base::NumberToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
@@ -675,7 +675,7 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   const int kDefaultMaxNumDelayableRequestsPerClient = 0;
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
-    string url = "http://host/low" + base::IntToString(i);
+    string url = "http://host/low" + base::NumberToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
@@ -704,7 +704,7 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
       10;  // Should match the .cc.
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
-    string url = "http://host/low" + base::IntToString(i);
+    string url = "http://host/low" + base::NumberToString(i);
     lows.push_back(NewRequest(url.c_str(), net::IDLE));
   }
 
@@ -764,7 +764,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   // Cancel a request after we learn the server supports SPDY.
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
+    string url = "http://host" + base::NumberToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
   std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
@@ -808,7 +808,7 @@ TEST_F(ResourceSchedulerTest,
   // Cancel a request after we learn the server supports SPDY.
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < max_delayable_requests_per_client_ect_2g - 1; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
+    string url = "http://host" + base::NumberToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(lows.back()->started());
   }
@@ -928,7 +928,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
     // per host limit from kicking in.
     for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
       // Keep unique hostnames to prevent the per host limit from kicking in.
-      std::string url = "http://host" + base::IntToString(i) + "/low";
+      std::string url = "http://host" + base::NumberToString(i) + "/low";
       lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
       EXPECT_TRUE(lows_singlehost[i]->started());
     }
@@ -966,7 +966,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   // Queue up to the overridden limit.
   for (int i = 0; i < kOverriddenNumRequests; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(lows_singlehost[i]->started());
   }
@@ -1020,7 +1020,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   // Queue up to the overridden limit.
   for (int i = 0; i < kNumDelayableHigh; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low1";
+    std::string url = "http://host" + base::NumberToString(i) + "/low1";
     delayable_first_page.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(delayable_first_page[i]->started());
   }
@@ -1041,7 +1041,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   std::vector<std::unique_ptr<TestRequest>> delayable_second_page;
   for (int i = 0; i < kNumDelayableLow; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low2";
+    std::string url = "http://host" + base::NumberToString(i) + "/low2";
     delayable_second_page.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_FALSE(delayable_second_page[i]->started());
   }
@@ -1071,7 +1071,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   // No new delayable request should start since there are already
   // |kNumDelayableLow| requests in flight.
   std::string url =
-      "http://host" + base::IntToString(kNumDelayableLow) + "/low3";
+      "http://host" + base::NumberToString(kNumDelayableLow) + "/low3";
   delayable_second_page.push_back(NewRequest(url.c_str(), net::LOWEST));
   EXPECT_FALSE(delayable_second_page.back()->started());
 }
@@ -1444,7 +1444,7 @@ TEST_F(ResourceSchedulerTest,
   // per host limit from kicking in.
   for (int i = 0; i < max_low_priority_requests_allowed; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_TRUE(lows_singlehost[i]->started()) << i;
   }
@@ -1484,7 +1484,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelaySet) {
   // per host limit from kicking in.
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_EQ(i < max_low_priority_requests_allowed,
               lows_singlehost[i]->started());
@@ -1531,7 +1531,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayNotSet) {
   // per host limit from kicking in.
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_EQ(i < max_low_priority_requests_allowed,
               lows_singlehost[i]->started());
@@ -1580,7 +1580,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerFires) {
   // per host limit from kicking in.
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_EQ(i < max_low_priority_requests_allowed,
               lows_singlehost[i]->started());
@@ -1628,7 +1628,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerNotFired) {
   // per host limit from kicking in.
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_EQ(i < max_low_priority_requests_allowed,
               lows_singlehost[i]->started());
@@ -1678,7 +1678,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerRunsOnRequestSchedule) {
 
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
     EXPECT_EQ(i < max_low_priority_requests_allowed,
               lows_singlehost[i]->started());
@@ -1710,7 +1710,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerRunsOnRequestSchedule) {
   // Start some requests which end up pending.
   for (int i = 0; i < max_low_priority_requests_allowed + 10; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
-    std::string url = "http://host" + base::IntToString(i) + "/low";
+    std::string url = "http://host" + base::NumberToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
   EXPECT_TRUE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());

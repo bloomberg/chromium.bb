@@ -15,7 +15,7 @@ void SharedFileSwitchValueBuilder::AddEntry(const std::string& key_str,
     switch_value_ += ",";
   }
   switch_value_ += key_str, switch_value_ += ":";
-  switch_value_ += base::IntToString(key_id);
+  switch_value_ += base::NumberToString(key_id);
 }
 
 base::Optional<std::map<int, std::string>> ParseSharedFileSwitchValue(

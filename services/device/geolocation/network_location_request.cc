@@ -321,7 +321,7 @@ void GetLocationFromResponse(int net_error,
 
   if (status_code != 200) {  // HTTP OK.
     std::string message = "Returned error code ";
-    message += base::IntToString(status_code);
+    message += base::NumberToString(status_code);
     FormatPositionError(server_url, message, position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_NOT_OK);
     return;
