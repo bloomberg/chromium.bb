@@ -688,6 +688,10 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
       pmd.GetAllocatorDump("parkable_strings");
   ASSERT_NE(nullptr, dump);
 
+  MemoryAllocatorDump::Entry original("original_size", "bytes",
+                                      2 * kSizeKb * 1000);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(original))));
+
   // |parkable1| is unparked.
   MemoryAllocatorDump::Entry uncompressed("uncompressed_size", "bytes",
                                           kSizeKb * 1000);

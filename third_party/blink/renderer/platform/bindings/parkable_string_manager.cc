@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/memory_pressure_listener.h"
@@ -133,12 +134,14 @@ bool ParkableStringManager::OnMemoryDump(
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump("parkable_strings");
 
+  size_t original_size = 0;
   size_t uncompressed_size = 0;
   size_t compressed_size = 0;
   size_t metadata_size = 0;
   size_t overhead_size = 0;
 
   for (ParkableStringImpl* str : unparked_strings_.Values()) {
+    original_size += str->CharactersSizeInBytes();
     uncompressed_size += str->CharactersSizeInBytes();
     metadata_size += sizeof(ParkableStringImpl);
 
@@ -147,6 +150,7 @@ bool ParkableStringManager::OnMemoryDump(
   }
 
   for (ParkableStringImpl* str : parked_strings_) {
+    original_size += str->CharactersSizeInBytes();
     compressed_size += str->compressed_size();
     metadata_size += sizeof(ParkableStringImpl);
   }
@@ -154,6 +158,7 @@ bool ParkableStringManager::OnMemoryDump(
   size_t total_size =
       uncompressed_size + compressed_size + metadata_size + overhead_size;
   dump->AddScalar("size", "bytes", total_size);
+  dump->AddScalar("original_size", "bytes", original_size);
   dump->AddScalar("uncompressed_size", "bytes", uncompressed_size);
   dump->AddScalar("compressed_size", "bytes", compressed_size);
   dump->AddScalar("metadata_size", "bytes", metadata_size);
@@ -320,6 +325,7 @@ void ParkableStringManager::AgeStringsAndPark() {
   if (!base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
     return;
 
+  TRACE_EVENT0("blink", "ParkableStringManager::AgeStringsAndPark");
   has_pending_aging_task_ = false;
 
   WTF::Vector<ParkableStringImpl*> unparked =
