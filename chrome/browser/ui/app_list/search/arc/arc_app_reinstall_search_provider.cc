@@ -182,7 +182,7 @@ void ArcAppReinstallSearchProvider::UpdateResults() {
     } else if (icon_it != icon_urls_.end()) {
       // Icon is loaded, add it to the results.
       new_results.emplace_back(std::make_unique<ArcAppReinstallAppResult>(
-          loaded_value_[i], icon_it->second, /*is_recommendation=*/true));
+          loaded_value_[i], icon_it->second));
     }
   }
 

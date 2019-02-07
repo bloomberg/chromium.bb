@@ -19,8 +19,7 @@ class ArcAppReinstallAppResult : public ChromeSearchResult {
  public:
   ArcAppReinstallAppResult(
       const arc::mojom::AppReinstallCandidatePtr& mojom_data,
-      const gfx::ImageSkia& skia_icon,
-      bool is_recommendation);
+      const gfx::ImageSkia& skia_icon);
   ~ArcAppReinstallAppResult() override;
 
   // ArcAppResult:

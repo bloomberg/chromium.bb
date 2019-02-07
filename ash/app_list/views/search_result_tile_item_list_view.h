@@ -47,6 +47,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;
 
+  std::vector<SearchResult*> GetDisplayResults();
+
   std::vector<SearchResultTileItemView*> tile_views_;
 
   std::vector<views::Separator*> separator_views_;
@@ -56,6 +58,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   views::Textfield* search_box_;
 
   const bool is_play_store_app_search_enabled_;
+
+  const bool is_app_reinstall_recommendation_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };

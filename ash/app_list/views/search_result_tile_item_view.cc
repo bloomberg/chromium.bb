@@ -72,6 +72,8 @@ SearchResultTileItemView::SearchResultTileItemView(
       pagination_model_(pagination_model),
       is_play_store_app_search_enabled_(
           app_list_features::IsPlayStoreAppSearchEnabled()),
+      is_app_reinstall_recommendation_enabled_(
+          app_list_features::IsAppReinstallZeroStateEnabled()),
       show_in_apps_page_(show_in_apps_page),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -87,7 +89,8 @@ SearchResultTileItemView::SearchResultTileItemView(
   AddChildView(icon_);
 
   if (is_play_store_app_search_enabled_ ||
-      app_list_features::IsAppShortcutSearchEnabled()) {
+      app_list_features::IsAppShortcutSearchEnabled() ||
+      is_app_reinstall_recommendation_enabled_) {
     badge_ = new views::ImageView;
     badge_->set_can_process_events_within_subtree(false);
     badge_->SetVerticalAlignment(views::ImageView::LEADING);
@@ -104,7 +107,8 @@ SearchResultTileItemView::SearchResultTileItemView(
   title_->SetAllowCharacterBreak(true);
   AddChildView(title_);
 
-  if (is_play_store_app_search_enabled_) {
+  if (is_play_store_app_search_enabled_ ||
+      is_app_reinstall_recommendation_enabled_) {
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
     rating_->SetLineHeight(kTileTextLineHeight);
@@ -263,7 +267,6 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_RETURN) {
     if (IsSuggestedAppTile())
       LogAppLaunch();
-
     RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
     view_delegate_->OpenSearchResult(result()->id(), event.flags());
