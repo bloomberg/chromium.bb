@@ -12,8 +12,8 @@
 namespace gpu {
 namespace gles2 {
 
-MultiDrawManager::ResultData::ResultData()
-    : draw_function(DrawFunction::None) {}
+MultiDrawManager::ResultData::ResultData() = default;
+MultiDrawManager::ResultData::~ResultData() = default;
 
 MultiDrawManager::ResultData::ResultData(ResultData&& rhs)
     : draw_function(rhs.draw_function),
@@ -25,7 +25,6 @@ MultiDrawManager::ResultData::ResultData(ResultData&& rhs)
       offsets(std::move(rhs.offsets)),
       indices(std::move(rhs.indices)),
       instance_counts(std::move(rhs.instance_counts)) {
-  rhs.draw_function = DrawFunction::None;
 }
 
 MultiDrawManager::ResultData& MultiDrawManager::ResultData::operator=(
@@ -42,33 +41,32 @@ MultiDrawManager::ResultData& MultiDrawManager::ResultData::operator=(
   std::swap(offsets, rhs.offsets);
   std::swap(indices, rhs.indices);
   std::swap(instance_counts, rhs.instance_counts);
-
-  rhs.draw_function = DrawFunction::None;
   return *this;
 }
 
-MultiDrawManager::ResultData::~ResultData() {}
-
 MultiDrawManager::MultiDrawManager(IndexStorageType index_type)
-    : current_draw_offset_(0), index_type_(index_type), result_() {}
+    : draw_state_(DrawState::End),
+      current_draw_offset_(0),
+      index_type_(index_type),
+      result_() {}
 
 bool MultiDrawManager::Begin(GLsizei drawcount) {
-  result_.drawcount = drawcount;
-  current_draw_offset_ = 0;
-  if (result_.draw_function != DrawFunction::None) {
-    NOTREACHED();
+  if (draw_state_ != DrawState::End) {
     return false;
   }
+  result_.drawcount = drawcount;
+  current_draw_offset_ = 0;
+  draw_state_ = DrawState::Begin;
   return true;
 }
 
 bool MultiDrawManager::End(ResultData* result) {
   DCHECK(result);
-
-  if (result_.draw_function == DrawFunction::None ||
+  if (draw_state_ != DrawState::Draw ||
       current_draw_offset_ != result_.drawcount) {
     return false;
   }
+  draw_state_ = DrawState::End;
   *result = std::move(result_);
   return true;
 }
@@ -77,10 +75,7 @@ bool MultiDrawManager::MultiDrawArrays(GLenum mode,
                                        const GLint* firsts,
                                        const GLsizei* counts,
                                        GLsizei drawcount) {
-  if (!EnsureDrawArraysFunction(DrawFunction::DrawArrays, mode) ||
-      base::CheckAdd(current_draw_offset_, drawcount).ValueOrDie() >
-          result_.drawcount) {
-    NOTREACHED();
+  if (!EnsureDrawArraysFunction(DrawFunction::DrawArrays, mode, drawcount)) {
     return false;
   }
   std::copy(firsts, firsts + drawcount, &result_.firsts[current_draw_offset_]);
@@ -94,10 +89,8 @@ bool MultiDrawManager::MultiDrawArraysInstanced(GLenum mode,
                                                 const GLsizei* counts,
                                                 const GLsizei* instance_counts,
                                                 GLsizei drawcount) {
-  if (!EnsureDrawArraysFunction(DrawFunction::DrawArraysInstanced, mode) ||
-      base::CheckAdd(current_draw_offset_, drawcount).ValueOrDie() >
-          result_.drawcount) {
-    NOTREACHED();
+  if (!EnsureDrawArraysFunction(DrawFunction::DrawArraysInstanced, mode,
+                                drawcount)) {
     return false;
   }
   std::copy(firsts, firsts + drawcount, &result_.firsts[current_draw_offset_]);
@@ -113,10 +106,8 @@ bool MultiDrawManager::MultiDrawElements(GLenum mode,
                                          GLenum type,
                                          const GLsizei* offsets,
                                          GLsizei drawcount) {
-  if (!EnsureDrawElementsFunction(DrawFunction::DrawElements, mode, type) ||
-      base::CheckAdd(current_draw_offset_, drawcount).ValueOrDie() >
-          result_.drawcount) {
-    NOTREACHED();
+  if (!EnsureDrawElementsFunction(DrawFunction::DrawElements, mode, type,
+                                  drawcount)) {
     return false;
   }
   std::copy(counts, counts + drawcount, &result_.counts[current_draw_offset_]);
@@ -145,10 +136,7 @@ bool MultiDrawManager::MultiDrawElementsInstanced(
     const GLsizei* instance_counts,
     GLsizei drawcount) {
   if (!EnsureDrawElementsFunction(DrawFunction::DrawElementsInstanced, mode,
-                                  type) ||
-      base::CheckAdd(current_draw_offset_, drawcount).ValueOrDie() >
-          result_.drawcount) {
-    NOTREACHED();
+                                  type, drawcount)) {
     return false;
   }
   std::copy(counts, counts + drawcount, &result_.counts[current_draw_offset_]);
@@ -199,30 +187,65 @@ void MultiDrawManager::ResizeArrays() {
   }
 }
 
+bool MultiDrawManager::ValidateDrawcount(GLsizei drawcount) const {
+  if (drawcount < 0) {
+    return false;
+  }
+  GLsizei new_offset;
+  if (!base::CheckAdd(current_draw_offset_, drawcount)
+           .AssignIfValid(&new_offset)) {
+    return false;
+  }
+  if (new_offset > result_.drawcount) {
+    return false;
+  }
+  return true;
+}
+
 bool MultiDrawManager::EnsureDrawArraysFunction(DrawFunction draw_function,
-                                                GLenum mode) {
-  bool first_call = result_.draw_function == DrawFunction::None;
+                                                GLenum mode,
+                                                GLsizei drawcount) {
+  if (!ValidateDrawcount(drawcount)) {
+    return false;
+  }
+  bool invalid_draw_state = draw_state_ == DrawState::End;
+  bool first_call = draw_state_ == DrawState::Begin;
   bool enums_match = result_.mode == mode;
+
+  if (invalid_draw_state || (!first_call && !enums_match)) {
+    return false;
+  }
   if (first_call) {
+    draw_state_ = DrawState::Draw;
     result_.draw_function = draw_function;
     result_.mode = mode;
     ResizeArrays();
   }
-  return first_call || enums_match;
+  return true;
 }
 
 bool MultiDrawManager::EnsureDrawElementsFunction(DrawFunction draw_function,
                                                   GLenum mode,
-                                                  GLenum type) {
-  bool first_call = result_.draw_function == DrawFunction::None;
+                                                  GLenum type,
+                                                  GLsizei drawcount) {
+  if (!ValidateDrawcount(drawcount)) {
+    return false;
+  }
+  bool invalid_draw_state = draw_state_ == DrawState::End;
+  bool first_call = draw_state_ == DrawState::Begin;
   bool enums_match = result_.mode == mode && result_.type == type;
+
+  if (invalid_draw_state || (!first_call && !enums_match)) {
+    return false;
+  }
   if (first_call) {
+    draw_state_ = DrawState::Draw;
     result_.draw_function = draw_function;
     result_.mode = mode;
     result_.type = type;
     ResizeArrays();
   }
-  return first_call || enums_match;
+  return true;
 }
 
 }  // namespace gles2
