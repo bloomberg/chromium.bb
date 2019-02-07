@@ -202,12 +202,12 @@ void DeactivateSync(Widget* widget) {
   // active. But we can simulate deactivation (e.g. as if another application
   // became active) by temporarily making |widget| non-activatable, then
   // activating (and closing) a temporary widget.
-  widget->widget_delegate()->set_can_activate(false);
+  widget->widget_delegate()->SetCanActivate(false);
   Widget* stealer = new Widget;
   stealer->Init(Widget::InitParams(Widget::InitParams::TYPE_WINDOW));
   ShowSync(stealer);
   stealer->CloseNow();
-  widget->widget_delegate()->set_can_activate(true);
+  widget->widget_delegate()->SetCanActivate(true);
 #else
   views::test::WidgetActivationWaiter waiter(widget, false);
   widget->Deactivate();

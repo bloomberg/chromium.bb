@@ -934,6 +934,10 @@ void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
   SetBoundsInPixels(rect, viz::LocalSurfaceIdAllocation());
 }
 
+void DesktopWindowTreeHostMus::OnCanActivateChanged() {
+  // TODO(crbug.com/928939): call to WindowTreeClient::SetCanFocus()
+}
+
 void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();

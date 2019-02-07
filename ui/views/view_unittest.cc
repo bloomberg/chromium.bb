@@ -2143,7 +2143,7 @@ TEST_F(ViewTest, HandleAccelerator) {
 
   // TYPE_POPUP widgets default to non-activatable, so the Show() above wouldn't
   // have activated the Widget. First, allow activation.
-  widget->widget_delegate()->set_can_activate(true);
+  widget->widget_delegate()->SetCanActivate(true);
 
   // When a non-child view is active, it should handle accelerators.
   view->accelerator_count_map_[return_accelerator] = 0;

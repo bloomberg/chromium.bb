@@ -50,7 +50,7 @@ TouchSelectionMenuViews::TouchSelectionMenuViews(
   set_shadow(BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   set_margins(gfx::Insets(kMenuMargin, kMenuMargin, kMenuMargin, kMenuMargin));
-  set_can_activate(false);
+  SetCanActivate(false);
   set_adjust_if_offscreen(true);
   EnableCanvasFlippingForRTLUI(true);
 

@@ -317,7 +317,7 @@ void NotificationViewMDTest::UpdateNotificationViews(
     widget_->SetContentsView(notification_view_.get());
     widget_->SetSize(notification_view_->GetPreferredSize());
     widget_->Show();
-    widget_->widget_delegate()->set_can_activate(true);
+    widget_->widget_delegate()->SetCanActivate(true);
     widget_->Activate();
   } else {
     notification_view_->UpdateWithNotification(notification);

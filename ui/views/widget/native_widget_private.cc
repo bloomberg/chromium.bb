@@ -26,5 +26,7 @@ void NativeWidgetPrivate::ShowEmojiPanel() {
   ui::ShowEmojiPanel();
 }
 
+void NativeWidgetPrivate::OnCanActivateChanged() {}
+
 }  // namespace internal
 }  // namespace views

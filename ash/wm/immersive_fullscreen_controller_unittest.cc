@@ -1021,14 +1021,14 @@ TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
 
   views::BubbleDialogDelegateView* bubble_delegate4(
       new TestBubbleDialogDelegate(child_view));
-  bubble_delegate4->set_can_activate(false);
+  bubble_delegate4->SetCanActivate(false);
   views::Widget* bubble_widget4(
       views::BubbleDialogDelegateView::CreateBubble(bubble_delegate4));
   bubble_widget4->Show();
 
   views::BubbleDialogDelegateView* bubble_delegate5(
       new TestBubbleDialogDelegate(child_view));
-  bubble_delegate5->set_can_activate(false);
+  bubble_delegate5->SetCanActivate(false);
   views::Widget* bubble_widget5(
       views::BubbleDialogDelegateView::CreateBubble(bubble_delegate5));
   bubble_widget5->Show();

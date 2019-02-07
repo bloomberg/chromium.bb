@@ -149,6 +149,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool ShouldUseDesktopNativeCursorManager() const override;
   bool ShouldCreateVisibilityController() const override;
   void SetBoundsInDIP(const gfx::Rect& bounds_in_dip) override;
+  void OnCanActivateChanged() override;
 
   // MusClientObserver:
   void OnWindowManagerFrameValuesChanged() override;

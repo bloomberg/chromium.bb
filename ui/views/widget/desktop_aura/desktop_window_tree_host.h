@@ -191,6 +191,9 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // Sets the bounds in screen coordinate DIPs (WindowTreeHost generally
   // operates in pixels). This function is implemented in terms of Screen.
   virtual void SetBoundsInDIP(const gfx::Rect& bounds);
+
+  // See description in Widget::OnCanActivateChanged().
+  virtual void OnCanActivateChanged() {}
 };
 
 }  // namespace views

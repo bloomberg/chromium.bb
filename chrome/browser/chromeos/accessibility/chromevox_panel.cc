@@ -70,12 +70,12 @@ void ChromeVoxPanel::EnterFullscreen() {
 
 void ChromeVoxPanel::ExitFullscreen() {
   GetWidget()->Deactivate();
-  GetWidget()->widget_delegate()->set_can_activate(false);
+  GetWidget()->widget_delegate()->SetCanActivate(false);
   SetAccessibilityPanelFullscreen(false);
 }
 
 void ChromeVoxPanel::Focus() {
-  GetWidget()->widget_delegate()->set_can_activate(true);
+  GetWidget()->widget_delegate()->SetCanActivate(true);
   GetWidget()->Activate();
   GetContentsView()->RequestFocus();
 }

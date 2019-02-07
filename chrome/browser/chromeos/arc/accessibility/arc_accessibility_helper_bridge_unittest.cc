@@ -418,7 +418,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
 
   // Prepare widget to hold it.
   views::Widget* widget = CreateTestWidget();
-  widget->widget_delegate()->set_can_activate(false);
+  widget->widget_delegate()->SetCanActivate(false);
   widget->Deactivate();
   widget->SetContentsView(notification_view.get());
   widget->Show();

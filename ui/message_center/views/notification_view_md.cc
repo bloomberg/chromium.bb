@@ -1291,7 +1291,7 @@ void NotificationViewMD::OnSettingsButtonPressed(const ui::Event& event) {
 }
 
 void NotificationViewMD::Activate() {
-  GetWidget()->widget_delegate()->set_can_activate(true);
+  GetWidget()->widget_delegate()->SetCanActivate(true);
   GetWidget()->Activate();
 }
 

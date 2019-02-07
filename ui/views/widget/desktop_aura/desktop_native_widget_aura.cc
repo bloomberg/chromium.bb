@@ -1005,6 +1005,10 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   desktop_window_tree_host_->SizeConstraintsChanged();
 }
 
+void DesktopNativeWidgetAura::OnCanActivateChanged() {
+  desktop_window_tree_host_->OnCanActivateChanged();
+}
+
 std::string DesktopNativeWidgetAura::GetName() const {
   return name_;
 }

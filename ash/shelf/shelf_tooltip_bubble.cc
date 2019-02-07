@@ -37,7 +37,7 @@ ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
     : ShelfBubble(anchor, alignment, background_color) {
   set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin));
   set_close_on_deactivate(false);
-  set_can_activate(false);
+  SetCanActivate(false);
   set_accept_events(false);
   set_shadow(views::BubbleBorder::NO_ASSETS);
   SetLayoutManager(std::make_unique<views::FillLayout>());

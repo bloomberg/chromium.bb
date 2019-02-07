@@ -743,7 +743,7 @@ void ArcNotificationContentView::ActivateWidget(bool activate) {
 
   // Make the widget active.
   if (activate) {
-    GetWidget()->widget_delegate()->set_can_activate(true);
+    GetWidget()->widget_delegate()->SetCanActivate(true);
     GetWidget()->Activate();
 
     if (surface_)
@@ -751,7 +751,7 @@ void ArcNotificationContentView::ActivateWidget(bool activate) {
     else
       activate_on_attach_ = true;
   } else {
-    GetWidget()->widget_delegate()->set_can_activate(false);
+    GetWidget()->widget_delegate()->SetCanActivate(false);
   }
 }
 

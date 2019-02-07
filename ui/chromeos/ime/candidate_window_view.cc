@@ -154,7 +154,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       should_show_upper_side_(false),
       was_candidate_window_open_(false),
       window_shell_id_(window_shell_id) {
-  set_can_activate(false);
+  SetCanActivate(false);
   DCHECK(parent || features::IsUsingWindowService());
   set_parent_window(parent);
   set_margins(gfx::Insets());
