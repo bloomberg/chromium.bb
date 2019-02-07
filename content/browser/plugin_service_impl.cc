@@ -294,10 +294,8 @@ bool PluginServiceImpl::GetPluginInfoArray(
     bool allow_wildcard,
     std::vector<WebPluginInfo>* plugins,
     std::vector<std::string>* actual_mime_types) {
-  bool use_stale = false;
-  PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &use_stale, plugins, actual_mime_types);
-  return use_stale;
+  return PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, plugins, actual_mime_types);
 }
 
 bool PluginServiceImpl::GetPluginInfo(int render_process_id,
