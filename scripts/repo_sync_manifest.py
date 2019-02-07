@@ -99,6 +99,8 @@ def GetParser():
   optimization_group.add_argument(
       '--git-cache-dir', type='path',
       help='Git cache directory to use.')
+  optimization_group.add_argument(
+      '--repo-url', help='Repo repository location.')
 
   return parser
 
@@ -194,7 +196,8 @@ def main(argv):
       manifest_repo_url=manifest_url,
       directory=options.repo_root,
       branch=options.branch,
-      git_cache_dir=options.git_cache_dir)
+      git_cache_dir=options.git_cache_dir,
+      repo_url=options.repo_url)
 
   if options.copy_repo:
     repo.PreLoad(options.copy_repo)

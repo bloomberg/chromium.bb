@@ -30,6 +30,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def setUp(self):
     self.repo_dir = os.path.join(self.tempdir, 'repo')
+    self.repo_url = os.path.join(self.tempdir, '.repo/repo')
     self.preload_src = os.path.join(self.tempdir, 'source')
     self.git_cache = os.path.join(self.tempdir, 'git_cache')
     self.manifest = os.path.join(self.tempdir, 'manifest.xml')
@@ -71,6 +72,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.INT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest=None)
     ])
@@ -91,6 +93,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.EXT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest=None)
     ])
@@ -111,6 +114,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.manifest_url,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest=None)
     ])
@@ -128,6 +132,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.INT_MANIFEST_URL,
             branch='branch',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest=None)
     ])
@@ -158,6 +163,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.INT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest='resolved_buildspec')
     ])
@@ -186,6 +192,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.EXT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest='resolved_buildspec')
     ])
@@ -213,6 +220,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.INT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest='resolved_buildspec')
     ])
@@ -241,6 +249,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.EXT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest='resolved_buildspec')
     ])
@@ -275,6 +284,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.INT_MANIFEST_URL,
             branch='master',
             git_cache_dir=None,
+            repo_url=None,
         ),
         mock.call().Sync(detach=True, local_manifest=self.manifest)
     ])
@@ -284,6 +294,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
         '--repo-root', self.repo_dir,
         '--copy-repo', self.preload_src,
         '--git-cache', self.git_cache,
+        '--repo-url', self.repo_url,
     ])
 
     # Ensure manifest_versions is not updated.
@@ -296,6 +307,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
             manifest_repo_url=self.INT_MANIFEST_URL,
             branch='master',
             git_cache_dir=self.git_cache,
+            repo_url=self.repo_url,
         ),
         mock.call().PreLoad(self.preload_src),
         mock.call().Sync(detach=True, local_manifest=None)
