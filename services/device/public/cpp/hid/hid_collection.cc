@@ -5,6 +5,7 @@
 #include "services/device/public/cpp/hid/hid_collection.h"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -12,6 +13,20 @@
 #include "services/device/public/cpp/hid/hid_item_state_table.h"
 
 namespace device {
+
+namespace {
+// The maximum value of the report size for a single item in a HID report is 32
+// bits. From the Device Class Definition for HID v1.11, sec. 8.2: "An item
+// field cannot span more than 4 bytes in a report. For example, a 32-bit item
+// must start on a byte boundary to satisfy this condition."
+static constexpr uint32_t kMaxItemReportSizeBits = 32;
+
+// On Windows, HID report length is reported (in bytes) as a USHORT which
+// imposes a practical limit of 2^16-1 bytes. Apply the same upper limit when
+// computing the maximum report size.
+static constexpr uint64_t kMaxReasonableReportLengthBits =
+    std::numeric_limits<uint16_t>::max() * 8;
+}  // namespace
 
 HidCollection::HidCollection(HidCollection* parent,
                              uint32_t usage_page,
@@ -203,10 +218,30 @@ mojom::HidCollectionInfoPtr HidCollection::GetDetails(
   for (const auto& entry : report_lists) {
     entry.max_report_bits = 0;
     for (const auto& report : entry.reports) {
-      size_t report_bits = 0;
-      for (const auto& item : report.second)
-        report_bits += item->GetReportSize() * item->GetReportCount();
-      entry.max_report_bits = std::max(entry.max_report_bits, report_bits);
+      uint64_t report_bits = 0;
+      for (const auto& item : report.second) {
+        uint64_t report_size = item->GetReportSize();
+        // Skip reports with items that have invalid report sizes.
+        if (report_size > kMaxItemReportSizeBits) {
+          report_bits = 0;
+          break;
+        }
+        // Report size and report count are both 32-bit values. A 64-bit integer
+        // type is needed to avoid overflow when computing the product.
+        uint64_t report_count = item->GetReportCount();
+        uint64_t item_bits = report_size * report_count;
+        // Ignore this report if adding the size of this item would extend the
+        // total report length beyond the reasonable maximum.
+        if (item_bits > kMaxReasonableReportLengthBits ||
+            report_bits > kMaxReasonableReportLengthBits - item_bits) {
+          report_bits = 0;
+          break;
+        }
+        report_bits += item_bits;
+      }
+      DCHECK_LE(report_bits, kMaxReasonableReportLengthBits);
+      entry.max_report_bits =
+          std::max(entry.max_report_bits, size_t{report_bits});
     }
   }
   return collection_info;

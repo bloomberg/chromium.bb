@@ -81,10 +81,10 @@ class HidReportItem {
   bool HasNull() const { return report_info_.null; }
 
   // Returns the width of each field defined by this item, in bits.
-  uint16_t GetReportSize() const { return global_.report_size; }
+  uint32_t GetReportSize() const { return global_.report_size; }
 
   // Returns the number of fields defined by this item.
-  uint16_t GetReportCount() const { return global_.report_count; }
+  uint32_t GetReportCount() const { return global_.report_count; }
 
   // Returns a 32-bit value representing a unit definition for the current item,
   // or 0 if the item is not assigned a unit.
