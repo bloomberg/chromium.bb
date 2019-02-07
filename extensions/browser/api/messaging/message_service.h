@@ -33,6 +33,7 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 class MessagingDelegate;
+struct MessagingEndpoint;
 
 // This class manages message and event passing between renderer processes.
 // It maintains a list of processes that are listening to events and a set of
@@ -81,7 +82,7 @@ class MessageService : public BrowserContextKeyedAPI,
   void OpenChannelToExtension(int source_process_id,
                               int source_routing_id,
                               const PortId& source_port_id,
-                              const std::string& source_extension_id,
+                              const MessagingEndpoint& source_endpoint,
                               const std::string& target_extension_id,
                               const GURL& source_url,
                               const std::string& channel_name);

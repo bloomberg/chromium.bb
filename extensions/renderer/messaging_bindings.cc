@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -188,14 +189,22 @@ void MessagingBindings::OpenChannelToExtension(
   ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_ExternalConnectionInfo info;
+
   // For messaging APIs, hosted apps should be considered a web page so hide
   // its extension ID.
   const Extension* extension = context()->extension();
-  if (extension && !extension->is_hosted_app())
-    info.source_id = extension->id();
+  if (extension && !extension->is_hosted_app()) {
+    info.source_endpoint =
+        context()->context_type() == Feature::CONTENT_SCRIPT_CONTEXT
+            ? MessagingEndpoint::ForContentScript(extension->id())
+            : MessagingEndpoint::ForExtension(extension->id());
+  } else {
+    info.source_endpoint = MessagingEndpoint::ForWebPage();
+  }
 
   v8::Isolate* isolate = args.GetIsolate();
   info.target_id = *v8::String::Utf8Value(isolate, args[0]);
+
   info.source_url = context()->url();
   std::string channel_name = *v8::String::Utf8Value(isolate, args[1]);
 

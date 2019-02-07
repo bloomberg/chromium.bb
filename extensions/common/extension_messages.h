@@ -18,6 +18,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/common_param_traits.h"
 #include "extensions/common/constants.h"
@@ -50,6 +51,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::InjectionType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::RunLocation,
                           extensions::UserScript::RUN_LOCATION_LAST - 1)
+
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::MessagingEndpoint::Type,
+                          extensions::MessagingEndpoint::Type::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(HostID::HostType, HostID::HOST_TYPE_LAST)
 
@@ -211,15 +215,19 @@ IPC_STRUCT_BEGIN(ExtensionMsg_TabTargetConnectionInfo)
   IPC_STRUCT_MEMBER(int, frame_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_TRAITS_BEGIN(extensions::MessagingEndpoint)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(extension_id)
+IPC_STRUCT_TRAITS_END()
+
 // Struct containing the data for external connections to extensions. Used to
 // handle the IPCs initiated by both connect() and onConnect().
 IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
   // The ID of the extension that is the target of the request.
   IPC_STRUCT_MEMBER(std::string, target_id)
 
-  // The ID of the extension that initiated the request. May be empty if it
-  // wasn't initiated by an extension.
-  IPC_STRUCT_MEMBER(std::string, source_id)
+  // Specifies the type and the ID of the endpoint that initiated the request.
+  IPC_STRUCT_MEMBER(extensions::MessagingEndpoint, source_endpoint)
 
   // The URL of the frame that initiated the request.
   IPC_STRUCT_MEMBER(GURL, source_url)

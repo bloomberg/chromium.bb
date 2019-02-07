@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/extension_bindings_system.h"
@@ -140,7 +141,7 @@ void RendererMessagingService::DispatchOnConnectToScriptContext(
 
   // First, determine the event we'll use to connect.
   std::string target_extension_id = script_context->GetExtensionID();
-  bool is_external = info.source_id != target_extension_id;
+  bool is_external = info.source_endpoint.extension_id != target_extension_id;
   std::string event_name;
   if (channel_name == messaging_util::kSendRequestChannel) {
     event_name = is_external ? messaging_util::kOnRequestExternalEvent
