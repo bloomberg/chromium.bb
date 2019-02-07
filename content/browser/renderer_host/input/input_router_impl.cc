@@ -382,11 +382,14 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     touch_action_filter_.AppendToGestureSequenceForDebugging(
         base::NumberToString(event.event.unique_touch_event_id).c_str());
     touch_action_filter_.IncreaseActiveTouches();
+    // In certain corner cases, the ack for the touch start may not come with a
+    // touch action, then we should set the touch actions to Auto.
     if ((compositor_touch_action_enabled_ &&
          !touch_action_filter_.white_listed_touch_action().has_value()) ||
         (!compositor_touch_action_enabled_ &&
          !touch_action_filter_.allowed_touch_action().has_value())) {
       touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+      touch_action_filter_.OnSetWhiteListedTouchAction(cc::kTouchActionAuto);
       if (compositor_touch_action_enabled_)
         touch_event_queue_.StopTimeoutMonitor();
       UpdateTouchAckTimeoutEnabled();

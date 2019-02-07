@@ -685,13 +685,6 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, BlockDoubleTapDragZoom) {
 
   DoDoubleTapDragZoom();
 
-  // Since we don't expect anything to change, we don't know how long to wait
-  // before we're sure the zoom was blocked.  Do a scroll so that we can wait
-  // until the offset changes. At that point, we know the zoom should have
-  // taken effect if it wasn't blocked by touch-action.
-  DoTouchScroll(gfx::Point(300, 300), gfx::Vector2d(0, 200), true, 10075,
-                gfx::Vector2d(0, 200), kNoJankTime);
-
   EXPECT_EQ(1, ExecuteScriptAndExtractDouble("window.visualViewport.scale"));
 }
 
