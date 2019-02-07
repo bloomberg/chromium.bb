@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/values.h"
 
 namespace cloud_devices {
@@ -30,24 +32,18 @@ class CloudDeviceDescription {
 
   base::Value ToValue() &&;
 
-  // Returns dictionary with capability/option.
-  // Returns NULL if missing.
-  const base::DictionaryValue* GetItem(const std::string& path) const;
+  // Returns item of given type with capability/option.
+  // Returns nullptr if missing.
+  const base::Value* GetItem(const std::vector<base::StringPiece>& path,
+                             base::Value::Type type) const;
 
-  // Create dictionary for capability/option.
-  // Never returns NULL.
-  base::DictionaryValue* CreateItem(const std::string& path);
-
-  // Returns list with capability/option.
-  // Returns NULL if missing.
-  const base::ListValue* GetListItem(const std::string& path) const;
-
-  // Create list for capability/option.
-  // Never returns NULL.
-  base::ListValue* CreateListItem(const std::string& path);
+  // Creates item with given type for capability/option.
+  // Returns nullptr if an intermediate Value in the path is not a dictionary.
+  base::Value* CreateItem(const std::vector<base::StringPiece>& path,
+                          base::Value::Type type);
 
  private:
-  std::unique_ptr<base::DictionaryValue> root_;
+  base::Value root_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudDeviceDescription);
 };

@@ -15,8 +15,8 @@
 namespace cloud_devices {
 
 CloudDeviceDescription::CloudDeviceDescription()
-    : root_(std::make_unique<base::DictionaryValue>()) {
-  root_->SetString(json::kVersion, json::kVersion10);
+    : root_(base::Value(base::Value::Type::DICTIONARY)) {
+  root_.SetKey(json::kVersion, base::Value(json::kVersion10));
 }
 
 CloudDeviceDescription::~CloudDeviceDescription() = default;
@@ -30,13 +30,10 @@ bool CloudDeviceDescription::InitFromString(const std::string& json) {
 }
 
 bool CloudDeviceDescription::InitFromValue(base::Value ticket) {
-  auto parsed = base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(std::move(ticket)));
-  if (!parsed)
+  if (!ticket.is_dict())
     return false;
-
-  root_ = std::move(parsed);
-  return IsValidTicket(*root_);
+  root_ = std::move(ticket);
+  return IsValidTicket(root_);
 }
 
 // static
@@ -51,36 +48,24 @@ bool CloudDeviceDescription::IsValidTicket(const base::Value& ticket) {
 std::string CloudDeviceDescription::ToString() const {
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      *root_, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      root_, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 
 base::Value CloudDeviceDescription::ToValue() && {
-  return base::Value::FromUniquePtrValue(std::move(root_));
+  return std::move(root_);
 }
 
-const base::DictionaryValue* CloudDeviceDescription::GetItem(
-    const std::string& path) const {
-  const base::DictionaryValue* value = nullptr;
-  root_->GetDictionary(path, &value);
-  return value;
+const base::Value* CloudDeviceDescription::GetItem(
+    const std::vector<base::StringPiece>& path,
+    base::Value::Type type) const {
+  return root_.FindPathOfType(path, type);
 }
 
-base::DictionaryValue* CloudDeviceDescription::CreateItem(
-    const std::string& path) {
-  return root_->SetDictionary(path, std::make_unique<base::DictionaryValue>());
-}
-
-const base::ListValue* CloudDeviceDescription::GetListItem(
-    const std::string& path) const {
-  const base::ListValue* value = nullptr;
-  root_->GetList(path, &value);
-  return value;
-}
-
-base::ListValue* CloudDeviceDescription::CreateListItem(
-    const std::string& path) {
-  return root_->SetList(path, std::make_unique<base::ListValue>());
+base::Value* CloudDeviceDescription::CreateItem(
+    const std::vector<base::StringPiece>& path,
+    base::Value::Type type) {
+  return root_.SetPath(path, base::Value(type));
 }
 
 }  // namespace cloud_devices

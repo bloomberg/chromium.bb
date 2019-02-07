@@ -19,10 +19,6 @@
 #include "base/stl_util.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace cloud_devices {
 
 // All traits below specify how to serialize and validate capabilities and
@@ -35,10 +31,10 @@ namespace cloud_devices {
 //   static std::string GetItemPath();
 //
 //   // Loads ticket item. Returns false if failed.
-//   static bool Load(const base::DictionaryValue& dict, ContentType* option);
+//   static bool Load(const base::Value& dict, ContentType* option);
 //
 //   // Saves ticket item.
-//   static void Save(ContentType option, base::DictionaryValue* dict);
+//   static void Save(ContentType option, base::Value* dict);
 
 // Represents a CDD capability that is stored as a JSON list
 // Ex: "<CAPABILITY_NAME>": [ {<VALUE>}, {<VALUE>}, {<VALUE>} ]
