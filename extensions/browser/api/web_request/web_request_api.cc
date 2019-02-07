@@ -145,14 +145,6 @@ const char* const kWebRequestEvents[] = {
     keys::kOnHeadersReceivedEvent,
 };
 
-// List of all webRequest events that support extraHeaders in the extraInfoSpec.
-const char* const kWebRequestExtraHeadersEventNames[] = {
-    keys::kOnBeforeSendHeadersEvent, keys::kOnSendHeadersEvent,
-    keys::kOnHeadersReceivedEvent,   keys::kOnAuthRequiredEvent,
-    keys::kOnResponseStartedEvent,   keys::kOnBeforeRedirectEvent,
-    keys::kOnCompletedEvent,
-};
-
 // User data key for WebRequestAPI::ProxySet.
 const void* const kWebRequestProxySetUserDataKey =
     &kWebRequestProxySetUserDataKey;
@@ -997,8 +989,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   }
   request_time_tracker_->LogRequestStartTime(
       request->id, base::TimeTicks::Now(), has_listener,
-      HasExtraHeadersListenerForRequest(browser_context, extension_info_map,
-                                        request));
+      HasExtraHeadersListener(browser_context, extension_info_map, request));
 
   const bool is_incognito_context = IsIncognitoBrowserContext(browser_context);
 
@@ -1740,40 +1731,22 @@ void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
   callbacks_for_page_load_.push_back(callback);
 }
 
-bool ExtensionWebRequestEventRouter::HasExtraHeadersListenerForRequest(
+bool ExtensionWebRequestEventRouter::HasExtraHeadersListener(
     void* browser_context,
     const extensions::InfoMap* extension_info_map,
     const WebRequestInfo* request) {
+  static const char* kEventNames[] = {
+      keys::kOnBeforeSendHeadersEvent, keys::kOnSendHeadersEvent,
+      keys::kOnHeadersReceivedEvent,   keys::kOnAuthRequiredEvent,
+      keys::kOnResponseStartedEvent,   keys::kOnBeforeRedirectEvent,
+      keys::kOnCompletedEvent,
+  };
   int extra_info_spec = 0;
-  for (const char* name : kWebRequestExtraHeadersEventNames) {
+  for (const char* name : kEventNames) {
     GetMatchingListeners(browser_context, extension_info_map, name, request,
                          &extra_info_spec);
     if (extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
       return true;
-  }
-  return false;
-}
-
-bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListener(
-    void* browser_context) {
-  if (HasAnyExtraHeadersListenerImpl(browser_context))
-    return true;
-
-  void* cross_browser_context = GetCrossBrowserContext(browser_context);
-  if (cross_browser_context)
-    return HasAnyExtraHeadersListenerImpl(cross_browser_context);
-
-  return false;
-}
-
-bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerImpl(
-    void* browser_context) {
-  for (const char* name : kWebRequestExtraHeadersEventNames) {
-    const Listeners& listeners = listeners_[browser_context][name];
-    for (const auto& listener : listeners) {
-      if (listener->extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
-        return true;
-    }
   }
   return false;
 }
