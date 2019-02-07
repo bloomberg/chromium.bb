@@ -292,6 +292,7 @@
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
       'win-annotator-rel': 'release_bot',
       'win-autofill-captured-sites-rel': 'release_bot',
+      'win32-arm64-rel': 'win32_arm64_release_bot',
     },
 
     'chromium.goma': {
@@ -1827,6 +1828,10 @@
 
     'win_msvc_release_bot': [
       'no_clang', 'release_bot',
+    ],
+
+    'win32_arm64_release_bot': [
+      'arm64', 'disable_nacl', 'release_bot',
     ],
 
     'clang_tot_win_release_cross': [
