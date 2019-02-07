@@ -47,8 +47,9 @@ WebComponent::WebComponent(
   if (startup_info.launch_info.additional_services &&
       startup_info.launch_info.additional_services->host_directory) {
     additional_services_ =
-        std::make_unique<base::fuchsia::ComponentContext>(std::move(
-            startup_info.launch_info.additional_services->host_directory));
+        std::make_unique<base::fuchsia::ServiceDirectoryClient>(
+            fidl::InterfaceHandle<fuchsia::io::Directory>(std::move(
+                startup_info.launch_info.additional_services->host_directory)));
     additional_service_names_ =
         std::move(startup_info.launch_info.additional_services->names);
   }
@@ -75,7 +76,8 @@ WebComponent::WebComponent(
   // message-loop, to ensure that it is available before the ServiceDirectory
   // starts processing requests.
   service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-      std::move(startup_info.launch_info.directory_request));
+      fidl::InterfaceRequest<fuchsia::io::Directory>(
+          std::move(startup_info.launch_info.directory_request)));
   view_provider_binding_ = std::make_unique<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>(
       service_directory_.get(), this);

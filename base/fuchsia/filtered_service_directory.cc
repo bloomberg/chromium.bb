@@ -26,7 +26,7 @@ FilteredServiceDirectory::~FilteredServiceDirectory() {
 }
 
 void FilteredServiceDirectory::AddService(const char* service_name) {
-  outgoing_directory_->AddService(
+  outgoing_directory_->AddServiceUnsafe(
       service_name,
       base::BindRepeating(&FilteredServiceDirectory::HandleRequest,
                           base::Unretained(this), service_name));

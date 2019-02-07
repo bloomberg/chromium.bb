@@ -7,7 +7,7 @@
 #include <zircon/syscalls.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "media/audio/fuchsia/audio_manager_fuchsia.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -36,7 +36,7 @@ bool AudioOutputStreamFuchsia::Open() {
 
   // Connect |audio_renderer_| to the audio service.
   fuchsia::media::AudioPtr audio_server =
-      base::fuchsia::ComponentContext::GetDefault()
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<fuchsia::media::Audio>();
   audio_server->CreateAudioRenderer(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/service_directory.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "fuchsia/runners/cast/cast_runner.h"
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
   CastRunner runner(
       base::fuchsia::ServiceDirectory::GetDefault(),
       WebContentRunner::CreateDefaultWebContext(),
-      base::fuchsia::ComponentContext::GetDefault()
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<chromium::cast::ApplicationConfigManager>(),
       run_loop.QuitClosure());
 

@@ -15,9 +15,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/logging.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "url/gurl.h"
@@ -73,14 +73,14 @@ class WebComponent : public fuchsia::sys::ComponentController,
   virtual void DestroyComponent(int termination_exit_code,
                                 fuchsia::sys::TerminationReason reason);
 
-  // Gets a directory of incoming services provided to the component, or returns
+  // Returns the directory of incoming services provided to the component, or
   // nullptr if none was provided.
-  base::fuchsia::ComponentContext* additional_services() const {
+  base::fuchsia::ServiceDirectoryClient* additional_services() const {
     return additional_services_.get();
   }
 
-  // Gets the names of services available in additional_services().
-  const std::vector<std::string> additional_service_names() {
+  // Returns the names of services available in additional_services().
+  const std::vector<std::string>& additional_service_names() const {
     return additional_service_names_;
   }
 
@@ -96,7 +96,7 @@ class WebComponent : public fuchsia::sys::ComponentController,
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
 
   // Incoming services provided at component creation.
-  std::unique_ptr<base::fuchsia::ComponentContext> additional_services_;
+  std::unique_ptr<base::fuchsia::ServiceDirectoryClient> additional_services_;
 
   // The names of services provided at component creation.
   std::vector<std::string> additional_service_names_;

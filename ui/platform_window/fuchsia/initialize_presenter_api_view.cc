@@ -7,8 +7,8 @@
 #include <fuchsia/ui/policy/cpp/fidl.h>
 #include <lib/zx/eventpair.h>
 
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 
 namespace ui {
 namespace fuchsia {
@@ -26,7 +26,7 @@ void InitializeViewTokenAndPresentView(
   ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create";
 
   // Request Presenter to show the view full-screen.
-  auto presenter = base::fuchsia::ComponentContext::GetDefault()
+  auto presenter = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
                        ->ConnectToService<::fuchsia::ui::policy::Presenter>();
 
   presenter->Present2(std::move(view_holder_token), nullptr);

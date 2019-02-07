@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
@@ -22,7 +22,7 @@
 // static
 chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
   auto web_context_provider =
-      base::fuchsia::ComponentContext::GetDefault()
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<chromium::web::ContextProvider>();
 
   chromium::web::CreateContextParams create_params;

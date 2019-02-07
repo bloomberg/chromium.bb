@@ -19,7 +19,7 @@ class FilteredServiceDirectoryTest : public ServiceDirectoryTestBase {
     filtered_service_directory_ = std::make_unique<FilteredServiceDirectory>(
         public_service_directory_client_.get());
     filtered_client_ = std::make_unique<ServiceDirectoryClient>(
-        filtered_service_directory_->ConnectClient().TakeChannel());
+        filtered_service_directory_->ConnectClient());
   }
 
  protected:

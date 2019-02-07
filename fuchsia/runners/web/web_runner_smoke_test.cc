@@ -5,7 +5,7 @@
 #include <fuchsia/sys/cpp/fidl.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -64,7 +64,7 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
   fuchsia::sys::LaunchInfo launch_info;
   launch_info.url = test_server_.GetURL("/test.html").spec();
 
-  auto launcher = base::fuchsia::ComponentContext::GetDefault()
+  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
                       ->ConnectToServiceSync<fuchsia::sys::Launcher>();
 
   fuchsia::sys::ComponentControllerSyncPtr controller;
