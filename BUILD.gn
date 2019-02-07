@@ -775,13 +775,6 @@ group("gn_all") {
       "//tools/accessibility/inspect:ax_dump_tree",
     ]
   }
-
-  # PFFFT.
-  deps += [
-    "//third_party/pffft:fuzzers",
-    "//third_party/pffft:pffft_benchmark",
-    "//third_party/pffft:pffft_unittest",
-  ]
 }
 
 if ((is_linux || is_win) && enable_remoting && !use_ozone) {
