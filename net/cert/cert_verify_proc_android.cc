@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
 #include "net/android/cert_verify_result_android.h"

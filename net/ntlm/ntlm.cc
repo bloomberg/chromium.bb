@@ -8,7 +8,6 @@
 
 #include "base/containers/span.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_string_util.h"
 #include "net/ntlm/ntlm_buffer_writer.h"

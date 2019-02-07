@@ -17,7 +17,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

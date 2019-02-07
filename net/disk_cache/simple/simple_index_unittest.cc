@@ -16,7 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/pickle.h"
-#include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/test/mock_entropy_provider.h"
