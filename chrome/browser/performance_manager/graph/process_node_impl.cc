@@ -2,32 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 #include "base/logging.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 
 namespace performance_manager {
 
-ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
+ProcessNodeImpl::ProcessNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
-    CoordinationUnitGraph* graph,
+    Graph* graph,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
     : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
 
-ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() {
+ProcessNodeImpl::~ProcessNodeImpl() {
   // Make as if we're transitioning to the null PID before we die to clear this
   // instance from the PID map.
   if (process_id_ != base::kNullProcessId)
     graph()->BeforeProcessPidChange(this, base::kNullProcessId);
 
   for (auto* child_frame : frame_coordination_units_)
-    child_frame->RemoveProcessCoordinationUnit(this);
+    child_frame->RemoveProcessNode(this);
 }
 
-void ProcessCoordinationUnitImpl::AddFrame(
-    FrameCoordinationUnitImpl* frame_cu) {
+void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_cu) {
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
   DCHECK(inserted);
   if (frame_cu->lifecycle_state() ==
@@ -35,31 +34,31 @@ void ProcessCoordinationUnitImpl::AddFrame(
     IncrementNumFrozenFrames();
 }
 
-void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
+void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
   SetProperty(resource_coordinator::mojom::PropertyType::kCPUUsage,
               cpu_usage * 1000);
 }
 
-void ProcessCoordinationUnitImpl::SetExpectedTaskQueueingDuration(
+void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
     base::TimeDelta duration) {
   SetProperty(
       resource_coordinator::mojom::PropertyType::kExpectedTaskQueueingDuration,
       duration.InMilliseconds());
 }
 
-void ProcessCoordinationUnitImpl::SetLaunchTime(base::Time launch_time) {
+void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {
   DCHECK(launch_time_.is_null());
   launch_time_ = launch_time;
 }
 
-void ProcessCoordinationUnitImpl::SetMainThreadTaskLoadIsLow(
+void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
   SetProperty(
       resource_coordinator::mojom::PropertyType::kMainThreadTaskLoadIsLow,
       main_thread_task_load_is_low);
 }
 
-void ProcessCoordinationUnitImpl::SetPID(base::ProcessId pid) {
+void ProcessNodeImpl::SetPID(base::ProcessId pid) {
   // Either this is the initial process associated with this process CU,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
@@ -81,16 +80,15 @@ void ProcessCoordinationUnitImpl::SetPID(base::ProcessId pid) {
   SetProperty(resource_coordinator::mojom::PropertyType::kPID, pid);
 }
 
-void ProcessCoordinationUnitImpl::SetProcessExitStatus(int32_t exit_status) {
+void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
   exit_status_ = exit_status;
 }
 
-void ProcessCoordinationUnitImpl::OnRendererIsBloated() {
+void ProcessNodeImpl::OnRendererIsBloated() {
   SendEvent(resource_coordinator::mojom::Event::kRendererIsBloated);
 }
 
-const std::set<FrameCoordinationUnitImpl*>&
-ProcessCoordinationUnitImpl::GetFrameCoordinationUnits() const {
+const std::set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
   return frame_coordination_units_;
 }
 
@@ -98,18 +96,18 @@ ProcessCoordinationUnitImpl::GetFrameCoordinationUnits() const {
 // pages. However, frames are children of both processes and frames, so we
 // find all of the pages that are reachable from the process's child
 // frames.
-std::set<PageCoordinationUnitImpl*>
-ProcessCoordinationUnitImpl::GetAssociatedPageCoordinationUnits() const {
-  std::set<PageCoordinationUnitImpl*> page_cus;
+std::set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageCoordinationUnits()
+    const {
+  std::set<PageNodeImpl*> page_cus;
   for (auto* frame_cu : frame_coordination_units_) {
-    if (auto* page_cu = frame_cu->GetPageCoordinationUnit())
+    if (auto* page_cu = frame_cu->GetPageNode())
       page_cus.insert(page_cu);
   }
   return page_cus;
 }
 
-void ProcessCoordinationUnitImpl::OnFrameLifecycleStateChanged(
-    FrameCoordinationUnitImpl* frame_cu,
+void ProcessNodeImpl::OnFrameLifecycleStateChanged(
+    FrameNodeImpl* frame_cu,
     resource_coordinator::mojom::LifecycleState old_state) {
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   DCHECK_NE(old_state, frame_cu->lifecycle_state());
@@ -121,21 +119,20 @@ void ProcessCoordinationUnitImpl::OnFrameLifecycleStateChanged(
     IncrementNumFrozenFrames();
 }
 
-void ProcessCoordinationUnitImpl::OnEventReceived(
+void ProcessNodeImpl::OnEventReceived(
     resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnProcessEventReceived(this, event);
 }
 
-void ProcessCoordinationUnitImpl::OnPropertyChanged(
+void ProcessNodeImpl::OnPropertyChanged(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())
     observer.OnProcessPropertyChanged(this, property_type, value);
 }
 
-void ProcessCoordinationUnitImpl::RemoveFrame(
-    FrameCoordinationUnitImpl* frame_cu) {
+void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_cu) {
   DCHECK(base::ContainsKey(frame_coordination_units_, frame_cu));
   frame_coordination_units_.erase(frame_cu);
 
@@ -144,12 +141,12 @@ void ProcessCoordinationUnitImpl::RemoveFrame(
     DecrementNumFrozenFrames();
 }
 
-void ProcessCoordinationUnitImpl::DecrementNumFrozenFrames() {
+void ProcessNodeImpl::DecrementNumFrozenFrames() {
   --num_frozen_frames_;
   DCHECK_GE(num_frozen_frames_, 0);
 }
 
-void ProcessCoordinationUnitImpl::IncrementNumFrozenFrames() {
+void ProcessNodeImpl::IncrementNumFrozenFrames() {
   ++num_frozen_frames_;
   DCHECK_LE(num_frozen_frames_,
             static_cast<int>(frame_coordination_units_.size()));

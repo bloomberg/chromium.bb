@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_FRAME_COORDINATION_UNIT_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_FRAME_COORDINATION_UNIT_IMPL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_FRAME_NODE_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_FRAME_NODE_IMPL_H_
+
+#include <memory>
+#include <set>
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
 
 namespace performance_manager {
 
-class PageCoordinationUnitImpl;
-class ProcessCoordinationUnitImpl;
+class PageNodeImpl;
+class ProcessNodeImpl;
 
-// Frame Coordination Units form a tree structure, each FrameCoordinationUnit at
-// most has one parent that is a FrameCoordinationUnit.
+// Frame Coordination Units form a tree structure, each FrameNode at
+// most has one parent that is a FrameNode.
 // A Frame Coordination Unit will have parents only if navigation committed.
-class FrameCoordinationUnitImpl
+class FrameNodeImpl
     : public CoordinationUnitInterface<
-          FrameCoordinationUnitImpl,
+          FrameNodeImpl,
           resource_coordinator::mojom::FrameCoordinationUnit,
           resource_coordinator::mojom::FrameCoordinationUnitRequest> {
  public:
@@ -26,13 +29,13 @@ class FrameCoordinationUnitImpl
     return resource_coordinator::CoordinationUnitType::kFrame;
   }
 
-  FrameCoordinationUnitImpl(
+  FrameNodeImpl(
       const resource_coordinator::CoordinationUnitID& id,
-      CoordinationUnitGraph* graph,
+      Graph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
-  ~FrameCoordinationUnitImpl() override;
+  ~FrameNodeImpl() override;
 
-  // FrameCoordinationUnit implementation.
+  // FrameNode implementation.
   void SetProcess(
       const resource_coordinator::CoordinationUnitID& cu_id) override;
   void AddChildFrame(
@@ -48,9 +51,9 @@ class FrameCoordinationUnitImpl
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void OnNonPersistentNotificationCreated() override;
 
-  FrameCoordinationUnitImpl* GetParentFrameCoordinationUnit() const;
-  PageCoordinationUnitImpl* GetPageCoordinationUnit() const;
-  ProcessCoordinationUnitImpl* GetProcessCoordinationUnit() const;
+  FrameNodeImpl* GetParentFrameNode() const;
+  PageNodeImpl* GetPageNode() const;
+  ProcessNodeImpl* GetProcessNode() const;
   bool IsMainFrame() const;
 
   resource_coordinator::mojom::LifecycleState lifecycle_state() const {
@@ -61,8 +64,8 @@ class FrameCoordinationUnitImpl
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
 
-  const std::set<FrameCoordinationUnitImpl*>&
-  child_frame_coordination_units_for_testing() const {
+  const std::set<FrameNodeImpl*>& child_frame_coordination_units_for_testing()
+      const {
     return child_frame_coordination_units_;
   }
 
@@ -72,8 +75,8 @@ class FrameCoordinationUnitImpl
       resource_coordinator::mojom::InterventionPolicy policy);
 
  private:
-  friend class PageCoordinationUnitImpl;
-  friend class ProcessCoordinationUnitImpl;
+  friend class PageNodeImpl;
+  friend class ProcessNodeImpl;
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
@@ -81,27 +84,25 @@ class FrameCoordinationUnitImpl
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
 
-  bool HasFrameCoordinationUnitInAncestors(
-      FrameCoordinationUnitImpl* frame_cu) const;
-  bool HasFrameCoordinationUnitInDescendants(
-      FrameCoordinationUnitImpl* frame_cu) const;
+  bool HasFrameNodeInAncestors(FrameNodeImpl* frame_cu) const;
+  bool HasFrameNodeInDescendants(FrameNodeImpl* frame_cu) const;
 
-  // The following methods will be called by other FrameCoordinationUnitImpl,
-  // PageCoordinationUnitImpl and ProcessCoordinationUnitImpl respectively to
+  // The following methods will be called by other FrameNodeImpl,
+  // PageNodeImpl and ProcessNodeImpl respectively to
   // manipulate their relationship.
-  void AddParentFrame(FrameCoordinationUnitImpl* parent_frame_cu);
-  bool AddChildFrame(FrameCoordinationUnitImpl* child_frame_cu);
-  void RemoveParentFrame(FrameCoordinationUnitImpl* parent_frame_cu);
-  bool RemoveChildFrame(FrameCoordinationUnitImpl* child_frame_cu);
-  void AddPageCoordinationUnit(PageCoordinationUnitImpl* page_cu);
-  void AddProcessCoordinationUnit(ProcessCoordinationUnitImpl* process_cu);
-  void RemovePageCoordinationUnit(PageCoordinationUnitImpl* page_cu);
-  void RemoveProcessCoordinationUnit(ProcessCoordinationUnitImpl* process_cu);
+  void AddParentFrame(FrameNodeImpl* parent_frame_cu);
+  bool AddChildFrame(FrameNodeImpl* child_frame_cu);
+  void RemoveParentFrame(FrameNodeImpl* parent_frame_cu);
+  bool RemoveChildFrame(FrameNodeImpl* child_frame_cu);
+  void AddPageNode(PageNodeImpl* page_cu);
+  void AddProcessNode(ProcessNodeImpl* process_cu);
+  void RemovePageNode(PageNodeImpl* page_cu);
+  void RemoveProcessNode(ProcessNodeImpl* process_cu);
 
-  FrameCoordinationUnitImpl* parent_frame_coordination_unit_;
-  PageCoordinationUnitImpl* page_coordination_unit_;
-  ProcessCoordinationUnitImpl* process_coordination_unit_;
-  std::set<FrameCoordinationUnitImpl*> child_frame_coordination_units_;
+  FrameNodeImpl* parent_frame_coordination_unit_;
+  PageNodeImpl* page_coordination_unit_;
+  ProcessNodeImpl* process_coordination_unit_;
+  std::set<FrameNodeImpl*> child_frame_coordination_units_;
 
   resource_coordinator::mojom::LifecycleState lifecycle_state_ =
       resource_coordinator::mojom::LifecycleState::kRunning;
@@ -115,9 +116,9 @@ class FrameCoordinationUnitImpl
                                    PolicyControlledIntervention::kMaxValue) +
                            1];
 
-  DISALLOW_COPY_AND_ASSIGN(FrameCoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_FRAME_COORDINATION_UNIT_IMPL_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_FRAME_NODE_IMPL_H_

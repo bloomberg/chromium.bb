@@ -7,11 +7,11 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/mock_coordination_unit_graphs.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/mock_graphs.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -33,7 +33,7 @@ class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
  public:
   // Overridden from PageSignalGeneratorImpl.
   void OnProcessPropertyChanged(
-      const ProcessCoordinationUnitImpl* process_cu,
+      const ProcessNodeImpl* process_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override {
     if (property_type == resource_coordinator::mojom::PropertyType::
@@ -85,7 +85,7 @@ class MockPageSignalReceiverImpl
 
 using MockPageSignalReceiver = testing::StrictMock<MockPageSignalReceiverImpl>;
 
-class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
+class PageSignalGeneratorImplTest : public GraphTestHarness {
  protected:
   // Aliasing these here makes this unittest much more legible.
   using LIS = PageSignalGeneratorImpl::LoadIdleState;
@@ -105,8 +105,7 @@ class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
     return page_signal_generator_;
   }
 
-  void DrivePageToLoadedAndIdle(
-      MockSinglePageInSingleProcessCoordinationUnitGraph* graph);
+  void DrivePageToLoadedAndIdle(MockSinglePageInSingleProcessGraph* graph);
 
   void EnablePAI() {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
@@ -122,7 +121,7 @@ class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
 };
 
 void PageSignalGeneratorImplTest::DrivePageToLoadedAndIdle(
-    MockSinglePageInSingleProcessCoordinationUnitGraph* graph) {
+    MockSinglePageInSingleProcessGraph* graph) {
   // Drive the state machine forward through to LoadedAndIdle.
   graph->page->SetIsLoading(true);
   graph->frame->SetNetworkAlmostIdle(true);
@@ -137,8 +136,7 @@ void PageSignalGeneratorImplTest::DrivePageToLoadedAndIdle(
 
 TEST_F(PageSignalGeneratorImplTest,
        CalculatePageEQTForSinglePageWithMultipleProcesses) {
-  MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageWithMultipleProcessesGraph cu_graph(coordination_unit_graph());
 
   cu_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
@@ -155,8 +153,7 @@ TEST_F(PageSignalGeneratorImplTest,
 
 TEST_F(PageSignalGeneratorImplTest, IsLoading) {
   EnablePAI();
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* page_cu = cu_graph.page.get();
   auto* psg = page_signal_generator();
   // The observer relationship isn't required for testing IsLoading.
@@ -176,8 +173,7 @@ TEST_F(PageSignalGeneratorImplTest, IsLoading) {
 
 TEST_F(PageSignalGeneratorImplTest, IsIdling) {
   EnablePAI();
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* frame_cu = cu_graph.frame.get();
   auto* page_cu = cu_graph.page.get();
   auto* proc_cu = cu_graph.process.get();
@@ -218,8 +214,7 @@ TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
   EXPECT_EQ(0u, psg->page_data_.size());
 
   {
-    MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-        coordination_unit_graph());
+    MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
 
     auto* page_cu = cu_graph.page.get();
     EXPECT_EQ(1u, psg->page_data_.count(page_cu));
@@ -233,8 +228,7 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* frame_cu = cu_graph.frame.get();
   auto* page_cu = cu_graph.page.get();
   auto* proc_cu = cu_graph.process.get();
@@ -332,8 +326,7 @@ TEST_F(PageSignalGeneratorImplTest, PageAlmostIdleTransitionsWithTimeout) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* frame_cu = cu_graph.frame.get();
 
   // Create a mock receiver and register it against the psg.
@@ -358,8 +351,7 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* process = cu_graph.process.get();
   auto* psg = page_signal_generator();
 
@@ -376,8 +368,7 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
-  MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* process = cu_graph.process.get();
   auto* psg = page_signal_generator();
 
@@ -419,8 +410,7 @@ CreateMeasurementBatch(base::TimeTicks start_time,
 TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   EnablePAI();
 
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
 
   // Create a mock receiver and register it against the psg.
   resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;

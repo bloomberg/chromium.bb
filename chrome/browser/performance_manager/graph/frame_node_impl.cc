@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 
 namespace performance_manager {
 
-FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
+FrameNodeImpl::FrameNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
-    CoordinationUnitGraph* graph,
+    Graph* graph,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
     : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)),
       parent_frame_coordination_unit_(nullptr),
@@ -24,7 +24,7 @@ FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
         resource_coordinator::mojom::InterventionPolicy::kUnknown;
 }
 
-FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
+FrameNodeImpl::~FrameNodeImpl() {
   if (parent_frame_coordination_unit_)
     parent_frame_coordination_unit_->RemoveChildFrame(this);
   if (page_coordination_unit_)
@@ -35,10 +35,9 @@ FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
     child_frame->RemoveParentFrame(this);
 }
 
-void FrameCoordinationUnitImpl::SetProcess(
+void FrameNodeImpl::SetProcess(
     const resource_coordinator::CoordinationUnitID& cu_id) {
-  ProcessCoordinationUnitImpl* process_cu =
-      ProcessCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+  ProcessNodeImpl* process_cu = ProcessNodeImpl::GetNodeByID(graph_, cu_id);
   if (!process_cu)
     return;
   DCHECK(!process_coordination_unit_);
@@ -46,15 +45,14 @@ void FrameCoordinationUnitImpl::SetProcess(
   process_cu->AddFrame(this);
 }
 
-void FrameCoordinationUnitImpl::AddChildFrame(
+void FrameNodeImpl::AddChildFrame(
     const resource_coordinator::CoordinationUnitID& cu_id) {
   DCHECK(cu_id != id());
-  FrameCoordinationUnitImpl* frame_cu =
-      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+  FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
     return;
-  if (HasFrameCoordinationUnitInAncestors(frame_cu) ||
-      frame_cu->HasFrameCoordinationUnitInDescendants(this)) {
+  if (HasFrameNodeInAncestors(frame_cu) ||
+      frame_cu->HasFrameNodeInDescendants(this)) {
     DCHECK(false) << "Cyclic reference in frame coordination units detected!";
     return;
   }
@@ -63,11 +61,10 @@ void FrameCoordinationUnitImpl::AddChildFrame(
   }
 }
 
-void FrameCoordinationUnitImpl::RemoveChildFrame(
+void FrameNodeImpl::RemoveChildFrame(
     const resource_coordinator::CoordinationUnitID& cu_id) {
   DCHECK(cu_id != id());
-  FrameCoordinationUnitImpl* frame_cu =
-      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+  FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
     return;
   if (RemoveChildFrame(frame_cu)) {
@@ -75,12 +72,12 @@ void FrameCoordinationUnitImpl::RemoveChildFrame(
   }
 }
 
-void FrameCoordinationUnitImpl::SetNetworkAlmostIdle(bool idle) {
+void FrameNodeImpl::SetNetworkAlmostIdle(bool idle) {
   SetProperty(resource_coordinator::mojom::PropertyType::kNetworkAlmostIdle,
               idle);
 }
 
-void FrameCoordinationUnitImpl::SetLifecycleState(
+void FrameNodeImpl::SetLifecycleState(
     resource_coordinator::mojom::LifecycleState state) {
   if (state == lifecycle_state_)
     return;
@@ -95,12 +92,11 @@ void FrameCoordinationUnitImpl::SetLifecycleState(
     page_coordination_unit_->OnFrameLifecycleStateChanged(this, old_state);
 }
 
-void FrameCoordinationUnitImpl::SetHasNonEmptyBeforeUnload(
-    bool has_nonempty_beforeunload) {
+void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
-void FrameCoordinationUnitImpl::SetInterventionPolicy(
+void FrameNodeImpl::SetInterventionPolicy(
     resource_coordinator::mojom::PolicyControlledIntervention intervention,
     resource_coordinator::mojom::InterventionPolicy policy) {
   size_t i = static_cast<size_t>(intervention);
@@ -122,37 +118,34 @@ void FrameCoordinationUnitImpl::SetInterventionPolicy(
   resource_coordinator::mojom::InterventionPolicy old_policy =
       intervention_policy_[i];
   intervention_policy_[i] = policy;
-  if (auto* page_cu = GetPageCoordinationUnit()) {
+  if (auto* page_cu = GetPageNode()) {
     page_cu->OnFrameInterventionPolicyChanged(this, intervention, old_policy,
                                               policy);
   }
 }
 
-void FrameCoordinationUnitImpl::OnNonPersistentNotificationCreated() {
+void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   SendEvent(
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated);
 }
 
-FrameCoordinationUnitImpl*
-FrameCoordinationUnitImpl::GetParentFrameCoordinationUnit() const {
+FrameNodeImpl* FrameNodeImpl::GetParentFrameNode() const {
   return parent_frame_coordination_unit_;
 }
 
-PageCoordinationUnitImpl* FrameCoordinationUnitImpl::GetPageCoordinationUnit()
-    const {
+PageNodeImpl* FrameNodeImpl::GetPageNode() const {
   return page_coordination_unit_;
 }
 
-ProcessCoordinationUnitImpl*
-FrameCoordinationUnitImpl::GetProcessCoordinationUnit() const {
+ProcessNodeImpl* FrameNodeImpl::GetProcessNode() const {
   return process_coordination_unit_;
 }
 
-bool FrameCoordinationUnitImpl::IsMainFrame() const {
+bool FrameNodeImpl::IsMainFrame() const {
   return !parent_frame_coordination_unit_;
 }
 
-bool FrameCoordinationUnitImpl::AreAllInterventionPoliciesSet() const {
+bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
   // The convention is that policies are first set en masse, in order. So if
   // the last policy is set then they are all considered to be set. Check this
   // in DEBUG builds.
@@ -176,7 +169,7 @@ bool FrameCoordinationUnitImpl::AreAllInterventionPoliciesSet() const {
          resource_coordinator::mojom::InterventionPolicy::kUnknown;
 }  // namespace performance_manager
 
-void FrameCoordinationUnitImpl::SetAllInterventionPoliciesForTesting(
+void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
     resource_coordinator::mojom::InterventionPolicy policy) {
   for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
     SetInterventionPolicy(
@@ -186,78 +179,67 @@ void FrameCoordinationUnitImpl::SetAllInterventionPoliciesForTesting(
   }
 }
 
-void FrameCoordinationUnitImpl::OnEventReceived(
-    resource_coordinator::mojom::Event event) {
+void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnFrameEventReceived(this, event);
 }
 
-void FrameCoordinationUnitImpl::OnPropertyChanged(
+void FrameNodeImpl::OnPropertyChanged(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())
     observer.OnFramePropertyChanged(this, property_type, value);
 }
 
-bool FrameCoordinationUnitImpl::HasFrameCoordinationUnitInAncestors(
-    FrameCoordinationUnitImpl* frame_cu) const {
+bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_cu) const {
   if (parent_frame_coordination_unit_ == frame_cu ||
       (parent_frame_coordination_unit_ &&
-       parent_frame_coordination_unit_->HasFrameCoordinationUnitInAncestors(
-           frame_cu))) {
+       parent_frame_coordination_unit_->HasFrameNodeInAncestors(frame_cu))) {
     return true;
   }
   return false;
 }
 
-bool FrameCoordinationUnitImpl::HasFrameCoordinationUnitInDescendants(
-    FrameCoordinationUnitImpl* frame_cu) const {
-  for (FrameCoordinationUnitImpl* child : child_frame_coordination_units_) {
-    if (child == frame_cu ||
-        child->HasFrameCoordinationUnitInDescendants(frame_cu)) {
+bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_cu) const {
+  for (FrameNodeImpl* child : child_frame_coordination_units_) {
+    if (child == frame_cu || child->HasFrameNodeInDescendants(frame_cu)) {
       return true;
     }
   }
   return false;
 }
 
-void FrameCoordinationUnitImpl::AddParentFrame(
-    FrameCoordinationUnitImpl* parent_frame_cu) {
+void FrameNodeImpl::AddParentFrame(FrameNodeImpl* parent_frame_cu) {
   parent_frame_coordination_unit_ = parent_frame_cu;
 }
 
-bool FrameCoordinationUnitImpl::AddChildFrame(
-    FrameCoordinationUnitImpl* child_frame_cu) {
+bool FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_cu) {
   return child_frame_coordination_units_.count(child_frame_cu)
              ? false
              : child_frame_coordination_units_.insert(child_frame_cu).second;
 }
 
-void FrameCoordinationUnitImpl::RemoveParentFrame(
-    FrameCoordinationUnitImpl* parent_frame_cu) {
+void FrameNodeImpl::RemoveParentFrame(FrameNodeImpl* parent_frame_cu) {
   DCHECK(parent_frame_coordination_unit_ == parent_frame_cu);
   parent_frame_coordination_unit_ = nullptr;
 }
 
-bool FrameCoordinationUnitImpl::RemoveChildFrame(
-    FrameCoordinationUnitImpl* child_frame_cu) {
+bool FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_cu) {
   return child_frame_coordination_units_.erase(child_frame_cu) > 0;
 }
 
-void FrameCoordinationUnitImpl::AddPageCoordinationUnit(
-    PageCoordinationUnitImpl* page_coordination_unit) {
+void FrameNodeImpl::AddPageNode(PageNodeImpl* page_coordination_unit) {
   DCHECK(!page_coordination_unit_);
   page_coordination_unit_ = page_coordination_unit;
 }
 
-void FrameCoordinationUnitImpl::RemovePageCoordinationUnit(
-    PageCoordinationUnitImpl* page_coordination_unit) {
+void FrameNodeImpl::RemovePageNode(PageNodeImpl* page_coordination_unit) {
   DCHECK(page_coordination_unit == page_coordination_unit_);
   page_coordination_unit_ = nullptr;
 }
 
-void FrameCoordinationUnitImpl::RemoveProcessCoordinationUnit(
-    ProcessCoordinationUnitImpl* process_coordination_unit) {
+void FrameNodeImpl::RemoveProcessNode(
+    ProcessNodeImpl* process_coordination_unit) {
   DCHECK(process_coordination_unit == process_coordination_unit_);
   process_coordination_unit_ = nullptr;
 }

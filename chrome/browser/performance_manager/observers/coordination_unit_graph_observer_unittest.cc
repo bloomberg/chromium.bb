@@ -4,11 +4,13 @@
 
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 
+#include <memory>
+
 #include "base/process/process_handle.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -18,11 +20,11 @@ namespace performance_manager {
 
 namespace {
 
-class CoordinationUnitGraphObserverTest : public CoordinationUnitTestHarness {};
+class GraphObserverTest : public GraphTestHarness {};
 
-class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
+class TestGraphObserver : public GraphObserver {
  public:
-  TestCoordinationUnitGraphObserver()
+  TestGraphObserver()
       : coordination_unit_created_count_(0u),
         coordination_unit_destroyed_count_(0u),
         property_changed_count_(0u) {}
@@ -35,21 +37,19 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
   }
   size_t property_changed_count() { return property_changed_count_; }
 
-  // Overridden from CoordinationUnitGraphObserver.
-  bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override {
+  // Overridden from GraphObserver.
+  bool ShouldObserve(const NodeBase* coordination_unit) override {
     return coordination_unit->id().type ==
            resource_coordinator::CoordinationUnitType::kFrame;
   }
-  void OnCoordinationUnitCreated(
-      const CoordinationUnitBase* coordination_unit) override {
+  void OnNodeCreated(const NodeBase* coordination_unit) override {
     ++coordination_unit_created_count_;
   }
-  void OnBeforeCoordinationUnitDestroyed(
-      const CoordinationUnitBase* coordination_unit) override {
+  void OnBeforeNodeDestroyed(const NodeBase* coordination_unit) override {
     ++coordination_unit_destroyed_count_;
   }
   void OnFramePropertyChanged(
-      const FrameCoordinationUnitImpl* frame_coordination_unit,
+      const FrameNodeImpl* frame_coordination_unit,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override {
     ++property_changed_count_;
@@ -63,20 +63,19 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
 
 }  // namespace
 
-TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
+TEST_F(GraphObserverTest, CallbacksInvoked) {
   EXPECT_TRUE(coordination_unit_graph()->observers_for_testing().empty());
   coordination_unit_graph()->RegisterObserver(
-      std::make_unique<TestCoordinationUnitGraphObserver>());
+      std::make_unique<TestGraphObserver>());
   EXPECT_EQ(1u, coordination_unit_graph()->observers_for_testing().size());
 
-  TestCoordinationUnitGraphObserver* observer =
-      static_cast<TestCoordinationUnitGraphObserver*>(
-          coordination_unit_graph()->observers_for_testing()[0].get());
+  TestGraphObserver* observer = static_cast<TestGraphObserver*>(
+      coordination_unit_graph()->observers_for_testing()[0].get());
 
   {
-    auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
-    auto root_frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-    auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+    auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
+    auto root_frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
+    auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
     EXPECT_EQ(2u, observer->coordination_unit_created_count());
 

@@ -4,12 +4,14 @@
 
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 
+#include <set>
+
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -34,8 +36,8 @@ const int kDefaultFrequencyUkmEQTReported = 5u;
 // Gets the number of tabs that are co-resident in all of the render processes
 // associated with a |resource_coordinator::CoordinationUnitType::kPage|
 // coordination unit.
-size_t GetNumCoresidentTabs(const PageCoordinationUnitImpl* page_cu) {
-  std::set<CoordinationUnitBase*> coresident_tabs;
+size_t GetNumCoresidentTabs(const PageNodeImpl* page_cu) {
+  std::set<NodeBase*> coresident_tabs;
   for (auto* process_cu : page_cu->GetAssociatedProcessCoordinationUnits()) {
     for (auto* associated_page_cu :
          process_cu->GetAssociatedPageCoordinationUnits()) {
@@ -52,8 +54,7 @@ MetricsCollector::MetricsCollector() {
 
 MetricsCollector::~MetricsCollector() = default;
 
-bool MetricsCollector::ShouldObserve(
-    const CoordinationUnitBase* coordination_unit) {
+bool MetricsCollector::ShouldObserve(const NodeBase* coordination_unit) {
   return coordination_unit->id().type ==
              resource_coordinator::CoordinationUnitType::kFrame ||
          coordination_unit->id().type ==
@@ -62,8 +63,7 @@ bool MetricsCollector::ShouldObserve(
              resource_coordinator::CoordinationUnitType::kProcess;
 }
 
-void MetricsCollector::OnCoordinationUnitCreated(
-    const CoordinationUnitBase* coordination_unit) {
+void MetricsCollector::OnNodeCreated(const NodeBase* coordination_unit) {
   if (coordination_unit->id().type ==
       resource_coordinator::CoordinationUnitType::kPage) {
     metrics_report_record_map_.emplace(coordination_unit->id(),
@@ -71,8 +71,8 @@ void MetricsCollector::OnCoordinationUnitCreated(
   }
 }
 
-void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
-    const CoordinationUnitBase* coordination_unit) {
+void MetricsCollector::OnBeforeNodeDestroyed(
+    const NodeBase* coordination_unit) {
   if (coordination_unit->id().type ==
       resource_coordinator::CoordinationUnitType::kPage) {
     metrics_report_record_map_.erase(coordination_unit->id());
@@ -81,7 +81,7 @@ void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
 }
 
 void MetricsCollector::OnPagePropertyChanged(
-    const PageCoordinationUnitImpl* page_cu,
+    const PageNodeImpl* page_cu,
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   const auto page_cu_id = page_cu->id();
@@ -103,7 +103,7 @@ void MetricsCollector::OnPagePropertyChanged(
 }
 
 void MetricsCollector::OnProcessPropertyChanged(
-    const ProcessCoordinationUnitImpl* process_cu,
+    const ProcessNodeImpl* process_cu,
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == resource_coordinator::mojom::PropertyType::
@@ -121,11 +121,11 @@ void MetricsCollector::OnProcessPropertyChanged(
 }
 
 void MetricsCollector::OnFrameEventReceived(
-    const FrameCoordinationUnitImpl* frame_cu,
+    const FrameNodeImpl* frame_cu,
     const resource_coordinator::mojom::Event event) {
   if (event ==
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated) {
-    auto* page_cu = frame_cu->GetPageCoordinationUnit();
+    auto* page_cu = frame_cu->GetPageNode();
     // Only record metrics while it is backgrounded.
     if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
       return;
@@ -139,7 +139,7 @@ void MetricsCollector::OnFrameEventReceived(
 }
 
 void MetricsCollector::OnPageEventReceived(
-    const PageCoordinationUnitImpl* page_cu,
+    const PageNodeImpl* page_cu,
     const resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kTitleUpdated) {
     // Only record metrics while it is backgrounded.
@@ -162,8 +162,7 @@ void MetricsCollector::OnPageEventReceived(
   }
 }
 
-bool MetricsCollector::ShouldReportMetrics(
-    const PageCoordinationUnitImpl* page_cu) {
+bool MetricsCollector::ShouldReportMetrics(const PageNodeImpl* page_cu) {
   return page_cu->TimeSinceLastNavigation() > kMetricsReportDelayTimeout;
 }
 

@@ -96,7 +96,7 @@ void PerformanceManager::OnStartImpl(
       base::BindRepeating(&CoordinationUnitIntrospectorImpl::BindToInterface,
                           base::Unretained(&introspector_)));
 
-  // Register new |CoordinationUnitGraphObserver| implementations here.
+  // Register new |GraphObserver| implementations here.
   auto page_signal_generator_impl = std::make_unique<PageSignalGeneratorImpl>();
   interface_registry_.AddInterface(
       base::BindRepeating(&PageSignalGeneratorImpl::BindToInterface,

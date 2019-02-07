@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_BASE_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_BASE_H_
 
 #include <map>
 #include <memory>
@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -23,21 +23,20 @@
 
 namespace performance_manager {
 
-class CoordinationUnitGraph;
+class Graph;
 
-// CoordinationUnitBase implements shared functionality among different types of
+// NodeBase implements shared functionality among different types of
 // coordination units. A specific type of coordination unit will derive from
 // this class and can override shared funtionality when needed.
-class CoordinationUnitBase {
+class NodeBase {
  public:
-  CoordinationUnitBase(const resource_coordinator::CoordinationUnitID& id,
-                       CoordinationUnitGraph* graph);
-  virtual ~CoordinationUnitBase();
+  NodeBase(const resource_coordinator::CoordinationUnitID& id, Graph* graph);
+  virtual ~NodeBase();
 
   void Destruct();
   void BeforeDestroyed();
-  void AddObserver(CoordinationUnitGraphObserver* observer);
-  void RemoveObserver(CoordinationUnitGraphObserver* observer);
+  void AddObserver(GraphObserver* observer);
+  void RemoveObserver(GraphObserver* observer);
   bool GetProperty(
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t* result) const;
@@ -46,10 +45,9 @@ class CoordinationUnitBase {
       int64_t default_value) const;
 
   const resource_coordinator::CoordinationUnitID& id() const { return id_; }
-  CoordinationUnitGraph* graph() const { return graph_; }
+  Graph* graph() const { return graph_; }
 
-  const base::ObserverList<CoordinationUnitGraphObserver>::Unchecked&
-  observers() const {
+  const base::ObserverList<GraphObserver>::Unchecked& observers() const {
     return observers_;
   }
 
@@ -73,28 +71,26 @@ class CoordinationUnitBase {
                    int64_t value);
 
   // Passes the ownership of the newly created |new_cu| to its graph.
-  static CoordinationUnitBase* PassOwnershipToGraph(
-      std::unique_ptr<CoordinationUnitBase> new_cu);
+  static NodeBase* PassOwnershipToGraph(std::unique_ptr<NodeBase> new_cu);
 
-  CoordinationUnitGraph* const graph_;
+  Graph* const graph_;
   const resource_coordinator::CoordinationUnitID id_;
 
  private:
-  base::ObserverList<CoordinationUnitGraphObserver>::Unchecked observers_;
+  base::ObserverList<GraphObserver>::Unchecked observers_;
   std::map<resource_coordinator::mojom::PropertyType, int64_t> properties_;
 
-  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitBase);
+  DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
 template <class CoordinationUnitClass,
           class MojoInterfaceClass,
           class MojoRequestClass>
-class CoordinationUnitInterface : public CoordinationUnitBase,
-                                  public MojoInterfaceClass {
+class CoordinationUnitInterface : public NodeBase, public MojoInterfaceClass {
  public:
   static CoordinationUnitClass* Create(
       const resource_coordinator::CoordinationUnitID& id,
-      CoordinationUnitGraph* graph,
+      Graph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref) {
     std::unique_ptr<CoordinationUnitClass> new_cu =
         std::make_unique<CoordinationUnitClass>(id, graph,
@@ -103,24 +99,22 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
         PassOwnershipToGraph(std::move(new_cu)));
   }
 
-  static const CoordinationUnitClass* FromCoordinationUnitBase(
-      const CoordinationUnitBase* cu) {
+  static const CoordinationUnitClass* FromNodeBase(const NodeBase* cu) {
     DCHECK(cu->id().type == CoordinationUnitClass::Type());
     return static_cast<const CoordinationUnitClass*>(cu);
   }
 
-  static CoordinationUnitClass* FromCoordinationUnitBase(
-      CoordinationUnitBase* cu) {
+  static CoordinationUnitClass* FromNodeBase(NodeBase* cu) {
     DCHECK(cu->id().type == CoordinationUnitClass::Type());
     return static_cast<CoordinationUnitClass*>(cu);
   }
 
   CoordinationUnitInterface(
       const resource_coordinator::CoordinationUnitID& id,
-      CoordinationUnitGraph* graph,
+      Graph* graph,
 
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-      : CoordinationUnitBase(id, graph), binding_(this) {
+      : NodeBase(id, graph), binding_(this) {
     keepalive_ref_ = std::move(keepalive_ref);
   }
 
@@ -137,11 +131,11 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
   mojo::Binding<MojoInterfaceClass>& binding() { return binding_; }
 
-  static CoordinationUnitClass* GetCoordinationUnitByID(
-      CoordinationUnitGraph* graph,
+  static CoordinationUnitClass* GetNodeByID(
+      Graph* graph,
       const resource_coordinator::CoordinationUnitID cu_id) {
     DCHECK(cu_id.type == CoordinationUnitClass::Type());
-    auto* cu = graph->GetCoordinationUnitByID(cu_id);
+    auto* cu = graph->GetNodeByID(cu_id);
     if (!cu)
       return nullptr;
 
@@ -159,4 +153,4 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_BASE_H_

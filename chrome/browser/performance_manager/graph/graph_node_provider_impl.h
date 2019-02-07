@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_PROVIDER_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_PROVIDER_IMPL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_NODE_PROVIDER_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_NODE_PROVIDER_IMPL_H_
 
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
@@ -20,19 +20,18 @@ struct BindSourceInfo;
 
 namespace performance_manager {
 
-class CoordinationUnitProviderImpl
+class GraphNodeProviderImpl
     : public resource_coordinator::mojom::CoordinationUnitProvider {
  public:
-  CoordinationUnitProviderImpl(
-      service_manager::ServiceKeepalive* service_keepalive,
-      CoordinationUnitGraph* coordination_unit_graph);
-  ~CoordinationUnitProviderImpl() override;
+  GraphNodeProviderImpl(service_manager::ServiceKeepalive* service_keepalive,
+                        Graph* coordination_unit_graph);
+  ~GraphNodeProviderImpl() override;
 
   void Bind(
       resource_coordinator::mojom::CoordinationUnitProviderRequest request,
       const service_manager::BindSourceInfo& source_info);
 
-  void OnConnectionError(CoordinationUnitBase* coordination_unit);
+  void OnConnectionError(NodeBase* coordination_unit);
 
   // Overridden from resource_coordinator::mojom::CoordinationUnitProvider:
   void CreateFrameCoordinationUnit(
@@ -51,13 +50,13 @@ class CoordinationUnitProviderImpl
  private:
   service_manager::ServiceKeepalive* const service_keepalive_;
   std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
-  CoordinationUnitGraph* coordination_unit_graph_;
+  Graph* coordination_unit_graph_;
   mojo::BindingSet<resource_coordinator::mojom::CoordinationUnitProvider>
       bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(GraphNodeProviderImpl);
 };
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_PROVIDER_IMPL_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_NODE_PROVIDER_IMPL_H_

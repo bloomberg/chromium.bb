@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/mock_coordination_unit_graphs.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/mock_graphs.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +17,7 @@ namespace performance_manager {
 
 namespace {
 
-class PageCoordinationUnitImplTest : public CoordinationUnitTestHarness {
+class PageNodeImplTest : public GraphTestHarness {
  public:
   void SetUp() override {
     ResourceCoordinatorClock::SetClockForTesting(&clock_);
@@ -37,80 +37,75 @@ class PageCoordinationUnitImplTest : public CoordinationUnitTestHarness {
 
 }  // namespace
 
-TEST_F(PageCoordinationUnitImplTest, AddFrameBasic) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame1_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame2_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame3_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+TEST_F(PageNodeImplTest, AddFrameBasic) {
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
+  auto frame1_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame2_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame3_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
   page_cu->AddFrame(frame1_cu->id());
   page_cu->AddFrame(frame2_cu->id());
   page_cu->AddFrame(frame3_cu->id());
-  EXPECT_EQ(3u, page_cu->GetFrameCoordinationUnits().size());
+  EXPECT_EQ(3u, page_cu->GetFrameNodes().size());
 }
 
-TEST_F(PageCoordinationUnitImplTest, AddReduplicativeFrame) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame1_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame2_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+TEST_F(PageNodeImplTest, AddReduplicativeFrame) {
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
+  auto frame1_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame2_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
   page_cu->AddFrame(frame1_cu->id());
   page_cu->AddFrame(frame2_cu->id());
   page_cu->AddFrame(frame1_cu->id());
-  EXPECT_EQ(2u, page_cu->GetFrameCoordinationUnits().size());
+  EXPECT_EQ(2u, page_cu->GetFrameNodes().size());
 }
 
-TEST_F(PageCoordinationUnitImplTest, RemoveFrame) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+TEST_F(PageNodeImplTest, RemoveFrame) {
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
+  auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
   // Parent-child relationships have not been established yet.
-  EXPECT_EQ(0u, page_cu->GetFrameCoordinationUnits().size());
-  EXPECT_FALSE(frame_cu->GetPageCoordinationUnit());
+  EXPECT_EQ(0u, page_cu->GetFrameNodes().size());
+  EXPECT_FALSE(frame_cu->GetPageNode());
 
   page_cu->AddFrame(frame_cu->id());
 
   // Ensure correct Parent-child relationships have been established.
-  EXPECT_EQ(1u, page_cu->GetFrameCoordinationUnits().size());
-  EXPECT_EQ(1u, page_cu->GetFrameCoordinationUnits().count(frame_cu.get()));
-  EXPECT_EQ(page_cu.get(), frame_cu->GetPageCoordinationUnit());
+  EXPECT_EQ(1u, page_cu->GetFrameNodes().size());
+  EXPECT_EQ(1u, page_cu->GetFrameNodes().count(frame_cu.get()));
+  EXPECT_EQ(page_cu.get(), frame_cu->GetPageNode());
 
   page_cu->RemoveFrame(frame_cu->id());
 
   // Parent-child relationships should no longer exist.
-  EXPECT_EQ(0u, page_cu->GetFrameCoordinationUnits().size());
-  EXPECT_FALSE(frame_cu->GetPageCoordinationUnit());
+  EXPECT_EQ(0u, page_cu->GetFrameNodes().size());
+  EXPECT_FALSE(frame_cu->GetPageNode());
 }
 
-TEST_F(PageCoordinationUnitImplTest,
-       CalculatePageCPUUsageForSinglePageInSingleProcess) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, CalculatePageCPUUsageForSinglePageInSingleProcess) {
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   cu_graph.process->SetCPUUsage(40);
   EXPECT_EQ(40, cu_graph.page->GetCPUUsage());
 }
 
-TEST_F(PageCoordinationUnitImplTest,
-       CalculatePageCPUUsageForMultiplePagesInSingleProcess) {
-  MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, CalculatePageCPUUsageForMultiplePagesInSingleProcess) {
+  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
   cu_graph.process->SetCPUUsage(40);
   EXPECT_EQ(20, cu_graph.page->GetCPUUsage());
   EXPECT_EQ(20, cu_graph.other_page->GetCPUUsage());
 }
 
-TEST_F(PageCoordinationUnitImplTest,
+TEST_F(PageNodeImplTest,
        CalculatePageCPUUsageForSinglePageWithMultipleProcesses) {
-  MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageWithMultipleProcessesGraph cu_graph(coordination_unit_graph());
   cu_graph.process->SetCPUUsage(40);
   cu_graph.other_process->SetCPUUsage(30);
   EXPECT_EQ(70, cu_graph.page->GetCPUUsage());
 }
 
-TEST_F(PageCoordinationUnitImplTest,
+TEST_F(PageNodeImplTest,
        CalculatePageCPUUsageForMultiplePagesWithMultipleProcesses) {
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+  MockMultiplePagesWithMultipleProcessesGraph cu_graph(
       coordination_unit_graph());
   cu_graph.process->SetCPUUsage(40);
   cu_graph.other_process->SetCPUUsage(30);
@@ -118,10 +113,8 @@ TEST_F(PageCoordinationUnitImplTest,
   EXPECT_EQ(50, cu_graph.other_page->GetCPUUsage());
 }
 
-TEST_F(PageCoordinationUnitImplTest,
-       CalculatePageEQTForSinglePageInSingleProcess) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, CalculatePageEQTForSinglePageInSingleProcess) {
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
 
   cu_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
@@ -131,10 +124,8 @@ TEST_F(PageCoordinationUnitImplTest,
   EXPECT_EQ(1, eqt);
 }
 
-TEST_F(PageCoordinationUnitImplTest,
-       CalculatePageEQTForMultiplePagesInSingleProcess) {
-  MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, CalculatePageEQTForMultiplePagesInSingleProcess) {
+  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
 
   cu_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
@@ -147,9 +138,8 @@ TEST_F(PageCoordinationUnitImplTest,
   EXPECT_EQ(1, eqt);
 }
 
-TEST_F(PageCoordinationUnitImplTest, TimeSinceLastVisibilityChange) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
 
   cu_graph.page->SetVisibility(true);
   EXPECT_TRUE(cu_graph.page->IsVisible());
@@ -164,9 +154,8 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastVisibilityChange) {
   EXPECT_FALSE(cu_graph.page->IsVisible());
 }
 
-TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   // Before any commit events, timedelta should be 0.
   EXPECT_TRUE(cu_graph.page->TimeSinceLastNavigation().is_zero());
 
@@ -190,9 +179,8 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
             cu_graph.page->TimeSinceLastNavigation());
 }
 
-TEST_F(PageCoordinationUnitImplTest, IsLoading) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+TEST_F(PageNodeImplTest, IsLoading) {
+  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* page_cu = cu_graph.page.get();
 
   // First attempt should fail, as the property is unset.
@@ -219,14 +207,13 @@ TEST_F(PageCoordinationUnitImplTest, IsLoading) {
   EXPECT_EQ(0u, loading);
 }
 
-TEST_F(PageCoordinationUnitImplTest, OnAllFramesInPageFrozen) {
+TEST_F(PageNodeImplTest, OnAllFramesInPageFrozen) {
   const int64_t kRunning = static_cast<int64_t>(
       resource_coordinator::mojom::LifecycleState::kRunning);
   const int64_t kFrozen = static_cast<int64_t>(
       resource_coordinator::mojom::LifecycleState::kFrozen);
 
-  MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockSinglePageWithMultipleProcessesGraph cu_graph(coordination_unit_graph());
 
   EXPECT_EQ(kRunning,
             cu_graph.page->GetPropertyOrDefault(
@@ -275,7 +262,7 @@ const size_t kInterventionCount =
 
 void ExpectRawInterventionPolicy(
     resource_coordinator::mojom::InterventionPolicy policy,
-    const PageCoordinationUnitImpl* page_cu) {
+    const PageNodeImpl* page_cu) {
   for (size_t i = 0; i < kInterventionCount; ++i) {
     EXPECT_EQ(
         policy,
@@ -287,7 +274,7 @@ void ExpectRawInterventionPolicy(
 
 void ExpectInterventionPolicy(
     resource_coordinator::mojom::InterventionPolicy policy,
-    PageCoordinationUnitImpl* page_cu) {
+    PageNodeImpl* page_cu) {
   for (size_t i = 0; i < kInterventionCount; ++i) {
     EXPECT_EQ(
         policy,
@@ -298,24 +285,24 @@ void ExpectInterventionPolicy(
 }
 
 void ExpectInitialInterventionPolicyAggregationWorks(
-    CoordinationUnitGraph* cu_graph,
+    Graph* cu_graph,
     resource_coordinator::mojom::InterventionPolicy f0_policy,
     resource_coordinator::mojom::InterventionPolicy f1_policy,
     resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,
     resource_coordinator::mojom::InterventionPolicy f0f1_policy_aggregated) {
   // Create two frames not tied to any page.
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f0 =
-      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f1 =
-      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
+  TestNodeWrapper<FrameNodeImpl> f0 =
+      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
+  TestNodeWrapper<FrameNodeImpl> f1 =
+      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
 
   // Set frame policies before attaching to a page CU.
   f0->SetAllInterventionPoliciesForTesting(f0_policy);
   f1->SetAllInterventionPoliciesForTesting(f1_policy);
 
   // Check the initial values before any frames are added.
-  TestCoordinationUnitWrapper<PageCoordinationUnitImpl> page =
-      TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(cu_graph);
+  TestNodeWrapper<PageNodeImpl> page =
+      TestNodeWrapper<PageNodeImpl>::Create(cu_graph);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
@@ -348,7 +335,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 
 }  // namespace
 
-TEST_F(PageCoordinationUnitImplTest, InitialInterventionPolicy) {
+TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
   auto* cu_graph = coordination_unit_graph();
 
   // Tests all possible transitions where the frame CU has its policy values
@@ -443,17 +430,17 @@ TEST_F(PageCoordinationUnitImplTest, InitialInterventionPolicy) {
           kOptOut /* f0f1_policy_aggregated */);
 }
 
-TEST_F(PageCoordinationUnitImplTest, IncrementalInterventionPolicy) {
+TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   auto* cu_graph = coordination_unit_graph();
 
-  TestCoordinationUnitWrapper<PageCoordinationUnitImpl> page =
-      TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(cu_graph);
+  TestNodeWrapper<PageNodeImpl> page =
+      TestNodeWrapper<PageNodeImpl>::Create(cu_graph);
 
   // Create two frames and immediately attach them to the page.
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f0 =
-      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
-  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f1 =
-      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
+  TestNodeWrapper<FrameNodeImpl> f0 =
+      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
+  TestNodeWrapper<FrameNodeImpl> f1 =
+      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
   page->AddFrame(f0->id());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());

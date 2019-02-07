@@ -5,14 +5,14 @@
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
-WebUIGraphDumpImpl::WebUIGraphDumpImpl(CoordinationUnitGraph* graph)
+WebUIGraphDumpImpl::WebUIGraphDumpImpl(Graph* graph)
     : graph_(graph), binding_(this) {
   DCHECK(graph);
 }
@@ -31,7 +31,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       resource_coordinator::mojom::WebUIGraph::New();
 
   {
-    auto processes = graph_->GetAllProcessCoordinationUnits();
+    auto processes = graph_->GetAllProcessNodes();
     graph->processes.reserve(processes.size());
     for (auto* process : processes) {
       resource_coordinator::mojom::WebUIProcessInfoPtr process_info =
@@ -47,7 +47,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
   }
 
   {
-    auto frames = graph_->GetAllFrameCoordinationUnits();
+    auto frames = graph_->GetAllFrameNodes();
     graph->frames.reserve(frames.size());
     for (auto* frame : frames) {
       resource_coordinator::mojom::WebUIFrameInfoPtr frame_info =
@@ -55,10 +55,10 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
 
       frame_info->id = frame->id().id;
 
-      auto* parent_frame = frame->GetParentFrameCoordinationUnit();
+      auto* parent_frame = frame->GetParentFrameNode();
       frame_info->parent_frame_id = parent_frame ? parent_frame->id().id : 0;
 
-      auto* process = frame->GetProcessCoordinationUnit();
+      auto* process = frame->GetProcessNode();
       frame_info->process_id = process ? process->id().id : 0;
 
       graph->frames.push_back(std::move(frame_info));
@@ -66,7 +66,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
   }
 
   {
-    auto pages = graph_->GetAllPageCoordinationUnits();
+    auto pages = graph_->GetAllPageNodes();
     graph->pages.reserve(pages.size());
     for (auto* page : pages) {
       resource_coordinator::mojom::WebUIPageInfoPtr page_info =
@@ -75,7 +75,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       page_info->id = page->id().id;
       page_info->main_frame_url = page->main_frame_url();
 
-      auto* main_frame = page->GetMainFrameCoordinationUnit();
+      auto* main_frame = page->GetMainFrameNode();
       page_info->main_frame_id = main_frame ? main_frame->id().id : 0;
 
       graph->pages.push_back(std::move(page_info));

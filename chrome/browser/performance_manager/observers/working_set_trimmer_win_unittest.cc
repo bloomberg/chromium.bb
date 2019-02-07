@@ -17,8 +17,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -72,7 +72,7 @@ MULTIPROCESS_TEST_MAIN(ProcessWithLargeWorkingSet) {
   return 0;
 }
 
-class WorkingSetTrimmerTest : public CoordinationUnitTestHarness {
+class WorkingSetTrimmerTest : public GraphTestHarness {
  protected:
   WorkingSetTrimmerTest() {
     // Create a child process and wait until it allocates a 10 MB buffer.
@@ -104,8 +104,8 @@ class WorkingSetTrimmerTest : public CoordinationUnitTestHarness {
   const base::string16 test_process_id_ =
       base::NumberToString16(base::GetCurrentProcId());
   base::Process child_process_;
-  TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> process_cu_ =
-      CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+  TestNodeWrapper<ProcessNodeImpl> process_cu_ =
+      CreateCoordinationUnit<ProcessNodeImpl>();
   WorkingSetTrimmer working_set_trimmer_;
 
  private:

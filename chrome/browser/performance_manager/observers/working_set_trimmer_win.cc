@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
@@ -51,14 +51,13 @@ void EmptyWorkingSet(base::ProcessId process_id,
 WorkingSetTrimmer::WorkingSetTrimmer() = default;
 WorkingSetTrimmer::~WorkingSetTrimmer() = default;
 
-bool WorkingSetTrimmer::ShouldObserve(
-    const CoordinationUnitBase* coordination_unit) {
+bool WorkingSetTrimmer::ShouldObserve(const NodeBase* coordination_unit) {
   return coordination_unit->id().type ==
          resource_coordinator::CoordinationUnitType::kProcess;
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
-    const ProcessCoordinationUnitImpl* process_cu) {
+    const ProcessNodeImpl* process_cu) {
   const base::ProcessId process_id = process_cu->process_id();
   if (process_id != base::kNullProcessId) {
     EmptyWorkingSet(process_id, process_cu->launch_time());

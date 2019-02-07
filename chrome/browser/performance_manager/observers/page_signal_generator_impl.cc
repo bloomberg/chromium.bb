@@ -4,14 +4,15 @@
 
 #include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/system_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -73,8 +74,7 @@ void PageSignalGeneratorImpl::AddReceiver(
 // 2- kMainThreadTaskLoadIsLow property changes for PageAlmostIdle detection
 // 3- kRendererIsBloated event for reloading bloated pages.
 // The system CU is observed for the kProcessCPUUsageReady event.
-bool PageSignalGeneratorImpl::ShouldObserve(
-    const CoordinationUnitBase* coordination_unit) {
+bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* coordination_unit) {
   auto cu_type = coordination_unit->id().type;
   switch (cu_type) {
     case resource_coordinator::CoordinationUnitType::kPage:
@@ -91,8 +91,7 @@ bool PageSignalGeneratorImpl::ShouldObserve(
   }
 }
 
-void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
-    const CoordinationUnitBase* cu) {
+void PageSignalGeneratorImpl::OnNodeCreated(const NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -101,14 +100,13 @@ void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
     return;
 
   // Create page data exists for this Page CU.
-  auto* page_cu = PageCoordinationUnitImpl::FromCoordinationUnitBase(cu);
+  auto* page_cu = PageNodeImpl::FromNodeBase(cu);
   DCHECK(!base::ContainsKey(page_data_, page_cu));  // No data should exist yet.
   page_data_[page_cu].SetLoadIdleState(kLoadingNotStarted,
                                        base::TimeTicks::Now());
 }
 
-void PageSignalGeneratorImpl::OnBeforeCoordinationUnitDestroyed(
-    const CoordinationUnitBase* cu) {
+void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(const NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -116,13 +114,13 @@ void PageSignalGeneratorImpl::OnBeforeCoordinationUnitDestroyed(
   if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
     return;
 
-  auto* page_cu = PageCoordinationUnitImpl::FromCoordinationUnitBase(cu);
+  auto* page_cu = PageNodeImpl::FromNodeBase(cu);
   size_t count = page_data_.erase(page_cu);
   DCHECK_EQ(1u, count);  // This should always erase exactly one CU.
 }
 
 void PageSignalGeneratorImpl::OnFramePropertyChanged(
-    const FrameCoordinationUnitImpl* frame_cu,
+    const FrameNodeImpl* frame_cu,
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
@@ -135,7 +133,7 @@ void PageSignalGeneratorImpl::OnFramePropertyChanged(
 }
 
 void PageSignalGeneratorImpl::OnPagePropertyChanged(
-    const PageCoordinationUnitImpl* page_cu,
+    const PageNodeImpl* page_cu,
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   if (resource_coordinator::IsPageAlmostIdleSignalEnabled() &&
@@ -150,15 +148,15 @@ void PageSignalGeneratorImpl::OnPagePropertyChanged(
 }
 
 void PageSignalGeneratorImpl::OnProcessPropertyChanged(
-    const ProcessCoordinationUnitImpl* process_cu,
+    const ProcessNodeImpl* process_cu,
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == resource_coordinator::mojom::PropertyType::
                            kExpectedTaskQueueingDuration) {
-    for (auto* frame_cu : process_cu->GetFrameCoordinationUnits()) {
+    for (auto* frame_cu : process_cu->GetFrameNodes()) {
       if (!frame_cu->IsMainFrame())
         continue;
-      auto* page_cu = frame_cu->GetPageCoordinationUnit();
+      auto* page_cu = frame_cu->GetPageNode();
       int64_t duration;
       if (!page_cu || !page_cu->GetExpectedTaskQueueingDuration(&duration))
         continue;
@@ -177,13 +175,13 @@ void PageSignalGeneratorImpl::OnProcessPropertyChanged(
 }
 
 void PageSignalGeneratorImpl::OnFrameEventReceived(
-    const FrameCoordinationUnitImpl* frame_cu,
+    const FrameNodeImpl* frame_cu,
     const resource_coordinator::mojom::Event event) {
   if (event !=
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated)
     return;
 
-  auto* page_cu = frame_cu->GetPageCoordinationUnit();
+  auto* page_cu = frame_cu->GetPageNode();
   if (!page_cu)
     return;
 
@@ -192,7 +190,7 @@ void PageSignalGeneratorImpl::OnFrameEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnPageEventReceived(
-    const PageCoordinationUnitImpl* page_cu,
+    const PageNodeImpl* page_cu,
     const resource_coordinator::mojom::Event event) {
   // We only care about the events if network idle signal is enabled.
   if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
@@ -210,10 +208,10 @@ void PageSignalGeneratorImpl::OnPageEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnProcessEventReceived(
-    const ProcessCoordinationUnitImpl* process_cu,
+    const ProcessNodeImpl* process_cu,
     const resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kRendererIsBloated) {
-    std::set<PageCoordinationUnitImpl*> page_cus =
+    std::set<PageNodeImpl*> page_cus =
         process_cu->GetAssociatedPageCoordinationUnits();
     // Currently bloated renderer handling supports only a single page.
     if (page_cus.size() == 1u) {
@@ -232,14 +230,14 @@ void PageSignalGeneratorImpl::OnProcessEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnSystemEventReceived(
-    const SystemCoordinationUnitImpl* system_cu,
+    const SystemNodeImpl* system_cu,
     const resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kProcessCPUUsageReady) {
     base::TimeTicks measurement_start =
         system_cu->last_measurement_start_time();
 
     for (auto& entry : page_data_) {
-      const PageCoordinationUnitImpl* page = entry.first;
+      const PageNodeImpl* page = entry.first;
       PageData* data = &entry.second;
       // TODO(siggi): Figure "recency" here, to avoid firing a measurement event
       //     for state transitions that happened "too long" before a
@@ -268,7 +266,7 @@ void PageSignalGeneratorImpl::BindToInterface(
 }
 
 void PageSignalGeneratorImpl::UpdateLoadIdleStateFrame(
-    const FrameCoordinationUnitImpl* frame_cu) {
+    const FrameNodeImpl* frame_cu) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
 
   // Only main frames are relevant in the load idle state.
@@ -276,14 +274,14 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStateFrame(
     return;
 
   // Update the load idle state of the page associated with this frame.
-  auto* page_cu = frame_cu->GetPageCoordinationUnit();
+  auto* page_cu = frame_cu->GetPageNode();
   if (!page_cu)
     return;
   UpdateLoadIdleStatePage(page_cu);
 }
 
 void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
-    const PageCoordinationUnitImpl* page_cu) {
+    const PageNodeImpl* page_cu) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
 
   auto* page_data = GetPageData(page_cu);
@@ -371,14 +369,14 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
 }
 
 void PageSignalGeneratorImpl::UpdateLoadIdleStateProcess(
-    const ProcessCoordinationUnitImpl* process_cu) {
+    const ProcessNodeImpl* process_cu) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
-  for (auto* frame_cu : process_cu->GetFrameCoordinationUnits())
+  for (auto* frame_cu : process_cu->GetFrameNodes())
     UpdateLoadIdleStateFrame(frame_cu);
 }
 
 void PageSignalGeneratorImpl::UpdateLifecycleState(
-    const PageCoordinationUnitImpl* page_cu,
+    const PageNodeImpl* page_cu,
     const resource_coordinator::mojom::LifecycleState state) {
   DispatchPageSignal(
       page_cu,
@@ -387,7 +385,7 @@ void PageSignalGeneratorImpl::UpdateLifecycleState(
 }
 
 void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(
-    const PageCoordinationUnitImpl* page_cu,
+    const PageNodeImpl* page_cu,
     base::TimeTicks now) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   auto* page_data = GetPageData(page_cu);
@@ -399,7 +397,7 @@ void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(
 }
 
 PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
-    const PageCoordinationUnitImpl* page_cu) {
+    const PageNodeImpl* page_cu) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   // There are two ways to enter this function:
   // 1. Via On*PropertyChange calls. The backing PageData is guaranteed to
@@ -411,8 +409,7 @@ PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
   return &page_data_[page_cu];
 }
 
-bool PageSignalGeneratorImpl::IsLoading(
-    const PageCoordinationUnitImpl* page_cu) {
+bool PageSignalGeneratorImpl::IsLoading(const PageNodeImpl* page_cu) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   int64_t is_loading = 0;
   if (!page_cu->GetProperty(
@@ -421,17 +418,15 @@ bool PageSignalGeneratorImpl::IsLoading(
   return is_loading;
 }
 
-bool PageSignalGeneratorImpl::IsIdling(
-    const PageCoordinationUnitImpl* page_cu) {
+bool PageSignalGeneratorImpl::IsIdling(const PageNodeImpl* page_cu) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   // Get the Frame CU for the main frame associated with this page.
-  const FrameCoordinationUnitImpl* main_frame_cu =
-      page_cu->GetMainFrameCoordinationUnit();
+  const FrameNodeImpl* main_frame_cu = page_cu->GetMainFrameNode();
   if (!main_frame_cu)
     return false;
 
   // Get the process CU associated with this main frame.
-  const auto* process_cu = main_frame_cu->GetProcessCoordinationUnit();
+  const auto* process_cu = main_frame_cu->GetProcessNode();
   if (!process_cu)
     return false;
 
@@ -459,10 +454,9 @@ void PageSignalGeneratorImpl::PageData::SetLoadIdleState(
 }
 
 template <typename Method, typename... Params>
-void PageSignalGeneratorImpl::DispatchPageSignal(
-    const PageCoordinationUnitImpl* page_cu,
-    Method m,
-    Params... params) {
+void PageSignalGeneratorImpl::DispatchPageSignal(const PageNodeImpl* page_cu,
+                                                 Method m,
+                                                 Params... params) {
   receivers_.ForAllPtrs(
       [&](resource_coordinator::mojom::PageSignalReceiver* receiver) {
         (receiver->*m)(

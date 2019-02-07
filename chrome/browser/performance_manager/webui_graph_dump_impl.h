@@ -10,11 +10,11 @@
 
 namespace performance_manager {
 
-class CoordinationUnitGraph;
+class Graph;
 
 class WebUIGraphDumpImpl : public resource_coordinator::mojom::WebUIGraphDump {
  public:
-  explicit WebUIGraphDumpImpl(CoordinationUnitGraph* graph);
+  explicit WebUIGraphDumpImpl(Graph* graph);
   ~WebUIGraphDumpImpl() override;
 
   // WebUIGraphDump implementation.
@@ -25,7 +25,7 @@ class WebUIGraphDumpImpl : public resource_coordinator::mojom::WebUIGraphDump {
             base::OnceClosure error_handler);
 
  private:
-  CoordinationUnitGraph* graph_;
+  Graph* graph_;
   mojo::Binding<resource_coordinator::mojom::WebUIGraphDump> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIGraphDumpImpl);

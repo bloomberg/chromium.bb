@@ -11,8 +11,8 @@
 
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_introspector_impl.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_introspector_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
@@ -78,7 +78,7 @@ class PerformanceManager {
 
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  CoordinationUnitGraph graph_;
+  Graph graph_;
   CoordinationUnitIntrospectorImpl introspector_;
 
   // Provided to |graph_|.

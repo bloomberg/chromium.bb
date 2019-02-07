@@ -6,8 +6,8 @@
 
 namespace performance_manager {
 
-CoordinationUnitGraphObserver::CoordinationUnitGraphObserver() = default;
+GraphObserver::GraphObserver() = default;
 
-CoordinationUnitGraphObserver::~CoordinationUnitGraphObserver() = default;
+GraphObserver::~GraphObserver() = default;
 
 }  // namespace performance_manager
