@@ -106,7 +106,6 @@ class FamilyInfoFetcher : public identity::IdentityManager::Observer {
   // IdentityManager::Observer implementation:
   void OnRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info) override;
-  void OnRefreshTokensLoaded() override;
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   identity::AccessTokenInfo access_token_info);

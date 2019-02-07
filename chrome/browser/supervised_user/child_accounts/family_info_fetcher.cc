@@ -126,10 +126,6 @@ void FamilyInfoFetcher::StartGetFamilyMembers() {
 }
 
 void FamilyInfoFetcher::StartFetching() {
-  // TODO(treib): we should stop listening to OnRefreshTokensLoaded which is
-  // unreliable for clients, as there is no way to know whether it has already
-  // happened or not, potentially leading to neverending waits. Note that this
-  // directly affects FamilyInfoFetcherTest.NoRefreshToken.
   if (identity_manager_->HasAccountWithRefreshToken(primary_account_id_)) {
     StartFetchingAccessToken();
   } else {
@@ -157,16 +153,6 @@ void FamilyInfoFetcher::OnRefreshTokenUpdatedForAccount(
   identity_manager_->RemoveObserver(this);
 
   StartFetchingAccessToken();
-}
-
-void FamilyInfoFetcher::OnRefreshTokensLoaded() {
-  identity_manager_->RemoveObserver(this);
-
-  // The PO2TS has loaded all tokens, but we didn't get one for the account we
-  // want. We probably won't get one any time soon, so report an error.
-  DLOG(WARNING) << "Did not get a refresh token for account "
-                << primary_account_id_;
-  consumer_->OnFailure(TOKEN_ERROR);
 }
 
 void FamilyInfoFetcher::OnAccessTokenFetchComplete(
