@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -33,7 +33,9 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
 
  public:
   explicit BodyConsumerBase(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
+      : resolver_(resolver),
+        task_runner_(ExecutionContext::From(resolver_->GetScriptState())
+                         ->GetTaskRunner(TaskType::kNetworking)) {}
   ScriptPromiseResolver* Resolver() { return resolver_; }
   void DidFetchDataLoadFailed() override {
     ScriptState::Scope scope(Resolver()->GetScriptState());
@@ -45,13 +47,29 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
     resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
   }
 
+  // Resource Timing event is not yet added, so delay the resolution timing
+  // a bit. See https://crbug.com/507169.
+  // TODO(yhirano): Fix this problem in a more sophisticated way.
+  template <typename T>
+  void ResolveLater(const T& object) {
+    task_runner_->PostTask(FROM_HERE,
+                           WTF::Bind(&BodyConsumerBase::ResolveNow<T>,
+                                     WrapPersistent(this), object));
+  }
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(resolver_);
     FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
-  Member<ScriptPromiseResolver> resolver_;
+  template <typename T>
+  void ResolveNow(const T& object) {
+    resolver_->Resolve(object);
+  }
+
+  const Member<ScriptPromiseResolver> resolver_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(BodyConsumerBase);
 };
 
@@ -62,7 +80,7 @@ class BodyBlobConsumer final : public BodyConsumerBase {
 
   void DidFetchDataLoadedBlobHandle(
       scoped_refptr<BlobDataHandle> blob_data_handle) override {
-    Resolver()->Resolve(Blob::Create(std::move(blob_data_handle)));
+    ResolveLater(WrapPersistent(Blob::Create(std::move(blob_data_handle))));
   }
   DISALLOW_COPY_AND_ASSIGN(BodyBlobConsumer);
 };
@@ -73,7 +91,7 @@ class BodyArrayBufferConsumer final : public BodyConsumerBase {
       : BodyConsumerBase(resolver) {}
 
   void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer* array_buffer) override {
-    Resolver()->Resolve(array_buffer);
+    ResolveLater(WrapPersistent(array_buffer));
   }
   DISALLOW_COPY_AND_ASSIGN(BodyArrayBufferConsumer);
 };
@@ -84,7 +102,7 @@ class BodyFormDataConsumer final : public BodyConsumerBase {
       : BodyConsumerBase(resolver) {}
 
   void DidFetchDataLoadedFormData(FormData* formData) override {
-    Resolver()->Resolve(formData);
+    ResolveLater(WrapPersistent(formData));
   }
 
   void DidFetchDataLoadedString(const String& string) override {
@@ -102,7 +120,7 @@ class BodyTextConsumer final : public BodyConsumerBase {
       : BodyConsumerBase(resolver) {}
 
   void DidFetchDataLoadedString(const String& string) override {
-    Resolver()->Resolve(string);
+    ResolveLater(string);
   }
   DISALLOW_COPY_AND_ASSIGN(BodyTextConsumer);
 };
@@ -124,7 +142,7 @@ class BodyJsonConsumer final : public BodyConsumerBase {
     if (v8::JSON::Parse(Resolver()->GetScriptState()->GetContext(),
                         input_string)
             .ToLocal(&parsed))
-      Resolver()->Resolve(parsed);
+      ResolveLater(ScriptValue(Resolver()->GetScriptState(), parsed));
     else
       Resolver()->Reject(trycatch.Exception());
   }

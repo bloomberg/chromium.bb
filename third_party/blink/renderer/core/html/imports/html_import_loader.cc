@@ -61,11 +61,8 @@ void HTMLImportLoader::Dispose() {
   ClearResource();
 }
 
-void HTMLImportLoader::ResponseReceived(
-    Resource* resource,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+void HTMLImportLoader::ResponseReceived(Resource* resource,
+                                        const ResourceResponse& response) {
   // Resource may already have been loaded with the import loader
   // being added as a client later & now being notified. Fail early.
   if (resource->LoadFailedOrCanceled() || response.HttpStatusCode() >= 400 ||

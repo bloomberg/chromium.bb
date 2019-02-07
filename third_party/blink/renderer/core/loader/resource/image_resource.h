@@ -87,8 +87,7 @@ class CORE_EXPORT ImageResource final
 
   scoped_refptr<const SharedBuffer> ResourceBuffer() const override;
   void NotifyStartLoad() override;
-  void ResponseReceived(const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
+  void ResponseReceived(const ResourceResponse&) override;
   void AppendData(const char*, size_t) override;
   void Finish(TimeTicks finish_time, base::SingleThreadTaskRunner*) override;
   void FinishAsError(const ResourceError&,

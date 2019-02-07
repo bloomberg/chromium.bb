@@ -65,6 +65,7 @@ class ResourceFetcher;
 class ResourceFinishObserver;
 class ResourceTimingInfo;
 class ResourceLoader;
+class ResponseBodyLoaderDrainableInterface;
 class SecurityOrigin;
 
 // |ResourceType| enum values are used in UMAs, so do not change the values of
@@ -261,8 +262,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // been made to not follow it.
   virtual void WillNotFollowRedirect() {}
 
-  virtual void ResponseReceived(const ResourceResponse&,
-                                std::unique_ptr<WebDataConsumerHandle>);
+  virtual void ResponseReceived(const ResourceResponse&);
+  virtual void ResponseBodyReceived(
+      ResponseBodyLoaderDrainableInterface& body_loader) {}
   void SetResponse(const ResourceResponse&);
   const ResourceResponse& GetResponse() const { return response_; }
 

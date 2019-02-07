@@ -484,8 +484,7 @@ void Resource::SetResponse(const ResourceResponse& response) {
                                    GetResourceRequest().RequestorOrigin()));
 }
 
-void Resource::ResponseReceived(const ResourceResponse& response,
-                                std::unique_ptr<WebDataConsumerHandle>) {
+void Resource::ResponseReceived(const ResourceResponse& response) {
   response_timestamp_ = CurrentTime();
   if (is_revalidating_) {
     if (response.HttpStatusCode() == 304) {
@@ -720,7 +719,6 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
       GetResourceRequest().RequestorOrigin();
   scoped_refptr<const SecurityOrigin> new_origin =
       new_request.RequestorOrigin();
-  DCHECK_EQ(GetDataBufferingPolicy(), kBufferData);
 
   DCHECK(existing_origin);
   DCHECK(new_origin);

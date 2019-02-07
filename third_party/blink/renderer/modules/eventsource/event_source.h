@@ -102,9 +102,7 @@ class MODULES_EXPORT EventSource final
   void Trace(blink::Visitor*) override;
 
  private:
-  void DidReceiveResponse(unsigned long,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
+  void DidReceiveResponse(unsigned long, const ResourceResponse&) override;
   void DidReceiveData(const char*, unsigned) override;
   void DidFinishLoading(unsigned long) override;
   void DidFail(const ResourceError&) override;

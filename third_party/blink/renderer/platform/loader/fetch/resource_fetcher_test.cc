@@ -184,7 +184,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   // Fetch the cached resource. The request to DispatchWillSendRequest should
@@ -216,7 +216,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHTTPHeaderField(http_names::kVary, "*");
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
 
@@ -258,7 +258,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   response.SetHTTPStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHTTPHeaderField(http_names::kVary, "*");
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
 
@@ -395,9 +395,7 @@ class ServeRequestsOnCompleteClient final
   void DataSent(Resource*, unsigned long long, unsigned long long) override {
     ASSERT_TRUE(false);
   }
-  void ResponseReceived(Resource*,
-                        const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override {
+  void ResponseReceived(Resource*, const ResourceResponse&) override {
     ASSERT_TRUE(false);
   }
   void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) override {
@@ -782,7 +780,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   ResourceResponse response(url);
   response.SetHTTPStatusCode(304);
   response.SetHTTPHeaderField("etag", "1234567890");
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   auto* fetcher = CreateFetcher(

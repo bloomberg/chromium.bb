@@ -170,9 +170,7 @@ const KURL& WorkerClassicScriptLoader::ResponseURL() const {
 
 void WorkerClassicScriptLoader::DidReceiveResponse(
     unsigned long identifier,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+    const ResourceResponse& response) {
   if (response.HttpStatusCode() / 100 != 2 && response.HttpStatusCode()) {
     NotifyError();
     return;

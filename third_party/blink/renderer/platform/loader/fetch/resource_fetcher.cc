@@ -637,7 +637,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   resource->NotifyStartLoad();
   // FIXME: We should provide a body stream here.
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->SetDataBufferingPolicy(kBufferData);
   if (data->size())
     resource->SetResourceBuffer(data);

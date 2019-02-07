@@ -208,7 +208,6 @@ ThreadableLoader::ThreadableLoader(
       resource_fetcher_(resource_fetcher),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCorsEnabled()),
-      is_using_data_consumer_handle_(false),
       async_(resource_loader_options.synchronous_policy ==
              kRequestAsynchronously),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
@@ -821,17 +820,12 @@ void ThreadableLoader::ReportResponseReceived(
   frame->Console().ReportResourceResponseReceived(loader, identifier, response);
 }
 
-void ThreadableLoader::ResponseReceived(
-    Resource* resource,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
+void ThreadableLoader::ResponseReceived(Resource* resource,
+                                        const ResourceResponse& response) {
   DCHECK_EQ(resource, GetResource());
   DCHECK(client_);
 
   checker_.ResponseReceived();
-
-  if (handle)
-    is_using_data_consumer_handle_ = true;
 
   // TODO(toyoshim): Support OOR-CORS preflight and Service Worker case.
   // Note that CORS-preflight is usually handled in the Network Service side,
@@ -840,8 +834,7 @@ void ThreadableLoader::ResponseReceived(
   if (out_of_blink_cors_ && !response.WasFetchedViaServiceWorker()) {
     DCHECK(actual_request_.IsNull());
     fallback_request_for_service_worker_ = ResourceRequest();
-    client_->DidReceiveResponse(resource->Identifier(), response,
-                                std::move(handle));
+    client_->DidReceiveResponse(resource->Identifier(), response);
     return;
   }
 
@@ -879,8 +872,7 @@ void ThreadableLoader::ResponseReceived(
     }
 
     fallback_request_for_service_worker_ = ResourceRequest();
-    client_->DidReceiveResponse(resource->Identifier(), response,
-                                std::move(handle));
+    client_->DidReceiveResponse(resource->Identifier(), response);
     return;
   }
 
@@ -912,8 +904,13 @@ void ThreadableLoader::ResponseReceived(
   DCHECK_EQ(&response, &resource->GetResponse());
   resource->SetResponseType(response_tainting_);
   DCHECK_EQ(response.GetType(), response_tainting_);
-  client_->DidReceiveResponse(resource->Identifier(), response,
-                              std::move(handle));
+  client_->DidReceiveResponse(resource->Identifier(), response);
+}
+
+void ThreadableLoader::ResponseBodyReceived(Resource*, BytesConsumer& body) {
+  checker_.ResponseBodyReceived();
+
+  client_->DidStartLoadingResponseBody(body);
 }
 
 void ThreadableLoader::SetSerializedCachedMetadata(Resource*,
@@ -934,9 +931,6 @@ void ThreadableLoader::DataReceived(Resource* resource,
   DCHECK(client_);
 
   checker_.DataReceived();
-
-  if (is_using_data_consumer_handle_)
-    return;
 
   // Preflight data should be invisible to clients.
   if (!actual_request_.IsNull())

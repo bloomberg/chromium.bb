@@ -26,13 +26,14 @@
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 
 #include <memory>
-#include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client_walker.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -113,15 +114,64 @@ RawResource::RawResource(const ResourceRequest& resource_request,
     : Resource(resource_request, type, options) {}
 
 void RawResource::AppendData(const char* data, size_t length) {
-  if (data_pipe_writer_) {
-    DCHECK_EQ(kDoNotBufferData, GetDataBufferingPolicy());
-    data_pipe_writer_->Write(data, SafeCast<uint32_t>(length));
-  } else {
-    Resource::AppendData(data, length);
-  }
+  if (GetResourceRequest().UseStreamOnResponse())
+    return;
+
+  Resource::AppendData(data, length);
 }
 
+class RawResource::PreloadBytesConsumerClient final
+    : public GarbageCollectedFinalized<PreloadBytesConsumerClient>,
+      public BytesConsumer::Client {
+  USING_GARBAGE_COLLECTED_MIXIN(PreloadBytesConsumerClient);
+
+ public:
+  PreloadBytesConsumerClient(BytesConsumer& bytes_consumer,
+                             RawResource& resource,
+                             RawResourceClient& client)
+      : bytes_consumer_(bytes_consumer),
+        resource_(resource),
+        client_(&client) {}
+  void OnStateChange() override {
+    auto* client = client_.Get();
+    if (!client) {
+      return;
+    }
+    while (resource_->HasClient(client)) {
+      const char* buffer = nullptr;
+      size_t available = 0;
+      auto result = bytes_consumer_->BeginRead(&buffer, &available);
+      if (result == BytesConsumer::Result::kShouldWait)
+        return;
+      if (result == BytesConsumer::Result::kOk) {
+        client->DataReceived(resource_, buffer, available);
+        result = bytes_consumer_->EndRead(available);
+      }
+      if (result != BytesConsumer::Result::kOk) {
+        return;
+      }
+    }
+    client_ = nullptr;
+  }
+
+  String DebugName() const override { return "PreloadBytesConsumerClient"; }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(bytes_consumer_);
+    visitor->Trace(resource_);
+    visitor->Trace(client_);
+    BytesConsumer::Client::Trace(visitor);
+  }
+
+ private:
+  const Member<BytesConsumer> bytes_consumer_;
+  const Member<RawResource> resource_;
+  WeakMember<RawResourceClient> client_;
+};
+
 void RawResource::DidAddClient(ResourceClient* c) {
+  auto* bytes_consumer_for_preload = bytes_consumer_for_preload_.Release();
+
   // CHECK()/RevalidationStartForbiddenScope are for
   // https://crbug.com/640960#c24.
   CHECK(!IsCacheValidator());
@@ -138,11 +188,31 @@ void RawResource::DidAddClient(ResourceClient* c) {
   }
 
   if (!GetResponse().IsNull()) {
-    client->ResponseReceived(this, GetResponse(),
-                             std::move(data_consumer_handle_));
+    client->ResponseReceived(this, GetResponse());
   }
   if (!HasClient(c))
     return;
+
+  if (bytes_consumer_for_preload) {
+    bytes_consumer_for_preload->StopBuffering();
+
+    if (matched_with_non_streaming_destination_) {
+      // In this case, the client needs individual chunks so we need
+      // PreloadBytesConsumerClient for the translation.
+      auto* bytes_consumer_client =
+          MakeGarbageCollected<PreloadBytesConsumerClient>(
+              *bytes_consumer_for_preload, *this, *client);
+      bytes_consumer_for_preload->SetClient(bytes_consumer_client);
+      bytes_consumer_client->OnStateChange();
+    } else {
+      // In this case, we can simply pass the BytesConsumer to the client.
+      client->ResponseBodyReceived(this, *bytes_consumer_for_preload);
+    }
+  }
+
+  if (!HasClient(c))
+    return;
+
   Resource::DidAddClient(client);
 }
 
@@ -176,9 +246,12 @@ SingleCachedMetadataHandler* RawResource::ScriptCacheHandler() {
   return static_cast<SingleCachedMetadataHandler*>(Resource::CacheHandler());
 }
 
-void RawResource::ResponseReceived(
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
+void RawResource::Trace(Visitor* visitor) {
+  visitor->Trace(bytes_consumer_for_preload_);
+  Resource::Trace(visitor);
+}
+
+void RawResource::ResponseReceived(const ResourceResponse& response) {
   if (response.WasFallbackRequiredByServiceWorker()) {
     // The ServiceWorker asked us to re-fetch the request. This resource must
     // not be reused.
@@ -188,17 +261,42 @@ void RawResource::ResponseReceived(
       GetMemoryCache()->Remove(this);
   }
 
-  Resource::ResponseReceived(response, nullptr);
+  Resource::ResponseReceived(response);
 
-  DCHECK(!handle || !data_consumer_handle_);
-  if (!handle && Clients().size() > 0)
-    handle = std::move(data_consumer_handle_);
   ResourceClientWalker<RawResourceClient> w(Clients());
-  DCHECK(Clients().size() <= 1 || !handle);
   while (RawResourceClient* c = w.Next()) {
-    // |handle| is cleared when passed, but it's not a problem because |handle|
-    // is null when there are two or more clients, as asserted.
-    c->ResponseReceived(this, this->GetResponse(), std::move(handle));
+    c->ResponseReceived(this, this->GetResponse());
+  }
+}
+
+void RawResource::ResponseBodyReceived(
+    ResponseBodyLoaderDrainableInterface& body_loader) {
+  if (IsUnusedPreload()) {
+    // For preload, we want to store the body while dispatching
+    // onload and onerror events.
+    bytes_consumer_for_preload_ = MakeGarbageCollected<BufferingBytesConsumer>(
+        &body_loader.DrainAsBytesConsumer());
+
+    return;
+  }
+
+  if (matched_with_non_streaming_destination_) {
+    DCHECK(GetResourceRequest().UseStreamOnResponse());
+    // The loading was initiated as a preload (hence UseStreamOnResponse is
+    // set), but this resource has been matched with a request without
+    // UseStreamOnResponse set.
+    return;
+  }
+
+  if (!GetResourceRequest().UseStreamOnResponse()) {
+    return;
+  }
+
+  BytesConsumer& bytes_consumer = body_loader.DrainAsBytesConsumer();
+  DCHECK_LE(Clients().size(), 1u);
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next()) {
+    c->ResponseBodyReceived(this, bytes_consumer);
   }
 }
 
@@ -262,57 +360,10 @@ bool RawResource::MatchPreload(const FetchParameters& params,
   if (!Resource::MatchPreload(params, task_runner))
     return false;
 
-  // This is needed to call Platform::Current() below. Remove this branch
-  // when the calls are removed.
-  if (!IsMainThread())
-    return false;
+  matched_with_non_streaming_destination_ =
+      !params.GetResourceRequest().UseStreamOnResponse();
 
-  if (!params.GetResourceRequest().UseStreamOnResponse())
-    return true;
-
-  if (ErrorOccurred())
-    return true;
-
-  // A preloaded resource is not for streaming.
-  DCHECK(!GetResourceRequest().UseStreamOnResponse());
-  DCHECK_EQ(GetDataBufferingPolicy(), kBufferData);
-
-  // Preloading for raw resources are not cached.
-  DCHECK(!IsMainThread() || !GetMemoryCache()->Contains(this));
-
-  constexpr auto kCapacity = 32 * 1024;
-  mojo::ScopedDataPipeProducerHandle producer;
-  mojo::ScopedDataPipeConsumerHandle consumer;
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = kCapacity;
-
-  MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
-  if (result != MOJO_RESULT_OK)
-    return false;
-
-  data_consumer_handle_ =
-      Platform::Current()->CreateDataConsumerHandle(std::move(consumer));
-  data_pipe_writer_ = std::make_unique<BufferingDataPipeWriter>(
-      std::move(producer), task_runner);
-
-  if (Data()) {
-    for (const auto& span : *Data())
-      data_pipe_writer_->Write(span.data(), SafeCast<uint32_t>(span.size()));
-  }
-  SetDataBufferingPolicy(kDoNotBufferData);
-
-  if (IsLoaded())
-    data_pipe_writer_->Finish();
   return true;
-}
-
-void RawResource::NotifyFinished() {
-  if (data_pipe_writer_)
-    data_pipe_writer_->Finish();
-  Resource::NotifyFinished();
 }
 
 static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
@@ -391,26 +442,27 @@ NOINLINE void RawResourceClientStateChecker::ResponseReceived() {
 
 NOINLINE void RawResourceClientStateChecker::SetSerializedCachedMetadata() {
   SECURITY_CHECK(state_ == kResponseReceived);
-  state_ = kSetSerializedCachedMetadata;
+}
+
+NOINLINE void RawResourceClientStateChecker::ResponseBodyReceived() {
+  SECURITY_CHECK(state_ == kResponseReceived);
+  state_ = kDataReceivedAsBytesConsumer;
 }
 
 NOINLINE void RawResourceClientStateChecker::DataReceived() {
   SECURITY_CHECK(state_ == kResponseReceived ||
-                 state_ == kSetSerializedCachedMetadata ||
                  state_ == kDataReceived);
   state_ = kDataReceived;
 }
 
 NOINLINE void RawResourceClientStateChecker::DataDownloaded() {
   SECURITY_CHECK(state_ == kResponseReceived ||
-                 state_ == kSetSerializedCachedMetadata ||
                  state_ == kDataDownloaded);
   state_ = kDataDownloaded;
 }
 
 NOINLINE void RawResourceClientStateChecker::DidDownloadToBlob() {
   SECURITY_CHECK(state_ == kResponseReceived ||
-                 state_ == kSetSerializedCachedMetadata ||
                  state_ == kDataDownloaded);
   state_ = kDidDownloadToBlob;
 }
@@ -420,9 +472,9 @@ NOINLINE void RawResourceClientStateChecker::NotifyFinished(
   SECURITY_CHECK(state_ != kNotAddedAsClient);
   SECURITY_CHECK(state_ != kNotifyFinished);
   SECURITY_CHECK(resource->ErrorOccurred() ||
-                 (state_ == kResponseReceived ||
-                  state_ == kSetSerializedCachedMetadata ||
-                  state_ == kDataReceived || state_ == kDataDownloaded ||
+                 (state_ == kResponseReceived || state_ == kDataReceived ||
+                  state_ == kDataDownloaded ||
+                  state_ == kDataReceivedAsBytesConsumer ||
                   state_ == kDidDownloadToBlob));
   state_ = kNotifyFinished;
 }

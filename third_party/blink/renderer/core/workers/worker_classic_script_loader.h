@@ -115,8 +115,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
 
   // ThreadableLoaderClient
   void DidReceiveResponse(unsigned long /*identifier*/,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
+                          const ResourceResponse&) override;
   void DidReceiveData(const char* data, unsigned data_length) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
   void DidFinishLoading(unsigned long identifier) override;

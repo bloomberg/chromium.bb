@@ -26,15 +26,14 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/buffering_data_pipe_writer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
-class WebDataConsumerHandle;
+class BytesConsumer;
+class BufferingBytesConsumer;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
@@ -94,6 +93,8 @@ class PLATFORM_EXPORT RawResource final : public Resource {
     return downloaded_blob_;
   }
 
+  void Trace(Visitor* visitor) override;
+
  protected:
   CachedMetadataHandler* CreateCachedMetadataHandler(
       std::unique_ptr<CachedMetadataSender> send_callback) override;
@@ -109,6 +110,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
       return MakeGarbageCollected<RawResource>(request, type_, options);
     }
   };
+  class PreloadBytesConsumerClient;
 
   // Resource implementation
   void DidAddClient(ResourceClient*) override;
@@ -117,8 +119,8 @@ class PLATFORM_EXPORT RawResource final : public Resource {
     return !IsLinkPreload();
   }
   void WillNotFollowRedirect() override;
-  void ResponseReceived(const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
+  void ResponseReceived(const ResourceResponse&) override;
+  void ResponseBodyReceived(ResponseBodyLoaderDrainableInterface&) override;
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
   void DidDownloadData(unsigned long long) override;
@@ -126,13 +128,14 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
   bool MatchPreload(const FetchParameters&,
                     base::SingleThreadTaskRunner*) override;
-  void NotifyFinished() override;
 
   scoped_refptr<BlobDataHandle> downloaded_blob_;
 
   // Used for preload matching.
-  std::unique_ptr<BufferingDataPipeWriter> data_pipe_writer_;
-  std::unique_ptr<WebDataConsumerHandle> data_consumer_handle_;
+  Member<BufferingBytesConsumer> bytes_consumer_for_preload_;
+  // True when this was initiated as a preload, and matched with a request
+  // without UseStreamOnResponse.
+  bool matched_with_non_streaming_destination_ = false;
 };
 
 // TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
@@ -157,27 +160,29 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
 
   // The order of the callbacks is as follows:
   // [Case 1] A successful load:
-  // 0+  redirectReceived() and/or dataSent()
-  // 1   responseReceived()
-  // 0-1 setSerializedCachedMetadata()
-  // 0+  dataReceived() or dataDownloaded(), but never both
-  // 1   notifyFinished() with errorOccurred() = false
+  // 0+  RedirectReceived() and/or DataSent()
+  // 1   ResponseReceived()
+  // 0-1 SetSerializedCachedMetadata()
+  // One of:
+  //   0+  DataReceived()
+  //   0+  DataDownloaded()
+  //   0-1 ResponseBodyReceived()
+  // 1   NotifyFinished() with ErrorOccurred() = false
   // [Case 2] When redirect is blocked:
-  // 0+  redirectReceived() and/or dataSent()
-  // 1   redirectBlocked()
-  // 1   notifyFinished() with errorOccurred() = true
+  // 0+  RedirectReceived() and/or DataSent()
+  // 1   RedirectBlocked()
+  // 1   NotifyFinished() with ErrorOccurred() = true
   // [Case 3] Other failures:
-  //     notifyFinished() with errorOccurred() = true is called at any time
-  //     (unless notifyFinished() is already called).
+  //     NotifyFinished() with ErrorOccurred() = true is called at any time
+  //     (unless NotifyFinished() is already called).
   // In all cases:
-  //     No callbacks are made after notifyFinished() or
-  //     removeClient() is called.
+  //     No callbacks are made after NotifyFinished() or
+  //     RemoveClient() is called.
   virtual void DataSent(Resource*,
                         unsigned long long /* bytesSent */,
                         unsigned long long /* totalBytesToBeSent */) {}
-  virtual void ResponseReceived(Resource*,
-                                const ResourceResponse&,
-                                std::unique_ptr<WebDataConsumerHandle>) {}
+  virtual void ResponseBodyReceived(Resource*, BytesConsumer&) {}
+  virtual void ResponseReceived(Resource*, const ResourceResponse&) {}
   virtual void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) {}
   virtual bool RedirectReceived(Resource*,
                                 const ResourceRequest&,
@@ -211,6 +216,7 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
   void RedirectBlocked();
   void DataSent();
   void ResponseReceived();
+  void ResponseBodyReceived();
   void SetSerializedCachedMetadata();
   void DataReceived();
   void DataDownloaded();
@@ -223,7 +229,7 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
     kStarted,
     kRedirectBlocked,
     kResponseReceived,
-    kSetSerializedCachedMetadata,
+    kDataReceivedAsBytesConsumer,
     kDataReceived,
     kDataDownloaded,
     kDidDownloadToBlob,

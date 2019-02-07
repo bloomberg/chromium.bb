@@ -1776,15 +1776,11 @@ void XMLHttpRequest::DidSendData(unsigned long long bytes_sent,
   }
 }
 
-void XMLHttpRequest::DidReceiveResponse(
-    unsigned long identifier,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
+void XMLHttpRequest::DidReceiveResponse(unsigned long identifier,
+                                        const ResourceResponse& response) {
   // TODO(yhirano): Remove this CHECK: see https://crbug.com/570946.
   CHECK(&response);
 
-  ALLOW_UNUSED_LOCAL(handle);
-  DCHECK(!handle);
   NETWORK_DVLOG(1) << this << " didReceiveResponse(" << identifier << ")";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
 

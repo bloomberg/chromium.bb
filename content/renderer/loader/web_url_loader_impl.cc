@@ -939,12 +939,10 @@ void WebURLLoaderImpl::Context::OnReceivedData(
       "loading", "WebURLLoaderImpl::Context::OnReceivedData",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  // We dispatch the data even when |useStreamOnResponse()| is set, in order
-  // to make Devtools work.
-  client_->DidReceiveData(payload, data_length);
-
   if (use_stream_on_response_) {
     body_stream_writer_->AddData(std::move(data));
+  } else {
+    client_->DidReceiveData(payload, data_length);
   }
 }
 
