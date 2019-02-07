@@ -1531,8 +1531,9 @@ TEST_F(ProfileSyncServiceTest, ConfigureDataTypeManagerReason) {
   service()->OnConfigureDone(configure_result);
 
   // Reconfiguration.
-  service()->ReconfigureDatatypeManager(
-      /*bypass_setup_in_progress_check=*/false);
+  // Trigger a reconfig by grabbing a SyncSetupInProgressHandle and immediately
+  // releasing it again (via the temporary unique_ptr going away).
+  service()->GetSetupInProgressHandle();
   EXPECT_EQ(syncer::CONFIGURE_REASON_RECONFIGURATION, configure_reason);
   service()->OnConfigureDone(configure_result);
   ShutdownAndDeleteService();
@@ -1550,8 +1551,9 @@ TEST_F(ProfileSyncServiceTest, ConfigureDataTypeManagerReason) {
   service()->OnConfigureDone(configure_result);
 
   // Reconfiguration.
-  service()->ReconfigureDatatypeManager(
-      /*bypass_setup_in_progress_check=*/false);
+  // Trigger a reconfig by grabbing a SyncSetupInProgressHandle and immediately
+  // releasing it again (via the temporary unique_ptr going away).
+  service()->GetSetupInProgressHandle();
   EXPECT_EQ(syncer::CONFIGURE_REASON_RECONFIGURATION, configure_reason);
   service()->OnConfigureDone(configure_result);
   ShutdownAndDeleteService();
