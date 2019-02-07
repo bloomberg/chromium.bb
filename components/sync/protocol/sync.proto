@@ -46,6 +46,7 @@ import "printer_specifics.proto";
 import "priority_preference_specifics.proto";
 import "reading_list_specifics.proto";
 import "search_engine_specifics.proto";
+import "security_event_specifics.proto";
 import "send_tab_to_self_specifics.proto";
 import "session_specifics.proto";
 import "sync_enums.proto";
@@ -147,6 +148,7 @@ message EntitySpecifics {
     UserConsentSpecifics user_consent = 556014;
     MountainShareSpecifics mountain_share = 545005;
     SendTabToSelfSpecifics send_tab_to_self = 601980;
+    SecurityEventSpecifics security_event = 600372;
   }
 }
 

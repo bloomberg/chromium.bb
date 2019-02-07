@@ -70,9 +70,9 @@
 #include "url/url_util.h"
 
 using content::BrowserThread;
+using sync_pb::GaiaPasswordReuse;
 using sync_pb::UserEventSpecifics;
 using GaiaPasswordCaptured = UserEventSpecifics::GaiaPasswordCaptured;
-using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
 using PasswordReuseDialogInteraction =
     GaiaPasswordReuse::PasswordReuseDialogInteraction;
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
