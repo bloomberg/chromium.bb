@@ -122,6 +122,7 @@ SyncerError Commit::PostAndProcessResponse(
   }
 
   DVLOG(1) << "Sending commit message.";
+  SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(cycle, &message_);
 
   CommitRequestEvent request_event(base::Time::Now(),
                                    message_.commit().entries_size(),
@@ -131,7 +132,7 @@ SyncerError Commit::PostAndProcessResponse(
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
   sync_pb::ClientToServerResponse response;
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &message_, &response, cycle, nullptr);
+      message_, &response, cycle, nullptr);
   TRACE_EVENT_END0("sync", "PostCommit");
 
   // TODO(rlarocque): Use result that includes errors captured later?

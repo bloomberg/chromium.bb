@@ -215,13 +215,15 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
     CopyClientDebugInfo(cycle->context()->debug_info_getter(), debug_info);
   }
 
+  SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(cycle, msg);
+
   cycle->SendProtocolEvent(
       *(delegate_.GetNetworkRequestEvent(base::Time::Now(), *msg)));
 
   ModelTypeSet partial_failure_data_types;
 
   SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
-      msg, &update_response, cycle, &partial_failure_data_types);
+      *msg, &update_response, cycle, &partial_failure_data_types);
 
   DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);

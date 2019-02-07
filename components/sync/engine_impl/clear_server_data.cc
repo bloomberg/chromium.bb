@@ -29,6 +29,7 @@ SyncerError ClearServerData::SendRequest(SyncCycle* cycle) {
   }
 
   DVLOG(1) << "Sending ClearServerData message.";
+  SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(cycle, &request_);
 
   const ClearServerDataRequestEvent request_event(base::Time::Now(), request_);
   cycle->SendProtocolEvent(request_event);
@@ -37,7 +38,7 @@ SyncerError ClearServerData::SendRequest(SyncCycle* cycle) {
 
   TRACE_EVENT_BEGIN0("sync", "PostClearServerData");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &request_, &response, cycle, nullptr);
+      request_, &response, cycle, nullptr);
   TRACE_EVENT_END0("sync", "PostClearServerData");
 
   const ClearServerDataResponseEvent response_event(base::Time::Now(),
