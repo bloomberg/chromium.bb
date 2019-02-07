@@ -970,13 +970,17 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
   HashSet<int> pending_render_surfaces;
   auto& effect_tree = host.property_trees()->effect_tree;
   for (const auto& layer : layers) {
+    bool found_backdrop_filter = false;
     for (auto* effect = effect_tree.Node(layer->effect_tree_index());
-         !effect->has_render_surface;
+         !effect->has_render_surface || !effect->backdrop_filters.IsEmpty();
          effect = effect_tree.Node(effect->parent_id)) {
+      found_backdrop_filter |= !effect->backdrop_filters.IsEmpty();
       if (effect->opacity != 1.f &&
-          !pending_render_surfaces.insert(effect->id).is_new_entry) {
-        // The opacity-only effect is seen the second time, which means that it
-        // has more than one compositing child and needs a render surface.
+          (!pending_render_surfaces.insert(effect->id).is_new_entry ||
+           found_backdrop_filter)) {
+        // The opacity-only effect is seen a second time, which means that it
+        // has more than one compositing child and needs a render surface. Or
+        // the opacity effect has a backdrop-filter child.
         effect->has_render_surface = true;
         break;
       }

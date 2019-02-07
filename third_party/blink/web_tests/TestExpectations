@@ -1918,13 +1918,10 @@ crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
 #crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
 # This fails, but only in CAP mode:
-crbug.com/497522 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Pass Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
 # Until backdrop filter is enabled by default, backdrop tests will not pass in virtual/stable.
 Bug(none) virtual/stable/compositing/layer-creation/fixed-position-out-of-view-with-backdrop-filter.html [ Skip ]
 Bug(none) virtual/stable/compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html [ Skip ]

@@ -3346,6 +3346,32 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
                  kHasRenderSurface);
 }
 
+TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
+  // Opacity effect with a single compositing backdrop-filter child. Normally
+  // the opacity effect would not get a render surface. However, because
+  // backdrop-filter needs to only filter up to the backdrop root, it always
+  // gets a render surface.
+  auto e = CreateOpacityEffect(e0(), 0.4f);
+  auto a = CreateOpacityEffect(*e, 0.5f);
+  CompositorFilterOperations blur_filter;
+  blur_filter.AppendBlurFilter(5);
+  auto bd = CreateBackdropFilterEffect(
+      *a, blur_filter, FloatPoint(),
+      CompositingReason::kActiveBackdropFilterAnimation);
+
+  TestPaintArtifact artifact;
+  FloatRect r(150, 150, 100, 100);
+  artifact.Chunk(t0(), c0(), *a).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *bd).RectDrawing(r, Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, ContentLayerCount());
+
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 0.5,
+                 kHasRenderSurface);
+  EXPECT_OPACITY(ContentLayerAt(1)->effect_tree_index(), 1.0,
+                 kHasRenderSurface);
+}
+
 TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
   auto opacity = CreateOpacityEffect(e0(), 0.5f);
   auto child_composited_effect = CreateOpacityEffect(
