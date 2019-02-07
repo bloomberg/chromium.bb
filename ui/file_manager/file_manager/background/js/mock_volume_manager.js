@@ -146,9 +146,11 @@ MockVolumeManager.prototype.getDriveConnectionState = function() {
  * @param {!VolumeManagerCommon.VolumeType} type Volume type.
  * @param {string} volumeId Volume id.
  * @param {string=} label Label.
+ * @param {string=} devicePath Device path.
  * @return {!VolumeInfo} Created mock VolumeInfo.
  */
-MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
+MockVolumeManager.createMockVolumeInfo = function(
+    type, volumeId, label, devicePath) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
   // If there's no label set it to volumeId to make it shorter to write tests.
@@ -156,7 +158,7 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
       type, volumeId, fileSystem,
       '',                                          // error
       '',                                          // deviceType
-      '',                                          // devicePath
+      devicePath || '',                            // devicePath
       false,                                       // isReadOnly
       false,                                       // isReadOnlyRemovableDevice
       {isCurrentProfile: true, displayName: ''},   // profile

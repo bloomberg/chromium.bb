@@ -716,6 +716,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
     if (window.IN_TEST && location.volumeInfo) {
       item.setAttribute(
           'volume-type-for-testing', location.volumeInfo.volumeType);
+      item.setAttribute('drive-label', location.volumeInfo.driveLabel);
     }
   } else {
     const rootType = location.rootType || null;
@@ -802,6 +803,10 @@ function EntryListItem(rootType, modelItem, tree) {
   item.modelItem_ = modelItem;
   item.dirEntry_ = modelItem.entry;
   item.parentTree_ = tree;
+
+  if (rootType === VolumeManagerCommon.RootType.REMOVABLE) {
+    item.setupEjectButton_(item.rowElement);
+  }
 
   const icon = queryRequiredElement('.icon', item);
   if (window.IN_TEST && item.entry && item.entry.volumeInfo) {
@@ -1806,8 +1811,11 @@ DirectoryTree.createDirectoryItem = function(modelItem, tree) {
           /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
       break;
     case NavigationModelItemType.ENTRY_LIST:
+      const rootType = modelItem.section === NavigationSection.REMOVABLE ?
+          VolumeManagerCommon.RootType.REMOVABLE :
+          VolumeManagerCommon.RootType.MY_FILES;
       return new EntryListItem(
-          VolumeManagerCommon.RootType.MY_FILES,
+          rootType,
           /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
       break;
   }

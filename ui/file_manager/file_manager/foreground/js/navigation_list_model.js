@@ -199,6 +199,14 @@ function NavigationListModel(
   this.myFilesModel_ = null;
 
   /**
+   * A collection of NavigationModel objects for Removable partition groups.
+   * Store the reference to each model here since DirectoryTree expects it to
+   * always have the same reference.
+   * @private {!Map<string, !NavigationModelFakeItem>}
+   */
+  this.removableModels_ = new Map();
+
+  /**
    * True when MyFiles should be a volume and Downloads just a plain folder
    * inside it. When false MyFiles is an EntryList, which means UI only type,
    * which contains Downloads as a child volume.
@@ -504,6 +512,32 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     return indexes.map(idx => volumeList[idx]);
   };
 
+  /**
+   * Removable volumes which share the same device path (i.e. partitions) are
+   * grouped.
+   * @return !Map<string, !Array<!NavigationModelVolumeItem>>
+   */
+  const groupRemovables = function() {
+    const removableGroups = new Map();
+    const removableVolumes =
+        getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE);
+
+    for (const removable of removableVolumes) {
+      // Partitions on the same physical device share device path and drive
+      // label. Create keys using these two identifiers.
+      let key = removable.volumeInfo.devicePath + '/' +
+          removable.volumeInfo.driveLabel;
+      if (!removableGroups.has(key)) {
+        // New key, so create a new array to hold partitions.
+        removableGroups.set(key, []);
+      }
+      // Add volume to array of volumes matching device path and drive label.
+      removableGroups.get(key).push(removable);
+    }
+
+    return removableGroups;
+  };
+
   // Items as per required order.
   this.navigationItems_ = [];
 
@@ -637,11 +671,49 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     provider.section = NavigationSection.CLOUD;
   }
 
-  // Join MTP, ARCHIVE and REMOVABLE. These types belong to same section.
+  // Add REMOVABLE volumes and partitions.
+  const removableModels = new Map();
+  for (const [devicePath, removableGroup] of groupRemovables().entries()) {
+    if (removableGroup.length == 1) {
+      // Add unpartitioned removable device as a regular volume.
+      this.navigationItems_.push(removableGroup[0]);
+      removableGroup[0].section = NavigationSection.REMOVABLE;
+      continue;
+    }
+
+    // Multiple partitions found.
+    let removableModel;
+    if (this.removableModels_.has(devicePath)) {
+      // Removable model has been seen before. Use the same reference.
+      removableModel = this.removableModels_.get(devicePath);
+    } else {
+      // Create an EntryList for new removable group.
+      const rootLabel = removableGroup[0].volumeInfo.driveLabel ?
+          removableGroup[0].volumeInfo.driveLabel :
+          /*default*/ 'External Drive';
+      const removableEntry = new EntryList(
+          rootLabel, VolumeManagerCommon.RootType.REMOVABLE, devicePath);
+      removableModel = new NavigationModelFakeItem(
+          removableEntry.label, NavigationModelItemType.ENTRY_LIST,
+          removableEntry);
+      removableModel.section = NavigationSection.REMOVABLE;
+      // Add partitions as entries.
+      for (const partition of removableGroup) {
+        // Only add partition if it doesn't exist as a child already.
+        if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) === -1) {
+          removableEntry.addEntry(new VolumeEntry(partition.volumeInfo));
+        }
+      }
+    }
+    removableModels.set(devicePath, removableModel);
+    this.navigationItems_.push(removableModel);
+  }
+  this.removableModels_ = removableModels;
+
+  // Join MTP, ARCHIVE. These types belong to same section.
   const zipIndexes = volumeIndexes[NavigationListModel.ZIP_VOLUME_TYPE] || [];
   const otherVolumes =
       [].concat(
-            getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE),
             getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
             getVolumes(VolumeManagerCommon.VolumeType.MTP),
             zipIndexes.map(idx => volumeList[idx]))

@@ -455,8 +455,8 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/phone_active.png) 2x);
 }
 
-[volume-type-icon='removable'][volume-subtype='partition'],
 [volume-type-icon='removable'][volume-subtype='unknown'],
+.tree-item .tree-item [volume-type-icon='removable'],
 [file-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive.png) 1x,
@@ -464,8 +464,15 @@ tree .tree-item[selected] > .tree-row >
 }
 
 tree .tree-item[selected] > .tree-row >
-[volume-type-icon='removable'][volume-subtype='partition'],
-.tree-row[selected] [volume-type-icon='removable'][volume-subtype='unknown']  {
+.tree-row[selected] [volume-type-icon='removable'][volume-subtype='unknown'],
+.tree-item .tree-item[selected] [volume-type-icon='removable'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/hard_drive_active.png) 1x,
+      url(../images/volumes/2x/hard_drive_active.png) 2x);
+}
+
+tree .tree-item > .tree-item > .tree-row >
+[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive_active.png) 1x,
       url(../images/volumes/2x/hard_drive_active.png) 2x);
