@@ -27,11 +27,11 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_source.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
@@ -86,7 +86,6 @@ const int kYieldAfterDurationMilliseconds = 20;
 const spdy::SpdyStreamId kFirstStreamId = 1;
 const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
-struct LoadTimingInfo;
 class NetLog;
 class NetworkQualityEstimator;
 class SpdyStream;
@@ -348,10 +347,19 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |pool| is the SpdySessionPool that owns us.  Its lifetime must
   // strictly be greater than |this|.
   //
-  // The session begins reading from |connection| on a subsequent event loop
-  // iteration, so the SpdySession may close immediately afterwards if the first
-  // read of |connection| fails.
-  void InitializeWithSocket(std::unique_ptr<ClientSocketHandle> connection,
+  // The session begins reading from |client_socket_handle| on a subsequent
+  // event loop iteration, so the SpdySession may close immediately afterwards
+  // if the first read of |client_socket_handle| fails.
+  void InitializeWithSocketHandle(
+      std::unique_ptr<ClientSocketHandle> client_socket_handle,
+      SpdySessionPool* pool);
+
+  // Just like InitializeWithSocketHandle(), but for use when the session is not
+  // on top of a socket pool, but instead directly on top of a socket, which the
+  // session has sole ownership of, and is responsible for deleting directly
+  // itself.
+  void InitializeWithSocket(std::unique_ptr<StreamSocket> stream_socket,
+                            const LoadTimingInfo::ConnectTiming& connect_timing,
                             SpdySessionPool* pool);
 
   // Check to see if this SPDY session can support an additional domain.
@@ -476,9 +484,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Returns true if the underlying transport socket ever had any reads or
   // writes.
-  bool WasEverUsed() const {
-    return connection_->socket()->WasEverUsed();
-  }
+  bool WasEverUsed() const { return socket_->WasEverUsed(); }
 
   // Returns the load timing information from the perspective of the given
   // stream.  If it's not the first stream, the connection is considered reused
@@ -594,6 +600,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     WRITE_STATE_DO_WRITE,
     WRITE_STATE_DO_WRITE_COMPLETE,
   };
+
+  // Has the shared logic for the other two Initialize methods that call it.
+  void InitializeInternal(SpdySessionPool* pool);
 
   // Called by SpdyStreamRequest to start a request to create a
   // stream. If OK is returned, then |stream| will be filled in with a
@@ -937,8 +946,18 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   TransportSecurityState* transport_security_state_;
   SSLConfigService* ssl_config_service_;
 
-  // The socket handle for this session.
-  std::unique_ptr<ClientSocketHandle> connection_;
+  // One of these two owns the socket for this session, which is stored in
+  // |socket_|. If |client_socket_handle_| is non-null, this session is on top
+  // of a socket in a socket pool. If |owned_stream_socket_| is non-null, this
+  // session is directly on top of a socket, which is not in a socket pool.
+  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
+  std::unique_ptr<StreamSocket> owned_stream_socket_;
+
+  // This is non-null only if |owned_stream_socket_| is non-null.
+  std::unique_ptr<LoadTimingInfo::ConnectTiming> connect_timing_;
+
+  // The socket for this session.
+  StreamSocket* socket_;
 
   // The read buffer used to read data from the socket.
   // Non-null if there is a Read() pending.

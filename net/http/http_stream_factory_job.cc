@@ -1279,7 +1279,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
       !spdy_session_direct_ && proxy_info_.proxy_server().is_trusted_proxy();
 
   base::WeakPtr<SpdySession> spdy_session =
-      session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
+      session_->spdy_session_pool()->CreateAvailableSessionFromSocketHandle(
           spdy_session_key_, is_trusted_proxy, std::move(connection_),
           net_log_);
 
