@@ -51,21 +51,23 @@ void ChromeContentGpuClient::InitializeRegistry(
     service_manager::BinderRegistry* registry) {
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,
-                 base::Unretained(this)),
+      base::BindRepeating(
+          &ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,
+          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateArcVideoEncodeAccelerator,
-                 base::Unretained(this)),
+      base::BindRepeating(
+          &ChromeContentGpuClient::CreateArcVideoEncodeAccelerator,
+          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
-      base::Bind(
+      base::BindRepeating(
           &ChromeContentGpuClient::CreateArcVideoProtectedBufferAllocator,
           base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateProtectedBufferManager,
-                 base::Unretained(this)),
+      base::BindRepeating(&ChromeContentGpuClient::CreateProtectedBufferManager,
+                          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
 #endif
 }
@@ -76,9 +78,9 @@ void ChromeContentGpuClient::GpuServiceInitialized(
   gpu_preferences_ = gpu_preferences;
   ui::OzonePlatform::GetInstance()
       ->GetSurfaceFactoryOzone()
-      ->SetGetProtectedNativePixmapDelegate(
-          base::Bind(&arc::ProtectedBufferManager::GetProtectedNativePixmapFor,
-                     base::Unretained(protected_buffer_manager_.get())));
+      ->SetGetProtectedNativePixmapDelegate(base::BindRepeating(
+          &arc::ProtectedBufferManager::GetProtectedNativePixmapFor,
+          base::Unretained(protected_buffer_manager_.get())));
 #endif
 
   // This doesn't work in single-process mode.

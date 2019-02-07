@@ -114,7 +114,7 @@ class GpuChildThread : public ChildThreadImpl,
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 
   // Holds a closure that releases pending interface requests on the IO thread.
-  base::Closure release_pending_requests_closure_;
+  base::OnceClosure release_pending_requests_closure_;
 
   // A closure which quits the main message loop.
   base::RepeatingClosure quit_closure_;

@@ -411,7 +411,7 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
 #endif
   timeout_.Start(FROM_HERE,
                  base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
-                 base::Bind(&TimedOut));
+                 base::BindOnce(&TimedOut));
 #endif  // OS_ANDROID
 }
 

@@ -57,10 +57,9 @@ gpu::GpuFeatureStatus GpuDataManagerImpl::GetFeatureStatus(
 }
 
 void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate(
-    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-        callback) const {
+    VideoMemoryUsageStatsCallback callback) const {
   base::AutoLock auto_lock(lock_);
-  private_->RequestVideoMemoryUsageStatsUpdate(callback);
+  private_->RequestVideoMemoryUsageStatsUpdate(std::move(callback));
 }
 
 void GpuDataManagerImpl::AddObserver(
