@@ -41,13 +41,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
               ColorSpace color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
-  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
-                        PresentationCallback presentation_callback) override;
-  gfx::SwapResult CommitOverlayPlanes(PresentationCallback callback) override;
-  void CommitOverlayPlanesAsync(
-      SwapCompletionCallback completion_callback,
-      PresentationCallback presentation_callback) override;
+
   gfx::Size GetSize() override;
   bool OnMakeCurrent(GLContext* context) override;
   bool ScheduleOverlayPlane(int z_order,
@@ -60,10 +54,31 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool IsSurfaceless() const override;
   void* GetHandle() override;
 
+  // Sync versions of frame update, should never be used.
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
+  gfx::SwapResult CommitOverlayPlanes(PresentationCallback callback) override;
+  gfx::SwapResult PostSubBuffer(int x,
+                                int y,
+                                int width,
+                                int height,
+                                PresentationCallback callback) override;
+
+  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
+                        PresentationCallback presentation_callback) override;
+  void CommitOverlayPlanesAsync(
+      SwapCompletionCallback completion_callback,
+      PresentationCallback presentation_callback) override;
+  void PostSubBufferAsync(int x,
+                          int y,
+                          int width,
+                          int height,
+                          SwapCompletionCallback completion_callback,
+                          PresentationCallback presentation_callback) override;
+
   bool SupportsAsyncSwap() override;
   bool SupportsPlaneGpuFences() const override;
   bool SupportsPresentationCallback() override;
-  bool SupportsSwapBuffersWithBounds() override;
+  bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
 
  private:
@@ -84,6 +99,11 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
     bool opaque = true;
 
+    // Indicates whether buffer for this layer was updated in the currently
+    // pending transaction, or the last transaction submitted if there isn't
+    // one pending.
+    bool buffer_updated_in_pending_transaction = true;
+
     scoped_refptr<SurfaceControl::Surface> surface;
   };
 
@@ -99,7 +119,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   };
   using ResourceRefs = base::flat_map<ASurfaceControl*, ResourceRef>;
 
-  void CommitPendingTransaction(SwapCompletionCallback completion_callback,
+  void CommitPendingTransaction(const gfx::Rect& damage_rect,
+                                SwapCompletionCallback completion_callback,
                                 PresentationCallback callback);
 
   // Called on the |gpu_task_runner_| when a transaction is acked by the
@@ -109,6 +130,9 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
       PresentationCallback presentation_callback,
       ResourceRefs released_resources,
       SurfaceControl::TransactionStats transaction_stats);
+
+  // The rect of the native window backing this surface.
+  gfx::Rect window_rect_;
 
   // Holds the surface state changes made since the last call to SwapBuffers.
   base::Optional<SurfaceControl::Transaction> pending_transaction_;

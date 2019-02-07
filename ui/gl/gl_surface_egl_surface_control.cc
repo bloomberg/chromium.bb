@@ -31,7 +31,11 @@ gfx::Size GetBufferSize(const AHardwareBuffer* buffer) {
 GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
     ANativeWindow* window,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : root_surface_(new SurfaceControl::Surface(window, kRootSurfaceName)),
+    : window_rect_(0,
+                   0,
+                   ANativeWindow_getWidth(window),
+                   ANativeWindow_getHeight(window)),
+      root_surface_(new SurfaceControl::Surface(window, kRootSurfaceName)),
       gpu_task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
@@ -57,7 +61,7 @@ bool GLSurfaceEGLSurfaceControl::Resize(const gfx::Size& size,
                                         float scale_factor,
                                         ColorSpace color_space,
                                         bool has_alpha) {
-  // Resizing requires resizing the SurfaceView in the browser.
+  window_rect_ = gfx::Rect(0, 0, size.width(), size.height());
   return true;
 }
 
@@ -71,30 +75,67 @@ gfx::SwapResult GLSurfaceEGLSurfaceControl::SwapBuffers(
   return gfx::SwapResult::SWAP_FAILED;
 }
 
-void GLSurfaceEGLSurfaceControl::SwapBuffersAsync(
-    SwapCompletionCallback completion_callback,
-    PresentationCallback presentation_callback) {
-  CommitPendingTransaction(std::move(completion_callback),
-                           std::move(presentation_callback));
-}
-
 gfx::SwapResult GLSurfaceEGLSurfaceControl::CommitOverlayPlanes(
     PresentationCallback callback) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
 
+gfx::SwapResult GLSurfaceEGLSurfaceControl::PostSubBuffer(
+    int x,
+    int y,
+    int width,
+    int height,
+    PresentationCallback callback) {
+  NOTREACHED();
+  return gfx::SwapResult::SWAP_FAILED;
+}
+
+void GLSurfaceEGLSurfaceControl::SwapBuffersAsync(
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
+  CommitPendingTransaction(window_rect_, std::move(completion_callback),
+                           std::move(presentation_callback));
+}
+
 void GLSurfaceEGLSurfaceControl::CommitOverlayPlanesAsync(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback) {
-  CommitPendingTransaction(std::move(completion_callback),
+  CommitPendingTransaction(window_rect_, std::move(completion_callback),
+                           std::move(presentation_callback));
+}
+
+void GLSurfaceEGLSurfaceControl::PostSubBufferAsync(
+    int x,
+    int y,
+    int width,
+    int height,
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
+  CommitPendingTransaction(gfx::Rect(x, y, width, height),
+                           std::move(completion_callback),
                            std::move(presentation_callback));
 }
 
 void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
+    const gfx::Rect& damage_rect,
     SwapCompletionCallback completion_callback,
     PresentationCallback present_callback) {
   DCHECK(pending_transaction_);
+
+  // Mark the intersection of a surface's rect with the damage rect as the dirty
+  // rect for that surface.
+  DCHECK_LE(pending_surfaces_count_, surface_list_.size());
+  for (size_t i = 0; i < pending_surfaces_count_; ++i) {
+    const auto& surface_state = surface_list_[i];
+    if (!surface_state.buffer_updated_in_pending_transaction)
+      continue;
+
+    gfx::Rect surface_damage_rect = surface_state.dst;
+    surface_damage_rect.Intersect(damage_rect);
+    pending_transaction_->SetDamageRect(*surface_state.surface,
+                                        surface_damage_rect);
+  }
 
   // Release resources for the current frame once the next frame is acked.
   ResourceRefs resources_to_release;
@@ -167,7 +208,9 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     resource_ref.scoped_buffer = std::move(scoped_hardware_buffer);
   }
 
-  if (uninitialized || surface_state.hardware_buffer != hardware_buffer) {
+  surface_state.buffer_updated_in_pending_transaction =
+      uninitialized || surface_state.hardware_buffer != hardware_buffer;
+  if (surface_state.buffer_updated_in_pending_transaction) {
     surface_state.hardware_buffer = hardware_buffer;
 
     if (!fence_fd.is_valid() && gpu_fence && surface_state.hardware_buffer) {
@@ -220,6 +263,10 @@ void* GLSurfaceEGLSurfaceControl::GetHandle() {
   return nullptr;
 }
 
+bool GLSurfaceEGLSurfaceControl::SupportsPostSubBuffer() {
+  return true;
+}
+
 bool GLSurfaceEGLSurfaceControl::SupportsAsyncSwap() {
   return true;
 }
@@ -230,11 +277,6 @@ bool GLSurfaceEGLSurfaceControl::SupportsPlaneGpuFences() const {
 
 bool GLSurfaceEGLSurfaceControl::SupportsPresentationCallback() {
   return true;
-}
-
-bool GLSurfaceEGLSurfaceControl::SupportsSwapBuffersWithBounds() {
-  // TODO(khushalsagar): Add support for partial swap.
-  return false;
 }
 
 bool GLSurfaceEGLSurfaceControl::SupportsCommitOverlayPlanes() {
