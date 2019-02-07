@@ -390,7 +390,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     // Fire the native event.
     BrowserAccessibility* event_target = GetFromID(event.id);
     if (!event_target || !event_target->CanFireEvents())
-      return;
+      continue;
 
     if (event.event_type == ax::mojom::Event::kHover)
       GetRootManager()->CacheHitTestResult(event_target);

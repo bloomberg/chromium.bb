@@ -15,6 +15,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -253,29 +254,63 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
 
   // Do a sequence of Windows-specific updates on each node. Each one is
   // done in a single pass that must complete before the next step starts.
-  // The first step moves win_attributes_ to old_win_attributes_ and then
-  // recomputes all of win_attributes_ other than IAccessibleText.
+  // The nodes that need to be updated are all of the nodes that were changed,
+  // plus some parents.
+  std::map<BrowserAccessibilityComWin*, bool /* is_subtree_created */>
+      objs_to_update;
   for (const auto& change : changes) {
     const ui::AXNode* changed_node = change.node;
     DCHECK(changed_node);
+
+    bool is_subtree_created = change.type == AXTreeObserver::SUBTREE_CREATED;
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative()) {
-      ToBrowserAccessibilityWin(obj)
-          ->GetCOM()
-          ->UpdateStep1ComputeWinAttributes();
+      objs_to_update[ToBrowserAccessibilityWin(obj)->GetCOM()] =
+          is_subtree_created;
+    }
+
+    // When a node is a text node or line break, update its parent, because
+    // its text is part of its hypertext.
+    const ui::AXNode* parent = changed_node->parent();
+    if (!parent)
+      continue;
+    if (ui::IsTextOrLineBreak(changed_node->data().role)) {
+      BrowserAccessibility* parent_obj = GetFromAXNode(parent);
+      if (parent_obj && parent_obj->IsNative()) {
+        BrowserAccessibilityComWin* parent_com_obj =
+            ToBrowserAccessibilityWin(parent_obj)->GetCOM();
+        if (objs_to_update.find(parent_com_obj) == objs_to_update.end())
+          objs_to_update[parent_com_obj] = false;
+      }
+    }
+
+    // When a node is editable, update the editable root too.
+    if (!changed_node->data().HasState(ax::mojom::State::kEditable))
+      continue;
+    const ui::AXNode* editable_root = changed_node;
+    while (editable_root->parent() && editable_root->parent()->data().HasState(
+                                          ax::mojom::State::kEditable)) {
+      editable_root = editable_root->parent();
+    }
+    BrowserAccessibility* editable_root_obj = GetFromAXNode(editable_root);
+    if (editable_root_obj && editable_root_obj->IsNative()) {
+      BrowserAccessibilityComWin* editable_root_com_obj =
+          ToBrowserAccessibilityWin(editable_root_obj)->GetCOM();
+      if (objs_to_update.find(editable_root_com_obj) == objs_to_update.end())
+        objs_to_update[editable_root_com_obj] = false;
     }
   }
+
+  // The first step moves win_attributes_ to old_win_attributes_ and then
+  // recomputes all of win_attributes_ other than IAccessibleText.
+  for (auto& key_value : objs_to_update)
+    key_value.first->UpdateStep1ComputeWinAttributes();
 
   // The next step updates the hypertext of each node, which is a
   // concatenation of all of its child text nodes, so it can't run until
   // the text of all of the nodes was computed in the previous step.
-  for (const auto& change : changes) {
-    const ui::AXNode* changed_node = change.node;
-    DCHECK(changed_node);
-    BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->IsNative())
-      ToBrowserAccessibilityWin(obj)->GetCOM()->UpdateStep2ComputeHypertext();
-  }
+  for (auto& key_value : objs_to_update)
+    key_value.first->UpdateStep2ComputeHypertext();
 
   // The third step fires events on nodes based on what's changed - like
   // if the name, value, or description changed, or if the hypertext had
@@ -285,14 +320,10 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // client may walk the tree when it receives any of these events.
   // At the end, it deletes old_win_attributes_ since they're not needed
   // anymore.
-  for (const auto& change : changes) {
-    const ui::AXNode* changed_node = change.node;
-    DCHECK(changed_node);
-    BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->IsNative()) {
-      ToBrowserAccessibilityWin(obj)->GetCOM()->UpdateStep3FireEvents(
-          change.type == AXTreeObserver::SUBTREE_CREATED);
-    }
+  for (auto& key_value : objs_to_update) {
+    BrowserAccessibilityComWin* obj = key_value.first;
+    bool is_subtree_created = key_value.second;
+    obj->UpdateStep3FireEvents(is_subtree_created);
   }
 }
 
