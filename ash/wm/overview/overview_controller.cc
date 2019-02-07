@@ -541,6 +541,12 @@ OverviewController::GetWindowsListInOverviewGridsForTesting() {
   return windows;
 }
 
+void OverviewController::DelayedUpdateMaskAndShadow() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&OverviewController::UpdateMaskAndShadow,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
 // TODO(flackr): Make OverviewController observe the activation of
 // windows, so we can remove OverviewDelegate.
 // TODO(sammiequon): Rename to something like EndOverview() and refactor to use
@@ -632,6 +638,11 @@ void OverviewController::RemoveAndDestroyStartAnimationObserver(
 
   if (!previous_empty && start_animations_.empty())
     OnStartingAnimationComplete(/*canceled=*/false);
+}
+
+void OverviewController::UpdateMaskAndShadow() {
+  if (overview_session_)
+    overview_session_->UpdateMaskAndShadow();
 }
 
 // static
