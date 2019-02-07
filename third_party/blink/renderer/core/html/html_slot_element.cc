@@ -232,9 +232,16 @@ void HTMLSlotElement::RecalcFlatTreeChildren() {
       flat_tree_children_.push_back(child);
   } else {
     flat_tree_children_ = assigned_nodes_;
+    for (auto& node : old_flat_tree_children) {
+      // Detach fallback nodes. Host children which are no longer slotted are
+      // detached in SlotAssignment::RecalcAssignment().
+      if (node->parentNode() == this)
+        node->RemovedFromFlatTree();
+    }
   }
 
-  LazyReattachNodesIfNeeded(old_flat_tree_children, flat_tree_children_);
+  NotifySlottedNodesOfFlatTreeChange(old_flat_tree_children,
+                                     flat_tree_children_);
 }
 
 void HTMLSlotElement::DispatchSlotChangeEvent() {
@@ -414,9 +421,9 @@ void HTMLSlotElement::DidRecalcStyle(const StyleRecalcChange change) {
   }
 }
 
-void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
-    const HeapVector<Member<Node>>& nodes1,
-    const HeapVector<Member<Node>>& nodes2) {
+void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(
+    const HeapVector<Member<Node>>& old_slotted,
+    const HeapVector<Member<Node>>& new_slotted) {
   // Use dynamic programming to minimize the number of nodes being reattached.
   using LCSTable = std::array<std::array<wtf_size_t, kLCSTableSizeLimit>,
                               kLCSTableSizeLimit>;
@@ -428,45 +435,40 @@ void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
   DEFINE_STATIC_LOCAL(BacktrackTable*, backtrack_table, (new BacktrackTable));
 
   FillLongestCommonSubsequenceDynamicProgrammingTable(
-      nodes1, nodes2, *lcs_table, *backtrack_table);
+      old_slotted, new_slotted, *lcs_table, *backtrack_table);
 
-  wtf_size_t r = nodes1.size();
-  wtf_size_t c = nodes2.size();
+  wtf_size_t r = old_slotted.size();
+  wtf_size_t c = new_slotted.size();
   while (r > 0 && c > 0) {
     Backtrack backtrack = (*backtrack_table)[r][c];
     if (backtrack == std::make_pair(r - 1, c - 1)) {
-      DCHECK_EQ(nodes1[r - 1], nodes2[c - 1]);
-    } else if (backtrack == std::make_pair(r - 1, c)) {
-      nodes1[r - 1]->LazyReattachIfAttached();
-    } else {
-      DCHECK(backtrack == std::make_pair(r, c - 1));
-      nodes2[c - 1]->LazyReattachIfAttached();
+      DCHECK_EQ(old_slotted[r - 1], new_slotted[c - 1]);
+    } else if (backtrack == std::make_pair(r, c - 1)) {
+      new_slotted[c - 1]->FlatTreeParentChanged();
     }
     std::tie(r, c) = backtrack;
   }
-  if (r > 0) {
-    for (wtf_size_t i = 0; i < r; ++i)
-      nodes1[i]->LazyReattachIfAttached();
-  } else if (c > 0) {
+  if (c > 0) {
     for (wtf_size_t i = 0; i < c; ++i)
-      nodes2[i]->LazyReattachIfAttached();
+      new_slotted[i]->FlatTreeParentChanged();
   }
 }
 
-void HTMLSlotElement::LazyReattachNodesIfNeeded(
-    const HeapVector<Member<Node>>& nodes1,
-    const HeapVector<Member<Node>>& nodes2) {
-  if (nodes1 == nodes2)
+void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChange(
+    const HeapVector<Member<Node>>& old_slotted,
+    const HeapVector<Member<Node>>& new_slotted) {
+  if (old_slotted == new_slotted)
     return;
   probe::didPerformSlotDistribution(this);
 
-  if (nodes1.size() + 1 > kLCSTableSizeLimit ||
-      nodes2.size() + 1 > kLCSTableSizeLimit) {
+  if (old_slotted.size() + 1 > kLCSTableSizeLimit ||
+      new_slotted.size() + 1 > kLCSTableSizeLimit) {
     // Since DP takes O(N^2), we don't use DP if the size is larger than the
     // pre-defined limit.
-    LazyReattachNodesNaive(nodes1, nodes2);
+    NotifySlottedNodesOfFlatTreeChangeNaive(new_slotted);
   } else {
-    LazyReattachNodesByDynamicProgramming(nodes1, nodes2);
+    NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(old_slotted,
+                                                           new_slotted);
   }
 }
 
@@ -483,14 +485,11 @@ void HTMLSlotElement::DidSlotChangeAfterRenaming() {
   CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
 }
 
-void HTMLSlotElement::LazyReattachNodesNaive(
-    const HeapVector<Member<Node>>& nodes1,
-    const HeapVector<Member<Node>>& nodes2) {
+void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChangeNaive(
+    const HeapVector<Member<Node>>& new_slotted) {
   // TODO(hayato): Use some heuristic to avoid reattaching all nodes
-  for (auto& node : nodes1)
-    node->LazyReattachIfAttached();
-  for (auto& node : nodes2)
-    node->LazyReattachIfAttached();
+  for (auto& node : new_slotted)
+    node->FlatTreeParentChanged();
 }
 
 void HTMLSlotElement::

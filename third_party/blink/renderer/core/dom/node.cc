@@ -1448,6 +1448,21 @@ void Node::LazyReattachIfAttached() {
       StyleChangeReasonForTracing::Create(style_change_reason::kLazyReattach));
 }
 
+void Node::SetForceReattachLayoutTree() {
+  DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
+  if (GetForceReattachLayoutTree())
+    return;
+  if (!InActiveDocument())
+    return;
+  if (!IsContainerNode() && !IsTextNode())
+    return;
+  SetFlag(kForceReattachLayoutTree);
+  if (!NeedsStyleRecalc()) {
+    // Make sure we traverse down to this node during style recalc.
+    MarkAncestorsWithChildNeedsStyleRecalc();
+  }
+}
+
 // FIXME: Shouldn't these functions be in the editing code?  Code that asks
 // questions about HTML in the core DOM class is obviously misplaced.
 bool Node::CanStartSelection() const {
@@ -3047,6 +3062,18 @@ bool Node::HasMediaControlAncestor() const {
   }
 
   return false;
+}
+
+void Node::FlatTreeParentChanged() {
+  // The node changed the flat tree position by being slotted to a new slot or
+  // slotted for the first time. We need to recalc style since the inheritance
+  // parent may have changed.
+  SetNeedsStyleRecalc(kLocalStyleChange,
+                      StyleChangeReasonForTracing::Create(
+                          style_change_reason::kFlatTreeChange));
+  // We also need to force a layout tree re-attach since the layout tree parent
+  // box may have changed.
+  SetForceReattachLayoutTree();
 }
 
 void Node::Trace(Visitor* visitor) {

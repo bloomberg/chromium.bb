@@ -23,6 +23,7 @@ extern const char kControl[];
 extern const char kDeclarativeContent[];
 extern const char kDesignMode[];
 extern const char kFrame[];
+extern const char kFlatTreeChange[];
 extern const char kFontSizeChange[];
 extern const char kFonts[];
 extern const char kFullscreen[];

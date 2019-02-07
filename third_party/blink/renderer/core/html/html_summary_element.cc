@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/html/html_summary_element.h"
 
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -44,7 +45,9 @@ HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
 }
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
-    : HTMLElement(kSummaryTag, document) {}
+    : HTMLElement(kSummaryTag, document) {
+  SetHasCustomStyleCallbacks();
+}
 
 LayoutObject* HTMLSummaryElement::CreateLayoutObject(
     const ComputedStyle& style) {
@@ -150,6 +153,16 @@ bool HTMLSummaryElement::HasActivationBehavior() const {
 
 bool HTMLSummaryElement::WillRespondToMouseClickEvents() {
   return IsMainSummary() || HTMLElement::WillRespondToMouseClickEvents();
+}
+
+void HTMLSummaryElement::WillRecalcStyle(const StyleRecalcChange) {
+  if (GetForceReattachLayoutTree() && IsMainSummary()) {
+    if (Element* marker = MarkerControl()) {
+      marker->SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kControl));
+    }
+  }
 }
 
 }  // namespace blink
