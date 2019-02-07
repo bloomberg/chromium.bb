@@ -288,11 +288,6 @@ TEST_F(FamilyInfoFetcherTest, NoRefreshToken) {
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_test_env_.SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
-
-  // After all refresh tokens have been loaded, there is still no token for our
-  // user, so we expect a token error.
-  EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::TOKEN_ERROR));
-  identity_test_env_.ReloadAccountsFromDisk();
 }
 
 TEST_F(FamilyInfoFetcherTest, GetTokenFailure) {
