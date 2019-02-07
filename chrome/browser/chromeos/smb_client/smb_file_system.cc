@@ -577,6 +577,11 @@ void SmbFileSystem::RequestUpdatedCredentials(base::OnceClosure reply) {
   request_creds_callback_.Run(GetMountPath(), GetMountId(), std::move(reply));
 }
 
+void SmbFileSystem::RequestUpdatedSharePath(
+    SmbService::StartReadDirIfSuccessfulCallback reply) {
+  request_path_callback_.Run(GetMountPath(), GetMountId(), std::move(reply));
+}
+
 void SmbFileSystem::HandleRequestReadDirectoryCallback(
     storage::AsyncFileUtil::ReadDirectoryCallback callback,
     const base::ElapsedTimer& metrics_timer,
