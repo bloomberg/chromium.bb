@@ -101,7 +101,7 @@ class BASE_EXPORT CommandLine {
   static bool InitializedForCurrentProcess();
 
 #if defined(OS_WIN)
-  static CommandLine FromString(const string16& command_line);
+  static CommandLine FromString(StringPiece16 command_line);
 #endif
 
   // Initialize from an argv vector.
@@ -213,7 +213,7 @@ class BASE_EXPORT CommandLine {
 #if defined(OS_WIN)
   // Initialize by parsing the given command line string.
   // The program name is assumed to be the first item in the string.
-  void ParseFromString(const string16& command_line);
+  void ParseFromString(StringPiece16 command_line);
 #endif
 
  private:
