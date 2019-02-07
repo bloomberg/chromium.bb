@@ -179,8 +179,6 @@ bool Database::IsExpectedSqliteError(int error) {
 }
 
 void Database::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
-  AssertIOAllowed();
-
   std::string debug_info = GetDiagnosticInfo(extended_error, stmt);
   if (!debug_info.empty() && RegisterIntentToUpload()) {
     DEBUG_ALIAS_FOR_CSTR(debug_buf, debug_info.c_str(), 2000);
@@ -231,14 +229,15 @@ Database::StatementRef::~StatementRef() {
 
 void Database::StatementRef::Close(bool forced) {
   if (stmt_) {
-    // Call to AssertIOAllowed() cannot go at the beginning of the function
-    // because Close() is called unconditionally from destructor to clean
-    // database_. And if this is inactive statement this won't cause any
-    // disk access and destructor most probably will be called on thread
-    // not allowing disk access.
+    // Call to InitScopedBlockingCall() cannot go at the beginning of the
+    // function because Close() is called unconditionally from destructor to
+    // clean database_. And if this is inactive statement this won't cause any
+    // disk access and destructor most probably will be called on thread not
+    // allowing disk access.
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
-    AssertIOAllowed();
+    base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+    InitScopedBlockingCall(&scoped_blocking_call);
     sqlite3_finalize(stmt_);
     stmt_ = nullptr;
   }
@@ -385,13 +384,14 @@ void Database::CloseInternal(bool forced) {
   open_statements_.clear();
 
   if (db_) {
-    // Call to AssertIOAllowed() cannot go at the beginning of the function
-    // because Close() must be called from destructor to clean
+    // Call to InitScopedBlockingCall() cannot go at the beginning of the
+    // function because Close() must be called from destructor to clean
     // statement_cache_, it won't cause any disk access and it most probably
     // will happen on thread not allowing disk access.
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
-    AssertIOAllowed();
+    base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+    InitScopedBlockingCall(&scoped_blocking_call);
 
     // Reseting acquires a lock to ensure no dump is happening on the database
     // at the same time. Unregister takes ownership of provider and it is safe
@@ -426,7 +426,8 @@ void Database::Close() {
 }
 
 void Database::Preload() {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
 
   if (!db_) {
     DCHECK(poisoned_) << "Cannot preload null db";
@@ -556,8 +557,6 @@ bool Database::RegisterIntentToUpload() const {
   static const char* kVersionKey = "version";
   static const char* kDiagnosticDumpsKey = "DiagnosticDumps";
   static int kVersion = 1;
-
-  AssertIOAllowed();
 
   if (histogram_tag_.empty())
     return false;
@@ -740,8 +739,6 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
 // TODO(shess): Since this is only called in an error situation, it might be
 // prudent to rewrite in terms of SQLite API calls, and mark the function const.
 std::string Database::CollectCorruptionInfo() {
-  AssertIOAllowed();
-
   // If the file cannot be accessed it is unlikely that an integrity check will
   // turn up actionable information.
   const base::FilePath db_path = DbPath();
@@ -825,7 +822,8 @@ bool Database::SetMmapAltStatus(int64_t status) {
 }
 
 size_t Database::GetAppropriateMmapSize() {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
 
   // How much to map if no errors are found.  50MB encompasses the 99th
   // percentile of Chrome databases in the wild, so this should be good.
@@ -968,7 +966,8 @@ void Database::TrimMemory() {
 // Create an in-memory database with the existing database's page
 // size, then backup that database over the existing database.
 bool Database::Raze() {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
 
   if (!db_) {
     DCHECK(poisoned_) << "Cannot raze null db";
@@ -1269,7 +1268,9 @@ bool Database::DetachDatabase(const char* attachment_point, InternalApiToken) {
 // caller wishes to execute multiple statements, that should be explicit, and
 // perhaps tucked into an explicit transaction with rollback in case of error.
 int Database::ExecuteAndReturnErrorCode(const char* sql) {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
+
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return SQLITE_ERROR;
@@ -1396,7 +1397,8 @@ scoped_refptr<Database::StatementRef> Database::GetUniqueStatement(
 scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
     sql::Database* tracking_db,
     const char* sql) const {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
   DCHECK(sql);
   DCHECK(!tracking_db || tracking_db == this);
 
@@ -1446,7 +1448,8 @@ std::string Database::GetSchema() const {
 }
 
 bool Database::IsSQLValid(const char* sql) {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
@@ -1542,7 +1545,8 @@ const char* Database::GetErrorMessage() const {
 
 bool Database::OpenInternal(const std::string& file_name,
                             Database::Retry retry_flag) {
-  AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
 
   if (db_) {
     DLOG(DCHECK) << "sql::Database is already open.";
