@@ -15,13 +15,9 @@ class ASH_EXPORT ScreenRotationAnimatorObserver {
  public:
   ScreenRotationAnimatorObserver() {}
 
-  // This will be called when the screen is copied before rotation.
-  virtual void OnScreenCopiedBeforeRotation() = 0;
-
   // This will be called when the animation is ended or aborted.
   virtual void OnScreenRotationAnimationFinished(
-      ScreenRotationAnimator* animator,
-      bool canceled) = 0;
+      ScreenRotationAnimator* animator) = 0;
 
  protected:
   virtual ~ScreenRotationAnimatorObserver() {}
