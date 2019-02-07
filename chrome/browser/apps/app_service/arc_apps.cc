@@ -333,7 +333,8 @@ const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
   // in arc_app_icon.cc?
   return prefs_->GetIconPath(
       app_id,
-      ArcAppIconDescriptor(size_hint_in_dip, GetPrimaryDisplayUIScaleFactor()));
+      ArcAppIconDescriptor(size_hint_in_dip,
+                           apps_util::GetPrimaryDisplayUIScaleFactor()));
 }
 
 void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
@@ -345,9 +346,9 @@ void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
   if (app_info) {
     base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
         base::BindOnce(&LoadIcon0, icon_compression,
-                       ConvertDipToPx(size_hint_in_dip), app_info->package_name,
-                       app_info->activity, app_info->icon_resource_id,
-                       std::move(callback));
+                       apps_util::ConvertDipToPx(size_hint_in_dip),
+                       app_info->package_name, app_info->activity,
+                       app_info->icon_resource_id, std::move(callback));
 
     AppConnectionHolder* app_connection_holder =
         prefs_->app_connection_holder();
@@ -367,7 +368,7 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                 int32_t size_hint_in_dip,
                                 LoadIconCallback callback) {
   // Use overloaded Chrome icon for Play Store that is adapted to Chrome style.
-  int size_hint_in_px = ConvertDipToPx(size_hint_in_dip);
+  int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
   int resource_id = (size_hint_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32
                                             : IDR_ARC_SUPPORT_ICON_192;
   LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,

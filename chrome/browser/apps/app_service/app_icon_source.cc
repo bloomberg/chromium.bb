@@ -26,7 +26,7 @@ namespace {
 void LoadDefaultImage(const content::URLDataSource::GotDataCallback& callback) {
   base::StringPiece contents =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-          IDR_APP_DEFAULT_ICON, GetPrimaryDisplayUIScaleFactor());
+          IDR_APP_DEFAULT_ICON, apps_util::GetPrimaryDisplayUIScaleFactor());
 
   base::RefCountedBytes* image_bytes = new base::RefCountedBytes();
   image_bytes->data().assign(contents.data(),
@@ -88,7 +88,7 @@ void AppIconSource::StartDataRequest(
     LoadDefaultImage(callback);
     return;
   }
-  int size_in_dip = ConvertPxToDip(size);
+  int size_in_dip = apps_util::ConvertPxToDip(size);
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxy::Get(profile_);

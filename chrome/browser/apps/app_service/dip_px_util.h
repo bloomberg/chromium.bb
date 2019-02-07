@@ -10,12 +10,12 @@
 
 #include "ui/base/resource/scale_factor.h"
 
-namespace apps {
+namespace apps_util {
 
 int ConvertDipToPx(int dip);
 int ConvertPxToDip(int px);
 ui::ScaleFactor GetPrimaryDisplayUIScaleFactor();
 
-}  // namespace apps
+}  // namespace apps_util
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_DIP_PX_UTIL_H_

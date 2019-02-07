@@ -77,7 +77,7 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
     }
 
     if (icon_key->icon_type == apps::mojom::IconType::kCrostini) {
-      auto scale_factor = GetPrimaryDisplayUIScaleFactor();
+      auto scale_factor = apps_util::GetPrimaryDisplayUIScaleFactor();
 
       // Try loading the icon from an on-disk cache. If that fails, fall back
       // to LoadIconFromVM.
