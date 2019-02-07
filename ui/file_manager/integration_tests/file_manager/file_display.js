@@ -180,7 +180,7 @@ testcase.fileDisplayUsb = async function() {
 };
 
 /**
- * Tests files display for partitions on a removable USB volume.
+ * Tests files display on a removable USB volume with and without partitions.
  */
 testcase.fileDisplayUsbPartition = async function() {
   // Open Files app on local downloads.
@@ -207,13 +207,27 @@ testcase.fileDisplayUsbPartition = async function() {
   chrome.test.assertEq(
       'removable', singleUSB.attributes['volume-type-for-testing']);
 
-  // Check whether the drive label is shared by the partitions.
-  chrome.test.assertEq(
-      'PARTITION_DRIVE_LABEL', partitionOne.attributes['drive-label']);
-  chrome.test.assertEq(
-      'PARTITION_DRIVE_LABEL', partitionTwo.attributes['drive-label']);
-  chrome.test.assertEq(
-      'SINGLE_DRIVE_LABEL', singleUSB.attributes['drive-label']);
+  // Wait for removable root to appear in the directory tree.
+  const removableRoot = await remoteCall.waitForElement(
+      appId, '#directory-tree [entry-label="PARTITION_DRIVE_LABEL"]');
+
+  // Check partitions are children of the root label.
+  const childEntriesQuery =
+      ['[entry-label="PARTITION_DRIVE_LABEL"] .tree-children .tree-item'];
+  const childEntries = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, childEntriesQuery);
+  const childEntryLabels =
+      childEntries.map(child => child.attributes['entry-label']);
+  chrome.test.assertEq(['partition-1', 'partition-2'], childEntryLabels);
+
+  // Check single USB does not have partitions as tree children.
+  const itemEntriesQuery =
+      ['[entry-label="singleUSB"] .tree-children .tree-item'];
+  const itemEntries = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, itemEntriesQuery);
+  chrome.test.assertEq(1, itemEntries.length);
+  const childVolumeType = itemEntries[0].attributes['volume-type-for-testing'];
+  chrome.test.assertTrue('removable' !== childVolumeType);
 };
 
 /**
