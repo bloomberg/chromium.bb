@@ -1596,4 +1596,86 @@ TEST_F(HidReportDescriptorTest,
                       kBelkinNostromoMouseAndExtraSize);
 }
 
+TEST_F(HidReportDescriptorTest, InvalidReportSizeIgnored) {
+  // Report size can be at most 32 bits. Make sure a report item with invalid
+  // size does not affect the maximum report size. The descriptor below
+  // describes a report with one 64-bit constant field.
+  static const uint8_t kInvalidReportSizeDescriptor[] = {
+      0xA0,        // Collection
+      0x95, 0x01,  //   Report Count (1)
+      0x75, 0x40,  //   Report Size (64)
+      0x90         //   Output
+  };
+  static const size_t kInvalidReportSizeDescriptorSize =
+      base::size(kInvalidReportSizeDescriptor);
+  auto info = HidCollectionInfo::New();
+  info->usage = HidUsageAndPage::New(0, 0);
+  AddTopCollectionInfo(std::move(info));
+  // Maximum report sizes should not be affected by the invalid report item.
+  ValidateDetails(false, 0, 0, 0, kInvalidReportSizeDescriptor,
+                  kInvalidReportSizeDescriptorSize);
+
+  // The report item with invalid size should still be included in the
+  // collection info.
+  auto* top = AddTopCollection(0, kCollectionTypePhysical);
+  SetReportSizeAndCount(64, 1);
+  AddReportConstant(top, kOutput, kNonNullableArray);
+  ValidateCollections(kInvalidReportSizeDescriptor,
+                      kInvalidReportSizeDescriptorSize);
+}
+
+TEST_F(HidReportDescriptorTest, ReasonablyHugeReportNotIgnored) {
+  // The descriptor below defines a 2^16-1 byte output report. Larger reports
+  // are considered unreasonable and are ignored in the max report size
+  // calculation.
+  static const uint8_t kReasonablyHugeReportDescriptor[] = {
+      0xA0,              // Collection
+      0x96, 0xff, 0xff,  //   Report Count (65535)
+      0x75, 0x08,        //   Report Size (8)
+      0x90               //   Output
+  };
+  static const size_t kReasonablyHugeReportDescriptorSize =
+      base::size(kReasonablyHugeReportDescriptor);
+  auto info = HidCollectionInfo::New();
+  info->usage = HidUsageAndPage::New(0, 0);
+  AddTopCollectionInfo(std::move(info));
+  // Maximum report sizes should include the huge report.
+  ValidateDetails(false, 0, 65535, 0, kReasonablyHugeReportDescriptor,
+                  kReasonablyHugeReportDescriptorSize);
+
+  auto* top = AddTopCollection(0, kCollectionTypePhysical);
+  SetReportSizeAndCount(8, 65535);
+  AddReportConstant(top, kOutput, kNonNullableArray);
+  ValidateCollections(kReasonablyHugeReportDescriptor,
+                      kReasonablyHugeReportDescriptorSize);
+}
+
+TEST_F(HidReportDescriptorTest, UnreasonablyHugeReportIgnored) {
+  // The descriptor below defines a 2^16 byte output report. The report is
+  // larger than the maximum report size considered reasonable and will be
+  // ignored when computing the max report size.
+  static const uint8_t kUnreasonablyHugeReportDescriptor[] = {
+      0xA0,                          // Collection
+      0x97, 0x00, 0x00, 0x01, 0x00,  //   Report Count (65536)
+      0x75, 0x08,                    //   Report Size (8)
+      0x90                           //   Output
+  };
+  static const size_t kUnreasonablyHugeReportDescriptorSize =
+      base::size(kUnreasonablyHugeReportDescriptor);
+  auto info = HidCollectionInfo::New();
+  info->usage = HidUsageAndPage::New(0, 0);
+  AddTopCollectionInfo(std::move(info));
+  // Maximum report sizes should not be affected by the huge report.
+  ValidateDetails(false, 0, 0, 0, kUnreasonablyHugeReportDescriptor,
+                  kUnreasonablyHugeReportDescriptorSize);
+
+  // The unreasonably huge report item should still be included in the
+  // collection info.
+  auto* top = AddTopCollection(0, kCollectionTypePhysical);
+  SetReportSizeAndCount(8, 65536);
+  AddReportConstant(top, kOutput, kNonNullableArray);
+  ValidateCollections(kUnreasonablyHugeReportDescriptor,
+                      kUnreasonablyHugeReportDescriptorSize);
+}
+
 }  // namespace device
