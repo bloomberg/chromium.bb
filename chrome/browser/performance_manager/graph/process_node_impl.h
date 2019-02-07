@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
+
+#include <set>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
 
 namespace performance_manager {
 
-class FrameCoordinationUnitImpl;
+class FrameNodeImpl;
 
 // A process coordination unit follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
@@ -25,9 +27,9 @@ class FrameCoordinationUnitImpl;
 //    process fails to start, this state may not occur.
 // 3. Process died or falied to start, have exit status.
 // 4. Back to 2.
-class ProcessCoordinationUnitImpl
+class ProcessNodeImpl
     : public CoordinationUnitInterface<
-          ProcessCoordinationUnitImpl,
+          ProcessNodeImpl,
           resource_coordinator::mojom::ProcessCoordinationUnit,
           resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
  public:
@@ -35,11 +37,11 @@ class ProcessCoordinationUnitImpl
     return resource_coordinator::CoordinationUnitType::kProcess;
   }
 
-  ProcessCoordinationUnitImpl(
+  ProcessNodeImpl(
       const resource_coordinator::CoordinationUnitID& id,
-      CoordinationUnitGraph* graph,
+      Graph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
-  ~ProcessCoordinationUnitImpl() override;
+  ~ProcessNodeImpl() override;
 
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
   void SetCPUUsage(double cpu_usage) override;
@@ -60,23 +62,22 @@ class ProcessCoordinationUnitImpl
   }
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
-  const std::set<FrameCoordinationUnitImpl*>& GetFrameCoordinationUnits() const;
-  std::set<PageCoordinationUnitImpl*> GetAssociatedPageCoordinationUnits()
-      const;
+  const std::set<FrameNodeImpl*>& GetFrameNodes() const;
+  std::set<PageNodeImpl*> GetAssociatedPageCoordinationUnits() const;
 
   base::ProcessId process_id() const { return process_id_; }
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
   // Add |frame_cu| to this process.
-  void AddFrame(FrameCoordinationUnitImpl* frame_cu);
+  void AddFrame(FrameNodeImpl* frame_cu);
   // Removes |frame_cu| from the set of frames hosted by this process. Invoked
-  // from the destructor of FrameCoordinationUnitImpl.
-  void RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
+  // from the destructor of FrameNodeImpl.
+  void RemoveFrame(FrameNodeImpl* frame_cu);
 
   // Invoked when the state of a frame hosted by this process changes.
   void OnFrameLifecycleStateChanged(
-      FrameCoordinationUnitImpl* frame_cu,
+      FrameNodeImpl* frame_cu,
       resource_coordinator::mojom::LifecycleState old_state);
 
  private:
@@ -96,14 +97,14 @@ class ProcessCoordinationUnitImpl
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 
-  std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
+  std::set<FrameNodeImpl*> frame_coordination_units_;
 
   // The number of frames hosted by this process that are frozen.
   int num_frozen_frames_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ProcessCoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(ProcessNodeImpl);
 };
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_

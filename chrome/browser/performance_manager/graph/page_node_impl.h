@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
 
 namespace performance_manager {
 
-class FrameCoordinationUnitImpl;
-class ProcessCoordinationUnitImpl;
+class FrameNodeImpl;
+class ProcessNodeImpl;
 
-class PageCoordinationUnitImpl
+class PageNodeImpl
     : public CoordinationUnitInterface<
-          PageCoordinationUnitImpl,
+          PageNodeImpl,
           resource_coordinator::mojom::PageCoordinationUnit,
           resource_coordinator::mojom::PageCoordinationUnitRequest> {
  public:
@@ -24,11 +24,11 @@ class PageCoordinationUnitImpl
     return resource_coordinator::CoordinationUnitType::kPage;
   }
 
-  PageCoordinationUnitImpl(
+  PageNodeImpl(
       const resource_coordinator::CoordinationUnitID& id,
-      CoordinationUnitGraph* graph,
+      Graph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
-  ~PageCoordinationUnitImpl() override;
+  ~PageNodeImpl() override;
 
   // resource_coordinator::mojom::PageCoordinationUnit implementation.
   void AddFrame(const resource_coordinator::CoordinationUnitID& cu_id) override;
@@ -46,8 +46,7 @@ class PageCoordinationUnitImpl
   // There is no direct relationship between processes and pages. However,
   // frames are accessible by both processes and frames, so we find all of the
   // processes that are reachable from the pages's accessible frames.
-  std::set<ProcessCoordinationUnitImpl*> GetAssociatedProcessCoordinationUnits()
-      const;
+  std::set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits() const;
   bool IsVisible() const;
   double GetCPUUsage() const;
 
@@ -63,13 +62,12 @@ class PageCoordinationUnitImpl
   // PageCoordinationUnit.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
-  const std::set<FrameCoordinationUnitImpl*>& GetFrameCoordinationUnits()
-      const {
+  const std::set<FrameNodeImpl*>& GetFrameNodes() const {
     return frame_coordination_units_;
   }
 
   // Returns the main frame CU or nullptr if this page has no main frame.
-  FrameCoordinationUnitImpl* GetMainFrameCoordinationUnit() const;
+  FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.
   base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
@@ -99,11 +97,11 @@ class PageCoordinationUnitImpl
 
   // Invoked when the state of a frame in this page changes.
   void OnFrameLifecycleStateChanged(
-      FrameCoordinationUnitImpl* frame_cu,
+      FrameNodeImpl* frame_cu,
       resource_coordinator::mojom::LifecycleState old_state);
 
   void OnFrameInterventionPolicyChanged(
-      FrameCoordinationUnitImpl* frame,
+      FrameNodeImpl* frame,
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
       resource_coordinator::mojom::InterventionPolicy old_policy,
       resource_coordinator::mojom::InterventionPolicy new_policy);
@@ -128,7 +126,7 @@ class PageCoordinationUnitImpl
   }
 
  private:
-  friend class FrameCoordinationUnitImpl;
+  friend class FrameNodeImpl;
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
@@ -136,8 +134,8 @@ class PageCoordinationUnitImpl
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
 
-  bool AddFrame(FrameCoordinationUnitImpl* frame_cu);
-  bool RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
+  bool AddFrame(FrameNodeImpl* frame_cu);
+  bool RemoveFrame(FrameNodeImpl* frame_cu);
 
   // This is called whenever |num_frozen_frames_| changes, or whenever
   // |frame_coordination_units_.size()| changes. It is used to synthesize the
@@ -154,7 +152,7 @@ class PageCoordinationUnitImpl
   // invalidate the aggregated intervention policies. This should be called
   // after the frame has already been added or removed from
   // |frame_coordination_units_|.
-  void MaybeInvalidateInterventionPolicies(FrameCoordinationUnitImpl* frame_cu,
+  void MaybeInvalidateInterventionPolicies(FrameNodeImpl* frame_cu,
                                            bool adding_frame);
 
   // Recomputes intervention policy aggregation. This is invoked on demand when
@@ -162,7 +160,7 @@ class PageCoordinationUnitImpl
   void RecomputeInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention);
 
-  std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
+  std::set<FrameNodeImpl*> frame_coordination_units_;
 
   base::TimeTicks visibility_change_time_;
   // Main frame navigation committed time.
@@ -212,9 +210,9 @@ class PageCoordinationUnitImpl
   // is used as a signal that the frame has reported.
   size_t intervention_policy_frames_reported_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(PageCoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_

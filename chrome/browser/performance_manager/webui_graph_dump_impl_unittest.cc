@@ -6,19 +6,19 @@
 
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/mock_coordination_unit_graphs.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/mock_graphs.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
 
-class WebUIGraphDumpImplTest : public CoordinationUnitTestHarness {};
+class WebUIGraphDumpImplTest : public GraphTestHarness {};
 
 TEST_F(WebUIGraphDumpImplTest, Create) {
-  CoordinationUnitGraph graph;
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(&graph);
+  Graph graph;
+  MockMultiplePagesWithMultipleProcessesGraph cu_graph(&graph);
 
   base::TimeTicks now = ResourceCoordinatorClock::NowTicks();
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_SYSTEM_COORDINATION_UNIT_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_SYSTEM_COORDINATION_UNIT_IMPL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_SYSTEM_NODE_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_SYSTEM_NODE_IMPL_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
 
 namespace performance_manager {
 
-class SystemCoordinationUnitImpl
+class SystemNodeImpl
     : public CoordinationUnitInterface<
-          SystemCoordinationUnitImpl,
+          SystemNodeImpl,
           resource_coordinator::mojom::SystemCoordinationUnit,
           resource_coordinator::mojom::SystemCoordinationUnitRequest> {
  public:
@@ -21,11 +21,11 @@ class SystemCoordinationUnitImpl
     return resource_coordinator::CoordinationUnitType::kSystem;
   }
 
-  SystemCoordinationUnitImpl(
+  SystemNodeImpl(
       const resource_coordinator::CoordinationUnitID& id,
-      CoordinationUnitGraph* graph,
+      Graph* graph,
       std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
-  ~SystemCoordinationUnitImpl() override;
+  ~SystemNodeImpl() override;
 
   // resource_coordinator::mojom::SystemCoordinationUnit implementation:
   void OnProcessCPUUsageReady() override;
@@ -52,9 +52,9 @@ class SystemCoordinationUnitImpl
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemCoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(SystemNodeImpl);
 };
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_SYSTEM_COORDINATION_UNIT_IMPL_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_SYSTEM_NODE_IMPL_H_

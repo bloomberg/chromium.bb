@@ -21,12 +21,12 @@ struct BindSourceInfo;
 
 namespace performance_manager {
 
-// The PageSignalGenerator is a dedicated |CoordinationUnitGraphObserver| for
+// The PageSignalGenerator is a dedicated |GraphObserver| for
 // calculating and emitting page-scoped signals. This observer observes
-// PageCoordinationUnits, ProcessCoordinationUnits and FrameCoordinationUnits,
+// PageCoordinationUnits, ProcessCoordinationUnits and FrameNodes,
 // combining information from the graph to generate page level signals.
 class PageSignalGeneratorImpl
-    : public CoordinationUnitGraphObserver,
+    : public GraphObserver,
       public resource_coordinator::mojom::PageSignalGenerator {
  public:
   PageSignalGeneratorImpl();
@@ -36,34 +36,33 @@ class PageSignalGeneratorImpl
   void AddReceiver(
       resource_coordinator::mojom::PageSignalReceiverPtr receiver) override;
 
-  // CoordinationUnitGraphObserver implementation.
-  bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override;
-  void OnCoordinationUnitCreated(const CoordinationUnitBase* cu) override;
-  void OnBeforeCoordinationUnitDestroyed(
-      const CoordinationUnitBase* cu) override;
+  // GraphObserver implementation.
+  bool ShouldObserve(const NodeBase* coordination_unit) override;
+  void OnNodeCreated(const NodeBase* cu) override;
+  void OnBeforeNodeDestroyed(const NodeBase* cu) override;
   void OnFramePropertyChanged(
-      const FrameCoordinationUnitImpl* frame_cu,
+      const FrameNodeImpl* frame_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnPagePropertyChanged(
-      const PageCoordinationUnitImpl* page_cu,
+      const PageNodeImpl* page_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnProcessPropertyChanged(
-      const ProcessCoordinationUnitImpl* process_cu,
+      const ProcessNodeImpl* process_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnFrameEventReceived(
-      const FrameCoordinationUnitImpl* frame_cu,
+      const FrameNodeImpl* frame_cu,
       const resource_coordinator::mojom::Event event) override;
   void OnPageEventReceived(
-      const PageCoordinationUnitImpl* page_cu,
+      const PageNodeImpl* page_cu,
       const resource_coordinator::mojom::Event event) override;
   void OnProcessEventReceived(
-      const ProcessCoordinationUnitImpl* page_cu,
+      const ProcessNodeImpl* page_cu,
       const resource_coordinator::mojom::Event event) override;
   void OnSystemEventReceived(
-      const SystemCoordinationUnitImpl* system_cu,
+      const SystemNodeImpl* system_cu,
       const resource_coordinator::mojom::Event event) override;
 
   void BindToInterface(
@@ -118,8 +117,8 @@ class PageSignalGeneratorImpl
     kLoadedAndIdle
   };
 
-  // Holds state per page CU. These are created via OnCoordinationUnitCreated
-  // and destroyed via OnBeforeCoordinationUnitDestroyed.
+  // Holds state per page CU. These are created via OnNodeCreated
+  // and destroyed via OnBeforeNodeDestroyed.
   struct PageData {
     // Set the load idle state and the time of change. Also clears the
     // |performance_estimate_issued| flag.
@@ -151,27 +150,26 @@ class PageSignalGeneratorImpl
   // These are called when properties/events affecting the load-idle state are
   // observed. Frame and Process variants will eventually all redirect to the
   // appropriate Page variant, where the real work is done.
-  void UpdateLoadIdleStateFrame(const FrameCoordinationUnitImpl* frame_cu);
-  void UpdateLoadIdleStatePage(const PageCoordinationUnitImpl* page_cu);
-  void UpdateLoadIdleStateProcess(
-      const ProcessCoordinationUnitImpl* process_cu);
+  void UpdateLoadIdleStateFrame(const FrameNodeImpl* frame_cu);
+  void UpdateLoadIdleStatePage(const PageNodeImpl* page_cu);
+  void UpdateLoadIdleStateProcess(const ProcessNodeImpl* process_cu);
 
   // This method is called when a property affecting the lifecycle state is
   // observed.
-  void UpdateLifecycleState(const PageCoordinationUnitImpl* page_cu,
+  void UpdateLifecycleState(const PageNodeImpl* page_cu,
                             resource_coordinator::mojom::LifecycleState state);
 
   // Helper function for transitioning to the final state.
-  void TransitionToLoadedAndIdle(const PageCoordinationUnitImpl* page_cu,
+  void TransitionToLoadedAndIdle(const PageNodeImpl* page_cu,
                                  base::TimeTicks now);
 
   // Convenience accessors for state associated with a |page_cu|.
-  PageData* GetPageData(const PageCoordinationUnitImpl* page_cu);
-  bool IsLoading(const PageCoordinationUnitImpl* page_cu);
-  bool IsIdling(const PageCoordinationUnitImpl* page_cu);
+  PageData* GetPageData(const PageNodeImpl* page_cu);
+  bool IsLoading(const PageNodeImpl* page_cu);
+  bool IsIdling(const PageNodeImpl* page_cu);
 
   template <typename Method, typename... Params>
-  void DispatchPageSignal(const PageCoordinationUnitImpl* page_cu,
+  void DispatchPageSignal(const PageNodeImpl* page_cu,
                           Method m,
                           Params... params);
 
@@ -180,8 +178,8 @@ class PageSignalGeneratorImpl
       receivers_;
 
   // Stores per Page CU data. This set is maintained by
-  // OnCoordinationUnitCreated and OnBeforeCoordinationUnitDestroyed.
-  std::map<const PageCoordinationUnitImpl*, PageData> page_data_;
+  // OnNodeCreated and OnBeforeNodeDestroyed.
+  std::map<const PageNodeImpl*, PageData> page_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSignalGeneratorImpl);
 };

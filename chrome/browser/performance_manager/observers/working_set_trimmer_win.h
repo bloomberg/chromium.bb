@@ -26,15 +26,14 @@ namespace performance_manager {
 //   to be compressed and/or written to disk preemptively, which makes more
 //   memory available quickly for foreground processes and improves global
 //   browser performance.
-class WorkingSetTrimmer : public CoordinationUnitGraphObserver {
+class WorkingSetTrimmer : public GraphObserver {
  public:
   WorkingSetTrimmer();
   ~WorkingSetTrimmer() override;
 
-  // CoordinationUnitGraphObserver:
-  bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override;
-  void OnAllFramesInProcessFrozen(
-      const ProcessCoordinationUnitImpl* process_cu) override;
+  // GraphObserver:
+  bool ShouldObserve(const NodeBase* coordination_unit) override;
+  void OnAllFramesInProcessFrozen(const ProcessNodeImpl* process_cu) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmer);

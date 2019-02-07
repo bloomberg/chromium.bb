@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/system_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 #include <algorithm>
 #include <iterator>
@@ -16,19 +16,19 @@
 
 namespace performance_manager {
 
-SystemCoordinationUnitImpl::SystemCoordinationUnitImpl(
+SystemNodeImpl::SystemNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
-    CoordinationUnitGraph* graph,
+    Graph* graph,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
     : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
 
-SystemCoordinationUnitImpl::~SystemCoordinationUnitImpl() = default;
+SystemNodeImpl::~SystemNodeImpl() = default;
 
-void SystemCoordinationUnitImpl::OnProcessCPUUsageReady() {
+void SystemNodeImpl::OnProcessCPUUsageReady() {
   SendEvent(resource_coordinator::mojom::Event::kProcessCPUUsageReady);
 }
 
-void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
+void SystemNodeImpl::DistributeMeasurementBatch(
     resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
         measurement_batch) {
   base::TimeDelta time_since_last_measurement;
@@ -55,11 +55,10 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
 
   // Keep track of the pages updated with CPU cost for the second pass,
   // where their memory usage is updated.
-  std::set<PageCoordinationUnitImpl*> pages;
-  std::vector<ProcessCoordinationUnitImpl*> found_processes;
+  std::set<PageNodeImpl*> pages;
+  std::vector<ProcessNodeImpl*> found_processes;
   for (const auto& measurement : measurement_batch->measurements) {
-    ProcessCoordinationUnitImpl* process =
-        graph()->GetProcessCoordinationUnitByPid(measurement->pid);
+    ProcessNodeImpl* process = graph()->GetProcessNodeByPid(measurement->pid);
     if (process) {
       base::TimeDelta cumulative_cpu_delta =
           measurement->cpu_usage - process->cumulative_cpu_usage();
@@ -67,8 +66,7 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
 
       // Distribute the CPU delta to the pages that own the frames in this
       // process.
-      std::set<FrameCoordinationUnitImpl*> frames =
-          process->GetFrameCoordinationUnits();
+      std::set<FrameNodeImpl*> frames = process->GetFrameNodes();
       if (!frames.empty()) {
         // To make sure we don't systemically truncate the remainder of the
         // delta, simply subtract the remainder and "hold it back" from the
@@ -78,8 +76,8 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
             cumulative_cpu_delta %
             base::TimeDelta::FromMicroseconds(frames.size());
 
-        for (FrameCoordinationUnitImpl* frame : frames) {
-          PageCoordinationUnitImpl* page = frame->GetPageCoordinationUnit();
+        for (FrameNodeImpl* frame : frames) {
+          PageNodeImpl* page = frame->GetPageNode();
           if (page) {
             page->set_usage_estimate_time(last_measurement_end_time_);
             page->set_cumulative_cpu_usage_estimate(
@@ -117,37 +115,35 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
   }
 
   // Grab all the processes to see if there were any we didn't get data for.
-  std::vector<ProcessCoordinationUnitImpl*> processes =
-      graph_->GetAllProcessCoordinationUnits();
+  std::vector<ProcessNodeImpl*> processes = graph_->GetAllProcessNodes();
 
   if (found_processes.size() != processes.size()) {
     // We didn't find them all, compute the difference and clear the data for
     // the processes we didn't find.
     std::sort(processes.begin(), processes.end());
     std::sort(found_processes.begin(), found_processes.end());
-    std::vector<ProcessCoordinationUnitImpl*> not_found_processes;
+    std::vector<ProcessNodeImpl*> not_found_processes;
     std::set_difference(
         processes.begin(), processes.end(), found_processes.begin(),
         found_processes.end(),
         std::inserter(not_found_processes, not_found_processes.begin()));
 
     // Clear processes we didn't get data for.
-    for (ProcessCoordinationUnitImpl* process : not_found_processes) {
+    for (ProcessNodeImpl* process : not_found_processes) {
       process->SetCPUUsage(0.0);
       process->set_private_footprint_kb(0);
     }
   }
 
   // Iterate through the pages involved to distribute the memory to them.
-  for (PageCoordinationUnitImpl* page : pages) {
+  for (PageNodeImpl* page : pages) {
     uint64_t private_footprint_kb_sum = 0;
-    const auto& frames = page->GetFrameCoordinationUnits();
-    for (FrameCoordinationUnitImpl* frame : frames) {
-      ProcessCoordinationUnitImpl* process =
-          frame->GetProcessCoordinationUnit();
+    const auto& frames = page->GetFrameNodes();
+    for (FrameNodeImpl* frame : frames) {
+      ProcessNodeImpl* process = frame->GetProcessNode();
       if (process) {
-        private_footprint_kb_sum += process->private_footprint_kb() /
-                                    process->GetFrameCoordinationUnits().size();
+        private_footprint_kb_sum +=
+            process->private_footprint_kb() / process->GetFrameNodes().size();
       }
     }
 
@@ -160,13 +156,12 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
   OnProcessCPUUsageReady();
 }
 
-void SystemCoordinationUnitImpl::OnEventReceived(
-    resource_coordinator::mojom::Event event) {
+void SystemNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnSystemEventReceived(this, event);
 }
 
-void SystemCoordinationUnitImpl::OnPropertyChanged(
+void SystemNodeImpl::OnPropertyChanged(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())

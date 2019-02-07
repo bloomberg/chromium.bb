@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/mock_coordination_unit_graphs.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,28 +14,27 @@ namespace performance_manager {
 
 namespace {
 
-class ProcessCoordinationUnitImplTest : public CoordinationUnitTestHarness {};
+class ProcessNodeImplTest : public GraphTestHarness {};
 
-class MockCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
+class MockGraphObserver : public GraphObserver {
  public:
-  MockCoordinationUnitGraphObserver() = default;
-  virtual ~MockCoordinationUnitGraphObserver() = default;
+  MockGraphObserver() = default;
+  virtual ~MockGraphObserver() = default;
 
-  bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override {
+  bool ShouldObserve(const NodeBase* coordination_unit) override {
     return true;
   }
 
-  MOCK_METHOD1(OnAllFramesInProcessFrozen,
-               void(const ProcessCoordinationUnitImpl*));
+  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNodeImpl*));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockCoordinationUnitGraphObserver);
+  DISALLOW_COPY_AND_ASSIGN(MockGraphObserver);
 };
 
 }  // namespace
 
-TEST_F(ProcessCoordinationUnitImplTest, MeasureCPUUsage) {
-  auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
+  auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
   process_cu->SetCPUUsage(1);
   int64_t cpu_usage;
   EXPECT_TRUE(process_cu->GetProperty(
@@ -43,13 +42,12 @@ TEST_F(ProcessCoordinationUnitImplTest, MeasureCPUUsage) {
   EXPECT_EQ(1, cpu_usage / 1000.0);
 }
 
-TEST_F(ProcessCoordinationUnitImplTest, OnAllFramesInProcessFrozen) {
-  auto owned_observer = std::make_unique<
-      testing::StrictMock<MockCoordinationUnitGraphObserver>>();
+TEST_F(ProcessNodeImplTest, OnAllFramesInProcessFrozen) {
+  auto owned_observer =
+      std::make_unique<testing::StrictMock<MockGraphObserver>>();
   auto* observer = owned_observer.get();
   coordination_unit_graph()->RegisterObserver(std::move(owned_observer));
-  MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
+  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
 
   // 1/2 frame in the process is frozen.
   // No call to OnAllFramesInProcessFrozen() is expected.
@@ -76,8 +74,8 @@ TEST_F(ProcessCoordinationUnitImplTest, OnAllFramesInProcessFrozen) {
       resource_coordinator::mojom::LifecycleState::kFrozen);
 }
 
-TEST_F(ProcessCoordinationUnitImplTest, ProcessLifeCycle) {
-  auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
+  auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
 
   // Test the potential lifecycles of a process CU.
   // First go to exited without an intervening PID, as would happen

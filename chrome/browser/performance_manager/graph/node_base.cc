@@ -2,41 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_base.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
 
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
+#include <utility>
+
+#include "chrome/browser/performance_manager/graph/graph.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
 namespace performance_manager {
 
-CoordinationUnitBase::CoordinationUnitBase(
-    const resource_coordinator::CoordinationUnitID& id,
-    CoordinationUnitGraph* graph)
+NodeBase::NodeBase(const resource_coordinator::CoordinationUnitID& id,
+                   Graph* graph)
     : graph_(graph), id_(id.type, id.id) {}
 
-CoordinationUnitBase::~CoordinationUnitBase() = default;
+NodeBase::~NodeBase() = default;
 
-void CoordinationUnitBase::Destruct() {
-  graph_->DestroyCoordinationUnit(this);
+void NodeBase::Destruct() {
+  graph_->DestroyNode(this);
 }
 
-void CoordinationUnitBase::BeforeDestroyed() {
+void NodeBase::BeforeDestroyed() {
   for (auto& observer : observers_)
-    observer.OnBeforeCoordinationUnitDestroyed(this);
+    observer.OnBeforeNodeDestroyed(this);
 }
 
-void CoordinationUnitBase::AddObserver(
-    CoordinationUnitGraphObserver* observer) {
+void NodeBase::AddObserver(GraphObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void CoordinationUnitBase::RemoveObserver(
-    CoordinationUnitGraphObserver* observer) {
+void NodeBase::RemoveObserver(GraphObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool CoordinationUnitBase::GetProperty(
+bool NodeBase::GetProperty(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t* result) const {
   auto value_it = properties_.find(property_type);
@@ -47,7 +46,7 @@ bool CoordinationUnitBase::GetProperty(
   return false;
 }
 
-int64_t CoordinationUnitBase::GetPropertyOrDefault(
+int64_t NodeBase::GetPropertyOrDefault(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t default_value) const {
   int64_t value = 0;
@@ -56,28 +55,27 @@ int64_t CoordinationUnitBase::GetPropertyOrDefault(
   return default_value;
 }
 
-void CoordinationUnitBase::OnEventReceived(
-    resource_coordinator::mojom::Event event) {
+void NodeBase::OnEventReceived(resource_coordinator::mojom::Event event) {
   for (auto& observer : observers())
     observer.OnEventReceived(this, event);
 }
 
-void CoordinationUnitBase::OnPropertyChanged(
+void NodeBase::OnPropertyChanged(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers())
     observer.OnPropertyChanged(this, property_type, value);
 }
 
-void CoordinationUnitBase::SendEvent(resource_coordinator::mojom::Event event) {
+void NodeBase::SendEvent(resource_coordinator::mojom::Event event) {
   OnEventReceived(event);
 }
 
-void CoordinationUnitBase::SetProperty(
+void NodeBase::SetProperty(
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
-  // The |CoordinationUnitGraphObserver| API specification dictates that
-  // the property is guarranteed to be set on the |CoordinationUnitBase|
+  // The |GraphObserver| API specification dictates that
+  // the property is guaranteed to be set on the |NodeBase|
   // and propagated to the appropriate associated |CoordianationUnitBase|
   // before |OnPropertyChanged| is invoked on all of the registered observers.
   properties_[property_type] = value;
@@ -85,9 +83,8 @@ void CoordinationUnitBase::SetProperty(
 }
 
 // static
-CoordinationUnitBase* CoordinationUnitBase::PassOwnershipToGraph(
-    std::unique_ptr<CoordinationUnitBase> new_cu) {
-  return new_cu->graph()->AddNewCoordinationUnit(std::move(new_cu));
+NodeBase* NodeBase::PassOwnershipToGraph(std::unique_ptr<NodeBase> new_cu) {
+  return new_cu->graph()->AddNewNode(std::move(new_cu));
 }
 
 }  // namespace performance_manager

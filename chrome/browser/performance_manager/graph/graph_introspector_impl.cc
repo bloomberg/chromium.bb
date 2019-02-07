@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_introspector_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_introspector_impl.h"
 
 #include <set>
 #include <utility>
@@ -10,37 +10,35 @@
 
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_graph.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace {
 
-using performance_manager::FrameCoordinationUnitImpl;
-using performance_manager::PageCoordinationUnitImpl;
-using performance_manager::ProcessCoordinationUnitImpl;
+using performance_manager::FrameNodeImpl;
+using performance_manager::PageNodeImpl;
+using performance_manager::ProcessNodeImpl;
 
 // Returns true iff the given |process| is responsible for hosting the
 // main-frame of the given |page|.
-bool HostsMainFrame(ProcessCoordinationUnitImpl* process,
-                    PageCoordinationUnitImpl* page) {
-  FrameCoordinationUnitImpl* main_frame = page->GetMainFrameCoordinationUnit();
+bool HostsMainFrame(ProcessNodeImpl* process, PageNodeImpl* page) {
+  FrameNodeImpl* main_frame = page->GetMainFrameNode();
   if (main_frame == nullptr) {
     // |process| can't host a frame that doesn't exist.
     return false;
   }
 
-  return main_frame->GetProcessCoordinationUnit() == process;
+  return main_frame->GetProcessNode() == process;
 }
 
 }  // namespace
 
 namespace performance_manager {
 
-CoordinationUnitIntrospectorImpl::CoordinationUnitIntrospectorImpl(
-    CoordinationUnitGraph* graph)
+CoordinationUnitIntrospectorImpl::CoordinationUnitIntrospectorImpl(Graph* graph)
     : graph_(graph) {}
 
 CoordinationUnitIntrospectorImpl::~CoordinationUnitIntrospectorImpl() = default;
@@ -48,8 +46,7 @@ CoordinationUnitIntrospectorImpl::~CoordinationUnitIntrospectorImpl() = default;
 void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     GetProcessToURLMapCallback callback) {
   std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos;
-  std::vector<ProcessCoordinationUnitImpl*> process_cus =
-      graph_->GetAllProcessCoordinationUnits();
+  std::vector<ProcessNodeImpl*> process_cus = graph_->GetAllProcessNodes();
   for (auto* process_cu : process_cus) {
     int64_t pid;
     if (!process_cu->GetProperty(
@@ -62,9 +59,9 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     DCHECK_NE(base::kNullProcessId, process_info->pid);
     process_info->launch_time = process_cu->launch_time();
 
-    std::set<PageCoordinationUnitImpl*> page_cus =
+    std::set<PageNodeImpl*> page_cus =
         process_cu->GetAssociatedPageCoordinationUnits();
-    for (PageCoordinationUnitImpl* page_cu : page_cus) {
+    for (PageNodeImpl* page_cu : page_cus) {
       int64_t ukm_source_id;
       if (page_cu->GetProperty(
               resource_coordinator::mojom::PropertyType::kUKMSourceId,

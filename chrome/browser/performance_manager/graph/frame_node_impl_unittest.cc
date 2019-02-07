@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/mock_coordination_unit_graphs.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/mock_graphs.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +16,7 @@ namespace performance_manager {
 
 namespace {
 
-class FrameCoordinationUnitImplTest : public CoordinationUnitTestHarness {
+class FrameNodeImplTest : public GraphTestHarness {
  public:
   void SetUp() override {
     ResourceCoordinatorClock::SetClockForTesting(&clock_);
@@ -34,29 +34,29 @@ class FrameCoordinationUnitImplTest : public CoordinationUnitTestHarness {
   base::SimpleTestTickClock clock_;
 };
 
-using FrameCoordinationUnitImplDeathTest = FrameCoordinationUnitImplTest;
+using FrameNodeImplDeathTest = FrameNodeImplTest;
 
 }  // namespace
 
-TEST_F(FrameCoordinationUnitImplTest, AddChildFrameBasic) {
-  auto frame1_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame2_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame3_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+TEST_F(FrameNodeImplTest, AddChildFrameBasic) {
+  auto frame1_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame2_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame3_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
   frame1_cu->AddChildFrame(frame2_cu->id());
   frame1_cu->AddChildFrame(frame3_cu->id());
-  EXPECT_EQ(nullptr, frame1_cu->GetParentFrameCoordinationUnit());
+  EXPECT_EQ(nullptr, frame1_cu->GetParentFrameNode());
   EXPECT_EQ(2u, frame1_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_EQ(frame1_cu.get(), frame2_cu->GetParentFrameCoordinationUnit());
-  EXPECT_EQ(frame1_cu.get(), frame3_cu->GetParentFrameCoordinationUnit());
+  EXPECT_EQ(frame1_cu.get(), frame2_cu->GetParentFrameNode());
+  EXPECT_EQ(frame1_cu.get(), frame3_cu->GetParentFrameNode());
 }
 
-TEST_F(FrameCoordinationUnitImplDeathTest, AddChildFrameOnCyclicReference) {
+TEST_F(FrameNodeImplDeathTest, AddChildFrameOnCyclicReference) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-  auto frame1_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame2_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto frame3_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame1_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame2_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto frame3_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
   frame1_cu->AddChildFrame(frame2_cu->id());
   frame2_cu->AddChildFrame(frame3_cu->id());
@@ -78,41 +78,40 @@ TEST_F(FrameCoordinationUnitImplDeathTest, AddChildFrameOnCyclicReference) {
                     frame1_cu.get()));
 }
 
-TEST_F(FrameCoordinationUnitImplTest, RemoveChildFrame) {
-  auto parent_frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
-  auto child_frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+TEST_F(FrameNodeImplTest, RemoveChildFrame) {
+  auto parent_frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto child_frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
 
   // Parent-child relationships have not been established yet.
   EXPECT_EQ(
       0u, parent_frame_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_TRUE(!parent_frame_cu->GetParentFrameCoordinationUnit());
+  EXPECT_TRUE(!parent_frame_cu->GetParentFrameNode());
   EXPECT_EQ(
       0u, child_frame_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_TRUE(!child_frame_cu->GetParentFrameCoordinationUnit());
+  EXPECT_TRUE(!child_frame_cu->GetParentFrameNode());
 
   parent_frame_cu->AddChildFrame(child_frame_cu->id());
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(
       1u, parent_frame_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_TRUE(!parent_frame_cu->GetParentFrameCoordinationUnit());
+  EXPECT_TRUE(!parent_frame_cu->GetParentFrameNode());
   EXPECT_EQ(
       0u, child_frame_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_EQ(parent_frame_cu.get(),
-            child_frame_cu->GetParentFrameCoordinationUnit());
+  EXPECT_EQ(parent_frame_cu.get(), child_frame_cu->GetParentFrameNode());
 
   parent_frame_cu->RemoveChildFrame(child_frame_cu->id());
 
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(
       0u, parent_frame_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_TRUE(!parent_frame_cu->GetParentFrameCoordinationUnit());
+  EXPECT_TRUE(!parent_frame_cu->GetParentFrameNode());
   EXPECT_EQ(
       0u, child_frame_cu->child_frame_coordination_units_for_testing().size());
-  EXPECT_TRUE(!child_frame_cu->GetParentFrameCoordinationUnit());
+  EXPECT_TRUE(!child_frame_cu->GetParentFrameNode());
 }
 
-int64_t GetLifecycleState(PageCoordinationUnitImpl* cu) {
+int64_t GetLifecycleState(PageNodeImpl* cu) {
   int64_t value;
   if (cu->GetProperty(
           resource_coordinator::mojom::PropertyType::kLifecycleState, &value))
@@ -131,18 +130,17 @@ int64_t GetLifecycleState(PageCoordinationUnitImpl* cu) {
                 resource_coordinator::mojom::LifecycleState::kRunning), \
             GetLifecycleState(cu.get()))
 
-TEST_F(FrameCoordinationUnitImplTest, LifecycleStatesTransitions) {
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+TEST_F(FrameNodeImplTest, LifecycleStatesTransitions) {
+  MockMultiplePagesWithMultipleProcessesGraph cu_graph(
       coordination_unit_graph());
   // Verifying the model.
   ASSERT_TRUE(cu_graph.frame->IsMainFrame());
   ASSERT_TRUE(cu_graph.other_frame->IsMainFrame());
   ASSERT_FALSE(cu_graph.child_frame->IsMainFrame());
-  ASSERT_EQ(cu_graph.child_frame->GetParentFrameCoordinationUnit(),
+  ASSERT_EQ(cu_graph.child_frame->GetParentFrameNode(),
             cu_graph.other_frame.get());
-  ASSERT_EQ(cu_graph.frame->GetPageCoordinationUnit(), cu_graph.page.get());
-  ASSERT_EQ(cu_graph.other_frame->GetPageCoordinationUnit(),
-            cu_graph.other_page.get());
+  ASSERT_EQ(cu_graph.frame->GetPageNode(), cu_graph.page.get());
+  ASSERT_EQ(cu_graph.other_frame->GetPageNode(), cu_graph.other_page.get());
 
   // Freezing a child frame should not affect the page state.
   cu_graph.child_frame->SetLifecycleState(

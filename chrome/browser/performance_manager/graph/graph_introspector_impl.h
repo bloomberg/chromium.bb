@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_INTROSPECTOR_IMPL_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_INTROSPECTOR_IMPL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_INTROSPECTOR_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_INTROSPECTOR_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_introspector.mojom.h"
@@ -15,12 +15,12 @@ struct BindSourceInfo;
 
 namespace performance_manager {
 
-class CoordinationUnitGraph;
+class Graph;
 
 class CoordinationUnitIntrospectorImpl
     : public resource_coordinator::mojom::CoordinationUnitIntrospector {
  public:
-  explicit CoordinationUnitIntrospectorImpl(CoordinationUnitGraph* graph);
+  explicit CoordinationUnitIntrospectorImpl(Graph* graph);
   ~CoordinationUnitIntrospectorImpl() override;
 
   void BindToInterface(
@@ -31,7 +31,7 @@ class CoordinationUnitIntrospectorImpl
   void GetProcessToURLMap(GetProcessToURLMapCallback callback) override;
 
  private:
-  CoordinationUnitGraph* const graph_;
+  Graph* const graph_;
   mojo::BindingSet<resource_coordinator::mojom::CoordinationUnitIntrospector>
       bindings_;
 
@@ -40,4 +40,4 @@ class CoordinationUnitIntrospectorImpl
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_COORDINATION_UNIT_COORDINATION_UNIT_INTROSPECTOR_IMPL_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_INTROSPECTOR_IMPL_H_

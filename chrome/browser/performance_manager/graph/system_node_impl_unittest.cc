@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/coordination_unit/system_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/mock_coordination_unit_graphs.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/system_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/mock_graphs.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,23 +20,23 @@ namespace performance_manager {
 namespace {
 
 // Observer used to make sure that signals are dispatched correctly.
-class SystemAndProcessObserver : public CoordinationUnitGraphObserver {
+class SystemAndProcessObserver : public GraphObserver {
  public:
-  // CoordinationUnitGraphObserver implementation:
-  bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override {
+  // GraphObserver implementation:
+  bool ShouldObserve(const NodeBase* coordination_unit) override {
     auto cu_type = coordination_unit->id().type;
     return cu_type == resource_coordinator::CoordinationUnitType::kSystem;
   }
 
   void OnSystemEventReceived(
-      const SystemCoordinationUnitImpl* system_cu,
+      const SystemNodeImpl* system_cu,
       const resource_coordinator::mojom::Event event) override {
     EXPECT_EQ(resource_coordinator::mojom::Event::kProcessCPUUsageReady, event);
     ++system_event_seen_count_;
   }
 
   void OnProcessPropertyChanged(
-      const ProcessCoordinationUnitImpl* process_cu,
+      const ProcessNodeImpl* process_cu,
       const resource_coordinator::mojom::PropertyType property,
       int64_t value) override {
     ++process_property_change_seen_count_;
@@ -52,7 +52,7 @@ class SystemAndProcessObserver : public CoordinationUnitGraphObserver {
   size_t process_property_change_seen_count_ = 0;
 };
 
-class SystemCoordinationUnitImplTest : public CoordinationUnitTestHarness {
+class SystemNodeImplTest : public GraphTestHarness {
  public:
   void SetUp() override {
     ResourceCoordinatorClock::SetClockForTesting(&clock_);
@@ -95,9 +95,9 @@ CreateMeasurementBatch(base::TimeTicks start_end_time,
 
 }  // namespace
 
-TEST_F(SystemCoordinationUnitImplTest, OnProcessCPUUsageReady) {
+TEST_F(SystemNodeImplTest, OnProcessCPUUsageReady) {
   SystemAndProcessObserver observer;
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+  MockMultiplePagesWithMultipleProcessesGraph cu_graph(
       coordination_unit_graph());
   cu_graph.system->AddObserver(&observer);
   EXPECT_EQ(0u, observer.system_event_seen_count());
@@ -105,9 +105,9 @@ TEST_F(SystemCoordinationUnitImplTest, OnProcessCPUUsageReady) {
   EXPECT_EQ(1u, observer.system_event_seen_count());
 }
 
-TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
+TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
   SystemAndProcessObserver observer;
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+  MockMultiplePagesWithMultipleProcessesGraph cu_graph(
       coordination_unit_graph());
   cu_graph.system->AddObserver(&observer);
   cu_graph.process->AddObserver(&observer);

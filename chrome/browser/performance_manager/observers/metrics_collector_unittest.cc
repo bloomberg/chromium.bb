@@ -7,10 +7,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_manager/coordination_unit/coordination_unit_test_harness.h"
-#include "chrome/browser/performance_manager/coordination_unit/frame_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/page_coordination_unit_impl.h"
-#include "chrome/browser/performance_manager/coordination_unit/process_coordination_unit_impl.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 #include "components/ukm/test_ukm_recorder.h"
 
@@ -27,9 +27,9 @@ const base::TimeDelta kTestMetricsReportDelayTimeout =
 #else
 #define MAYBE_MetricsCollectorTest MetricsCollectorTest
 #endif
-class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
+class MAYBE_MetricsCollectorTest : public GraphTestHarness {
  public:
-  MAYBE_MetricsCollectorTest() : CoordinationUnitTestHarness() {}
+  MAYBE_MetricsCollectorTest() : GraphTestHarness() {}
 
   void SetUp() override {
     MetricsCollector* metrics_collector = new MetricsCollector();
@@ -59,7 +59,7 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
 constexpr char MAYBE_MetricsCollectorTest::kDummyUrl[];
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
@@ -92,7 +92,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
@@ -110,8 +110,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
+  auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
   page_cu->AddFrame(frame_cu->id());
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
@@ -146,8 +146,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(
     MAYBE_MetricsCollectorTest,
     FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
+  auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
   page_cu->AddFrame(frame_cu->id());
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
@@ -165,7 +165,7 @@ TEST_F(
 }
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
@@ -198,7 +198,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
@@ -216,10 +216,10 @@ TEST_F(MAYBE_MetricsCollectorTest,
 
 // Flaky test: https://crbug.com/833028
 TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
-  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-  auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
+  auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
 
-  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
   page_cu->AddFrame(frame_cu->id());
   frame_cu->SetProcess(process_cu->id());
 

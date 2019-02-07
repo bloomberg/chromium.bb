@@ -17,9 +17,9 @@
 
 namespace performance_manager {
 
-class CoordinationUnitBase;
-class FrameCoordinationUnitImpl;
-class PageCoordinationUnitImpl;
+class FrameNodeImpl;
+class NodeBase;
+class PageNodeImpl;
 
 extern const char kTabFromBackgroundedToFirstFaviconUpdatedUMA[];
 extern const char kTabFromBackgroundedToFirstTitleUpdatedUMA[];
@@ -30,30 +30,28 @@ extern const int kDefaultFrequencyUkmEQTReported;
 
 // A MetricsCollector observes changes happened inside CoordinationUnit Graph,
 // and reports UMA/UKM.
-class MetricsCollector : public CoordinationUnitGraphObserver {
+class MetricsCollector : public GraphObserver {
  public:
   MetricsCollector();
   ~MetricsCollector() override;
 
-  // CoordinationUnitGraphObserver implementation.
-  bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override;
-  void OnCoordinationUnitCreated(
-      const CoordinationUnitBase* coordination_unit) override;
-  void OnBeforeCoordinationUnitDestroyed(
-      const CoordinationUnitBase* coordination_unit) override;
+  // GraphObserver implementation.
+  bool ShouldObserve(const NodeBase* coordination_unit) override;
+  void OnNodeCreated(const NodeBase* coordination_unit) override;
+  void OnBeforeNodeDestroyed(const NodeBase* coordination_unit) override;
   void OnPagePropertyChanged(
-      const PageCoordinationUnitImpl* page_cu,
+      const PageNodeImpl* page_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnProcessPropertyChanged(
-      const ProcessCoordinationUnitImpl* process_cu,
+      const ProcessNodeImpl* process_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnFrameEventReceived(
-      const FrameCoordinationUnitImpl* frame_cu,
+      const FrameNodeImpl* frame_cu,
       const resource_coordinator::mojom::Event event) override;
   void OnPageEventReceived(
-      const PageCoordinationUnitImpl* page_cu,
+      const PageNodeImpl* page_cu,
       const resource_coordinator::mojom::Event event) override;
 
  private:
@@ -85,7 +83,7 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
     ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   };
 
-  bool ShouldReportMetrics(const PageCoordinationUnitImpl* page_cu);
+  bool ShouldReportMetrics(const PageNodeImpl* page_cu);
   bool IsCollectingExpectedQueueingTimeForUkm(
       const resource_coordinator::CoordinationUnitID& page_cu_id);
   void RecordExpectedQueueingTimeForUkm(

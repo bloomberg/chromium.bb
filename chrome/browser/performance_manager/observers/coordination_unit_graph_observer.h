@@ -10,12 +10,12 @@
 
 namespace performance_manager {
 
-class CoordinationUnitBase;
-class CoordinationUnitGraph;
-class FrameCoordinationUnitImpl;
-class PageCoordinationUnitImpl;
-class ProcessCoordinationUnitImpl;
-class SystemCoordinationUnitImpl;
+class FrameNodeImpl;
+class Graph;
+class NodeBase;
+class PageNodeImpl;
+class ProcessNodeImpl;
+class SystemNodeImpl;
 
 // An observer API for the coordination unit graph maintained by GRC.
 //
@@ -31,89 +31,85 @@ class SystemCoordinationUnitImpl;
 //   (1) Derive from this class.
 //   (2) Register by calling on |coordination_unit_graph().RegisterObserver|
 //       inside of the ResourceCoordinatorService::Create.
-class CoordinationUnitGraphObserver {
+class GraphObserver {
  public:
-  CoordinationUnitGraphObserver();
-  virtual ~CoordinationUnitGraphObserver();
+  GraphObserver();
+  virtual ~GraphObserver();
 
   // Determines whether or not the observer should be registered with, and
   // invoked for, the |coordination_unit|.
-  virtual bool ShouldObserve(const CoordinationUnitBase* coordination_unit) = 0;
+  virtual bool ShouldObserve(const NodeBase* coordination_unit) = 0;
 
   // Called whenever a CoordinationUnit is created.
-  virtual void OnCoordinationUnitCreated(
-      const CoordinationUnitBase* coordination_unit) {}
+  virtual void OnNodeCreated(const NodeBase* coordination_unit) {}
 
   // Called when the |coordination_unit| is about to be destroyed.
-  virtual void OnBeforeCoordinationUnitDestroyed(
-      const CoordinationUnitBase* coordination_unit) {}
+  virtual void OnBeforeNodeDestroyed(const NodeBase* coordination_unit) {}
 
   // Called whenever a property of the |coordination_unit| is changed if the
   // |coordination_unit| doesn't implement its own PropertyChanged handler.
   virtual void OnPropertyChanged(
-      const CoordinationUnitBase* coordination_unit,
+      const NodeBase* coordination_unit,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
-  // Called whenever a property of the FrameCoordinationUnit is changed.
+  // Called whenever a property of the FrameNode is changed.
   virtual void OnFramePropertyChanged(
-      const FrameCoordinationUnitImpl* frame_cu,
+      const FrameNodeImpl* frame_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the PageCoordinationUnit is changed.
   virtual void OnPagePropertyChanged(
-      const PageCoordinationUnitImpl* page_cu,
+      const PageNodeImpl* page_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the ProcessCoordinationUnit is changed.
   virtual void OnProcessPropertyChanged(
-      const ProcessCoordinationUnitImpl* process_cu,
+      const ProcessNodeImpl* process_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the SystemCoordinationUnit is changed.
   virtual void OnSystemPropertyChanged(
-      const SystemCoordinationUnitImpl* system_cu,
+      const SystemNodeImpl* system_cu,
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever an event is received in |coordination_unit| if the
   // |coordination_unit| doesn't implement its own EventReceived handler.
-  virtual void OnEventReceived(const CoordinationUnitBase* coordination_unit,
+  virtual void OnEventReceived(const NodeBase* coordination_unit,
                                const resource_coordinator::mojom::Event event) {
   }
   virtual void OnFrameEventReceived(
-      const FrameCoordinationUnitImpl* frame_cu,
+      const FrameNodeImpl* frame_cu,
       const resource_coordinator::mojom::Event event) {}
   virtual void OnPageEventReceived(
-      const PageCoordinationUnitImpl* page_cu,
+      const PageNodeImpl* page_cu,
       const resource_coordinator::mojom::Event event) {}
   virtual void OnProcessEventReceived(
-      const ProcessCoordinationUnitImpl* process_cu,
+      const ProcessNodeImpl* process_cu,
       const resource_coordinator::mojom::Event event) {}
   virtual void OnSystemEventReceived(
-      const SystemCoordinationUnitImpl* system_cu,
+      const SystemNodeImpl* system_cu,
       const resource_coordinator::mojom::Event event) {}
 
   // Called when all the frames in a process become frozen.
-  virtual void OnAllFramesInProcessFrozen(
-      const ProcessCoordinationUnitImpl* process_cu) {}
+  virtual void OnAllFramesInProcessFrozen(const ProcessNodeImpl* process_cu) {}
 
-  void set_coordination_unit_graph(
-      CoordinationUnitGraph* coordination_unit_graph) {
+  void set_coordination_unit_graph(Graph* coordination_unit_graph) {
     coordination_unit_graph_ = coordination_unit_graph;
   }
 
-  const CoordinationUnitGraph& coordination_unit_graph() const {
+  const Graph& coordination_unit_graph() const {
     return *coordination_unit_graph_;
   }
 
  private:
-  CoordinationUnitGraph* coordination_unit_graph_ = nullptr;
+  Graph* coordination_unit_graph_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraphObserver);
+  DISALLOW_COPY_AND_ASSIGN(GraphObserver);
 };
 
 }  // namespace performance_manager
