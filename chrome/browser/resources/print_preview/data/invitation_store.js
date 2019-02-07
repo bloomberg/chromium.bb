@@ -149,16 +149,14 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitations are fetched.
-     * @param {!CustomEvent} event Contains the list of invitations.
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceInvitesDoneDetail>}
+     *     event Contains the list of invitations.
      * @private
      */
     onCloudPrintInvitesDone_(event) {
-      const invitesDoneDetail =
-          /** @type {!cloudprint.CloudPrintInterfaceInvitesDoneDetail} */ (
-              event.detail);
-      this.loadStatus_[invitesDoneDetail.user] =
+      this.loadStatus_[event.detail.user] =
           print_preview.InvitationStoreLoadStatus.DONE;
-      this.invitations_[invitesDoneDetail.user] = invitesDoneDetail.invitations;
+      this.invitations_[event.detail.user] = event.detail.invitations;
 
       this.dispatchEvent(
           new CustomEvent(InvitationStore.EventType.INVITATION_SEARCH_DONE));
@@ -166,25 +164,23 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitations fetch has failed.
-     * @param {!CustomEvent} event
+     * @param {!CustomEvent<string>} event Contains the user for whom invite
+     *     fetch failed.
      * @private
      */
     onCloudPrintInvitesFailed_(event) {
-      this.loadStatus_[/** @type {string} */ (event.detail)] =
+      this.loadStatus_[event.detail] =
           print_preview.InvitationStoreLoadStatus.FAILED;
     }
 
     /**
      * Called when printer sharing invitation was processed successfully.
-     * @param {!CustomEvent} event Contains detailed information about the
-     *     invite.
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceProcessInviteDetail>}
+     *     event Contains detailed information about the invite.
      * @private
      */
     onCloudPrintProcessInviteDone_(event) {
-      this.invitationProcessed_(
-          /** @type {!cloudprint.CloudPrintInterfaceProcessInviteDetail} */ (
-              event.detail)
-              .invitation);
+      this.invitationProcessed_(event.detail.invitation);
       this.dispatchEvent(
           new CustomEvent(InvitationStore.EventType.INVITATION_PROCESSED));
     }

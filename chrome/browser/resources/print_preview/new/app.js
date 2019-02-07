@@ -613,7 +613,8 @@ Polymer({
   /**
    * Updates the cloud print status to NOT_SIGNED_IN if there is an
    * authentication error.
-   * @param {!CustomEvent<{status: number}>} event Contains the error status
+   * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceErrorEventDetail>}
+   *     event Contains the error status
    * @private
    */
   checkCloudPrintStatus_: function(event) {
@@ -631,7 +632,8 @@ Polymer({
   /**
    * Called when there was an error communicating with Google Cloud print.
    * Displays an error message in the print header.
-   * @param {!CustomEvent} event Contains the error message.
+   * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceErrorEventDetail>}
+   *     event Contains the error message.
    * @private
    */
   onCloudPrintError_: function(event) {

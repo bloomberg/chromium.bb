@@ -140,7 +140,7 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Contains the new value of the input.
+   * @param {!CustomEvent<string>} e Contains the new value of the input.
    * @private
    */
   onInputChange_: function(e) {

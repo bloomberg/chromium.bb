@@ -288,10 +288,7 @@ cr.define('cloudprint', function() {
      * request.
      * @param {!cloudprint.CloudPrintRequest} request Request that has been
      *     completed.
-     * @return {!{ status: number,
-     *             errorCode: number,
-     *             message: string,
-     *             origin: !print_preview.DestinationOrigin }} Information
+     * @return {!cloudprint.CloudPrintInterfaceErrorEventDetail} Information
      *     about the error.
      * @private
      */

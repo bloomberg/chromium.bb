@@ -336,8 +336,7 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Contains information about what control fired the
-   *     event.
+   * @param {!Event} e Contains information about what control fired the event.
    * @private
    */
   onTextFocus_: function(e) {
@@ -454,8 +453,9 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event fired when a control's text field is blurred.
-   *     Contains information about whether the control is in an invalid state.
+   * @param {!CustomEvent<boolean>} e Event fired when a control's text field
+   *     is blurred. Contains information about whether the control is in an
+   *     invalid state.
    * @private
    */
   onTextBlur_: function(e) {
