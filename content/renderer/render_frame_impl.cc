@@ -819,7 +819,8 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_commit_callback,
     const network::ResourceResponseHead* head,
-    std::unique_ptr<NavigationClient> navigation_client) {
+    std::unique_ptr<NavigationClient> navigation_client,
+    int request_id) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state.get());
@@ -848,7 +849,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
       common_params.navigation_type ==
       FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
   internal_data->set_previews_state(common_params.previews_state);
-  internal_data->set_request_id(ResourceDispatcher::MakeRequestID());
+  internal_data->set_request_id(request_id);
   document_state->set_can_load_local_resources(
       commit_params.can_load_local_resources);
 
@@ -970,6 +971,60 @@ void FillMiscNavigationParams(const CommonNavigationParams& common_params,
 }
 
 }  // namespace
+
+// This class uses existing WebNavigationBodyLoader to read the whole response
+// body into in-memory buffer, and then creates another body loader with static
+// data so that we can parse mhtml archive synchronously. This is a workaround
+// for the fact that we need the whole archive to determine the document's mime
+// type and construct a right document instance.
+class RenderFrameImpl::MHTMLBodyLoaderClient
+    : public blink::WebNavigationBodyLoader::Client {
+ public:
+  // Once the body is read, fills |navigation_params| with the new body loader
+  // and calls |done_callbcak|.
+  MHTMLBodyLoaderClient(
+      std::unique_ptr<blink::WebNavigationParams> navigation_params,
+      base::OnceCallback<void(std::unique_ptr<blink::WebNavigationParams>)>
+          done_callback)
+      : navigation_params_(std::move(navigation_params)),
+        done_callback_(std::move(done_callback)) {
+    body_loader_ = std::move(navigation_params_->body_loader);
+    body_loader_->StartLoadingBody(this, false /* use_isolated_code_cache */);
+  }
+
+  ~MHTMLBodyLoaderClient() override {}
+
+  void BodyCodeCacheReceived(base::span<const uint8_t>) override {}
+
+  void BodyDataReceived(base::span<const char> data) override {
+    data_.Append(data.data(), data.size());
+  }
+
+  void BodyLoadingFinished(base::TimeTicks completion_time,
+                           int64_t total_encoded_data_length,
+                           int64_t total_encoded_body_length,
+                           int64_t total_decoded_body_length,
+                           bool should_report_corb_blocking,
+                           const base::Optional<WebURLError>& error) override {
+    if (!error.has_value()) {
+      WebNavigationParams::FillBodyLoader(navigation_params_.get(), data_);
+      // Clear |is_static_data| flag to avoid the special behavior it triggers,
+      // e.g. skipping content disposition check. We want this load to be
+      // regular, just like with an original body loader.
+      navigation_params_->is_static_data = false;
+    }
+    std::move(done_callback_).Run(std::move(navigation_params_));
+  }
+
+ private:
+  WebData data_;
+  std::unique_ptr<blink::WebNavigationParams> navigation_params_;
+  std::unique_ptr<blink::WebNavigationBodyLoader> body_loader_;
+  base::OnceCallback<void(std::unique_ptr<blink::WebNavigationParams>)>
+      done_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MHTMLBodyLoaderClient);
+};
 
 class RenderFrameImpl::FrameURLLoaderFactory
     : public blink::WebURLLoaderFactory {
@@ -2844,7 +2899,8 @@ void RenderFrameImpl::LoadNavigationErrorPage(
         navigation_state->common_params(), navigation_state->commit_params(),
         base::TimeTicks(),  // Not used for failed navigation.
         mojom::FrameNavigationControl::CommitNavigationCallback(),
-        mojom::NavigationClient::CommitNavigationCallback(), nullptr, nullptr);
+        mojom::NavigationClient::CommitNavigationCallback(), nullptr, nullptr,
+        ResourceDispatcher::MakeRequestID());
     FillMiscNavigationParams(navigation_state->common_params(),
                              navigation_state->commit_params(),
                              navigation_params.get());
@@ -3273,18 +3329,12 @@ void RenderFrameImpl::CommitNavigationInternal(
   DCHECK(!IsRendererDebugURL(common_params.url));
   DCHECK(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
-  // If this was a renderer-initiated navigation (nav_entry_id == 0) from this
-  // frame, but it was aborted, then ignore it.
-  if (!browser_side_navigation_pending_ &&
-      !browser_side_navigation_pending_url_.is_empty() &&
-      browser_side_navigation_pending_url_ == commit_params.original_url &&
-      commit_params.nav_entry_id == 0) {
+  if (ShouldIgnoreCommitNavigation(commit_params)) {
     browser_side_navigation_pending_url_ = GURL();
-    if (IsPerNavigationMojoInterfaceEnabled()) {
+    if (IsPerNavigationMojoInterfaceEnabled())
       navigation_client_impl_.reset();
-    } else {
+    else
       std::move(callback).Run(blink::mojom::CommitResult::Aborted);
-    }
     return;
   }
 
@@ -3293,6 +3343,130 @@ void RenderFrameImpl::CommitNavigationInternal(
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
          !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
+
+  // We only save metrics of the main frame's main resource to the
+  // document state. In view source mode, we effectively let the user
+  // see the source of the server's error page instead of using custom
+  // one derived from the metrics saved to document state.
+  const network::ResourceResponseHead* response_head = nullptr;
+  if (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
+    response_head = &head;
+  int request_id = ResourceDispatcher::MakeRequestID();
+  std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
+      common_params, commit_params, base::TimeTicks::Now(), std::move(callback),
+      std::move(per_navigation_mojo_interface_callback), response_head,
+      std::move(navigation_client_impl_), request_id);
+
+  // Check if the navigation being committed originated as a client redirect.
+  bool is_client_redirect =
+      !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  auto navigation_params =
+      std::make_unique<WebNavigationParams>(devtools_navigation_token);
+  navigation_params->is_client_redirect = is_client_redirect;
+  FillMiscNavigationParams(common_params, commit_params,
+                           navigation_params.get());
+
+  auto commit_with_params = base::BindOnce(
+      &RenderFrameImpl::CommitNavigationWithParams, weak_factory_.GetWeakPtr(),
+      common_params, commit_params, std::move(subresource_loader_factories),
+      std::move(subresource_overrides),
+      std::move(controller_service_worker_info),
+      std::move(prefetch_loader_factory), std::move(document_state));
+
+  // Perform a navigation to a data url if needed (for main frames).
+  // Note: the base URL might be invalid, so also check the data URL string.
+  bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
+#if defined(OS_ANDROID)
+  should_load_data_url |= !commit_params.data_url_as_string.empty();
+#endif
+  if (is_main_frame_ && should_load_data_url) {
+    std::string mime_type, charset, data;
+    GURL base_url;
+    DecodeDataURL(common_params, commit_params, &mime_type, &charset, &data,
+                  &base_url);
+    navigation_params->url = base_url;
+    WebNavigationParams::FillStaticResponse(navigation_params.get(),
+                                            WebString::FromUTF8(mime_type),
+                                            WebString::FromUTF8(charset), data);
+    // Needed so that history-url-only changes don't become reloads.
+    navigation_params->unreachable_url = common_params.history_url_for_data_url;
+    std::move(commit_with_params).Run(std::move(navigation_params));
+    return;
+  }
+
+  FillNavigationParamsRequest(common_params, commit_params,
+                              navigation_params.get());
+  if (!url_loader_client_endpoints &&
+      common_params.url.SchemeIs(url::kDataScheme)) {
+    // Normally, data urls will have |url_loader_client_endpoints| set.
+    // However, tests and interstitial pages pass data urls directly,
+    // without creating url loader.
+    std::string mime_type, charset, data;
+    if (!net::DataURL::Parse(common_params.url, &mime_type, &charset, &data)) {
+      CHECK(false) << "Invalid URL passed: "
+                   << common_params.url.possibly_invalid_spec();
+      return;
+    }
+    WebNavigationParams::FillStaticResponse(navigation_params.get(),
+                                            WebString::FromUTF8(mime_type),
+                                            WebString::FromUTF8(charset), data);
+  } else {
+    NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
+        common_params, commit_params, request_id, head,
+        std::move(url_loader_client_endpoints),
+        GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
+        !frame_->Parent(), navigation_params.get());
+  }
+
+  // The MHTML mime type should be same as the one we check in the browser
+  // process's download_utils::MustDownload.
+  bool is_mhtml_archive =
+      base::LowerCaseEqualsASCII(head.mime_type, "multipart/related") ||
+      base::LowerCaseEqualsASCII(head.mime_type, "message/rfc822");
+  if (is_mhtml_archive && navigation_params->body_loader) {
+    // Load full mhtml archive before committing navigation.
+    // We need this to retrieve the document mime type prior to committing.
+    mhtml_body_loader_client_ =
+        std::make_unique<RenderFrameImpl::MHTMLBodyLoaderClient>(
+            std::move(navigation_params), std::move(commit_with_params));
+    return;
+  }
+
+  // Common case - fill navigation params from provided information and commit.
+  std::move(commit_with_params).Run(std::move(navigation_params));
+}
+
+bool RenderFrameImpl::ShouldIgnoreCommitNavigation(
+    const CommitNavigationParams& commit_params) {
+  // We can ignore renderer-initiated navigations (nav_entry_id == 0) which
+  // have been canceled in the renderer, but browser was not aware yet at the
+  // moment of issuing a CommitNavigation call.
+  if (!browser_side_navigation_pending_ &&
+      !browser_side_navigation_pending_url_.is_empty() &&
+      browser_side_navigation_pending_url_ == commit_params.original_url &&
+      commit_params.nav_entry_id == 0) {
+    return true;
+  }
+  return false;
+}
+
+void RenderFrameImpl::CommitNavigationWithParams(
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
+    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+        subresource_overrides,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    std::unique_ptr<DocumentState> document_state,
+    std::unique_ptr<WebNavigationParams> navigation_params) {
+  if (ShouldIgnoreCommitNavigation(commit_params)) {
+    browser_side_navigation_pending_url_ = GURL();
+    if (IsPerNavigationMojoInterfaceEnabled())
+      navigation_client_impl_.reset();
+    return;
+  }
 
   // TODO(yoichio): This is temporary switch to have chrome WebUI
   // use the old web APIs.
@@ -3314,18 +3488,6 @@ void RenderFrameImpl::CommitNavigationInternal(
     frame_->EnableViewSourceMode(true);
 
   PrepareFrameForCommit(common_params.url, commit_params);
-
-  // We only save metrics of the main frame's main resource to the
-  // document state. In view source mode, we effectively let the user
-  // see the source of the server's error page instead of using custom
-  // one derived from the metrics saved to document state.
-  const network::ResourceResponseHead* response_head = nullptr;
-  if (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
-    response_head = &head;
-  std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromParams(
-      common_params, commit_params, base::TimeTicks::Now(), std::move(callback),
-      std::move(per_navigation_mojo_interface_callback), response_head,
-      std::move(navigation_client_impl_)));
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -3354,66 +3516,11 @@ void RenderFrameImpl::CommitNavigationInternal(
     return;
   }
 
-  // Check if the navigation being committed originated as a client redirect.
-  bool is_client_redirect =
-      !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-
-  auto navigation_params =
-      std::make_unique<WebNavigationParams>(devtools_navigation_token);
   navigation_params->frame_load_type = load_type;
   navigation_params->history_item = item_for_history_navigation;
-  navigation_params->is_client_redirect = is_client_redirect;
   navigation_params->service_worker_network_provider =
       BuildServiceWorkerNetworkProviderForNavigation(
           &commit_params, std::move(controller_service_worker_info));
-  FillMiscNavigationParams(common_params, commit_params,
-                           navigation_params.get());
-
-  // Perform a navigation to a data url if needed (for main frames).
-  // Note: the base URL might be invalid, so also check the data URL string.
-  bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
-#if defined(OS_ANDROID)
-  should_load_data_url |= !commit_params.data_url_as_string.empty();
-#endif
-  if (is_main_frame_ && should_load_data_url) {
-    std::string mime_type, charset, data;
-    GURL base_url;
-    DecodeDataURL(common_params, commit_params, &mime_type, &charset, &data,
-                  &base_url);
-    navigation_params->url = base_url;
-    WebNavigationParams::FillStaticResponse(navigation_params.get(),
-                                            WebString::FromUTF8(mime_type),
-                                            WebString::FromUTF8(charset), data);
-    // Needed so that history-url-only changes don't become reloads.
-    navigation_params->unreachable_url = common_params.history_url_for_data_url;
-  } else {
-    InternalDocumentStateData* internal_data =
-        InternalDocumentStateData::FromDocumentState(document_state.get());
-    FillNavigationParamsRequest(common_params, commit_params,
-                                navigation_params.get());
-    if (!url_loader_client_endpoints &&
-        common_params.url.SchemeIs(url::kDataScheme)) {
-      // Normally, data urls will have |url_loader_client_endpoints| set.
-      // However, tests and interstitial pages pass data urls directly,
-      // without creating url loader.
-      std::string mime_type, charset, data;
-      if (!net::DataURL::Parse(common_params.url, &mime_type, &charset,
-                               &data)) {
-        CHECK(false) << "Invalid URL passed: "
-                     << common_params.url.possibly_invalid_spec();
-        return;
-      }
-      WebNavigationParams::FillStaticResponse(
-          navigation_params.get(), WebString::FromUTF8(mime_type),
-          WebString::FromUTF8(charset), data);
-    } else {
-      NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-          common_params, commit_params, internal_data->request_id(), head,
-          std::move(url_loader_client_endpoints),
-          GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
-          !frame_->Parent(), navigation_params.get());
-    }
-  }
 
   frame_->CommitNavigation(std::move(navigation_params),
                            std::move(document_state));
@@ -3476,6 +3583,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params.url,
                                                   commit_params);
   sync_navigation_callback_.Cancel();
+  mhtml_body_loader_client_.reset();
 
   GetContentClient()->SetActiveURL(
       common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
@@ -3591,7 +3699,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       common_params, commit_params, base::TimeTicks(), std::move(callback),
       std::move(per_navigation_mojo_interface_callback), nullptr,
-      std::move(navigation_client_impl_));
+      std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID());
 
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
@@ -4844,6 +4952,7 @@ void RenderFrameImpl::RenderFallbackContentInParentProcess() {
 void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
   sync_navigation_callback_.Cancel();
+  mhtml_body_loader_client_.reset();
   if (!IsPerNavigationMojoInterfaceEnabled())
     Send(new FrameHostMsg_AbortNavigation(routing_id_));
 }
@@ -5860,6 +5969,7 @@ void RenderFrameImpl::PrepareFrameForCommit(
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
   sync_navigation_callback_.Cancel();
+  mhtml_body_loader_client_.reset();
 
   GetContentClient()->SetActiveURL(
       url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
@@ -6185,6 +6295,7 @@ void RenderFrameImpl::BeginNavigation(
     }
 
     sync_navigation_callback_.Cancel();
+    mhtml_body_loader_client_.reset();
 
     // When an MHTML Archive is present, it should be used to serve iframe
     // content instead of doing a network request.

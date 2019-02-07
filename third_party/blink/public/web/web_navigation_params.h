@@ -163,6 +163,7 @@ struct BLINK_EXPORT WebNavigationParams {
 
   // Fills |body_loader| based on the provided static data.
   static void FillBodyLoader(WebNavigationParams*, base::span<const char> data);
+  static void FillBodyLoader(WebNavigationParams*, WebData data);
 
   // Fills |response| and |body_loader| based on the provided static data.
   // |url| must be set already.

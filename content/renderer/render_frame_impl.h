@@ -157,6 +157,7 @@ namespace content {
 
 class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
+class DocumentState;
 class ExternalPopupMenu;
 class FrameRequestBlocker;
 class ManifestManager;
@@ -1227,6 +1228,26 @@ class CONTENT_EXPORT RenderFrameImpl
   // document or an MHTML archive).
   void CommitSyncNavigation(std::unique_ptr<blink::WebNavigationInfo> info);
 
+  // Commit navigation with |navigation_params| prepared.
+  void CommitNavigationWithParams(
+      const CommonNavigationParams& common_params,
+      const CommitNavigationParams& commit_params,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      std::unique_ptr<DocumentState> document_state,
+      std::unique_ptr<blink::WebNavigationParams> navigation_params);
+
+  // We can ignore renderer-initiated navigations which have been canceled
+  // in the renderer, but browser was not aware yet at the moment of issuing
+  // a CommitNavigation call.
+  bool ShouldIgnoreCommitNavigation(
+      const CommitNavigationParams& commit_params);
+
   // Decodes a data url for navigation commit.
   void DecodeDataURL(const CommonNavigationParams& common_params,
                      const CommitNavigationParams& commit_params,
@@ -1702,6 +1723,9 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
   base::CancelableOnceCallback<void()> sync_navigation_callback_;
+
+  class MHTMLBodyLoaderClient;
+  std::unique_ptr<MHTMLBodyLoaderClient> mhtml_body_loader_client_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

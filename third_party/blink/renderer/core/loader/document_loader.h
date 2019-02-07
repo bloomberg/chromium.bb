@@ -291,8 +291,6 @@ class CORE_EXPORT DocumentLoader
 
   void CommitData(const char* bytes, size_t length);
 
-  bool MaybeCreateArchive();
-
   void StartLoadingInternal();
   void FinishedLoading(TimeTicks finish_time);
   void CancelLoadAfterCSPDenied(const ResourceResponse&);
