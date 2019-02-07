@@ -1894,9 +1894,9 @@ class MediaSessionPictureInPictureWindowControllerBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "MediaSession");
+                                    "MediaSession,SkipAd");
     scoped_feature_list_.InitWithFeatures(
-        {media_session::features::kMediaSessionService, media::kSkipAd}, {});
+        {media_session::features::kMediaSessionService}, {});
   }
 
  private:

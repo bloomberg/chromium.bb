@@ -226,8 +226,7 @@ void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
 }
 
 void PictureInPictureWindowControllerImpl::SkipAd() {
-  if (base::FeatureList::IsEnabled(media::kSkipAd) &&
-      media_session_action_skip_ad_handled_)
+  if (media_session_action_skip_ad_handled_)
     MediaSession::Get(initiator_)->SkipAd();
 }
 
