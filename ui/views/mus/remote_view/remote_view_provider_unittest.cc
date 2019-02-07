@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/mus/window_mus.h"
@@ -200,14 +201,14 @@ TEST_F(RemoteViewProviderTest, ScreenBounds) {
   aura::Window* embedder = SimulateEmbed();
   ASSERT_TRUE(embedder);
 
-  const viz::LocalSurfaceId server_changed_local_surface_id(
-      1, base::UnguessableToken::Create());
   aura::Window* root_window = embedded_->GetRootWindow();
   ASSERT_TRUE(root_window);
   const gfx::Rect root_bounds(101, 102, 100, 50);
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
   window_tree_client()->OnWindowBoundsChanged(
       aura::WindowMus::Get(root_window)->server_id(), gfx::Rect(), root_bounds,
-      server_changed_local_surface_id);
+      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ(root_bounds, root_window->GetHost()->GetBoundsInPixels());
   EXPECT_EQ(root_bounds.origin(), root_window->GetBoundsInScreen().origin());
 }

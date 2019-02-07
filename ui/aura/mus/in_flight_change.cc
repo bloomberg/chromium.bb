@@ -10,6 +10,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -74,30 +75,50 @@ bool InFlightChange::Matches(const InFlightChange& change) const {
 
 void InFlightChange::ChangeFailed() {}
 
+void InFlightChange::OnLastChangeOfTypeSucceeded() {}
+
 // InFlightBoundsChange -------------------------------------------------------
 
 InFlightBoundsChange::InFlightBoundsChange(
     WindowTreeClient* window_tree_client,
     WindowMus* window,
     const gfx::Rect& revert_bounds,
-    const base::Optional<viz::LocalSurfaceId>& revert_local_surface_id)
+    bool from_server,
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        revert_local_surface_id_allocation)
     : InFlightChange(window, ChangeType::BOUNDS),
       window_tree_client_(window_tree_client),
       revert_bounds_(revert_bounds),
-      revert_local_surface_id_(revert_local_surface_id) {}
+      from_server_(from_server),
+      revert_local_surface_id_allocation_(revert_local_surface_id_allocation) {}
 
 InFlightBoundsChange::~InFlightBoundsChange() {}
 
 void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
+  from_server_ = static_cast<const InFlightBoundsChange&>(change).from_server_;
   revert_bounds_ =
       static_cast<const InFlightBoundsChange&>(change).revert_bounds_;
-  revert_local_surface_id_ =
-      static_cast<const InFlightBoundsChange&>(change).revert_local_surface_id_;
+  revert_local_surface_id_allocation_ =
+      static_cast<const InFlightBoundsChange&>(change)
+          .revert_local_surface_id_allocation_;
 }
 
 void InFlightBoundsChange::Revert() {
-  window_tree_client_->SetWindowBoundsFromServer(window(), revert_bounds_,
-                                                 revert_local_surface_id_);
+  window_tree_client_->SetWindowBoundsFromServer(
+      window(), revert_bounds_, from_server_,
+      revert_local_surface_id_allocation_);
+}
+
+void InFlightBoundsChange::OnLastChangeOfTypeSucceeded() {
+  if (!window() || !window()->GetWindow()->GetHost())
+    return;  // Revert() handles this case.
+  WindowTreeHostMus* window_tree_host =
+      static_cast<WindowTreeHostMus*>(window()->GetWindow()->GetHost());
+  if (window_tree_host->window() != window()->GetWindow())
+    return;
+  if (!window_tree_host->has_pending_local_surface_id_from_server())
+    return;
+  window_tree_client_->ApplyPendingSurfaceIdFromServer(window());
 }
 
 // InFlightDragChange -----------------------------------------------------

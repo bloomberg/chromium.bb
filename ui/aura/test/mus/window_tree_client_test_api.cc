@@ -5,6 +5,7 @@
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
 
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -60,9 +61,11 @@ void WindowTreeClientTestApi::CallOnCaptureChanged(Window* new_capture,
 void WindowTreeClientTestApi::CallOnEmbedFromToken(EmbedRoot* embed_root) {
   embed_root->OnScheduledEmbedForExistingClient(
       base::UnguessableToken::Create());
-  tree_client_impl_->OnEmbedFromToken(embed_root->token(),
-                                      CreateWindowDataForEmbed(), kDisplayId,
-                                      base::Optional<viz::LocalSurfaceId>());
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
+  tree_client_impl_->OnEmbedFromToken(
+      embed_root->token(), CreateWindowDataForEmbed(), kDisplayId,
+      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
 }
 
 void WindowTreeClientTestApi::SetTree(ws::mojom::WindowTree* window_tree) {

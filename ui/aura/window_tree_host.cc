@@ -51,13 +51,6 @@ namespace {
 const char kWindowTreeHostForAcceleratedWidget[] =
     "__AURA_WINDOW_TREE_HOST_ACCELERATED_WIDGET__";
 
-bool ShouldAllocateLocalSurfaceId(Window* window) {
-  // When running with the window service (either in 'mus' or 'mash' mode), the
-  // LocalSurfaceId allocation for the WindowTreeHost is managed by the
-  // WindowTreeClient and WindowTreeHostMus.
-  return window->env()->mode() == Env::Mode::LOCAL;
-}
-
 #if DCHECK_IS_ON()
 class ScopedLocalSurfaceIdValidator {
  public:
@@ -67,9 +60,10 @@ class ScopedLocalSurfaceIdValidator {
             window ? window->GetLocalSurfaceIdAllocation().local_surface_id()
                    : viz::LocalSurfaceId()) {}
   ~ScopedLocalSurfaceIdValidator() {
-    if (window_ && ShouldAllocateLocalSurfaceId(window_))
+    if (window_) {
       DCHECK_EQ(local_surface_id_,
                 window_->GetLocalSurfaceIdAllocation().local_surface_id());
+    }
   }
 
  private:
@@ -459,12 +453,16 @@ void WindowTreeHost::OnHostResizedInPixels(
   // Allocate a new LocalSurfaceId for the new state.
   viz::LocalSurfaceIdAllocation local_surface_id_allocation(
       new_local_surface_id_allocation);
-  if (ShouldAllocateLocalSurfaceId(window()) &&
+  if (ShouldAllocateLocalSurfaceIdOnResize() &&
       !new_local_surface_id_allocation.IsValid()) {
     window_->AllocateLocalSurfaceId();
     local_surface_id_allocation = window_->GetLocalSurfaceIdAllocation();
   }
-  ScopedLocalSurfaceIdValidator lsi_validator(window());
+  std::unique_ptr<ScopedLocalSurfaceIdValidator> lsi_validator;
+  // With mus |local_surface_id_allocation|, may be applied to Window by way of
+  // Compositor::SetScaleAndSize() so that we can't check here.
+  if (window()->env()->mode() == Env::Mode::LOCAL)
+    lsi_validator = std::make_unique<ScopedLocalSurfaceIdValidator>(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
                                local_surface_id_allocation);
 
@@ -520,6 +518,10 @@ gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
       gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
   window()->layer()->transform().TransformRect(&new_bounds);
   return gfx::ToEnclosingRect(new_bounds);
+}
+
+bool WindowTreeHost::ShouldAllocateLocalSurfaceIdOnResize() {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

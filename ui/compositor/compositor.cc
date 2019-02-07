@@ -34,7 +34,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
-#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
@@ -398,6 +398,46 @@ void Compositor::SetScaleAndSize(
     if (root_layer_)
       root_layer_->OnDeviceScaleFactorChanged(scale);
   }
+}
+
+viz::LocalSurfaceIdAllocation Compositor::UpdateLocalSurfaceIdFromParent(
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  DCHECK(local_surface_id_allocation.IsValid());
+  if (!host_->local_surface_id_allocation_from_parent().IsValid()) {
+    host_->SetLocalSurfaceIdAllocationFromParent(local_surface_id_allocation);
+    return local_surface_id_allocation;
+  }
+  // It's entirely possible |local_surface_id_allocation| has an older child
+  // sequence number than LayerTreeHost. Create a new LocalSurfaceId to ensure
+  // the child sequence number matches that in LayerTreeHost. To do otherwise
+  // would lead to the cached value in LayerTreeHost not necessarily matching
+  // the most recent supplied value, which is problematic for any code expecting
+  // the value to be up to date.
+  const viz::LocalSurfaceId& current_id =
+      host_->local_surface_id_allocation_from_parent().local_surface_id();
+  auto allocator =
+      viz::ChildLocalSurfaceIdAllocator::CreateWithChildSequenceNumber(
+          current_id.child_sequence_number());
+  allocator->UpdateFromParent(local_surface_id_allocation);
+  const viz::LocalSurfaceIdAllocation resulting_id =
+      allocator->GetCurrentLocalSurfaceIdAllocation();
+  host_->SetLocalSurfaceIdAllocationFromParent(resulting_id);
+  return resulting_id;
+}
+
+viz::LocalSurfaceIdAllocation Compositor::GetLocalSurfaceIdAllocation() const {
+  return host_->local_surface_id_allocation_from_parent();
+}
+
+viz::LocalSurfaceIdAllocation Compositor::RequestNewChildLocalSurfaceId() {
+  const uint32_t child_sequence_number =
+      host_->GenerateChildSurfaceSequenceNumberSync();
+  const viz::LocalSurfaceId current_id =
+      host_->local_surface_id_allocation_from_parent().local_surface_id();
+  return viz::LocalSurfaceIdAllocation(
+      viz::LocalSurfaceId(current_id.parent_sequence_number(),
+                          child_sequence_number, current_id.embed_token()),
+      base::TimeTicks::Now());
 }
 
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {

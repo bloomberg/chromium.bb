@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -120,6 +121,12 @@ class TestWindowTree : public ws::mojom::WindowTree {
   const base::Optional<viz::LocalSurfaceId>& last_local_surface_id() const {
     return last_local_surface_id_;
   }
+  size_t get_and_clear_update_local_surface_id_from_child_count() {
+    size_t update_local_surface_id_from_child_count = 0u;
+    std::swap(update_local_surface_id_from_child_count_,
+              update_local_surface_id_from_child_count);
+    return update_local_surface_id_from_child_count;
+  }
 
   const gfx::Rect& last_set_window_bounds() const {
     return last_set_window_bounds_;
@@ -185,11 +192,14 @@ class TestWindowTree : public ws::mojom::WindowTree {
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void DeleteWindow(uint32_t change_id, ws::Id window_id) override;
-  void SetWindowBounds(
-      uint32_t change_id,
-      ws::Id window_id,
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void SetWindowBounds(uint32_t change_id,
+                       ws::Id window_id,
+                       const gfx::Rect& bounds,
+                       const base::Optional<viz::LocalSurfaceIdAllocation>&
+                           local_surface_id_allocation) override;
+  void UpdateLocalSurfaceIdFromChild(ws::Id transport_window_id,
+                                     const viz::LocalSurfaceIdAllocation&
+                                         local_surface_id_allocation) override;
   void AllocateLocalSurfaceId(uint64_t window_id) override {}
   void SetWindowTransform(uint32_t change_id,
                           ws::Id window_id,
@@ -347,6 +357,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
   bool last_can_focus_ = false;
 
   size_t accepts_drops_count_ = 0u;
+
+  size_t update_local_surface_id_from_child_count_ = 0u;
 
   int last_move_hit_test_ = HTNOWHERE;
 

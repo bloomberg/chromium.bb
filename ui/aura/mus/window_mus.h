@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/base/mojo/cursor.mojom.h"
@@ -28,6 +27,7 @@ enum class OrderDirection;
 
 namespace viz {
 class FrameSinkId;
+class LocalSurfaceIdAllocation;
 }
 
 namespace aura {
@@ -105,8 +105,8 @@ class AURA_EXPORT WindowMus {
   virtual const viz::LocalSurfaceIdAllocation&
   GetLocalSurfaceIdAllocation() = 0;
 
-  // Returns true if the window has a LocalSurfaceId.
-  virtual bool HasLocalSurfaceId() = 0;
+  virtual void UpdateLocalSurfaceIdFromParent(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) = 0;
 
   // Called in the rare case when WindowTreeClient needs to change state and
   // can't go through one of the SetFooFromServer() functions above. Generally

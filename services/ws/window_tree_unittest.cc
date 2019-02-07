@@ -13,8 +13,11 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/test/fake_host_frame_sink_client.h"
+#include "services/ws/client_root_test_helper.h"
 #include "services/ws/event_test_utils.h"
 #include "services/ws/proxy_window.h"
 #include "services/ws/proxy_window_test_helper.h"
@@ -27,6 +30,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -157,6 +161,10 @@ TEST(WindowTreeTest, NewTopLevelWindow) {
   ASSERT_TRUE(top_level);
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
             SingleChangeToDescription(*setup.changes()));
+  ASSERT_TRUE((*setup.changes())[0].local_surface_id_allocation);
+  EXPECT_TRUE((*setup.changes())[0].local_surface_id_allocation->IsValid());
+  EXPECT_EQ(ProxyWindow::GetMayBeNull(top_level)->local_surface_id_allocation(),
+            (*setup.changes())[0].local_surface_id_allocation);
 }
 
 TEST(WindowTreeTest, NewTopLevelWindowWithProperties) {
@@ -177,21 +185,18 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   setup.changes()->clear();
+  ProxyWindow* top_level_proxy = ProxyWindow::GetMayBeNull(top_level);
 
   const gfx::Rect bounds_from_client = gfx::Rect(100, 200, 300, 400);
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(
+      *top_level_proxy->local_surface_id_allocation());
+  child_allocator.GenerateId();
   setup.window_tree_test_helper()->SetWindowBoundsWithAck(
-      top_level, bounds_from_client, 2);
+      top_level, bounds_from_client,
+      child_allocator.GetCurrentLocalSurfaceIdAllocation(), 2);
   EXPECT_EQ(bounds_from_client, top_level->GetBoundsInScreen());
-  ASSERT_EQ(2u, setup.changes()->size());
-  {
-    const Change& change = (*setup.changes())[0];
-    EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
-    EXPECT_EQ(top_level->GetBoundsInScreen(), change.bounds2);
-    EXPECT_TRUE(change.local_surface_id);
-    setup.changes()->erase(setup.changes()->begin());
-  }
-  // See comments in WindowTree::SetBoundsImpl() for why this returns false.
-  EXPECT_EQ("ChangeCompleted id=2 success=false",
+  EXPECT_EQ("ChangeCompleted id=2 success=true",
             SingleChangeToDescription(*setup.changes()));
   setup.changes()->clear();
 
@@ -200,6 +205,11 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   ASSERT_EQ(1u, setup.changes()->size());
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*setup.changes())[0].type);
   EXPECT_EQ(bounds_from_server, (*setup.changes())[0].bounds2);
+  ASSERT_TRUE((*setup.changes())[0].local_surface_id_allocation);
+  EXPECT_NE((*setup.changes())[0].local_surface_id_allocation,
+            child_allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ(top_level_proxy->local_surface_id_allocation(),
+            (*setup.changes())[0].local_surface_id_allocation);
   setup.changes()->clear();
 
   // Set a LayoutManager so that when the client requests a bounds change the
@@ -209,8 +219,10 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
   const gfx::Rect restricted_bounds = gfx::Rect(401, 405, 406, 407);
   layout_manager->set_next_bounds(restricted_bounds);
   top_level->parent()->SetLayoutManager(layout_manager);
+  child_allocator.GenerateId();
   setup.window_tree_test_helper()->SetWindowBoundsWithAck(
-      top_level, bounds_from_client, 3);
+      top_level, bounds_from_client,
+      child_allocator.GetCurrentLocalSurfaceIdAllocation(), 3);
   ASSERT_EQ(2u, setup.changes()->size());
   // The layout manager changes the bounds to a different value than the client
   // requested, so the client should get OnWindowBoundsChanged() with
@@ -230,27 +242,20 @@ TEST(WindowTreeTest, SetTopLevelWindowBounds) {
                                         &screen_position_client);
 
   // Tests that top-level window bounds are set in screen coordinates.
+  child_allocator.GenerateId();
   setup.window_tree_test_helper()->SetWindowBoundsWithAck(
-      top_level, bounds_from_client, 4);
+      top_level, bounds_from_client,
+      child_allocator.GetCurrentLocalSurfaceIdAllocation(), 4);
   EXPECT_EQ(bounds_from_client, top_level->GetBoundsInScreen());
   EXPECT_EQ(bounds_from_client - screen_offset, top_level->bounds());
-  ASSERT_EQ(2u, setup.changes()->size());
-  {
-    const Change& change = (*setup.changes())[0];
-    EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
-    EXPECT_EQ(top_level->GetBoundsInScreen(), change.bounds2);
-    EXPECT_TRUE(change.local_surface_id);
-    setup.changes()->erase(setup.changes()->begin());
-  }
-  // See comments in WindowTree::SetBoundsImpl() for why this returns false.
-  EXPECT_EQ("ChangeCompleted id=4 success=false",
+  EXPECT_EQ("ChangeCompleted id=4 success=true",
             SingleChangeToDescription(*setup.changes()));
 
   aura::client::SetScreenPositionClient(setup.aura_test_helper()->root_window(),
                                         nullptr);
 }
 
-TEST(WindowTreeTest, SetTopLevelWindowBoundsFailsForSameSize) {
+TEST(WindowTreeTest, SetTopLevelWindowBoundsSameSize) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -258,10 +263,88 @@ TEST(WindowTreeTest, SetTopLevelWindowBoundsFailsForSameSize) {
   const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
   top_level->SetBounds(bounds);
   setup.changes()->clear();
-  // WindowTreeTestHelper::SetWindowBounds() uses a null LocalSurfaceId, which
-  // differs from the current LocalSurfaceId (assigned by ClientRoot). Because
-  // of this, the LocalSurfaceIds differ and the call returns false.
-  EXPECT_FALSE(
+  ProxyWindow* top_level_proxy = ProxyWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_proxy);
+  ASSERT_TRUE(top_level_proxy->local_surface_id_allocation().has_value());
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(
+      *top_level_proxy->local_surface_id_allocation());
+  child_allocator.GenerateId();
+  // WindowTreeTestHelper::SetWindowBounds() with same bounds should succeed.
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
+      top_level, bounds, child_allocator.GetCurrentLocalSurfaceIdAllocation()));
+  EXPECT_TRUE(setup.changes()->empty());
+  ASSERT_TRUE(top_level_proxy->local_surface_id_allocation().has_value());
+  EXPECT_EQ(child_allocator.GetCurrentLocalSurfaceIdAllocation(),
+            *top_level_proxy->local_surface_id_allocation());
+}
+
+TEST(WindowTreeTest, SetTopLevelWindowBoundsBadEmbedToken) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
+  top_level->SetBounds(bounds);
+  setup.changes()->clear();
+  ProxyWindow* top_level_proxy = ProxyWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_proxy);
+  ASSERT_TRUE(top_level_proxy->local_surface_id_allocation().has_value());
+  const viz::LocalSurfaceId initial_lsia =
+      top_level_proxy->local_surface_id_allocation()->local_surface_id();
+  viz::LocalSurfaceIdAllocation lsia_with_different_embed_token(
+      viz::LocalSurfaceId(initial_lsia.parent_sequence_number(),
+                          initial_lsia.child_sequence_number(),
+                          base::UnguessableToken::Create()),
+      base::TimeTicks::Now());
+  // Clients are not allowed to change the embed token.
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetWindowBounds(
+      top_level, gfx::Rect(1, 2, 3, 4), lsia_with_different_embed_token));
+  EXPECT_EQ(initial_lsia,
+            top_level_proxy->local_surface_id_allocation()->local_surface_id());
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_TRUE(setup.changes()->empty());
+}
+
+TEST(WindowTreeTest, UpdateLocalSurfaceIdFromChildBadEmbedToken) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
+  top_level->SetBounds(bounds);
+  setup.changes()->clear();
+  ProxyWindow* top_level_proxy = ProxyWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_proxy);
+  ASSERT_TRUE(top_level_proxy->local_surface_id_allocation().has_value());
+  const viz::LocalSurfaceId initial_lsia =
+      top_level_proxy->local_surface_id_allocation()->local_surface_id();
+  viz::LocalSurfaceIdAllocation lsia_with_different_embed_token(
+      viz::LocalSurfaceId(initial_lsia.parent_sequence_number(),
+                          initial_lsia.child_sequence_number(),
+                          base::UnguessableToken::Create()),
+      base::TimeTicks::Now());
+  // Clients are not allowed to change the embed token.
+  setup.window_tree_test_helper()->window_tree()->UpdateLocalSurfaceIdFromChild(
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level),
+      lsia_with_different_embed_token);
+  EXPECT_EQ(initial_lsia,
+            top_level_proxy->local_surface_id_allocation()->local_surface_id());
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_TRUE(setup.changes()->empty());
+}
+
+TEST(WindowTreeTest, SetTopLevelWindowBoundsNullSurfaceId) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
+  top_level->SetBounds(bounds);
+  setup.changes()->clear();
+  // Server allows null LocalSurfaceIds, which is used on the initial resize
+  // from the client.
+  EXPECT_TRUE(
       setup.window_tree_test_helper()->SetWindowBounds(top_level, bounds));
   EXPECT_TRUE(setup.changes()->empty());
 }
@@ -302,10 +385,12 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
 
   // Set the bounds from the parent and ensure client is notified.
   const gfx::Rect bounds2 = gfx::Rect(1, 2, 300, 401);
-  base::Optional<viz::LocalSurfaceId> local_surface_id(
-      viz::LocalSurfaceId(1, 2, base::UnguessableToken::Create()));
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation(
+      viz::LocalSurfaceIdAllocation(
+          viz::LocalSurfaceId(1, 2, base::UnguessableToken::Create()),
+          base::TimeTicks::Now()));
   EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
-      window, bounds2, local_surface_id));
+      window, bounds2, local_surface_id_allocation));
   EXPECT_EQ(bounds2, window->bounds());
   ASSERT_EQ(1u,
             embedding_helper->window_tree_client.tracker()->changes()->size());
@@ -313,15 +398,18 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
       (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change.type);
   EXPECT_EQ(bounds2, bounds_change.bounds2);
-  EXPECT_EQ(local_surface_id, bounds_change.local_surface_id);
+  EXPECT_EQ(local_surface_id_allocation,
+            bounds_change.local_surface_id_allocation);
   embedding_helper->window_tree_client.tracker()->changes()->clear();
 
   // Set the bounds from the parent, only updating the LocalSurfaceId (bounds
   // remains the same). The client should be notified.
-  base::Optional<viz::LocalSurfaceId> local_surface_id2(
-      viz::LocalSurfaceId(1, 3, base::UnguessableToken::Create()));
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation2(
+      viz::LocalSurfaceIdAllocation(
+          viz::LocalSurfaceId(1, 3, base::UnguessableToken::Create()),
+          base::TimeTicks::Now()));
   EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
-      window, bounds2, local_surface_id2));
+      window, bounds2, local_surface_id_allocation2));
   EXPECT_EQ(bounds2, window->bounds());
   ASSERT_EQ(1u,
             embedding_helper->window_tree_client.tracker()->changes()->size());
@@ -329,13 +417,14 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
       (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change2.type);
   EXPECT_EQ(bounds2, bounds_change2.bounds2);
-  EXPECT_EQ(local_surface_id2, bounds_change2.local_surface_id);
+  EXPECT_EQ(local_surface_id_allocation2,
+            bounds_change2.local_surface_id_allocation);
   embedding_helper->window_tree_client.tracker()->changes()->clear();
 
   // Try again with the same values. This should succeed, but not notify the
   // client.
   EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
-      window, bounds2, local_surface_id2));
+      window, bounds2, local_surface_id_allocation2));
   EXPECT_TRUE(
       embedding_helper->window_tree_client.tracker()->changes()->empty());
 }
@@ -2044,14 +2133,16 @@ TEST(WindowTreeTest, DsfChanges) {
   ASSERT_TRUE(top_level);
   top_level->Show();
   ProxyWindow* top_level_proxy_window = ProxyWindow::GetMayBeNull(top_level);
-  const base::Optional<viz::LocalSurfaceId> initial_surface_id =
-      top_level_proxy_window->local_surface_id();
-  EXPECT_TRUE(initial_surface_id);
+  const base::Optional<viz::LocalSurfaceIdAllocation>
+      initial_surface_id_allocation =
+          top_level_proxy_window->local_surface_id_allocation();
+  EXPECT_TRUE(initial_surface_id_allocation);
 
   // Changing the scale factor should change the LocalSurfaceId.
   setup.aura_test_helper()->test_screen()->SetDeviceScaleFactor(2.0f);
-  EXPECT_TRUE(top_level_proxy_window->local_surface_id());
-  EXPECT_NE(*top_level_proxy_window->local_surface_id(), *initial_surface_id);
+  EXPECT_TRUE(top_level_proxy_window->local_surface_id_allocation());
+  EXPECT_NE(*top_level_proxy_window->local_surface_id_allocation(),
+            *initial_surface_id_allocation);
 }
 
 TEST(WindowTreeTest, DontSendGestures) {

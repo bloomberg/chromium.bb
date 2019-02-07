@@ -42,8 +42,9 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   static WindowTreeHostMus* ForWindow(aura::Window* window);
 
   // Sets the bounds in pixels.
-  void SetBoundsFromServerInPixels(const gfx::Rect& bounds_in_pixels,
-                                   const viz::LocalSurfaceId& local_surface_id);
+  void SetBoundsFromServerInPixels(
+      const gfx::Rect& bounds_in_pixels,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
 
   ui::EventDispatchDetails SendEventToSink(ui::Event* event) {
     return aura::WindowTreeHostPlatform::SendEventToSink(event);
@@ -86,6 +87,20 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   int64_t display_id() const { return display_id_; }
   display::Display GetDisplay() const;
 
+  // Used to hold a LocalSurfaceIdAllocation from the server. This is used
+  // when a LocalSurfaceIdAllocation is received from the server, and there are
+  // inflight bounds changes. In such a scenario |id| is only applied once
+  // all inflight changes have been acked, or the size changes requiring a new
+  // LocalSurfaceIdAllocation. |id| is only applied after the changes have been
+  // acked to ensure the client/server stay in sync with ids.
+  void SetPendingLocalSurfaceIdFromServer(
+      const viz::LocalSurfaceIdAllocation& id);
+  bool has_pending_local_surface_id_from_server() const {
+    return pending_local_surface_id_from_server_.has_value();
+  }
+  base::Optional<viz::LocalSurfaceIdAllocation>
+  TakePendingLocalSurfaceIdFromServer();
+
   // aura::WindowTreeHostPlatform:
   void HideImpl() override;
   void SetBoundsInPixels(
@@ -97,6 +112,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
   int64_t GetDisplayId() override;
+  bool ShouldAllocateLocalSurfaceIdOnResize() override;
 
   // InputMethodMusDelegate:
   void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
@@ -111,6 +127,9 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   bool in_set_bounds_from_server_ = false;
 
   std::unique_ptr<InputMethodMus> input_method_;
+
+  base::Optional<viz::LocalSurfaceIdAllocation>
+      pending_local_surface_id_from_server_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };

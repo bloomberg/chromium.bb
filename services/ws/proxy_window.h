@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/ws/ids.h"
 #include "ui/base/cursor/cursor.h"
@@ -25,7 +26,6 @@ class WindowTargeter;
 }  // namespace aura
 
 namespace ui {
-
 class EventHandler;
 }
 
@@ -124,12 +124,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
     return attached_compositor_frame_sink_;
   }
 
-  void set_local_surface_id(
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-    local_surface_id_ = local_surface_id;
+  void set_local_surface_id_allocation(
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation) {
+    local_surface_id_allocation_ = local_surface_id_allocation;
   }
-  const base::Optional<viz::LocalSurfaceId>& local_surface_id() const {
-    return local_surface_id_;
+  const base::Optional<viz::LocalSurfaceIdAllocation>&
+  local_surface_id_allocation() const {
+    return local_surface_id_allocation_;
   }
 
   bool HasDragDropDelegate() const {
@@ -195,7 +197,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
   // See |capture_owner_| for details.
   WindowTree* focus_owner_ = nullptr;
 
-  base::Optional<viz::LocalSurfaceId> local_surface_id_;
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation_;
 
   std::unique_ptr<DragDropDelegate> drag_drop_delegate_;
 

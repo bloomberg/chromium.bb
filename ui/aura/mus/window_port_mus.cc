@@ -27,12 +27,14 @@
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -228,10 +230,12 @@ gfx::Size WindowPortMus::GetSizeInPixels(const gfx::Size& size) {
 
 void WindowPortMus::SetAllocator(std::unique_ptr<MusLsiAllocator> allocator) {
   allocator_ = std::move(allocator);
-  // This triggers allocating a LocalSurfaceId *and* notifying the server.
-  // TODO: investigate making allocation match that of WindowPortLocal, this may
-  // be called earlier than WindowPortLocal allocates the id.
-  allocator_->AllocateLocalSurfaceId();
+  if (allocator_->type() != MusLsiAllocatorType::kTopLevel) {
+    // This triggers allocating a LocalSurfaceId *and* notifying the server.
+    // TODO: investigate making allocation match that of WindowPortLocal, this
+    // may be called earlier than WindowPortLocal allocates the id.
+    allocator_->AllocateLocalSurfaceId();
+  }
 }
 
 WindowPortMus::ServerChangeIdType WindowPortMus::ScheduleChange(
@@ -392,8 +396,6 @@ void WindowPortMus::SetBoundsFromServer(const gfx::Rect& bounds) {
   ServerChangeData data;
   data.bounds_in_dip = bounds;
   ScopedServerChange change(this, ServerChangeType::BOUNDS, data);
-  // XXX this seems like the wrong place to cache size.
-  last_surface_size_in_pixels_ = GetSizeInPixels(bounds.size());
   window_->SetBounds(bounds);
 }
 
@@ -501,11 +503,17 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
 void WindowPortMus::AllocateLocalSurfaceId() {
   // This API does not make sense for EMBED.
   DCHECK_NE(window_mus_type(), WindowMusType::EMBED);
-  if (!allocator_ && window_mus_type() == WindowMusType::LOCAL) {
+  if (!allocator_ && (window_mus_type() == WindowMusType::TOP_LEVEL &&
+                      static_cast<WindowTreeHostMus*>(window_->GetHost())
+                          ->has_pending_local_surface_id_from_server())) {
+    SetAllocator(MusLsiAllocator::CreateAllocator(
+        MusLsiAllocatorType::kTopLevel, this, window_tree_client_));
+  }
+  if (allocator_) {
+    allocator_->AllocateLocalSurfaceId();
+  } else if (window_mus_type() == WindowMusType::LOCAL) {
     SetAllocator(MusLsiAllocator::CreateAllocator(MusLsiAllocatorType::kLocal,
                                                   this, window_tree_client_));
-  } else if (allocator_) {
-    allocator_->AllocateLocalSurfaceId();
   }
 }
 
@@ -525,13 +533,38 @@ void WindowPortMus::InvalidateLocalSurfaceId() {
     allocator_->InvalidateLocalSurfaceId();
 }
 
+void WindowPortMus::UpdateLocalSurfaceIdFromParent(
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  switch (window_mus_type()) {
+    case WindowMusType::EMBED:
+      window_->GetHost()->compositor()->UpdateLocalSurfaceIdFromParent(
+          local_surface_id_allocation);
+      break;
+    case WindowMusType::TOP_LEVEL:
+      if (!allocator_) {
+        SetAllocator(MusLsiAllocator::CreateAllocator(
+            MusLsiAllocatorType::kTopLevel, this, window_tree_client_));
+      }
+      DCHECK(allocator_->AsTopLevelAllocator());
+      allocator_->AsTopLevelAllocator()->UpdateLocalSurfaceIdFromParent(
+          local_surface_id_allocation);
+      break;
+    case WindowMusType::LOCAL:
+    case WindowMusType::OTHER:
+      NOTREACHED();
+      break;
+  }
+}
+
 void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
     const viz::LocalSurfaceIdAllocation&
         embedded_client_local_surface_id_allocation) {
-  // This API does not make sense for EMBED.
+  // This API does not make sense for EMBED and TOP_LEVEL.
   DCHECK_NE(window_mus_type(), WindowMusType::EMBED);
+  DCHECK_NE(window_mus_type(), WindowMusType::TOP_LEVEL);
   if (allocator_) {
-    allocator_->UpdateLocalSurfaceIdFromEmbeddedClient(
+    DCHECK(allocator_->AsParentAllocator());
+    allocator_->AsParentAllocator()->UpdateLocalSurfaceIdFromEmbeddedClient(
         embedded_client_local_surface_id_allocation);
   }
 }
@@ -541,10 +574,6 @@ WindowPortMus::GetLocalSurfaceIdAllocation() {
   static base::NoDestructor<viz::LocalSurfaceIdAllocation> empty_allocation;
   return allocator_ ? allocator_->GetLocalSurfaceIdAllocation()
                     : *empty_allocation;
-}
-
-bool WindowPortMus::HasLocalSurfaceId() {
-  return allocator_.get() != nullptr;
 }
 
 std::unique_ptr<WindowMusChangeData>
@@ -699,7 +728,7 @@ void WindowPortMus::OnPropertyChanged(const void* key,
 
 std::unique_ptr<cc::LayerTreeFrameSink>
 WindowPortMus::CreateLayerTreeFrameSink() {
-  // This function should not be called for WindowPortMus.
+  // This function is currently not used when aura is configured with MUS.
   NOTIMPLEMENTED();
   return nullptr;
 }

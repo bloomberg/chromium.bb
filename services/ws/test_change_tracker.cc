@@ -113,8 +113,11 @@ std::string ChangeToDescription(const Change& change,
           "local_surface_id=%s",
           WindowIdToString(change.window_id).c_str(),
           change.bounds.ToString().c_str(), change.bounds2.ToString().c_str(),
-          change.local_surface_id ? change.local_surface_id->ToString().c_str()
-                                  : "(none)");
+          change.local_surface_id_allocation
+              ? change.local_surface_id_allocation->local_surface_id()
+                    .ToString()
+                    .c_str()
+              : "(none)");
 
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
@@ -358,13 +361,14 @@ void TestChangeTracker::OnWindowBoundsChanged(
     Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.window_id = window_id;
   change.bounds = old_bounds;
   change.bounds2 = new_bounds;
-  change.local_surface_id = local_surface_id;
+  change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);
 }
 
@@ -548,14 +552,17 @@ void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
-                                          mojom::WindowDataPtr window_data,
-                                          bool drawn) {
+void TestChangeTracker::OnTopLevelCreated(
+    uint32_t change_id,
+    mojom::WindowDataPtr window_data,
+    bool drawn,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_ON_TOP_LEVEL_CREATED;
   change.change_id = change_id;
   change.window_id = window_data->window_id;
   change.bool_value = drawn;
+  change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);
 }
 

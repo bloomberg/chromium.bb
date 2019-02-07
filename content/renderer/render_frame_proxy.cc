@@ -693,8 +693,9 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_) {
-    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
-                                         gfx::Rect(local_frame_size()));
+    mus_embedded_frame_->SetWindowBounds(
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation(),
+        gfx::Rect(local_frame_size()));
   }
 #endif
 

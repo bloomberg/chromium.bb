@@ -264,7 +264,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;
   ChangeSource OnTransientChildRemoved(WindowMus* child) override;
-  bool HasLocalSurfaceId() override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
@@ -296,6 +295,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() override;
+  void UpdateLocalSurfaceIdFromParent(const viz::LocalSurfaceIdAllocation&
+                                          local_surface_id_allocation) override;
   void InvalidateLocalSurfaceId() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
@@ -332,9 +333,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // Manages allocation of LocalSurfaceIds. Only created if this window needs
   // allocated LocalSurfaceIds.
   std::unique_ptr<MusLsiAllocator> allocator_;
-
-  // This is set the first time an id is generated.
-  base::Optional<gfx::Size> last_surface_size_in_pixels_;
 
   ui::Cursor cursor_;
 

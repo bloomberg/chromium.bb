@@ -93,7 +93,7 @@ struct Change {
   gfx::Rect bounds;
   gfx::Rect bounds2;
   viz::FrameSinkId frame_sink_id;
-  base::Optional<viz::LocalSurfaceId> local_surface_id;
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
   int32_t event_action = 0;
   bool matches_event_observer = false;
   std::string embed_url;
@@ -194,7 +194,8 @@ class TestChangeTracker {
       Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation);
   void OnWindowTransformChanged(Id window_id);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
@@ -221,9 +222,11 @@ class TestChangeTracker {
   void OnWindowFocused(Id window_id);
   void OnWindowCursorChanged(Id window_id, const ui::Cursor& cursor);
   void OnChangeCompleted(uint32_t change_id, bool success);
-  void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr window_data,
-                         bool drawn);
+  void OnTopLevelCreated(
+      uint32_t change_id,
+      mojom::WindowDataPtr window_data,
+      bool drawn,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void OnDragDropStart(
       const base::flat_map<std::string, std::vector<uint8_t>>& drag_data);
   void OnDragEnter(Id window_id);
