@@ -66,7 +66,7 @@ function FileSelection(indexes, entries) {
     if (this.iconType == null) {
       this.iconType = FileType.getIcon(entry);
     } else if (this.iconType != 'unknown') {
-      var iconType = FileType.getIcon(entry);
+      const iconType = FileType.getIcon(entry);
       if (this.iconType != iconType) {
         this.iconType = 'unknown';
       }
@@ -89,7 +89,7 @@ FileSelection.prototype.computeAdditional = function(metadataModel) {
                 this.entries,
                 constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES)
             .then(function(props) {
-              var present = props.filter(function(p) {
+              const present = props.filter(function(p) {
                 // If no availableOffline property, then assume it's available.
                 return !('availableOffline' in p) || p.availableOffline;
               });
@@ -220,8 +220,8 @@ FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
  * Update the UI when the selection model changes.
  */
 FileSelectionHandler.prototype.onFileSelectionChanged = function() {
-  var indexes = this.listContainer_.selectionModel.selectedIndexes;
-  var entries = indexes.map(function(index) {
+  const indexes = this.listContainer_.selectionModel.selectedIndexes;
+  const entries = indexes.map(function(index) {
     return /** @type {!Entry} */ (
         this.directoryModel_.getFileList().item(index));
   }.bind(this));
@@ -236,8 +236,8 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   // asynchronous calls. We initiate these calls after a timeout. If the
   // selection is changing quickly we only do this once when it slows down.
 
-  var updateDelay = FileSelectionHandler.UPDATE_DELAY;
-  var now = Date.now();
+  let updateDelay = FileSelectionHandler.UPDATE_DELAY;
+  const now = Date.now();
 
   if (now > (this.lastFileSelectionTime_ || 0) + updateDelay &&
       indexes.length < FileSelectionHandler.NUMBER_OF_ITEMS_HEAVY_TO_COMPUTE) {
@@ -248,7 +248,7 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   }
   this.lastFileSelectionTime_ = now;
 
-  var selection = this.selection;
+  const selection = this.selection;
   this.selectionUpdateTimer_ = setTimeout(function() {
     this.selectionUpdateTimer_ = null;
     if (this.selection === selection) {
