@@ -8,10 +8,13 @@
 // Utility functions for converting between DIP (device independent pixels) and
 // PX (physical pixels).
 
+#include "ui/base/resource/scale_factor.h"
+
 namespace apps {
 
 int ConvertDipToPx(int dip);
 int ConvertPxToDip(int px);
+ui::ScaleFactor GetPrimaryDisplayUIScaleFactor();
 
 }  // namespace apps
 

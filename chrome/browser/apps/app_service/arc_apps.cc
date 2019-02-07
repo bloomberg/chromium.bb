@@ -331,11 +331,9 @@ const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
   // TODO(crbug.com/826982): process the app_id argument like the private
   // GetAppFromAppOrGroupId function and the ArcAppIcon::mapped_app_id_ field
   // in arc_app_icon.cc?
-  //
-  // TODO(crbug.com/826982): don't hard-code SCALE_FACTOR_100P.
   return prefs_->GetIconPath(
-      app_id, ArcAppIconDescriptor(size_hint_in_dip,
-                                   ui::ScaleFactor::SCALE_FACTOR_100P));
+      app_id,
+      ArcAppIconDescriptor(size_hint_in_dip, GetPrimaryDisplayUIScaleFactor()));
 }
 
 void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
