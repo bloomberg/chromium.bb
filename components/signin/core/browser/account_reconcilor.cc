@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -218,10 +219,20 @@ AccountReconcilor::~AccountReconcilor() {
   DCHECK(!registered_with_identity_manager_);
 }
 
+void AccountReconcilor::RegisterWithAllDependencies() {
+  RegisterWithContentSettings();
+  RegisterWithIdentityManager();
+}
+
+void AccountReconcilor::UnregisterWithAllDependencies() {
+  UnregisterWithIdentityManager();
+  UnregisterWithContentSettings();
+}
+
 void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   VLOG(1) << "AccountReconcilor::Initialize";
   if (delegate_->IsReconcileEnabled()) {
-    EnableReconcile();
+    RegisterWithAllDependencies();
 
     // Start a reconcile if the tokens are already loaded.
     if (start_reconcile_if_tokens_available && IsIdentityManagerReady())
@@ -237,14 +248,17 @@ void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
 
 void AccountReconcilor::EnableReconcile() {
   DCHECK(delegate_->IsReconcileEnabled());
-  RegisterWithContentSettings();
-  RegisterWithIdentityManager();
+  RegisterWithAllDependencies();
+#if !defined(OS_IOS)
+  // TODO(droger): Investigate why this breaks tests on iOS.
+  if (IsIdentityManagerReady())
+    StartReconcile();
+#endif  // !defined(OS_IOS)
 }
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {
   AbortReconcile();
-  UnregisterWithIdentityManager();
-  UnregisterWithContentSettings();
+  UnregisterWithAllDependencies();
 
   if (logout_all_accounts)
     PerformLogoutAllAccountsAction();

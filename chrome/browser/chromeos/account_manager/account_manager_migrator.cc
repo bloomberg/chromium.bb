@@ -575,8 +575,9 @@ void AccountManagerMigrator::RunCleanupTasks() {
   // Secondary Accounts but if we do not enable reconciliation, users will not
   // be able to add any account to Chrome content area which is a much worse
   // experience than losing Chrome content area Secondary Accounts.
-  AccountReconcilorFactory::GetForProfile(profile_)->Initialize(
-      true /* start_reconcile_if_tokens_available */);
+  AccountReconcilor* account_reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile_);
+  account_reconcilor->EnableReconcile();
 }
 
 // static

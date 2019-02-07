@@ -233,6 +233,8 @@ class AccountReconcilor : public KeyedService,
   }
 
   // Register and unregister with dependent services.
+  void RegisterWithAllDependencies();
+  void UnregisterWithAllDependencies();
   void RegisterWithIdentityManager();
   void UnregisterWithIdentityManager();
   void RegisterWithCookieManagerService();
