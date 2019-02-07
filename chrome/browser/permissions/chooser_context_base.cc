@@ -76,9 +76,9 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
     return {};
 
   std::vector<std::unique_ptr<Object>> results;
-  auto* info = new content_settings::SettingInfo();
+  content_settings::SettingInfo info;
   std::unique_ptr<base::DictionaryValue> setting =
-      GetWebsiteSetting(requesting_origin, embedding_origin, info);
+      GetWebsiteSetting(requesting_origin, embedding_origin, &info);
   std::unique_ptr<base::Value> objects;
   if (!setting->Remove(kObjectListKey, &objects))
     return results;
@@ -92,7 +92,7 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
     base::DictionaryValue* object_dict;
     if (object.GetAsDictionary(&object_dict) && IsValidObject(*object_dict)) {
       results.push_back(std::make_unique<Object>(
-          requesting_origin, embedding_origin, object_dict, info->source,
+          requesting_origin, embedding_origin, object_dict, info.source,
           host_content_settings_map_->is_incognito()));
     }
   }
