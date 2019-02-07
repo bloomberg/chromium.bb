@@ -104,9 +104,14 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
 
   SetShowState(SHOW_ACTIVE_FOLDER, false);
 
+  // Avoid announcing search box focus since it is overlapped with opening
+  // folder alert.
+  auto* search_box = contents_view_->GetSearchBoxView()->search_box();
+  search_box->GetViewAccessibility().OverrideIsIgnored(true);
+
   // Disable all the items behind the folder so that they will not be reached
   // during focus traversal.
-  contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
+  search_box->RequestFocus();
   DisableFocusForShowingActiveFolder(true);
 }
 
