@@ -99,4 +99,18 @@ TEST(TextSearcherICUTest, FindSubstringWithOffset) {
   EXPECT_EQ(offset_result.length, first_result.length);
 }
 
+TEST(TextSearcherICUTest, FindControlCharacter) {
+  TextSearcherICU searcher;
+  const String& pattern = MakeUTF16(u8"\u0080");
+  searcher.SetPattern(pattern, 0);
+
+  const String& text = MakeUTF16("some text");
+  searcher.SetText(text.Characters16(), text.length());
+
+  MatchResultICU result;
+  EXPECT_FALSE(searcher.NextMatchResult(result));
+  EXPECT_EQ(0u, result.start);
+  EXPECT_EQ(0u, result.length);
+}
+
 }  // namespace blink

@@ -139,6 +139,7 @@ TextSearcherICU::~TextSearcherICU() {
 
 void TextSearcherICU::SetPattern(const StringView& pattern,
                                  FindOptions options) {
+  DCHECK_GT(pattern.length(), 0u);
   options_ = options;
   SetCaseSensitivity(!(options & kCaseInsensitive));
   SetPattern(pattern.Characters16(), pattern.length());
@@ -186,6 +187,12 @@ bool TextSearcherICU::NextMatchResultInternal(MatchResultICU& result) {
 
   result.start = static_cast<wtf_size_t>(match_start);
   result.length = usearch_getMatchedLength(searcher_);
+  // Might be possible to get zero-length result with some Unicode characters
+  // that shouldn't actually match but is matched by ICU such as \u0080.
+  if (result.length == 0u) {
+    result.start = 0;
+    return false;
+  }
   return true;
 }
 
