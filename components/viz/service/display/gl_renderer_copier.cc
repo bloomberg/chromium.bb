@@ -105,11 +105,9 @@ void PopulateScalerParameters(const CopyOutputRequest& request,
 
 GLRendererCopier::GLRendererCopier(
     scoped_refptr<ContextProvider> context_provider,
-    TextureDeleter* texture_deleter,
-    ComputeWindowRectCallback window_rect_callback)
+    TextureDeleter* texture_deleter)
     : context_provider_(std::move(context_provider)),
-      texture_deleter_(texture_deleter),
-      window_rect_callback_(std::move(window_rect_callback)) {}
+      texture_deleter_(texture_deleter) {}
 
 GLRendererCopier::~GLRendererCopier() {
   for (auto& entry : cache_)
@@ -118,46 +116,25 @@ GLRendererCopier::~GLRendererCopier() {
 
 void GLRendererCopier::CopyFromTextureOrFramebuffer(
     std::unique_ptr<CopyOutputRequest> request,
-    const gfx::Rect& output_rect,
+    const copy_output::RenderPassGeometry& geometry,
     GLenum internal_format,
     GLuint framebuffer_texture,
     const gfx::Size& framebuffer_texture_size,
     bool flipped_source,
     const gfx::ColorSpace& color_space) {
-  // Finalize the source subrect, as the entirety of the RenderPass's output
-  // optionally clamped to the requested copy area. Then, compute the result
-  // rect, which is the selection clamped to the maximum possible result bounds.
-  // If there will be zero pixels of output or the scaling ratio was not
-  // reasonable, do not proceed.
-  gfx::Rect copy_rect = output_rect;
-  if (request->has_area())
-    copy_rect.Intersect(request->area());
-  gfx::Rect result_rect = request->is_scaled()
-                              ? copy_output::ComputeResultRect(
-                                    gfx::Rect(copy_rect.size()),
-                                    request->scale_from(), request->scale_to())
-                              : gfx::Rect(copy_rect.size());
-  if (request->has_result_selection())
-    result_rect.Intersect(request->result_selection());
-  if (result_rect.IsEmpty())
-    return;
+  const gfx::Rect& result_rect = geometry.result_selection;
 
   // Fast-Path: If no transformation is necessary and no new textures need to be
   // generated, read-back directly from the currently-bound framebuffer.
   if (request->result_format() == ResultFormat::RGBA_BITMAP &&
       !request->is_scaled()) {
-    const gfx::Vector2d readback_offset =
-        window_rect_callback_.Run(result_rect + copy_rect.OffsetFromOrigin())
-            .OffsetFromOrigin();
-    StartReadbackFromFramebuffer(std::move(request), readback_offset,
+    StartReadbackFromFramebuffer(std::move(request), geometry.readback_offset,
                                  flipped_source, false, result_rect,
                                  color_space);
     return;
   }
 
-  // Transform the copy rect into window coordinates, the coordinate system GL
-  // is using for the currently-bound framebuffer.
-  gfx::Rect sampling_rect = window_rect_callback_.Run(copy_rect);
+  gfx::Rect sampling_rect = geometry.sampling_bounds;
 
   const base::UnguessableToken requester = SourceOf(*request);
   std::unique_ptr<ReusableThings> things =

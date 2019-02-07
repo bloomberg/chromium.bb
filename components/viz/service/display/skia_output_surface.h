@@ -14,13 +14,17 @@ class SkImage;
 
 namespace gfx {
 class ColorSpace;
-}
+}  // namespace gfx
 
 namespace viz {
 
 class ContextLostObserver;
 class CopyOutputRequest;
 struct ResourceMetadata;
+
+namespace copy_output {
+struct RenderPassGeometry;
+}  // namespace copy_output
 
 // This class extends the OutputSurface for SkiaRenderer needs. In future, the
 // SkiaRenderer will be the only renderer. When other renderers are removed,
@@ -105,9 +109,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   // Copy the output of the current frame if the |id| is zero, otherwise copy
   // the output of a cached SkSurface for the given |id|.
   virtual void CopyOutput(RenderPassId id,
-                          const gfx::Rect& copy_rect,
+                          const copy_output::RenderPassGeometry& geometry,
                           const gfx::ColorSpace& color_space,
-                          const gfx::Rect& result_rect,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
   // Add context lost observer.

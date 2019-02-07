@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
@@ -477,9 +478,8 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
 
 void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     RenderPassId id,
-    const gfx::Rect& copy_rect,
+    const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
-    const gfx::Rect& result_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   // TODO(crbug.com/914502): Do this on the GPU instead of CPU with GL.
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
@@ -511,14 +511,15 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   }
 
   SkBitmap bitmap;
-  SkImageInfo copy_rect_info = SkImageInfo::Make(
-      copy_rect.width(), copy_rect.height(), SkColorType::kN32_SkColorType,
-      SkAlphaType::kPremul_SkAlphaType,
-      surface->getCanvas()->imageInfo().refColorSpace());
-  bitmap.allocPixels(copy_rect_info, copy_rect.width() * 4);
-  surface->readPixels(bitmap, copy_rect.x(), copy_rect.y());
-
   if (request->is_scaled()) {
+    SkImageInfo sampling_bounds_info = SkImageInfo::Make(
+        geometry.sampling_bounds.width(), geometry.sampling_bounds.height(),
+        SkColorType::kN32_SkColorType, SkAlphaType::kPremul_SkAlphaType,
+        surface->getCanvas()->imageInfo().refColorSpace());
+    bitmap.allocPixels(sampling_bounds_info);
+    surface->readPixels(bitmap, geometry.sampling_bounds.x(),
+                        geometry.sampling_bounds.y());
+
     // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
     // (appropriate for thumbnailing); and, for upscaling, use the RESIZE_BEST
     // strategy. Note that processing is only done on the subset of the
@@ -531,9 +532,19 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
                                         : ImageOperations::RESIZE_BEST;
     bitmap = ImageOperations::Resize(
-        bitmap, method, result_rect.width(), result_rect.height(),
-        SkIRect{result_rect.x(), result_rect.y(), result_rect.right(),
-                result_rect.bottom()});
+        bitmap, method, geometry.result_bounds.width(),
+        geometry.result_bounds.height(),
+        SkIRect{geometry.result_selection.x(), geometry.result_selection.y(),
+                geometry.result_selection.right(),
+                geometry.result_selection.bottom()});
+  } else {
+    SkImageInfo sampling_bounds_info = SkImageInfo::Make(
+        geometry.result_selection.width(), geometry.result_selection.height(),
+        SkColorType::kN32_SkColorType, SkAlphaType::kPremul_SkAlphaType,
+        surface->getCanvas()->imageInfo().refColorSpace());
+    bitmap.allocPixels(sampling_bounds_info);
+    surface->readPixels(bitmap, geometry.readback_offset.x(),
+                        geometry.readback_offset.y());
   }
 
   // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to the
@@ -558,7 +569,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   // Note: The CopyOutputSkBitmapResult automatically provides I420 format
   // conversion, if needed.
   request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
-      result_format, result_rect, bitmap));
+      result_format, geometry.result_selection, bitmap));
 }
 
 gpu::DecoderContext* SkiaOutputSurfaceImplOnGpu::decoder() {

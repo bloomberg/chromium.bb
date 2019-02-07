@@ -20,6 +20,7 @@
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
@@ -541,8 +542,38 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
   for (int i = 0; i < settings_->slow_down_compositing_scale_factor; ++i)
     DrawRenderPass(render_pass);
 
-  for (auto& copy_request : render_pass->copy_requests)
-    CopyDrawnRenderPass(std::move(copy_request));
+  for (auto& request : render_pass->copy_requests) {
+    // Finalize the source subrect (output_rect, result_bounds,
+    // sampling_bounds), as the entirety of the RenderPass's output optionally
+    // clamped to the requested copy area. Then, compute the result rect
+    // (result_selection), which is the selection clamped to the maximum
+    // possible result bounds. If there will be zero pixels of output or the
+    // scaling ratio was not reasonable, do not proceed.
+    gfx::Rect output_rect = render_pass->output_rect;
+    if (request->has_area())
+      output_rect.Intersect(request->area());
+
+    copy_output::RenderPassGeometry geometry;
+    geometry.result_bounds =
+        request->is_scaled() ? copy_output::ComputeResultRect(
+                                   gfx::Rect(output_rect.size()),
+                                   request->scale_from(), request->scale_to())
+                             : gfx::Rect(output_rect.size());
+
+    geometry.result_selection = geometry.result_bounds;
+    if (request->has_result_selection())
+      geometry.result_selection.Intersect(request->result_selection());
+    if (geometry.result_selection.IsEmpty())
+      continue;
+
+    geometry.sampling_bounds = MoveFromDrawToWindowSpace(output_rect);
+
+    geometry.readback_offset =
+        MoveFromDrawToWindowSpace(geometry.result_selection +
+                                  output_rect.OffsetFromOrigin())
+            .OffsetFromOrigin();
+    CopyDrawnRenderPass(geometry, std::move(request));
+  }
 }
 
 void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {

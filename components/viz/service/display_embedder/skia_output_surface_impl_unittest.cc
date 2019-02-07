@@ -16,6 +16,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -222,9 +223,12 @@ TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
                      base::Unretained(this), output_color, output_rect,
                      color_space));
   request->set_result_task_runner(gpu_thread_->task_runner());
-  gfx::Rect result_rect = output_rect;
-  output_surface_->CopyOutput(0, output_rect, color_space, result_rect,
-                              std::move(request));
+  copy_output::RenderPassGeometry geometry;
+  geometry.result_bounds = output_rect;
+  geometry.result_selection = output_rect;
+  geometry.sampling_bounds = output_rect;
+  geometry.readback_offset = gfx::Vector2d(0, 0);
+  output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
   BlockMainThread();
 }
 

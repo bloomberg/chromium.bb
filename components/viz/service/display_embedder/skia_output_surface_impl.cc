@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -648,18 +649,16 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
 
 void SkiaOutputSurfaceImpl::CopyOutput(
     RenderPassId id,
-    const gfx::Rect& copy_rect,
+    const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
-    const gfx::Rect& result_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!request->has_result_task_runner())
     request->set_result_task_runner(base::ThreadTaskRunnerHandle::Get());
 
-  auto callback =
-      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
-                     base::Unretained(impl_on_gpu_.get()), id, copy_rect,
-                     color_space, result_rect, std::move(request));
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
+                                 base::Unretained(impl_on_gpu_.get()), id,
+                                 geometry, color_space, std::move(request));
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 

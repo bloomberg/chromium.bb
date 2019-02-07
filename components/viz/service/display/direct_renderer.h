@@ -30,7 +30,7 @@ class FilterOperations;
 namespace gfx {
 class ColorSpace;
 class RRectF;
-}
+}  // namespace gfx
 
 namespace viz {
 class BspWalkActionDrawPolygon;
@@ -38,6 +38,10 @@ class DrawPolygon;
 class OutputSurface;
 class RendererSettings;
 class RenderPass;
+
+namespace copy_output {
+struct RenderPassGeometry;
+}  // namespace copy_output
 
 // This is the base class for code shared between the GL and software
 // renderer implementations. "Direct" refers to the fact that it does not
@@ -198,6 +202,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DidChangeVisibility() = 0;
   virtual void CopyDrawnRenderPass(
+      const copy_output::RenderPassGeometry& geometry,
       std::unique_ptr<CopyOutputRequest> request) = 0;
   virtual void SetEnableDCLayers(bool enable) = 0;
   virtual void GenerateMipmap() = 0;

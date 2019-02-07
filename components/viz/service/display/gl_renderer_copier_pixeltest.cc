@@ -22,6 +22,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,16 +74,8 @@ class GLRendererCopierPixelTest
     flipped_source_ = std::get<4>(GetParam());
 
     gl_ = context_provider()->ContextGL();
-    copier_ = std::make_unique<GLRendererCopier>(
-        context_provider(), texture_deleter_.get(),
-        base::BindRepeating(
-            [](bool flipped_source, const gfx::Rect& draw_rect) {
-              gfx::Rect window_rect = draw_rect;
-              if (flipped_source)
-                window_rect.set_y(kSourceSize.height() - window_rect.bottom());
-              return window_rect;
-            },
-            flipped_source_));
+    copier_ = std::make_unique<GLRendererCopier>(context_provider(),
+                                                 texture_deleter_.get());
 
     ASSERT_TRUE(cc::ReadPNGFile(
         GetTestFilePath(FILE_PATH_LITERAL("16_color_rects.png")),
@@ -98,6 +91,13 @@ class GLRendererCopierPixelTest
   }
 
   GLRendererCopier* copier() { return copier_.get(); }
+
+  gfx::Rect DrawToWindowSpace(const gfx::Rect& draw_rect) {
+    gfx::Rect window_rect = draw_rect;
+    if (flipped_source_)
+      window_rect.set_y(kSourceSize.height() - window_rect.bottom());
+    return window_rect;
+  }
 
   // Creates a packed RGBA (bytes_per_pixel=4) or RGB (bytes_per_pixel=3) bitmap
   // in OpenGL byte/row order from the given SkBitmap.
@@ -266,8 +266,16 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
     }
     const GLuint source_texture = CreateSourceTexture();
     CreateAndBindSourceFramebuffer(source_texture);
+
+    copy_output::RenderPassGeometry geometry;
+    // geometry.result_bounds not used by GLRendererCopier
+    geometry.sampling_bounds = DrawToWindowSpace(gfx::Rect(kSourceSize));
+    geometry.result_selection = request->result_selection();
+    geometry.readback_offset =
+        DrawToWindowSpace(geometry.result_selection).OffsetFromOrigin();
+
     copier()->CopyFromTextureOrFramebuffer(
-        std::move(request), gfx::Rect(kSourceSize), source_gl_format_,
+        std::move(request), geometry, source_gl_format_,
         have_source_texture_ ? source_texture : 0, kSourceSize, flipped_source_,
         gfx::ColorSpace::CreateSRGB());
     loop.Run();
