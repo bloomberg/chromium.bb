@@ -120,7 +120,7 @@ def origin_trial_features(interface, constants, attributes, methods):
     KEY = 'origin_trial_feature_name'  # pylint: disable=invalid-name
 
     def member_filter(members):
-        return sorted([member for member in members if member.get(KEY) and not member.get('exposed_test')])
+        return sorted([member for member in members if member.get(KEY)])
 
     def member_filter_by_name(members, name):
         return [member for member in members if member[KEY] == name]
@@ -147,10 +147,12 @@ def origin_trial_features(interface, constants, attributes, methods):
         # TODO(chasej): Need to handle method overloads? e.g.
         # (method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test'])
         feature['needs_secure_context'] = any(member.get('secure_context_test', False) for member in members)
+        feature['needs_context'] = feature['needs_secure_context'] or any(member.get('exposed_test', False) for member in members)
 
     if features:
         includes.add('platform/bindings/script_state.h')
         includes.add('core/origin_trials/origin_trials.h')
+
     return features
 
 
