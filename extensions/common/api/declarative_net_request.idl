@@ -4,6 +4,7 @@
 
 // The <code>chrome.declarativeNetRequest</code> API is used to block or
 // redirect network requests by specifying declarative rules.
+[generate_error_messages]
 namespace declarativeNetRequest {
   // This describes the resource type of the network request.
   enum ResourceType {
