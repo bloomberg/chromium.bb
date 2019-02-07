@@ -26,12 +26,25 @@ namespace blink {
 
 namespace {
 
+enum class CompressionMode { kDisabled, kBackground, kForeground };
+
+// Compression mode. Foreground parking takes precedence over background, and
+// both are mutually exclusive.
+CompressionMode GetCompressionMode() {
+  if (base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
+    return CompressionMode::kForeground;
+  if (base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
+    return CompressionMode::kBackground;
+  return CompressionMode::kDisabled;
+}
+
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
                               public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
 
   void OnPurgeMemory() override {
-    if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
+    // Memory pressure compression is enabled for all modes.
+    if (GetCompressionMode() == CompressionMode::kDisabled)
       return;
     ParkableStringManager::Instance().PurgeMemory();
   }
@@ -80,7 +93,7 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
   DCHECK(IsMainThread());
   backgrounded_ = backgrounded;
 
-  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
+  if (GetCompressionMode() != CompressionMode::kBackground)
     return;
 
   if (backgrounded_) {
@@ -233,7 +246,7 @@ void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
 
 void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
-  DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
+  DCHECK_NE(CompressionMode::kDisabled, GetCompressionMode());
 
   size_t total_size = 0;
   for (ParkableStringImpl* str : parked_strings_)
@@ -280,7 +293,7 @@ size_t ParkableStringManager::Size() const {
 
 void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
   DCHECK(IsMainThread());
-  DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
+  DCHECK_EQ(CompressionMode::kBackground, GetCompressionMode());
   DCHECK(waiting_to_record_stats_);
   waiting_to_record_stats_ = false;
   if (!should_record_stats_)
@@ -322,7 +335,7 @@ void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
 }
 
 void ParkableStringManager::AgeStringsAndPark() {
-  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
+  if (GetCompressionMode() != CompressionMode::kForeground)
     return;
 
   TRACE_EVENT0("blink", "ParkableStringManager::AgeStringsAndPark");
@@ -353,7 +366,7 @@ void ParkableStringManager::AgeStringsAndPark() {
 }
 
 void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
-  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInForeground))
+  if (GetCompressionMode() != CompressionMode::kForeground)
     return;
 
   if (has_pending_aging_task_)
@@ -371,7 +384,7 @@ void ParkableStringManager::ScheduleAgingTaskIfNeeded() {
 
 void ParkableStringManager::PurgeMemory() {
   DCHECK(IsMainThread());
-  DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
+  DCHECK_NE(CompressionMode::kDisabled, GetCompressionMode());
 
   ParkAll(ParkableStringImpl::ParkingMode::kAlways);
   // Critical memory pressure: drop compressed data for strings that we cannot
