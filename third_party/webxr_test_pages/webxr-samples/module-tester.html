@@ -100,9 +100,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function setScene(newScene) {
         scene = newScene;
         scene.standingStats(true);
-        scene.addNode(new SkyboxNode({url: 'media/textures/milky-way-4k.png'}));
+        scene.addNode(new SkyboxNode({url: '../media/textures/milky-way-4k.png'}));
 
-        let stereo = new Gltf2Node({url: 'media/gltf/stereo/stereo.gltf'});
+        let stereo = new Gltf2Node({url: '../media/gltf/stereo/stereo.gltf'});
         stereo.selectable = true;
         boxNodes.push(stereo);
         scene.addNode(stereo);
@@ -135,9 +135,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         addBox(-0.7, 0.7, -1.0);
         addBox(0.7, 0.7, -1.0);*/
 
-        let button = new ButtonNode(new UrlTexture('media/textures/play-button.png'), () => {
+        let button = new ButtonNode(new UrlTexture('../media/textures/play-button.png'), () => {
           // Do something?
-          button.iconTexture = new UrlTexture('media/textures/pause-button.png');
+          button.iconTexture = new UrlTexture('../media/textures/pause-button.png');
           console.log("Button clicked");
         });
         scene.addNode(button);
@@ -284,7 +284,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             scene.addNode(new CubeSeaNode());
             break;
           default:
-            scene.addNode(new Gltf2Node({url: `media/gltf/${sceneSelect.value}/${sceneSelect.value}.gltf`}));
+            scene.addNode(new Gltf2Node({url: `../media/gltf/${sceneSelect.value}/${sceneSelect.value}.gltf`}));
             break;
         }
         setScene(scene);

@@ -86,13 +86,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (hideStats) {
         scene.enableStats(false);
       }
-      scene.addNode(new Gltf2Node({url: 'media/gltf/garage/garage.gltf'}));
+      scene.addNode(new Gltf2Node({url: '../media/gltf/garage/garage.gltf'}));
       scene.standingStats(true);
 
       let playButton = null;
-      let playTexture = new UrlTexture('media/textures/play-button.png');
-      let pauseTexture = new UrlTexture('media/textures/pause-button.png');
-      let stereo = new Gltf2Node({url: 'media/gltf/stereo/stereo.gltf'});
+      let playTexture = new UrlTexture('../media/textures/play-button.png');
+      let pauseTexture = new UrlTexture('../media/textures/pause-button.png');
+      let stereo = new Gltf2Node({url: '../media/gltf/stereo/stereo.gltf'});
       // FIXME: Temporary fix to initialize for cloning.
       stereo.visible = false;
       scene.addNode(stereo);
@@ -275,17 +275,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Load multiple audio sources.
           Promise.all([
             createAudioSource({
-              url: 'media/sound/guitar.ogg',
+              url: '../media/sound/guitar.ogg',
               position: [0, DEFAULT_HEIGHT, -1],
               rotateY: 0
             }),
             createAudioSource({
-              url: 'media/sound/drums.ogg',
+              url: '../media/sound/drums.ogg',
               position: [-1, DEFAULT_HEIGHT, 0],
               rotateY: Math.PI * 0.5
             }),
             createAudioSource({
-              url: 'media/sound/perc.ogg',
+              url: '../media/sound/perc.ogg',
               position: [1, DEFAULT_HEIGHT, 0],
               rotateY: Math.PI * -0.5
             }),
@@ -335,7 +335,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
       }
 
       function onRequestSession() {

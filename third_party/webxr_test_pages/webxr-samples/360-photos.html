@@ -75,7 +75,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let renderer = null;
       let scene = new Scene();
       scene.addNode(new SkyboxNode({
-        url: 'media/textures/chess-pano-4k.jpg',
+        url: '../media/textures/chess-pano-4k.jpg',
         displayMode: 'stereoTopBottom'
       }));
 
@@ -120,7 +120,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
       }
 
       function onRequestSession() {

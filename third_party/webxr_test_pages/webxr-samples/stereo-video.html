@@ -75,12 +75,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
-      scene.addNode(new Gltf2Node({url: 'media/gltf/home-theater/home-theater.gltf'}));
+      scene.addNode(new Gltf2Node({url: '../media/gltf/home-theater/home-theater.gltf'}));
       scene.enableStats(false);
 
       let video = document.createElement('video');
       video.loop = true;
-      video.src = 'media/video/bbb-sunflower-540p2-1min.webm';
+      video.src = '../media/video/bbb-sunflower-540p2-1min.webm';
 
       let videoNode = new VideoNode({
         video: video,
@@ -114,7 +114,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       });
 
       // Add a button to the scene to play/pause the movie.
-      let playTexture = new UrlTexture('media/textures/play-button.png');
+      let playTexture = new UrlTexture('../media/textures/play-button.png');
 
       // Create a button that plays the video when clicked.
       let playButton = new ButtonNode(playTexture, () => {
@@ -171,7 +171,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
       }
 
       function onRequestSession() {

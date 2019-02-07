@@ -77,7 +77,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
-      scene.addNode(new Gltf2Node({url: 'media/gltf/garage/garage.gltf'}));
+      scene.addNode(new Gltf2Node({url: '../media/gltf/garage/garage.gltf'}));
       scene.standingStats(true);
 
       // Indicates if we are currently presenting a spectator view of the
@@ -132,7 +132,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
 
         // Because we may be rendering to the gl context's backbuffer now we
         // need to start monitoring resize events to manage it's size.
@@ -223,7 +223,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         // Load up a mesh that we can use to visualize the headset's pose.
         if (!headset) {
-          headset = new Gltf2Node({url: 'media/gltf/headset/headset.gltf'});
+          headset = new Gltf2Node({url: '../media/gltf/headset/headset.gltf'});
           scene.addNode(headset);
         }
       }
