@@ -2550,6 +2550,8 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
+  "junit/src/org/chromium/chrome/browser/usage_stats/EventTrackerTest.java",
+  "junit/src/org/chromium/chrome/browser/usage_stats/PageViewObserverTest.java",
   "junit/src/org/chromium/chrome/browser/util/UrlUtilitiesUnitTest.java",
   "junit/src/org/chromium/chrome/browser/util/test/ShadowUrlUtilities.java",
   "junit/src/org/chromium/chrome/browser/webapps/MockWebappDataStorageClockRule.java",
@@ -2565,13 +2567,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetectorTest.java",
   "junit/src/org/chromium/chrome/browser/widget/selection/SelectionDelegateTest.java",
 ]
-
-if (enable_usage_stats) {
-  chrome_junit_test_java_sources += [
-    "junit/src/org/chromium/chrome/browser/usage_stats/EventTrackerTest.java",
-    "junit/src/org/chromium/chrome/browser/usage_stats/PageViewObserverTest.java",
-  ]
-}
 
 # Only used for testing, should not be shipped to end users.
 if (enable_offline_pages_harness) {
