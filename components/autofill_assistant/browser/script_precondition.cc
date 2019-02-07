@@ -24,9 +24,8 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
     // TODO(crbug.com/806868): Check if we shouldn't skip the script when this
     // happens.
     if (element.selectors_size() == 0) {
-      DLOG(WARNING)
-          << "Empty selectors in script precondition for script path: "
-          << script_path << ".";
+      DVLOG(3) << "Empty selectors in script precondition for script path: "
+               << script_path << ".";
       continue;
     }
 
@@ -42,8 +41,8 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   for (const auto& pattern : script_precondition_proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
-      DLOG(ERROR) << "Invalid regexp in script precondition '" << pattern
-                  << "' for script path: " << script_path << ".";
+      DVLOG(1) << "Invalid regexp in script precondition '" << pattern
+               << "' for script path: " << script_path << ".";
       return nullptr;
     }
     path_pattern.emplace_back(std::move(re));

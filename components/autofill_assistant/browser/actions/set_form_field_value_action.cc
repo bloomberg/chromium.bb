@@ -83,7 +83,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
                            weak_ptr_factory_.GetWeakPtr(), delegate,
                            std::move(callback), /* next = */ next + 1));
       } else {
-        DLOG(ERROR)
+        DVLOG(3)
             << "SetFormFieldValueProto_KeyPress: field `keycode' is deprecated "
             << "and only supports US-ASCII values (encountered "
             << key_field.keycode() << "). Use field `key' instead.";
@@ -99,7 +99,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
                          std::move(callback), /* next = */ next + 1));
       break;
     default:
-      DLOG(ERROR) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
+      DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
       OnSetFieldValue(delegate, std::move(callback), next, /* status= */ false);
       break;
   }

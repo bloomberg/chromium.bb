@@ -263,8 +263,8 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       default:
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        DLOG(ERROR) << "Unknown or unsupported action with action_case="
-                    << action.action_info_case();
+        DVLOG(1) << "Unknown or unsupported action with action_case="
+                 << action.action_info_case();
         actions->emplace_back(std::make_unique<UnsupportedAction>(action));
         break;
       }
