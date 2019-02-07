@@ -26,6 +26,9 @@ const CGFloat kActivityIndicatorSize = 24;
 // Radius of the activity indicator.
 const CGFloat kActivityIndicatorRadius = 10;
 
+// Duration to wait before changing visibility of subviews after they are added.
+const CGFloat kUpdateSubviewsDelay = 0.1;
+
 // Duration of the animation to make the activity indicator visible.
 const NSTimeInterval kActivityIndicatorVisbilityAnimationDuration = 0.4;
 
@@ -55,6 +58,14 @@ const CGFloat kButtonPadding = 12;
   // Create and add subviews the first time this moves to a superview.
   if (newSuperview && !self.subviews.count) {
     [self setupSubviews];
+
+    // Delay updating visiblity of the subviews. Otherwise the activity
+    // indicator will not animate in the loading state.
+    dispatch_after(
+        dispatch_time(DISPATCH_TIME_NOW, kUpdateSubviewsDelay * NSEC_PER_SEC),
+        dispatch_get_main_queue(), ^{
+          [self updateSubviewsForState:self.state];
+        });
   }
   [super willMoveToSuperview:newSuperview];
 }
@@ -69,22 +80,7 @@ const CGFloat kButtonPadding = 12;
 - (void)setState:(TranslateInfobarLanguageTabViewState)state {
   _state = state;
 
-  if (state == TranslateInfobarLanguageTabViewStateLoading) {
-    [self.activityIndicator startAnimating];
-    // Animate showing the activity indicator and hiding the button. Otherwise
-    // the ripple effect on the button won't be seen.
-    [UIView animateWithDuration:kActivityIndicatorVisbilityAnimationDuration
-                     animations:^{
-                       self.activityIndicator.alpha = 1.0;
-                       self.button.alpha = 0.0;
-                     }];
-  } else {
-    self.button.alpha = 1.0;
-    self.activityIndicator.alpha = 0.0;
-    [self.activityIndicator stopAnimating];
-
-    [self.button setTitleColor:[self titleColor] forState:UIControlStateNormal];
-  }
+  [self updateSubviewsForState:state];
 }
 
 #pragma mark - Private
@@ -96,7 +92,6 @@ const CGFloat kButtonPadding = 12;
   self.activityIndicator.cycleColors =
       @[ [[MDCPalette cr_bluePalette] tint500] ];
   [self.activityIndicator setRadius:kActivityIndicatorRadius];
-  self.activityIndicator.alpha = 0.0;  // Initially hidden.
   [self addSubview:self.activityIndicator];
 
   [NSLayoutConstraint activateConstraints:@[
@@ -126,6 +121,26 @@ const CGFloat kButtonPadding = 12;
   [self addSubview:self.button];
 
   AddSameConstraints(self, self.button);
+}
+
+// Updates visibility of the subviews depending on |state|.
+- (void)updateSubviewsForState:(TranslateInfobarLanguageTabViewState)state {
+  if (state == TranslateInfobarLanguageTabViewStateLoading) {
+    [self.activityIndicator startAnimating];
+    // Animate showing the activity indicator and hiding the button. Otherwise
+    // the ripple effect on the button won't be seen.
+    [UIView animateWithDuration:kActivityIndicatorVisbilityAnimationDuration
+                     animations:^{
+                       self.activityIndicator.alpha = 1.0;
+                       self.button.alpha = 0.0;
+                     }];
+  } else {
+    self.button.alpha = 1.0;
+    self.activityIndicator.alpha = 0.0;
+    [self.activityIndicator stopAnimating];
+
+    [self.button setTitleColor:[self titleColor] forState:UIControlStateNormal];
+  }
 }
 
 // Returns the button's title color depending on the state.
