@@ -372,5 +372,11 @@ TEST_F(DataOfferTest, SetClipboardData) {
   EXPECT_EQ(std::string("Test data"), result);
 }
 
+TEST_F(DataOfferTest, AcceptWithNull) {
+  TestDataOfferDelegate delegate;
+  DataOffer data_offer(&delegate);
+  data_offer.Accept(nullptr);
+}
+
 }  // namespace
 }  // namespace exo

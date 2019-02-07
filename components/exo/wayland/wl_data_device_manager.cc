@@ -188,7 +188,12 @@ void data_offer_accept(wl_client* client,
                        wl_resource* resource,
                        uint32_t serial,
                        const char* mime_type) {
-  GetUserDataAs<DataOffer>(resource)->Accept(mime_type);
+  if (mime_type == nullptr) {
+    GetUserDataAs<DataOffer>(resource)->Accept(nullptr);
+    return;
+  }
+  const std::string mime_type_string(mime_type);
+  GetUserDataAs<DataOffer>(resource)->Accept(&mime_type_string);
 }
 
 void data_offer_receive(wl_client* client,
