@@ -9,11 +9,90 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib.api import image
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import image_lib
+from chromite.lib.api import image
+
+
+class BuildImageTest(cros_test_lib.RunCommandTestCase):
+  """Build Image tests."""
+
+  def testInsideChrootCommand(self):
+    """Test the build_image command when called from inside the chroot."""
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    image.Build(board='board')
+    self.assertCommandContains(
+        [os.path.join(constants.CROSUTILS_DIR, 'build_image')])
+
+  def testOutsideChrootCommand(self):
+    """Test the build_image command when called from outside the chroot."""
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    image.Build(board='board')
+    self.assertCommandContains(['./build_image'])
+
+  def testBuildBoardHandling(self):
+    """Test the argument handling."""
+    # No board and no default should raise an error.
+    self.PatchObject(cros_build_lib, 'GetDefaultBoard', return_value=None)
+    with self.assertRaises(image.InvalidArgumentError):
+      image.Build()
+
+    # Falls back to default when no board provided.
+    self.PatchObject(cros_build_lib, 'GetDefaultBoard', return_value='default')
+    image.Build()
+    self.assertCommandContains(['--board', 'default'])
+
+    # Should be using the passed board before the default.
+    image.Build('board')
+    self.assertCommandContains(['--board', 'board'])
+
+  def testBuildImageTypes(self):
+    """Test the image type handling."""
+    # Should default to building the base image.
+    image.Build('board')
+    self.assertCommandContains([constants.IMAGE_TYPE_BASE])
+
+    # Should be using the argument when passed.
+    image.Build('board', [constants.IMAGE_TYPE_DEV])
+    self.assertCommandContains([constants.IMAGE_TYPE_DEV])
+
+    # Multiple should all be passed.
+    multi = [constants.IMAGE_TYPE_BASE, constants.IMAGE_TYPE_DEV,
+             constants.IMAGE_TYPE_TEST]
+    image.Build('board', multi)
+    self.assertCommandContains(multi)
+
+
+class BuildConfigTest(cros_test_lib.MockTestCase):
+  """BuildConfig tests."""
+
+  def testGetArguments(self):
+    """GetArguments tests."""
+    config = image.BuildConfig()
+    self.assertEqual([], config.GetArguments())
+
+    # Make sure each arg produces the correct argument individually.
+    config.builder_path = 'test'
+    self.assertEqual(['--builder_path', 'test'], config.GetArguments())
+    config.builder_path = None
+
+    config.disk_layout = 'disk'
+    self.assertEqual(['--disk_layout', 'disk'], config.GetArguments())
+    config.disk_layout = None
+
+    config.enable_rootfs_verification = False
+    self.assertEqual(['--noenable_rootfs_verification'], config.GetArguments())
+    config.enable_rootfs_verification = True
+
+    config.replace = True
+    self.assertEqual(['--replace'], config.GetArguments())
+    config.replace = False
+
+    config.version = 'version'
+    self.assertEqual(['--version', 'version'], config.GetArguments())
+    config.version = None
 
 
 class ImageTestTest(cros_test_lib.RunCommandTempDirTestCase):

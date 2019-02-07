@@ -22,6 +22,73 @@ class InvalidArgumentError(Exception):
   """Invalid argument values."""
 
 
+class BuildConfig(object):
+  """Value object to hold the build configuration options."""
+
+  def __init__(self, builder_path=None, disk_layout=None,
+               enable_rootfs_verification=True, replace=False, version=None):
+    """Build config initialization.
+
+    Args:
+      builder_path (str): The value to which the builder path lsb key should be
+        set, the build_name installed on DUT during hwtest.
+      disk_layout (str): The disk layout type.
+      enable_rootfs_verification (bool): Whether the rootfs verification is
+        enabled.
+      replace (bool): Whether to replace existing output if any exists.
+      version (str): The version string to use for the image.
+    """
+    self.builder_path = builder_path
+    self.disk_layout = disk_layout
+    self.enable_rootfs_verification = enable_rootfs_verification
+    self.replace = replace
+    self.version = version
+
+  def GetArguments(self):
+    """Get the build_image arguments for the configuration."""
+    args = []
+
+    if self.builder_path:
+      args.extend(['--builder_path', self.builder_path])
+    if self.disk_layout:
+      args.extend(['--disk_layout', self.disk_layout])
+    if not self.enable_rootfs_verification:
+      args.append('--noenable_rootfs_verification')
+    if self.replace:
+      args.append('--replace')
+    if self.version:
+      args.extend(['--version', self.version])
+
+    return args
+
+
+def Build(board=None, images=None, config=None):
+  """Build an image.
+
+  Args:
+    board (str): The board name.
+    images (list): The image types to build.
+    config (BuildConfig): The build configuration options.
+  """
+  board = board or cros_build_lib.GetDefaultBoard()
+  if not board:
+    raise InvalidArgumentError('board is required.')
+  images = images or [constants.IMAGE_TYPE_BASE]
+  config = config or BuildConfig()
+
+  if cros_build_lib.IsInsideChroot():
+    cmd = [os.path.join(constants.CROSUTILS_DIR, 'build_image')]
+  else:
+    cmd = ['./build_image']
+
+  cmd.extend(['--board', board])
+  cmd.extend(config.GetArguments())
+  cmd.extend(images)
+
+  result = cros_build_lib.RunCommand(cmd, enter_chroot=True, error_code_ok=True)
+  return result.returncode == 0
+
+
 def Test(board, result_directory, image_dir=None):
   """Run tests on an already built image.
 
