@@ -34,6 +34,14 @@ class CORE_EXPORT FindBuffer {
   struct BufferMatchResult {
     const unsigned start;
     const unsigned length;
+
+    bool operator==(const BufferMatchResult& other) const {
+      return start == other.start && length == other.length;
+    }
+
+    bool operator!=(const BufferMatchResult& other) const {
+      return !operator==(other);
+    }
   };
 
   // All match results for this buffer. We can iterate through the
