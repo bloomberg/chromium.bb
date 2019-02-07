@@ -75,7 +75,7 @@
 #include "chrome/browser/ui/webui/eoc_internals/eoc_internals.mojom.h"
 #else
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
-#include "chrome/services/app_service/manifest.h"
+#include "chrome/services/app_service/public/cpp/manifest.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

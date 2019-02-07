@@ -34,6 +34,19 @@ source_set("cpp") {
   }
 }
 
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/services/media_gallery_util/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
 source_set("browser_tests") {
   testonly = true
 

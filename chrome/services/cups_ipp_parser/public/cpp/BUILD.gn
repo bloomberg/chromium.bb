@@ -33,3 +33,16 @@ if (use_cups) {
     dict = "ipp_message_parser_fuzzer.dict"
   }
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/services/cups_ipp_parser/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
+}

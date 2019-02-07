@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//media/media_options.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -66,9 +65,4 @@ if (is_android) {
       "//testing/gtest",
     ]
   }
-}
-
-service_manifest("manifest") {
-  name = "media_gallery_util"
-  source = "manifest.json"
 }

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -37,9 +36,4 @@ source_set("lib") {
       "safe_archive_analyzer.h",
     ]
   }
-}
-
-service_manifest("manifest") {
-  name = "file_util"
-  source = "manifest.json"
 }

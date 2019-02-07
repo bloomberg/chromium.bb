@@ -15,6 +15,20 @@ source_set("app_update") {
   ]
 }
 
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/services/app_service/public/mojom",
+    "//services/preferences/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 

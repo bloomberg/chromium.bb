@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "xr_device_service.cc",
@@ -27,7 +25,16 @@ source_set("lib") {
   ]
 }
 
-service_manifest("manifest") {
-  name = "xr_device_service"
-  source = "manifest.json"
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//device/vr/public/mojom",
+    "//device/vr/public/mojom:test_mojom",
+    "//services/service_manager/public/cpp",
+  ]
 }

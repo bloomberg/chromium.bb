@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
-#include "chrome/services/file_util/manifest.h"
+#include "chrome/services/file_util/public/cpp/manifest.h"
 #include "chrome/services/noop/manifest.h"
 #include "components/services/patch/manifest.h"
 #include "components/services/unzip/manifest.h"
@@ -26,8 +26,8 @@
 #include "ash/components/shortcut_viewer/public/cpp/manifest.h"
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/public/cpp/manifest.h"
-#include "chrome/browser/chromeos/ash_pref_connector_manifest.h"
-#include "chrome/services/cups_ipp_parser/manifest.h"
+#include "chrome/browser/chromeos/prefs/ash_pref_connector_manifest.h"
+#include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"
 #include "chromeos/services/ime/manifest.h"
 #include "chromeos/services/secure_channel/manifest.h"
 #include "mash/public/mojom/launchable.mojom.h"  // nogncheck
@@ -54,7 +54,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-#include "chrome/services/media_gallery_util/manifest.h"
+#include "chrome/services/media_gallery_util/public/cpp/manifest.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -133,9 +133,9 @@ const std::vector<service_manager::Manifest>&
 GetChromePackagedServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
+      GetFileUtilManifest(),
       patch_service::GetManifest(),
       unzip_service::GetManifest(),
-      file_util::GetManifest(),
       proxy_resolver::GetManifest(),
       prefs::GetLocalStateManifest(),
       noop::GetManifest(),
@@ -143,7 +143,7 @@ GetChromePackagedServiceManifests() {
       removable_storage_writer::GetManifest(),
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-      media_gallery_util::GetManifest(),
+      GetMediaGalleryUtilManifest(),
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
       pdf_compositor::GetManifest(),
@@ -152,7 +152,7 @@ GetChromePackagedServiceManifests() {
       chrome_printing::GetManifest(),
 #endif
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
-      xr_device_service::GetManifest(),
+      GetXrDeviceServiceManifest(),
 #endif
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
     BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
@@ -173,8 +173,8 @@ GetChromePackagedServiceManifests() {
       shortcut_viewer::GetManifest(),
       tap_visualizer::GetManifest(),
       ash::GetManifest(),
-      ash_pref_connector::GetManifest(),
-      cups_ipp_parser::GetManifest(),
+      GetAshPrefConnectorManifest(),
+      GetCupsIppParserManifest(),
       ime::GetManifest(),
       secure_channel::GetManifest(),
       ax_host_service::GetManifest(),
