@@ -46,6 +46,7 @@ source_set("common") {
     "ensure_user.h",
     "file_chooser.h",
     "file_chooser_common_win.h",
+    "file_chooser_mac.mm",
     "file_chooser_main_win.cc",
     "file_chooser_win.cc",
     "file_transfer_message_handler.cc",
