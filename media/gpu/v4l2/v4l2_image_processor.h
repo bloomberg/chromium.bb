@@ -21,6 +21,7 @@
 #include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/image_processor.h"
@@ -198,6 +199,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
 
   // Checker for the sequence that creates this V4L2ImageProcessor.
   SEQUENCE_CHECKER(client_sequence_checker_);
+  // Checker for the device thread owned by this V4L2ImageProcessor.
+  THREAD_CHECKER(device_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);
 };
