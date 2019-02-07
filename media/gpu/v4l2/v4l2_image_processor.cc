@@ -84,7 +84,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       error_cb_(error_cb) {}
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
   Destroy();
 
@@ -443,7 +443,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
 
 bool V4L2ImageProcessor::Reset() {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(device_thread_.IsRunning());
 
   process_task_tracker_.TryCancelAll();
@@ -452,7 +452,7 @@ bool V4L2ImageProcessor::Reset() {
 
 void V4L2ImageProcessor::Destroy() {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
