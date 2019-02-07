@@ -436,8 +436,8 @@ bool TaskTracker::WillPostTask(Task* task,
   DCHECK(task);
   DCHECK(task->task);
 
-  if (!BeforePostTask(GetEffectiveShutdownBehavior(shutdown_behavior,
-                                                   !task->delay.is_zero())))
+  if (!BeforePostTask(GetEffectiveShutdownBehavior(
+          shutdown_behavior, !task->delayed_run_time.is_null())))
     return false;
 
   if (task->delayed_run_time.is_null())
@@ -498,7 +498,7 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
 
   const TaskShutdownBehavior effective_shutdown_behavior =
       GetEffectiveShutdownBehavior(sequence->shutdown_behavior(),
-                                   !task->delay.is_zero());
+                                   !task->delayed_run_time.is_null());
 
   const bool can_run_task = BeforeRunTask(effective_shutdown_behavior);
 
@@ -588,7 +588,7 @@ void TaskTracker::RunOrSkipTask(Task task,
                                 bool can_run_task) {
   DCHECK(sequence);
   RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, traits,
-                         task.sequenced_time);
+                         task.queue_time);
 
   const bool previous_singleton_allowed =
       ThreadRestrictions::SetSingletonAllowed(

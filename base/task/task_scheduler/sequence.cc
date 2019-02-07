@@ -47,8 +47,8 @@ bool Sequence::Transaction::PushTask(Task task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task.task);
-  DCHECK(task.sequenced_time.is_null());
-  task.sequenced_time = base::TimeTicks::Now();
+  DCHECK(task.queue_time.is_null());
+  task.queue_time = base::TimeTicks::Now();
 
   task.task = sequence_->traits_.shutdown_behavior() ==
                       TaskShutdownBehavior::BLOCK_SHUTDOWN
@@ -79,11 +79,9 @@ SequenceSortKey Sequence::Transaction::GetSortKey() const {
   DCHECK(!IsEmpty());
 
   // Save the sequenced time of the next task in the sequence.
-  base::TimeTicks next_task_sequenced_time =
-      sequence_->queue_.front().sequenced_time;
+  base::TimeTicks next_task_queue_time = sequence_->queue_.front().queue_time;
 
-  return SequenceSortKey(sequence_->traits_.priority(),
-                         next_task_sequenced_time);
+  return SequenceSortKey(sequence_->traits_.priority(), next_task_queue_time);
 }
 
 bool Sequence::Transaction::IsEmpty() const {

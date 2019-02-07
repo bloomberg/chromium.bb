@@ -61,19 +61,19 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
   // Take the task in front of the sequence. It should be task A.
   Optional<Task> task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_a, &task.value());
-  EXPECT_FALSE(task->sequenced_time.is_null());
+  EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task B should now be in front.
   EXPECT_FALSE(sequence_transaction.Pop());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_b, &task.value());
-  EXPECT_FALSE(task->sequenced_time.is_null());
+  EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task C should now be in front.
   EXPECT_FALSE(sequence_transaction.Pop());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_c, &task.value());
-  EXPECT_FALSE(task->sequenced_time.is_null());
+  EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot.
   EXPECT_FALSE(sequence_transaction.Pop());
@@ -84,13 +84,13 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
   // Task D should be in front.
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_d, &task.value());
-  EXPECT_FALSE(task->sequenced_time.is_null());
+  EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task E should now be in front.
   EXPECT_FALSE(sequence_transaction.Pop());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_e, &task.value());
-  EXPECT_FALSE(task->sequenced_time.is_null());
+  EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. The sequence should now be empty.
   EXPECT_TRUE(sequence_transaction.Pop());
@@ -116,7 +116,7 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyBestEffort) {
 
   // Verify the sort key.
   EXPECT_EQ(TaskPriority::BEST_EFFORT, best_effort_sort_key.priority());
-  EXPECT_EQ(take_best_effort_task->sequenced_time,
+  EXPECT_EQ(take_best_effort_task->queue_time,
             best_effort_sort_key.next_task_sequenced_time());
 
   // Pop for correctness.
@@ -144,7 +144,7 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
 
   // Verify the sort key.
   EXPECT_EQ(TaskPriority::USER_VISIBLE, foreground_sort_key.priority());
-  EXPECT_EQ(take_foreground_task->sequenced_time,
+  EXPECT_EQ(take_foreground_task->queue_time,
             foreground_sort_key.next_task_sequenced_time());
 
   // Pop for correctness.
