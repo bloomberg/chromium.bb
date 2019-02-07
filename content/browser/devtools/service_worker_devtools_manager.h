@@ -11,8 +11,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
@@ -102,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void AgentHostDestroyed(ServiceWorkerDevToolsAgentHost* agent_host);
 
  private:
-  friend struct base::DefaultSingletonTraits<ServiceWorkerDevToolsManager>;
+  friend class base::NoDestructor<ServiceWorkerDevToolsManager>;
   friend class ServiceWorkerDevToolsAgentHost;
 
   using WorkerId = std::pair<int, int>;
