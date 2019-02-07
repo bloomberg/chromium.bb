@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/worker_thread.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
@@ -158,8 +159,14 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     switch (target.type) {
       case MessageTarget::EXTENSION: {
         ExtensionMsg_ExternalConnectionInfo info;
-        if (extension && !extension->is_hosted_app())
-          info.source_id = extension->id();
+        if (extension && !extension->is_hosted_app()) {
+          info.source_endpoint =
+              script_context->context_type() == Feature::CONTENT_SCRIPT_CONTEXT
+                  ? MessagingEndpoint::ForContentScript(extension->id())
+                  : MessagingEndpoint::ForExtension(extension->id());
+        } else {
+          info.source_endpoint = MessagingEndpoint::ForWebPage();
+        }
         info.target_id = *target.extension_id;
         info.source_url = script_context->url();
 

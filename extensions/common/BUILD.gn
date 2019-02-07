@@ -87,6 +87,8 @@ if (enable_extensions) {
       "api/declarative_net_request/utils.cc",
       "api/declarative_net_request/utils.h",
       "api/messaging/message.h",
+      "api/messaging/messaging_endpoint.cc",
+      "api/messaging/messaging_endpoint.h",
       "api/messaging/port_id.cc",
       "api/messaging/port_id.h",
       "api/printer_provider/usb_printer_manifest_data.cc",

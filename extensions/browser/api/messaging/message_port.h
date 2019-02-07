@@ -19,6 +19,7 @@ class RenderFrameHost;
 
 namespace extensions {
 struct Message;
+struct MessagingEndpoint;
 struct PortId;
 
 // One side of the communication handled by extensions::MessageService.
@@ -58,7 +59,7 @@ class MessagePort {
       int source_frame_id,
       int guest_process_id,
       int guest_render_frame_routing_id,
-      const std::string& source_extension_id,
+      const MessagingEndpoint& source_endpoint,
       const std::string& target_extension_id,
       const GURL& source_url);
 

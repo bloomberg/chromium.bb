@@ -61,7 +61,7 @@ class ExtensionMessagePort : public MessagePort {
                          int source_frame_id,
                          int guest_process_id,
                          int guest_render_frame_routing_id,
-                         const std::string& source_extension_id,
+                         const MessagingEndpoint& source_endpoint,
                          const std::string& target_extension_id,
                          const GURL& source_url) override;
   void DispatchOnDisconnect(const std::string& error_message) override;

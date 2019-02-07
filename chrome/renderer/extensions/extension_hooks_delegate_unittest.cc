@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/common/child_process_host.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/value_builder.h"
@@ -184,7 +185,8 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
       DictionaryBuilder().Set("tabId", tab_id).Build().get());
   ExtensionMsg_ExternalConnectionInfo external_connection_info;
   external_connection_info.target_id = extension()->id();
-  external_connection_info.source_id = extension()->id();
+  external_connection_info.source_endpoint =
+      MessagingEndpoint::ForExtension(extension()->id());
   external_connection_info.source_url = source_url;
   external_connection_info.guest_process_id =
       content::ChildProcessHost::kInvalidUniqueID;

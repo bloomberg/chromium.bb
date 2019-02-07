@@ -12,6 +12,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
@@ -185,14 +186,16 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& event_name) {
+  DCHECK_NE(info.source_endpoint.type, MessagingEndpoint::Type::kNativeApp);
+
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = script_context->v8_context();
   v8::Context::Scope context_scope(v8_context);
 
   gin::DataObjectBuilder sender_builder(isolate);
-  if (!info.source_id.empty())
-    sender_builder.Set("id", info.source_id);
+  if (info.source_endpoint.extension_id)
+    sender_builder.Set("id", *info.source_endpoint.extension_id);
   if (!info.source_url.is_empty())
     sender_builder.Set("url", info.source_url.spec());
   if (source->frame_id >= 0)
@@ -242,8 +245,8 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
         std::make_unique<base::Value>(base::Value::Type::LIST);
     auto& list = activity_logging_args->GetList();
     list.reserve(2u);
-    if (!info.source_id.empty())
-      list.emplace_back(info.source_id);
+    if (info.source_endpoint.extension_id)
+      list.emplace_back(*info.source_endpoint.extension_id);
     else
       list.emplace_back();
 

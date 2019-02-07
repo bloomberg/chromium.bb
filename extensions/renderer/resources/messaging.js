@@ -171,7 +171,7 @@
         'Cannot send a response more than once per chrome.' + eventName +
         ' listener per document';
     }
-    errorMsg += ' (message was sent by extension' + sourceExtensionId;
+    errorMsg += ' (message was sent by extension ' + sourceExtensionId;
     if (sourceExtensionId && sourceExtensionId !== targetExtensionId)
       errorMsg += ' for extension ' + targetExtensionId;
     if (sourceUrl)

@@ -82,11 +82,15 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
   }
 
   v8::Local<v8::String> v8_channel_name;
-  v8::Local<v8::String> v8_source_id;
+  v8::Local<v8::String> v8_source_extension_id;
   v8::Local<v8::String> v8_target_extension_id;
   v8::Local<v8::String> v8_source_url_spec;
   if (!ToV8String(isolate, channel_name.c_str(), &v8_channel_name) ||
-      !ToV8String(isolate, info.source_id.c_str(), &v8_source_id) ||
+      !ToV8String(isolate,
+                  info.source_endpoint.extension_id
+                      ? *info.source_endpoint.extension_id
+                      : ExtensionId(),
+                  &v8_source_extension_id) ||
       !ToV8String(isolate, target_extension_id.c_str(),
                   &v8_target_extension_id) ||
       !ToV8String(isolate, source_url_spec.c_str(), &v8_source_url_spec)) {
@@ -108,7 +112,7 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
       // guestRenderFrameRoutingId
       guest_render_frame_routing_id,
       // sourceExtensionId
-      v8_source_id,
+      v8_source_extension_id,
       // targetExtensionId
       v8_target_extension_id,
       // sourceUrl

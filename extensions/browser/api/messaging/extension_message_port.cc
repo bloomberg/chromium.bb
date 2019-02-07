@@ -18,6 +18,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
@@ -207,7 +208,7 @@ void ExtensionMessagePort::DispatchOnConnect(
     int source_frame_id,
     int guest_process_id,
     int guest_render_frame_routing_id,
-    const std::string& source_extension_id,
+    const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
     const GURL& source_url) {
   ExtensionMsg_TabConnectionInfo source;
@@ -217,7 +218,7 @@ void ExtensionMessagePort::DispatchOnConnect(
 
   ExtensionMsg_ExternalConnectionInfo info;
   info.target_id = target_extension_id;
-  info.source_id = source_extension_id;
+  info.source_endpoint = source_endpoint;
   info.source_url = source_url;
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;

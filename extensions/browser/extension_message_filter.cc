@@ -19,6 +19,7 @@
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -390,7 +391,7 @@ void ExtensionMessageFilter::OnOpenChannelToExtension(
   if (browser_context_) {
     MessageService::Get(browser_context_)
         ->OpenChannelToExtension(render_process_id_, routing_id, port_id,
-                                 info.source_id, info.target_id,
+                                 info.source_endpoint, info.target_id,
                                  info.source_url, channel_name);
   }
 }

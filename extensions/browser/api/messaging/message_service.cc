@@ -39,6 +39,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -80,7 +81,7 @@ struct MessageService::OpenChannelParams {
   int source_frame_id;
   std::unique_ptr<MessagePort> receiver;
   PortId receiver_port_id;
-  std::string source_extension_id;
+  MessagingEndpoint source_endpoint;
   std::string target_extension_id;
   GURL source_url;
   std::string channel_name;
@@ -93,7 +94,7 @@ struct MessageService::OpenChannelParams {
                     int source_frame_id,
                     MessagePort* receiver,
                     const PortId& receiver_port_id,
-                    const std::string& source_extension_id,
+                    const MessagingEndpoint& source_endpoint,
                     const std::string& target_extension_id,
                     const GURL& source_url,
                     const std::string& channel_name,
@@ -103,7 +104,7 @@ struct MessageService::OpenChannelParams {
         source_frame_id(source_frame_id),
         receiver(receiver),
         receiver_port_id(receiver_port_id),
-        source_extension_id(source_extension_id),
+        source_endpoint(source_endpoint),
         target_extension_id(target_extension_id),
         source_url(source_url),
         channel_name(channel_name),
@@ -161,12 +162,16 @@ void MessageService::OpenChannelToExtension(
     int source_process_id,
     int source_routing_id,
     const PortId& source_port_id,
-    const std::string& source_extension_id,
+    const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
     const GURL& source_url,
     const std::string& channel_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(source_port_id.is_opener);
+  DCHECK(!target_extension_id.empty());
+  DCHECK_NE(source_endpoint.type, MessagingEndpoint::Type::kNativeApp);
+  DCHECK(source_endpoint.extension_id.has_value() ||
+         source_endpoint.type == MessagingEndpoint::Type::kTab);
 
   content::RenderFrameHost* source_render_frame_host =
       content::RenderFrameHost::FromID(source_process_id, source_routing_id);
@@ -188,7 +193,9 @@ void MessageService::OpenChannelToExtension(
 
   bool is_web_connection = false;
 
-  if (source_extension_id != target_extension_id) {
+  if ((source_endpoint.type == MessagingEndpoint::Type::kTab ||
+       source_endpoint.type == MessagingEndpoint::Type::kExtension) &&
+      source_endpoint.extension_id != target_extension_id) {
     // It's an external connection. Check the externally_connectable manifest
     // key if it's present. If it's not, we allow connection from any extension
     // but not webpages.
@@ -199,21 +206,20 @@ void MessageService::OpenChannelToExtension(
     bool is_externally_connectable = false;
 
     if (externally_connectable) {
-      if (source_extension_id.empty()) {
-        // No source extension ID so the source was a web page. Check that the
-        // URL matches.
+      if (source_endpoint.extension_id) {
+        // The source was an extension or a content script. Check that the
+        // extension ID matches.
+        is_externally_connectable =
+            externally_connectable->IdCanConnect(*source_endpoint.extension_id);
+      } else {
+        // Check that the web page URL matches.
         is_web_connection = true;
         is_externally_connectable =
             externally_connectable->matches.MatchesURL(source_url);
-      } else {
-        // Source extension ID so the source was an extension. Check that the
-        // extension matches.
-        is_externally_connectable =
-            externally_connectable->IdCanConnect(source_extension_id);
       }
     } else {
-      // Default behaviour. Any extension, no webpages.
-      is_externally_connectable = !source_extension_id.empty();
+      // Default behaviour. Any extension or content script, no webpages.
+      is_externally_connectable = source_endpoint.extension_id.has_value();
     }
 
     if (!is_externally_connectable) {
@@ -254,7 +260,7 @@ void MessageService::OpenChannelToExtension(
 
   std::unique_ptr<OpenChannelParams> params(new OpenChannelParams(
       source_process_id, source_routing_id, std::move(source_tab),
-      source_frame_id, nullptr, receiver_port_id, source_extension_id,
+      source_frame_id, nullptr, receiver_port_id, source_endpoint,
       target_extension_id, source_url, channel_name,
       include_guest_process_info));
 
@@ -441,7 +447,8 @@ void MessageService::OpenChannelToTab(int source_process_id,
                                                  // sense
                                                  // for opening to tabs.
       -1,  // If there is no tab, then there is no frame either.
-      receiver.release(), receiver_port_id, extension_id, extension_id,
+      receiver.release(), receiver_port_id,
+      MessagingEndpoint::ForExtension(extension_id), extension_id,
       GURL(),  // Source URL doesn't make sense for opening to tabs.
       channel_name,
       false));  // Connections to tabs aren't webview guests.
@@ -470,7 +477,10 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
 
   std::unique_ptr<ExtensionMessagePort> opener(new ExtensionMessagePort(
       weak_factory_.GetWeakPtr(), params->receiver_port_id.GetOppositePortId(),
-      params->source_extension_id, source, false));
+      params->source_endpoint.extension_id
+          ? *params->source_endpoint.extension_id
+          : ExtensionId(),
+      source, false));
   if (!opener->IsValidPort())
     return;
   opener->OpenPort(params->source_process_id, params->source_routing_id);
@@ -504,8 +514,7 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   channel->receiver->DispatchOnConnect(
       params->channel_name, std::move(params->source_tab),
       params->source_frame_id, guest_process_id, guest_render_frame_routing_id,
-      params->source_extension_id, params->target_extension_id,
-      params->source_url);
+      params->source_endpoint, params->target_extension_id, params->source_url);
 
   // Report the event to the event router, if the target is an extension.
   //
@@ -523,7 +532,7 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   if (target_extension) {
     events::HistogramValue histogram_value = events::UNKNOWN;
     bool is_external =
-        params->source_extension_id != params->target_extension_id;
+        params->source_endpoint.extension_id != params->target_extension_id;
     if (params->channel_name == "chrome.runtime.onRequest") {
       histogram_value = is_external ? events::RUNTIME_ON_REQUEST_EXTERNAL
                                     : events::RUNTIME_ON_REQUEST;
