@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -120,10 +122,6 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   ASSERT_EQ(user, user_manager::UserManager::Get()->FindUser(account_id_));
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 
-  // On Chrome OS this is false.
-  ASSERT_FALSE(
-      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
-
   // Require account consistency.
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
@@ -144,15 +142,37 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
                               "mode=3,enable_account_consistency=true");
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
-                       PRE_TestMirrorRequestChromeOsNotChildAccount) {
+class ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled
+    : public ChromeOsMirrorAccountConsistencyTest {
+ public:
+  ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled() = default;
+  ~ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled() override =
+      default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::switches::kAccountManager);
+    ChromeOsMirrorAccountConsistencyTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled);
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled,
+    PRE_TestMirrorRequestChromeOsNotChildAccount) {
   RegisterUser(account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 // Mirror is not enabled for non-child accounts.
-IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
-                       TestMirrorRequestChromeOsNotChildAccount) {
+IN_PROC_BROWSER_TEST_F(
+    ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled,
+    TestMirrorRequestChromeOsNotChildAccount) {
   // Not a child user.
   LoginUser(account_id_);
 
@@ -161,12 +181,9 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   ASSERT_EQ(user, user_manager::UserManager::Get()->FindUser(account_id_));
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 
-  // On Chrome OS this is false.
-  ASSERT_FALSE(
+  // With Chrome OS Account Manager enabled, this should be true.
+  EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
-
-  PrefService* prefs = profile->GetPrefs();
-  ASSERT_FALSE(prefs->GetBoolean(prefs::kAccountConsistencyMirrorRequired));
-
-  TestMirrorRequestForProfile(test_server_.get(), profile, "");
+  TestMirrorRequestForProfile(test_server_.get(), profile,
+                              "mode=0,enable_account_consistency=true");
 }
