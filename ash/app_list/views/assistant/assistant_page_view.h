@@ -34,6 +34,7 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
 
   // AppListPage:
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
+  gfx::Rect GetSearchBoxBounds() const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
 

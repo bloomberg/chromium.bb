@@ -22,6 +22,10 @@ namespace {
 constexpr int kHeight = 440;
 constexpr int kWidth = 640;
 
+// The height of the search box in |search_result_page_view_|. It is only for
+// animation.
+constexpr int kSearchBoxHeight = 56;
+
 }  // namespace
 
 AssistantPageView::AssistantPageView(
@@ -71,6 +75,15 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
   }
 
   return onscreen_bounds;
+}
+
+gfx::Rect AssistantPageView::GetSearchBoxBounds() const {
+  gfx::Rect rect(AppListPage::GetSearchBoxBounds());
+
+  rect.Offset((rect.width() - kWidth) / 2, 0);
+  rect.set_size(gfx::Size(kWidth, kSearchBoxHeight));
+
+  return rect;
 }
 
 views::View* AssistantPageView::GetFirstFocusableView() {
