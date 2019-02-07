@@ -92,14 +92,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
 
   // Sets debugging features mask for testing.
-  virtual void SetDebuggingFeaturesStatus(int featues_mask);
+  virtual void SetDebuggingFeaturesStatus(int features_mask);
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.
   void SetServiceIsAvailable(bool is_available);
 
  private:
-  int featues_mask_;
+  int features_mask_;
 
   bool service_is_available_;
   std::vector<WaitForServiceToBeAvailableCallback>
