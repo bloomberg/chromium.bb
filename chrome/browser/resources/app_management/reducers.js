@@ -76,12 +76,12 @@ cr.define('app_management', function() {
    * @return {Page}
    */
   CurrentPageState.changePage = function(apps, action) {
-    if (action.pageType == PageType.DETAIL && apps[action.id]) {
+    if (action.pageType === PageType.DETAIL && apps[action.id]) {
       return {
         pageType: PageType.DETAIL,
         selectedAppId: action.id,
       };
-    } else if (action.pageType == PageType.NOTIFICATIONS) {
+    } else if (action.pageType === PageType.NOTIFICATIONS) {
       return {
         pageType: PageType.NOTIFICATIONS,
         selectedAppId: null,
@@ -100,8 +100,8 @@ cr.define('app_management', function() {
    * @return {Page}
    */
   CurrentPageState.removeApp = function(currentPage, action) {
-    if (currentPage.pageType == PageType.DETAIL &&
-        currentPage.selectedAppId == action.id) {
+    if (currentPage.pageType === PageType.DETAIL &&
+        currentPage.selectedAppId === action.id) {
       return {
         pageType: PageType.MAIN,
         selectedAppId: null,

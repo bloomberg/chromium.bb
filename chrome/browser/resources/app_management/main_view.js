@@ -141,7 +141,7 @@ Polymer({
             .map(function(p) {
               // Make the titles of app collapsible but make the number in the
               // "X other app(s)" part non-collapsible.
-              p.collapsible = !!p.arg && p.arg != '$' + placeholder;
+              p.collapsible = !!p.arg && p.arg !== '$' + placeholder;
               return p;
             });
     return pieces;
@@ -158,7 +158,7 @@ Polymer({
     const textContainer = this.$['notifications-sublabel'];
     textContainer.textContent = '';
     for (const p of pieces) {
-      if (!p.value || p.value.length == 0) {
+      if (!p.value || p.value.length === 0) {
         return;
       }
 

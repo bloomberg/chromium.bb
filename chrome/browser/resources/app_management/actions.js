@@ -43,7 +43,7 @@ cr.define('app_management.actions', function() {
    * @param {string=} id
    */
   function changePage(pageType, id) {
-    if (pageType == PageType.DETAIL && !id) {
+    if (pageType === PageType.DETAIL && !id) {
       console.warn(
           'Tried to load app detail page without providing an app id.');
     }
