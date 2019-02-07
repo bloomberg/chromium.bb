@@ -121,6 +121,7 @@ AdsPageLoadMetricsObserver::OnCommit(
   DCHECK(ad_frames_data_.empty());
 
   committed_ = true;
+  web_contents_ = navigation_handle->GetWebContents();
 
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] = nullptr;
@@ -432,8 +433,16 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
   FrameData* ancestor_data = id_and_data->second;
-  if (ancestor_data)
-    ancestor_data->ProcessResourceLoadInFrame(resource);
+  if (!ancestor_data)
+    return;
+  ancestor_data->ProcessResourceLoadInFrame(resource);
+
+  if (web_contents_ && ancestor_data->size_intervention_status() ==
+                           FrameData::FrameSizeInterventionStatus::kTriggered) {
+    RecordSingleFeatureUsage(
+        web_contents_->GetMainFrame(),
+        blink::mojom::WebFeature::kAdFrameSizeIntervention);
+  }
 }
 
 AdsPageLoadMetricsObserver::ResourceMimeType
@@ -639,6 +648,9 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
                   UMA_HISTOGRAM_COUNTS_10000, visibility,
                   std::min(ad_frame_data.frame_size().width(),
                            ad_frame_data.frame_size().height()));
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SizeIntervention",
+                  UMA_HISTOGRAM_ENUMERATION, visibility,
+                  ad_frame_data.size_intervention_status());
 
     non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.frame_bytes();

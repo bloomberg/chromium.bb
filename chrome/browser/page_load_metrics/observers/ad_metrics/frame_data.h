@@ -32,6 +32,15 @@ class FrameData {
     kMaxValue = kAnyVisibility,
   };
 
+  // Whether or not the frame size intervention would have triggered on
+  // this frame.  These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  enum class FrameSizeInterventionStatus {
+    kNone = 0,
+    kTriggered = 1,
+    kMaxValue = kTriggered,
+  };
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. For any additions, also update the
   // corresponding PageEndReason enum in enums.xml.
@@ -40,6 +49,9 @@ class FrameData {
     kReceivedActivation = 1,
     kMaxValue = kReceivedActivation,
   };
+
+  // Maximum number of bytes allowed to be loaded by a frame.
+  static const int kFrameSizeInterventionByteThreshold = 1050 * 1024;
 
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
@@ -85,6 +97,10 @@ class FrameData {
 
   gfx::Size frame_size() const { return frame_size_; }
 
+  FrameSizeInterventionStatus size_intervention_status() const {
+    return size_intervention_status_;
+  }
+
  private:
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
@@ -99,6 +115,10 @@ class FrameData {
   bool is_display_none_;
   FrameVisibility visibility_;
   gfx::Size frame_size_;
+
+  // Indicates whether or not this frame would have triggered a size
+  // intervention.
+  FrameSizeInterventionStatus size_intervention_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameData);
 };

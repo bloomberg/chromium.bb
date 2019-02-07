@@ -60,6 +60,10 @@ const char kSmallestDimensionHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "SmallestDimension";
 
+const char kAdFrameSizeInterventionHistogramId[] =
+    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+    "SizeIntervention";
+
 enum class Origin {
   kNavigation,
   kAnchorAttribute,
@@ -735,6 +739,114 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network", 2, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 2, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       AdFrameSizeInterventionTriggered) {
+  base::HistogramTester histogram_tester;
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ads_observer");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/ad_with_incomplete_resource.html"),
+      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+
+  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->Wait();
+
+  // Load a resource large enough to trigger intervention.
+  resource_response->WaitForRequest();
+  resource_response->Send(kHttpResponseHeader);
+  resource_response->Send(
+      std::string(FrameData::kFrameSizeInterventionByteThreshold, ' '));
+  resource_response->Done();
+
+  // Wait for the resource to finish loading.
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+
+  // Close all tabs to report metrics.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  histogram_tester.ExpectBucketCount(
+      kAdFrameSizeInterventionHistogramId,
+      FrameData::FrameSizeInterventionStatus::kTriggered, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       AdFrameSizeInterventionNotActivatedOnFrameWithGesture) {
+  base::HistogramTester histogram_tester;
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ads_observer");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/ad_with_incomplete_resource.html"),
+      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+
+  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->Wait();
+
+  // Activate one frame by executing a dummy script.
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  const std::string no_op_script = "// No-op script";
+  EXPECT_TRUE(ExecuteScript(ad_frame, no_op_script));
+
+  // Load a resource large enough to trigger intervention.
+  resource_response->WaitForRequest();
+  resource_response->Send(kHttpResponseHeader);
+  resource_response->Send(
+      std::string(FrameData::kFrameSizeInterventionByteThreshold, ' '));
+  resource_response->Done();
+
+  // Wait for the resource to finish loading.
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+
+  // Close all tabs to report metrics.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  histogram_tester.ExpectBucketCount(
+      kAdFrameSizeInterventionHistogramId,
+      FrameData::FrameSizeInterventionStatus::kNone, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kAdFrameSizeIntervention, 0);
 }
 
 // Verify that per-resource metrics are reported for cached resources and
