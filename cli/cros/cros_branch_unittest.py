@@ -845,20 +845,49 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     for project in NON_BRANCHED_PROJECTS:
       self.AssertNoPush(project)
 
-  def testRenameModifiesCorrectProjects(self):
-    """Test Rename renames correct project branches to correct branch names."""
-    self.branch.Rename()
+  def testRenameCreatesNewBranch(self):
+    """Test Rename creates a branch with the new name."""
+    self.branch.Rename('original')
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertBranchRenamed(project, 'branch')
+      self.AssertProjectBranched(project, 'branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertBranchRenamed(project, 'branch-' + project)
+      self.AssertProjectBranched(project, 'branch-' + project)
+    for project in NON_BRANCHED_PROJECTS:
+      self.AssertProjectNotBranched(project)
+
+  def testRenameDeletesOldBranch(self):
+    """Test Rename deletes the original branch."""
+    self.branch.Rename('original')
+    for project in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertBranchDeleted(project, 'original')
+    for project in MULTI_CHECKOUT_PROJECTS:
+      self.AssertBranchDeleted(project, 'original-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertBranchNotModified(project)
 
   def testRenameRepairsManifests(self):
     """Test Rename commits repairs to manifest repositories."""
-    self.branch.Rename()
+    self.branch.Rename('original')
     self.AssertManifestRepairsCommitted()
+
+  def testRenamePushesNewBranch(self):
+    """Test Rename pushes the new branch to remote."""
+    self.branch.Rename('original', push=True)
+    for project in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertBranchPushed(project, 'branch')
+    for project in MULTI_CHECKOUT_PROJECTS:
+      self.AssertBranchPushed(project, 'branch-' + project)
+    for project in NON_BRANCHED_PROJECTS:
+      self.AssertNoPush(project)
+
+  def testRenamePushesDeletionOfOldBranch(self):
+    self.branch.Rename('original', push=True)
+    for project in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertRemoteBranchDeleted(project, 'original')
+    for project in MULTI_CHECKOUT_PROJECTS:
+      self.AssertRemoteBranchDeleted(project, 'original-' + project)
+    for project in NON_BRANCHED_PROJECTS:
+      self.AssertNoPush(project)
 
   def testDeleteModifiesCorrectProjects(self):
     """Test Delete deletes correct project branches."""

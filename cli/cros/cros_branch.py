@@ -381,19 +381,11 @@ class Branch(object):
     self.name = name
     self.checkout = checkout
 
-    # Not all branchable projects will have the same branch name.
-    # In particular, if a branch is checked out to multiple locations
-    # from multiple revisions, each checkout will have its own branch.
-    # This mapping is used throughout the Branch class, so compute it now.
-    self._project_branches = [
-        ProjectBranch(project, self._ProjectBranchName(project))
-        for project in filter(CanBranchProject, checkout.manifest.Projects())
-    ]
-
-  def _ProjectBranchName(self, project):
+  def _ProjectBranchName(self, branch, project):
     """Determine's the git branch name for the project.
 
     Args:
+      branch: The base branch name.
       project: The repo_manfest.Project in question.
 
     Returns:
@@ -402,34 +394,52 @@ class Branch(object):
     # If project has only one checkout, the base branch name is fine.
     checkouts = [p.name for p in self.checkout.manifest.Projects()]
     if checkouts.count(project.name) == 1:
-      return self.name
+      return branch
     # Otherwise, the project branch name needs a suffix. We append its
     # upstream or revision to distinguish it from other checkouts.
     suffix = git.StripRefs(project.upstream or project.Revision())
-    return '%s-%s' % (self.name, suffix)
+    return '%s-%s' % (branch, suffix)
 
-  def _CreateLocalBranches(self):
-    """Create git branches for all branchable projects in the local checkout."""
-    for project, branch in self._project_branches:
+  def _ProjectBranches(self, branch):
+    """Return a list of ProjectBranches: one for each branchable project.
+
+    Args:
+      branch: The base branch name.
+    """
+    return [
+        ProjectBranch(project, self._ProjectBranchName(branch, project)) for
+        project in filter(CanBranchProject, self.checkout.manifest.Projects())
+    ]
+
+  def _CreateLocalBranches(self, branches):
+    """Create git branches for all branchable projects in the local checkout.
+
+    Args:
+      branches: List of ProjectBranches to create.
+    """
+    for project, branch in branches:
       self.checkout.RunGit(project,
                            ['checkout', '-B', branch, project.Revision()])
 
-  def _RenameLocalBranches(self):
-    """Rename current branches of all branchable projects in the checkout."""
-    for project, branch in self._project_branches:
-      self.checkout.RunGit(project, ['branch', '-m', branch])
+  def _DeleteLocalBranches(self, branches):
+    """Delete the given project branches in the local checkout.
 
-  def _DeleteLocalBranches(self):
-    """Delete this branch for all branchable projects in the checkout."""
-    for project, branch in self._project_branches:
+    Args:
+      branches: List of ProjectBranches to delete.
+    """
+    for project, branch in branches:
       self.checkout.RunGit(project, ['branch', '-D', branch])
 
-  def _RepairManifestRepositories(self):
-    """Repair all manifests in all manifest repositories on current branch."""
+  def _RepairManifestRepositories(self, branches):
+    """Repair all manifests in all manifest repositories on current branch.
+
+    Args:
+      branches: List of ProjectBranches describing the repairs needed.
+    """
     for project_name in config_lib.GetSiteParams().MANIFEST_PROJECTS:
       manifest_project = self.checkout.manifest.GetUniqueProject(project_name)
       manifest_repo = ManifestRepository(self.checkout, manifest_project)
-      manifest_repo.RepairManifestsOnDisk(self._project_branches)
+      manifest_repo.RepairManifestsOnDisk(branches)
       self.checkout.RunGit(
           manifest_project,
           ['commit', '-a', '-m',
@@ -442,13 +452,14 @@ class Branch(object):
       raise BranchError('Cannot bump version with nonzero patch number.')
     return 'patch' if int(vinfo.branch_build_number) else 'branch'
 
-  def _PushBranchesToRemote(self, force=False):
+  def _PushBranchesToRemote(self, branches, force=False):
     """Push state of local git branches to remote.
 
     Args:
+      branches: List of ProjectBranches to push.
       force: Whether or not to overwrite existing branches on the remote.
     """
-    for project, branch in self._project_branches:
+    for project, branch in branches:
       branch = git.NormalizeRef(branch)
 
       # We push the local branch to the same ref on the remote.
@@ -462,9 +473,13 @@ class Branch(object):
       # TODO(evanhernandez): Add check to see if branch exists.
       self.checkout.RunGit(project, cmd)
 
-  def _DeleteBranchesOnRemote(self):
-    """Deletes this branch for all projects on the remote."""
-    for project, branch in self._project_branches:
+  def _DeleteBranchesOnRemote(self, branches):
+    """Deletes this branch for all projects on the remote.
+
+    Args:
+      branches: List of ProjectBranches to delete on remote.
+    """
+    for project, branch in branches:
       self.checkout.RunGit(
           project,
           ['push', project.Remote().GitName(),
@@ -479,8 +494,9 @@ class Branch(object):
       push: Whether to push the new branch to remote.
       force: Whether or not to overwrite an existing branch.
     """
-    self._CreateLocalBranches()
-    self._RepairManifestRepositories()
+    branches = self._ProjectBranches(self.name)
+    self._CreateLocalBranches(branches)
+    self._RepairManifestRepositories(branches)
     which_version = self._WhichVersionShouldBump()
     self.checkout.BumpVersion(
         which_version,
@@ -489,19 +505,29 @@ class Branch(object):
     # Only once every step has succeeded do we push a new branch.
     # This is as close to atomicity as we can get with GOB.
     if push:
-      self._PushBranchesToRemote(force=force)
+      self._PushBranchesToRemote(branches, force=force)
 
-  def Rename(self, push=False, force=False):
-    """Rename this branch.
+  def Rename(self, original, push=False, force=False):
+    """Create this branch by renaming some other branch.
+
+    There is no way to atomically rename a remote branch. Therefore, this
+    method creates a new branch and then deletes the original.
 
     Args:
+      original: Name of the original branch.
       push: Whether to push the new branch to remote.
       force: Whether or not to overwrite an existing branch.
     """
-    if push or force:
-      raise NotImplementedError('--push and --force unavailable.')
-    self._RenameLocalBranches()
-    self._RepairManifestRepositories()
+    new_branches = self._ProjectBranches(self.name)
+    self._CreateLocalBranches(new_branches)
+    self._RepairManifestRepositories(new_branches)
+
+    old_branches = self._ProjectBranches(original)
+    self._DeleteLocalBranches(old_branches)
+
+    if push:
+      self._PushBranchesToRemote(new_branches, force=force)
+      self._DeleteBranchesOnRemote(old_branches)
 
   def Delete(self, push=False, force=False):
     """Delete this branch.
@@ -512,9 +538,10 @@ class Branch(object):
     """
     if push and not force:
       raise BranchError('Must set --force to delete remote branches.')
-    self._DeleteLocalBranches()
+    branches = self._ProjectBranches(self.name)
+    self._DeleteLocalBranches(branches)
     if push:
-      self._DeleteBranchesOnRemote()
+      self._DeleteBranchesOnRemote(branches)
 
 
 class StandardBranch(Branch):
@@ -730,6 +757,7 @@ Delete Examples:
     elif self.options.subcommand == 'rename':
       checkout.SyncBranch(self.options.old)
       Branch(self.options.new, checkout).Rename(
+          self.options.old,
           push=self.options.push,
           force=self.options.force)
     elif self.options.subcommand == 'delete':
