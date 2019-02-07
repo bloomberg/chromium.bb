@@ -839,14 +839,19 @@ message ExportLxdContainerProgressSignal {
     // One or more steps failed and the container could not be exported.
     FAILED = 2;
 
-    // The container is exporting into a tar file.
+    // Deprecated.  The container is exporting into a tar file.
     EXPORTING_TAR = 3;
 
-    // The container tar file is being compressed into an image file.
+    // Deprecated.  The container tar file is being compressed into an image
+    // file.
     EXPORTING_COMPRESS = 4;
 
     // The exported image file is being downloaded.
     EXPORTING_DOWNLOAD = 5;
+
+    // The exported image file is being packed.  This is equivalent to
+    // tar/compress.
+    EXPORTING_PACK = 6;
   }
 
   // Container status.
