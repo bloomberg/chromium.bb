@@ -366,14 +366,18 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   }
   void OnRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info) override {
-    EXPECT_TRUE(is_inside_batch_);
+    if (!is_inside_batch_)
+      StartBatchOfRefreshTokenStateChanges();
+
     batch_change_records_.rbegin()->emplace_back(account_info.account_id);
     account_from_refresh_token_updated_callback_ = account_info;
     if (on_refresh_token_updated_callback_)
       std::move(on_refresh_token_updated_callback_).Run();
   }
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
-    EXPECT_TRUE(is_inside_batch_);
+    if (!is_inside_batch_)
+      StartBatchOfRefreshTokenStateChanges();
+
     batch_change_records_.rbegin()->emplace_back(account_id);
     account_from_refresh_token_removed_callback_ = account_id;
     if (on_refresh_token_removed_callback_)
@@ -412,7 +416,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     std::move(on_cookie_deleted_by_user_callback_).Run();
   }
 
-  void OnStartBatchOfRefreshTokenStateChanges() override {
+  void StartBatchOfRefreshTokenStateChanges() {
     EXPECT_FALSE(is_inside_batch_);
     is_inside_batch_ = true;
 

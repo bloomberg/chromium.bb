@@ -58,10 +58,6 @@ void OAuth2TokenServiceDelegate::RemoveObserver(
 
 void OAuth2TokenServiceDelegate::StartBatchChanges() {
   ++batch_change_depth_;
-  if (batch_change_depth_ == 1) {
-    for (auto& observer : observer_list_)
-      observer.OnStartBatchChanges();
-  }
 }
 
 void OAuth2TokenServiceDelegate::EndBatchChanges() {

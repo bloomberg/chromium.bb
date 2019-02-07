@@ -237,10 +237,9 @@ void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
   set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
 
   // The typical order of |OAuth2TokenService::Observer| callbacks is:
-  // 1. OnStartBatchChanges
-  // 2. OnRefreshTokenAvailable
-  // 3. OnEndBatchChanges
-  // 4. OnRefreshTokensLoaded
+  // 1. OnRefreshTokenAvailable
+  // 2. OnEndBatchChanges
+  // 3. OnRefreshTokensLoaded
   {
     ScopedBatchChange batch(this);
     for (const auto& account_key : account_keys) {

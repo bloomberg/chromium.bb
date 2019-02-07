@@ -112,8 +112,6 @@ class OAuth2TokenService {
     // Called after all refresh tokens are loaded during OAuth2TokenService
     // startup.
     virtual void OnRefreshTokensLoaded() {}
-    // Sent before starting a batch of refresh token changes.
-    virtual void OnStartBatchChanges() {}
     // Sent after a batch of refresh token changes is done.
     virtual void OnEndBatchChanges() {}
     // Called when the authentication error state for |account_id| has changed.

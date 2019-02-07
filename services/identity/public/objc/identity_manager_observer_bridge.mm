@@ -74,13 +74,6 @@ void IdentityManagerObserverBridge::OnAccountsInCookieUpdated(
   }
 }
 
-void IdentityManagerObserverBridge::OnStartBatchOfRefreshTokenStateChanges() {
-  if ([delegate_ respondsToSelector:@selector
-                 (onStartBatchOfRefreshTokenStateChanges)]) {
-    [delegate_ onStartBatchOfRefreshTokenStateChanges];
-  }
-}
-
 void IdentityManagerObserverBridge::OnEndBatchOfRefreshTokenStateChanges() {
   if ([delegate_
           respondsToSelector:@selector(onEndBatchOfRefreshTokenStateChanges)]) {
