@@ -105,6 +105,8 @@
 #include "chrome/browser/sync/test/integration/printers_helper.h"
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
@@ -123,6 +125,22 @@ const char kSyncPasswordForTest[] = "sync-password-for-test";
 }
 
 namespace {
+
+void SetURLLoaderFactoryForTest(
+    Profile* profile,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
+      ChromeSigninClientFactory::GetForProfile(profile));
+  signin_client->SetURLLoaderFactoryForTest(url_loader_factory);
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerFactory* factory =
+      g_browser_process->platform_part()->GetAccountManagerFactory();
+  chromeos::AccountManager* account_manager =
+      factory->GetAccountManager(profile->GetPath().value());
+  account_manager->SetUrlLoaderFactoryForTests(url_loader_factory);
+#endif  // defined(OS_CHROMEOS)
+}
 
 // Helper class to ensure a profile is registered before the manager is
 // notified of creation.
@@ -390,9 +408,7 @@ bool SyncTest::CreateProfile(int index) {
         std::make_unique<SyncProfileDelegate>(base::Bind(
             &SyncTest::InitializeProfile, base::Unretained(this), index));
     Profile* profile = MakeTestProfile(profile_path, index);
-    ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
-        ChromeSigninClientFactory::GetForProfile(profile));
-    signin_client->SetURLLoaderFactoryForTest(test_shared_url_loader_factory_);
+    SetURLLoaderFactoryForTest(profile, test_shared_url_loader_factory_);
   }
 
   // Once profile initialization has kicked off, wait for it to finish.
@@ -675,9 +691,7 @@ void SyncTest::SetDecryptionPassphraseForClient(int index,
 }
 
 void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
-  ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
-      ChromeSigninClientFactory::GetForProfile(profile));
-  signin_client->SetURLLoaderFactoryForTest(test_shared_url_loader_factory_);
+  SetURLLoaderFactoryForTest(profile, test_shared_url_loader_factory_);
 }
 
 void SyncTest::SetUpInvalidations(int index) {

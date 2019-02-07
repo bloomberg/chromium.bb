@@ -485,6 +485,8 @@ bool AccountManagerMigrator::ShouldRunMigrations() const {
     return false;
   }
 
+  // Do not unnecessarily run migrations if they have been successfully run
+  // before.
   if (profile_->GetPrefs()->GetInteger(
           prefs::kAccountManagerNumTimesMigrationRanSuccessfully) >=
       kMaxMigrationRuns) {
@@ -492,19 +494,19 @@ bool AccountManagerMigrator::ShouldRunMigrations() const {
     return false;
   }
 
-  return true;
-}
-
-void AccountManagerMigrator::AddMigrationSteps() {
-  const AccountManager::AccountKey device_account = GetDeviceAccount(profile_);
-  if (device_account.account_type ==
+  // Do not run migrations if the Device Account is invalid.
+  if (GetDeviceAccount(profile_).account_type ==
       account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED) {
     // Unfortunately this is a valid case for tests. See
     // https://crbug.com/915628. Early exit here because if the Device Account
     // itself is invalid, we should not attempt any migration.
-    return;
+    return false;
   }
 
+  return true;
+}
+
+void AccountManagerMigrator::AddMigrationSteps() {
   chromeos::AccountManagerFactory* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
@@ -513,7 +515,7 @@ void AccountManagerMigrator::AddMigrationSteps() {
       IdentityManagerFactory::GetForProfile(profile_);
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
-      device_account, account_manager, identity_manager,
+      GetDeviceAccount(profile_), account_manager, identity_manager,
       AccountTrackerServiceFactory::GetForProfile(profile_),
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));

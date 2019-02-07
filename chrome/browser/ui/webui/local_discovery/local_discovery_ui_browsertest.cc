@@ -42,7 +42,10 @@
 #include "services/network/test/test_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #endif
@@ -284,6 +287,22 @@ const char kURLRegisterComplete[] =
 
 const char kSampleUser[] = "user@consumer.example.com";
 
+void SetURLLoaderFactoryForTest(
+    Profile* profile,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
+      ChromeSigninClientFactory::GetForProfile(profile));
+  signin_client->SetURLLoaderFactoryForTest(url_loader_factory);
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerFactory* factory =
+      g_browser_process->platform_part()->GetAccountManagerFactory();
+  chromeos::AccountManager* account_manager =
+      factory->GetAccountManager(profile->GetPath().value());
+  account_manager->SetUrlLoaderFactoryForTests(url_loader_factory);
+#endif  // defined(OS_CHROMEOS)
+}
+
 class TestMessageLoopCondition {
  public:
   TestMessageLoopCondition() : signaled_(false),
@@ -371,10 +390,9 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
 
-    ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
-        ChromeSigninClientFactory::GetForProfile(
-            ProfileManager::GetActiveUserProfile()));
-    signin_client->SetURLLoaderFactoryForTest(test_shared_loader_factory_);
+    SetURLLoaderFactoryForTest(
+        ProfileManager::GetActiveUserProfile() /* profile */,
+        test_shared_loader_factory_);
   }
 
   void TearDownOnMainThread() override {
