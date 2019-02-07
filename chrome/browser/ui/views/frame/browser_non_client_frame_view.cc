@@ -149,16 +149,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
                    : ThemeProperties::COLOR_FRAME_INACTIVE;
   }
 
-  // For hosted app windows, if "painting as themed" (which is only true when on
-  // Linux and using the system theme), prefer the system theme color over the
-  // hosted app theme color. The title bar will be painted in the system theme
-  // color (regardless of what we do here), so by returning the system title bar
-  // background color here, we ensure that:
-  // a) The side and bottom borders are painted in the same color as the title
-  // bar background, and
-  // b) The title text is painted in a color that contrasts with the title bar
-  // background.
-  if (ShouldPaintAsThemed())
+  if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
 
   extensions::HostedAppBrowserController* hosted_app_controller =
@@ -255,10 +246,6 @@ bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
          browser_view_->tabstrip()->SingleTabMode();
 }
 
-bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
-  return browser_view_->IsBrowserTypeNormal();
-}
-
 SkColor BrowserNonClientFrameView::GetCaptionColor(
     ActiveState active_state) const {
   return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
@@ -276,8 +263,8 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
   const int frame_image_id = ShouldPaintAsActive(active_state)
                                  ? IDR_THEME_FRAME
                                  : IDR_THEME_FRAME_INACTIVE;
-  return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
-                                   tp->HasCustomImage(IDR_THEME_FRAME))
+  return frame_->ShouldUseTheme() && (tp->HasCustomImage(frame_image_id) ||
+                                      tp->HasCustomImage(IDR_THEME_FRAME))
              ? *tp->GetImageSkiaNamed(frame_image_id)
              : gfx::ImageSkia();
 }
@@ -425,7 +412,7 @@ SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
   // During shutdown, there may no longer be a widget, and thus no theme
   // provider.
   const auto* theme_provider = GetThemeProvider();
-  return ShouldPaintAsThemed() && theme_provider
+  return frame_->ShouldUseTheme() && theme_provider
              ? theme_provider->GetColor(color_id)
              : ThemeProperties::GetDefaultColor(color_id,
                                                 browser_view_->IsIncognito());

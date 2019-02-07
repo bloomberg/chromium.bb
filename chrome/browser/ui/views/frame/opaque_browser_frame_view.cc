@@ -10,8 +10,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -124,10 +122,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   layout_->set_delegate(this);
   SetLayoutManager(std::unique_ptr<views::LayoutManager>(layout_));
 
-  // This must be initialised before the call to GetFrameColor().
-  platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
-      this, layout_,
-      ThemeServiceFactory::GetForProfile(browser_view->browser()->profile())));
+  platform_observer_.reset(
+      OpaqueBrowserFrameViewPlatformSpecific::Create(this, layout_));
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
@@ -542,13 +538,6 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   // it shouldn't have a client edge.
   if (!browser_view()->toolbar()->custom_tab_bar())
     PaintClientEdge(canvas);
-}
-
-// BrowserNonClientFrameView:
-bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
-  // Theme app and popup windows if |platform_observer_| wants it.
-  return browser_view()->IsBrowserTypeNormal() ||
-         platform_observer_->IsUsingSystemTheme();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
