@@ -9,7 +9,6 @@
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pdf_util.h"
 #include "content/public/browser/browser_context.h"
@@ -23,7 +22,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
-#include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -58,6 +56,26 @@ class PdfWebContentsLifetimeHelper
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper)
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Returns true if the PDF plugin for |navigation_handle| is enabled. Optionally
+// also sets |is_stale| to true if the plugin list needs a reload.
+bool IsPDFPluginEnabled(content::NavigationHandle* navigation_handle,
+                        bool* is_stale) {
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  int process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+  int routing_id = web_contents->GetMainFrame()->GetRoutingID();
+  content::ResourceContext* resource_context =
+      web_contents->GetBrowserContext()->GetResourceContext();
+
+  content::WebPluginInfo plugin_info;
+  return content::PluginService::GetInstance()->GetPluginInfo(
+      process_id, routing_id, resource_context, navigation_handle->GetURL(),
+      web_contents->GetMainFrame()->GetLastCommittedOrigin(), kPDFMimeType,
+      false /* allow_wildcard */, is_stale, &plugin_info,
+      nullptr /* actual_mime_type */);
+}
+#endif
+
 }  // namespace
 
 PDFIFrameNavigationThrottle::PDFIFrameNavigationThrottle(
@@ -77,28 +95,6 @@ PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(
   if (handle->IsInMainFrame())
     return nullptr;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  content::WebPluginInfo pdf_plugin_info;
-  static const base::FilePath pdf_plugin_path(
-      ChromeContentClient::kPDFPluginPath);
-  content::PluginService::GetInstance()->GetPluginInfoByPath(pdf_plugin_path,
-                                                             &pdf_plugin_info);
-
-  ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  int process_id =
-      handle->GetWebContents()->GetMainFrame()->GetProcess()->GetID();
-  int routing_id = handle->GetWebContents()->GetMainFrame()->GetRoutingID();
-  content::ResourceContext* resource_context =
-      handle->GetWebContents()->GetBrowserContext()->GetResourceContext();
-  if (filter->IsPluginAvailable(process_id, routing_id, resource_context,
-                                handle->GetURL(), url::Origin(),
-                                &pdf_plugin_info)) {
-    return nullptr;
-  }
-#endif
-
-  // If ENABLE_PLUGINS is false, the PDF plugin is not available, so we should
-  // always intercept PDF iframe navigations.
   return std::make_unique<PDFIFrameNavigationThrottle>(handle);
 }
 
@@ -126,6 +122,41 @@ PDFIFrameNavigationThrottle::WillProcessResponse() {
   if (!base::FeatureList::IsEnabled(features::kClickToOpenPDFPlaceholder))
     return content::NavigationThrottle::PROCEED;
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  bool is_stale = false;
+  bool pdf_plugin_enabled = IsPDFPluginEnabled(navigation_handle(), &is_stale);
+
+  if (is_stale) {
+    // On browser start, the plugin list may not be ready yet.
+    content::PluginService::GetInstance()->GetPlugins(
+        base::BindOnce(&PDFIFrameNavigationThrottle::OnPluginsLoaded,
+                       weak_factory_.GetWeakPtr()));
+    return content::NavigationThrottle::DEFER;
+  }
+
+  // If the plugin was found, proceed on the navigation. Otherwise fall through
+  // to the placeholder case.
+  if (pdf_plugin_enabled)
+    return content::NavigationThrottle::PROCEED;
+#endif
+
+  LoadPlaceholderHTML();
+  return content::NavigationThrottle::CANCEL_AND_IGNORE;
+}
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void PDFIFrameNavigationThrottle::OnPluginsLoaded(
+    const std::vector<content::WebPluginInfo>& plugins) {
+  if (IsPDFPluginEnabled(navigation_handle(), nullptr /* is_stale */)) {
+    Resume();
+  } else {
+    LoadPlaceholderHTML();
+    CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
+  }
+}
+#endif
+
+void PDFIFrameNavigationThrottle::LoadPlaceholderHTML() {
   // Prepare the params to navigate to the placeholder.
   std::string html = GetPDFPlaceholderHTML(navigation_handle()->GetURL());
   GURL data_url("data:text/html," + net::EscapePath(html));
@@ -148,6 +179,4 @@ PDFIFrameNavigationThrottle::WillProcessResponse() {
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PdfWebContentsLifetimeHelper::NavigateIFrameToPlaceholder,
                      helper->GetWeakPtr(), params));
-
-  return content::NavigationThrottle::CANCEL_AND_IGNORE;
 }

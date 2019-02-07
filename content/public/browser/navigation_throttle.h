@@ -180,6 +180,13 @@ class CONTENT_EXPORT NavigationThrottle {
     resume_callback_ = callback;
   }
 
+  // Overrides the default CancelDeferredNavigation method and replaces it by
+  // |callback|. This should only be used in tests.
+  void set_cancel_deferred_navigation_callback_for_testing(
+      const base::RepeatingCallback<void(ThrottleCheckResult)> callback) {
+    cancel_deferred_navigation_callback_ = callback;
+  }
+
  protected:
   // Resumes a navigation that was previously deferred by this
   // NavigationThrottle.
@@ -201,6 +208,8 @@ class CONTENT_EXPORT NavigationThrottle {
 
   // Used in tests.
   base::RepeatingClosure resume_callback_;
+  base::RepeatingCallback<void(ThrottleCheckResult)>
+      cancel_deferred_navigation_callback_;
 };
 
 #if defined(UNIT_TEST)
