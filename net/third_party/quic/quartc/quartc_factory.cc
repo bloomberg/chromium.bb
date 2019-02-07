@@ -35,7 +35,9 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   SetQuicReloadableFlag(quic_fix_spurious_ack_alarm, true);
 
   // Enable version 45+ to enable SendMessage API.
+  // Enable version 46+ to enable 'quic bit' per draft 17.
   SetQuicReloadableFlag(quic_enable_version_45, true);
+  SetQuicReloadableFlag(quic_enable_version_46, true);
 
   // Fix for inconsistent reporting of crypto handshake.
   SetQuicReloadableFlag(quic_fix_has_pending_crypto_data, true);

@@ -266,10 +266,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
 
-// If true, only send version negotiation packets when they are at least
-// 1200 bytes.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_limit_version_negotiation, true)
-
 // If true, disables key share caching for QUIC key exchange
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, true)
 
@@ -350,3 +346,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_config_rotation, false)
 // If true, use numeric_limits<uint64_t>::max() to represent uninitialized
 // packet number.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_uint64max_uninitialized_pn, false)
+
+// If true, Set is_current_packet_connectivity_probing_ to false in the end
+// of QuicConnection::ProcessUdpPacket.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_clear_probing_mark_after_packet_processing,
+    true)
+
+// If true, enable QUIC version 47.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)

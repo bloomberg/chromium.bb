@@ -509,6 +509,8 @@ class TestPacketWriter : public QuicPacketWriter {
     supports_release_time_ = supports_release_time;
   }
 
+  SimpleQuicFramer* framer() { return &framer_; }
+
  private:
   ParsedQuicVersion version_;
   SimpleQuicFramer framer_;
@@ -1617,9 +1619,15 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
                           probing_packet->encrypted_length),
       clock_.Now()));
 
+  uint64_t num_probing_received =
+      connection_.GetStats().num_connectivity_probing_received;
   ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
 
-  EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
+  if (!GetQuicReloadableFlag(quic_clear_probing_mark_after_packet_processing)) {
+    EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
+  }
+  EXPECT_EQ(num_probing_received,
+            connection_.GetStats().num_connectivity_probing_received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
 }
@@ -1713,9 +1721,15 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
                           probing_packet->encrypted_length),
       clock_.Now()));
 
+  uint64_t num_probing_received =
+      connection_.GetStats().num_connectivity_probing_received;
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
 
-  EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  if (!GetQuicReloadableFlag(quic_clear_probing_mark_after_packet_processing)) {
+    EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  }
+  EXPECT_EQ(num_probing_received + 1,
+            connection_.GetStats().num_connectivity_probing_received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
 
@@ -1770,9 +1784,15 @@ TEST_P(QuicConnectionTest, ReceiveReorderedConnectivityProbingAtServer) {
                           probing_packet->encrypted_length),
       clock_.Now()));
 
+  uint64_t num_probing_received =
+      connection_.GetStats().num_connectivity_probing_received;
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
 
-  EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  if (!GetQuicReloadableFlag(quic_clear_probing_mark_after_packet_processing)) {
+    EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  }
+  EXPECT_EQ(num_probing_received + 1,
+            connection_.GetStats().num_connectivity_probing_received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
 }
@@ -1859,9 +1879,15 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
       QuicEncryptedPacket(probing_packet->encrypted_buffer,
                           probing_packet->encrypted_length),
       clock_.Now()));
+  uint64_t num_probing_received =
+      connection_.GetStats().num_connectivity_probing_received;
   ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
 
-  EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
+  if (!GetQuicReloadableFlag(quic_clear_probing_mark_after_packet_processing)) {
+    EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
+  }
+  EXPECT_EQ(num_probing_received,
+            connection_.GetStats().num_connectivity_probing_received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
 }
@@ -1901,9 +1927,15 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
       QuicEncryptedPacket(probing_packet->encrypted_buffer,
                           probing_packet->encrypted_length),
       clock_.Now()));
+  uint64_t num_probing_received =
+      connection_.GetStats().num_connectivity_probing_received;
   ProcessReceivedPacket(kNewSelfAddress, kPeerAddress, *received);
 
-  EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  if (!GetQuicReloadableFlag(quic_clear_probing_mark_after_packet_processing)) {
+    EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  }
+  EXPECT_EQ(num_probing_received + 1,
+            connection_.GetStats().num_connectivity_probing_received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
   EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
 }
@@ -6176,8 +6208,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
     peer_framer_.set_version_for_tests(
         ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_99));
   } else {
-    peer_framer_.set_version_for_tests(
-        ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED));
+    peer_framer_.set_version_for_tests(UnsupportedQuicVersion());
   }
 
   QuicPacketHeader header;
@@ -6222,8 +6253,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
     peer_framer_.set_version_for_tests(
         ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_99));
   } else {
-    peer_framer_.set_version_for_tests(
-        ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED));
+    peer_framer_.set_version_for_tests(UnsupportedQuicVersion());
   }
 
   QuicPacketHeader header;
@@ -6275,8 +6305,7 @@ TEST_P(QuicConnectionTest,
     peer_framer_.set_version_for_tests(
         ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_99));
   } else {
-    peer_framer_.set_version_for_tests(
-        ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED));
+    peer_framer_.set_version_for_tests(UnsupportedQuicVersion());
   }
 
   QuicPacketHeader header;
@@ -6483,8 +6512,7 @@ TEST_P(QuicConnectionTest, SelectMutualVersion) {
 
   // Shouldn't be able to find a mutually supported version.
   ParsedQuicVersionVector unsupported_version;
-  unsupported_version.push_back(
-      ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED));
+  unsupported_version.push_back(UnsupportedQuicVersion());
   EXPECT_FALSE(connection_.SelectMutualVersion(unsupported_version));
 }
 
@@ -7730,6 +7758,29 @@ TEST_P(QuicConnectionTest, StopProcessingGQuicPacketInIetfQuicConnection) {
 
   EXPECT_EQ(2u, connection_.GetStats().packets_received);
   EXPECT_EQ(1u, connection_.GetStats().packets_processed);
+}
+
+TEST_P(QuicConnectionTest, AcceptPacketNumberZero) {
+  if (!GetQuicRestartFlag(quic_uint64max_uninitialized_pn) ||
+      version().transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  // Set first_sending_packet_number to be 0 to allow successfully processing
+  // acks which ack packet number 0.
+  QuicFramerPeer::SetFirstSendingPacketNumber(writer_->framer()->framer(), 0);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  ProcessPacket(0);
+  EXPECT_EQ(QuicPacketNumber(0), LargestAcked(*outgoing_ack()));
+  EXPECT_EQ(1u, outgoing_ack()->packets.NumIntervals());
+
+  ProcessPacket(1);
+  EXPECT_EQ(QuicPacketNumber(1), LargestAcked(*outgoing_ack()));
+  EXPECT_EQ(1u, outgoing_ack()->packets.NumIntervals());
+
+  ProcessPacket(2);
+  EXPECT_EQ(QuicPacketNumber(2), LargestAcked(*outgoing_ack()));
+  EXPECT_EQ(1u, outgoing_ack()->packets.NumIntervals());
 }
 
 }  // namespace

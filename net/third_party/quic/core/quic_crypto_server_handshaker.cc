@@ -467,7 +467,7 @@ QuicConnectionId QuicCryptoServerHandshaker::GenerateConnectionIdForReject(
     return EmptyQuicConnectionId();
   }
   return helper_->GenerateConnectionIdForReject(
-      session()->connection()->connection_id());
+      transport_version(), session()->connection()->connection_id());
 }
 
 const QuicSocketAddress QuicCryptoServerHandshaker::GetClientAddress() {

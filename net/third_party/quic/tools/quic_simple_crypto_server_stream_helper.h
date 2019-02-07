@@ -20,6 +20,7 @@ class QuicSimpleCryptoServerStreamHelper
   ~QuicSimpleCryptoServerStreamHelper() override;
 
   QuicConnectionId GenerateConnectionIdForReject(
+      QuicTransportVersion /*version*/,
       QuicConnectionId /*connection_id*/) const override;
 
   bool CanAcceptClientHello(const CryptoHandshakeMessage& message,

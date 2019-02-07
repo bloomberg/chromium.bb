@@ -51,6 +51,13 @@ class QUIC_EXPORT_PRIVATE QuartcPacketTransport {
   virtual void SetDelegate(Delegate* delegate) = 0;
 };
 
+struct QUIC_EXPORT_PRIVATE QuartcPerPacketOptions : public PerPacketOptions {
+  std::unique_ptr<PerPacketOptions> Clone() const override;
+
+  // The connection which is sending this packet.
+  QuicConnection* connection = nullptr;
+};
+
 // Implements a QuicPacketWriter using a QuartcPacketTransport, which allows a
 // QuicConnection to use (for example), a WebRTC IceTransport.
 class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
@@ -90,10 +97,6 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
 
   WriteResult Flush() override;
 
-  // Sets the connection which sends packets using this writer.  Connection must
-  // be set in order to attach packet info (eg. packet numbers) to writes.
-  void set_connection(QuicConnection* connection) { connection_ = connection; }
-
   void SetPacketTransportDelegate(QuartcPacketTransport::Delegate* delegate);
 
  private:
@@ -101,9 +104,6 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   QuartcPacketTransport* packet_transport_;
   // The maximum size of the packet can be written by this writer.
   QuicByteCount max_packet_size_;
-
-  // The current connection sending packets using this writer.
-  QuicConnection* connection_;
 
   // Whether packets can be written.
   bool writable_ = false;

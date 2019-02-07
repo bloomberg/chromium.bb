@@ -339,5 +339,12 @@ size_t QuicFramerPeer::ComputeFrameLength(
                                     packet_number_length);
 }
 
+// static
+void QuicFramerPeer::SetFirstSendingPacketNumber(QuicFramer* framer,
+                                                 uint64_t packet_number) {
+  *const_cast<QuicPacketNumber*>(&framer->first_sending_packet_number_) =
+      QuicPacketNumber(packet_number);
+}
+
 }  // namespace test
 }  // namespace quic

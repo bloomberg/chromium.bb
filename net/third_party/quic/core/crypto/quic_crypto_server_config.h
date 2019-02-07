@@ -600,6 +600,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const ValidateClientHelloResultCallback::Result& validate_chlo_result,
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
+      ParsedQuicVersion version,
       const ParsedQuicVersionVector& supported_versions,
       const QuicClock* clock,
       QuicRandom* rand,

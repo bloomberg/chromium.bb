@@ -39,8 +39,9 @@ class MockQuicCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
   MockQuicCryptoServerStreamHelper& operator=(
       const MockQuicCryptoServerStreamHelper&) = delete;
   ~MockQuicCryptoServerStreamHelper() override;
-  MOCK_CONST_METHOD1(GenerateConnectionIdForReject,
-                     QuicConnectionId(QuicConnectionId connection_id));
+  MOCK_CONST_METHOD2(GenerateConnectionIdForReject,
+                     QuicConnectionId(QuicTransportVersion version,
+                                      QuicConnectionId connection_id));
   MOCK_CONST_METHOD5(CanAcceptClientHello,
                      bool(const CryptoHandshakeMessage& message,
                           const QuicSocketAddress& client_address,

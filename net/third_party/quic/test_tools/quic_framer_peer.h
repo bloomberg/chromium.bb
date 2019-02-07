@@ -161,6 +161,8 @@ class QuicFramerPeer {
                                    const QuicFrame& frame,
                                    bool last_frame_in_packet,
                                    QuicPacketNumberLength packet_number_length);
+  static void SetFirstSendingPacketNumber(QuicFramer* framer,
+                                          uint64_t packet_number);
 };
 
 }  // namespace test

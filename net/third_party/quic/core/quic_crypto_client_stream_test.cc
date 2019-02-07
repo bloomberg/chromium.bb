@@ -392,7 +392,7 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
     client_session_->GetMutableCryptoStream()->CryptoConnect();
     EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
         .Times(testing::AnyNumber());
-    EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_))
+    EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_, _))
         .Times(testing::AnyNumber());
     crypto_test_utils::AdvanceHandshake(
         client_connection_, client_session_->GetMutableCryptoStream(), 0,

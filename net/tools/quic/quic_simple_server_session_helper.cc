@@ -16,6 +16,7 @@ QuicSimpleServerSessionHelper::~QuicSimpleServerSessionHelper() = default;
 
 quic::QuicConnectionId
 QuicSimpleServerSessionHelper::GenerateConnectionIdForReject(
+    quic::QuicTransportVersion /*version*/,
     quic::QuicConnectionId /*connection_id*/) const {
   return quic::QuicUtils::CreateRandomConnectionId(random_);
 }

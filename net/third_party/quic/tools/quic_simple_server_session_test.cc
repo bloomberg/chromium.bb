@@ -233,7 +233,7 @@ class QuicSimpleServerSessionTest
         ->OnSuccessfulVersionNegotiation(supported_versions.front());
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
 
-    if (connection_->transport_version() == QUIC_VERSION_99) {
+    if (IsVersion99()) {
       EXPECT_CALL(*connection_, SendControlFrame(_))
           .WillRepeatedly(Invoke(
               this,
@@ -250,6 +250,10 @@ class QuicSimpleServerSessionTest
   QuicStreamId GetNthServerInitiatedUnidirectionalId(int n) {
     return QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
         *session_, n);
+  }
+
+  bool IsVersion99() const {
+    return connection_->transport_version() == QUIC_VERSION_99;
   }
 
   StrictMock<MockQuicSessionVisitor> owner_;
@@ -304,7 +308,7 @@ TEST_P(QuicSimpleServerSessionTest, NeverOpenStreamDueToReset) {
                           GetNthClientInitiatedBidirectionalId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  if (connection_->transport_version() != QUIC_VERSION_99) {
+  if (!IsVersion99()) {
     EXPECT_CALL(*connection_, SendControlFrame(_));
   }
   EXPECT_CALL(*connection_,
@@ -338,7 +342,7 @@ TEST_P(QuicSimpleServerSessionTest, AcceptClosedStream) {
                          GetNthClientInitiatedBidirectionalId(0),
                          QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  if (connection_->transport_version() != QUIC_VERSION_99) {
+  if (!IsVersion99()) {
     EXPECT_CALL(*connection_, SendControlFrame(_));
   }
   EXPECT_CALL(*connection_,
@@ -532,7 +536,7 @@ class QuicSimpleServerSessionServerPushTest
         ->OnSuccessfulVersionNegotiation(supported_versions.front());
     // Needed to make new session flow control window and server push work.
 
-    if (connection_->transport_version() == QUIC_VERSION_99) {
+    if (IsVersion99()) {
       EXPECT_CALL(*connection_, SendControlFrame(_))
           .WillRepeatedly(Invoke(this, &QuicSimpleServerSessionServerPushTest::
                                            ClearMaxStreamIdControlFrame));
@@ -585,7 +589,7 @@ class QuicSimpleServerSessionServerPushTest
       QuicString body(body_size, 'a');
       QuicString data;
       header_length = 0;
-      if (connection_->transport_version() == QUIC_VERSION_99) {
+      if (IsVersion99()) {
         HttpEncoder encoder;
         std::unique_ptr<char[]> buffer;
         header_length =
@@ -611,7 +615,7 @@ class QuicSimpleServerSessionServerPushTest
                                      QuicStream::kDefaultPriority, _));
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
-        if (connection_->transport_version() == QUIC_VERSION_99) {
+        if (IsVersion99()) {
           EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN))
               .WillOnce(Return(QuicConsumedData(header_length, false)));
         }
@@ -656,7 +660,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // created and a response sent on the stream.
   EXPECT_CALL(*session_, WriteHeadersMock(next_out_going_stream_id, _, false,
                                           QuicStream::kDefaultPriority, _));
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     EXPECT_CALL(*connection_,
                 SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
         .WillOnce(Return(QuicConsumedData(header_length, false)));
@@ -667,7 +671,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
           kStreamFlowControlWindowSize - header_length, false)));
   EXPECT_CALL(*session_, SendBlocked(next_out_going_stream_id));
 
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // The PromisePushedResources call, above, will have used all available
     // stream ids.  For version 99, stream ids are not made available until
     // a MAX_STREAM_ID frame is received. This emulates the reception of one.
@@ -690,7 +694,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // Having two extra resources to be send later. One of them will be reset, so
   // when opened stream become close, only one will become open.
   size_t num_resources = kMaxStreamsForTest + 2;
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // V99 will send out a stream-id-blocked frame when the we desired to exceed
     // the limit. This will clear the frames so that they do not block the later
     // rst-stream frame.
@@ -721,7 +725,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   InSequence s;
   EXPECT_CALL(*session_, WriteHeadersMock(stream_not_reset, _, false,
                                           QuicStream::kDefaultPriority, _));
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN))
         .WillOnce(Return(QuicConsumedData(header_length, false)));
   }
@@ -734,7 +738,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
                                           QuicStream::kDefaultPriority, _))
       .Times(0);
 
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // The PromisePushedResources call, above, will have used all available
     // stream ids.  For version 99, stream ids are not made available until
     // a MAX_STREAM_ID frame is received. This emulates the reception of one.
@@ -752,7 +756,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // Tests that closing a open outgoing stream can trigger a promised resource
   // in the queue to be send out.
   size_t num_resources = kMaxStreamsForTest + 1;
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // V99 will send out a stream-id-blocked frame when the we desired to exceed
     // the limit. This will clear the frames so that they do not block the later
     // rst-stream frame.
@@ -772,7 +776,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
               OnStreamReset(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT));
   EXPECT_CALL(*session_, WriteHeadersMock(stream_to_open, _, false,
                                           QuicStream::kDefaultPriority, _));
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN))
         .WillOnce(Return(QuicConsumedData(header_length, false)));
   }
@@ -785,7 +789,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   QuicRstStreamFrame rst(kInvalidControlFrameId, stream_got_reset,
                          QUIC_STREAM_CANCELLED, 0);
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // The PromisePushedResources call, above, will have used all available
     // stream ids.  For version 99, stream ids are not made available until
     // a MAX_STREAM_ID frame is received. This emulates the reception of one.

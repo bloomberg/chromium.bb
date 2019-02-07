@@ -1084,10 +1084,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Contents received in the current packet, especially used to identify
   // whether the current packet is a padded PING packet.
   PacketContent current_packet_content_;
-  // True if the packet currently being processed is a connectivity probing
-  // packet. Is set to false when a new packet is received, and will be set to
-  // true as soon as |current_packet_content_| is set to
-  // SECOND_FRAME_IS_PADDING.
+  // Set to true as soon as the packet currently being processed has been
+  // detected as a connectivity probing.
+  // Always false outside the context of ProcessUdpPacket().
   bool is_current_packet_connectivity_probing_;
 
   // Caches the current effective peer migration type if a effective peer
@@ -1397,6 +1396,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // connection does not support version negotiation if a single version is
   // provided in constructor.
   const bool no_version_negotiation_;
+
+  // Latched value of --quic_clear_probing_mark_after_packet_processing.
+  const bool clear_probing_mark_after_packet_processing_;
 
   // Payload of most recently transmitted QUIC_VERSION_99 connectivity
   // probe packet (the PATH_CHALLENGE payload). This implementation transmits

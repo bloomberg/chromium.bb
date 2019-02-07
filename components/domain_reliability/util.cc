@@ -134,6 +134,7 @@ std::string GetDomainReliabilityProtocol(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_46:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_47:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       return "QUIC";
     case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:

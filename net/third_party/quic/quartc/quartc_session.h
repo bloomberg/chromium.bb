@@ -24,6 +24,7 @@ namespace quic {
 class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
  public:
   QuicConnectionId GenerateConnectionIdForReject(
+      QuicTransportVersion version,
       QuicConnectionId connection_id) const override;
 
   bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
@@ -232,6 +233,9 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   std::unique_ptr<QuicCryptoClientConfig> quic_crypto_client_config_;
   // Config for QUIC crypto server stream, used by the server.
   std::unique_ptr<QuicCryptoServerConfig> quic_crypto_server_config_;
+
+  // Options passed to the packet writer for each packet.
+  std::unique_ptr<QuartcPerPacketOptions> per_packet_options_;
 
   // Queue of pending messages sent by SendQuartcMessage that were not sent
   // yet or blocked by congestion control. Messages are queued in the order

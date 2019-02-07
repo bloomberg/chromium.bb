@@ -544,6 +544,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   QuicTime creation_time() const { return creation_time_; }
 
+  QuicPacketNumber first_sending_packet_number() const {
+    return first_sending_packet_number_;
+  }
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -878,6 +882,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicTime creation_time_;
   // The last timestamp received if process_timestamps_ is true.
   QuicTime::Delta last_timestamp_;
+
+  // If this is a framer of a connection, this is the packet number of first
+  // sending packet. If this is a framer of a framer of dispatcher, this is the
+  // packet number of sent packets (for those which have packet number).
+  const QuicPacketNumber first_sending_packet_number_;
 
   // If not null, framer asks data_producer_ to write stream frame data. Not
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
