@@ -60,8 +60,6 @@ These builders must pass before a CL may land.
 
 * [linux_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_compile_dbg_ng) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_chromium_compile_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_compile_dbg_ng))
 
-* [linux_chromium_headless_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_headless_rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_chromium_headless_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_headless_rel))
-
 * [linux_chromium_tsan_rel_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_tsan_rel_ng) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_chromium_tsan_rel_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_tsan_rel_ng))
 
 * [mac-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/mac-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+mac-rel))
