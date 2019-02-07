@@ -38,6 +38,18 @@
                 "description": "Extensions and packaged applications a user has installed (be _really_ careful!)."
               }
             }
+          },
+          "origins": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "When present, only data for origins in this list is deleted. Only supported for cookies, storage and cache. Cookies are cleared for the whole registrable domain."
+          },
+          "excludeOrigins": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "When present, data for origins in this list is excluded from deletion. Can't be used together with <code>origins</code>. Only supported for cookies, storage and cache.  Cookies are excluded for the whole registrable domain."
           }
         }
       },
