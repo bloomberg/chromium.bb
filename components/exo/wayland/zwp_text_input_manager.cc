@@ -25,14 +25,6 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // text_input_v1 interface:
 
-size_t OffsetFromUTF8Offset(const base::StringPiece& text, uint32_t offset) {
-  return base::UTF8ToUTF16(text.substr(0, offset)).size();
-}
-
-size_t OffsetFromUTF16Offset(const base::StringPiece16& text, uint32_t offset) {
-  return base::UTF16ToUTF8(text.substr(0, offset)).size();
-}
-
 class WaylandTextInputDelegate : public TextInput::Delegate {
  public:
   WaylandTextInputDelegate(wl_resource* text_input) : text_input_(text_input) {}
@@ -107,15 +99,13 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
   }
 
   void SetCursor(const gfx::Range& selection) override {
-    // TODO(mukai): compute the utf8 offset for |selection| and call
-    // zwp_text_input_v1_send_cursor_position.
-    NOTIMPLEMENTED();
+    zwp_text_input_v1_send_cursor_position(text_input_, selection.end(),
+                                           selection.start());
   }
 
   void DeleteSurroundingText(const gfx::Range& range) override {
-    // TODO(mukai): compute the utf8 offset for |range| and call
-    // zwp_text_input_send_delete_surrounding_text.
-    NOTIMPLEMENTED();
+    zwp_text_input_v1_send_delete_surrounding_text(text_input_, range.start(),
+                                                   range.length());
   }
 
   void SendKey(const ui::KeyEvent& event) override {
@@ -216,7 +206,8 @@ void text_input_set_surrounding_text(wl_client* client,
                                      uint32_t anchor) {
   TextInput* text_input = GetUserDataAs<TextInput>(resource);
   text_input->SetSurroundingText(base::UTF8ToUTF16(text),
-                                 OffsetFromUTF8Offset(text, cursor));
+                                 OffsetFromUTF8Offset(text, cursor),
+                                 OffsetFromUTF8Offset(text, anchor));
 }
 
 void text_input_set_content_type(wl_client* client,
