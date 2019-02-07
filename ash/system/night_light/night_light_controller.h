@@ -74,6 +74,9 @@ class ASH_EXPORT NightLightController
     // Provides the delegate with the geoposition so that it can be used to
     // calculate sunset and sunrise times.
     virtual void SetGeoposition(mojom::SimpleGeopositionPtr position) = 0;
+
+    // Returns true if a geoposition value is available.
+    virtual bool HasGeoposition() const = 0;
   };
 
   class Observer {
@@ -119,6 +122,9 @@ class ASH_EXPORT NightLightController
     return last_animation_duration_;
   }
   base::OneShotTimer* timer() { return &timer_; }
+  bool is_current_geoposition_from_cache() const {
+    return is_current_geoposition_from_cache_;
+  }
 
   void BindRequest(mojom::NightLightControllerRequest request);
 
@@ -163,6 +169,15 @@ class ASH_EXPORT NightLightController
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
+  // Called only when the active user changes in order to see if we need to use
+  // a previously cached geoposition value from the active user's prefs.
+  void LoadCachedGeopositionIfNeeded();
+
+  // Called whenever we receive a new geoposition update to cache it in all
+  // logged-in users' prefs so that it can be used later in the event of not
+  // being able to retrieve a valid geoposition.
+  void StoreCachedGeoposition(const mojom::SimpleGeopositionPtr& position);
+
   void RefreshLayersTemperature();
 
   void StartWatchingPrefsChanges();
@@ -223,6 +238,15 @@ class ASH_EXPORT NightLightController
   // The timer that schedules the start and end of NightLight when the schedule
   // type is either kSunsetToSunrise or kCustom.
   base::OneShotTimer timer_;
+
+  // True if the current geoposition value used by the Delegate is from a
+  // previously cached value in the user prefs of any of the users in the
+  // current session. It is reset to false once we receive a newly-updated
+  // geoposition from the client.
+  // This is used to treat the current geoposition as temporary until we receive
+  // a valid geoposition update, and also not to let a cached geoposition value
+  // to leak to another user for privacy reasons.
+  bool is_current_geoposition_from_cache_ = false;
 
   // The registrar used to watch NightLight prefs changes in the above
   // |active_user_pref_service_| from outside ash.

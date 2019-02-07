@@ -117,6 +117,7 @@ class TestDelegate : public NightLightController::Delegate {
   base::Time GetSunsetTime() const override { return fake_sunset_; }
   base::Time GetSunriseTime() const override { return fake_sunrise_; }
   void SetGeoposition(mojom::SimpleGeopositionPtr position) override {
+    has_geoposition_ = true;
     if (position.Equals(mojom::SimpleGeoposition::New(
             kFakePosition1_Latitude, kFakePosition1_Longitude))) {
       // Set sunset and sunrise times associated with fake position 1.
@@ -129,11 +130,13 @@ class TestDelegate : public NightLightController::Delegate {
       SetFakeSunrise(TimeOfDay(kFakePosition2_SunriseOffset));
     }
   }
+  bool HasGeoposition() const override { return has_geoposition_; }
 
  private:
   base::Time fake_now_;
   base::Time fake_sunset_;
   base::Time fake_sunrise_;
+  bool has_geoposition_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
@@ -636,6 +639,101 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
   EXPECT_TRUE(controller->timer()->IsRunning());
   EXPECT_EQ(base::TimeDelta::FromHours(14),
             controller->timer()->GetCurrentDelay());
+}
+
+// Tests the behavior when there is no valid geoposition for example due to lack
+// of connectivity.
+TEST_F(NightLightTest, AbsentValidGeoposition) {
+  NightLightController* controller = GetController();
+  ASSERT_FALSE(delegate()->HasGeoposition());
+
+  // Initially, no values are stored in either of the two users' prefs.
+  ASSERT_FALSE(
+      user1_pref_service()->HasPrefPath(prefs::kNightLightCachedLatitude));
+  ASSERT_FALSE(
+      user1_pref_service()->HasPrefPath(prefs::kNightLightCachedLongitude));
+  ASSERT_FALSE(
+      user2_pref_service()->HasPrefPath(prefs::kNightLightCachedLatitude));
+  ASSERT_FALSE(
+      user2_pref_service()->HasPrefPath(prefs::kNightLightCachedLongitude));
+
+  // Store fake geoposition 2 in user 2's prefs.
+  user2_pref_service()->SetDouble(prefs::kNightLightCachedLatitude,
+                                  kFakePosition2_Latitude);
+  user2_pref_service()->SetDouble(prefs::kNightLightCachedLongitude,
+                                  kFakePosition2_Longitude);
+
+  // Switch to user 2 and expect that the delegate now has a geoposition, but
+  // the controller knows that it's from a cached value.
+  SwitchActiveUser(kUser2Email);
+  EXPECT_TRUE(delegate()->HasGeoposition());
+  EXPECT_TRUE(controller->is_current_geoposition_from_cache());
+  const TimeOfDay kSunset2{kFakePosition2_SunsetOffset};
+  const TimeOfDay kSunrise2{kFakePosition2_SunriseOffset};
+  EXPECT_EQ(delegate()->GetSunsetTime(), kSunset2.ToTimeToday());
+  EXPECT_EQ(delegate()->GetSunriseTime(), kSunrise2.ToTimeToday());
+
+  // Store fake geoposition 1 in user 1's prefs.
+  user1_pref_service()->SetDouble(prefs::kNightLightCachedLatitude,
+                                  kFakePosition1_Latitude);
+  user1_pref_service()->SetDouble(prefs::kNightLightCachedLongitude,
+                                  kFakePosition1_Longitude);
+
+  // Switching to user 1 should ignore the current geoposition since it's
+  // a cached value from user 2's prefs rather than a newly-updated value.
+  // User 1's cached values should be loaded.
+  SwitchActiveUser(kUser1Email);
+  EXPECT_TRUE(delegate()->HasGeoposition());
+  EXPECT_TRUE(controller->is_current_geoposition_from_cache());
+  const TimeOfDay kSunset1{kFakePosition1_SunsetOffset};
+  const TimeOfDay kSunrise1{kFakePosition1_SunriseOffset};
+  EXPECT_EQ(delegate()->GetSunsetTime(), kSunset1.ToTimeToday());
+  EXPECT_EQ(delegate()->GetSunriseTime(), kSunrise1.ToTimeToday());
+
+  // Now simulate receiving a geoposition update of fake geoposition 2.
+  controller->SetCurrentGeoposition(mojom::SimpleGeoposition::New(
+      kFakePosition2_Latitude, kFakePosition2_Longitude));
+  EXPECT_TRUE(delegate()->HasGeoposition());
+  EXPECT_FALSE(controller->is_current_geoposition_from_cache());
+  EXPECT_EQ(delegate()->GetSunsetTime(), kSunset2.ToTimeToday());
+  EXPECT_EQ(delegate()->GetSunriseTime(), kSunrise2.ToTimeToday());
+
+  // Update user 2's prefs with fake geoposition 1.
+  user2_pref_service()->SetDouble(prefs::kNightLightCachedLatitude,
+                                  kFakePosition1_Latitude);
+  user2_pref_service()->SetDouble(prefs::kNightLightCachedLongitude,
+                                  kFakePosition1_Longitude);
+
+  // Now switching to user 2 should completely ignore their cached geopsoition,
+  // since from now on we have a valid newly-retrieved value.
+  SwitchActiveUser(kUser2Email);
+  EXPECT_TRUE(delegate()->HasGeoposition());
+  EXPECT_FALSE(controller->is_current_geoposition_from_cache());
+  EXPECT_EQ(delegate()->GetSunsetTime(), kSunset2.ToTimeToday());
+  EXPECT_EQ(delegate()->GetSunriseTime(), kSunrise2.ToTimeToday());
+
+  // Clear all cached geoposition prefs for all users, just to make sure getting
+  // a new geoposition with persist it for all users not just the active one.
+  user1_pref_service()->ClearPref(prefs::kNightLightCachedLatitude);
+  user1_pref_service()->ClearPref(prefs::kNightLightCachedLongitude);
+  user2_pref_service()->ClearPref(prefs::kNightLightCachedLatitude);
+  user2_pref_service()->ClearPref(prefs::kNightLightCachedLongitude);
+
+  // Now simulate receiving a geoposition update of fake geoposition 1.
+  controller->SetCurrentGeoposition(mojom::SimpleGeoposition::New(
+      kFakePosition1_Latitude, kFakePosition1_Longitude));
+  EXPECT_TRUE(delegate()->HasGeoposition());
+  EXPECT_FALSE(controller->is_current_geoposition_from_cache());
+  EXPECT_EQ(delegate()->GetSunsetTime(), kSunset1.ToTimeToday());
+  EXPECT_EQ(delegate()->GetSunriseTime(), kSunrise1.ToTimeToday());
+  EXPECT_EQ(kFakePosition1_Latitude,
+            user1_pref_service()->GetDouble(prefs::kNightLightCachedLatitude));
+  EXPECT_EQ(kFakePosition1_Longitude,
+            user1_pref_service()->GetDouble(prefs::kNightLightCachedLongitude));
+  EXPECT_EQ(kFakePosition1_Latitude,
+            user2_pref_service()->GetDouble(prefs::kNightLightCachedLatitude));
+  EXPECT_EQ(kFakePosition1_Longitude,
+            user2_pref_service()->GetDouble(prefs::kNightLightCachedLongitude));
 }
 
 // Tests that on device resume from sleep, the NightLight status is updated

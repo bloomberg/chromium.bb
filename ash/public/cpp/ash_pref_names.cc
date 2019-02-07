@@ -183,6 +183,12 @@ const char kNightLightScheduleType[] = "ash.night_light.schedule_type";
 const char kNightLightCustomStartTime[] = "ash.night_light.custom_start_time";
 const char kNightLightCustomEndTime[] = "ash.night_light.custom_end_time";
 
+// Double prefs storing the most recent valid geoposition, which is only used
+// when the device lacks connectivity and we're unable to retrieve a valid
+// geoposition to calculate the sunset / sunrise times.
+const char kNightLightCachedLatitude[] = "ash.night_light.cached_latitude";
+const char kNightLightCachedLongitude[] = "ash.night_light.cached_longitude";
+
 // Whether the Chrome OS lock screen is allowed.
 const char kAllowScreenLock[] = "allow_screen_lock";
 
