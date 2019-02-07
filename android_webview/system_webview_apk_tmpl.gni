@@ -7,7 +7,6 @@ import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//chrome/android/chrome_public_apk_tmpl.gni")
 
 template("system_webview_apk_tmpl") {
   android_apk(target_name) {
@@ -42,18 +41,9 @@ template("system_webview_apk_tmpl") {
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.
       if (android_64bit_target_cpu) {
-        if (android_64bit_browser) {
-          native_lib_placeholders = [ "libdummy.so" ]
-          if (build_apk_secondary_abi) {
-            secondary_abi_shared_libraries = [
-              "//android_webview:monochrome($android_secondary_abi_toolchain)",
-            ]
-          }
-        } else {
-          shared_libraries = [ "//android_webview:monochrome" ]
-          if (build_apk_secondary_abi) {
-            secondary_native_lib_placeholders = [ "libdummy.so" ]
-          }
+        shared_libraries = [ "//android_webview:monochrome" ]
+        if (build_apk_secondary_abi) {
+          secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {
         native_lib_placeholders = [ "libdummy.so" ]

@@ -29,11 +29,8 @@ trichrome_jinja_variables = [
   "trichrome_library=$trichrome_library_package",
   "trichrome_version=$trichrome_version_code",
   "trichrome_certdigest=$trichrome_certdigest",
+  "use32bitAbi=android:use32bitAbi=\"true\"",
 ]
-
-if (!android_64bit_browser) {
-  trichrome_jinja_variables += [ "use32bitAbi=android:use32bitAbi=\"true\"" ]
-}
 
 template("trichrome_library_apk_tmpl") {
   android_apk(target_name) {
@@ -81,17 +78,10 @@ template("trichrome_library_apk_tmpl") {
       # opposite-bitness placeholder library to ensure that the library is
       # treated as multiarch and gets its Java code precompiled for both
       # architectures.
-      if (android_64bit_browser) {
-        shared_libraries = [ "//chrome/android:monochrome" ]
-        if (build_apk_secondary_abi) {
-          secondary_native_lib_placeholders = [ "libdummy.so" ]
-        }
-      } else {
-        native_lib_placeholders = [ "libdummy.so" ]
-        if (build_apk_secondary_abi) {
-          secondary_abi_shared_libraries =
-              [ "//chrome/android:monochrome_secondary_abi_lib" ]
-        }
+      native_lib_placeholders = [ "libdummy.so" ]
+      if (build_apk_secondary_abi) {
+        secondary_abi_shared_libraries =
+            [ "//chrome/android:monochrome_secondary_abi_lib" ]
       }
     } else {
       shared_libraries = [ "//chrome/android:monochrome" ]
