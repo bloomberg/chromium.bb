@@ -209,5 +209,26 @@ bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
              features::kOffMainThreadSharedWorkerScriptFetch);
 }
 
+bool IsPlzDedicatedWorkerEnabled() {
+  // PlzDedicatedWorker depends on off-the-main-thread dedicated worker script
+  // fetch and NetworkService.
+#if DCHECK_IS_ON()
+  if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kOffMainThreadDedicatedWorkerScriptFetch))
+        << "PlzDedicatedWorker is enabled but "
+        << "OffMainThreadDedicatedWorkerScriptFetch isn't. PlzDedicatedWorker "
+        << "requires OffMainThreadDedicatedWorkerScriptFetch.";
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService))
+        << "PlzDedicatedWorker is enabled but NetworkService isn't. "
+        << "PlzDedicatedWorker requires NetworkService.";
+  }
+#endif  // DCHECK_IS_ON()
+  return base::FeatureList::IsEnabled(
+             features::kOffMainThreadDedicatedWorkerScriptFetch) &&
+         base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
+}
+
 }  // namespace features
 }  // namespace blink
