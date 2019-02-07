@@ -190,7 +190,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Passing a null callback will restore the default behavior.
   // This method must be called either on the UI thread or before threads start.
   // This callback is run on the UI thread.
-  using CreateNetworkFactoryCallback = base::Callback<void(
+  using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       network::mojom::URLLoaderFactoryRequest request,
       int process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory)>;

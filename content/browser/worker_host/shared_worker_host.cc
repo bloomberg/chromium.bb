@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -39,6 +40,13 @@
 
 namespace content {
 namespace {
+
+SharedWorkerHost::CreateNetworkFactoryCallback&
+GetCreateNetworkFactoryCallback() {
+  static base::NoDestructor<SharedWorkerHost::CreateNetworkFactoryCallback>
+      s_callback;
+  return *s_callback;
+}
 
 void AllowFileSystemOnIOThreadResponse(base::OnceCallback<void(bool)> callback,
                                        bool result) {
@@ -140,6 +148,18 @@ SharedWorkerHost::~SharedWorkerHost() {
     process_host->DecrementKeepAliveRefCount(
         RenderProcessHost::KeepAliveClientType::kSharedWorker);
   }
+}
+
+// static
+void SharedWorkerHost::SetNetworkFactoryForTesting(
+    const CreateNetworkFactoryCallback& create_network_factory_callback) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(create_network_factory_callback.is_null() ||
+         GetCreateNetworkFactoryCallback().is_null())
+      << "It is not expected that this is called with non-null callback when "
+      << "another overriding callback is already set.";
+  GetCreateNetworkFactoryCallback() = create_network_factory_callback;
 }
 
 void SharedWorkerHost::Start(
@@ -293,14 +313,21 @@ void SharedWorkerHost::Start(
 //  the connection error and terminates the worker.
 void SharedWorkerHost::CreateNetworkFactory(
     network::mojom::URLLoaderFactoryRequest request) {
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = process_id_;
-  // TODO(lukasza): https://crbug.com/792546: Start using CORB.
-  params->is_corb_enabled = false;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  service_->storage_partition()->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(request), std::move(params));
+  RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
+  url::Origin origin = instance_->constructor_origin();
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
+  if (GetCreateNetworkFactoryCallback().is_null()) {
+    process->CreateURLLoaderFactory(origin, std::move(no_header_client),
+                                    std::move(request));
+  } else {
+    network::mojom::URLLoaderFactoryPtr original_factory;
+    process->CreateURLLoaderFactory(origin, std::move(no_header_client),
+                                    mojo::MakeRequest(&original_factory));
+    GetCreateNetworkFactoryCallback().Run(std::move(request), process_id_,
+                                          original_factory.PassInterface());
+  }
 }
 
 void SharedWorkerHost::AllowFileSystem(
