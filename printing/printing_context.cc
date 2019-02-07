@@ -5,8 +5,6 @@
 #include "printing/printing_context.h"
 
 #include "base/logging.h"
-#include "base/values.h"
-#include "printing/buildflags/buildflags.h"
 #include "printing/page_setup.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"

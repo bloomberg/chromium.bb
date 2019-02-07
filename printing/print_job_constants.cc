@@ -4,8 +4,6 @@
 
 #include "printing/print_job_constants.h"
 
-#include "printing/buildflags/buildflags.h"
-
 namespace printing {
 
 // True if this is the first preview request.
