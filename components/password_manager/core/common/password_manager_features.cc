@@ -14,6 +14,11 @@ namespace features {
 const base::Feature kAffiliationBasedMatching = {
     "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the editing of passwords in chrome://settings/passwords, i.e. the
+// Desktop passwords settings page.
+const base::Feature kEditPasswordsInDesktopSettings = {
+    "EditPasswordsInDesktopSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Recovers lost passwords on Mac by deleting the ones that cannot be decrypted
 // with the present encryption key from the Keychain.
 const base::Feature kDeleteCorruptedPasswords = {
