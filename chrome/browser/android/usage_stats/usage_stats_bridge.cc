@@ -109,19 +109,43 @@ void UsageStatsBridge::SetSuspensions(JNIEnv* j_env,
   ScopedJavaGlobalRef<jobject> callback(j_callback);
 
   usage_stats_database_->SetSuspensions(
-      domains, base::BindOnce(&UsageStatsBridge::OnSetSuspensionsDone,
+      domains, base::BindOnce(&UsageStatsBridge::OnUpdateDone,
                               weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void UsageStatsBridge::GetAllTokenMappings(JNIEnv* j_env,
                                            const JavaRef<jobject>& j_this,
                                            const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->GetAllTokenMappings(
+      base::BindOnce(&UsageStatsBridge::OnGetAllTokenMappingsDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void UsageStatsBridge::SetTokenMappings(JNIEnv* j_env,
                                         const JavaRef<jobject>& j_this,
-                                        const JavaRef<jobject>& j_mappings,
-                                        const JavaRef<jobject>& j_callback) {}
+                                        const JavaRef<jobjectArray>& j_tokens,
+                                        const JavaRef<jobjectArray>& j_fqdns,
+                                        const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  std::vector<std::string> tokens, fqdns;
+  AppendJavaStringArrayToStringVector(j_env, j_tokens, &tokens);
+  AppendJavaStringArrayToStringVector(j_env, j_fqdns, &fqdns);
+
+  DCHECK(tokens.size() == fqdns.size());
+
+  // Zip tokens (keys) and FQDNs (values) into a map.
+  UsageStatsDatabase::TokenMap mappings;
+  for (size_t i = 0; i < tokens.size(); i++) {
+    mappings.emplace(tokens[i], fqdns[i]);
+  }
+
+  usage_stats_database_->SetTokenMappings(
+      mappings, base::BindOnce(&UsageStatsBridge::OnUpdateDone,
+                               weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void UsageStatsBridge::OnGetAllSuspensionsDone(
     ScopedJavaGlobalRef<jobject> callback,
@@ -136,9 +160,39 @@ void UsageStatsBridge::OnGetAllSuspensionsDone(
   RunObjectCallbackAndroid(callback, j_suspensions);
 }
 
-void UsageStatsBridge::OnSetSuspensionsDone(
+void UsageStatsBridge::OnGetAllTokenMappingsDone(
     ScopedJavaGlobalRef<jobject> callback,
-    UsageStatsDatabase::Error error) {
+    UsageStatsDatabase::Error error,
+    UsageStatsDatabase::TokenMap mappings) {
+  JNIEnv* env = AttachCurrentThread();
+
+  if (!isSuccess(error)) {
+    RunObjectCallbackAndroid(
+        callback, ToJavaArrayOfStrings(env, std::vector<std::string>()));
+    return;
+  }
+
+  // Create separate vectors of keys and values from map for passing over
+  // JNI bridge as String arrays.
+  std::vector<std::string> keys, values;
+  keys.reserve(mappings.size());
+  values.reserve(mappings.size());
+
+  for (auto mapping : mappings) {
+    keys.emplace_back(std::move(mapping.first));
+    values.emplace_back(std::move(mapping.second));
+  }
+
+  ScopedJavaLocalRef<jobjectArray> j_keys = ToJavaArrayOfStrings(env, keys);
+  ScopedJavaLocalRef<jobjectArray> j_values = ToJavaArrayOfStrings(env, values);
+
+  // Over JNI, reconstruct map from keys and values, and run on given callback.
+  Java_UsageStatsBridge_createMapAndRunCallback(env, j_keys, j_values,
+                                                callback);
+}
+
+void UsageStatsBridge::OnUpdateDone(ScopedJavaGlobalRef<jobject> callback,
+                                    UsageStatsDatabase::Error error) {
   RunBooleanCallbackAndroid(callback, isSuccess(error));
 }
 

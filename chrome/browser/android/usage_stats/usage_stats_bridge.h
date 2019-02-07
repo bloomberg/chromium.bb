@@ -80,7 +80,8 @@ class UsageStatsBridge {
 
   void SetTokenMappings(JNIEnv* j_env,
                         const JavaRef<jobject>& j_this,
-                        const JavaRef<jobject>& j_mappings,
+                        const JavaRef<jobjectArray>& j_tokens,
+                        const JavaRef<jobjectArray>& j_fqdns,
                         const JavaRef<jobject>& j_callback);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -90,8 +91,12 @@ class UsageStatsBridge {
                                UsageStatsDatabase::Error error,
                                std::vector<std::string> suspensions);
 
-  void OnSetSuspensionsDone(ScopedJavaGlobalRef<jobject> callback,
-                            UsageStatsDatabase::Error error);
+  void OnGetAllTokenMappingsDone(ScopedJavaGlobalRef<jobject> callback,
+                                 UsageStatsDatabase::Error error,
+                                 UsageStatsDatabase::TokenMap mappings);
+
+  void OnUpdateDone(ScopedJavaGlobalRef<jobject> callback,
+                    UsageStatsDatabase::Error error);
 
   std::unique_ptr<UsageStatsDatabase> usage_stats_database_;
 
