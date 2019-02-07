@@ -43,6 +43,7 @@ CrElementsCheckboxTest.All
 CrElementsInputTest.All
 CrElementsProfileAvatarSelectorFocusTest.All
 CrElementsToggleTest.All
+CrExtensionsOptionsPageTest.All
 CrSettingsAnimatedPagesTest.All
 CrSettingsFocusRowBehavior.FocusTest
 CrSettingsSyncPageTest.All
