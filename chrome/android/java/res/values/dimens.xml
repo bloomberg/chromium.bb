@@ -524,6 +524,8 @@
 
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
+    <!--  Used as a margin to force the shadow view to overlap other views. -->
+    <dimen name="action_bar_shadow_margin_negative">-10dp</dimen>
     <dimen name="clear_text_button_end_padding">10dp</dimen>
     <dimen name="sync_promo_view_padding">16dp</dimen>
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>

@@ -21,9 +21,12 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
@@ -51,6 +54,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -247,15 +251,41 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+        ViewGroup result = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
+        if (mIsFromSigninScreen) {
+            inflater.inflate(R.layout.sync_and_services_bottom_bar, result, true);
+            ButtonCompat cancelButton = result.findViewById(R.id.cancel_button);
+            cancelButton.setOnClickListener(view -> cancelSync());
+
+            ButtonCompat confirmButton = result.findViewById(R.id.confirm_button);
+            confirmButton.setOnClickListener(view -> confirmSettings());
+        }
+        return result;
+    }
+
+    private void confirmSettings() {
+        // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
+        getActivity().finish();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         mProfileSyncService.addSyncStateChangedListener(this);
         mSigninPreference.registerForUpdates();
 
-        if (!ChromeSigninController.get().isSignedIn()) {
-            // Don't show CancelSyncDialog.
-            mIsFromSigninScreen = false;
+        if (!mIsFromSigninScreen || ChromeSigninController.get().isSignedIn()) {
+            return;
         }
+
+        // Don't show CancelSyncDialog and hide bottom bar.
+        mIsFromSigninScreen = false;
+        View bottomBarShadow = getView().findViewById(R.id.bottom_bar_shadow);
+        bottomBarShadow.setVisibility(View.GONE);
+        View bottomBarButtonContainer = getView().findViewById(R.id.bottom_bar_button_container);
+        bottomBarButtonContainer.setVisibility(View.GONE);
     }
 
     @Override
