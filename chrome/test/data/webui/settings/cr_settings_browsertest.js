@@ -1345,7 +1345,8 @@ CrSettingsSiteListTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteListTest', 'SiteList', function() {
+// TODO(crbug.com/929455): flaky, fix.
+TEST_F('CrSettingsSiteListTest', 'DISABLED_SiteList', function() {
   mocha.grep('SiteList').run();
 });
 
