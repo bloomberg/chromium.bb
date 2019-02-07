@@ -449,7 +449,7 @@ deps = {
   },
 
   'src/ios/third_party/webkit/src': {
-      'url': Var('chromium_git') + '/external/github.com/WebKit/webkit.git',
+      'url': Var('chromium_git') + '/external/github.com/WebKit/webkit.git' + '@' + 'c56dd8a91c62afcfd0de4a5fe6dbb46484ea1fb5',
       'condition': 'checkout_ios and checkout_ios_webkit'
   },
 
