@@ -28,7 +28,7 @@ float GetPrimaryDisplayScaleFactor() {
 
 }  // namespace
 
-namespace apps {
+namespace apps_util {
 
 int ConvertDipToPx(int dip) {
   return base::saturated_cast<int>(
@@ -44,4 +44,4 @@ ui::ScaleFactor GetPrimaryDisplayUIScaleFactor() {
   return ui::GetSupportedScaleFactor(GetPrimaryDisplayScaleFactor());
 }
 
-}  // namespace apps
+}  // namespace apps_util

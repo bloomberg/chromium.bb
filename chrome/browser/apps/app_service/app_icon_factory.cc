@@ -148,7 +148,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            content::BrowserContext* context,
                            const std::string& extension_id,
                            apps::mojom::Publisher::LoadIconCallback callback) {
-  int size_hint_in_px = ConvertDipToPx(size_hint_in_dip);
+  int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
 
   const extensions::Extension* extension =
       extensions::ExtensionSystem::Get(context)
