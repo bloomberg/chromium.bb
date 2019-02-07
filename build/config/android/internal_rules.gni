@@ -2335,16 +2335,16 @@ if (enable_java_templates) {
     }
   }
 
-  # Create an apk.jar.info file by merging several .jar.info files into one.
+  # Create an .jar.info file by merging several .jar.info files into one.
   #
   # Variables:
-  #   apk_build_config: Path to APK's build config file. Used to extract the
+  #   build_config: Path to APK's build config file. Used to extract the
   #       list of input .jar files from its dependencies.
   #   output: Output file path.
   #
-  template("create_apk_jar_info") {
+  template("create_final_jar_info") {
     _output = invoker.output
-    _build_config = invoker.apk_build_config
+    _build_config = invoker.build_config
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
@@ -2365,10 +2365,14 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--output",
         rebase_path(_output, root_build_dir),
-        "--apk-jar-file=@FileArg($_rebased_build_config:deps_info:jar_path)",
         "--dep-jar-files=@FileArg(" +
             "$_rebased_build_config:deps_info:javac_full_classpath)",
       ]
+      if (!invoker.is_bundle) {
+        args += [
+          "--apk-jar-file=@FileArg($_rebased_build_config:deps_info:jar_path)",
+        ]
+      }
     }
   }
 
