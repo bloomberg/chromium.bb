@@ -622,39 +622,6 @@
           'gtest_tests': 'chromium_android_gtests',
         },
       },
-      'x64 Device Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_type': 'coho',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'skip_cipd_packages': True,
-        'skip_output_links': True,
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-        },
-      },
-      'x86 Cloud Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_type': 'gce_x86',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'skip_cipd_packages': True,
-        'skip_output_links': True,
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'isolated_scripts': 'telemetry_perf_unittests_isolated_scripts',
-        },
-      },
     },
   },
   {
