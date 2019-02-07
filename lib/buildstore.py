@@ -285,32 +285,6 @@ class BuildStore(object):
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuildStage(build_id, name, board, status)
 
-  def InsertFailure(self, build_stage_id, exception_type, exception_message,
-                    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
-                    outer_failure_id=None, extra_info=None):
-    """Insert a failure description into CIDB.
-
-    Args:
-      build_stage_id: primary key, in CIDB's buildStageTable, of the stage
-                      where failure occured.
-      exception_type: str name of the exception class.
-      exception_message: str description of the failure.
-      exception_category: (Optional) one of
-                          constants.EXCEPTION_CATEGORY_ALL_CATEGORIES,
-                          Default: 'unknown'.
-      outer_failure_id: (Optional) primary key of outer failure which contains
-                        this failure. Used to store CompoundFailure
-                        relationship.
-      extra_info: (Optional) extra category-specific string description giving
-                  failure details. Used for programmatic triage.
-    """
-    if not self.InitializeClients():
-      raise BuildStoreException('BuildStore clients could not be initialized.')
-    if self._write_to_cidb:
-      return self.cidb_conn.InsertFailure(build_stage_id, exception_type,
-                                          exception_message, exception_category,
-                                          outer_failure_id, extra_info)
-
   def InsertBuildMessage(
       self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
       message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
@@ -612,13 +586,6 @@ class FakeBuildStore(object):
     build_stage_id = self.fake_cidb.InsertBuildStage(build_id, name, board,
                                                      status)
     return build_stage_id
-
-  def InsertFailure(self, build_stage_id, exception_type, exception_message,
-                    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
-                    outer_failure_id=None, extra_info=None):
-    return self.fake_cidb.InsertFailure(build_stage_id, exception_type,
-                                        exception_message, exception_category,
-                                        outer_failure_id, extra_info)
 
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     return self.fake_cidb.GetSlaveStatuses(master_build_id, buildbucket_ids)

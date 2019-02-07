@@ -535,35 +535,6 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   def ConstructStage(self):
     return generic_stages.BuilderStage(self._run, self.buildstore)
 
-  def testGetBuildFailureMessageFromBuildStore(self):
-    """Test GetBuildFailureMessageFromBuildStore."""
-    db = fake_cidb.FakeCIDBConnection()
-    cidb.CIDBConnectionFactory.SetupMockCidb(db)
-    buildstore = FakeBuildStore(db)
-
-    build_id = db.InsertBuild('lumpy-pre-cq', 1,
-                              'lumpy-pre-cq', 'bot_hostname',
-                              status=constants.BUILDER_STATUS_INFLIGHT)
-    stage_id = db.InsertBuildStage(build_id, 'BuildPackages', status='fail')
-    db.InsertFailure(stage_id, 'PackageBuildFailure',
-                     'Packages failed in ./build_packages: sys-apps/flashrom',
-                     exception_category='build',
-                     extra_info={"shortname": "./build_packages",
-                                 "failed_packages": ["sys-apps/flashrom"]})
-    self._Prepare(build_id=build_id)
-    stage = self.ConstructStage()
-    # Sending cidb_id as buildbucket_id so as to not refactor the
-    # fake_cidb function.
-    self._run.options.master_build_id = 2
-    self._run.options.master_buildbucket_id = 2341
-    message = stage.GetBuildFailureMessageFromBuildStore(
-        buildstore, BuildIdentifier(buildbucket_id=build_id, cidb_id=build_id))
-
-    self.assertFalse(message.MatchesExceptionCategories(
-        {constants.EXCEPTION_CATEGORY_LAB}))
-    self.assertTrue(message.MatchesExceptionCategories(
-        {constants.EXCEPTION_CATEGORY_BUILD}))
-
   def testGetBuildFailureMessageFromResults(self):
     """Test GetBuildFailureMessageFromResults."""
     ex = failures_lib.StepFailure()

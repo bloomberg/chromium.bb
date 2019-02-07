@@ -9,13 +9,10 @@ from __future__ import print_function
 
 import json
 
-from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.lib import failure_message_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import fake_cidb
-from chromite.lib.buildstore import FakeBuildStore
 
 
 class StepFailureTests(cros_test_lib.TestCase):
@@ -112,84 +109,23 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertEqual(stage_failure_msg.exception_type, 'CompoundFailure')
     self.assertEqual(stage_failure_msg.exception_category, 'unknown')
 
-class ReportStageFailureTest(cros_test_lib.TestCase):
+class ReportStageFailureTest(cros_test_lib.MockTestCase):
   """Tests for ReportStageFailure."""
 
-  def testReportStageFailureOnCompoundFailure(self):
-    """Tests ReportStageFailure on CompoundFailure."""
-    fake_db = fake_cidb.FakeCIDBConnection()
-    buildstore = FakeBuildStore(fake_db)
-    inner_exception_1 = failures_lib.TestLabFailure()
-    inner_exception_2 = TypeError()
-    exc_infos = failures_lib.CreateExceptInfo(inner_exception_1, None)
-    exc_infos += failures_lib.CreateExceptInfo(inner_exception_2, None)
-    outer_exception = failures_lib.GoBFailure(exc_infos=exc_infos)
-    mock_build_stage_id = 9345
-    outer_failure_id = failures_lib.ReportStageFailure(
-        buildstore, mock_build_stage_id, outer_exception)
+  def testReportStageFailure(self):
+    """Test ReportStageFailure."""
 
-    self.assertEqual(3, len(fake_db.failureTable))
-    for failure_id, failure in fake_db.failureTable.iteritems():
-      self.assertEqual(failure['build_stage_id'], mock_build_stage_id)
-      self.assertIsNone(failure['extra_info'])
+    class FakeStepFailure(failures_lib.StepFailure):
+      """A fake StepFailure subclass for unittest."""
+      EXCEPTION_CATEGORY = 'unittest'
 
-      if failure_id == outer_failure_id:
-        self.assertEqual(failure_id, outer_failure_id)
-        self.assertEqual(failure['exception_message'],
-                         outer_exception.ToSummaryString())
-      elif failure['exception_type'] == failures_lib.TestLabFailure.__name__:
-        self.assertEqual(failure['outer_failure_id'], outer_failure_id)
-        self.assertEqual(failure['exception_category'],
-                         constants.EXCEPTION_CATEGORY_LAB)
-      elif failure['exception_type'] == TypeError.__name__:
-        self.assertEqual(failure['outer_failure_id'], outer_failure_id)
-        self.assertEqual(failure['exception_category'],
-                         constants.EXCEPTION_CATEGORY_UNKNOWN)
-
-  def testReportStageFailureOnBuildScriptFailure(self):
-    """Test ReportStageFailure On BuildScriptFailure."""
-    fake_db = fake_cidb.FakeCIDBConnection()
-    buildstore = FakeBuildStore(fake_db)
-    msg = 'run command error'
-    short_name = 'short name'
-    error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
-    build_failure = failures_lib.BuildScriptFailure(error, short_name)
-    mock_build_stage_id = 1
-    failure_id = failures_lib.ReportStageFailure(
-        buildstore, mock_build_stage_id, build_failure)
-
-    extra_info_json_string = json.dumps({'shortname': short_name})
-    self.assertEqual(len(fake_db.failureTable), 1)
-    values = fake_db.failureTable[failure_id]
-    self.assertEqual(values['exception_message'], msg)
-    self.assertEqual(values['outer_failure_id'], None)
-    self.assertEqual(values['extra_info'], extra_info_json_string)
-    self.assertEqual(json.loads(values['extra_info'])['shortname'], short_name)
-
-  def testReportStageFailureOnPackageBuildFailure(self):
-    """Test ReportStageFailure On PackageBuildFailure."""
-    fake_db = fake_cidb.FakeCIDBConnection()
-    buildstore = FakeBuildStore(fake_db)
-    msg = 'run command error'
-    short_name = 'short name'
-    failed_packages = ['chromeos-base/autotest', 'chromeos-base/telemetry']
-    error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
-    build_failure = failures_lib.PackageBuildFailure(
-        error, short_name, failed_packages)
-    mock_build_stage_id = 1
-    failure_id = failures_lib.ReportStageFailure(
-        buildstore, mock_build_stage_id, build_failure)
-
-    extra_info_json_string = json.dumps({
-        'shortname': short_name,
-        'failed_packages': failed_packages})
-    self.assertEqual(len(fake_db.failureTable), 1)
-    values = fake_db.failureTable[failure_id]
-    self.assertEqual(values['exception_message'], str(build_failure))
-    self.assertEqual(values['outer_failure_id'], None)
-    self.assertEqual(values['extra_info'], extra_info_json_string)
-    self.assertEqual(json.loads(values['extra_info'])['failed_packages'],
-                     failed_packages)
+    fake_failure = FakeStepFailure('Toot! Toot!')
+    insert_failure_fn = self.PatchObject(failures_lib,
+                                         '_InsertFailureToMonarch')
+    failures_lib.ReportStageFailure(
+        fake_failure, {})
+    insert_failure_fn.assert_called_once_with(exception_category='unittest',
+                                              metrics_fields={})
 
 
 class SetFailureTypeTest(cros_test_lib.TestCase):

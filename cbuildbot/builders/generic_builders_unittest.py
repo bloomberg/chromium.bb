@@ -63,20 +63,3 @@ class BuilderTest(cros_test_lib.MockTestCase):
     for r in results_lib.Results.Get():
       if r.name in ('stage_3', 'stage_4'):
         self.assertEqual(r.prefix, 'stage_prefix')
-
-    for i in range(0, 4):
-      self.assertFalse(fake_db.HasFailureMsgForStage(i))
-    for i in range(4, 6):
-      self.assertTrue(fake_db.HasFailureMsgForStage(i))
-
-    self.assertEqual(fake_db.GetBuildStage(0)['status'],
-                     constants.BUILDER_STATUS_SKIPPED)
-    self.assertEqual(fake_db.GetBuildStage(1)['status'],
-                     constants.BUILDER_STATUS_FORGIVEN)
-    self.assertEqual(fake_db.GetBuildStage(2)['status'],
-                     constants.BUILDER_STATUS_PASSED)
-    self.assertEqual(fake_db.GetBuildStage(3)['status'],
-                     constants.BUILDER_STATUS_FAILED)
-    self.assertEqual(fake_db.GetBuildStage(4)['status'],
-                     constants.BUILDER_STATUS_FAILED)
-    self.assertIsNone(fake_db.GetBuildStage(5))

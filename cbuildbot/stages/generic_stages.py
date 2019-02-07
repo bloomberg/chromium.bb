@@ -274,8 +274,6 @@ class BuilderStage(object):
       })
       if self.buildstore.AreClientsReady():
         failures_lib.ReportStageFailure(
-            self.buildstore,
-            self._build_stage_id,
             stage_result,
             metrics_fields=failed_metrics_fields)
 
