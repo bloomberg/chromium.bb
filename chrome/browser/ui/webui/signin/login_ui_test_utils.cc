@@ -9,7 +9,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -296,6 +294,10 @@ void ExecuteJsToSigninInSigninFrame(Browser* browser,
 bool SignInWithUI(Browser* browser,
                   const std::string& username,
                   const std::string& password) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+  return false;
+#else
   SignInObserver signin_observer;
   ScopedObserver<identity::IdentityManager, SignInObserver>
       scoped_signin_observer(&signin_observer);
@@ -315,6 +317,7 @@ bool SignInWithUI(Browser* browser,
   ExecuteJsToSigninInSigninFrame(browser, username, password);
   signin_observer.Wait();
   return signin_observer.DidSignIn();
+#endif
 }
 
 bool DismissSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout) {

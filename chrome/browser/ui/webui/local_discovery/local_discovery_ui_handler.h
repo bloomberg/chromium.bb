@@ -117,8 +117,10 @@ class LocalDiscoveryUIHandler
   // tab.
   void HandleOpenCloudPrintURL(const base::ListValue* args);
 
+#if !defined(OS_CHROMEOS)
   // For showing sync login UI.
   void HandleShowSyncUI(const base::ListValue* args);
+#endif
 
   // For when the IP address of the printer has been resolved for registration.
   void StartRegisterHTTP(

@@ -667,10 +667,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SHOW_BETA_FORUM:
       ShowBetaForum(browser_);
       break;
+#if !defined(OS_CHROMEOS)
     case IDC_SHOW_SIGNIN:
       ShowBrowserSigninOrSettings(
           browser_, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
       break;
+#endif
     case IDC_DISTILL_PAGE:
       DistillCurrentPage(browser_);
       break;

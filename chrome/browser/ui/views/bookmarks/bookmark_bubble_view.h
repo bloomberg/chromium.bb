@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"

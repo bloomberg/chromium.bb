@@ -6,18 +6,19 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/box_layout.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/sync/bubble_sync_promo_view_util.h"
 #endif
 
 namespace autofill {
@@ -47,29 +48,25 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   view->set_id(DialogViewId::SIGN_IN_PROMO_VIEW);
 
-  std::unique_ptr<views::View> signin_view;
-  Profile* profile = controller()->GetProfile();
+#if !defined(OS_CHROMEOS)
   sync_promo_delegate_ =
       std::make_unique<SaveCardSignInPromoBubbleViews::SyncPromoDelegate>(
           controller(),
           signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE);
-  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    signin_view = std::make_unique<DiceBubbleSyncPromoView>(
-        profile, sync_promo_delegate_.get(),
-        signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE);
-#else
-    NOTREACHED();
-#endif
-  } else {
-    signin_view = std::make_unique<BubbleSyncPromoView>(
-        sync_promo_delegate_.get(),
-        signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
-        IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED,
-        IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED);
-  }
+
+  BubbleSyncPromoViewParams params;
+  params.link_text_resource_id = IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED;
+  params.message_text_resource_id =
+      IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED;
+
+  std::unique_ptr<views::View> signin_view = CreateBubbleSyncPromoView(
+      controller()->GetProfile(), sync_promo_delegate_.get(),
+      signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE, params);
+
   signin_view->set_id(DialogViewId::SIGN_IN_VIEW);
   view->AddChildView(signin_view.release());
+#endif
+
   return view;
 }
 

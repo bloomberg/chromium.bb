@@ -1586,7 +1586,6 @@ test("browser_tests") {
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h",
         "../browser/ui/views/autofill/local_card_migration_browsertest.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest.cc",
-        "../browser/ui/views/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_bubble_view_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_editor_view_browsertest.cc",
         "../browser/ui/views/certificate_selector_dialog_browsertest.cc",
@@ -1668,6 +1667,7 @@ test("browser_tests") {
       ]
       if (!is_chromeos) {
         sources += [
+          "../browser/ui/views/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc",
           "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
           "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
         ]
@@ -4522,7 +4522,6 @@ test("unit_tests") {
       "../browser/ui/views/relaunch_notification/relaunch_required_timer_internal_unittest.cc",
       "../browser/ui/views/relaunch_notification/wall_clock_timer_unittest.cc",
       "../browser/ui/views/status_icons/status_tray_win_unittest.cc",
-      "../browser/ui/views/sync/bubble_sync_promo_view_unittest.cc",
       "../browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
@@ -4546,6 +4545,7 @@ test("unit_tests") {
     if (!is_chromeos) {
       sources += [
         "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
+        "../browser/ui/views/sync/bubble_sync_promo_view_unittest.cc",
         "../browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc",
       ]
     }
