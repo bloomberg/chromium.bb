@@ -21,7 +21,6 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -88,6 +87,7 @@
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #else
 #include "chrome/browser/signin/signin_global_error_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -373,7 +373,10 @@ void ToolbarView::ShowBookmarkBubble(
   PageActionIconView* const star_view = location_bar()->star_view();
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
+#if !defined(OS_CHROMEOS)
+  // ChromeOS does not show the signin promo.
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
+#endif
   BookmarkBubbleView::ShowBubble(anchor_view, star_view, gfx::Rect(), nullptr,
                                  observer, std::move(delegate),
                                  browser_->profile(), url, already_bookmarked);

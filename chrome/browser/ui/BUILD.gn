@@ -765,8 +765,6 @@ jumbo_split_static_library("ui") {
       "bluetooth/bluetooth_chooser_desktop.h",
       "bluetooth/chrome_extension_bluetooth_chooser.cc",
       "bluetooth/chrome_extension_bluetooth_chooser.h",
-      "bookmarks/bookmark_bubble_sign_in_delegate.cc",
-      "bookmarks/bookmark_bubble_sign_in_delegate.h",
       "bookmarks/bookmark_context_menu_controller.cc",
       "bookmarks/bookmark_context_menu_controller.h",
       "bookmarks/bookmark_drag_drop.cc",
@@ -1838,6 +1836,8 @@ jumbo_split_static_library("ui") {
       "avatar_button_error_controller.cc",
       "avatar_button_error_controller.h",
       "avatar_button_error_controller_delegate.h",
+      "bookmarks/bookmark_bubble_sign_in_delegate.cc",
+      "bookmarks/bookmark_bubble_sign_in_delegate.h",
       "external_protocol_dialog_delegate.cc",
       "external_protocol_dialog_delegate.h",
       "signin_view_controller.cc",
@@ -2773,8 +2773,6 @@ jumbo_split_static_library("ui") {
       "views/status_bubble_views.h",
       "views/subtle_notification_view.cc",
       "views/subtle_notification_view.h",
-      "views/sync/bubble_sync_promo_view.cc",
-      "views/sync/bubble_sync_promo_view.h",
       "views/sync/profile_signin_confirmation_dialog_views.cc",
       "views/sync/profile_signin_confirmation_dialog_views.h",
       "views/tab_contents/chrome_web_contents_view_focus_helper.cc",
@@ -2898,15 +2896,6 @@ jumbo_split_static_library("ui") {
 
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]
 
-    if (enable_dice_support) {
-      sources += [
-        "views/sync/dice_bubble_sync_promo_view.cc",
-        "views/sync/dice_bubble_sync_promo_view.h",
-        "views/sync/dice_signin_button_view.cc",
-        "views/sync/dice_signin_button_view.h",
-      ]
-    }
-
     if (enable_native_window_nav_buttons) {
       sources += [
         "views/frame/desktop_linux_browser_frame_view.cc",
@@ -3023,6 +3012,14 @@ jumbo_split_static_library("ui") {
         "views/relaunch_notification/relaunch_required_dialog_view.cc",
         "views/relaunch_notification/relaunch_required_dialog_view.h",
         "views/screen_capture_notification_ui_views.cc",
+        "views/sync/bubble_sync_promo_view.cc",
+        "views/sync/bubble_sync_promo_view.h",
+        "views/sync/bubble_sync_promo_view_util.cc",
+        "views/sync/bubble_sync_promo_view_util.h",
+        "views/sync/dice_bubble_sync_promo_view.cc",
+        "views/sync/dice_bubble_sync_promo_view.h",
+        "views/sync/dice_signin_button_view.cc",
+        "views/sync/dice_signin_button_view.h",
         "views/sync/one_click_signin_dialog_view.cc",
         "views/sync/one_click_signin_dialog_view.h",
         "views/tabs/window_finder.cc",

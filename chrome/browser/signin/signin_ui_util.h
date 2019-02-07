@@ -74,6 +74,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 // Also, the parser does not validate the policy value.
 std::string GetAllowedDomain(std::string signin_pattern);
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 namespace internal {
 // Same as |EnableSyncFromPromo| but with a callback that creates a
 // DiceTurnSyncOnHelper so that it can be unit tested.
@@ -92,6 +93,7 @@ void EnableSyncFromPromo(
              DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
         create_dice_turn_sync_on_helper_callback);
 }  // namespace internal
+#endif
 
 }  // namespace signin_ui_util
 

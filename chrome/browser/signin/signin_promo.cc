@@ -168,14 +168,6 @@ GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
   return GURL(url);
 }
 
-#if defined(OS_CHROMEOS)
-GURL GetEmbeddedPromoURLForTab(signin_metrics::AccessPoint access_point,
-                               signin_metrics::Reason reason,
-                               bool auto_close) {
-  return GetEmbeddedPromoURL(access_point, reason, auto_close);
-}
-#endif
-
 GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
                          signin_metrics::Reason reason,
                          bool auto_close) {

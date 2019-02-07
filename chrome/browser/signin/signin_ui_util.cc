@@ -103,11 +103,11 @@ void EnableSyncFromPromo(Browser* browser,
                                 is_default_promo_account,
                                 base::BindOnce(&CreateDiceTurnSyncOnHelper));
 #else
-  internal::EnableSyncFromPromo(browser, account, access_point,
-                                is_default_promo_account, base::DoNothing());
+  NOTREACHED();
 #endif
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 namespace internal {
 void EnableSyncFromPromo(
     Browser* browser,
@@ -128,20 +128,6 @@ void EnableSyncFromPromo(
   Profile* profile = browser->profile();
   DCHECK(!profile->IsOffTheRecord());
 
-#if defined(OS_CHROMEOS)
-  // It looks like on ChromeOS there are tests that expect that the Chrome
-  // sign-in tab is presented even thought the user is signed in to Chrome
-  // (e.g. BookmarkBubbleSignInDelegateTest.*). However signing in to Chrome in
-  // a regular profile is not supported on ChromeOS as the primary account is
-  // set when the profile is created.
-  //
-  // TODO(msarda): Investigate whether this flow needs to be supported on
-  // ChromeOS and remove it if not.
-  DCHECK(account.IsEmpty());
-  chrome::ShowBrowserSignin(browser, access_point);
-  return;
-#endif
-
   if (IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount()) {
     DVLOG(1) << "There is already a primary account.";
     return;
@@ -152,7 +138,6 @@ void EnableSyncFromPromo(
     return;
   }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   DCHECK(!account.account_id.empty());
   DCHECK(!account.email.empty());
   DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
@@ -182,13 +167,8 @@ void EnableSyncFromPromo(
            signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
            account.account_id,
            DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
-#else
-  NOTREACHED();
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 }  // namespace internal
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
   identity::IdentityManager* identity_manager =
