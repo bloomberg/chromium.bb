@@ -391,13 +391,18 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   histogram_tester.ExpectTotalCount(
       "Previews.Triggered.EffectiveConnectionType2", 5);
 
-  // NoScript has precedence over Client LoFi - dropped for committed HTTP:
-  EXPECT_EQ(content::PREVIEWS_OFF,
+  // NoScript has precedence over Client LoFi - except for committed HTTP:
+  EXPECT_EQ(content::CLIENT_LOFI_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
                     content::RESOURCE_LOADING_HINTS_ON,
                 enabled_previews_decider()));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Triggered.EffectiveConnectionType2.LoFi",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 6);
 
   // Only Client LoFi:
   EXPECT_EQ(content::CLIENT_LOFI_ON,
@@ -406,9 +411,9 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 content::CLIENT_LOFI_ON, enabled_previews_decider()));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.LoFi",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 2);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 6);
+      "Previews.Triggered.EffectiveConnectionType2", 7);
 
   // Only NoScript:
   EXPECT_EQ(content::NOSCRIPT_ON,
@@ -424,7 +429,7 @@ TEST_F(PreviewsContentUtilTest,
                                           "NoScriptPreviews");
   PreviewsUserData user_data(1);
   // NoScript not allowed at commit time so Client LoFi chosen:
-  EXPECT_EQ(content::PREVIEWS_OFF,
+  EXPECT_EQ(content::CLIENT_LOFI_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
