@@ -18,9 +18,9 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/image_processor.h"
@@ -196,8 +196,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // Error callback to the client.
   ErrorCB error_cb_;
 
-  // Checker for the thread that creates this V4L2ImageProcessor.
-  THREAD_CHECKER(client_thread_checker_);
+  // Checker for the sequence that creates this V4L2ImageProcessor.
+  SEQUENCE_CHECKER(client_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);
 };
