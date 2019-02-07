@@ -687,9 +687,9 @@ class CONTENT_EXPORT RenderWidget
   void OnOrientationChange();
   void OnWaitNextFrameForTests(int routing_id);
 
-  // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
-  // use this method so that we can properly inform the RenderThread of our
-  // state.
+  // Sets the "hidden" state of this widget.  All modification of is_hidden_
+  // should use this method so that we can properly inform the RenderThread of
+  // our state.
   void SetHidden(bool hidden);
 
   // Sets the fullscreen state for the WebView.

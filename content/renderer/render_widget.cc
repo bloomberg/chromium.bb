@@ -876,36 +876,39 @@ void RenderWidget::OnDisableDeviceEmulation() {
 }
 
 void RenderWidget::OnWasHidden() {
+  // A frozen main frame widget will never be hidden since that would require it
+  // to be shown first. It must be thawed before changing visibility.
+  DCHECK(!is_frozen_);
+
   TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
-  // Go into a mode where we stop generating paint and scrolling events.
+
   SetHidden(true);
+
   for (auto& observer : render_frames_)
     observer.WasHidden();
 }
 
 void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
                               bool was_evicted) {
+  // A frozen main frame widget does not become shown, since it has no frame
+  // associated with it. It must be thawed before changing visibility.
+  DCHECK(!is_frozen_);
+
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
-  // TODO(danakj): Nothing should happen ideally if the RenderWidget is frozen!
-  // It's not visible! However.. the RenderView needs to see it as visible in
-  // order to make the Page visible /o\ so this is hard. We need to detangle
-  // page visibility from the main widget. https://crbug.com/419087
 
   was_shown_time_ = base::TimeTicks::Now();
-  // See OnWasHidden
+
   SetHidden(false);
-  for (auto& observer : render_frames_)
-    observer.WasShown();
-
-  if (was_evicted) {
-    for (auto& observer : render_frame_proxies_) {
-      observer.WasEvicted();
-    }
-  }
-
   if (!show_request_timestamp.is_null()) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
         CreateTabSwitchingTimeRecorder(show_request_timestamp));
+  }
+
+  for (auto& observer : render_frames_)
+    observer.WasShown();
+  if (was_evicted) {
+    for (auto& observer : render_frame_proxies_)
+      observer.WasEvicted();
   }
 }
 
@@ -2399,6 +2402,10 @@ void RenderWidget::OnOrientationChange() {
 }
 
 void RenderWidget::SetHidden(bool hidden) {
+  // A frozen main frame widget does not become shown or hidden, since it has
+  // no frame associated with it. It must be thawed before changing visibility.
+  DCHECK(!is_frozen_);
+
   if (is_hidden_ == hidden)
     return;
 
@@ -2424,15 +2431,7 @@ void RenderWidget::SetHidden(bool hidden) {
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
 
-  // TODO(danakj): Frozen RenderWidgets become visible with the RenderView but
-  // they don't need to anymore, since the RenderView's visibility is controlled
-  // separately. However even if they become visible, we don't need to start the
-  // compositor in this case.
-  // If frozen, then hidden changing doesn't change anything with the
-  // compositor since when frozen the compositor is always stopped (until
-  // we WarmupCompositor()).
-  if (!is_frozen_)
-    StartStopCompositor();
+  StartStopCompositor();
 }
 
 void RenderWidget::SetIsFullscreen(bool fullscreen) {
