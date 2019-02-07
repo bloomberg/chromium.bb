@@ -21,6 +21,21 @@ namespace content {
 // logic for deferred tasks in MessageLoop.
 struct NonNestable {};
 
+// Semantic annotations which tell the scheduler what type of task it's dealing
+// with. This will be used by the scheduler for dynamic prioritization and for
+// attribution in traces, etc...
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.browser
+enum class BrowserTaskType {
+  // A catch all tasks that don't fit the types below.
+  kDefault,
+
+  // Critical startup tasks.
+  kBootstrap,
+
+  // Used to validate values in Java
+  kBrowserTaskType_Last
+};
+
 // TaskTraits for running tasks on the browser threads.
 //
 // These traits enable the use of the //base/task/post_task.h APIs to post tasks
@@ -49,6 +64,7 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
     using base::TaskTraits::ValidTrait::ValidTrait;
 
     ValidTrait(BrowserThread::ID);
+    ValidTrait(BrowserTaskType);
     ValidTrait(NonNestable);
   };
 
@@ -59,35 +75,46 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
   constexpr BrowserTaskTraitsExtension(ArgTypes... args)
       : browser_thread_(
             base::trait_helpers::GetEnum<BrowserThread::ID>(args...)),
+        task_type_(
+            base::trait_helpers::GetEnum<BrowserTaskType,
+                                         BrowserTaskType::kDefault>(args...)),
         nestable_(!base::trait_helpers::HasTrait<NonNestable>(args...)) {}
 
   // Keep in sync with UiThreadTaskTraits.java
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
-    static_assert(8 == sizeof(BrowserTaskTraitsExtension),
+    static_assert(12 == sizeof(BrowserTaskTraitsExtension),
                   "Update Serialize() and Parse() when changing "
                   "BrowserTaskTraitsExtension");
-    return {kExtensionId,
-            {static_cast<uint8_t>(browser_thread_),
-             static_cast<uint8_t>(nestable_)}};
+    return {
+        kExtensionId,
+        {static_cast<uint8_t>(browser_thread_),
+         static_cast<uint8_t>(task_type_), static_cast<uint8_t>(nestable_)}};
   }
 
   static const BrowserTaskTraitsExtension Parse(
       const base::TaskTraitsExtensionStorage& extension) {
     return BrowserTaskTraitsExtension(
         static_cast<BrowserThread::ID>(extension.data[0]),
-        static_cast<bool>(extension.data[1]));
+        static_cast<BrowserTaskType>(extension.data[1]),
+        static_cast<bool>(extension.data[2]));
   }
 
   constexpr BrowserThread::ID browser_thread() const { return browser_thread_; }
+  constexpr BrowserTaskType task_type() const { return task_type_; }
 
   // Returns true if tasks with these traits may run in a nested RunLoop.
   constexpr bool nestable() const { return nestable_; }
 
  private:
-  BrowserTaskTraitsExtension(BrowserThread::ID browser_thread, bool nestable)
-      : browser_thread_(browser_thread), nestable_(nestable) {}
+  BrowserTaskTraitsExtension(BrowserThread::ID browser_thread,
+                             BrowserTaskType task_type,
+                             bool nestable)
+      : browser_thread_(browser_thread),
+        task_type_(task_type),
+        nestable_(nestable) {}
 
   BrowserThread::ID browser_thread_;
+  BrowserTaskType task_type_;
   bool nestable_;
 };
 
