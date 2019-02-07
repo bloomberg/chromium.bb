@@ -2297,7 +2297,6 @@ enum class ShowTabSwitcherSnapshotResult {
   // Otherwise, load |url| in the current tab.
   Tab* newTab = currentTabInTargetBVC;
   web::NavigationManager::WebLoadParams params(URL);
-  params.virtual_url = virtualURL;
   newTab.webState->GetNavigationManager()->LoadURLWithParams(params);
   if (tabOpenedCompletion) {
     tabOpenedCompletion();
