@@ -285,6 +285,13 @@ bool AppListPresenterImpl::IsShowingEmbeddedAssistantUI() const {
   return false;
 }
 
+void AppListPresenterImpl::SetExpandArrowViewVisibility(bool show) {
+  if (view_) {
+    view_->app_list_main_view()->contents_view()->SetExpandArrowViewVisibility(
+        show);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl, private:
 

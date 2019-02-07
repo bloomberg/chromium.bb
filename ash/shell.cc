@@ -711,6 +711,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
+  for (auto& observer : shell_observers_)
+    observer.OnShellDestroying();
+
   // Wayland depends upon some ash specific objects. Destroy it early on.
   wayland_server_controller_.reset();
 
@@ -1099,9 +1102,6 @@ void Shell::Init(
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 
-  // |app_list_controller_| is put after |tablet_mode_controller_| as the former
-  // uses the latter in constructor.
-  app_list_controller_ = std::make_unique<AppListControllerImpl>();
   shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
@@ -1175,6 +1175,10 @@ void Shell::Init(
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
+
+  // |tablet_mode_controller_| and |mru_window_tracker_| are put before
+  // |app_list_controller_| as they are used in constructor.
+  app_list_controller_ = std::make_unique<AppListControllerImpl>();
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
 

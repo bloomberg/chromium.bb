@@ -112,6 +112,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
 
+  // Show/hide the expand arrow view button.
+  void SetExpandArrowViewVisibility(bool show);
+
  private:
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);

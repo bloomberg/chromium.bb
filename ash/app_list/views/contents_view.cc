@@ -621,6 +621,13 @@ float ContentsView::GetAppListMainViewScale() const {
   return app_list_view_->app_list_main_view()->GetTransform().Scale2d().x();
 }
 
+void ContentsView::SetExpandArrowViewVisibility(bool show) {
+  if (expand_arrow_view_->visible() == show)
+    return;
+
+  expand_arrow_view_->SetVisible(show);
+}
+
 bool ContentsView::ShouldLayoutPage(AppListPage* page,
                                     ash::AppListState current_state,
                                     ash::AppListState target_state) const {
