@@ -184,9 +184,20 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
       if (!parsed_rule || !parse_error.empty()) {
         if (unparsed_warning_count < kMaxUnparsedRulesWarnings) {
           ++unparsed_warning_count;
+          std::string rule_location;
+
+          // If possible use the rule ID in the install warning.
+          if (auto* id_val = rules_list[i].FindKeyOfType(
+                  kIDKey, base::Value::Type::INTEGER)) {
+            rule_location = base::StringPrintf("id %d", id_val->GetInt());
+          } else {
+            // Use one-based indices.
+            rule_location = base::StringPrintf("index %zu", i + 1);
+          }
+
           warnings->push_back(
               CreateInstallWarning(ErrorUtils::FormatErrorMessage(
-                  kRuleNotParsedWarning, std::to_string(i),
+                  kRuleNotParsedWarning, rule_location,
                   base::UTF16ToUTF8(parse_error))));
         } else {
           unparsed_warnings_limit_exeeded = true;
@@ -194,15 +205,16 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
         continue;
       }
 
-      bool inserted = id_set.insert(parsed_rule->id).second;
+      int rule_id = parsed_rule->id;
+      bool inserted = id_set.insert(rule_id).second;
       if (!inserted)
-        return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, i);
+        return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, rule_id);
 
       IndexedRule indexed_rule;
       ParseResult parse_result =
           IndexedRule::CreateIndexedRule(std::move(parsed_rule), &indexed_rule);
       if (parse_result != ParseResult::SUCCESS)
-        return ParseInfo(parse_result, i);
+        return ParseInfo(parse_result, rule_id);
 
       if (indexer.indexed_rules_count() >= kRuleCountLimit) {
         rule_count_exceeded = true;
