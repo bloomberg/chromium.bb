@@ -27,6 +27,8 @@
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space_options.h"
+#include "third_party/blink/renderer/modules/xr/xr_render_state.h"
+#include "third_party/blink/renderer/modules/xr/xr_render_state_init.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_stationary_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_unbounded_reference_space.h"
@@ -47,6 +49,9 @@ const char kSubtypeRequired[] =
 
 const char kReferenceSpaceNotSupported[] =
     "This device does not support the requested reference space type.";
+
+const char kIncompatibleLayer[] =
+    "XRLayer was created with a different session.";
 
 const double kDegToRad = M_PI / 180.0;
 
@@ -145,6 +150,7 @@ XRSession::XRSession(
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())) {
+  render_state_ = MakeGarbageCollected<XRRenderState>();
   blurred_ = !HasAppropriateFocus();
 
   // When an output context is provided, monitor it for resize events.
@@ -187,29 +193,6 @@ bool XRSession::immersive() const {
   return mode_ == kModeImmersiveVR || mode_ == kModeImmersiveAR;
 }
 
-void XRSession::setDepthNear(double value) {
-  if (depth_near_ != value) {
-    update_views_next_frame_ = true;
-    depth_near_ = value;
-  }
-}
-
-void XRSession::setDepthFar(double value) {
-  if (depth_far_ != value) {
-    update_views_next_frame_ = true;
-    depth_far_ = value;
-  }
-}
-
-void XRSession::setBaseLayer(XRLayer* value) {
-  base_layer_ = value;
-  // Make sure that the layer's drawing buffer is updated to the right size
-  // if this is a non-immersive session.
-  if (!immersive() && base_layer_) {
-    base_layer_->OnResize();
-  }
-}
-
 void XRSession::SetNonImmersiveProjectionMatrix(
     const WTF::Vector<float>& projection_matrix) {
   DCHECK_EQ(projection_matrix.size(), 16lu);
@@ -226,6 +209,35 @@ ExecutionContext* XRSession::GetExecutionContext() const {
 
 const AtomicString& XRSession::InterfaceName() const {
   return event_target_names::kXRSession;
+}
+
+void XRSession::updateRenderState(XRRenderStateInit* init,
+                                  ExceptionState& exception_state) {
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return;
+  }
+
+  if (init->hasBaseLayer() && init->baseLayer()) {
+    // Validate that any baseLayer provided was created with this session.
+    if (init->baseLayer()->session() != this) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        kIncompatibleLayer);
+      return;
+    }
+
+    // If the baseLayer was previously null and there are outstanding rAF
+    // callbacks, kick off a new frame request to flush them out.
+    if (!render_state_->baseLayer() && !pending_frame_ &&
+        !callback_collection_->IsEmpty()) {
+      // Kick off a request for a new XR frame.
+      xr_->frameProvider()->RequestFrame(this);
+      pending_frame_ = true;
+    }
+  }
+
+  pending_render_state_.push_back(init);
 }
 
 ScriptPromise XRSession::requestReferenceSpace(
@@ -300,11 +312,6 @@ int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   // Don't allow any new frame requests once the session is ended.
   if (ended_)
-    return 0;
-
-  // Don't allow frames to be scheduled if there's no layers attached to the
-  // session. That would allow tracking with no associated visuals.
-  if (!base_layer_)
     return 0;
 
   int id = callback_collection_->RegisterCallback(callback);
@@ -547,15 +554,34 @@ void XRSession::OnFrame(
 
   base_pose_matrix_ = std::move(base_pose_matrix);
 
-  // Don't allow frames to be processed if there's no layers attached to the
-  // session. That would allow tracking with no associated visuals.
-  if (!base_layer_)
-    return;
+  // If there are pending render state changes, apply them now.
+  if (pending_render_state_.size() > 0) {
+    XRLayer* prev_base_layer = render_state_->baseLayer();
+    update_views_next_frame_ = true;
 
-  XRFrame* presentation_frame = CreatePresentationFrame();
+    for (auto& init : pending_render_state_) {
+      render_state_->Update(init);
+    }
+    pending_render_state_.clear();
+
+    // If this is an inline session and the base layer has changed, give it an
+    // opportunity to update it's drawing buffer size.
+    if (!immersive() && render_state_->baseLayer() &&
+        render_state_->baseLayer() != prev_base_layer) {
+      render_state_->baseLayer()->OnResize();
+    }
+  }
 
   if (pending_frame_) {
     pending_frame_ = false;
+
+    // Don't allow frames to be processed if there's no layers attached to the
+    // session. That would allow tracking with no associated visuals.
+    XRLayer* frame_base_layer = render_state_->baseLayer();
+    if (!frame_base_layer)
+      return;
+
+    XRFrame* presentation_frame = CreatePresentationFrame();
 
     // Make sure that any frame-bounded changed to the views array take effect.
     if (update_views_next_frame_) {
@@ -563,8 +589,6 @@ void XRSession::OnFrame(
       update_views_next_frame_ = false;
     }
 
-    // Cache the base layer, since it could change during the frame callback.
-    XRLayer* frame_base_layer = base_layer_;
     frame_base_layer->OnFrameStart(output_mailbox_holder);
 
     // TODO(836349): revisit sending background image data to blink at all.
@@ -638,8 +662,8 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
         display::Display::DegreesToRotation(output_angle));
   }
 
-  if (base_layer_) {
-    base_layer_->OnResize();
+  if (render_state_->baseLayer()) {
+    render_state_->baseLayer()->OnResize();
   }
 }
 
@@ -838,12 +862,12 @@ const HeapVector<Member<XRView>>& XRSession::views() {
       }
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
-      UpdateViewFromEyeParameters(views_[XRView::kEyeLeft],
-                                  display_info_->leftEye, depth_near_,
-                                  depth_far_);
-      UpdateViewFromEyeParameters(views_[XRView::kEyeRight],
-                                  display_info_->rightEye, depth_near_,
-                                  depth_far_);
+      UpdateViewFromEyeParameters(
+          views_[XRView::kEyeLeft], display_info_->leftEye,
+          render_state_->depthNear(), render_state_->depthFar());
+      UpdateViewFromEyeParameters(
+          views_[XRView::kEyeRight], display_info_->rightEye,
+          render_state_->depthNear(), render_state_->depthFar());
     } else {
       if (views_.IsEmpty()) {
         views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
@@ -858,13 +882,15 @@ const HeapVector<Member<XRView>>& XRSession::views() {
 
       if (non_immersive_projection_matrix_.size() > 0) {
         views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
-            non_immersive_projection_matrix_, depth_near_, depth_far_);
+            non_immersive_projection_matrix_, render_state_->depthNear(),
+            render_state_->depthFar());
       } else {
         // In non-immersive mode, if there is no explicit projection matrix
         // provided, the projection matrix must be aligned with the
         // output canvas dimensions.
         views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
-            kMagicWindowVerticalFieldOfView, aspect, depth_near_, depth_far_);
+            kMagicWindowVerticalFieldOfView, aspect, render_state_->depthNear(),
+            render_state_->depthFar());
       }
     }
 
@@ -876,7 +902,8 @@ const HeapVector<Member<XRView>>& XRSession::views() {
     DVLOG(2) << __FUNCTION__ << ": FIXME, fallback proj matrix update";
     if (non_immersive_projection_matrix_.size() > 0) {
       views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
-          non_immersive_projection_matrix_, depth_near_, depth_far_);
+          non_immersive_projection_matrix_, render_state_->depthNear(),
+          render_state_->depthFar());
     }
   }
 
@@ -890,7 +917,8 @@ bool XRSession::HasPendingActivity() const {
 void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(output_context_);
-  visitor->Trace(base_layer_);
+  visitor->Trace(render_state_);
+  visitor->Trace(pending_render_state_);
   visitor->Trace(views_);
   visitor->Trace(input_sources_);
   visitor->Trace(resize_observer_);

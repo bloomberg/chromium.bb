@@ -240,7 +240,7 @@ export class Scene extends Node {
     let gl = this._renderer.gl;
     let session = xrFrame.session;
     // Assumed to be a XRWebGLLayer for now.
-    let layer = session.baseLayer;
+    let layer = session.renderState.baseLayer;
 
     if (!gl) {
       return;

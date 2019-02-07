@@ -25,17 +25,14 @@ enum XREnvironmentBlendMode {
   readonly attribute XRSessionMode mode;
   readonly attribute XRPresentationContext outputContext;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
-
-  attribute double depthNear;
-  attribute double depthFar;
-
-  attribute XRLayer baseLayer;
+  readonly attribute XRRenderState renderState;
 
   attribute EventHandler onblur;
   attribute EventHandler onfocus;
   attribute EventHandler onresetpose;
   attribute EventHandler onend;
 
+  [RaisesException] void updateRenderState(XRRenderStateInit init);
   [CallWith=ScriptState] Promise<XRReferenceSpace> requestReferenceSpace([PermissiveDictionaryConversion] XRReferenceSpaceOptions options);
 
   long requestAnimationFrame(XRFrameRequestCallback callback);

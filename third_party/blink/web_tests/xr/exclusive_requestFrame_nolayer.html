@@ -22,24 +22,23 @@ let testFunction = (session) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
 
-  function onBadFrame(time, vrFrame) {
-    reject("Callback registered without layer was called");
-  }
-
-  function onGoodFrame(time, vrFrame) {
+  function onEarlyFrame(time, vrFrame) {
+    // We shouldn't be allowed to reach this callback with no baseLayer
+    assert_equals(session.renderState.baseLayer, webglLayer);
     resolve();
   }
 
-  // This callback shouldn't be allowed to register, since the session doesn't
+  // This callback shouldn't go through, since the session doesn't
   // have a baseLayer when this call is made.
-  let badHandle = session.requestAnimationFrame(onBadFrame);
-  assert_equals(badHandle, 0);
+  let handle = session.requestAnimationFrame(onEarlyFrame);
+  // Should still give us a valid handle, though.
+  assert_not_equals(handle, 0);
 
-  // Once the base layer is set the callback should be allowed.
-  session.baseLayer = webglLayer;
-
-  let goodHandle = session.requestAnimationFrame(onGoodFrame);
-  assert_not_equals(goodHandle, 0);
+  // Wait for a bit and set the baseLayer.
+  setTimeout(() => {
+    // Once the base layer is set the previously registered callback should run.
+    session.updateRenderState({ baseLayer: webglLayer });
+  }, 300);
 });
 
 xr_session_promise_test(

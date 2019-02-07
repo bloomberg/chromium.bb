@@ -10439,6 +10439,12 @@ interface XRReferenceSpace : XRSpace
     getter onreset
     method constructor
     setter onreset
+interface XRRenderState
+    attribute @@toStringTag
+    getter baseLayer
+    getter depthFar
+    getter depthNear
+    method constructor
 interface XRRigidTransform
     attribute @@toStringTag
     getter matrix
@@ -10447,9 +10453,6 @@ interface XRRigidTransform
     method constructor
 interface XRSession : EventTarget
     attribute @@toStringTag
-    getter baseLayer
-    getter depthFar
-    getter depthNear
     getter environmentBlendMode
     getter mode
     getter onblur
@@ -10457,6 +10460,7 @@ interface XRSession : EventTarget
     getter onfocus
     getter onresetpose
     getter outputContext
+    getter renderState
     method cancelAnimationFrame
     method constructor
     method end
@@ -10464,9 +10468,7 @@ interface XRSession : EventTarget
     method requestAnimationFrame
     method requestHitTest
     method requestReferenceSpace
-    setter baseLayer
-    setter depthFar
-    setter depthNear
+    method updateRenderState
     setter onblur
     setter onend
     setter onfocus

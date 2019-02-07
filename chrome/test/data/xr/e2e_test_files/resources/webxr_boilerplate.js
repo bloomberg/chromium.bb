@@ -131,7 +131,7 @@ function onSessionStarted(session) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  session.baseLayer = new XRWebGLLayer(session, gl);
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
   session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' })
       .then( (refSpace) => {
         sessionInfos[getSessionType(session)].currentRefSpace = refSpace;
@@ -159,7 +159,7 @@ function onXRFrame(t, frame) {
     return;
   }
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
 
   // If in an immersive session, set canvas to blue.
   // If in an AR session, just draw the camera.

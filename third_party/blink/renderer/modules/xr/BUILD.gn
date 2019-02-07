@@ -34,6 +34,8 @@ blink_modules_sources("xr") {
     "xr_ray.h",
     "xr_reference_space.cc",
     "xr_reference_space.h",
+    "xr_render_state.cc",
+    "xr_render_state.h",
     "xr_rigid_transform.cc",
     "xr_rigid_transform.h",
     "xr_session.cc",
