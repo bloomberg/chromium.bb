@@ -263,4 +263,8 @@ specific_include_rules = {
   "browser_process_impl.cc": [
     "+ui/message_center/message_center.h",
   ],
+  "identity_test_environment_profile_adaptor\.cc": [
+    # The following is used to build FakeSigninManager instances for testing.
+    "+components/signin/core/browser/fake_signin_manager.h",
+  ],
 }
