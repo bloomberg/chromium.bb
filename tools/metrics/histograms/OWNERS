@@ -7,7 +7,7 @@ per-file histograms.xml=file://base/metrics/OWNERS
 
 per-file histograms.xml=alexilin@chromium.org
 per-file histograms.xml=csharrison@chromium.org
-per-file histograms.xml=cthomp@chromium.org
+per-file histograms.xml=cthomp@chromium.org  # For security-related metrics only.
 per-file histograms.xml=schenney@chromium.org
 
 per-file histograms.xml=set noparent
