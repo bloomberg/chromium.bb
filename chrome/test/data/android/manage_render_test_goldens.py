@@ -26,6 +26,9 @@ GOLDEN_DIRECTORIES = [
   os.path.join(
       CHROMIUM_SRC, 'components', 'test', 'data', 'permission_dialogs',
       'render_tests'),
+  os.path.join(
+      CHROMIUM_SRC, 'components', 'test', 'data', 'vr_browser_ui',
+      'render_tests'),
 ]
 
 

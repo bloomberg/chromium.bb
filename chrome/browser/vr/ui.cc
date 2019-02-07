@@ -89,6 +89,10 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kAudioCaptureIndicator;
     case UserFriendlyElementName::kWebXrExternalPromptNotification:
       return kWebXrExternalPromptNotification;
+    case UserFriendlyElementName::kCameraPermissionIndicator:
+      return kVideoCaptureIndicator;
+    case UserFriendlyElementName::kLocationPermissionIndicator:
+      return kLocationAccessIndicator;
     default:
       NOTREACHED();
       return kNone;

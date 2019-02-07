@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.vr.jsdialog;
 
+import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.support.test.filters.MediumTest;
@@ -15,20 +17,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.jsdialog.JavascriptAppModalDialog;
+import org.chromium.chrome.browser.vr.UserFriendlyElementName;
+import org.chromium.chrome.browser.vr.VrBrowserTestFramework;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
+import org.chromium.chrome.browser.vr.util.RenderTestUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -48,10 +50,20 @@ public class VrBrowserJavaScriptModalDialogTest {
             new RenderTestRule("components/test/data/js_dialogs/render_tests");
 
     private ChromeTabbedActivity mActivity;
+    private VrBrowserTestFramework mVrBrowserTestFramework;
 
     @Before
     public void setUp() throws InterruptedException {
         mActivity = mActivityTestRule.getActivity();
+        mVrBrowserTestFramework = new VrBrowserTestFramework(mActivityTestRule);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        NativeUiUtils.enableMockedInput();
+        // Wait for any residual animations from entering VR to finish so that they don't get caught
+        // later.
+        NativeUiUtils.waitForUiQuiescence();
     }
 
     /**
@@ -60,61 +72,80 @@ public class VrBrowserJavaScriptModalDialogTest {
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    public void testAlertModalDialog() throws ExecutionException, IOException {
-        testModalDialogImpl("js_modal_view_vr_alert", "alert('Hello Android!')");
+    public void testAlertModalDialog()
+            throws InterruptedException, ExecutionException, IOException {
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
+                        JavaScriptUtils.executeJavaScript(
+                                mActivity.getCurrentWebContents(), "alert('Hello Android!')");
+                    });
+        });
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "js_modal_view_vr_alert_visible_browser_ui", mRenderTestRule);
+        // No assertNoJavaScriptErrors since the alert is still visible, preventing further
+        // JavaScript execution.
     }
 
     /**
-     * Verifies modal confirm-dialog appearance and that it looks as it is expected.
+     * Verifies modal confirm-dialog appearance and that it looks as it is expected. Additionally,
+     * verifies that its "Cancel" button works as expected.
      */
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    public void testConfirmModalDialog() throws ExecutionException, IOException {
-        testModalDialogImpl("js_modal_view_vr_confirm", "confirm('Deny?')");
+    public void testConfirmModalDialog()
+            throws InterruptedException, ExecutionException, IOException {
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
+                        JavaScriptUtils.executeJavaScript(
+                                mActivity.getCurrentWebContents(), "var c = confirm('Deny?')");
+                    });
+        });
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "js_modal_view_vr_confirm_visible_browser_ui", mRenderTestRule);
+        NativeUiUtils.clickFallbackUiNegativeButton();
+        // Ensure the cancel button was clicked.
+        Assert.assertTrue("JavaScript Confirm's cancel button was not clicked",
+                mVrBrowserTestFramework.runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS)
+                        .equals("false"));
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "js_modal_view_vr_confirm_canceled_browser_ui", mRenderTestRule);
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
     /**
-     * Verifies modal prompt-dialog appearance and that it looks as it is expected.
+     * Verifies modal prompt-dialog appearance and that it looks as it is expected. Additionally,
+     * verifies that its "Ok" button works as expected.
      */
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    public void testPromptModalDialog() throws ExecutionException, IOException {
-        testModalDialogImpl(
-                "js_modal_view_vr_prompt", "prompt('Is the tree closed?', 'Hopefully not')");
-    }
-
-    private void testModalDialogImpl(String name, String js)
-            throws ExecutionException, IOException {
-        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-
-        executeJavaScriptAndWaitForDialog(js);
-
-        JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
-
-        Assert.assertEquals(NativeUiUtils.getVrViewContainer().getChildCount(), 1);
-        mRenderTestRule.render(NativeUiUtils.getVrViewContainer().getChildAt(0), name);
-    }
-
-    /**
-     * Asynchronously executes the given code for spawning a dialog and waits
-     * for the dialog to be visible.
-     */
-    private void executeJavaScriptAndWaitForDialog(String script) {
-        JavaScriptUtils.executeJavaScript(mActivity.getCurrentWebContents(), script);
-        NativeUiUtils.waitForModalDialogStatus(true /* shouldBeShown */, mActivity);
-    }
-
-    /**
-     * Returns the current JavaScript modal dialog showing or null if no such dialog is currently
-     * showing.
-     */
-    private JavascriptAppModalDialog getCurrentDialog() throws ExecutionException {
-        return (JavascriptAppModalDialog) ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mActivity.getModalDialogManager().getCurrentDialogForTest().get(
-                                ModalDialogProperties.CONTROLLER));
+    public void testPromptModalDialog()
+            throws InterruptedException, ExecutionException, IOException {
+        String expectedString = "Hopefully not";
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
+                        JavaScriptUtils.executeJavaScript(mActivity.getCurrentWebContents(),
+                                "var p = prompt('Is the tree closed?', '" + expectedString + "')");
+                    });
+        });
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "js_modal_view_vr_prompt_visible_browser_ui", mRenderTestRule);
+        NativeUiUtils.clickFallbackUiPositiveButton();
+        // This JavaScript will only run once the prompt has been dismissed, and the return value
+        // will only be what we expect if the positive button was actually clicked (as opposed to
+        // canceled).
+        Assert.assertTrue("JavaScript Prompt's OK button was not clicked",
+                mVrBrowserTestFramework
+                        .runJavaScriptOrFail("p == '" + expectedString + "'", POLL_TIMEOUT_SHORT_MS)
+                        .equals("true"));
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "js_modal_view_vr_prompt_submitted_browser_ui", mRenderTestRule);
+        mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 }
