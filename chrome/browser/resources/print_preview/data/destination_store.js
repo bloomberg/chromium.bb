@@ -1255,13 +1255,12 @@ cr.define('print_preview', function() {
     /**
      * Called when the /search call completes, either successfully or not.
      * In case of success, stores fetched destinations.
-     * @param {!CustomEvent} event Contains the request result.
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceSearchDoneDetail>}
+     *      event Contains the request result.
      * @private
      */
     onCloudPrintSearchDone_(event) {
-      const payload =
-          /** @type {!cloudprint.CloudPrintInterfaceSearchDoneDetail} */ (
-              event.detail);
+      const payload = event.detail;
       if (payload.printers && payload.printers.length > 0) {
         this.insertDestinations_(payload.printers);
         if (this.selectFirstDestination_) {
@@ -1344,8 +1343,9 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitation was processed successfully.
-     * @param {!CustomEvent} event Contains detailed information about the
-     *     invite and newly accepted destination (if known).
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceProcessInviteDetail>}
+     *     event Contains detailed information about the invite and newly
+     *     accepted destination (if known).
      * @private
      */
     onCloudPrintProcessInviteDone_(event) {

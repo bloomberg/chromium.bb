@@ -23,6 +23,16 @@ cloudprint.CloudPrintInterfaceEventType = {
 
 /**
  * @typedef {{
+ *   status: number,
+ *   errorCode: number,
+ *   message: string,
+ *   origin: !print_preview.DestinationOrigin,
+ * }}
+ */
+cloudprint.CloudPrintInterfaceErrorEventDetail;
+
+/**
+ * @typedef {{
  *   user: string,
  *   origin: !print_preview.DestinationOrigin,
  *   printers: (!Array<!print_preview.Destination>|undefined),
