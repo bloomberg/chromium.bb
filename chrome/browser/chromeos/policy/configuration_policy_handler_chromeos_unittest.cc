@@ -310,14 +310,14 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   // Extension IDs are OK.
   base::Value entry1("abcdefghijklmnopabcdefghijklmnop");
   auto entry1_dict = std::make_unique<base::DictionaryValue>();
-  entry1_dict->Set(kPinnedAppsPrefAppIDPath, entry1.CreateDeepCopy());
+  entry1_dict->Set(kPinnedAppsPrefAppIDKey, entry1.CreateDeepCopy());
   expected_pinned_apps.Append(std::move(entry1_dict));
   list.Append(entry1.CreateDeepCopy());
 
   // Android appds are OK.
   base::Value entry2("com.google.android.gm");
   auto entry2_dict = std::make_unique<base::DictionaryValue>();
-  entry2_dict->Set(kPinnedAppsPrefAppIDPath, entry2.CreateDeepCopy());
+  entry2_dict->Set(kPinnedAppsPrefAppIDKey, entry2.CreateDeepCopy());
   expected_pinned_apps.Append(std::move(entry2_dict));
   list.Append(entry2.CreateDeepCopy());
 

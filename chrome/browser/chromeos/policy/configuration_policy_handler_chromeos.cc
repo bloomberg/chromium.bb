@@ -351,7 +351,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyList(
   std::vector<base::Value> pinned_apps_list;
   for (const base::Value& entry : filtered_list->GetList()) {
     base::Value app_dict(base::Value::Type::DICTIONARY);
-    app_dict.SetKey(kPinnedAppsPrefAppIDPath, entry.Clone());
+    app_dict.SetKey(kPinnedAppsPrefAppIDKey, entry.Clone());
     pinned_apps_list.push_back(std::move(app_dict));
   }
   prefs->SetValue(prefs::kPolicyPinnedLauncherApps,

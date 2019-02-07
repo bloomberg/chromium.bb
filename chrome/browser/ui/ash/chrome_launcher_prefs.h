@@ -14,9 +14,9 @@ class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
-// Path within the dictionary entries in the prefs::kPinnedLauncherApps list
+// Key for the dictionary entries in the prefs::kPinnedLauncherApps list
 // specifying the extension ID of the app to be pinned by that entry.
-extern const char kPinnedAppsPrefAppIDPath[];
+extern const char kPinnedAppsPrefAppIDKey[];
 
 extern const char kPinnedAppsPrefPinnedByPolicy[];
 

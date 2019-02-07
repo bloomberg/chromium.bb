@@ -76,7 +76,7 @@ struct ComparePinInfo {
 
 }  // namespace
 
-const char kPinnedAppsPrefAppIDPath[] = "id";
+const char kPinnedAppsPrefAppIDKey[] = "id";
 
 void RegisterChromeLauncherUserPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kPolicyPinnedLauncherApps);
@@ -107,14 +107,17 @@ std::vector<std::string> GetAppsPinnedByPolicy(
       arc_app_list_pref ? arc_app_list_pref->GetAppIds()
                         : std::vector<std::string>());
 
-  std::string app_id;
-  for (size_t i = 0; i < policy_apps->GetSize(); ++i) {
-    const base::DictionaryValue* dictionary = nullptr;
-    if (!policy_apps->GetDictionary(i, &dictionary) ||
-        !dictionary->GetString(kPinnedAppsPrefAppIDPath, &app_id)) {
+  for (const auto& policy_apps_entry : policy_apps->GetList()) {
+    const base::Value* app_id_value =
+        policy_apps_entry.is_dict()
+            ? policy_apps_entry.FindKeyOfType(kPinnedAppsPrefAppIDKey,
+                                              base::Value::Type::STRING)
+            : nullptr;
+    if (!app_id_value) {
       LOG(ERROR) << "Cannot extract policy app info from prefs.";
       continue;
     }
+    const std::string app_id = app_id_value->GetString();
 
     if (chromeos::DemoSession::Get() &&
         chromeos::DemoSession::Get()->ShouldIgnorePinPolicy(app_id)) {

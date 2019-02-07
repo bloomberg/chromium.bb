@@ -718,12 +718,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         base::WrapUnique<LauncherControllerHelper>(helper));
   }
 
-  void InsertPrefValue(base::ListValue* pref_value,
-                       int index,
+  void AppendPrefValue(base::ListValue* pref_value,
                        const std::string& extension_id) {
-    auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString(kPinnedAppsPrefAppIDPath, extension_id);
-    pref_value->Insert(index, std::move(entry));
+    base::DictionaryValue entry;
+    entry.SetKey(kPinnedAppsPrefAppIDKey, base::Value(extension_id));
+    pref_value->GetList().push_back(std::move(entry));
   }
 
   void InsertRemoveAllPinsChange(syncer::SyncChangeList* list) {
@@ -1514,8 +1513,8 @@ TEST_F(ChromeLauncherControllerTest, MergePolicyAndUserPrefPinnedApps) {
 
   base::ListValue policy_value;
   // extension 2 4 are pinned by policy
-  InsertPrefValue(&policy_value, 0, extension2_->id());
-  InsertPrefValue(&policy_value, 1, extensionDocApp_->id());
+  AppendPrefValue(&policy_value, extension2_->id());
+  AppendPrefValue(&policy_value, extensionDocApp_->id());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
@@ -2980,8 +2979,8 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
 
   // Pin policy should be initilized before controller start.
   base::ListValue policy_value;
-  InsertPrefValue(&policy_value, 0, extension1_->id());
-  InsertPrefValue(&policy_value, 1, extension2_->id());
+  AppendPrefValue(&policy_value, extension1_->id());
+  AppendPrefValue(&policy_value, extension2_->id());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
@@ -3906,7 +3905,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
   // package_name (not hash) specified as id. In this test we check that
   // by hash we can determine that appropriate package was set by policy.
   base::ListValue policy_value;
-  InsertPrefValue(&policy_value, 0, appinfo.package_name);
+  AppendPrefValue(&policy_value, appinfo.package_name);
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
@@ -4568,8 +4567,8 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
 
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension2_.get());
-  InsertPrefValue(&policy_value, 0, extension1_->id());
-  InsertPrefValue(&policy_value, 1, extension2_->id());
+  AppendPrefValue(&policy_value, extension1_->id());
+  AppendPrefValue(&policy_value, extension2_->id());
 
   arc::mojom::AppInfo appinfo =
       CreateAppInfo("Some App", "SomeActivity", "com.example.app");
@@ -4580,8 +4579,8 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
   const std::string online_only_app_id =
       AddArcAppAndShortcut(online_only_appinfo);
 
-  InsertPrefValue(&policy_value, 2, appinfo.package_name);
-  InsertPrefValue(&policy_value, 3, online_only_appinfo.package_name);
+  AppendPrefValue(&policy_value, appinfo.package_name);
+  AppendPrefValue(&policy_value, online_only_appinfo.package_name);
 
   // If the device is offline, extension2 and onlineonly should be unpinned.
   chromeos::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
@@ -4618,8 +4617,8 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
 
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension2_.get());
-  InsertPrefValue(&policy_value, 0, extension1_->id());
-  InsertPrefValue(&policy_value, 1, extension2_->id());
+  AppendPrefValue(&policy_value, extension1_->id());
+  AppendPrefValue(&policy_value, extension2_->id());
 
   arc::mojom::AppInfo appinfo =
       CreateAppInfo("Some App", "SomeActivity", "com.example.app");
@@ -4630,8 +4629,8 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
   const std::string online_only_app_id =
       AddArcAppAndShortcut(online_only_appinfo);
 
-  InsertPrefValue(&policy_value, 2, appinfo.package_name);
-  InsertPrefValue(&policy_value, 3, online_only_appinfo.package_name);
+  AppendPrefValue(&policy_value, appinfo.package_name);
+  AppendPrefValue(&policy_value, online_only_appinfo.package_name);
 
   // If the device is offline, extension2 and onlineonly should be unpinned.
   chromeos::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
