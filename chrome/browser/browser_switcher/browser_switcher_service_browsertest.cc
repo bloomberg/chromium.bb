@@ -23,6 +23,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/browser_switcher/browser_switcher_service_win.h"
+#endif
+
 namespace browser_switcher {
 
 namespace {
@@ -210,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
   SetUseIeSitelist(true);
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAnInvalidUrl);
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAnInvalidUrl);
 
   bool fetch_happened = false;
   content::URLLoaderInterceptor interceptor(base::BindRepeating(
@@ -241,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
                        IeemFetchAndParseAfterStartup) {
   SetUseIeSitelist(true);
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(ReturnValidXml));
@@ -265,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresFailedDownload) {
   SetUseIeSitelist(true);
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(FailToDownload));
@@ -290,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresFailedDownload) {
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresNonManagedPref) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, true);
-  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   bool fetch_happened = false;
   content::URLLoaderInterceptor interceptor(base::BindRepeating(

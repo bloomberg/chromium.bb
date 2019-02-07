@@ -3410,6 +3410,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "badging/badge_manager_delegate_win.cc",
       "badging/badge_manager_delegate_win.h",
+      "browser_switcher/browser_switcher_service_win.cc",
+      "browser_switcher/browser_switcher_service_win.h",
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "first_run/upgrade_util.cc",
