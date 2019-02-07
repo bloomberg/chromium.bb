@@ -241,19 +241,7 @@ void ProducerClient::NotifyDataSourceStopped(
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
-  // TODO(oysteine): Remove the PostTask once Perfetto is fixed to always call
-  // CommitData on its provided TaskRunner, right now it'll call it on whatever
-  // thread is requesting a new chunk when the SharedMemoryBuffer is full. Until
-  // then this is technically not threadsafe on shutdown (when the
-  // ProducerClient gets destroyed) but should be okay while the Perfetto
-  // integration is behind a flag.
-  if (GetTaskRunner()->RunsTasksInCurrentSequence()) {
-    producer_host_->CommitData(commit);
-  } else {
-    GetTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProducerClient::CommitDataOnSequence,
-                                  base::Unretained(this), commit));
-  }
+  producer_host_->CommitData(commit);
 }
 
 void ProducerClient::CommitDataOnSequence(
