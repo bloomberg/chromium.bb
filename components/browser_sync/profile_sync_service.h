@@ -283,13 +283,6 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasCookieJarMismatch(
       const std::vector<gaia::ListedAccount>& cookie_jar_accounts);
 
-  // Reconfigures the data type manager with the latest enabled types.
-  // Note: Does not initialize the engine if it is not already initialized.
-  // If a Sync setup is currently in progress (i.e. a settings UI is open), then
-  // the reconfiguration will only happen if |bypass_setup_in_progress_check| is
-  // set to true.
-  void ReconfigureDatatypeManager(bool bypass_setup_in_progress_check);
-
   syncer::PassphraseRequiredReason passphrase_required_reason_for_test() const {
     return crypto_.passphrase_required_reason();
   }
@@ -402,6 +395,13 @@ class ProfileSyncService : public syncer::SyncService,
   };
 
   friend class TestProfileSyncService;
+
+  // Reconfigures the data type manager with the latest enabled types.
+  // Note: Does not initialize the engine if it is not already initialized.
+  // If a Sync setup is currently in progress (i.e. a settings UI is open), then
+  // the reconfiguration will only happen if |bypass_setup_in_progress_check| is
+  // set to true.
+  void ReconfigureDatatypeManager(bool bypass_setup_in_progress_check);
 
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager(syncer::ConfigureReason reason);

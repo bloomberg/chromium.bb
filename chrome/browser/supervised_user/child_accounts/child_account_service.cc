@@ -24,10 +24,11 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -217,11 +218,12 @@ bool ChildAccountService::SetActive(bool active) {
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
-    sync_service->ReconfigureDatatypeManager(
-        /*bypass_setup_in_progress_check=*/false);
+    // Trigger a reconfig by grabbing a SyncSetupInProgressHandle and
+    // immediately releasing it again (via the temporary unique_ptr going away).
+    sync_service->GetSetupInProgressHandle();
   }
 
   return true;
