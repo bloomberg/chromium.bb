@@ -4,5 +4,5 @@
 
 declare_args() {
   # Is the GWP-ASan client enabled for chrome/ on a given platform.
-  enable_gwp_asan = is_win
+  enable_gwp_asan = is_win || is_mac
 }
