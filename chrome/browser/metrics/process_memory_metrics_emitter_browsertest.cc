@@ -329,7 +329,7 @@ class ProcessMemoryMetricsEmitterTest
     const int64_t* value = ukm::TestUkmRecorder::GetEntryMetric(entry, name);
     ASSERT_TRUE(value) << name;
     EXPECT_GE(*value, 0) << name;
-    EXPECT_LE(*value, 10) << name;
+    EXPECT_LE(*value, 300) << name;
   }
 
   void CheckAllUkmEntries(size_t entry_count = 1u) {
