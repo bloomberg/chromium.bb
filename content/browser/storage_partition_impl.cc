@@ -689,6 +689,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
                                           partition->service_worker_context_);
   partition->platform_notification_context_->Initialize();
 
+  partition->devtools_background_services_context_ =
+      base::MakeRefCounted<DevToolsBackgroundServicesContext>(
+          context, partition->service_worker_context_);
+
   partition->background_fetch_context_ =
       base::MakeRefCounted<BackgroundFetchContext>(
           context, partition->service_worker_context_,
@@ -915,6 +919,11 @@ CookieStoreContext* StoragePartitionImpl::GetCookieStoreContext() {
 GeneratedCodeCacheContext*
 StoragePartitionImpl::GetGeneratedCodeCacheContext() {
   return generated_code_cache_context_.get();
+}
+
+DevToolsBackgroundServicesContext*
+StoragePartitionImpl::GetDevToolsBackgroundServicesContext() {
+  return devtools_background_services_context_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(

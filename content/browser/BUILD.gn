@@ -629,6 +629,8 @@ jumbo_source_set("browser") {
     "devtools/browser_devtools_agent_host.h",
     "devtools/devtools_agent_host_impl.cc",
     "devtools/devtools_agent_host_impl.h",
+    "devtools/devtools_background_services_context.cc",
+    "devtools/devtools_background_services_context.h",
     "devtools/devtools_frame_trace_recorder.cc",
     "devtools/devtools_frame_trace_recorder.h",
     "devtools/devtools_http_handler.cc",
