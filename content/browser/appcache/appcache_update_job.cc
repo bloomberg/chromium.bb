@@ -729,12 +729,18 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
       const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
       std::string message = FormatUrlErrorMessage(
           kFormatString, manifest_url_, fetcher->result(), response_code);
+      ResultType result = fetcher->result();
+      if (result == UPDATE_OK) {
+        // URLFetcher considers any 2xx response a success, however in this
+        // particular case we want to treat any non 200 responses as failures.
+        result = SERVER_ERROR;
+      }
       HandleCacheFailure(
           blink::mojom::AppCacheErrorDetails(
               message,
               blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
               GURL(), response_code, false /*is_cross_origin*/),
-          fetcher->result(), GURL());
+          result, GURL());
     }
   }
 }
