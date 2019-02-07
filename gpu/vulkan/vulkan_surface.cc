@@ -85,7 +85,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 
   if (formats.size() == 1 && VK_FORMAT_UNDEFINED == formats[0].format) {
     surface_format_.format = preferred_formats[0];
-    surface_format_.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+    surface_format_.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
   } else {
     bool format_set = false;
     for (VkSurfaceFormatKHR supported_format : formats) {
@@ -93,7 +93,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       while (counter < size && format_set == false) {
         if (supported_format.format == preferred_formats[counter]) {
           surface_format_ = supported_format;
-          surface_format_.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+          surface_format_.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
           format_set = true;
         }
         counter++;

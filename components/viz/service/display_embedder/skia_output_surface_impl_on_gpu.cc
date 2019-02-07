@@ -310,7 +310,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
         LOG(FATAL) << "Failed to create vulkan surface.";
       if (!vulkan_surface->Initialize(
               vulkan_context_provider_->GetDeviceQueue(),
-              gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
+              gpu::VulkanSurface::FORMAT_RGBA_32)) {
         LOG(FATAL) << "Failed to initialize vulkan surface.";
       }
       vulkan_surface_ = std::move(vulkan_surface);
@@ -840,19 +840,14 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForGL() {
 
   GrGLFramebufferInfo framebuffer_info;
   framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
-  if (supports_alpha_) {
-    framebuffer_info.fFormat =
-        gl_version_info_->is_es ? GL_BGRA8_EXT : GL_RGBA8;
-  } else {
-    framebuffer_info.fFormat = GL_RGB8_OES;
-  }
-
+  framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
   GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
                                       framebuffer_info);
-
+  auto color_type =
+      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
-      FramebufferColorType(), color_space_.ToSkColorSpace(), &surface_props);
+      gr_context(), render_target, kBottomLeft_GrSurfaceOrigin, color_type,
+      color_space_.ToSkColorSpace(), &surface_props);
   DCHECK(sk_surface_);
 }
 
@@ -866,19 +861,21 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
     VkImage vk_image = swap_chain->GetCurrentImage();
     VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
-    GrVkImageInfo vk_image_info;
-    vk_image_info.fImage = vk_image;
-    vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
-    vk_image_info.fImageLayout = vk_image_layout;
-    vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
-    vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
-    vk_image_info.fLevelCount = 1;
+    const auto surface_format = vulkan_surface_->surface_format().format;
+    DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
+           surface_format == VK_FORMAT_R8G8B8A8_UNORM);
+    GrVkImageInfo vk_image_info(vk_image, GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
+                                vk_image_layout, surface_format,
+                                1 /* level_count */);
     GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
-                                        vulkan_surface_->size().height(), 0, 0,
-                                        vk_image_info);
+                                        vulkan_surface_->size().height(),
+                                        0 /* sample_cnt */, vk_image_info);
+    auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
+                             ? kBGRA_8888_SkColorType
+                             : kRGBA_8888_SkColorType;
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
-        gr_context(), render_target, kTopLeft_GrSurfaceOrigin,
-        FramebufferColorType(), nullptr, &surface_props);
+        gr_context(), render_target, kTopLeft_GrSurfaceOrigin, sk_color_type,
+        nullptr /* color_space */, &surface_props);
     DCHECK(sk_surface);
   } else {
     auto backend = sk_surface->getBackendRenderTarget(

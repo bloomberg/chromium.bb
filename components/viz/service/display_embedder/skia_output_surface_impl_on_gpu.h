@@ -221,10 +221,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void ScheduleDelayedWork();
   void PerformDelayedWork();
 
-  SkColorType FramebufferColorType() {
-    return supports_alpha_ ? kBGRA_8888_SkColorType : kRGB_888x_SkColorType;
-  }
-
   bool is_using_vulkan() const { return !!vulkan_context_provider_; }
 
   const gpu::SurfaceHandle surface_handle_;
