@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/identity/public/cpp/identity_manager.h"
+
 #include <vector>
 
-#include "services/identity/public/cpp/identity_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
@@ -91,43 +92,6 @@ class CustomFakeProfileOAuth2TokenService
   std::set<std::string> expected_scopes_to_invalidate_;
   std::string expected_access_token_to_invalidate_;
   base::OnceClosure on_access_token_invalidated_callback_;
-};
-
-class FakeCookieManager : public network::mojom::CookieManager {
- public:
-  void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          bool secure_source,
-                          bool modify_http_only,
-                          SetCanonicalCookieCallback callback) override {
-    std::move(callback).Run(false);
-  }
-  void GetAllCookies(GetAllCookiesCallback callback) override {}
-  void GetCookieList(const GURL& url,
-                     const net::CookieOptions& cookie_options,
-                     GetCookieListCallback callback) override {}
-  void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
-                             DeleteCanonicalCookieCallback callback) override {}
-  void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
-                     DeleteCookiesCallback callback) override {}
-  void AddCookieChangeListener(
-      const GURL& url,
-      const std::string& name,
-      network::mojom::CookieChangeListenerPtr listener) override {
-    listener_ = std::move(listener);
-  }
-  void AddGlobalChangeListener(
-      network::mojom::CookieChangeListenerPtr notification_pointer) override {}
-  void CloneInterface(
-      network::mojom::CookieManagerRequest new_interface) override {}
-  void FlushCookieStore(FlushCookieStoreCallback callback) override {}
-  void SetContentSettings(
-      const std::vector<::ContentSettingPatternSource>& settings) override {}
-  void SetForceKeepSessionState() override {}
-  void BlockThirdPartyCookies(bool block) override {}
-
- private:
-  // The observer receiving change notifications.
-  network::mojom::CookieChangeListenerPtr listener_;
 };
 
 class AccountTrackerServiceForTest : public AccountTrackerService {
@@ -548,7 +512,6 @@ class IdentityManagerTest : public testing::Test {
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
-    signin_client_.set_cookie_manager(std::make_unique<FakeCookieManager>());
     account_tracker_.Initialize(&pref_service_, base::FilePath());
 
     gaia_cookie_manager_service_.InitCookieListener();

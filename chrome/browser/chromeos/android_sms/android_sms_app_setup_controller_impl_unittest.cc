@@ -27,6 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_paths.h"
+#include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -49,7 +50,7 @@ web_app::PendingAppManager::AppInfo GetAppInfoForUrl(const GURL& url) {
   return info;
 }
 
-class FakeCookieManager : public network::mojom::CookieManager {
+class FakeCookieManager : public network::TestCookieManager {
  public:
   FakeCookieManager() = default;
   ~FakeCookieManager() override {
@@ -102,26 +103,6 @@ class FakeCookieManager : public network::mojom::CookieManager {
                      DeleteCookiesCallback callback) override {
     delete_cookies_calls_.emplace_back(std::move(filter), std::move(callback));
   }
-
-  void GetAllCookies(GetAllCookiesCallback callback) override {}
-  void GetCookieList(const GURL& url,
-                     const net::CookieOptions& cookie_options,
-                     GetCookieListCallback callback) override {}
-  void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
-                             DeleteCanonicalCookieCallback callback) override {}
-  void AddCookieChangeListener(
-      const GURL& url,
-      const std::string& name,
-      network::mojom::CookieChangeListenerPtr listener) override {}
-  void AddGlobalChangeListener(
-      network::mojom::CookieChangeListenerPtr notification_pointer) override {}
-  void CloneInterface(
-      network::mojom::CookieManagerRequest new_interface) override {}
-  void FlushCookieStore(FlushCookieStoreCallback callback) override {}
-  void SetContentSettings(
-      const std::vector<::ContentSettingPatternSource>& settings) override {}
-  void SetForceKeepSessionState() override {}
-  void BlockThirdPartyCookies(bool block) override {}
 
  private:
   std::vector<
