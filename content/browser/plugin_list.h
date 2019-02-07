@@ -86,7 +86,7 @@ class CONTENT_EXPORT PluginList {
                           std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
-  void set_will_load_plugins_callback(const base::Closure& callback);
+  void set_will_load_plugins_callback(const base::RepeatingClosure& callback);
 
  private:
   enum LoadingState {
@@ -155,7 +155,7 @@ class CONTENT_EXPORT PluginList {
   std::vector<WebPluginInfo> plugins_list_ GUARDED_BY(lock_);
 
   // Callback that is invoked whenever the PluginList will reload the plugins.
-  base::Closure will_load_plugins_callback_ GUARDED_BY(lock_);
+  base::RepeatingClosure will_load_plugins_callback_ GUARDED_BY(lock_);
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.

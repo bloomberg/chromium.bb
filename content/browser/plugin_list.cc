@@ -145,12 +145,12 @@ void PluginList::LoadPlugins() {
     return;
 
   std::vector<WebPluginInfo> new_plugins;
-  base::Closure will_load_callback;
+  base::OnceClosure will_load_callback;
   {
     base::AutoLock lock(lock_);
     will_load_callback = will_load_plugins_callback_;
   }
-  if (!will_load_callback.is_null())
+  if (will_load_callback)
     std::move(will_load_callback).Run();
 
   std::vector<base::FilePath> plugin_paths;
@@ -213,7 +213,8 @@ void PluginList::SetPlugins(const std::vector<WebPluginInfo>& plugins) {
   plugins_list_ = plugins;
 }
 
-void PluginList::set_will_load_plugins_callback(const base::Closure& callback) {
+void PluginList::set_will_load_plugins_callback(
+    const base::RepeatingClosure& callback) {
   base::AutoLock lock(lock_);
   will_load_plugins_callback_ = callback;
 }

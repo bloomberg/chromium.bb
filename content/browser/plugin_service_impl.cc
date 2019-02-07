@@ -119,8 +119,8 @@ void PluginServiceImpl::Init() {
   plugin_list_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  PluginList::Singleton()->set_will_load_plugins_callback(
-      base::Bind(&WillLoadPluginsCallback, &plugin_list_sequence_checker_));
+  PluginList::Singleton()->set_will_load_plugins_callback(base::BindRepeating(
+      &WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 
   RegisterPepperPlugins();
 }
