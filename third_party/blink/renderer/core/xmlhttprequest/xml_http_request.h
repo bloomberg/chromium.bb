@@ -66,7 +66,6 @@ class SharedBuffer;
 class TextResourceDecoder;
 class ThreadableLoader;
 class URLSearchParams;
-class WebDataConsumerHandle;
 class XMLHttpRequestUpload;
 
 class XMLHttpRequest final : public XMLHttpRequestEventTarget,
@@ -184,8 +183,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
   void DidReceiveResponse(unsigned long identifier,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
+                          const ResourceResponse&) override;
   void DidReceiveData(const char* data, unsigned data_length) override;
   // When responseType is set to "blob", didDownloadData() is called instead
   // of didReceiveData().

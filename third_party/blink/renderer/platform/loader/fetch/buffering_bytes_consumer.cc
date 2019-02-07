@@ -11,6 +11,7 @@ namespace blink {
 BufferingBytesConsumer::BufferingBytesConsumer(BytesConsumer* bytes_consumer)
     : bytes_consumer_(bytes_consumer) {
   bytes_consumer_->SetClient(this);
+  BufferData();
 }
 
 BufferingBytesConsumer::~BufferingBytesConsumer() = default;
@@ -18,6 +19,9 @@ BufferingBytesConsumer::~BufferingBytesConsumer() = default;
 BytesConsumer::Result BufferingBytesConsumer::BeginRead(const char** buffer,
                                                         size_t* available) {
   if (buffer_.IsEmpty()) {
+    if (!is_buffering_)
+      return bytes_consumer_->BeginRead(buffer, available);
+
     if (has_seen_error_)
       return Result::kError;
 
@@ -43,6 +47,9 @@ BytesConsumer::Result BufferingBytesConsumer::BeginRead(const char** buffer,
 
 BytesConsumer::Result BufferingBytesConsumer::EndRead(size_t read_size) {
   if (buffer_.IsEmpty()) {
+    if (!is_buffering_)
+      return bytes_consumer_->EndRead(read_size);
+
     DCHECK(has_seen_error_);
     return Result::kError;
   }
@@ -72,6 +79,9 @@ scoped_refptr<EncodedFormData> BufferingBytesConsumer::DrainAsFormData() {
 }
 
 mojo::ScopedDataPipeConsumerHandle BufferingBytesConsumer::DrainAsDataPipe() {
+  if (!is_buffering_)
+    return bytes_consumer_->DrainAsDataPipe();
+
   // We intentionally return an empty handle here, because returning a DataPipe
   // may activate back pressure.
   return {};
@@ -115,6 +125,9 @@ void BufferingBytesConsumer::OnStateChange() {
 }
 
 void BufferingBytesConsumer::BufferData() {
+  if (!is_buffering_)
+    return;
+
   while (true) {
     const char* p = nullptr;
     size_t available = 0;

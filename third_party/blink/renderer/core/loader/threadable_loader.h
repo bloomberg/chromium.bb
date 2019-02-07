@@ -153,9 +153,8 @@ class CORE_EXPORT ThreadableLoader final
   void DataSent(Resource*,
                 unsigned long long bytes_sent,
                 unsigned long long total_bytes_to_be_sent) override;
-  void ResponseReceived(Resource*,
-                        const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
+  void ResponseReceived(Resource*, const ResourceResponse&) override;
+  void ResponseBodyReceived(Resource*, BytesConsumer& body) override;
   void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) override;
   void DataReceived(Resource*, const char* data, size_t data_length) override;
   bool RedirectReceived(Resource*,
@@ -228,9 +227,6 @@ class CORE_EXPORT ThreadableLoader final
   bool cors_flag_ = false;
   scoped_refptr<const SecurityOrigin> security_origin_;
   scoped_refptr<const SecurityOrigin> original_security_origin_;
-
-  // Set to true when the response data is given to a data consumer handle.
-  bool is_using_data_consumer_handle_;
 
   const bool async_;
 

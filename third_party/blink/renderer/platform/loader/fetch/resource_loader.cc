@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -414,6 +415,17 @@ void ResourceLoader::Start() {
                       request.IntraPriorityValue(), &scheduler_client_id_);
 }
 
+void ResourceLoader::DidStartLoadingResponseBodyInternal(
+    BytesConsumer& bytes_consumer) {
+  DCHECK(!response_body_loader_);
+  ResponseBodyLoaderClient& response_body_loader_client = *this;
+  response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
+      bytes_consumer, response_body_loader_client, GetLoadingTaskRunner());
+  resource_->ResponseBodyReceived(*response_body_loader_);
+  if (!response_body_loader_->IsDrained())
+    response_body_loader_->Start();
+}
+
 void ResourceLoader::Run() {
   StartWith(resource_->GetResourceRequest());
 }
@@ -516,9 +528,10 @@ void ResourceLoader::SetDefersLoading(bool defers) {
     return;
 
   if (response_body_loader_) {
-    if (defers) {
+    if (defers && !response_body_loader_->IsSuspended()) {
       response_body_loader_->Suspend();
-    } else {
+    }
+    if (!defers && response_body_loader_->IsSuspended()) {
       response_body_loader_->Resume();
     }
   }
@@ -947,7 +960,7 @@ void ResourceLoader::DidReceiveResponse(
   if (handle)
     resource_->VirtualTimePauser().UnpauseVirtualTime();
 
-  resource_->ResponseReceived(response_to_pass, std::move(handle));
+  resource_->ResponseReceived(response_to_pass);
 
   // Send the cached code after we notify that the response is received.
   // Resource expects that we receive the response first before the
@@ -964,6 +977,13 @@ void ResourceLoader::DidReceiveResponse(
       !resource_->ShouldIgnoreHTTPStatusCodeErrors()) {
     HandleError(
         ResourceError::CancelledError(response_to_pass.CurrentRequestUrl()));
+    return;
+  }
+
+  if (handle) {
+    DidStartLoadingResponseBodyInternal(
+        *MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
+            GetLoadingTaskRunner(), std::move(handle)));
   }
 }
 
@@ -997,15 +1017,11 @@ void ResourceLoader::DidStartLoadingResponseBody(
     return;
   }
 
-  DCHECK(!response_body_loader_);
   DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
-  ResponseBodyLoaderClient& response_body_loader_client = *this;
-  response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
+  DidStartLoadingResponseBodyInternal(
       *MakeGarbageCollected<DataPipeBytesConsumer>(
-          GetLoadingTaskRunner(), std::move(body), &completion_notifier),
-      response_body_loader_client, GetLoadingTaskRunner());
+          GetLoadingTaskRunner(), std::move(body), &completion_notifier));
   data_pipe_completion_notifier_ = completion_notifier;
-  response_body_loader_->Start();
 }
 
 void ResourceLoader::DidReceiveData(const char* data, int length) {

@@ -109,9 +109,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   // ThreadableLoaderClient
   void DidSendData(unsigned long long /*bytesSent*/,
                    unsigned long long /*totalBytesToBeSent*/) override;
-  void DidReceiveResponse(unsigned long,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
+  void DidReceiveResponse(unsigned long, const ResourceResponse&) override;
   void DidDownloadData(unsigned long long /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
@@ -200,10 +198,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidSendData(
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     unsigned long,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  ALLOW_UNUSED_LOCAL(handle);
-  DCHECK(!handle);
+    const ResourceResponse& response) {
   if (!client_)
     return;
 

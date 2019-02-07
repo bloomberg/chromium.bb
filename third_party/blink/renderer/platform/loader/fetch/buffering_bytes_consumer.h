@@ -37,6 +37,12 @@ class PLATFORM_EXPORT BufferingBytesConsumer final
   explicit BufferingBytesConsumer(BytesConsumer* bytes_consumer);
   ~BufferingBytesConsumer() override;
 
+  // After this function is called, |this| will not do buffering. Already
+  // buffered data still waits to be consumed, but after all the buffered data
+  // is consumed, BeginRead and EndRead will result in BeginRead and EndRead
+  // calls to the original BytesConsumer.
+  void StopBuffering() { is_buffering_ = false; }
+
   // BufferingBytesConsumer
   Result BeginRead(const char** buffer, size_t* available) override;
   Result EndRead(size_t read_size) override;
@@ -60,6 +66,7 @@ class PLATFORM_EXPORT BufferingBytesConsumer final
   const TraceWrapperMember<BytesConsumer> bytes_consumer_;
   Deque<Vector<char>> buffer_;
   size_t offset_for_first_chunk_ = 0;
+  bool is_buffering_ = true;
   bool has_seen_end_of_data_ = false;
   bool has_seen_error_ = false;
   Member<BytesConsumer::Client> client_;

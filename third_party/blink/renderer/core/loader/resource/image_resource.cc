@@ -469,10 +469,7 @@ static bool IsEntireResource(const ResourceResponse& response) {
          first_byte_position == 0 && last_byte_position + 1 == instance_length;
 }
 
-void ImageResource::ResponseReceived(
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+void ImageResource::ResponseReceived(const ResourceResponse& response) {
   DCHECK(!multipart_parser_);
   if (response.MimeType() == "multipart/x-mixed-replace") {
     Vector<char> boundary = network_utils::ParseMultipartBoundary(
@@ -489,7 +486,7 @@ void ImageResource::ResponseReceived(
   // ResourceResponse, while |response| might just be a revalidation response
   // (e.g. a 304) with a partial set of updated headers that were folded into
   // the cached response.
-  Resource::ResponseReceived(response, std::move(handle));
+  Resource::ResponseReceived(response);
 
   if (placeholder_option_ ==
           PlaceholderOption::kShowAndReloadPlaceholderAlways &&

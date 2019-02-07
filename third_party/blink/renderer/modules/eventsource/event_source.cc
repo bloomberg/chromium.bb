@@ -219,11 +219,8 @@ ExecutionContext* EventSource::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void EventSource::DidReceiveResponse(
-    unsigned long identifier,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+void EventSource::DidReceiveResponse(unsigned long identifier,
+                                     const ResourceResponse& response) {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(loader_);
 

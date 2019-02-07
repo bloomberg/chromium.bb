@@ -34,13 +34,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
+class BytesConsumer;
 class KURL;
 class ResourceError;
 class ResourceResponse;
@@ -57,8 +57,8 @@ class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
     return true;
   }
   virtual void DidReceiveResponse(unsigned long /*identifier*/,
-                                  const ResourceResponse&,
-                                  std::unique_ptr<WebDataConsumerHandle>) {}
+                                  const ResourceResponse&) {}
+  virtual void DidStartLoadingResponseBody(BytesConsumer&) {}
   virtual void DidReceiveData(const char*, unsigned /*dataLength*/) {}
   virtual void DidReceiveCachedMetadata(const char*, int /*dataLength*/) {}
   virtual void DidFinishLoading(unsigned long /*identifier*/) {}

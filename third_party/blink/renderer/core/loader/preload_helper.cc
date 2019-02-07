@@ -522,6 +522,8 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
       resource = RawResource::FetchImport(params, resource_fetcher, nullptr);
       break;
     case ResourceType::kRaw:
+      params.MutableResourceRequest().SetUseStreamOnResponse(true);
+      params.MutableOptions().data_buffering_policy = kDoNotBufferData;
       resource = RawResource::Fetch(params, resource_fetcher, nullptr);
       break;
     default:

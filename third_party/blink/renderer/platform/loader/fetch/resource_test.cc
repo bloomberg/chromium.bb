@@ -148,7 +148,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   MockResource* resource = MockResource::Create(url);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   // Revalidating with a url that differs by only the fragment
@@ -157,7 +157,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   resource->SetRevalidatingRequest(ResourceRequest(url));
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(304);
-  resource->ResponseReceived(revalidating_response, nullptr);
+  resource->ResponseReceived(revalidating_response);
 }
 
 TEST(ResourceTest, Vary) {
@@ -167,7 +167,7 @@ TEST(ResourceTest, Vary) {
   response.SetHTTPStatusCode(200);
 
   MockResource* resource = MockResource::Create(url);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   ResourceRequest new_request(url);
@@ -193,7 +193,7 @@ TEST(ResourceTest, Vary) {
   old_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
   old_request.SetHTTPHeaderField(http_names::kReferer, "http://foo.com");
   resource = MockResource::Create(old_request);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   // Header present on old but not new
@@ -223,7 +223,7 @@ TEST(ResourceTest, RevalidationFailed) {
   MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
   resource->FinishForTest();
@@ -243,7 +243,7 @@ TEST(ResourceTest, RevalidationFailed) {
 
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(200);
-  resource->ResponseReceived(revalidating_response, nullptr);
+  resource->ResponseReceived(revalidating_response);
 
   EXPECT_FALSE(resource->IsCacheValidator());
   EXPECT_EQ(200, resource->GetResponse().HttpStatusCode());
@@ -271,7 +271,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
   resource->FinishForTest();
@@ -291,7 +291,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
 
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(304);
-  resource->ResponseReceived(revalidating_response, nullptr);
+  resource->ResponseReceived(revalidating_response);
 
   EXPECT_FALSE(resource->IsCacheValidator());
   EXPECT_EQ(200, resource->GetResponse().HttpStatusCode());
@@ -313,7 +313,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   Resource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
@@ -326,7 +326,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
 
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(304);
-  resource->ResponseReceived(revalidating_response, nullptr);
+  resource->ResponseReceived(revalidating_response);
   EXPECT_FALSE(resource->IsCacheValidator());
   EXPECT_EQ(200, resource->GetResponse().HttpStatusCode());
   EXPECT_FALSE(resource->ResourceBuffer());
@@ -351,7 +351,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   response.AddHTTPHeaderField("proxy-authenticate", "proxy-authenticate value");
   response.AddHTTPHeaderField("proxy-connection", "proxy-connection value");
   response.AddHTTPHeaderField("x-custom", "custom value");
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
@@ -389,7 +389,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   revalidating_response.AddHTTPHeaderField("proxy-connection", "garbage");
   // Header that is updated with 304 code.
   revalidating_response.AddHTTPHeaderField("x-custom", "updated");
-  resource->ResponseReceived(revalidating_response, nullptr);
+  resource->ResponseReceived(revalidating_response);
 
   // Validate the original response.
   EXPECT_EQ(200, resource->GetResponse().HttpStatusCode());
@@ -423,7 +423,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
   resource->FinishForTest();
@@ -463,7 +463,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   // The final response is received.
   ResourceResponse revalidating_response(redirect_target_url);
   revalidating_response.SetHTTPStatusCode(200);
-  resource->ResponseReceived(revalidating_response, nullptr);
+  resource->ResponseReceived(revalidating_response);
 
   EXPECT_TRUE(resource->CacheHandler());
 
@@ -509,7 +509,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
                               "max-age=0, stale-while-revalidate=40");
 
   MockResource* resource = MockResource::Create(url);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(false));
@@ -548,7 +548,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   MockResource* resource = MockResource::Create(url);
   resource->WillFollowRedirect(redirected_revalidating_request,
                                redirect_response);
-  resource->ResponseReceived(response, nullptr);
+  resource->ResponseReceived(response);
   resource->FinishForTest();
 
   EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(false));

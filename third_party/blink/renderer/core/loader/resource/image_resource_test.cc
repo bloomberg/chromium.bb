@@ -189,7 +189,7 @@ void ReceiveResponse(ImageResource* image_resource,
   resource_response.SetMimeType(mime_type);
   resource_response.SetHTTPStatusCode(200);
   image_resource->NotifyStartLoad();
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(data, data_size);
   image_resource->FinishForTest();
 }
@@ -562,7 +562,7 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
@@ -589,11 +589,11 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   // Send the image response.
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("multipart/x-mixed-replace");
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
 
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   EXPECT_NE(0u, image_resource->EncodedSizeMemoryUsageForTesting());
@@ -633,7 +633,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   image_resource->FinishForTest();
@@ -676,7 +676,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   image_resource->FinishForTest();
@@ -723,7 +723,7 @@ TEST_P(ImageResourceReloadTest,
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
   resource_response.AddHTTPHeaderField("chrome-proxy", "q=low");
 
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   image_resource->FinishForTest();
@@ -771,7 +771,7 @@ TEST_P(ImageResourceReloadTest,
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   image_resource->FinishForTest();
@@ -1069,7 +1069,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
   ResourceResponse resource_response(url);
   resource_response.SetHTTPStatusCode(304);
 
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
 
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
@@ -1103,7 +1103,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
   image_resource->SetRevalidatingRequest(ResourceRequest(url));
   ResourceResponse resource_response(url);
   resource_response.SetHTTPStatusCode(304);
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
 
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
@@ -1894,7 +1894,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage2));
-  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->ResponseReceived(resource_response);
 
   // This is number is sufficiently large amount of bytes necessary for the
   // image to be created (since the size is known). This was determined by

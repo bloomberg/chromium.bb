@@ -514,7 +514,7 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
   if (made_from_readable_stream_) {
     ScriptState::Scope scope(script_state_);
     // We need to have |reader| alive by some means (as noted in
-    // ReadableStreamDataConsumerHandle). Based on the following facts:
+    // ReadableStreamDataBytesConsumer). Based on the following facts:
     //  - This function is used only from Tee and StartLoading.
     //  - This branch cannot be taken when called from Tee.
     //  - StartLoading makes HasPendingActivity return true while loading.

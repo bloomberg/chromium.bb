@@ -278,7 +278,7 @@ void ImageDocument::CreateDocumentStructure() {
   body->AppendChild(image_element_.Get());
   if (Loader() && image_element_->CachedImageResourceForImageDocument()) {
     image_element_->CachedImageResourceForImageDocument()->ResponseReceived(
-        Loader()->GetResponse(), nullptr);
+        Loader()->GetResponse());
   }
 
   if (ShouldShrinkToFit()) {

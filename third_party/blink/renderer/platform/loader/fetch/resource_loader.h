@@ -161,6 +161,8 @@ class PLATFORM_EXPORT ResourceLoader final
   friend class ResourceLoaderIsolatedCodeCacheTest;
   class CodeCacheRequest;
 
+  void DidStartLoadingResponseBodyInternal(BytesConsumer& bytes_consumer);
+
   // ResourceLoadSchedulerClient.
   void Run() override;
   ConsoleLogger* GetConsoleLogger() override;

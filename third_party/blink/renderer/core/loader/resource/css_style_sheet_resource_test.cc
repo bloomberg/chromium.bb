@@ -67,7 +67,7 @@ class CSSStyleSheetResourceTest : public PageTestBase {
 
     CSSStyleSheetResource* css_resource =
         CSSStyleSheetResource::CreateForTest(css_url, UTF8Encoding());
-    css_resource->ResponseReceived(response, nullptr);
+    css_resource->ResponseReceived(response);
     css_resource->FinishForTest();
     GetMemoryCache()->Add(css_resource);
     return css_resource;
@@ -92,7 +92,7 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
 
   CSSStyleSheetResource* css_resource =
       CSSStyleSheetResource::CreateForTest(css_url, UTF8Encoding());
-  css_resource->ResponseReceived(response, nullptr);
+  css_resource->ResponseReceived(response);
   css_resource->FinishForTest();
 
   CSSParserContext* parser_context = CSSParserContext::Create(
