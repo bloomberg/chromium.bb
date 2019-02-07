@@ -1735,6 +1735,14 @@
         }
       },
       {
+        "isolate_name": "webdriver_wpt_tests",
+        "name": "webdriver_tests_suite",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "args": [
           "--num-retries=3"
         ],
@@ -2456,6 +2464,14 @@
         }
       },
       {
+        "isolate_name": "webdriver_wpt_tests",
+        "name": "webdriver_tests_suite",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "args": [
           "--num-retries=3",
           "--debug"
@@ -3128,6 +3144,14 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "views_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "webdriver_wpt_tests",
+        "name": "webdriver_tests_suite",
+        "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -4389,6 +4413,19 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "views_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "webdriver_wpt_tests",
+        "name": "webdriver_tests_suite",
+        "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
