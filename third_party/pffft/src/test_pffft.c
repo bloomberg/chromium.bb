@@ -361,10 +361,6 @@ void benchmark_ffts(int N, int cplx) {
   pffft_aligned_free(Z);
 }
 
-#ifndef PFFFT_SIMD_DISABLE
-void validate_pffft_simd(); // a small function inside pffft.c that will detect compiler bugs with respect to simd instruction 
-#endif
-
 int main(int argc, char **argv) {
   int Nvalues[] = { 64, 96, 128, 160, 192, 256, 384, 5*96, 512, 5*128, 3*256, 800, 1024, 2048, 2400, 4096, 8192, 9*1024, 16384, 32768, 256*1024, 1024*1024, -1 };
   int i;
