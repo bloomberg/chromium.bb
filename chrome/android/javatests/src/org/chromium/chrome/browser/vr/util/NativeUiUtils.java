@@ -111,6 +111,18 @@ public class NativeUiUtils {
     }
 
     /**
+     * Hovers over a UI element with the controller.
+     *
+     * @param elementName The UserFriendlyElementName that will be hovered over.
+     * @param position A PointF specifying where on the element to hover relative to a unit square
+     *        centered at (0, 0).
+     */
+    public static void hoverElement(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.HOVER, position);
+    }
+
+    /**
      * Clicks the app button while pointed at a UI element.
      * @param elementName The UserFriendlyElementName that will be pointed at.
      * @param position A PointF specifying where on the element to point at relative to a unit

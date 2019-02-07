@@ -11,6 +11,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.graphics.PointF;
 import android.os.SystemClock;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -20,17 +21,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
+import org.chromium.chrome.browser.vr.util.RenderTestUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.RenderTestRule;
 
+import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,6 +50,10 @@ public class VrBrowserNativeUiTest {
     // only ever runs in ChromeTabbedActivity.
     @Rule
     public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
+
+    @Rule
+    public RenderTestRule mRenderTestRule =
+            new RenderTestRule("components/test/data/vr_browser_ui/render_tests");
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
@@ -280,5 +289,69 @@ public class VrBrowserNativeUiTest {
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
                 mVrTestRule.getActivity().getActivityTab(), "chrome://va/");
+    }
+
+    /**
+     * Tests that the keyboard appears when clicking on the URL bar.
+     * Also contains a regression test for https://crbug.com/874671 where inputting text into the
+     * URL bar would cause a browser crash.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testKeyboardAppearsOnUrlBarClick()
+            throws InterruptedException, TimeoutException, IOException {
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
+        // For whatever reason, the laser has a lot of random noise (not visible to an actual user)
+        // when the keyboard is present on certain OS/hardware configurations (currently known to
+        // happen on Pixel XL w/ N). So, point the controller off to the right so the laser isn't
+        // visible.
+        NativeUiUtils.hoverElement(UserFriendlyElementName.OMNIBOX_TEXT_FIELD, new PointF(3f, 0f));
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "keyboard_visible_browser_ui", mRenderTestRule);
+        // Regression test for https://crbug.com/874671
+        // We need to use the VrCore-side emulated controller because the keyboard isn't a UI
+        // element, meaning we can't specify it as a click target for the Chrome-side controller.
+        NativeUiUtils.revertToRealInput();
+        // Point at the keyboard and click an arbitrary key
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+        controller.recenterView();
+        controller.moveControllerInstant(0.0f, -0.259f, -0.996f, -0.0f);
+        // Spam clicks to ensure we're getting one in.
+        for (int i = 0; i < 5; i++) {
+            controller.performControllerClick();
+        }
+    }
+
+    /**
+     * Tests that the overflow menu appears when the overflow menu button is clicked.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testOverflowMenuAppears()
+            throws InterruptedException, TimeoutException, IOException {
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "overflow_menu_visible_browser_ui", mRenderTestRule);
+    }
+
+    /**
+     * Tests that the page info popup appears when the security token in the URL bar is clicked.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testPageInfoAppearsOnSecurityTokenClick()
+            throws InterruptedException, TimeoutException, IOException {
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.PAGE_INFO_BUTTON, new PointF());
+        // Workaround for https://crbug.com/893291, where the text doesn't actually show up until a
+        // bit after the element is drawn.
+        SystemClock.sleep(1000);
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "page_info_visible_browser_ui", mRenderTestRule);
     }
 }

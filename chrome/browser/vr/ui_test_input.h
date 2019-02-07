@@ -43,6 +43,11 @@ enum class UserFriendlyElementName : int {
   kWebXrExternalPromptNotification,  // The notification shown in the headset
                                      // if a permission is requested while in
                                      // immersive WebXR session.
+  kCameraPermissionIndicator,    // The camera icon that appears when a page is
+                                 // using the camera permission.
+  kLocationPermissionIndicator,  // The location icon that appears when a page
+                                 // is using the high accuracy location
+                                 // permission.
 };
 
 // These are the types of actions that Java can request callbacks for once

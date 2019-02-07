@@ -841,6 +841,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
         "javatests/src/org/chromium/chrome/browser/vr/util/HeadTrackingUtils.java",
         "javatests/src/org/chromium/chrome/browser/vr/util/NativeUiUtils.java",
         "javatests/src/org/chromium/chrome/browser/vr/util/NfcSimUtils.java",
+        "javatests/src/org/chromium/chrome/browser/vr/util/RenderTestUtils.java",
         "javatests/src/org/chromium/chrome/browser/vr/util/VrBrowserTransitionUtils.java",
         "javatests/src/org/chromium/chrome/browser/vr/util/VrInfoBarUtils.java",
         "javatests/src/org/chromium/chrome/browser/vr/util/VrSettingsServiceUtils.java",
@@ -881,6 +882,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
         "//chrome/android/shared_preference_files/test/",
         "//components/test/data/js_dialogs/render_tests/",
         "//components/test/data/permission_dialogs/render_tests/",
+        "//components/test/data/vr_browser_ui/render_tests/",
         "//third_party/gvr-android-sdk/test-apks/",
       ]
     }
