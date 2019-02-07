@@ -224,21 +224,18 @@ bool PluginList::GetPluginsNoRefresh(std::vector<WebPluginInfo>* plugins) {
   return loading_state_ == LOADING_STATE_UP_TO_DATE;
 }
 
-void PluginList::GetPluginInfoArray(
+bool PluginList::GetPluginInfoArray(
     const GURL& url,
     const std::string& mime_type,
     bool allow_wildcard,
-    bool* use_stale,
     std::vector<WebPluginInfo>* info,
     std::vector<std::string>* actual_mime_types) {
   DCHECK(mime_type == base::ToLowerASCII(mime_type));
   DCHECK(info);
 
-  if (!use_stale)
-    LoadPlugins();
+  LoadPlugins();
   base::AutoLock lock(lock_);
-  if (use_stale)
-    *use_stale = (loading_state_ != LOADING_STATE_UP_TO_DATE);
+  bool is_stale = loading_state_ != LOADING_STATE_UP_TO_DATE;
   info->clear();
   if (actual_mime_types)
     actual_mime_types->clear();
@@ -266,7 +263,7 @@ void PluginList::GetPluginInfoArray(
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
   if (last_dot == std::string::npos || !mime_type.empty())
-    return;
+    return is_stale;
 
   std::string extension =
       base::ToLowerASCII(base::StringPiece(path).substr(last_dot + 1));
@@ -281,6 +278,7 @@ void PluginList::GetPluginInfoArray(
       }
     }
   }
+  return is_stale;
 }
 
 void PluginList::RemoveExtraPluginPathLocked(

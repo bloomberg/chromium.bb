@@ -76,13 +76,11 @@ class CONTENT_EXPORT PluginList {
   // returns plugins which support wildcard mime types (* as the mime
   // type).  The |info| parameter is required to be non-NULL.  The
   // list is in order of "most desirable" to "least desirable".
-  // If |use_stale| is NULL, this will load the plugin list if necessary.
-  // If it is not NULL, the plugin list will not be loaded, and |*use_stale|
-  // will be true iff the plugin list was stale.
-  void GetPluginInfoArray(const GURL& url,
+  // This will load the plugin list if necessary.
+  // The return value indicates whether the plugin list was stale.
+  bool GetPluginInfoArray(const GURL& url,
                           const std::string& mime_type,
                           bool allow_wildcard,
-                          bool* use_stale,
                           std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
