@@ -177,6 +177,28 @@ template("internal_jumbo_target") {
       outputs = jumbo_files
       args = [ "--outputs" ] + rebase_path(outputs, root_build_dir) +
              [ "--file-list={{response_file_name}}" ]
+
+      # For the "gn analyze" step to work, gn needs to know about the
+      # original source files. They can't be in |sources| because then
+      # they will be compiled, so they have to be somewhere else where
+      # gn analyze looks. One alternative is the |data| list but that
+      # will affect test packaging with known bad effects on
+      # distributed testing. Putting them in this action's input list
+      # is the least bad place.
+      inputs = []
+      foreach(f, invoker_sources - excluded_sources) {
+        # Avoid generated files and non non-source files.
+        in_source_tree = string_replace(rebase_path(f),
+                                        rebase_path(root_out_dir),
+                                        "dummy") == rebase_path(f)
+        is_source_file = get_path_info(f, "extension") == "cc" ||
+                         get_path_info(f, "extension") == "cpp" ||
+                         get_path_info(f, "extension") == "c" ||
+                         get_path_info(f, "extension") == "mm"
+        if (in_source_tree && is_source_file) {
+          inputs += [ f ]
+        }
+      }
     }
   } else {
     # If the list subtraction triggers a gn error,
