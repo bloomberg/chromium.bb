@@ -46,6 +46,8 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
 
   StreamSocket* socket() { return socket_.get(); }
 
+  std::unique_ptr<StreamSocket> ReleaseSocket();
+
  private:
   const SocketExpected socket_expected_;
   bool has_result_ = false;

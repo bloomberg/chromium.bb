@@ -472,8 +472,8 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       if (!is_https_proxy_ || !SanitizeProxyRedirect(&response_))
         return ERR_TUNNEL_CONNECTION_FAILED;
 
-      transport_.reset();
       http_stream_parser_.reset();
+      transport_.reset();
       return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
 
     case 407:  // Proxy Authentication Required

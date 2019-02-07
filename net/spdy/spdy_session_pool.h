@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -48,6 +49,7 @@ class HttpStreamRequest;
 class NetLogWithSource;
 class NetworkQualityEstimator;
 class SpdySession;
+class StreamSocket;
 class TransportSecurityState;
 
 // This is a very simple pool for open SpdySessions.
@@ -95,12 +97,28 @@ class NET_EXPORT SpdySessionPool
   // not already be a session for the given key.
   //
   // Returns the new SpdySession. Note that the SpdySession begins reading from
-  // |connection| on a subsequent event loop iteration, so it may be closed
-  // immediately afterwards if the first read of |connection| fails.
+  // |client_socket_handle| on a subsequent event loop iteration, so it may be
+  // closed immediately afterwards if the first read of |client_socket_handle|
+  // fails.
+  base::WeakPtr<SpdySession> CreateAvailableSessionFromSocketHandle(
+      const SpdySessionKey& key,
+      bool is_trusted_proxy,
+      std::unique_ptr<ClientSocketHandle> client_socket_handle,
+      const NetLogWithSource& net_log);
+
+  // Just like the above method, except it takes a SocketStream instead of a
+  // ClientSocketHandle, and separate connect timing information. When this
+  // constructor is used, there is no socket pool beneath the SpdySession.
+  // Instead, the session takes exclusive ownership of the underting socket, and
+  // destroying the session will directly destroy the socket, as opposed to
+  // disconnected it and then returning it to the socket pool. This is intended
+  // for use with H2 proxies, which are layered beneath the socket pools and
+  // can have sockets above them for tunnels, which are put in a socket pool.
   base::WeakPtr<SpdySession> CreateAvailableSessionFromSocket(
       const SpdySessionKey& key,
       bool is_trusted_proxy,
-      std::unique_ptr<ClientSocketHandle> connection,
+      std::unique_ptr<StreamSocket> socket_stream,
+      const LoadTimingInfo::ConnectTiming& connect_timing,
       const NetLogWithSource& net_log);
 
   // If there is an available session for |key|, return it.
@@ -253,6 +271,18 @@ class NET_EXPORT SpdySessionPool
   void CloseCurrentSessionsHelper(Error error,
                                   const std::string& description,
                                   bool idle_only);
+
+  // Creates a new session. The session must be initialized before
+  // InsertSession() is invoked.
+  std::unique_ptr<SpdySession> CreateSession(const SpdySessionKey& key,
+                                             bool is_trusted_proxy,
+                                             NetLog* net_log);
+  // Adds a new session previously created with CreateSession to the pool.
+  // |source_net_log| is the NetLog for the object that created the session.
+  base::WeakPtr<SpdySession> InsertSession(
+      const SpdySessionKey& key,
+      std::unique_ptr<SpdySession> new_session,
+      const NetLogWithSource& source_net_log);
 
   HttpServerProperties* http_server_properties_;
 

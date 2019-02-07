@@ -4,6 +4,8 @@
 
 #include "net/socket/connect_job_test_util.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "net/socket/stream_socket.h"
@@ -47,6 +49,10 @@ void TestConnectJobDelegate::StartJobExpectingResult(ConnectJob* connect_job,
     OnConnectJobComplete(rv, connect_job);
     EXPECT_THAT(result_, test::IsError(expected_result));
   }
+}
+
+std::unique_ptr<StreamSocket> TestConnectJobDelegate::ReleaseSocket() {
+  return std::move(socket_);
 }
 
 }  // namespace net

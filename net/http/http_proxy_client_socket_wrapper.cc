@@ -670,7 +670,7 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
     }
   } else {
     // Create a session direct to the proxy itself
-    spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(
+    spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocketHandle(
         key, is_trusted_proxy_, std::move(transport_socket_handle_), net_log_);
     DCHECK(spdy_session);
   }
