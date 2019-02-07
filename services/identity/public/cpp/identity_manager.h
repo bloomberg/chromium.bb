@@ -152,9 +152,6 @@ class IdentityManager : public SigninManagerBase::Observer,
     // action, e.g. from the settings or by an extension.
     virtual void OnAccountsCookieDeletedByUserAction() {}
 
-    // Called before a batch of refresh token state changes is started.
-    virtual void OnStartBatchOfRefreshTokenStateChanges() {}
-
     // Called after a batch of refresh token state chagnes is completed.
     virtual void OnEndBatchOfRefreshTokenStateChanges() {}
 
@@ -471,7 +468,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
-  void OnStartBatchChanges() override;
   void OnEndBatchChanges() override;
   void OnAuthErrorChanged(const std::string& account_id,
                           const GoogleServiceAuthError& auth_error) override;
