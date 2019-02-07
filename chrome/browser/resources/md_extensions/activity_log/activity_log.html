@@ -7,21 +7,13 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="activity_log_item.html">
-<link rel="import" href="navigation_helper.html">
-<link rel="import" href="shared_style.html">
+<link rel="import" href="activity_log_history.html">
+<link rel="import" href="../navigation_helper.html">
+<link rel="import" href="../shared_style.html">
 
 <dom-module id="extensions-activity-log">
   <template>
     <style include="iron-flex cr-shared-style shared-style paper-button-style">
-      .activity-message {
-        color: #6e6e6e;
-        font-size: 123%;  /* Should be 16px when 100% is 13px. */
-        font-weight: 500;
-        margin-top: 80px;
-        text-align: center;
-      }
-
       #activity-log-heading {
         flex-grow: 1;
         margin-inline-start: 16px;
@@ -51,23 +43,11 @@
             $i18n{clearActivities}
           </paper-button>
         </div>
-        <div id="loading-activities" class="activity-message"
-            hidden$="[[!shouldShowLoadingMessage_(
-                pageState_)]]">
-            <span>$i18n{loadingActivities}</span>
-        </div>
-        <div id="no-activities" class="activity-message"
-            hidden$="[[!shouldShowEmptyActivityLogMessage_(
-                pageState_, activityData_)]]">
-            <span>$i18n{noActivities}</span>
-        </div>
-        <div id="activity-list"
-            hidden$="[[!shouldShowActivities_(pageState_, activityData_)]]">
-          <template is="dom-repeat" items="[[activityData_]]">
-            <activity-log-item id="[[item.apiCall]]" data="[[item]]">
-            </activity-log-item>
-          </template>
-        </div>
+        <template is="dom-if" if="[[showHistory_]]" restamp>
+          <activity-log-history extension-id="[[extensionId]]"
+              delegate="[[delegate]]" last-search="[[lastSearch_]]">
+          </activity-log-history>
+        </template>
       </div>
     </div>
   </template>

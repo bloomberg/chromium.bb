@@ -48,10 +48,16 @@ grit("flattened_resources") {
   ]
   output_dir = "$root_gen_dir/chrome/browser/resources/md_extensions"
 }
-js_type_check("closure_compile") {
+
+group("closure_compile") {
   deps = [
-    ":activity_log",
-    ":activity_log_item",
+    ":extensions_resources",
+    "activity_log:closure_compile",
+  ]
+}
+
+js_type_check("extensions_resources") {
+  deps = [
     ":code_section",
     ":detail_view",
     ":drag_and_drop_handler",
@@ -89,26 +95,6 @@ js_library("code_section") {
     "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
-}
-
-js_library("activity_log_item") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/activity_log_private.js" ]
-}
-
-js_library("activity_log") {
-  deps = [
-    ":activity_log_item",
-    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink",
-  ]
-  externs_list = [
-    "$externs_path/activity_log_private.js",
-    "$externs_path/developer_private.js",
-  ]
 }
 
 js_library("detail_view") {
@@ -258,8 +244,6 @@ js_library("load_error") {
 
 js_library("manager") {
   deps = [
-    ":activity_log",
-    ":activity_log_item",
     ":detail_view",
     ":item",
     ":item_list",
@@ -271,6 +255,9 @@ js_library("manager") {
     ":service",
     ":sidebar",
     ":toolbar",
+    "activity_log:activity_log",
+    "activity_log:activity_log_history",
+    "activity_log:activity_log_item",
     "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:assert",
@@ -334,13 +321,14 @@ js_library("runtime_hosts_dialog") {
 
 js_library("service") {
   deps = [
-    ":activity_log",
     ":error_page",
     ":item",
     ":load_error",
     ":navigation_helper",
     ":pack_dialog",
     ":toolbar",
+    "activity_log:activity_log",
+    "activity_log:activity_log_history",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
