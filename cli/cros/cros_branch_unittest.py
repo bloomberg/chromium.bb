@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import mock
 import os
 
 from chromite.cbuildbot.manifest_version import VersionInfo
@@ -21,6 +22,7 @@ from chromite.cli.cros.cros_branch import CrosCheckout
 from chromite.cli.cros.cros_branch import FactoryBranch
 from chromite.cli.cros.cros_branch import FirmwareBranch
 from chromite.cli.cros.cros_branch import ManifestRepository
+from chromite.cli.cros.cros_branch import ProjectBranch
 from chromite.cli.cros.cros_branch import ReleaseBranch
 from chromite.cli.cros.cros_branch import StabilizeBranch
 from chromite.lib import config_lib
@@ -308,6 +310,17 @@ class ManifestTestCase(cros_test_lib.TestCase):
     """
     return self.ProjectFor(pid).Revision()
 
+  def RemoteFor(self, pid):
+    """Return the test project's remote name.
+
+    Args:
+      pid: The test project ID (e.g. 'chromiumos-overlay')
+
+    Returns:
+      Remote name for the project, e.g. 'cros'.
+    """
+    return self.ProjectFor(pid).Remote().GitName()
+
   def ProjectFor(self, pid):
     """Return the test project's repo_manifest.Project.
 
@@ -529,6 +542,35 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
     proj = actual.GetUniqueProject(self.NameFor(PROJECTS.EXPLICIT_TOT))
     self.assertEqual(proj.revision, TOT)
 
+  def testRepairManifestsOnDisk(self):
+    """Test RepairManifestsOnDisk writes all manifests."""
+    repair = self.PatchObject(ManifestRepository, 'RepairManifest',
+                              return_value=self.full_manifest)
+    write = self.PatchObject(repo_manifest.Manifest, 'Write')
+
+    branches = [
+        ProjectBranch(self.ProjectFor(PROJECTS.MANIFEST_INTERNAL), 'branch-a'),
+        ProjectBranch(self.ProjectFor(PROJECTS.EXPLICIT_BRANCH), 'branch-b'),
+    ]
+    branches_by_path = {
+        self.PathFor(PROJECTS.MANIFEST_INTERNAL): 'branch-a',
+        self.PathFor(PROJECTS.EXPLICIT_BRANCH): 'branch-b',
+    }
+
+    self.manifest_repo.RepairManifestsOnDisk(branches)
+    self.assertItemsEqual(repair.call_args_list, [
+        mock.call('/root/manifest-internal/default.xml', branches_by_path),
+        mock.call('/root/manifest-internal/official.xml', branches_by_path),
+        mock.call('/root/manifest-internal/internal.xml', branches_by_path),
+        mock.call('/root/manifest-internal/external.xml', branches_by_path),
+    ])
+    self.assertItemsEqual(write.call_args_list, [
+        mock.call('/root/manifest-internal/default.xml'),
+        mock.call('/root/manifest-internal/official.xml'),
+        mock.call('/root/manifest-internal/internal.xml'),
+        mock.call('/root/manifest-internal/external.xml'),
+    ])
+
 
 class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
   """Tests for nontrivial methods in CrosCheckout."""
@@ -550,6 +592,10 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
             EXTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions',
             INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal',
         ))
+    self.get_current_branch = self.PatchObject(git, 'GetCurrentBranch',
+                                               return_value='local-branch')
+    self.get_git_repo_revision = self.PatchObject(git, 'GetGitRepoRevision',
+                                                  return_value='abcdef')
 
   def testSyncVersion(self):
     """Test SyncVersion passes correct args to repo_sync_manifest."""
@@ -600,18 +646,34 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test RunGit runs git command in project directory."""
     checkout = CrosCheckout('/root')
     project = self.ProjectFor(PROJECTS.MANIFEST)
+
     checkout.RunGit(project, ['branch', '-m', 'foo'])
     self.rc_mock.assertCommandContains(
         ['git', 'branch', '-m', 'foo'],
-        cwd=os.path.join('/root', self.PathFor(PROJECTS.MANIFEST)),
+        cwd='/root/manifest',
         print_cmd=True)
 
   def testGitRevision(self):
-    """Test GitRevision properly forwards to git.GetGitRepoRevision."""
-    self.PatchObject(git, 'GetGitRepoRevision', self.RevisionFor)
-    checkout = CrosCheckout('')
+    """Test GitRevision properly forwards project path."""
+    checkout = CrosCheckout('/root')
     project = self.ProjectFor(PROJECTS.MANIFEST)
-    self.assertEqual(checkout.GitRevision(project), project.revision)
+
+    actual = checkout.GitRevision(project)
+    self.assertEqual(
+        self.get_git_repo_revision.call_args_list,
+        [mock.call('/root/manifest')])
+    self.assertEqual(actual, 'abcdef')
+
+  def testGitBranch(self):
+    """Test GitBranch properly forwards project path."""
+    checkout = CrosCheckout('/root')
+    project = self.ProjectFor(PROJECTS.MANIFEST)
+
+    actual = checkout.GitBranch(project)
+    self.assertEqual(
+        self.get_current_branch.call_args_list,
+        [mock.call('/root/manifest')])
+    self.assertEqual(actual, 'local-branch')
 
 
 class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
@@ -623,7 +685,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     Args:
       version: The version string to return.
     """
-    self.PatchObject(VersionInfo, 'from_repo',
+    self.PatchObject(CrosCheckout, 'ReadVersion',
                      return_value=VersionInfo(version))
 
   def AssertProjectBranched(self, project, branch):
@@ -681,6 +743,29 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
         cwd=self.PathListRegexFor(project),
         expected=False)
 
+  def AssertBranchPushed(self, project, branch):
+    """Assert given branch pushed to remote for given project.
+
+    Args:
+      project: Project ID.
+      branch: Expected name for the branch.
+    """
+    self.rc_mock.assertCommandContains(
+        ['git', 'push', self.RemoteFor(project),
+         'refs/heads/%s:refs/heads/%s' % (branch, branch)],
+        cwd=self.PathListRegexFor(project))
+
+  def AssertNoPush(self, project):
+    """Assert no push operation run inside the given project.
+
+    Args:
+      project: Project ID.
+    """
+    self.rc_mock.assertCommandContains(
+        ['git', 'push'],
+        cwd=self.PathListRegexFor(project),
+        expected=False)
+
   def AssertManifestRepairsCommitted(self):
     """Assert commits made to all manifest repositories."""
     for manifest_project in MANIFEST_PROJECTS:
@@ -693,12 +778,11 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.rc_mock.SetDefaultCmdResult()
     self.StartPatcher(self.rc_mock)
 
-    # ManifestRepository and VersionInfo tested separately, so mock them.
+    # ManifestRepository and CrosCheckout tested separately, so mock them.
     self.PatchObject(ManifestRepository, 'RepairManifestsOnDisk')
-    self.PatchObject(VersionInfo, 'IncrementVersion')
-    self.PatchObject(VersionInfo, 'UpdateVersionFile')
-    self.PatchObject(
-        VersionInfo, 'from_repo', return_value=VersionInfo('1.2.0'))
+    self.PatchObject(CrosCheckout, 'ReadVersion',
+                     return_value=VersionInfo('1.2.0'))
+    self.bump_version = self.PatchObject(CrosCheckout, 'BumpVersion')
 
     # The instance under test.
     self.checkout = CrosCheckout('/', manifest=self.full_manifest)
@@ -718,6 +802,36 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test Create commits repairs to manifest repositories."""
     self.branch.Create()
     self.AssertManifestRepairsCommitted()
+
+  def testCreateBumpsBranchNumber(self):
+    """Test WhichVersionShouldBump bumps branch number on X.0.0 version."""
+    self.SetVersion('1.0.0')
+    self.branch.Create()
+    self.assertEqual(self.bump_version.call_args_list,
+                     [mock.call('branch', mock.ANY)])
+
+  def testCreateBumpsPatchNumber(self):
+    """Test WhichVersionShouldBump bumps patch number on X.X.0 version."""
+    self.SetVersion('1.2.0')
+    self.branch.Create()
+    self.assertEqual(self.bump_version.call_args_list,
+                     [mock.call('patch', mock.ANY)])
+
+  def testCreateDiesOnNonzeroPatchNumber(self):
+    """Test WhichVersionShouldBump dies on X.X.X version."""
+    self.SetVersion('1.2.3')
+    with self.assertRaises(BranchError):
+      self.branch.Create()
+
+  def testCreatePushesToRemote(self):
+    """Test Create pushes new branch to remote."""
+    self.branch.Create(push=True)
+    for project in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertBranchPushed(project, 'branch')
+    for project in MULTI_CHECKOUT_PROJECTS:
+      self.AssertBranchPushed(project, 'branch-' + project)
+    for project in NON_BRANCHED_PROJECTS:
+      self.AssertNoPush(project)
 
   def testRenameModifiesCorrectProjects(self):
     """Test Rename renames correct project branches to correct branch names."""
@@ -743,24 +857,6 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
       self.AssertBranchDeleted(project, 'branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertBranchNotModified(project)
-
-  def testWhichVersionShouldBumpZeroBranchNumber(self):
-    """Test WhichVersionShouldBump bumps branch number on X.0.0 version."""
-    self.SetVersion('1.0.0')
-    actual = self.branch.WhichVersionShouldBump()
-    self.assertEqual(actual, 'branch')
-
-  def testWhichVersionShouldBumpNonzeroBranchNumber(self):
-    """Test WhichVersionShouldBump bumps patch number on X.X.0 version."""
-    self.SetVersion('1.2.0')
-    actual = self.branch.WhichVersionShouldBump()
-    self.assertEqual(actual, 'patch')
-
-  def testWhichVersionShouldBumpNonzeroPatchNumber(self):
-    """Test WhichVersionShouldBump dies on X.X.X version."""
-    self.SetVersion('1.2.3')
-    with self.assertRaises(BranchError):
-      self.branch.WhichVersionShouldBump()
 
 
 class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
