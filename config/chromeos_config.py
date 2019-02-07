@@ -1663,6 +1663,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   active_builders = frozenset([
       'amd64-generic',
       'arm-generic',
+      'arm64-generic',
       'daisy',
       'kevin',
       'kevin64',
@@ -1674,7 +1675,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   # Move the following builders to active_builders once they are consistently
   # green.
   unstable_builders = frozenset([
-      'arm64-generic', # Enable once stable.
       'lakitu',  # TODO: Re-enable after crbug.com/919630 resolved.
   ])
 
@@ -2757,13 +2757,13 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
 
   _chromium_pfq_important_boards = frozenset([
       'arm-generic',
+      'arm64-generic',
       'daisy',
       'veyron_jerry',
       'amd64-generic',
   ])
 
   _chromium_pfq_experimental_boards = frozenset([
-      'arm64-generic',
   ])
 
   master_config = site_config.Add(
