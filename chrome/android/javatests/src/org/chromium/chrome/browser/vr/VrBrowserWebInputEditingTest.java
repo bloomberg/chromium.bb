@@ -146,6 +146,11 @@ public class VrBrowserWebInputEditingTest {
         DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "selectbox",
                 false /* goThroughRootAndroidView */);
         NativeUiUtils.waitForModalDialogStatus(true /* shouldBeShown */, mVrTestRule.getActivity());
+        // On fast devices such as the Vega, it's possible to send the first click before the modal
+        // dialog starts accepting any input, causing the click to be registered on the web contents
+        // and causing the dialog to be dismissed. So, ensure that the dialog is at least done
+        // rendering before trying to send input.
+        NativeUiUtils.waitForUiQuiescence();
         // Click on whichever option is near the center of the screen. We don't care which, as long
         // as it's not the initial selection, which should be at the top. Clicking in the exact
         // center can sometimes click in the area between two options, so offset slightly to prevent
