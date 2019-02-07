@@ -217,6 +217,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   bubble_border_->set_use_theme_background_color(!init_params.bg_color);
   if (init_params.corner_radius)
     bubble_border_->SetCornerRadius(init_params.corner_radius.value());
+  bubble_border_->set_avoid_shadow_overlap(true);
   set_parent_window(params_.parent_window);
   SetCanActivate(false);
   set_notify_enter_exit_on_child(true);
