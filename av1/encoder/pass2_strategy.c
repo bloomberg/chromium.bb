@@ -1032,7 +1032,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   } else {
     // Calculate 'num_extra_arfs' (internal alt-refs) that we are allowed.
     // Note: When new pyramid structure is used through
-    // 'define_customized_gf_group_structure()' function, this value is
+    // 'define_pyramid_gf_group_structure()' function, this value is
     // overridden.
     if (rc->baseline_gf_interval == MIN_GF_INTERVAL &&
         rc->source_alt_ref_pending) {
@@ -1111,6 +1111,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     gf_group_error_left = gf_group_err;
   }
 
+  // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
 
   // Allocate bits to each of the frames in the GF group.

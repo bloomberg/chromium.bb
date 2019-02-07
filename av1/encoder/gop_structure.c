@@ -149,7 +149,7 @@ static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
   }
 }
 
-static void define_customized_gf_group_structure(
+static void define_pyramid_gf_group_structure(
     AV1_COMP *cpi, const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
@@ -221,25 +221,9 @@ static void define_customized_gf_group_structure(
 #endif
 }
 
-void av1_gop_setup_structure(AV1_COMP *cpi,
-                             const EncodeFrameParams *const frame_params) {
+static void define_flat_gf_group_structure(
+    AV1_COMP *cpi, const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
-
-  const int max_pyr_height = cpi->oxcf.gf_max_pyr_height;
-  const int valid_customized_gf_length =
-      max_pyr_height >= MIN_PYRAMID_LVL && max_pyr_height <= MAX_PYRAMID_LVL &&
-      rc->baseline_gf_interval >= MIN_GF_INTERVAL &&
-      rc->baseline_gf_interval <= get_max_gf_length(max_pyr_height);
-  // used the new structure only if extra_arf is allowed
-  if (valid_customized_gf_length && rc->source_alt_ref_pending &&
-      cpi->extra_arf_allowed > 0) {
-    define_customized_gf_group_structure(cpi, frame_params);
-    cpi->new_bwdref_update_rule = 1;
-    return;
-  } else {
-    cpi->new_bwdref_update_rule = 0;
-  }
-
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
   int i;
@@ -453,4 +437,25 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
 
   gf_group->bidir_pred_enabled[frame_index] = 0;
   gf_group->brf_src_offset[frame_index] = 0;
+}
+
+void av1_gop_setup_structure(AV1_COMP *cpi,
+                             const EncodeFrameParams *const frame_params) {
+  RATE_CONTROL *const rc = &cpi->rc;
+
+  const int max_pyr_height = cpi->oxcf.gf_max_pyr_height;
+  const int valid_pyramid_gf_length =
+      max_pyr_height >= MIN_PYRAMID_LVL && max_pyr_height <= MAX_PYRAMID_LVL &&
+      rc->baseline_gf_interval >= MIN_GF_INTERVAL &&
+      rc->baseline_gf_interval <= get_max_gf_length(max_pyr_height);
+
+  // Decide whether to use a flat or pyramid structure for this GF
+  if (valid_pyramid_gf_length && rc->source_alt_ref_pending &&
+      cpi->extra_arf_allowed > 0) {
+    define_pyramid_gf_group_structure(cpi, frame_params);
+    cpi->new_bwdref_update_rule = 1;
+  } else {
+    define_flat_gf_group_structure(cpi, frame_params);
+    cpi->new_bwdref_update_rule = 0;
+  }
 }
