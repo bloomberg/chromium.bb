@@ -70,6 +70,7 @@ class BLINK_PLATFORM_EXPORT WebData {
   void Reset();
   void Assign(const WebData&);
   void Assign(const char* data, size_t size);
+  void Append(const char* data, size_t size);
 
   size_t size() const;
 

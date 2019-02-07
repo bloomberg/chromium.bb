@@ -568,6 +568,26 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
       CommitData(span.data(), span.size());
   }
 
+  if (loading_mhtml_archive_) {
+    ArchiveResource* main_resource =
+        fetcher_->CreateArchive(url_, data_buffer_);
+    data_buffer_ = nullptr;
+    if (main_resource) {
+      // The origin is the MHTML file, we need to set the base URL to the
+      // document encoded in the MHTML so relative URLs are resolved properly.
+      CommitNavigation(main_resource->MimeType(), main_resource->Url());
+      // CommitNavigation runs unload listeners which can detach the frame.
+      if (!frame_)
+        return;
+      scoped_refptr<SharedBuffer> data(main_resource->Data());
+      for (const auto& span : *data)
+        CommitData(span.data(), span.size());
+    } else {
+      // Cannot parse mhtml archive - load empty document instead.
+      CommitNavigation(response_.MimeType());
+    }
+  }
+
   TimeTicks response_end_time = finish_time;
   if (response_end_time.is_null())
     response_end_time = time_of_last_data_received_;
@@ -575,12 +595,10 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
     response_end_time = CurrentTimeTicks();
   GetTiming().SetResponseEnd(response_end_time);
 
-  if (!MaybeCreateArchive()) {
-    // If this is an empty document, it might not have actually been
-    // committed yet. Force a commit so that the Document actually gets created.
-    if (state_ == kProvisional)
-      CommitNavigation(response_.MimeType());
-  }
+  // If this is an empty document, it might not have actually been
+  // committed yet. Force a commit so that the Document actually gets created.
+  if (state_ == kProvisional)
+    CommitNavigation(response_.MimeType());
   DCHECK_GE(state_, kCommitted);
 
   if (!frame_)
@@ -775,12 +793,6 @@ bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
     }
   }
 
-  // The MHTML mime type should be same as the one we check in the browser
-  // process's IsDownload (navigation_url_loader_network_service.cc).
-  loading_mhtml_archive_ =
-      DeprecatedEqualIgnoringCase("multipart/related", response_.MimeType()) ||
-      DeprecatedEqualIgnoringCase("message/rfc822", response_.MimeType());
-
   if (!ShouldContinueForResponse()) {
     StopLoading();
     return false;
@@ -970,28 +982,6 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   frame_ = nullptr;
 }
 
-bool DocumentLoader::MaybeCreateArchive() {
-  // Give the archive machinery a crack at this document.
-  if (!loading_mhtml_archive_)
-    return false;
-
-  ArchiveResource* main_resource = fetcher_->CreateArchive(Url(), data_buffer_);
-  if (!main_resource)
-    return false;
-
-  data_buffer_ = nullptr;
-  // The origin is the MHTML file, we need to set the base URL to the document
-  // encoded in the MHTML so relative URLs are resolved properly.
-  CommitNavigation(main_resource->MimeType(), main_resource->Url());
-  if (!frame_)
-    return false;
-
-  scoped_refptr<SharedBuffer> data(main_resource->Data());
-  for (const auto& span : *data)
-    CommitData(span.data(), span.size());
-  return true;
-}
-
 const KURL& DocumentLoader::UnreachableURL() const {
   return unreachable_url_;
 }
@@ -1159,6 +1149,22 @@ void DocumentLoader::StartLoadingInternal() {
 
   if (!HandleResponse(response))
     return;
+
+  loading_mhtml_archive_ =
+      DeprecatedEqualIgnoringCase("multipart/related", response_.MimeType()) ||
+      DeprecatedEqualIgnoringCase("message/rfc822", response_.MimeType());
+  if (loading_mhtml_archive_) {
+    // To commit an mhtml archive synchronously we have to load the whole body
+    // synchronously and parse it, and it's already loaded in a buffer usually.
+    // This means we should not defer, and we'll finish loading synchronously
+    // from StartLoadingBody().
+    body_loader_->StartLoadingBody(this, false /* use_isolated_code_cache */);
+    if (body_loader_) {
+      // If we did not finish synchronously, load empty document instead.
+      FinishedLoading(CurrentTimeTicks());
+    }
+    return;
+  }
 
   if (defers_loading_)
     body_loader_->SetDefersLoading(true);

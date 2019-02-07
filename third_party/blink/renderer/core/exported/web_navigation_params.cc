@@ -90,6 +90,19 @@ void WebNavigationParams::FillBodyLoader(WebNavigationParams* params,
 }
 
 // static
+void WebNavigationParams::FillBodyLoader(WebNavigationParams* params,
+                                         WebData data) {
+  params->response.SetExpectedContentLength(data.size());
+  auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+  scoped_refptr<SharedBuffer> buffer = data;
+  if (buffer)
+    body_loader->Write(*buffer);
+  body_loader->Finish();
+  params->body_loader = std::move(body_loader);
+  params->is_static_data = true;
+}
+
+// static
 void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
                                              WebString mime_type,
                                              WebString text_encoding,
