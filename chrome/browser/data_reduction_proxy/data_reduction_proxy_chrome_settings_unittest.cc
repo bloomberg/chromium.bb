@@ -387,7 +387,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataBasic) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
 
@@ -406,7 +406,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataUsedDataReductionProxy) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
 
@@ -421,7 +421,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataCachedResponse) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   handle.set_was_response_cached(true);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
@@ -435,7 +435,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateHTTPSDataCachedResponse) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   handle.set_was_response_cached(true);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
@@ -452,7 +452,7 @@ TEST_F(DataReductionProxyChromeSettingsTest,
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   handle.set_was_response_cached(true);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
@@ -468,7 +468,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLitePage) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
 
@@ -485,7 +485,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLofiPolicyReceived) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
 
@@ -502,7 +502,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLofiReceived) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
           raw_headers.c_str(), raw_headers.size()));
-  handle.set_response_headers(headers.get());
+  handle.set_response_headers(headers);
   auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
       &handle, headers.get());
 
