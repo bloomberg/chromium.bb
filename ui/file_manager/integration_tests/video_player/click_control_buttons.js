@@ -28,68 +28,6 @@ function waitForFunctionResult(funcName, filename, expectedResult) {
 }
 
 /**
- * The openSingleImage test for Downloads.
- * @return {Promise} Promise to be fulfilled with on success.
- */
-testcase.clickControlButtons = function() {
-  var openVideo = openSingleVideo('local', 'downloads', ENTRIES.world);
-  var appId;
-  return openVideo
-      .then(function(args) {
-        appId = args[0];
-        // Video player starts playing given file automatically.
-        return waitForFunctionResult('isPlaying', 'world.ogv', true);
-      })
-      .then(function() {
-        // Play will finish in 2 seconds (world.ogv is 2-second short movie.)
-        return waitForFunctionResult('isPlaying', 'world.ogv', false);
-      })
-      .then(function() {
-        // Conform that clicking play button will re-play the video.
-        return remoteCallVideoPlayer.callRemoteTestUtil(
-            'fakeMouseClick', appId, ['.media-button.play']);
-      })
-      .then(function() {
-        return waitForFunctionResult('isPlaying', 'world.ogv', true);
-      })
-      .then(function() {
-        // Confirm that clicking volume button mutes the video.
-        return remoteCallVideoPlayer.callRemoteTestUtil(
-            'fakeMouseClick', appId, ['.media-button.sound']);
-      })
-      .then(function() {
-        return waitForFunctionResult('isMuted', 'world.ogv', true);
-      })
-      .then(function() {
-        // Confirm that clicking volume button again unmutes the video.
-        return remoteCallVideoPlayer.callRemoteTestUtil(
-            'fakeMouseClick', appId, ['.media-button.sound']);
-      })
-      .then(function() {
-        return waitForFunctionResult('isMuted', 'world.ogv', false);
-      })
-      .then(function() {
-        // Confirm that clicking fullscreen button enables fullscreen mode.
-        return remoteCallVideoPlayer.callRemoteTestUtil(
-            'fakeMouseClick', appId, ['.media-button.fullscreen']);
-      })
-      .then(function() {
-        return remoteCallVideoPlayer.waitForElement(
-            appId, '#controls[fullscreen]');
-      })
-      .then(function() {
-        // Confirm that clicking fullscreen-exit button disables fullscreen
-        // mode.
-        return remoteCallVideoPlayer.callRemoteTestUtil(
-            'fakeMouseClick', appId, ['.media-button.fullscreen']);
-      })
-      .then(function() {
-        return remoteCallVideoPlayer.waitForElement(
-            appId, '#controls:not([fullscreen])');
-      });
-};
-
-/**
  * Confirms that native media keys are dispatched correctly.
  * @return {Promise} Promise to be fulfilled on success.
  */

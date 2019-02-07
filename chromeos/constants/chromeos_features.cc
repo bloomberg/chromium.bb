@@ -71,7 +71,7 @@ const base::Feature kInstantTethering{"InstantTethering",
 
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
-    "VideoPlayerNativeControls", base::FEATURE_DISABLED_BY_DEFAULT};
+    "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the messages.google.com domain as part of the "Messages" feature under
 // "Connected Devices" settings.

@@ -278,6 +278,8 @@ NativeControlsVideoPlayer.prototype.reloadCurrentVideo_ = function(
  * @private
  */
 NativeControlsVideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
+  document.title = video.name;
+
   this.videoElement_.src = video.toURL();
   if (opt_callback) {
     this.videoElement_.addEventListener(
