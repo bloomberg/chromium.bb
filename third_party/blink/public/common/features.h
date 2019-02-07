@@ -70,6 +70,9 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // Returns true when off-the-main-thread shared worker script fetch is enabled.
 BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();
 
+// Returns true when PlzDedicatedWorker is enabled.
+BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
+
 }  // namespace features
 }  // namespace blink
 

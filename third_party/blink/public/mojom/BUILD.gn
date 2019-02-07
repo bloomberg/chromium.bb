@@ -86,7 +86,6 @@ mojom("mojom_platform") {
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
     "webaudio/audio_context_manager.mojom",
-    "worker/dedicated_worker_factory.mojom",
     "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",
@@ -199,6 +198,7 @@ mojom("mojom_core") {
     "service_worker/service_worker_registration.mojom",
 
     # Depends on controller_service_worker.mojom.
+    "worker/dedicated_worker_factory.mojom",
     "worker/shared_worker_factory.mojom",
   ]
 
