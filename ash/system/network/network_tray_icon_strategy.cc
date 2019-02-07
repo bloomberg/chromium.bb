@@ -6,6 +6,8 @@
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/active_network_icon.h"
 #include "ash/system/network/network_icon.h"
 #include "base/logging.h"
 #include "chromeos/network/network_state.h"
@@ -104,11 +106,10 @@ gfx::ImageSkia MobileNetworkTrayIconStrategy::GetNetworkIcon(bool* animating) {
 }
 
 gfx::ImageSkia SingleNetworkTrayIconStrategy::GetNetworkIcon(bool* animating) {
-  auto icon_type = GetIconType();
-  gfx::ImageSkia image;
-  network_icon::GetDefaultNetworkImageAndLabel(icon_type, &image,
-                                               /*label=*/nullptr, animating);
-  return image;
+  return Shell::Get()
+      ->system_tray_model()
+      ->active_network_icon()
+      ->GetDefaultImage(GetIconType(), animating);
 }
 
 }  // namespace tray

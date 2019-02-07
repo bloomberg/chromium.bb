@@ -709,6 +709,8 @@ component("ash") {
     "system/model/update_model.h",
     "system/model/virtual_keyboard_model.cc",
     "system/model/virtual_keyboard_model.h",
+    "system/network/active_network_icon.cc",
+    "system/network/active_network_icon.h",
     "system/network/auto_connect_notifier.cc",
     "system/network/auto_connect_notifier.h",
     "system/network/network_feature_pod_button.cc",

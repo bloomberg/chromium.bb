@@ -6,6 +6,8 @@
 
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/active_network_icon.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -86,11 +88,10 @@ void NetworkFeaturePodButton::NetworkStateChanged(bool notify_a11y) {
 }
 
 void NetworkFeaturePodButton::Update() {
-  gfx::ImageSkia image;
   bool animating = false;
-  network_icon::GetDefaultNetworkImageAndLabel(
-      network_icon::ICON_TYPE_DEFAULT_VIEW, &image, nullptr, &animating);
-
+  gfx::ImageSkia image =
+      Shell::Get()->system_tray_model()->active_network_icon()->GetDefaultImage(
+          network_icon::ICON_TYPE_DEFAULT_VIEW, &animating);
   if (animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
