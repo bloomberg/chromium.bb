@@ -46,8 +46,6 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
     return Promise.all([
       remoteCallVideoPlayer.waitForElement(
           appWindow, '#video-player[first-video][last-video]'),
-      remoteCallVideoPlayer.waitForElement(
-          appWindow, '.play.media-button[state="playing"]'),
     ]);
   }).then(function(args) {
     return [appWindow, args[0]];

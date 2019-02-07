@@ -70,11 +70,6 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, CheckInitialElements) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, ClickControlButtons) {
-  set_test_case_name("clickControlButtons");
-  StartTest();
-}
-
 // Flaky. Suspect due to a race when loading Chromecast integration.
 // See https://crbug.com/926035.
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, DISABLED_NativeMediaKey) {
