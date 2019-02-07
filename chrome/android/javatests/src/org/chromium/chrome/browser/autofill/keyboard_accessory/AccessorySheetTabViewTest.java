@@ -129,7 +129,6 @@ public class AccessorySheetTabViewTest {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        ManualFillingTestHelper.createTestCredentials();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(new AccessorySheetDataPiece(
                     new KeyboardAccessoryData.FooterCommand(

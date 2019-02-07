@@ -6,7 +6,9 @@
 
 #include <jni.h>
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/android/callback_android.h"
@@ -14,8 +16,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
+#include "chrome/browser/autofill/manual_filling_controller_impl.h"
+#include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "jni/ManualFillingBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -157,6 +163,44 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
         ConvertUTF16ToJavaString(env, footer_command.display_text()));
   }
   return j_tab_data;
+}
+
+// static
+void JNI_ManualFillingBridge_CachePasswordSheetDataForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    const base::android::JavaParamRef<jobjectArray>& j_usernames,
+    const base::android::JavaParamRef<jobjectArray>& j_passwords) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  PasswordAccessoryController* pwd_controller =
+      static_cast<ManualFillingControllerImpl*>(
+          ManualFillingControllerImpl::GetOrCreate(web_contents).get())
+          ->password_controller_for_testing();
+
+  if (!pwd_controller) {
+    // If the controller isn't initialized (e.g. because the flags are not set),
+    // fail silently so tests can use shared setup methods for old and new UI.
+    LOG(ERROR) << "Tried to fill cache of non-existent accessory controller.";
+    return;
+  }
+
+  url::Origin origin = url::Origin::Create(web_contents->GetLastCommittedURL());
+  std::vector<std::string> usernames;
+  std::vector<std::string> passwords;
+  base::android::AppendJavaStringArrayToStringVector(env, j_usernames,
+                                                     &usernames);
+  base::android::AppendJavaStringArrayToStringVector(env, j_passwords,
+                                                     &passwords);
+  std::vector<autofill::PasswordForm> password_forms(usernames.size());
+  std::map<base::string16, const autofill::PasswordForm*> credentials;
+  for (unsigned int i = 0; i < usernames.size(); ++i) {
+    password_forms[i].origin = origin.GetURL();
+    password_forms[i].username_value = base::ASCIIToUTF16(usernames[i]);
+    password_forms[i].password_value = base::ASCIIToUTF16(passwords[i]);
+    credentials[password_forms[i].username_value] = &password_forms[i];
+  }
+  pwd_controller->SavePasswordsForOrigin(credentials, origin);
 }
 
 // static
