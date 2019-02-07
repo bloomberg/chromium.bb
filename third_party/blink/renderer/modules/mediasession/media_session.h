@@ -18,6 +18,7 @@
 namespace blink {
 
 class ExecutionContext;
+class ExceptionState;
 class MediaMetadata;
 class V8MediaSessionActionHandler;
 
@@ -42,7 +43,9 @@ class MODULES_EXPORT MediaSession final
   void setMetadata(MediaMetadata*);
   MediaMetadata* metadata() const;
 
-  void setActionHandler(const String& action, V8MediaSessionActionHandler*);
+  void setActionHandler(const String& action,
+                        V8MediaSessionActionHandler*,
+                        ExceptionState&);
 
   // Called by the MediaMetadata owned by |this| when it has updates. Also used
   // internally when a new MediaMetadata object is set.

@@ -13,8 +13,11 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
@@ -156,7 +159,19 @@ void MediaSession::OnMetadataChanged() {
 }
 
 void MediaSession::setActionHandler(const String& action,
-                                    V8MediaSessionActionHandler* handler) {
+                                    V8MediaSessionActionHandler* handler,
+                                    ExceptionState& exception_state) {
+  if (action == "skipad") {
+    if (!origin_trials::SkipAdEnabled(GetExecutionContext())) {
+      exception_state.ThrowTypeError(
+          "The provided value 'skipad' is not a valid enum "
+          "value of type MediaSessionAction.");
+      return;
+    }
+
+    UseCounter::Count(GetExecutionContext(), WebFeature::kMediaSessionSkipAd);
+  }
+
   if (handler) {
     auto add_result = action_handlers_.Set(action, handler);
 

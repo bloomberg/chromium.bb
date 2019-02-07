@@ -647,8 +647,7 @@ void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
 }
 
 void OverlayWindowViews::SetSkipAdButtonVisibility(bool is_visible) {
-  if (base::FeatureList::IsEnabled(media::kSkipAd))
-    show_skip_ad_button_ = is_visible;
+  show_skip_ad_button_ = is_visible;
 }
 
 void OverlayWindowViews::SetPictureInPictureCustomControls(

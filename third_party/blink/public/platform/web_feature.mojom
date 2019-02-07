@@ -2220,6 +2220,7 @@ enum WebFeature {
   kV8RemotePlayback_WatchAvailability_Method = 2780,
   kV8RemotePlayback_Prompt_Method = 2781,
   kLayoutJankExplicitlyRequested = 2782,
+  kMediaSessionSkipAd = 2783,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
