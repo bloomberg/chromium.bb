@@ -4118,7 +4118,6 @@ if (enable_java_templates) {
     action_with_pydeps("${target_name}__wrapper_script") {
       script = "//build/android/gyp/create_bundle_wrapper_script.py"
       inputs = [
-        "//build/android/gyp/bundletool.py",
         _base_module_build_config,
       ]
       outputs = [
@@ -4161,9 +4160,57 @@ if (enable_java_templates) {
     }
 
     group(target_name) {
-      deps = [
+      public_deps = [
         ":${target_name}__bundle",
         ":${target_name}__wrapper_script",
+      ]
+    }
+  }
+
+  # Create an .apks file from an .aab file. The .apks file will contain the
+  # minimal set of .apk files needed for tracking binary size.
+  # The file will be created at "$bundle_path_without_extension.minimal.apks".
+  #
+  # Variables:
+  #   bundle_path: Path to the input .aab file.
+  #
+  # Example:
+  #   create_app_bundle_minimal_apks("minimal_apks") {
+  #     deps = [
+  #       ":bundle_target",
+  #     ]
+  #     bundle_path = "$root_build_dir/apks/Bundle.aab"
+  #   }
+  template("create_app_bundle_minimal_apks") {
+    action_with_pydeps(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "testonly",
+                             ])
+      script = "//build/android/gyp/create_app_bundle_minimal_apks.py"
+      _dir = get_path_info(invoker.bundle_path, "dir")
+      _name = get_path_info(invoker.bundle_path, "name")
+      _output_path = "$_dir/$_name.minimal.apks"
+      outputs = [
+        _output_path,
+      ]
+      inputs = [
+        invoker.bundle_path,
+      ]
+      args = [
+        "--bundle",
+        rebase_path(invoker.bundle_path, root_build_dir),
+        "--output",
+        rebase_path(_output_path, root_build_dir),
+        "--aapt2-path",
+        rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
+        "--keystore-path",
+        rebase_path(android_keystore_path, root_build_dir),
+        "--keystore-name",
+        android_keystore_name,
+        "--keystore-password",
+        android_keystore_password,
       ]
     }
   }

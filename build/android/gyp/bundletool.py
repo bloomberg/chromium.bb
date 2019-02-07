@@ -8,6 +8,7 @@
 Bundletool is distributed as a versioned jar file. This script abstracts the
 location and version of this jar file, as well as the JVM invokation."""
 
+import logging
 import os
 import subprocess
 import sys
@@ -24,6 +25,7 @@ BUNDLETOOL_JAR_PATH = os.path.join(
 
 def RunBundleTool(args):
   args = ['java', '-jar', BUNDLETOOL_JAR_PATH] + args
+  logging.debug(' '.join(args))
   subprocess.check_call(args)
 
 if __name__ == '__main__':

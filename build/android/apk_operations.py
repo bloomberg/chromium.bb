@@ -96,25 +96,25 @@ BundleGenerationInfo = collections.namedtuple(
     'keystore_alias')
 
 
-def _GenerateBundleApks(info, universal=False):
+def _GenerateBundleApks(info, output_path, minimal=False, universal=False):
   """Generate an .apks archive from a bundle on demand.
 
   Args:
     info: A BundleGenerationInfo instance.
+    output_path: Path of output .apks archive.
+    minimal: Create the minimal set of apks possible (english-only).
     universal: Whether to create a single APK that contains the contents of all
-      modules.
-  Returns:
-    Path of output .apks archive.
+        modules.
   """
   app_bundle_utils.GenerateBundleApks(
       info.bundle_path,
-      info.bundle_apks_path,
+      output_path,
       info.aapt2_path,
       info.keystore_path,
       info.keystore_password,
       info.keystore_alias,
-      universal)
-  return info.bundle_apks_path
+      universal=universal,
+      minimal=minimal)
 
 
 def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
@@ -1102,8 +1102,10 @@ class _InstallCommand(_Command):
 
   def Run(self):
     if self.is_bundle:
-      bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info)
-      _InstallBundle(self.devices, bundle_apks_path, self.args.package_name,
+      # Store .apks file beside the .aab file so that it gets cached.
+      output_path = self.bundle_generation_info.bundle_apks_path
+      _GenerateBundleApks(self.bundle_generation_info, output_path)
+      _InstallBundle(self.devices, output_path, self.args.package_name,
                      self.args.command_line_flags_file, self.args.module,
                      self.args.fake)
     else:
@@ -1416,21 +1418,24 @@ class _BuildBundleApks(_Command):
   need_device_args = False
 
   def _RegisterExtraArgs(self, group):
-    group.add_argument('--output-apks',
-                       help='Destination path for .apks archive copy.')
+    group.add_argument(
+        '--output-apks', required=True, help='Destination path for .apks file.')
+    group.add_argument(
+        '--minimal',
+        action='store_true',
+        help='Build .apks archive that targets the bundle\'s minSdkVersion and '
+        'contains only english splits. It still contains optional splits.')
     group.add_argument('--universal', action='store_true',
                        help='Build .apks archive containing single APK with '
                             'contents of all splits. NOTE: Won\'t add modules '
                             'with <dist:fusing dist:include="false"/> flag.')
 
   def Run(self):
-    bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info,
-                                           self.args.universal)
-    if self.args.output_apks:
-      try:
-        shutil.copyfile(bundle_apks_path, self.args.output_apks)
-      except shutil.Error as e:
-        logging.exception('Failed to copy .apks archive: %s', e)
+    _GenerateBundleApks(
+        self.bundle_generation_info,
+        self.args.output_apks,
+        minimal=self.args.minimal,
+        universal=self.args.universal)
 
 
 # Shared commands for regular APKs and app bundles.
