@@ -274,7 +274,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
@@ -519,7 +518,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -4910,14 +4908,6 @@ void ChromeContentBrowserClient::CreateWebUsbService(
     mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     return;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // WebUSB is not supported in Apps/Extensions. https://crbug.com/770896
-  if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
-          extensions::kExtensionScheme)) {
-    return;
-  }
-#endif
 
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
