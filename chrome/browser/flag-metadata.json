@@ -37,11 +37,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "ChromeVoxArcSupport",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "PasswordImport",
     "owners": [ "vasilii" ],
     "expiry_milestone": 76
@@ -269,16 +264,6 @@
     "name": "autofill-preview-style",
     "owners": [ "ftirelo" ],
     "expiry_milestone": 73
-  },
-  {
-    "name": "autofill-primary-info-style",
-    "owners": [ "ftirelo" ],
-    "expiry_milestone": 73
-  },
-  {
-    "name": "autofill-rationalize-repeated-server-predictions",
-    "owners": [ "parastoog" ],
-    "expiry_milestone": 71
   },
    {
     "name": "autofill-profile-client-validation",
@@ -597,17 +582,7 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-lock-screen-apps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-mtp-write-support",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "disable-multi-mirroring",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -793,11 +768,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-apps-grid-gap",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-arc-cups-api",
     "owners": [ "luum", "skau" ],
     "expiry_milestone": 76
@@ -873,11 +843,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-autofill-credit-card-upload-google-pay-on-android-branding",
-    "owners": [ "dlkumar@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-autofill-import-non-focusable-credit-card-forms",
     "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
     "expiry_milestone": 76
@@ -889,11 +854,6 @@
   },
   {
     "name": "enable-autofill-manual-fallback",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-autofill-native-dropdown-views",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1053,11 +1013,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-continue-reading",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-credit-card-assist",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1078,18 +1033,8 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-custom-feedback-ui",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-custom-mac-paper-sizes",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-data-reduction-proxy-main-menu",
-    // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {
@@ -1104,11 +1049,6 @@
   },
   {
     "name": "enable-data-reduction-proxy-with-network-service",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-datasaver-prompt",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1148,17 +1088,7 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-drag-apps-in-tablet-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-drag-tabs-in-tablet-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-draw-occlusion",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1174,11 +1104,6 @@
   },
   {
     "name": "enable-embedded-extension-options",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-emoji-context-menu",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1233,11 +1158,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-experimental-crostini-ui",
-    "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-experimental-productivity-features",
     "owners": [ "feature-control@chromium.org" ],
     "expiry_milestone": 76
@@ -1249,11 +1169,6 @@
   },
   {
     "name": "enable-first-run-ui-transitions",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-floating-virtual-keyboard",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1279,11 +1194,6 @@
   },
   {
     "name": "enable-future-v8-vm-features",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-gamepad-extensions",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1473,11 +1383,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-memory-coordinator",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-message-center-new-style-notification",
     "owners": [ "knollr", "peter" ],
     "expiry_milestone": 76
@@ -1541,21 +1446,6 @@
     "name": "enable-new-photo-picker",
     "owners": [ "finnur", "peter" ],
     "expiry_milestone": 72
-  },
-  {
-    "name": "enable-new-print-preview",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-new-remote-playback-pipeline",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-new-style-launcher",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-noscript-previews",
@@ -1673,11 +1563,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-overview-swipe-to-close",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-parallel-downloading",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1718,18 +1603,8 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-potentially-annoying-security-features",
-    "owners": [ "security-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-previews-android-omnibox-ui",
     // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-print-preview-register-promos",
-    "owners": [ "skau" ],
     "expiry_milestone": 76
   },
   {
@@ -1864,11 +1739,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-special-locale",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-speculative-service-worker-start-on-query-input",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1964,11 +1834,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-sync-user-consent-separate-type",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-sync-uss-bookmarks",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
@@ -1979,17 +1844,7 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-sync-uss-sessions",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-system-webapps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-tab-modal-js-dialog-android",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1999,24 +1854,9 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-tcp-fast-open",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-text-suggestions-touch-bar",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-touch-drag-drop",
     "owners": ["eirage", "input-dev" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "enable-touchable-app-context-menu",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-touchscreen-calibration",
@@ -2046,11 +1886,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-v8-context-snapshot",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-v8-orinoco",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -2070,11 +1905,6 @@
     "owners": [ "//ui/keyboard/OWNERS" ],
     // Useful for debugging the virtual keyboard on non-tablet devices.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-virtual-keyboard-md-ui",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-virtual-keyboard-ukm",
@@ -2202,17 +2032,7 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-websocket-auth-connection-reuse",
-    "owners": [ "blink-network-dev" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "enable-webvr",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-wifi-credential-sync",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -2362,11 +2182,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "force-unified-consent-bump",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "force-update-menu-type",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
     "expiry_milestone": -1
@@ -2422,11 +2237,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "hide-active-apps-from-shelf",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ignore-gpu-blacklist",
     "owners": [ "kbr", "zmo" ],
     "expiry_milestone": -1
@@ -2444,11 +2254,6 @@
   {
     "name": "incognito-strings",
     // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "infinite-session-restore",
-    "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 76
   },
   {
@@ -2503,11 +2308,6 @@
   },
   {
     "name": "lsd-permission-prompt",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "mac-rtl",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -2583,11 +2383,6 @@
   },
   {
     "name": "network-service-in-process",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "new-audio-rendering-mixing-strategy",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -2678,11 +2473,6 @@
   },
   {
     "name": "offline-pages-in-downloads-home-open-in-cct",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-limitless-prefetching",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -2952,11 +2742,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "quick-unlock-fingerprint",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "quick-unlock-pin",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -3008,11 +2793,6 @@
   },
   {
     "name": "save-page-as-mhtml",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "save-previous-document-resources-until",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -3077,17 +2857,7 @@
     "expiry_milestone": 76
   },
   {
-    "name": "simplified-ntp",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "simplify-https-indicator",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "single-click-autofill",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
