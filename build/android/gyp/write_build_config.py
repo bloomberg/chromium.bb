@@ -1417,6 +1417,13 @@ def main(argv):
         c['main_class'] for c in processor_deps.Direct()]
     deps_info['javac_full_classpath'] = javac_full_classpath
     deps_info['javac_full_interface_classpath'] = javac_full_interface_classpath
+  elif options.type == 'android_app_bundle':
+    # bundles require javac_full_classpath to create .aab.jar.info.
+    javac_full_classpath = set()
+    for d in deps.Direct('android_app_bundle_module'):
+      javac_full_classpath.update(p for p in d['javac_full_classpath'])
+      javac_full_classpath.add(d['jar_path'])
+    deps_info['javac_full_classpath'] = sorted(javac_full_classpath)
 
   if options.type in ('android_apk', 'dist_jar', 'java_binary', 'junit_binary',
       'android_app_bundle_module', 'android_app_bundle'):

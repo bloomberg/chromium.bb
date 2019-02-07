@@ -266,9 +266,6 @@ def _CreateInfoFile(java_files, jar_path, chromium_code, srcjar_files,
 
   This maps fully qualified names for classes to either the java file that they
   are defined in or the path of the srcjar that they came from.
-
-  For apks this also produces a coalesced .apk.jar.info file combining all the
-  .jar.info files of its transitive dependencies.
   """
   output_path = jar_path + '.info'
   logging.info('Start creating info file: %s', output_path)
@@ -290,7 +287,7 @@ def _CreateInfoFile(java_files, jar_path, chromium_code, srcjar_files,
       all_info_data[fully_qualified_name] = java_file
   logging.info('Writing info file: %s', output_path)
   with build_utils.AtomicOutput(output_path) as f:
-    jar_info_utils.WriteJarInfoFile(f.name, all_info_data, srcjar_files)
+    jar_info_utils.WriteJarInfoFile(f, all_info_data, srcjar_files)
   logging.info('Completed info file: %s', output_path)
 
 
