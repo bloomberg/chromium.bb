@@ -71,10 +71,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       base::CommandLine::ForCurrentProcess();
   gpu::GpuPreferences gpu_preferences =
       gpu::gles2::ParseGpuPreferences(command_line);
-  gpu_preferences.single_process =
-      command_line->HasSwitch(switches::kSingleProcess);
-  gpu_preferences.in_process_gpu =
-      command_line->HasSwitch(switches::kInProcessGPU);
   gpu_preferences.disable_accelerated_video_decode =
       command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
   gpu_preferences.disable_accelerated_video_encode =
@@ -105,7 +101,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kGpuStartupDialog);
   gpu_preferences.disable_gpu_watchdog =
       command_line->HasSwitch(switches::kDisableGpuWatchdog) ||
-      (gpu_preferences.single_process || gpu_preferences.in_process_gpu);
+      command_line->HasSwitch(switches::kSingleProcess) ||
+      command_line->HasSwitch(switches::kInProcessGPU);
   gpu_preferences.gpu_sandbox_start_early =
       command_line->HasSwitch(switches::kGpuSandboxStartEarly);
 

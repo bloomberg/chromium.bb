@@ -418,8 +418,8 @@ TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
 
 TEST_F(StructTraitsTest, GpuPreferences) {
   GpuPreferences prefs;
-  prefs.single_process = true;
-  prefs.in_process_gpu = true;
+  prefs.gpu_startup_dialog = true;
+  prefs.disable_gpu_watchdog = true;
 #if defined(OS_WIN)
   const GpuPreferences::VpxDecodeVendors vendor =
       GpuPreferences::VPX_VENDOR_AMD;
@@ -430,8 +430,8 @@ TEST_F(StructTraitsTest, GpuPreferences) {
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   GpuPreferences echo;
   proxy->EchoGpuPreferences(prefs, &echo);
-  EXPECT_TRUE(echo.single_process);
-  EXPECT_TRUE(echo.in_process_gpu);
+  EXPECT_TRUE(echo.gpu_startup_dialog);
+  EXPECT_TRUE(echo.disable_gpu_watchdog);
   EXPECT_TRUE(echo.enable_gpu_driver_debug_logging);
 #if defined(OS_WIN)
   EXPECT_EQ(vendor, echo.enable_accelerated_vpx_decode);

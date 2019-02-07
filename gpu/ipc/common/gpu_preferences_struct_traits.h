@@ -56,8 +56,6 @@ template <>
 struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool Read(gpu::mojom::GpuPreferencesDataView prefs,
                    gpu::GpuPreferences* out) {
-    out->single_process = prefs.single_process();
-    out->in_process_gpu = prefs.in_process_gpu();
     out->disable_accelerated_video_decode =
         prefs.disable_accelerated_video_decode();
     out->disable_accelerated_video_encode =
@@ -132,12 +130,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     return true;
   }
 
-  static bool single_process(const gpu::GpuPreferences& prefs) {
-    return prefs.single_process;
-  }
-  static bool in_process_gpu(const gpu::GpuPreferences& prefs) {
-    return prefs.in_process_gpu;
-  }
   static bool disable_accelerated_video_decode(
       const gpu::GpuPreferences& prefs) {
     return prefs.disable_accelerated_video_decode;
