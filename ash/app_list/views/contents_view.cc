@@ -267,7 +267,7 @@ bool ContentsView::IsShowingSearchResults() const {
 }
 
 void ContentsView::ShowEmbeddedAssistantUI(bool show) {
-  int assistant_page =
+  const int assistant_page =
       GetPageIndexForState(ash::AppListState::kStateEmbeddedAssistant);
   DCHECK_GE(assistant_page, 0);
 
@@ -276,7 +276,14 @@ void ContentsView::ShowEmbeddedAssistantUI(bool show) {
   if (show)
     GetPageView(assistant_page)->RequestFocus();
 
-  SetActiveStateInternal(show ? assistant_page : page_before_search_, show,
+  // Embedded Assistant UI can only be transitioned from/to
+  // |search_result_page_view_|.
+  const int search_results_page =
+      GetPageIndexForState(ash::AppListState::kStateSearchResults);
+  DCHECK_GE(search_results_page, 0);
+  GetPageView(search_results_page)->SetVisible(!show);
+  SetActiveStateInternal(show ? assistant_page : search_results_page,
+                         /*show_search_or_assistant_results=*/true,
                          !AppListView::ShortAnimationsForTesting());
 }
 
@@ -499,8 +506,6 @@ bool ContentsView::Back() {
       ShowSearchResults(false);
       break;
     case ash::AppListState::kStateEmbeddedAssistant:
-      GetSearchBoxView()->ClearSearch();
-      GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
       ShowEmbeddedAssistantUI(false);
       break;
     case ash::AppListState::kInvalidState:  // Falls through.
