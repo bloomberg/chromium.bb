@@ -210,18 +210,6 @@ TEST_F(DWriteFontProxyImplUnitTest, TestFindUniqueFont) {
   }
 }
 
-TEST_F(DWriteFontProxyImplUnitTest, TestFontIndexingTimeout) {
-  impl_.SetSlowDownIndexingForTesting(true);
-  base::ReadOnlySharedMemoryRegion font_table_memory;
-  dwrite_font_proxy().GetUniqueNameLookupTable(&font_table_memory);
-  blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
-
-  for (auto& test_font_name_index : expected_test_fonts) {
-    base::Optional<blink::FontTableMatcher::MatchResult> match_result =
-        font_table_matcher.MatchName(test_font_name_index.first);
-    CHECK(!match_result);
-  }
-}
 
 }  // namespace
 
