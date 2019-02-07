@@ -1186,8 +1186,6 @@ void OmniboxEditModel::OnPopupDataChanged(
     keyword_ = keyword;
     is_keyword_hint_ = is_keyword_hint;
     if (!keyword_was_selected && is_keyword_selected()) {
-      // We just entered keyword mode, so remove the keyword from the input.
-      user_text_ = MaybeStripKeyword(user_text_);
       // Since we entered keyword mode, record the reason. Note that we
       // don't do this simply because the keyword changes, since the user
       // never left keyword mode.
@@ -1233,7 +1231,8 @@ void OmniboxEditModel::OnPopupDataChanged(
 
   const base::string16& user_text =
       user_input_in_progress_ ? user_text_ : view_->GetText();
-  if (keyword_state_changed && is_keyword_selected()) {
+  if (keyword_state_changed && is_keyword_selected() &&
+      inline_autocomplete_text_.empty()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or
     // tab after the keyword name alone would have been be handled in
@@ -1252,16 +1251,6 @@ void OmniboxEditModel::OnPopupDataChanged(
     view_->SetWindowTextAndCaretPos(user_text, 0, false, false);
   } else if (view_->OnInlineAutocompleteTextMaybeChanged(
                  user_text + inline_autocomplete_text_, user_text.length())) {
-    call_controller_onchanged = false;
-  }
-
-  // If |has_temporary_text_| is true, then we previously had a manual selection
-  // but now don't (or |destination_for_temporary_text_change| would have been
-  // non-null).  This can happen when deleting the selected item in the popup.
-  // In this case, we've already reverted the popup to the default match, so we
-  // need to revert ourselves as well.
-  if (has_temporary_text_) {
-    RevertTemporaryText(false);
     call_controller_onchanged = false;
   }
 
@@ -1401,6 +1390,15 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
   if (popup_model())
     popup_model()->OnResultChanged();
+
+  if (!is_keyword_selected() && !is_keyword_hint && !keyword.empty()) {
+    // We just entered keyword mode, so remove the keyword from the input.
+    // We don't call MaybeStripKeyword, as we haven't yet updated our internal
+    // state (keyword_ and is_keyword_hint_), and MaybeStripKeyword checks this.
+    user_text_ =
+        KeywordProvider::SplitReplacementStringFromInput(user_text_, false);
+  }
+
   // OnPopupDataChanged() resets OmniboxController's |current_match_| early
   // on.  Therefore, copy match.inline_autocompletion to a temp to preserve
   // its value across the entire call.
