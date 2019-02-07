@@ -77,9 +77,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
 
-    # All platforms.
-    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=905001)
-
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
@@ -117,6 +114,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/' +
         'generate-mipmap-with-large-base-level.html',
         ['win', 'no_passthrough'], bug=3033) # angle bug ID
+    self.Fail('conformance2/glsl3/tricky-loop-conditions.html',
+        ['win'], bug=1465) # anglebug.com/1465
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -672,6 +671,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=911772)
     self.Flaky('conformance2/textures/canvas/tex-3d-r16f-red-half_float.html',
         ['mac', ('nvidia', 0xfe9)], bug=911772)
+
+    self.Fail('conformance2/glsl3/tricky-loop-conditions.html',
+        ['mac', ('nvidia', 0xfe9)], bug=929398)
 
     # When these fail on this configuration, they fail multiple times in a row.
     self.Fail('deqp/functional/gles3/shaderoperator/*',
