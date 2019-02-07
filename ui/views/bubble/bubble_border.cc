@@ -91,19 +91,23 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   // In MD, there are no arrows, so positioning logic is significantly simpler.
   if (has_arrow(arrow_)) {
     gfx::Rect contents_bounds(contents_size);
-    // Apply the border part of the inset before calculating coordinates because
-    // the border should align with the anchor's border. For the purposes of
-    // positioning, the border is rounded up to a dip, which may mean we have
-    // misalignment in scale factors greater than 1. Borders with custom shadow
-    // elevations do not draw the 1px border.
+    // Always apply the border part of the inset before calculating coordinates,
+    // that ensures the bubble's border is aligned with the anchor's border.
+    // For the purposes of positioning, the border is rounded up to a dip, which
+    // may cause misalignment in scale factors greater than 1.
     // TODO(estade): when it becomes possible to provide px bounds instead of
     // dip bounds, fix this.
+    // Borders with custom shadow elevations do not draw the 1px border.
     const gfx::Insets border_insets =
         shadow_ == NO_ASSETS || md_shadow_elevation_.has_value()
             ? gfx::Insets()
             : gfx::Insets(kBorderThicknessDip);
     const gfx::Insets shadow_insets = GetInsets() - border_insets;
     contents_bounds.Inset(-border_insets);
+    // If |avoid_shadow_overlap_| is true, the shadow part of the inset is also
+    // applied now, to ensure that the shadow itself doesn't overlap the anchor.
+    if (avoid_shadow_overlap_)
+      contents_bounds.Inset(-shadow_insets);
     switch (arrow_) {
       case TOP_LEFT:
         contents_bounds += anchor_rect.bottom_left() - contents_bounds.origin();
@@ -156,7 +160,8 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     // used to position the bubble origin according to |anchor_rect|.
     DCHECK((shadow_ != NO_ASSETS && shadow_ != NO_SHADOW) ||
            shadow_insets.IsEmpty());
-    contents_bounds.Inset(-shadow_insets);
+    if (!avoid_shadow_overlap_)
+      contents_bounds.Inset(-shadow_insets);
     // |arrow_offset_| is used to adjust bubbles that would normally be
     // partially offscreen.
     if (is_arrow_on_horizontal(arrow_))
