@@ -83,8 +83,26 @@ IntPoint AccumulatedScrollOffsetForFixedBackground(
 
 }  // anonymous namespace
 
-void BackgroundImageGeometry::SetNoRepeatX(LayoutUnit x_offset,
+bool NeedsFullSizeDestination(const FillLayer& fill_layer) {
+  // When dealing with a mask, the dest rect needs to maintain the full size
+  // and the mask should be expanded to fill it out. This allows the mask to
+  // correctly mask the entire area it is meant to. This is unnecessary on the
+  // last layer, so the normal background path is taken for efficiency when
+  // creating the paint shader later on.
+  return fill_layer.GetType() == EFillLayerType::kMask && fill_layer.Next() &&
+         fill_layer.Composite() != kCompositeSourceOver;
+}
+
+void BackgroundImageGeometry::SetNoRepeatX(const FillLayer& fill_layer,
+                                           LayoutUnit x_offset,
                                            LayoutUnit snapped_x_offset) {
+  if (NeedsFullSizeDestination(fill_layer)) {
+    SetPhaseX(-x_offset.ToFloat());
+    SetSpaceSize(
+        LayoutSize(unsnapped_dest_rect_.Width(), SpaceSize().Height()));
+    return;
+  }
+
   // The snapped offset may not yet be snapped, so make sure it is an integer.
   snapped_x_offset = LayoutUnit(RoundToInt(snapped_x_offset));
 
@@ -120,8 +138,16 @@ void BackgroundImageGeometry::SetNoRepeatX(LayoutUnit x_offset,
   SetSpaceSize(LayoutSize(LayoutUnit(), SpaceSize().Height()));
 }
 
-void BackgroundImageGeometry::SetNoRepeatY(LayoutUnit y_offset,
+void BackgroundImageGeometry::SetNoRepeatY(const FillLayer& fill_layer,
+                                           LayoutUnit y_offset,
                                            LayoutUnit snapped_y_offset) {
+  if (NeedsFullSizeDestination(fill_layer)) {
+    SetPhaseY(-y_offset.ToFloat());
+    SetSpaceSize(
+        LayoutSize(SpaceSize().Width(), unsnapped_dest_rect_.Height()));
+    return;
+  }
+
   // The snapped offset may not yet be snapped, so make sure it is an integer.
   snapped_y_offset = LayoutUnit(RoundToInt(snapped_y_offset));
 
@@ -978,7 +1004,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
         fill_layer.BackgroundXOrigin() == BackgroundEdgeOrigin::kRight
             ? snapped_available_width - computed_x_position
             : computed_x_position;
-    SetNoRepeatX(unsnapped_box_offset.X() + x_offset,
+    SetNoRepeatX(fill_layer, unsnapped_box_offset.X() + x_offset,
                  snapped_box_offset.X() + snapped_x_offset);
     if (offset_in_background_.X() > tile_size_.Width())
       unsnapped_dest_rect_ = snapped_dest_rect_ = LayoutRect();
@@ -1009,7 +1035,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
         fill_layer.BackgroundYOrigin() == BackgroundEdgeOrigin::kBottom
             ? snapped_available_height - computed_y_position
             : computed_y_position;
-    SetNoRepeatY(unsnapped_box_offset.Y() + y_offset,
+    SetNoRepeatY(fill_layer, unsnapped_box_offset.Y() + y_offset,
                  snapped_box_offset.Y() + snapped_y_offset);
     if (offset_in_background_.Y() > tile_size_.Height())
       unsnapped_dest_rect_ = snapped_dest_rect_ = LayoutRect();
