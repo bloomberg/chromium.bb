@@ -443,9 +443,6 @@ class WebView {
 
   // Suspend and resume ---------------------------------------------------
 
-  // Pausing and unpausing current scheduled tasks.
-  virtual void PausePageScheduledTasks(bool paused) = 0;
-
   // TODO(lfg): Remove this once the refactor of WebView/WebWidget is
   // completed.
   virtual WebWidget* MainFrameWidget() = 0;

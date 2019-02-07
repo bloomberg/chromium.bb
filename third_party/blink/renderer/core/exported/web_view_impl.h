@@ -172,7 +172,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DisableAutoResizeMode() override;
   void PerformPluginAction(const WebPluginAction&, const gfx::Point&) override;
   void AudioStateChanged(bool is_audio_playing) override;
-  void PausePageScheduledTasks(bool paused) override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
