@@ -350,7 +350,7 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyDelegateExtraHeaders) {
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
 
-  proxy_delegate.VerifyOnTunnelHeadersReceived(
+  proxy_delegate.VerifyOnHttp1TunnelHeadersReceived(
       proxy_server, response_header_name, response_header_value);
 }
 
