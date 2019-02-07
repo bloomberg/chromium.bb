@@ -251,6 +251,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_BACK" desc="Label for a back button to return to a previous UI state or screen. Used in multiple contexts. [CHAR-LIMIT=20]">
         Back
       </message>
+      <message name="IDS_CONFIRM" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Confirm
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
