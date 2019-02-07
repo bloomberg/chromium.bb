@@ -88,7 +88,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
         context_->storage()->CreateResponseReader(resource_id);
     mojo::MakeStrongBinding(
         std::make_unique<ServiceWorkerInstalledScriptLoader>(
-            options, std::move(client), std::move(response_reader)),
+            options, std::move(client), std::move(response_reader), version,
+            resource_request.url),
         std::move(request));
     return;
   }
@@ -243,7 +244,8 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
   mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerInstalledScriptLoader>(
           options, std::move(client),
-          context_->storage()->CreateResponseReader(new_resource_id)),
+          context_->storage()->CreateResponseReader(new_resource_id), version,
+          resource_request.url),
       std::move(request));
 }
 }  // namespace content
