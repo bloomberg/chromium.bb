@@ -26,7 +26,7 @@ namespace {
 void LoadDefaultImage(const content::URLDataSource::GotDataCallback& callback) {
   base::StringPiece contents =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-          IDR_APP_DEFAULT_ICON, ui::SCALE_FACTOR_100P);
+          IDR_APP_DEFAULT_ICON, GetPrimaryDisplayUIScaleFactor());
 
   base::RefCountedBytes* image_bytes = new base::RefCountedBytes();
   image_bytes->data().assign(contents.data(),

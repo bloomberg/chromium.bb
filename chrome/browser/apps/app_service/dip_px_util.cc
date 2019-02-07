@@ -7,8 +7,14 @@
 #include <cmath>
 
 #include "base/numerics/safe_conversions.h"
+#include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+
+// TODO(crbug.com/826982): plumb through enough information to use one of
+// Screen::GetDisplayNearest{Window/View/Point}. That way in multi-monitor
+// setups where one screen is hidpi and the other one isn't, we don't always do
+// the wrong thing.
 
 namespace {
 
@@ -32,6 +38,10 @@ int ConvertDipToPx(int dip) {
 int ConvertPxToDip(int px) {
   return base::saturated_cast<int>(
       std::floor(static_cast<float>(px) / GetPrimaryDisplayScaleFactor()));
+}
+
+ui::ScaleFactor GetPrimaryDisplayUIScaleFactor() {
+  return ui::GetSupportedScaleFactor(GetPrimaryDisplayScaleFactor());
 }
 
 }  // namespace apps

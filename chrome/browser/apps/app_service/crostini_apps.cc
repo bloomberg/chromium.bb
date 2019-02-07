@@ -8,6 +8,7 @@
 
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/apps/app_service/launch_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -76,8 +77,7 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
     }
 
     if (icon_key->icon_type == apps::mojom::IconType::kCrostini) {
-      // TODO(crbug.com/826982): don't hard-code SCALE_FACTOR_100P.
-      auto scale_factor = ui::ScaleFactor::SCALE_FACTOR_100P;
+      auto scale_factor = GetPrimaryDisplayUIScaleFactor();
 
       // Try loading the icon from an on-disk cache. If that fails, fall back
       // to LoadIconFromVM.
