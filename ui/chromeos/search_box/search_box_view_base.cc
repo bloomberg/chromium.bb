@@ -18,6 +18,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -204,6 +205,15 @@ class SearchBoxTextfield : public views::Textfield {
     // Clear selection and set the caret to the end of the text.
     ClearSelection();
     Textfield::OnBlur();
+
+    // Search box focus announcement overlaps with opening or closing folder
+    // alert, so we ignored the search box in those cases. Now reset the flag
+    // here.
+    auto& accessibility = GetViewAccessibility();
+    if (accessibility.IsIgnored()) {
+      accessibility.OverrideIsIgnored(false);
+      accessibility.NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged);
+    }
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {

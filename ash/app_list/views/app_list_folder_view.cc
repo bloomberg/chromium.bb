@@ -35,6 +35,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -471,6 +472,9 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
+
+  announcement_view_ = new views::View();
+  AddChildView(announcement_view_);
 }
 
 AppListFolderView::~AppListFolderView() {
@@ -486,10 +490,7 @@ AppListFolderView::~AppListFolderView() {
 }
 
 void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
-  accessible_name_ = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-      IDS_APP_LIST_FOLDER_OPEN_FOLDER_ACCESSIBILE_NAME);
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-
+  CreateOpenOrCloseFolderAccessibilityEvent(true);
   folder_item_ = folder;
   items_grid_view_->SetItemList(folder_item_->item_list());
   folder_header_view_->SetFolderItem(folder_item_);
@@ -803,11 +804,8 @@ void AppListFolderView::HideViewImmediately() {
 }
 
 void AppListFolderView::CloseFolderPage() {
-  accessible_name_ = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-      IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME);
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-
   GiveBackFocusToSearchBox();
+  CreateOpenOrCloseFolderAccessibilityEvent(false);
   if (items_grid_view()->dragging())
     items_grid_view()->EndDrag(true);
   items_grid_view()->ClearAnySelectedView();
@@ -824,7 +822,6 @@ void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
 
 void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kGenericContainer;
-  node_data->SetName(accessible_name_);
 }
 
 void AppListFolderView::NavigateBack(AppListFolderItem* item,
@@ -833,7 +830,11 @@ void AppListFolderView::NavigateBack(AppListFolderItem* item,
 }
 
 void AppListFolderView::GiveBackFocusToSearchBox() {
-  contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
+  // Avoid announcing search box focus since it is overlapped with closing
+  // folder alert.
+  auto* search_box = contents_view_->GetSearchBoxView()->search_box();
+  search_box->GetViewAccessibility().OverrideIsIgnored(true);
+  search_box->RequestFocus();
 }
 
 void AppListFolderView::SetItemName(AppListFolderItem* item,
@@ -843,6 +844,14 @@ void AppListFolderView::SetItemName(AppListFolderItem* item,
 
 ui::Compositor* AppListFolderView::GetCompositor() {
   return GetWidget()->GetCompositor();
+}
+
+void AppListFolderView::CreateOpenOrCloseFolderAccessibilityEvent(bool open) {
+  announcement_view_->GetViewAccessibility().OverrideName(
+      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+          open ? IDS_APP_LIST_FOLDER_OPEN_FOLDER_ACCESSIBILE_NAME
+               : IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME));
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 }  // namespace app_list
