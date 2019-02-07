@@ -258,9 +258,9 @@ class EntryList {
    * @param {string} label: Label to be used when displaying to user, it should
    *    already translated.
    * @param {VolumeManagerCommon.RootType} rootType root type.
-   *
+   * @param {string} devicePath Device path
    */
-  constructor(label, rootType) {
+  constructor(label, rootType, devicePath = '') {
     /**
      * @private {string} label: Label to be used when displaying to user, it
      *      should be already translated. */
@@ -268,6 +268,12 @@ class EntryList {
 
     /** @private {VolumeManagerCommon.RootType} rootType root type. */
     this.rootType_ = rootType;
+
+    /**
+     * @private {string} devicePath Path belonging to the external media
+     * device. Partitions on the same external drive have the same device path.
+     */
+    this.devicePath_ = devicePath;
 
     /**
      * @private {!Array<!Entry|!FilesAppEntry>} children entries of
@@ -317,6 +323,11 @@ class EntryList {
    * @override
    */
   toURL() {
+    // There may be multiple entry lists. Append the device path to return
+    // a unique identifiable URL for the entry list.
+    if (this.devicePath_) {
+      return 'entry-list://' + this.rootType + '/' + this.devicePath_;
+    }
     return 'entry-list://' + this.rootType;
   }
 

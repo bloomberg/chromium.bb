@@ -75,7 +75,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
 
   if (util.isFakeEntry(entry)) {
     components.push(new LocationLine.PathComponent(
-        util.getRootTypeLabel(locationInfo), entry.toURL(),
+        util.getEntryLabel(locationInfo, entry), entry.toURL(),
         /** @type {!FakeEntry} */ (entry)));
     return components;
   }
