@@ -282,6 +282,16 @@ histogram would remain useful, the expiration should be extended accordingly
 before it becomes expired. If histogram you care about already expired, see
 [Expired Histogram Whitelist](#Expired-histogram-whitelist).
 
+In **rare** cases, the expiry can be set to "never". This is used to denote
+metrics of critical importance that are, typically, used for other reports.
+For example, all metrics of the "[heartbeat](https://uma.googleplex.com/p/chrome/variations)"
+are set to never expire.  All metrics that never expire must have an XML
+comment describing why so that it can be audited in the future.
+
+```
+<!-- expires-never: "heartbeat" metric (internal: go/uma-heartbeats) -->
+```
+
 For all the new histograms the use of expiry attribute will be strongly
 encouraged and enforced by Chrome metrics team through reviews.
 
