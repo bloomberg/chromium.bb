@@ -22,8 +22,6 @@
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
-      # chromium.android.fyi
-      'x64 Device Tester',
     ],
   },
   'angle_end2end_tests': {
@@ -306,9 +304,6 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
-      # chromium.android.fyi
-      'x64 Device Tester',
-      'x86 Cloud Tester',
       # chromium.clang
       'ToTAndroid',
       'ToTAndroidCFI',
@@ -787,8 +782,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'KitKat Phone Tester (dbg)',
-      # chromium.android.fyi
-      'x86 Cloud Tester',
       # chromium.memory
       'Android CFI',
       # chromium.clang
@@ -857,8 +850,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'KitKat Phone Tester (dbg)',
-      # chromium.android.fyi
-      'x86 Cloud Tester',
       # chromium.memory
       'Android CFI',
       # chromium.clang
@@ -1103,16 +1094,6 @@
           'shards': 15,
         },
       },
-      # chromium.android.fyi
-      'x86 Cloud Tester': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'shards': 1,
-        },
-      },
       # chromium.fyi
       'linux-chromium-tests-staging-tests': {
         'args': [
@@ -1290,13 +1271,6 @@
     'remove_from': [
       # chromium.win
       'Win10 Tests x64',
-    ],
-  },
-  'vr_android_unittests': {
-    'remove_from': [
-      # chromium.android.fyi
-      'x64 Device Tester',
-      'x86 Cloud Tester',
     ],
   },
   'vr_pixeltests': {
