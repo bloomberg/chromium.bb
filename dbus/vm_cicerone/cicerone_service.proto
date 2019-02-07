@@ -207,7 +207,7 @@ message LaunchVshdResponse {
   uint32 cid = 3;
 }
 
-// Request to get information about a Linux package file in the container.
+// Request to get information about a Linux package in the container.
 message LinuxPackageInfoRequest {
   // Name of the VM to target.
   string vm_name = 1;
@@ -220,6 +220,10 @@ message LinuxPackageInfoRequest {
 
   // Path to the package file (e.g. .deb) in the container's filesystem.
   string file_path = 4;
+
+  // Name (not package_id) of package to look up. Used when |file_path| is
+  // empty.
+  string package_name = 5;
 }
 
 // Response sent back from a GetLinuxPackageInfo call.
@@ -255,7 +259,7 @@ message LinuxPackageInfoResponse {
   string summary = 8;
 }
 
-// Request to install a Linux package file in the container.
+// Request to install a Linux package in the container.
 message InstallLinuxPackageRequest {
   // Name of the VM to target.
   string vm_name = 1;
@@ -268,6 +272,10 @@ message InstallLinuxPackageRequest {
 
   // Path to the package file (e.g. .deb) in the container's filesystem.
   string file_path = 4;
+
+  // Package ID to install in the form "package_name;version;arch;data". Used
+  // when |file_path| is empty.
+  string package_id = 5;
 }
 
 // Response sent back from a InstallLinuxPackage call.
@@ -798,40 +806,6 @@ message AppSearchResponse {
   }
   // List of valid packages matching the search query.
   repeated AppSearchResult packages = 1;
-}
-
-// Request to install a Linux package from an APT repository. Returns an
-// InstallLinuxPackageReponse message.
-message InstallLinuxPackageFromAptRequest {
-  // Name of the VM to target.
-  string vm_name = 1;
-
-  // Name of the container within the VM to target.
-  string container_name = 2;
-
-  // The owner of the VM and container.
-  string owner_id = 3;
-
-  // Package ID to install in the form "package_name;version;arch;data".
-  string package_id = 4;
-}
-
-// Request to lookup a Linux package via its name, returns package info,
-// which includes the package's package_id. Returns a LinuxPackageInfoResponse
-// message.
-message LinuxPackageInfoFromAptRequest {
-  // Name of the VM to target.
-  string vm_name = 1;
-
-  // Name of the container within the VM to target, if empty the default
-  // container name will be used.
-  string container_name = 2;
-
-  // The owner of the vm and container.
-  string owner_id = 3;
-
-  // Name (not package_id) of package to look up.
-  string package_name = 4;
 }
 
 message ExportLxdContainerRequest {
