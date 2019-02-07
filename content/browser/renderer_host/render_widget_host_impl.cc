@@ -2424,6 +2424,7 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
   WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingStart,
       blink::kWebGestureDeviceSyntheticAutoscroll);
+  event.SetPositionInWidget(autoscroll_start_position_);
   event.data.fling_start.velocity_x = velocity.x();
   event.data.fling_start.velocity_y = velocity.y();
 
@@ -2442,6 +2443,7 @@ void RenderWidgetHostImpl::OnAutoscrollEnd() {
       WebInputEvent::kGestureFlingCancel,
       blink::kWebGestureDeviceSyntheticAutoscroll);
   cancel_event.data.fling_cancel.prevent_boosting = true;
+  cancel_event.SetPositionInWidget(autoscroll_start_position_);
 
   ForwardGestureEventWithLatencyInfo(
       cancel_event, ui::LatencyInfo(ui::SourceEventType::OTHER));
