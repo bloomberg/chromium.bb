@@ -27,7 +27,6 @@
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -86,18 +85,10 @@ AppListControllerImpl::AppListControllerImpl()
 
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->mru_window_tracker()->AddObserver(this);
 }
 
-AppListControllerImpl::~AppListControllerImpl() {
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
-  model_.RemoveObserver(this);
-}
+AppListControllerImpl::~AppListControllerImpl() {}
 
 void AppListControllerImpl::SetClient(mojom::AppListClientPtr client_ptr) {
   client_ = std::move(client_ptr);
@@ -451,6 +442,10 @@ void AppListControllerImpl::Show(int64_t display_id,
   }
 
   presenter_.Show(display_id, event_time_stamp);
+
+  // AppListControllerImpl::Show is called in ash at the first time of showing
+  // app list view. So check whether the expand arrow view should be visible.
+  UpdateExpandArrowVisibility();
 }
 
 void AppListControllerImpl::UpdateYPositionAndOpacity(
@@ -545,6 +540,20 @@ void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
                                            use_slide_to_exit_overview_);
 }
 
+// Stop observing at the beginning of ~Shell to avoid unnecessary work during
+// Shell shutdown.
+void AppListControllerImpl::OnShellDestroying() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
+  Shell::Get()->mru_window_tracker()->RemoveObserver(this);
+  model_.RemoveObserver(this);
+}
+
 void AppListControllerImpl::OnTabletModeStarted() {
   if (presenter_.GetTargetVisibility()) {
     DCHECK(IsVisible());
@@ -614,6 +623,10 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
     ShowHomeLauncher();
 }
 
+void AppListControllerImpl::OnWindowUntracked(aura::Window* untracked_window) {
+  UpdateExpandArrowVisibility();
+}
+
 void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
 }
@@ -675,6 +688,23 @@ ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
 
 bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
   return presenter_.IsShowingEmbeddedAssistantUI();
+}
+
+void AppListControllerImpl::UpdateExpandArrowVisibility() {
+  bool should_show = false;
+
+  // Hide the expand arrow view when tablet mode is enabled and there is no
+  // activatable window.
+  if (IsTabletMode()) {
+    should_show = !ash::Shell::Get()
+                       ->mru_window_tracker()
+                       ->BuildWindowForCycleList()
+                       .empty();
+  } else {
+    should_show = true;
+  }
+
+  presenter_.SetExpandArrowViewVisibility(should_show);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

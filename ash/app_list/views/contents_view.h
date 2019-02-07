@@ -178,6 +178,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // is also applied to search box window.
   float GetAppListMainViewScale() const;
 
+  // Show/hide the expand arrow view button when contents view is in fullscreen
+  // and tablet mode is enabled.
+  void SetExpandArrowViewVisibility(bool show);
+
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.

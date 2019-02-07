@@ -25,6 +25,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
@@ -54,7 +55,8 @@ class ASH_EXPORT AppListControllerImpl
       public keyboard::KeyboardControllerObserver,
       public WallpaperControllerObserver,
       public DefaultVoiceInteractionObserver,
-      public WindowTreeHostManager::Observer {
+      public WindowTreeHostManager::Observer,
+      public ash::MruWindowTracker::Observer {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -206,6 +208,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
+  void OnShellDestroying() override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -227,6 +230,9 @@ class ASH_EXPORT AppListControllerImpl
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
+  // MruWindowTracker::Observer:
+  void OnWindowUntracked(aura::Window* untracked_window) override;
+
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // Performs the 'back' action for the active page.
@@ -244,6 +250,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
+
+  // Update the visibility of expand arrow view.
+  void UpdateExpandArrowVisibility();
 
  private:
   syncer::StringOrdinal GetOemFolderPos();

@@ -475,6 +475,9 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     window2_->ResetOpacityAndTransform();
 
   if (is_final_state_show) {
+    // Show or hide the expand arrow view.
+    app_list_controller_->UpdateExpandArrowVisibility();
+
     std::vector<aura::Window*> windows_to_hide_minimize;
     windows_to_hide_minimize.push_back(GetWindow1());
 
