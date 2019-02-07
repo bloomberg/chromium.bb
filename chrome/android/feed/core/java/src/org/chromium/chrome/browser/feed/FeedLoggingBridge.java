@@ -10,6 +10,8 @@ import com.google.android.libraries.feed.api.stream.ScrollListener;
 import com.google.android.libraries.feed.host.logging.ActionType;
 import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
+import com.google.android.libraries.feed.host.logging.ElementLoggingData;
+import com.google.android.libraries.feed.host.logging.ElementType;
 import com.google.android.libraries.feed.host.logging.SpinnerType;
 
 import org.chromium.base.annotations.JNINamespace;
@@ -146,24 +148,6 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     }
 
     @Override
-    public void onInterestHeaderView(ContentLoggingData data) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeFeedLoggingBridge == 0) return;
-
-        // TODO(https://crbug.com/924739): Implementation.
-    }
-
-    @Override
-    public void onInterestHeaderClicked(ContentLoggingData data) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeFeedLoggingBridge == 0) return;
-
-        // TODO(https://crbug.com/924739): Implementation.
-    }
-
-    @Override
     public void onOpenedWithContent(int timeToPopulateMs, int contentCount) {
         // Bridge could have been destroyed for policy when this is called.
         // See https://crbug.com/901414.
@@ -201,6 +185,16 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onPietFrameRenderingEvent(List<Integer> pietErrorCodes) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onVisualElementClicked(ElementLoggingData data, @ElementType int elementType) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onVisualElementViewed(ElementLoggingData data, @ElementType int elementType) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
