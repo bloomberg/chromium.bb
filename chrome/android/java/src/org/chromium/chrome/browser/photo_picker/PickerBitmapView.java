@@ -282,6 +282,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             mIconView.getLayoutParams().height = imageSizeWithBorders();
             mIconView.getLayoutParams().width = imageSizeWithBorders();
             addPaddingToParent(mIconView, mBorder);
+        } else {
+            mIconView.getLayoutParams().height = mCategoryView.getImageSize();
+            mIconView.getLayoutParams().width = mCategoryView.getImageSize();
         }
 
         boolean noImageWasLoaded = !mImageLoaded;
