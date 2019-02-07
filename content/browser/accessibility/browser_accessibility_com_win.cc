@@ -1799,16 +1799,6 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
         FireNativeEvent(IA2_EVENT_TEXT_INSERTED);
       }
     }
-
-    // Changing a static text node can affect the IA2 hypertext of its parent
-    // and, if the node is in a simple text control, the hypertext of the text
-    // control itself.
-    BrowserAccessibilityComWin* parent =
-        ToBrowserAccessibilityComWin(owner()->PlatformGetParent());
-    if (parent && (parent->owner()->HasState(ax::mojom::State::kEditable) ||
-                   owner()->IsTextOnlyObject())) {
-      parent->owner()->UpdatePlatformAttributes();
-    }
   }
 
   old_win_attributes_.reset(nullptr);
