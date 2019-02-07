@@ -38,7 +38,7 @@ class BASE_EXPORT AnyInternal {
   constexpr explicit AnyInternal(const TypeOps* type_ops)
       : type_ops_(type_ops), union_({}) {}
 
-  constexpr void operator=(AnyInternal&& other) noexcept {
+  void operator=(AnyInternal&& other) noexcept {
     reset();
     if (other.type_ops_)
       other.type_ops_->move_fn_ptr(&other, this);

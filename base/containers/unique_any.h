@@ -229,7 +229,7 @@ class BASE_EXPORT unique_any {
     return *this;
   }
 
-  constexpr unique_any& operator=(unique_any&& other) noexcept {
+  unique_any& operator=(unique_any&& other) noexcept {
     internal_ = std::move(other.internal_);
     return *this;
   }
