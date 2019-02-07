@@ -147,7 +147,7 @@
             android:id="@+id/negative_button"
             style="@style/TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
             tools:text="@string/no_thanks"/>
@@ -160,7 +160,7 @@
             android:id="@+id/positive_button"
             style="@style/FilledButton.Flat"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
             tools:text="@string/signin_accept_button"/>
@@ -168,7 +168,7 @@
             android:id="@+id/more_button"
             style="@style/TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:drawableEnd="@drawable/down_arrow"
             android:drawablePadding="8dp"
             android:visibility="gone"
