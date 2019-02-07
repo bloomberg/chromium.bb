@@ -76,13 +76,17 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self._model = None
     self.buildstore = FakeBuildStore()
 
-  def CreateMockOverlay(self, overlay):
+  def CreateMockOverlay(self, overlay, build_root=None):
     """Helper for creating an overlay in the fake buildroot.
 
     Args:
       overlay: The overlay name to create. Usually the board name.
+      build_root: The buildroot in which to create the mock overlay.
     """
-    layout_path = os.path.join(self.build_root, 'src', 'overlays',
+    if not build_root:
+      build_root = self.build_root
+
+    layout_path = os.path.join(build_root, 'src', 'overlays',
                                'overlay-%s' % overlay,
                                'metadata', 'layout.conf')
 
@@ -237,6 +241,10 @@ class AbstractStageTestCase(StageTestCase):
   Abstract base class that sets up the build config and options with some
   default values for testing BuilderStage and its derivatives.
   """
+  def setUp(self):
+    # Value which will be populated as the stage runs, so that tests can examine
+    # it's state afterwards.
+    self.stage = None
 
   def ConstructStage(self, **kwargs):
     """Returns an instance of the stage to be tested.
@@ -257,8 +265,8 @@ class AbstractStageTestCase(StageTestCase):
     # Stage construction is usually done as late as possible because the tests
     # set up the build configuration and options used in constructing the stage.
     results_lib.Results.Clear()
-    stage = self.ConstructStage(**kwargs)
-    stage.Run()
+    self.stage = self.ConstructStage(**kwargs)
+    self.stage.Run()
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
 
 
