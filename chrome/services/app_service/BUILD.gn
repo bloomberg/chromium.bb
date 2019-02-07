@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "app_service.cc",
@@ -35,9 +33,4 @@ source_set("unit_tests") {
     ":lib",
     "//testing/gtest",
   ]
-}
-
-service_manifest("manifest") {
-  name = "apps"
-  source = "manifest.json"
 }

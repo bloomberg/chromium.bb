@@ -7,7 +7,6 @@ import("//build/config/ui.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/ozone/ozone.gni")
@@ -2635,9 +2634,18 @@ proto_library("device_configuration_proto") {
   generate_python = false
 }
 
-service_manifest("ash_pref_connector_manifest") {
-  name = "ash_pref_connector"
-  source = "prefs/ash_pref_connector_manifest.json"
+source_set("ash_pref_connector_manifest") {
+  sources = [
+    "prefs/ash_pref_connector_manifest.cc",
+    "prefs/ash_pref_connector_manifest.h",
+  ]
+
+  deps = [
+    "//ash/public/cpp",
+    "//base",
+    "//services/preferences/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
 }
 
 device_policy_remover_path = "$target_gen_dir/device_policy_remover.cc"

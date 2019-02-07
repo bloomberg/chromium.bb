@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 enable_service = use_cups && is_chromeos
 
@@ -36,9 +35,4 @@ source_set("lib") {
   } else {
     sources += [ "fake_ipp_parser.cc" ]
   }
-}
-
-service_manifest("manifest") {
-  name = "cups_ipp_parser"
-  source = "manifest.json"
 }

@@ -30,24 +30,39 @@ source_set("cpp") {
   }
 }
 
-source_set("unit_tests") {
-  testonly = true
-
+source_set("manifest") {
   sources = [
-    "sandboxed_dmg_analyzer_mac_unittest.cc",
-    "sandboxed_rar_analyzer_unittest.cc",
-    "sandboxed_zip_analyzer_unittest.cc",
+    "manifest.cc",
+    "manifest.h",
   ]
 
   deps = [
-    ":cpp",
-    "//chrome/services/file_util:lib",
-    "//crypto:platform",
-    "//services/service_manager/public/cpp/test:test_support",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
+    "//base",
+    "//chrome/services/file_util/public/mojom",
+    "//services/service_manager/public/cpp",
   ]
+}
+
+if (safe_browsing_mode == 1) {
+  source_set("unit_tests") {
+    testonly = true
+
+    sources = [
+      "sandboxed_dmg_analyzer_mac_unittest.cc",
+      "sandboxed_rar_analyzer_unittest.cc",
+      "sandboxed_zip_analyzer_unittest.cc",
+    ]
+
+    deps = [
+      ":cpp",
+      "//chrome/services/file_util:lib",
+      "//crypto:platform",
+      "//services/service_manager/public/cpp/test:test_support",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
 }
 
 if (is_chromeos) {
