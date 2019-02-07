@@ -37,12 +37,10 @@ bool SupportsType(const WebPluginInfo& plugin,
   if (mime_type.empty())
     return false;
 
-  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_info = plugin.mime_types[i];
+  for (const WebPluginMimeType& mime_info : plugin.mime_types) {
     if (net::MatchesMimeType(mime_info.mime_type, mime_type)) {
-      if (!allow_wildcard && mime_info.mime_type == "*")
-        continue;
-      return true;
+      if (allow_wildcard || mime_info.mime_type != "*")
+        return true;
     }
   }
   return false;
@@ -55,10 +53,9 @@ bool SupportsType(const WebPluginInfo& plugin,
 bool SupportsExtension(const WebPluginInfo& plugin,
                        const std::string& extension,
                        std::string* actual_mime_type) {
-  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_type = plugin.mime_types[i];
-    for (size_t j = 0; j < mime_type.file_extensions.size(); ++j) {
-      if (mime_type.file_extensions[j] == extension) {
+  for (const WebPluginMimeType& mime_type : plugin.mime_types) {
+    for (const std::string& file_extension : mime_type.file_extensions) {
+      if (file_extension == extension) {
         *actual_mime_type = mime_type.mime_type;
         return true;
       }
@@ -111,10 +108,8 @@ void PluginList::GetInternalPlugins(
     std::vector<WebPluginInfo>* internal_plugins) {
   base::AutoLock lock(lock_);
 
-  for (std::vector<WebPluginInfo>::iterator it = internal_plugins_.begin();
-       it != internal_plugins_.end(); ++it) {
-    internal_plugins->push_back(*it);
-  }
+  for (const auto& plugin : internal_plugins_)
+    internal_plugins->push_back(plugin);
 }
 
 bool PluginList::ReadPluginInfo(const base::FilePath& filename,
@@ -156,10 +151,9 @@ void PluginList::LoadPlugins() {
   std::vector<base::FilePath> plugin_paths;
   GetPluginPathsToLoad(&plugin_paths);
 
-  for (std::vector<base::FilePath>::const_iterator it = plugin_paths.begin();
-       it != plugin_paths.end(); ++it) {
+  for (const base::FilePath& path : plugin_paths) {
     WebPluginInfo plugin_info;
-    LoadPluginIntoPluginList(*it, &new_plugins, &plugin_info);
+    LoadPluginIntoPluginList(path, &new_plugins, &plugin_info);
   }
 
   SetPlugins(new_plugins);
@@ -172,12 +166,11 @@ bool PluginList::LoadPluginIntoPluginList(const base::FilePath& path,
     return false;
 
   // TODO(piman): Do we still need this after NPAPI removal?
-  for (size_t i = 0; i < plugin_info->mime_types.size(); ++i) {
+  for (const content::WebPluginMimeType& mime_type : plugin_info->mime_types) {
     // TODO: don't load global handlers for now.
     // WebKit hands to the Plugin before it tries
     // to handle mimeTypes on its own.
-    const std::string& mime_type = plugin_info->mime_types[i].mime_type;
-    if (mime_type == "*")
+    if (mime_type.mime_type == "*")
       return false;
   }
   plugins->push_back(*plugin_info);
@@ -194,8 +187,7 @@ void PluginList::GetPluginPathsToLoad(
     extra_plugin_paths = extra_plugin_paths_;
   }
 
-  for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
-    const base::FilePath& path = extra_plugin_paths[i];
+  for (const base::FilePath& path : extra_plugin_paths) {
     if (base::ContainsValue(*plugin_paths, path))
       continue;
     plugin_paths->push_back(path);
@@ -254,11 +246,11 @@ void PluginList::GetPluginInfoArray(
   std::set<base::FilePath> visited_plugins;
 
   // Add in plugins by mime type.
-  for (size_t i = 0; i < plugins_list_.size(); ++i) {
-    if (SupportsType(plugins_list_[i], mime_type, allow_wildcard)) {
-      base::FilePath path = plugins_list_[i].path;
+  for (const WebPluginInfo& plugin : plugins_list_) {
+    if (SupportsType(plugin, mime_type, allow_wildcard)) {
+      const base::FilePath& path = plugin.path;
       if (visited_plugins.insert(path).second) {
-        info->push_back(plugins_list_[i]);
+        info->push_back(plugin);
         if (actual_mime_types)
           actual_mime_types->push_back(mime_type);
       }
@@ -273,18 +265,19 @@ void PluginList::GetPluginInfoArray(
   // as when the user doesn't have the Flash plugin enabled.
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
-  if (last_dot != std::string::npos && mime_type.empty()) {
-    std::string extension =
-        base::ToLowerASCII(base::StringPiece(path).substr(last_dot + 1));
-    std::string actual_mime_type;
-    for (size_t i = 0; i < plugins_list_.size(); ++i) {
-      if (SupportsExtension(plugins_list_[i], extension, &actual_mime_type)) {
-        base::FilePath plugin_path = plugins_list_[i].path;
-        if (visited_plugins.insert(plugin_path).second) {
-          info->push_back(plugins_list_[i]);
-          if (actual_mime_types)
-            actual_mime_types->push_back(actual_mime_type);
-        }
+  if (last_dot == std::string::npos || !mime_type.empty())
+    return;
+
+  std::string extension =
+      base::ToLowerASCII(base::StringPiece(path).substr(last_dot + 1));
+  std::string actual_mime_type;
+  for (const WebPluginInfo& plugin : plugins_list_) {
+    if (SupportsExtension(plugin, extension, &actual_mime_type)) {
+      base::FilePath plugin_path = plugin.path;
+      if (visited_plugins.insert(plugin_path).second) {
+        info->push_back(plugin);
+        if (actual_mime_types)
+          actual_mime_types->push_back(actual_mime_type);
       }
     }
   }
@@ -299,6 +292,6 @@ void PluginList::RemoveExtraPluginPathLocked(
     extra_plugin_paths_.erase(it);
 }
 
-PluginList::~PluginList() {}
+PluginList::~PluginList() = default;
 
 }  // namespace content
