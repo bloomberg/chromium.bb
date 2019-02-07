@@ -170,11 +170,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // Returns whether the focus has been taken from the app window.
   bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
 
-  // Called from the lock screen Web UI when the animation shown on a note
-  // action launch finishes (the animation is started when the lock screen
-  // note state changes to kLaunching).
-  void NewNoteLaunchAnimationDone();
-
   FirstAppRunToastManager* first_app_run_toast_manager() {
     return first_app_run_toast_manager_.get();
   }
@@ -195,11 +190,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // Continues lock screen apps initialization. Should be called when stylus
   // input has been detected.
   void InitializeWithStylusInputPresent();
-
-  // Issues a lock screen note app launch request to |app_manager_|.
-  // Expected to be called only in kLaunching state. In the case the launch is
-  // not successful, the note taking action state will be changed accordingly.
-  void StartLaunchRequest();
 
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
@@ -234,13 +224,6 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
   std::unique_ptr<LockScreenProfileCreator> lock_screen_profile_creator_;
-
-  // Whether sending app launch request to the note taking app (using
-  // |app_manager_|) was delayed until the note action launch animation is
-  // completed by lock screen UI - this is only used with Web UI lock
-  // implementation, and for note action launch requests that don't come from
-  // the lock UI (i.e. stylus removal).
-  bool app_launch_delayed_for_animation_ = false;
 
   // Whether lock screen apps initialization was stopped due to stylus input
   // missing (or stylus not being otherwise enabled). If stylus availability
