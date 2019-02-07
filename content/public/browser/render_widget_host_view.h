@@ -143,9 +143,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual base::string16 GetSelectedText() = 0;
 
   // This only returns non-null on platforms that implement touch
-  // selection editing (TSE), currently Aura and (soon) Android.
-  // TODO(wjmaclean): update this comment when OOPIF TSE is implemented on
-  // Android. https://crbug.com/470662.
+  // selection editing (TSE), currently Aura and Android.
   virtual TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() = 0;
 
