@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,8 +178,12 @@ cr.define('extensions', function() {
     });
   }
 
-  const ActivityLogHistory = Polymer({
-    is: 'activity-log-history',
+  const ActivityLog = Polymer({
+    is: 'extensions-activity-log',
+
+    behaviors: [
+      CrContainerShadowBehavior,
+    ],
 
     properties: {
       /** @type {!string} */
@@ -192,49 +196,78 @@ cr.define('extensions', function() {
        * An array representing the activity log. Stores activities grouped by
        * API call or content script name sorted in descending order of the call
        * count.
-       * @private {!Array<!extensions.ActivityGroup>}
+       * @private
+       * @type {!Array<!extensions.ActivityGroup>}
        */
       activityData_: {
         type: Array,
         value: () => [],
       },
 
-      /** @private {ActivityLogPageState} */
+      /**
+       * @private
+       * @type {ActivityLogPageState}
+       */
       pageState_: {
         type: String,
         value: ActivityLogPageState.LOADING,
       },
 
-      lastSearch: {
+      /**
+       * A promise resolver for any external files waiting for the
+       * GetExtensionActivity API call to finish.
+       * Currently only used for extension_settings_browsertest.cc
+       * @type {!PromiseResolver}
+       */
+      onDataFetched: {type: Object, value: new PromiseResolver()},
+
+      /** @private */
+      lastSearch_: {
         type: String,
-        observer: 'onSearchChanged_',
-      }
+        value: '',
+      },
     },
+
+    /** @private {?number} */
+    navigationListener_: null,
 
     listeners: {
       'delete-activity-log-item': 'deleteItem_',
-    },
-
-    /**
-     * A promise resolver for any external files waiting for the
-     * GetExtensionActivity API call to finish.
-     * Currently only used for extension_settings_browsertest.cc
-     * @private {PromiseResolver}
-     */
-    dataFetchedResolver_: null,
-
-    /**
-     * Expose only the promise of dataFetchedResolver_.
-     * @return {!Promise<void>}
-     */
-    whenDataFetched: function() {
-      return this.dataFetchedResolver_.promise;
+      'view-enter-start': 'onViewEnterStart_',
     },
 
     /** @override */
     attached: function() {
-      this.dataFetchedResolver_ = new PromiseResolver();
-      this.refreshActivities_();
+      // Fetch the activity log for the extension when this page is attached.
+      // This is necesary as the listener below is not fired if the user
+      // navigates directly to the activity log page using url.
+      this.getActivityLog_();
+
+      // Add a listener here so we fetch the activity log whenever a user
+      // navigates to the activity log from another page. This is needed since
+      // this component already exists in the background if a user navigates
+      // away from this page so attached may not be called when a user navigates
+      // back.
+      this.navigationListener_ = extensions.navigation.addListener(newPage => {
+        if (newPage.page === Page.ACTIVITY_LOG) {
+          this.getActivityLog_();
+        }
+      });
+    },
+
+    /** @override */
+    detached: function() {
+      assert(extensions.navigation.removeListener(this.navigationListener_));
+      this.navigationListener_ = null;
+    },
+
+    /**
+     * Focuses the back button when page is loaded.
+     * @private
+     */
+    onViewEnterStart_: function() {
+      Polymer.RenderStatus.afterNextRender(
+          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
     },
 
     /**
@@ -263,25 +296,29 @@ cr.define('extensions', function() {
           this.activityData_.length > 0;
     },
 
-    clearActivities: function() {
+    /** @private */
+    onClearButtonTap_: function() {
       this.delegate.deleteActivitiesFromExtension(this.extensionId).then(() => {
         this.processActivities_([]);
       });
     },
 
-    /**
-     * @private
-     * @param {!CustomEvent<!Array<string>>} e
-     */
+    /** @private */
     deleteItem_: function(e) {
-      const activityIds = e.detail;
+      const activityIds = e.detail.activityIds;
       this.delegate.deleteActivitiesById(activityIds).then(() => {
         // It is possible for multiple activities displayed to have the same
         // underlying activity ID. This happens when we split content script and
         // web request activities by fields other than their API call. For
         // consistency, we will re-fetch the activity log.
-        this.refreshActivities_();
+        this.refreshActivities();
       });
+    },
+
+    /** @private */
+    onCloseButtonTap_: function() {
+      extensions.navigation.navigateTo(
+          {page: Page.DETAILS, extensionId: this.extensionId});
     },
 
     /**
@@ -293,21 +330,18 @@ cr.define('extensions', function() {
       this.pageState_ = ActivityLogPageState.LOADED;
       this.activityData_ =
           sortActivitiesByCallCount(groupActivities(activityData));
-      if (!this.dataFetchedResolver_.isFulfilled) {
-        this.dataFetchedResolver_.resolve();
+      if (!this.onDataFetched.isFulfilled) {
+        this.onDataFetched.resolve();
       }
     },
 
-    /**
-     * @private
-     * @return {!Promise<void>}
-     */
-    refreshActivities_: function() {
-      if (this.lastSearch === '') {
+    /** @return {!Promise<void>} */
+    refreshActivities: function() {
+      if (this.lastSearch_ === '') {
         return this.getActivityLog_();
       }
 
-      return this.getFilteredActivityLog_(this.lastSearch);
+      return this.getFilteredActivityLog_(this.lastSearch_);
     },
 
     /**
@@ -336,27 +370,23 @@ cr.define('extensions', function() {
           });
     },
 
-    /**
-     * @private
-     * @param {string} newSearch
-     * @param {string|undefined} oldSearch
-     */
-    onSearchChanged_: function(newSearch, oldSearch) {
-      // |this.delegate| may be undefined if --disable-features=WebUIPolymer2
-      // is set (happens on the chromeos tryjob), which causes an error. This
-      // happens only for the first time the observer for |lastSearch| is
-      // invoked, when |lastSearch| changes value from |undefined| to the
-      // initial value set in activity_log.js.
-      // TODO(kelvinjiang): Remove this when migration to Polymer 2 is complete
-      // (crbug.com/738611).
-      if (oldSearch != undefined) {
-        this.refreshActivities_();
+    /** @private */
+    onSearchChanged_: function(e) {
+      // Remove all whitespaces from the search term, as API call names and
+      // urls should not contain any whitespace. As of now, only single term
+      // search queries are allowed.
+      const searchTerm = e.detail.replace(/\s+/g, '');
+      if (searchTerm === this.lastSearch_) {
+        return;
       }
+
+      this.lastSearch_ = searchTerm;
+      this.refreshActivities();
     },
   });
 
   return {
-    ActivityLogHistory: ActivityLogHistory,
+    ActivityLog: ActivityLog,
     ActivityLogDelegate: ActivityLogDelegate,
   };
 });

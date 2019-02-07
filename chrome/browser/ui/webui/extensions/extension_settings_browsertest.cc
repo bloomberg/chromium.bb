@@ -285,11 +285,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {
       R"(let manager = document.querySelector('extensions-manager');
          let activityLog =
              manager.shadowRoot.querySelector('extensions-activity-log');
-         let activityLogHistory =
-             activityLog.shadowRoot.querySelector('activity-log-history');
-         activityLogHistory.whenDataFetched().then(() => {
+         activityLog.onDataFetched.promise.then(() => {
              Polymer.dom.flush();
-             let item = activityLogHistory.shadowRoot.querySelector(
+             let item = activityLog.shadowRoot.querySelector(
                  'activity-log-item');
              let activityKey = item.shadowRoot.getElementById('activity-key');
              window.domAutomationController.send(

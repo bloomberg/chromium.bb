@@ -202,7 +202,7 @@ TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
 CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log.html';
+    return 'chrome://extensions/activity_log.html';
   }
 
   get extraLibraries() {
@@ -217,32 +217,12 @@ TEST_F('CrExtensionsActivityLogTest', 'All', () => {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-// Extension Activity Log History Tests
-
-CrExtensionsActivityLogHistoryTest = class extends CrExtensionsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_history.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'activity_log_history_test.js',
-    ]);
-  }
-};
-
-TEST_F('CrExtensionsActivityLogHistoryTest', 'All', () => {
-  mocha.run();
-});
-
-////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Item Tests
 
 CrExtensionsActivityLogItemTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_item.html';
+    return 'chrome://extensions/activity_log_item.html';
   }
 
   get extraLibraries() {
