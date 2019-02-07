@@ -534,5 +534,87 @@ TEST_F(DemoSessionMetricsRecorderTest, NoUniqueAppsLaunchedOnDeletion) {
   histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 0, 1);
 }
 
+TEST_F(DemoSessionMetricsRecorderTest, AppLaunched) {
+  // Activate each window twice.  Despite activating each twice,
+  // the sample should only be incremented once per unique app, except
+  // for apps for which we don't have enums, which all get recorded
+  // as "other" apps.
+
+  // Chrome browser window
+  std::unique_ptr<aura::Window> chrome_browser_window =
+      CreateChromeAppWindow(extension_misc::kChromeAppId);
+  wm::ActivateWindow(chrome_browser_window.get());
+  wm::DeactivateWindow(chrome_browser_window.get());
+  wm::ActivateWindow(chrome_browser_window.get());
+
+  // Chrome apps
+  std::unique_ptr<aura::Window> chrome_app_window_1 =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
+  wm::ActivateWindow(chrome_app_window_1.get());
+  wm::DeactivateWindow(chrome_app_window_1.get());
+  wm::ActivateWindow(chrome_app_window_1.get());
+
+  // The following 2 activations should get recorded as kOtherChromeApp
+  std::unique_ptr<aura::Window> chrome_app_window_2 =
+      CreateChromeAppWindow("otherappid2");
+  wm::ActivateWindow(chrome_app_window_2.get());
+  wm::DeactivateWindow(chrome_app_window_2.get());
+  wm::ActivateWindow(chrome_app_window_2.get());
+
+  std::unique_ptr<aura::Window> chrome_app_window_3 =
+      CreateChromeAppWindow("otherappid3");
+  wm::ActivateWindow(chrome_app_window_3.get());
+  wm::DeactivateWindow(chrome_app_window_3.get());
+  wm::ActivateWindow(chrome_app_window_3.get());
+
+  // ARC Apps
+  std::unique_ptr<aura::Window> arc_window_1 =
+      CreateArcWindow("com.google.Photos");
+  wm::ActivateWindow(arc_window_1.get());
+  wm::DeactivateWindow(arc_window_1.get());
+  wm::ActivateWindow(arc_window_1.get());
+
+  std::unique_ptr<aura::Window> arc_window_2 =
+      CreateArcWindow("com.google.Sheets");
+  wm::ActivateWindow(arc_window_2.get());
+  wm::DeactivateWindow(arc_window_2.get());
+  wm::ActivateWindow(arc_window_2.get());
+
+  // The following 2 activations should get recorded as kOtherArcApp
+  std::unique_ptr<aura::Window> arc_window_3 =
+      CreateArcWindow("com.some.other.App3");
+  wm::ActivateWindow(arc_window_3.get());
+  wm::DeactivateWindow(arc_window_3.get());
+  wm::ActivateWindow(arc_window_3.get());
+
+  std::unique_ptr<aura::Window> arc_window_4 =
+      CreateArcWindow("com.some.other.App4");
+  wm::ActivateWindow(arc_window_4.get());
+  wm::DeactivateWindow(arc_window_4.get());
+  wm::ActivateWindow(arc_window_4.get());
+
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.AppLaunched", DemoSessionMetricsRecorder::DemoModeApp::kBrowser,
+      1);
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.AppLaunched", DemoSessionMetricsRecorder::DemoModeApp::kCamera,
+      1);
+  // We should see 2 "other chrome apps"
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.AppLaunched",
+      DemoSessionMetricsRecorder::DemoModeApp::kOtherChromeApp, 2);
+
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.AppLaunched",
+      DemoSessionMetricsRecorder::DemoModeApp::kGooglePhotos, 1);
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.AppLaunched",
+      DemoSessionMetricsRecorder::DemoModeApp::kGoogleSheets, 1);
+  // We should see 2 "other arc apps"
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.AppLaunched",
+      DemoSessionMetricsRecorder::DemoModeApp::kOtherArcApp, 2);
+}
+
 }  // namespace
 }  // namespace ash

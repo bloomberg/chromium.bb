@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/app_types.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -94,11 +95,11 @@ class ASH_EXPORT DemoSessionMetricsRecorder
   // the unique-apps-launched stat.
   bool ShouldRecordAppLaunch(const std::string& app_id);
 
-  // Records the specified app_id's launch, subject to the
+  // Records the specified app's launch, subject to the
   // restrictions of ShouldRecordAppLaunch().
-  void RecordAppLaunch(const std::string& app_id);
+  void RecordAppLaunch(const std::string& id, AppType app_type);
 
-  // Emits histograms for the number of unique apps launched.
+  // Emits various histograms for unique apps launched.
   void ReportUniqueAppsLaunched();
 
   // Stores samples as they are collected. Report to UMA if we see user
