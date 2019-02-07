@@ -48,7 +48,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using sync_pb::UserEventSpecifics;
-using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
+using GaiaPasswordReuse = sync_pb::GaiaPasswordReuse;
 using GaiaPasswordCaptured = UserEventSpecifics::GaiaPasswordCaptured;
 using PasswordReuseDialogInteraction =
     GaiaPasswordReuse::PasswordReuseDialogInteraction;

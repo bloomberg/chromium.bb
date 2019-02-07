@@ -402,6 +402,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(priority_preference);
   VISIT(reading_list);
   VISIT(search_engine);
+  VISIT(security_event);
   VISIT(send_tab_to_self);
   VISIT(session);
   VISIT(synced_notification);
@@ -821,8 +822,11 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {}
 
 VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationSpecifics& proto) {}
 
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::GaiaPasswordReuse& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SecurityEventSpecifics& proto) {
+  VISIT(gaia_password_reuse_event);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::GaiaPasswordReuse& proto) {
   VISIT(reuse_detected);
   VISIT(reuse_lookup);
   VISIT(dialog_interaction);
@@ -831,34 +835,31 @@ VISIT_PROTO_FIELDS(
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected&
-        proto) {
+    const sync_pb::GaiaPasswordReuse::PasswordReuseDetected& proto) {
   VISIT(status);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::GaiaPasswordReuse::
-                       PasswordReuseDetected::SafeBrowsingStatus& proto) {
+VISIT_PROTO_FIELDS(
+    const sync_pb::GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus&
+        proto) {
   VISIT(enabled);
   VISIT_ENUM(safe_browsing_reporting_population);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::GaiaPasswordReuse::
-                       PasswordReuseDialogInteraction& proto) {
+VISIT_PROTO_FIELDS(
+    const sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction& proto) {
   VISIT_ENUM(interaction_result);
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup&
-        proto) {
+    const sync_pb::GaiaPasswordReuse::PasswordReuseLookup& proto) {
   VISIT_ENUM(lookup_result);
   VISIT_ENUM(verdict);
   VISIT(verdict_token);
 }
 
 // TODO(markusheintz): Remove.
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordCaptured&
-        proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GaiaPasswordReuse::PasswordCaptured& proto) {
   VISIT_ENUM(event_trigger);
 }
 

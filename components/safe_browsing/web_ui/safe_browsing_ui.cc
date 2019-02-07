@@ -39,13 +39,12 @@
 #endif
 
 using base::Time;
+using sync_pb::GaiaPasswordReuse;
 using PasswordCaptured = sync_pb::UserEventSpecifics::GaiaPasswordCaptured;
-using PasswordReuseLookup =
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup;
-using PasswordReuseDetected =
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected;
-using PasswordReuseDialogInteraction = sync_pb::UserEventSpecifics::
-    GaiaPasswordReuse::PasswordReuseDialogInteraction;
+using PasswordReuseLookup = sync_pb::GaiaPasswordReuse::PasswordReuseLookup;
+using PasswordReuseDetected = sync_pb::GaiaPasswordReuse::PasswordReuseDetected;
+using PasswordReuseDialogInteraction =
+    sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction;
 
 namespace safe_browsing {
 WebUIInfoSingleton::WebUIInfoSingleton() = default;
@@ -607,8 +606,7 @@ base::DictionaryValue SerializePGEvent(
                        base::Value(event_trigger));
   }
 
-  sync_pb::UserEventSpecifics::GaiaPasswordReuse reuse =
-      event.gaia_password_reuse_event();
+  GaiaPasswordReuse reuse = event.gaia_password_reuse_event();
   if (reuse.has_reuse_detected()) {
     event_dict.SetPath({"reuse_detected", "status", "enabled"},
                        base::Value(reuse.reuse_detected().status().enabled()));

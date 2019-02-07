@@ -13,6 +13,7 @@
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/sessions/core/session_id.h"
+#include "components/sync/protocol/gaia_password_reuse.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "ui/base/buildflags.h"
 #include "url/origin.h"
@@ -330,21 +331,19 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void MaybeLogPasswordReuseLookupResult(
       content::WebContents* web_contents,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-          LookupResult result);
+      sync_pb::GaiaPasswordReuse::PasswordReuseLookup::LookupResult result);
 
   void MaybeLogPasswordReuseLookupResultWithVerdict(
       content::WebContents* web_contents,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-          LookupResult result,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-          ReputationVerdict verdict,
+      sync_pb::GaiaPasswordReuse::PasswordReuseLookup::LookupResult result,
+      sync_pb::GaiaPasswordReuse::PasswordReuseLookup::ReputationVerdict
+          verdict,
       const std::string& verdict_token);
 
   void MaybeLogPasswordReuseDialogInteraction(
       int64_t navigation_id,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::
-          PasswordReuseDialogInteraction::InteractionResult interaction_result);
+      sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction::
+          InteractionResult interaction_result);
 
   // Log that we captured the password, either due to log-in or by timer.
   // This also sets the reoccuring timer.

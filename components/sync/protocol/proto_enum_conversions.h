@@ -76,25 +76,23 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(sync_pb::UserConsentTypes::ConsentStatus status);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected::
-        SafeBrowsingStatus::ReportingPopulation
-            safe_browsing_reporting_population);
+    sync_pb::GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus::
+        ReportingPopulation safe_browsing_reporting_population);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::
-        PasswordReuseDialogInteraction::InteractionResult interaction_result);
+    sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction::
+        InteractionResult interaction_result);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-        LookupResult lookup_result);
+    sync_pb::GaiaPasswordReuse::PasswordReuseLookup::LookupResult
+        lookup_result);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-        ReputationVerdict verdict);
+    sync_pb::GaiaPasswordReuse::PasswordReuseLookup::ReputationVerdict verdict);
 
 // TODO(markusheintz): Remove.
-const char* ProtoEnumToString(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
-                                  PasswordCaptured::EventTrigger trigger);
+const char* ProtoEnumToString(
+    sync_pb::GaiaPasswordReuse::PasswordCaptured::EventTrigger trigger);
 
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::GaiaPasswordCaptured::EventTrigger trigger);
