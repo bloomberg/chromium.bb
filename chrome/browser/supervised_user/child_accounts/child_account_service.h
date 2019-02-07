@@ -13,12 +13,12 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "net/base/backoff_entry.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -34,8 +34,7 @@ class Profile;
 class ChildAccountService : public KeyedService,
                             public FamilyInfoFetcher::Consumer,
                             public identity::IdentityManager::Observer,
-                            public SupervisedUserService::Delegate,
-                            public GaiaCookieManagerService::Observer {
+                            public SupervisedUserService::Delegate {
  public:
   enum class AuthState { AUTHENTICATED, NOT_AUTHENTICATED, PENDING };
 
@@ -88,10 +87,9 @@ class ChildAccountService : public KeyedService,
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) override;
   void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
 
-  // GaiaCookieManagerService::Observer implementation.
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+  // IdentityManager::Observer implementation.
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   void StartFetchingFamilyInfo();
@@ -116,7 +114,7 @@ class ChildAccountService : public KeyedService,
   base::OneShotTimer family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;
 
-  GaiaCookieManagerService* gaia_cookie_manager_;
+  identity::IdentityManager* identity_manager_;
 
   base::CallbackList<void()> google_auth_state_observers_;
 
