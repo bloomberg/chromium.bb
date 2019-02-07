@@ -10,12 +10,23 @@ source_set("ntp") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
+    ":features",
     "//base:base",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/web/public",
     "//ui/base:base",
+  ]
+}
+
+source_set("features") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
