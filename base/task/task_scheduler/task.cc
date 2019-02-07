@@ -23,8 +23,7 @@ Task::Task(const Location& posted_from, OnceClosure task, TimeDelta delay)
     : PendingTask(posted_from,
                   std::move(task),
                   delay.is_zero() ? TimeTicks() : TimeTicks::Now() + delay,
-                  Nestable::kNonNestable),
-      delay(delay) {
+                  Nestable::kNonNestable) {
   // TaskScheduler doesn't use |sequence_num| but tracing (toplevel.flow) relies
   // on it being unique. While this subtle dependency is a bit overreaching,
   // TaskScheduler is the only task system that doesn't use |sequence_num| and
@@ -38,8 +37,6 @@ Task::Task(const Location& posted_from, OnceClosure task, TimeDelta delay)
 // this case.
 Task::Task(Task&& other) noexcept
     : PendingTask(std::move(other)),
-      delay(other.delay),
-      sequenced_time(other.sequenced_time),
       sequenced_task_runner_ref(std::move(other.sequenced_task_runner_ref)),
       single_thread_task_runner_ref(
           std::move(other.single_thread_task_runner_ref)) {}
