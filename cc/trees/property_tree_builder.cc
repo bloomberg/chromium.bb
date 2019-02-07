@@ -820,7 +820,12 @@ bool ShouldCreateRenderSurface(const MutatorHost& mutator_host,
   }
 
   // If the layer uses a CSS filter.
-  if (!Filters(layer).IsEmpty() || !BackdropFilters(layer).IsEmpty()) {
+  if (!Filters(layer).IsEmpty()) {
+    return true;
+  }
+
+  // If the layer uses a CSS backdrop-filter.
+  if (!BackdropFilters(layer).IsEmpty()) {
     return true;
   }
 

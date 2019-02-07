@@ -801,6 +801,9 @@ static bool NeedsEffect(const LayoutObject& object) {
   if (blend_mode != SkBlendMode::kSrcOver)
     return true;
 
+  if (!style.BackdropFilter().IsEmpty())
+    return true;
+
   if (style.Opacity() != 1.0f || style.HasWillChangeOpacityHint())
     return true;
 
@@ -928,6 +931,25 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         state.blend_mode = WebCoreCompositeToSkiaComposite(
             kCompositeSourceOver, style.GetBlendMode());
       }
+      if (object_.IsBoxModelObject()) {
+        if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
+          // Try to use the cached effect for backdrop-filter.
+          if (properties_->Effect()) {
+            state.backdrop_filter = properties_->Effect()->BackdropFilter();
+            state.backdrop_filter_bounds =
+                properties_->Effect()->BackdropFilterBounds();
+          }
+          // With BGPT disabled, UpdateFilterReferenceBox gets called from
+          // CompositedLayerMapping::UpdateGraphicsLayerGeometry, but only
+          // for composited layers.
+          if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+              layer->GetCompositingState() != kPaintsIntoOwnBacking) {
+            layer->UpdateFilterReferenceBox();
+          }
+          layer->UpdateCompositorFilterOperationsForBackdropFilter(
+              state.backdrop_filter, &state.backdrop_filter_bounds);
+        }
+      }
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         // We may begin to composite our subtree prior to an animation starts,
@@ -1025,8 +1047,7 @@ static bool NeedsFilter(const LayoutObject& object) {
     return false;
 
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
-  if (object.StyleRef().HasFilter() || object.HasReflection() ||
-      object.HasBackdropFilter())
+  if (object.StyleRef().HasFilter() || object.HasReflection())
     return true;
 
   // TODO(flackr): Check for nodes for each KeyframeModel target
@@ -1056,9 +1077,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
         // Try to use the cached filter.
         if (properties_->Filter()) {
           state.filter = properties_->Filter()->Filter();
-          state.backdrop_filter = properties_->Filter()->BackdropFilter();
-          state.backdrop_filter_bounds =
-              properties_->Filter()->BackdropFilterBounds();
         }
 
         // With BGPT disabled, UpdateFilterReferenceBox gets called from
@@ -1069,8 +1087,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
           layer->UpdateFilterReferenceBox();
         }
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
-        layer->UpdateCompositorFilterOperationsForBackdropFilter(
-            state.backdrop_filter, &state.backdrop_filter_bounds);
         layer->ClearFilterOnEffectNodeDirty();
       }
 

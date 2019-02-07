@@ -142,8 +142,8 @@ class CORE_EXPORT ObjectPaintProperties {
   // follows:
   // [ effect ]
   // |     Isolated group to apply various CSS effects, including opacity,
-  // |     mix-blend-mode, and for isolation if a mask needs to be applied or
-  // |     backdrop-dependent children are present.
+  // |     mix-blend-mode, backdrop-filter, and for isolation if a mask needs
+  // |     to be applied or backdrop-dependent children are present.
   // +-[ filter ]
   // |     Isolated group for CSS filter.
   // +-[ vertical/horizontal scrollbar effect ]

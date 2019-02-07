@@ -3262,6 +3262,7 @@ void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
   const auto& style = GetLayoutObject().StyleRef();
   if (style.BackdropFilter().IsEmpty()) {
     operations.Clear();
+    *backdrop_filter_bounds = gfx::RRectF();
     return;
   }
   FloatRect reference_box = BackdropFilterReferenceBox();
