@@ -559,6 +559,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
+      'moblab-generic-vm-paladin': site_config.templates.moblab_vm_tests,
+      'moblab-generic-vm-pre-cq': site_config.templates.moblab_vm_tests,
+
       'peppy-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
@@ -678,6 +681,8 @@ def GeneralTemplates(site_config, ge_build_config):
       vm_tests=[],
       vm_tests_override=None,
       gce_tests=[],
+      tast_vm_tests=[],
+      moblab_vm_tests=[],
   )
 
   site_config.AddTemplate(

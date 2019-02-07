@@ -1158,6 +1158,20 @@ class CBuildBotTest(ChromeosConfigTestBase):
                      "Simple example: [['url', ['refs/heads/master']]]") %
                     (config.name, config.triggered_gitiles))
 
+  def testNoTestsInPostsubmit(self):
+    """Configs must have names set."""
+    for build_name, config in self.site_config.iteritems():
+      if config.build_type != constants.POSTSUBMIT_TYPE:
+        continue
+
+      msg = 'Unexpected test in: %s' % build_name
+      self.assertFalse(config.unittests, msg)
+      self.assertFalse(config.hw_tests, msg)
+      self.assertFalse(config.vm_tests, msg)
+      self.assertFalse(config.gce_tests, msg)
+      self.assertFalse(config.tast_vm_tests, msg)
+      self.assertFalse(config.moblab_vm_tests, msg)
+
 
 class TemplateTest(ChromeosConfigTestBase):
   """Tests for templates."""

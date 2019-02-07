@@ -873,8 +873,6 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.beaglebone)
     if board in chromeos_boards.builder_incompatible_binaries_boards:
       board_config.apply(unittests=False)
-    if board == 'moblab-generic-vm':
-      board_config.apply(site_config.templates.moblab_vm_tests)
 
     result[board] = board_config
 
@@ -1819,7 +1817,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground',
       'leon',
       'link',
-      'moblab-generic-vm', #
+      'moblab-generic-vm',
       'monroe',
       'nami',
       'nocturne',
