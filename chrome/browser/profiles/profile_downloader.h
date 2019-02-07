@@ -95,8 +95,6 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   void OnDecodeImageFailed() override;
 
   // Overriden from identity::IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
   void OnAccountUpdated(const AccountInfo& info) override;
 
   // Callback for AccessTokenFetcher.
@@ -125,7 +123,6 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       identity_manager_observer_;
   bool waiting_for_account_info_;
-  bool waiting_for_refresh_token_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDownloader);
 };

@@ -51,8 +51,7 @@ ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
       identity_manager_(IdentityManagerFactory::GetForProfile(
           delegate_->GetBrowserProfile())),
       identity_manager_observer_(this),
-      waiting_for_account_info_(false),
-      waiting_for_refresh_token_(false) {
+      waiting_for_account_info_(false) {
   DCHECK(delegate_);
   identity_manager_observer_.Add(identity_manager_);
 }
@@ -75,10 +74,7 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
 
   account_id_ = account_id.empty() ? identity_manager_->GetPrimaryAccountId()
                                    : account_id;
-  if (identity_manager_->HasAccountWithRefreshToken(account_id_))
-    StartFetchingOAuth2AccessToken();
-  else
-    waiting_for_refresh_token_ = true;
+  StartFetchingOAuth2AccessToken();
 }
 
 base::string16 ProfileDownloader::GetProfileHostedDomain() const {
@@ -150,7 +146,7 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
           account_id_, "profile_downloader", scopes,
           base::BindOnce(&ProfileDownloader::OnAccessTokenFetchComplete,
                          base::Unretained(this)),
-          identity::AccessTokenFetcher::Mode::kImmediate);
+          identity::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
 }
 
 ProfileDownloader::~ProfileDownloader() {
@@ -290,15 +286,6 @@ void ProfileDownloader::OnDecodeImageFailed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->OnProfileDownloadFailure(
       this, ProfileDownloaderDelegate::IMAGE_DECODE_FAILED);
-}
-
-void ProfileDownloader::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
-  if (account_info.account_id != account_id_ || !waiting_for_refresh_token_)
-    return;
-
-  waiting_for_refresh_token_ = false;
-  StartFetchingOAuth2AccessToken();
 }
 
 void ProfileDownloader::OnAccessTokenFetchComplete(
