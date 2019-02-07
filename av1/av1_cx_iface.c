@@ -127,6 +127,8 @@ struct av1_extracfg {
   int use_intra_dct_only;
   int use_inter_dct_only;
   int quant_b_adapt;
+  COST_UPDATE_TYPE coeff_cost_upd_freq;
+  COST_UPDATE_TYPE mode_cost_upd_freq;
 };
 
 static struct av1_extracfg default_extra_cfg = {
@@ -218,12 +220,14 @@ static struct av1_extracfg default_extra_cfg = {
   0,   // noise_level
   32,  // noise_block_size
 #endif
-  0,  // chroma_subsampling_x
-  0,  // chroma_subsampling_y
-  0,  // reduced_tx_type_set
-  0,  // use_intra_dct_only
-  0,  // use_inter_dct_only
-  0,  // quant_b_adapt
+  0,            // chroma_subsampling_x
+  0,            // chroma_subsampling_y
+  0,            // reduced_tx_type_set
+  0,            // use_intra_dct_only
+  0,            // use_inter_dct_only
+  0,            // quant_b_adapt
+  COST_UPD_SB,  // coeff_cost_upd_freq
+  COST_UPD_SB,  // mode_cost_upd_freq
 };
 
 struct aom_codec_alg_priv {
@@ -433,6 +437,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(extra_cfg, chroma_subsampling_y, 1);
 
   RANGE_CHECK_HI(extra_cfg, disable_trellis_quant, 2);
+  RANGE_CHECK(extra_cfg, coeff_cost_upd_freq, 0, 2);
+  RANGE_CHECK(extra_cfg, mode_cost_upd_freq, 0, 2);
 
   return AOM_CODEC_OK;
 }
@@ -586,6 +592,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->use_intra_dct_only = extra_cfg->use_intra_dct_only;
   oxcf->use_inter_dct_only = extra_cfg->use_inter_dct_only;
   oxcf->quant_b_adapt = extra_cfg->quant_b_adapt;
+  oxcf->coeff_cost_upd_freq = (COST_UPDATE_TYPE)extra_cfg->coeff_cost_upd_freq;
+  oxcf->mode_cost_upd_freq = (COST_UPDATE_TYPE)extra_cfg->mode_cost_upd_freq;
 #if CONFIG_DIST_8X8
   oxcf->using_dist_8x8 = extra_cfg->enable_dist_8x8;
   if (extra_cfg->tuning == AOM_TUNE_CDEF_DIST ||
@@ -1333,6 +1341,20 @@ static aom_codec_err_t ctrl_set_quant_b_adapt(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+static aom_codec_err_t ctrl_set_coeff_cost_upd_freq(aom_codec_alg_priv_t *ctx,
+                                                    va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.coeff_cost_upd_freq = CAST(AV1E_SET_COEFF_COST_UPD_FREQ, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_mode_cost_upd_freq(aom_codec_alg_priv_t *ctx,
+                                                   va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.mode_cost_upd_freq = CAST(AV1E_SET_MODE_COST_UPD_FREQ, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
 static aom_codec_err_t ctrl_set_film_grain_test_vector(
     aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -2057,6 +2079,8 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_INTRA_DCT_ONLY, ctrl_set_intra_dct_only },
   { AV1E_SET_INTER_DCT_ONLY, ctrl_set_inter_dct_only },
   { AV1E_SET_QUANT_B_ADAPT, ctrl_set_quant_b_adapt },
+  { AV1E_SET_COEFF_COST_UPD_FREQ, ctrl_set_coeff_cost_upd_freq },
+  { AV1E_SET_MODE_COST_UPD_FREQ, ctrl_set_mode_cost_upd_freq },
   { AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode },
   { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
   { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },

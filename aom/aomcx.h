@@ -990,6 +990,22 @@ enum aome_enc_control_id {
   /*!\brief Control to select maximum reference frames allowed per frame
    * (valid values: 3 - 7) */
   AV1E_SET_MAX_REFERENCE_FRAMES,
+
+  /*!\brief Control to set frequency of the cost updates for coefficients
+   * Possible values are:
+   * 0: Update at SB level (default)
+   * 1: Update at SB row level in tile
+   * 2: Update at tile level
+   */
+  AV1E_SET_COEFF_COST_UPD_FREQ,
+
+  /*!\brief Control to set frequency of the cost updates for mode
+   * Possible values are:
+   * 0: Update at SB level (default)
+   * 1: Update at SB row level in tile
+   * 2: Update at tile level
+   */
+  AV1E_SET_MODE_COST_UPD_FREQ,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1378,6 +1394,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_GF_MAX_PYRAMID_HEIGHT, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_MAX_REFERENCE_FRAMES, unsigned int)
 #define AOM_CTRL_AV1E_SET_MAX_REFERENCE_FRAMES
+
+AOM_CTRL_USE_TYPE(AV1E_SET_COEFF_COST_UPD_FREQ, unsigned int)
+#define AOM_CTRL_AV1E_SET_COEFF_COST_UPD_FREQ
+
+AOM_CTRL_USE_TYPE(AV1E_SET_MODE_COST_UPD_FREQ, unsigned int)
+#define AOM_CTRL_AV1E_SET_MODE_COST_UPD_FREQ
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

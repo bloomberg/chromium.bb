@@ -170,6 +170,12 @@ typedef struct TplDepFrame {
   int base_qindex;
 } TplDepFrame;
 
+typedef enum {
+  COST_UPD_SB,
+  COST_UPD_SBROW,
+  COST_UPD_TILE,
+} COST_UPDATE_TYPE;
+
 #define TPL_DEP_COST_SCALE_LOG2 4
 
 typedef struct AV1EncoderConfig {
@@ -378,6 +384,8 @@ typedef struct AV1EncoderConfig {
   int use_intra_dct_only;
   int use_inter_dct_only;
   int quant_b_adapt;
+  COST_UPDATE_TYPE coeff_cost_upd_freq;
+  COST_UPDATE_TYPE mode_cost_upd_freq;
   int border_in_pixels;
 } AV1EncoderConfig;
 
