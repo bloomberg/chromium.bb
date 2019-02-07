@@ -121,7 +121,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   base::OnceClosure stop_complete_callback_;
 
   base::Lock lock_;  // Protects subsequent members.
-  uint32_t target_buffer_ = 0;
+  // Regular accesses to |target_buffer_| in conjunction with other fields are
+  // protected by |lock_|, thus no memory order guarantees are required when
+  // writing or reading it in those places. Note that OnAddTraceEvent()
+  // accesses its atomic value racily without holding |lock_|.
+  std::atomic<uint32_t> target_buffer_{0};
   ProducerClient* producer_client_ = nullptr;
   // We own the registry during startup, but transfer its ownership to the
   // ProducerClient once the perfetto service is available. Only set if

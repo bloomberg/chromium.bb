@@ -130,8 +130,10 @@ class TraceEventDataSource::ThreadLocalEventSink {
  public:
   ThreadLocalEventSink(
       std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
+      perfetto::BufferID target_buffer,
       bool thread_will_flush)
       : trace_writer_(std::move(trace_writer)),
+        target_buffer_(target_buffer),
         thread_will_flush_(thread_will_flush) {
 #if DCHECK_IS_ON()
     static std::atomic<int32_t> id_counter(1);
@@ -432,8 +434,11 @@ class TraceEventDataSource::ThreadLocalEventSink {
     trace_writer_->Flush();
   }
 
+  perfetto::BufferID target_buffer() const { return target_buffer_; }
+
  private:
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
+  perfetto::BufferID target_buffer_;
   const bool thread_will_flush_;
   ChromeEventBundleHandle event_bundle_;
   perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
@@ -504,7 +509,8 @@ void TraceEventDataSource::StartTracing(
 
     DCHECK(!producer_client_);
     producer_client_ = producer_client;
-    target_buffer_ = data_source_config.target_buffer();
+    target_buffer_.store(data_source_config.target_buffer(),
+                         std::memory_order_relaxed);
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
   }
@@ -552,7 +558,7 @@ void TraceEventDataSource::StopTracing(
     base::AutoLock lock(lock_);
     DCHECK(producer_client_);
     producer_client_ = nullptr;
-    target_buffer_ = 0;
+    target_buffer_.store(0, std::memory_order_relaxed);
   }
 
   if (was_enabled) {
@@ -629,12 +635,13 @@ TraceEventDataSource::CreateThreadLocalEventSink(bool thread_will_flush) {
   if (startup_writer_registry_) {
     return new ThreadLocalEventSink(
         startup_writer_registry_->CreateUnboundTraceWriter(),
-        thread_will_flush);
+        target_buffer_.load(std::memory_order_relaxed), thread_will_flush);
   } else if (producer_client_) {
     return new ThreadLocalEventSink(
         std::make_unique<perfetto::StartupTraceWriter>(
-            producer_client_->CreateTraceWriter(target_buffer_)),
-        thread_will_flush);
+            producer_client_->CreateTraceWriter(
+                target_buffer_.load(std::memory_order_relaxed))),
+        target_buffer_.load(std::memory_order_relaxed), thread_will_flush);
   } else {
     return nullptr;
   }
@@ -647,6 +654,24 @@ void TraceEventDataSource::OnAddTraceEvent(
     base::trace_event::TraceEventHandle* handle) {
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
+
+  // Make sure the sink was reset since the last tracing session. Normally, it
+  // is reset on Flush after the session is disabled. However, it may not have
+  // been reset if the current thread doesn't support flushing. In that case, we
+  // need to check here that it writes to the right buffer.
+  //
+  // Because we want to avoid locking for each event, we access |target_buffer_|
+  // racily. It's OK if we don't see it change to the new buffer immediately. In
+  // that case, the first few trace events may get lost, but we will eventually
+  // notice that we are writing to the wrong buffer once the change to
+  // |target_buffer_| has propagated, and reset the sink. Note we will still
+  // acquire the |lock_| to safely recreate the sink in
+  // CreateThreadLocalEventSink().
+  if (!thread_will_flush && thread_local_event_sink &&
+      GetInstance()->target_buffer_.load(std::memory_order_relaxed) !=
+          thread_local_event_sink->target_buffer()) {
+    thread_local_event_sink = nullptr;
+  }
 
   if (!thread_local_event_sink) {
     thread_local_event_sink =
