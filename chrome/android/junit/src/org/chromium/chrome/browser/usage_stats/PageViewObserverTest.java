@@ -182,6 +182,18 @@ public final class PageViewObserverTest {
 
     // TODO(pnoland): add test for platform reporting once the System API is available in Q.
 
+    @Test
+    public void tabIncognito_eventsNotReported() {
+        PageViewObserver observer = createPageViewObserver();
+        onUpdateUrl(mTab, STARTING_URL);
+
+        doReturn(true).when(mTab2).isIncognito();
+        doReturn(DIFFERENT_URL).when(mTab2).getUrl();
+        didSelectTab(mTab2, TabSelectionType.FROM_USER);
+        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
+        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStopEvent(DIFFERENT_FQDN)));
+    }
+
     private PageViewObserver createPageViewObserver() {
         PageViewObserver observer =
                 new PageViewObserver(mActivity, mTabModelSelector, mEventTracker, mTokenTracker);

@@ -73,7 +73,9 @@ public class PageViewObserver {
                 if (tab == mCurrentTab) return;
 
                 switchObserverToTab(tab);
-                updateUrl(tab.getUrl());
+                if (mCurrentTab != null) {
+                    updateUrl(mCurrentTab.getUrl());
+                }
             }
 
             @Override
@@ -120,6 +122,11 @@ public class PageViewObserver {
     private void switchObserverToTab(Tab tab) {
         if (mCurrentTab != tab && mCurrentTab != null) {
             mCurrentTab.removeObserver(mTabObserver);
+        }
+
+        if (tab != null && tab.isIncognito()) {
+            mCurrentTab = null;
+            return;
         }
 
         mCurrentTab = tab;
