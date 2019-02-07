@@ -56,12 +56,6 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //content/public/common/content_switches.h
 
-  // Runs the renderer and plugins in the same process as the browser.
-  bool single_process = false;
-
-  // Run the GPU process as a thread in the browser process.
-  bool in_process_gpu = false;
-
   // Disables hardware acceleration of video decode, where available.
   bool disable_accelerated_video_decode = false;
 

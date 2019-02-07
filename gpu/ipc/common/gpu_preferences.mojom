@@ -17,8 +17,6 @@ enum VpxDecodeVendors {
 
 // gpu::GpuPreferences
 struct GpuPreferences {
-  bool single_process;
-  bool in_process_gpu;
   bool disable_accelerated_video_decode;
   bool disable_accelerated_video_encode;
   bool gpu_startup_dialog;
