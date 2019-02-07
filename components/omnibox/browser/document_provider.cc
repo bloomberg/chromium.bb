@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -69,6 +70,29 @@ const char kDocumentMimetype[] = "application/vnd.google-apps.document";
 const char kFormMimetype[] = "application/vnd.google-apps.form";
 const char kSpreadsheetMimetype[] = "application/vnd.google-apps.spreadsheet";
 const char kPresentationMimetype[] = "application/vnd.google-apps.presentation";
+
+// Returns mappings from MIME types to overridden icons.
+AutocompleteMatch::DocumentType GetIconForMIMEType(
+    const base::StringPiece& mimetype) {
+  static const auto kIconMap =
+      std::map<base::StringPiece, AutocompleteMatch::DocumentType>{
+          {kDocumentMimetype, AutocompleteMatch::DocumentType::DRIVE_DOCS},
+          {kFormMimetype, AutocompleteMatch::DocumentType::DRIVE_FORMS},
+          {kSpreadsheetMimetype, AutocompleteMatch::DocumentType::DRIVE_SHEETS},
+          {kPresentationMimetype,
+           AutocompleteMatch::DocumentType::DRIVE_SLIDES},
+          {"image/jpeg", AutocompleteMatch::DocumentType::DRIVE_IMAGE},
+          {"image/png", AutocompleteMatch::DocumentType::DRIVE_IMAGE},
+          {"image/gif", AutocompleteMatch::DocumentType::DRIVE_IMAGE},
+          {"application/pdf", AutocompleteMatch::DocumentType::DRIVE_PDF},
+          {"video/mp4", AutocompleteMatch::DocumentType::DRIVE_VIDEO},
+      };
+
+  const auto& iterator = kIconMap.find(mimetype);
+  return iterator != kIconMap.end()
+             ? iterator->second
+             : AutocompleteMatch::DocumentType::DRIVE_OTHER;
+}
 
 const char kErrorMessageAdminDisabled[] =
     "Not eligible to query due to admin disabled Chrome search settings.";
@@ -469,17 +493,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     const base::DictionaryValue* metadata = nullptr;
     if (result->GetDictionary("metadata", &metadata)) {
       if (metadata->GetString("mimeType", &mimetype)) {
-        if (mimetype == kDocumentMimetype) {
-          match.document_type = AutocompleteMatch::DocumentType::DRIVE_DOCS;
-        } else if (mimetype == kFormMimetype) {
-          match.document_type = AutocompleteMatch::DocumentType::DRIVE_FORMS;
-        } else if (mimetype == kSpreadsheetMimetype) {
-          match.document_type = AutocompleteMatch::DocumentType::DRIVE_SHEETS;
-        } else if (mimetype == kPresentationMimetype) {
-          match.document_type = AutocompleteMatch::DocumentType::DRIVE_SLIDES;
-        } else {
-          match.document_type = AutocompleteMatch::DocumentType::DRIVE_OTHER;
-        }
+        match.document_type = GetIconForMIMEType(mimetype);
       }
       std::string update_time;
       metadata->GetString("updateTime", &update_time);

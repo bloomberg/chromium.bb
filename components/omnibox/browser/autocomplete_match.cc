@@ -250,6 +250,12 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
           return omnibox::kDriveSheetsIcon;
         case DocumentType::DRIVE_SLIDES:
           return omnibox::kDriveSlidesIcon;
+        case DocumentType::DRIVE_IMAGE:
+          return omnibox::kDriveImageIcon;
+        case DocumentType::DRIVE_PDF:
+          return omnibox::kDrivePdfIcon;
+        case DocumentType::DRIVE_VIDEO:
+          return omnibox::kDriveVideoIcon;
         case DocumentType::DRIVE_OTHER:
           return omnibox::kDriveLogoIcon;
         default:

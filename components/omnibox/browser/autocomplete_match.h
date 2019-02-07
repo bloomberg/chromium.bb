@@ -124,6 +124,9 @@ struct AutocompleteMatch {
     DRIVE_FORMS,
     DRIVE_SHEETS,
     DRIVE_SLIDES,
+    DRIVE_IMAGE,
+    DRIVE_PDF,
+    DRIVE_VIDEO,
     DRIVE_OTHER
   };
 
