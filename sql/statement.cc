@@ -54,7 +54,8 @@ bool Statement::CheckValid() const {
 }
 
 int Statement::StepInternal(bool timer_flag) {
-  ref_->AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  ref_->InitScopedBlockingCall(&scoped_blocking_call);
   if (!CheckValid())
     return SQLITE_ERROR;
 
@@ -98,7 +99,8 @@ bool Statement::Step() {
 }
 
 void Statement::Reset(bool clear_bound_vars) {
-  ref_->AssertIOAllowed();
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  ref_->InitScopedBlockingCall(&scoped_blocking_call);
   if (is_valid()) {
     if (clear_bound_vars)
       sqlite3_clear_bindings(ref_->stmt());

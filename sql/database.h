@@ -20,9 +20,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/tick_clock.h"
 #include "sql/internal_api_token.h"
 #include "sql/statement_id.h"
@@ -554,12 +554,12 @@ class COMPONENT_EXPORT(SQL) Database {
   // |forced| indicates that orderly-shutdown checks should not apply.
   void CloseInternal(bool forced);
 
-  // Check whether the current thread is allowed to make IO calls, but only
-  // if database wasn't open in memory. Function is inlined to be a no-op in
-  // official build.
-  void AssertIOAllowed() const {
+  // Construct a ScopedBlockingCall to annotate IO calls, but only if
+  // database wasn't open in memory.
+  void InitScopedBlockingCall(
+      base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
     if (!in_memory_)
-      base::AssertBlockingAllowedDeprecated();
+      scoped_blocking_call->emplace(base::BlockingType::MAY_BLOCK);
   }
 
   // Internal helper for Does*Exist() functions.
@@ -622,11 +622,12 @@ class COMPONENT_EXPORT(SQL) Database {
     // orderly-shutdown checks should apply (see Database::RazeAndClose()).
     void Close(bool forced);
 
-    // Check whether the current thread is allowed to make IO calls, but only
-    // if database wasn't open in memory.
-    void AssertIOAllowed() const {
+    // Construct a ScopedBlockingCall to annotate IO calls, but only if
+    // database wasn't open in memory.
+    void InitScopedBlockingCall(
+        base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
       if (database_)
-        database_->AssertIOAllowed();
+        database_->InitScopedBlockingCall(scoped_blocking_call);
     }
 
    private:
