@@ -15,12 +15,12 @@
 namespace extensions {
 namespace declarative_net_request {
 
-// Holds the ParseResult together with the index of the rule at which the error
+// Holds the ParseResult together with the id of the rule at which the error
 // occurred, if any.
 class ParseInfo {
  public:
   explicit ParseInfo(ParseResult result);
-  ParseInfo(ParseResult result, size_t rule_index);
+  ParseInfo(ParseResult result, int rule_id);
   ParseInfo(const ParseInfo&);
   ParseInfo& operator=(const ParseInfo&);
 
@@ -33,9 +33,9 @@ class ParseInfo {
 
  private:
   ParseResult result_;
-  // When set, denotes the index of the rule with which the |result_| is
+  // When set, denotes the id of the rule with which the |result_| is
   // associated.
-  base::Optional<size_t> rule_index_;
+  base::Optional<int> rule_id_;
 };
 
 }  // namespace declarative_net_request

@@ -176,8 +176,9 @@ TEST_P(RuleIndexingTest, DuplicateResourceTypes) {
       std::vector<std::string>({"image", "stylesheet"});
   rule.condition->excluded_resource_types = std::vector<std::string>({"image"});
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, *rule.id)
+          .GetErrorDescription(kJSONRulesFilename));
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
@@ -186,7 +187,7 @@ TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
   rule.action->redirect_url = std::string("https://google.com");
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, 0u)
+      ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, *rule.id)
           .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -200,7 +201,7 @@ TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
   rule.priority = kMinValidPriority;
   AddRule(rule);
 
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_URL, 1u)
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_URL, *rule.id)
                          .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -208,7 +209,7 @@ TEST_P(RuleIndexingTest, InvalidRuleID) {
   TestRule rule = CreateGenericRule();
   rule.id = kMinValidID - 1;
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_RULE_ID, 0u)
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_RULE_ID, *rule.id)
                          .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -219,7 +220,7 @@ TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
   rule.priority = kMinValidPriority - 1;
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, 0u)
+      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, *rule.id)
           .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -231,7 +232,7 @@ TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
        "other"});
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, 0u)
+      ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, *rule.id)
           .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -239,7 +240,7 @@ TEST_P(RuleIndexingTest, EmptyDomainsList) {
   TestRule rule = CreateGenericRule();
   rule.condition->domains = std::vector<std::string>();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_DOMAINS_LIST, 0u)
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_DOMAINS_LIST, *rule.id)
                          .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -247,15 +248,16 @@ TEST_P(RuleIndexingTest, EmptyResourceTypeList) {
   TestRule rule = CreateGenericRule();
   rule.condition->resource_types = std::vector<std::string>();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, *rule.id)
+          .GetErrorDescription(kJSONRulesFilename));
 }
 
 TEST_P(RuleIndexingTest, EmptyURLFilter) {
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_URL_FILTER, 0u)
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_URL_FILTER, *rule.id)
                          .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -265,8 +267,9 @@ TEST_P(RuleIndexingTest, InvalidRedirectURL) {
   rule.action->redirect_url = std::string("google");
   rule.priority = kMinValidPriority;
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_URL, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_URL, *rule.id)
+          .GetErrorDescription(kJSONRulesFilename));
 }
 
 TEST_P(RuleIndexingTest, ListNotPassed) {
@@ -279,7 +282,7 @@ TEST_P(RuleIndexingTest, DuplicateIDS) {
   TestRule rule = CreateGenericRule();
   AddRule(rule);
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, 1u)
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, *rule.id)
                          .GetErrorDescription(kJSONRulesFilename));
 }
 
@@ -321,7 +324,7 @@ TEST_P(RuleIndexingTest, TooManyParseFailures) {
     // |kMaxUnparsedRulesWarnings| rules, which couldn't be parsed.
     for (size_t i = 0; i < kMaxUnparsedRulesWarnings; i++) {
       warning.message = ErrorUtils::FormatErrorMessage(
-          kRuleNotParsedWarning, std::to_string(i),
+          kRuleNotParsedWarning, base::StringPrintf("id %zu", i + 1),
           "'RuleActionType': expected \"block\" or \"redirect\" or \"allow\", "
           "got \"invalid_action_type\"");
       EXPECT_EQ(expected_warnings[i], warning);
@@ -374,14 +377,14 @@ TEST_P(RuleIndexingTest, InvalidJSONRules_StrongTypes) {
 
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
-            kRuleNotParsedWarning, "1",
+            kRuleNotParsedWarning, "id 2",
             "'RuleActionType': expected \"block\" or \"redirect\" or \"allow\","
             " got \"invalid action\""),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
-            kRuleNotParsedWarning, "3",
+            kRuleNotParsedWarning, "id 4",
             "'DomainType': expected \"firstParty\" or \"thirdParty\", got "
             "\"invalid_domain_type\""),
         manifest_keys::kDeclarativeNetRequestKey,
@@ -412,7 +415,7 @@ TEST_P(RuleIndexingTest, InvalidJSONRules_Parsed) {
         "action" : {"type" : "block" }
       },
       {
-        "id" : "4",
+        "id" : "6",
         "condition" : {"urlFilter" : "google"},
         "action" : {"type" : "block" }
       }
@@ -431,17 +434,17 @@ TEST_P(RuleIndexingTest, InvalidJSONRules_Parsed) {
 
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
-            kRuleNotParsedWarning, "0",
+            kRuleNotParsedWarning, "id 1",
             "'condition': expected dictionary, got list"),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "2",
+        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "id 3",
                                        "found unexpected key 'invalidKey'"),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "3",
+        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "index 4",
                                        "'id': expected id, got string"),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
