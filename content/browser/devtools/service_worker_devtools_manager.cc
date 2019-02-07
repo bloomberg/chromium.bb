@@ -16,7 +16,8 @@ namespace content {
 // static
 ServiceWorkerDevToolsManager* ServiceWorkerDevToolsManager::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return base::Singleton<ServiceWorkerDevToolsManager>::get();
+  static base::NoDestructor<ServiceWorkerDevToolsManager> instance;
+  return &*instance;
 }
 
 ServiceWorkerDevToolsAgentHost*
