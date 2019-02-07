@@ -946,6 +946,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # Need to reenable power_DarkResumeDisplay after crosbug/703250 is fixed.
       # Need to reenable cheets_SELinuxTest after crosbug/693308 is fixed.
       # Need to reenable security_SMMLocked when crosbug/654610 is fixed.
+      # Add strict_toolchain_checks to perform toolchain-related checks
       useflags=config_lib.append_useflags([
           '-cros-debug',
           '-tests_security_OpenFDs',
@@ -956,7 +957,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
           '-tests_power_DarkResumeDisplay',
           '-tests_security_SMMLocked',
           '-tests_cheets_SELinuxTest',
-          'thinlto']),
+          'thinlto',
+          'strict_toolchain_checks']),
       afdo_use=True,
       latest_toolchain=True,
       manifest=constants.OFFICIAL_MANIFEST,
