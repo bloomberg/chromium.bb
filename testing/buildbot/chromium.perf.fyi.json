@@ -272,7 +272,7 @@
           "--benchmarks=loading.desktop.network_service",
           "-v",
           "--upload-results",
-          "--output-format=histograms",
+          "--output-format=chartjson",
           "--browser=release"
         ],
         "isolate_name": "performance_test_suite",
