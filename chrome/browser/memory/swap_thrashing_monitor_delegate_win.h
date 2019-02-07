@@ -18,6 +18,9 @@
 
 namespace memory {
 
+// This delegate can be created from any sequence but it has to be used on a
+// MayBlock sequence as the work done to compute the thrashing level might be
+// blocking.
 class SwapThrashingMonitorDelegateWin : public SwapThrashingMonitorDelegate {
  public:
   SwapThrashingMonitorDelegateWin();
