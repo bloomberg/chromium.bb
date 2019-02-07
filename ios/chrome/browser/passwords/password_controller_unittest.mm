@@ -877,7 +877,9 @@ static NSString* kHtmlWithTwoPasswordForms =
      "<input type='password' id='p1'>"
      "</form>"
      "<form id='f2'>"
-     "<input type='text' id='u2'>"
+     "<input type='text' id='u2'"
+     "  onkeyup='window.onKeyUpCalled_=true'"
+     "  onchange='window.onChangeCalled_=true'>"
      "<input type='password' id='p2'>"
      "</form>";
 
@@ -1113,7 +1115,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     block_was_called = NO;
     SuggestionHandledCompletion completion = ^{
       block_was_called = YES;
-      EXPECT_NSEQ(@"abc[]=def, onkeyup=false, onchange=false",
+      EXPECT_NSEQ(@"abc[]=def, onkeyup=true, onchange=true",
                   ExecuteJavaScript(kUsernamePasswordVerificationScript));
     };
     [passwordController_
