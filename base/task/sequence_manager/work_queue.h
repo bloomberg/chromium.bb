@@ -73,7 +73,7 @@ class BASE_EXPORT WorkQueue {
   // Reloads the empty |tasks_| with
   // |task_queue_->TakeImmediateIncomingQueue| and if a fence hasn't been
   // reached it informs the WorkQueueSets if the head changed.
-  void ReloadEmptyImmediateQueue();
+  void TakeImmediateIncomingQueueTasks();
 
   size_t Size() const { return tasks_.size(); }
 

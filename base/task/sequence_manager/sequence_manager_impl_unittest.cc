@@ -624,7 +624,8 @@ namespace {
 
 void InsertFenceAndPostTestTask(int id,
                                 std::vector<EnqueueOrder>* run_order,
-                                scoped_refptr<TestTaskQueue> task_queue) {
+                                scoped_refptr<TestTaskQueue> task_queue,
+                                SequenceManagerForTest* manager) {
   run_order->push_back(EnqueueOrder::FromIntForTesting(id));
   task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   task_queue->task_runner()->PostTask(FROM_HERE,
@@ -632,7 +633,7 @@ void InsertFenceAndPostTestTask(int id,
 
   // Force reload of immediate work queue. In real life the same effect can be
   // achieved with cross-thread posting.
-  task_queue->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
+  manager->ReloadEmptyWorkQueues();
 }
 
 }  // namespace
@@ -645,8 +646,10 @@ TEST_P(SequenceManagerTestWithMessageLoop, TaskQueueDisabledFromNestedLoop) {
 
   tasks_to_post_from_nested_loop.push_back(
       std::make_pair(BindOnce(&TestTask, 1, &run_order), false));
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      BindOnce(&InsertFenceAndPostTestTask, 2, &run_order, queue), true));
+  tasks_to_post_from_nested_loop.push_back(
+      std::make_pair(BindOnce(&InsertFenceAndPostTestTask, 2, &run_order, queue,
+                              manager_.get()),
+                     true));
 
   queue->task_runner()->PostTask(
       FROM_HERE, BindOnce(&PostFromNestedRunloop, queue,
@@ -820,6 +823,60 @@ TEST(SequenceManagerTestWithMockTaskRunner,
   queue->task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&TestTask, 3, &run_order), delay);
 
+  EXPECT_EQ(1u, fixture.test_task_runner()->GetPendingTaskCount());
+}
+
+TEST(SequenceManagerTestWithMockTaskRunner,
+     CrossThreadTaskPostingToDisabledQueueDoesntScheduleWork) {
+  FixtureWithMockTaskRunner fixture;
+  auto queue =
+      fixture.sequence_manager()->CreateTaskQueue(TaskQueue::Spec("test"));
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      queue->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+
+  WaitableEvent done_event;
+  Thread thread("TestThread");
+  thread.Start();
+  thread.task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                   // Should not schedule a DoWork.
+                                   queue->task_runner()->PostTask(
+                                       FROM_HERE, BindOnce(&NopTask));
+                                   done_event.Signal();
+                                 }));
+  done_event.Wait();
+  thread.Stop();
+
+  EXPECT_EQ(0u, fixture.test_task_runner()->GetPendingTaskCount());
+
+  // But if the queue becomes re-enabled it does schedule work.
+  voter->SetQueueEnabled(true);
+  EXPECT_EQ(1u, fixture.test_task_runner()->GetPendingTaskCount());
+}
+
+TEST(SequenceManagerTestWithMockTaskRunner,
+     CrossThreadTaskPostingToBlockedQueueDoesntScheduleWork) {
+  FixtureWithMockTaskRunner fixture;
+  auto queue =
+      fixture.sequence_manager()->CreateTaskQueue(TaskQueue::Spec("test"));
+  queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
+
+  WaitableEvent done_event;
+  Thread thread("TestThread");
+  thread.Start();
+  thread.task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                   // Should not schedule a DoWork.
+                                   queue->task_runner()->PostTask(
+                                       FROM_HERE, BindOnce(&NopTask));
+                                   done_event.Signal();
+                                 }));
+  done_event.Wait();
+  thread.Stop();
+
+  EXPECT_EQ(0u, fixture.test_task_runner()->GetPendingTaskCount());
+
+  // But if the queue becomes unblocked it does schedule work.
+  queue->RemoveFence();
   EXPECT_EQ(1u, fixture.test_task_runner()->GetPendingTaskCount());
 }
 
@@ -1248,7 +1305,7 @@ TEST_P(SequenceManagerTest, DelayedFence_TakeIncomingImmediateQueue) {
       BindOnce(&RecordTimeAndQueueTask, &run_times, queue1, mock_tick_clock()));
   // Force reload of immediate work queue. In real life the same effect can be
   // achieved with cross-thread posting.
-  queue1->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
+  sequence_manager()->ReloadEmptyWorkQueues();
 
   AdvanceMockTickClock(TimeDelta::FromMilliseconds(300));
 
@@ -3395,10 +3452,67 @@ TEST_P(SequenceManagerTest, ObserverNotFiredAfterTaskQueueDestructed) {
 
   // We don't expect the observer to fire if the TaskQueue gets destructed.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
-  main_tq->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
-
+  auto task_runner = main_tq->task_runner();
   main_tq = nullptr;
+  task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
+
   FastForwardUntilNoTasksRemain();
+}
+
+TEST_P(SequenceManagerTest, ObserverNotFiredForDisabledQueuePostTask) {
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+  auto task_runner = main_tq->task_runner();
+
+  MockTaskQueueObserver observer;
+  main_tq->SetObserver(&observer);
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      main_tq->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+
+  // We don't expect the observer to fire if the TaskQueue gets disabled.
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
+
+  // Should not fire the observer.
+  task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
+
+  FastForwardUntilNoTasksRemain();
+  // When |voter| goes out of scope the queue will become enabled and the
+  // observer will fire. We're not interested in testing that however.
+  Mock::VerifyAndClearExpectations(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       ObserverNotFiredForCrossThreadDisabledQueuePostTask) {
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+  auto task_runner = main_tq->task_runner();
+
+  MockTaskQueueObserver observer;
+  main_tq->SetObserver(&observer);
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      main_tq->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+
+  // We don't expect the observer to fire if the TaskQueue gets blocked.
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
+
+  WaitableEvent done_event;
+  Thread thread("TestThread");
+  thread.Start();
+  thread.task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                   // Should not fire the observer.
+                                   task_runner->PostTask(FROM_HERE,
+                                                         BindOnce(&NopTask));
+                                   done_event.Signal();
+                                 }));
+  done_event.Wait();
+  thread.Stop();
+
+  FastForwardUntilNoTasksRemain();
+  // When |voter| goes out of scope the queue will become enabled and the
+  // observer will fire. We're not interested in testing that however.
+  Mock::VerifyAndClearExpectations(&observer);
 }
 
 TEST_P(SequenceManagerTest, GracefulShutdown) {
@@ -3918,7 +4032,7 @@ TEST_P(SequenceManagerTest, DeletePendingTasks_Complex) {
       BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(
                                             "Q3 I1", queues[2]->task_runner(),
                                             0, &tasks_alive, &tasks_deleted)));
-  queues[2]->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
+  queues[2]->GetTaskQueueImpl()->ReloadEmptyImmediateWorkQueue();
   queues[2]->task_runner()->PostTask(
       FROM_HERE,
       BindOnce(&CallbackWithDestructor, std::make_unique<PostTaskWhenDeleted>(

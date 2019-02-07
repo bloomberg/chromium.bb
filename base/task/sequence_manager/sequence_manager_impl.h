@@ -217,7 +217,7 @@ class BASE_EXPORT SequenceManagerImpl
     ~AnyThread();
 
     // Task queues with newly available work on the incoming queue.
-    internal::IncomingImmediateWorkList* incoming_immediate_work_list = nullptr;
+    internal::EmptyQueuesToReloadList* empty_queues_to_reload_list = nullptr;
   };
 
   // SequenceManager maintains a queue of non-nestable tasks since they're
@@ -278,7 +278,7 @@ class BASE_EXPORT SequenceManagerImpl
     //   from underneath.
 
     // Scratch space used to store the contents of
-    // any_thread().incoming_immediate_work_list for use by
+    // any_thread().empty_queues_to_reload_list for use by
     // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
     // memory allocations. This should have the same size as |active_queues|.
     // DO NOT RELY ON THE VALIDITY OF THE POINTERS WITHIN!
@@ -332,18 +332,19 @@ class BASE_EXPORT SequenceManagerImpl
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
   // |schedule_work| is true it makes sure a DoWork is posted.
   // Can be called from any thread.
-  void OnQueueHasIncomingImmediateWork(internal::TaskQueueImpl* queue,
-                                       internal::EnqueueOrder enqueue_order,
-                                       bool schedule_work);
+  void OnEmptyQueueHasIncomingImmediateWork(
+      internal::TaskQueueImpl* queue,
+      internal::EnqueueOrder enqueue_order,
+      bool schedule_work);
 
   // Returns true if |task_queue| was added to the list, or false if it was
   // already in the list.  If |task_queue| was inserted, the |order| is set
   // with |enqueue_order|.
-  bool AddToIncomingImmediateWorkList(internal::TaskQueueImpl* task_queue,
-                                      internal::EnqueueOrder enqueue_order);
-  void RemoveFromIncomingImmediateWorkList(internal::TaskQueueImpl* task_queue);
+  bool AddToEmptyQueuesToReloadList(internal::TaskQueueImpl* task_queue,
+                                    internal::EnqueueOrder enqueue_order);
+  void RemoveFromEmptyQueuesToReloadList(internal::TaskQueueImpl* task_queue);
 
-  // Calls |ReloadImmediateWorkQueueIfEmpty| on all queues in
+  // Calls |TakeImmediateIncomingQueueTasks| on all queues in
   // |main_thread_only().queues_to_reload|.
   void ReloadEmptyWorkQueues();
 

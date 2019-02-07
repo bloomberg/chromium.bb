@@ -273,29 +273,29 @@ void SequenceManagerImpl::SetObserver(Observer* observer) {
   main_thread_only().observer = observer;
 }
 
-bool SequenceManagerImpl::AddToIncomingImmediateWorkList(
+bool SequenceManagerImpl::AddToEmptyQueuesToReloadList(
     internal::TaskQueueImpl* task_queue,
     internal::EnqueueOrder enqueue_order) {
   AutoLock lock(any_thread_lock_);
   // Check if |task_queue| is already in the linked list.
-  if (task_queue->immediate_work_list_storage()->queue)
+  if (task_queue->empty_queues_to_reload_list_storage()->queue)
     return false;
 
   // Insert into the linked list.
-  task_queue->immediate_work_list_storage()->queue = task_queue;
-  task_queue->immediate_work_list_storage()->order = enqueue_order;
-  task_queue->immediate_work_list_storage()->next =
-      any_thread().incoming_immediate_work_list;
-  any_thread().incoming_immediate_work_list =
-      task_queue->immediate_work_list_storage();
+  task_queue->empty_queues_to_reload_list_storage()->queue = task_queue;
+  task_queue->empty_queues_to_reload_list_storage()->order = enqueue_order;
+  task_queue->empty_queues_to_reload_list_storage()->next =
+      any_thread().empty_queues_to_reload_list;
+  any_thread().empty_queues_to_reload_list =
+      task_queue->empty_queues_to_reload_list_storage();
   return true;
 }
 
-void SequenceManagerImpl::RemoveFromIncomingImmediateWorkList(
+void SequenceManagerImpl::RemoveFromEmptyQueuesToReloadList(
     internal::TaskQueueImpl* task_queue) {
   AutoLock lock(any_thread_lock_);
-  internal::IncomingImmediateWorkList** prev =
-      &any_thread().incoming_immediate_work_list;
+  internal::EmptyQueuesToReloadList** prev =
+      &any_thread().empty_queues_to_reload_list;
   while (*prev) {
     if ((*prev)->queue == task_queue) {
       *prev = (*prev)->next;
@@ -304,8 +304,8 @@ void SequenceManagerImpl::RemoveFromIncomingImmediateWorkList(
     prev = &(*prev)->next;
   }
 
-  task_queue->immediate_work_list_storage()->next = nullptr;
-  task_queue->immediate_work_list_storage()->queue = nullptr;
+  task_queue->empty_queues_to_reload_list_storage()->next = nullptr;
+  task_queue->empty_queues_to_reload_list_storage()->queue = nullptr;
 }
 
 void SequenceManagerImpl::ShutdownTaskQueueGracefully(
@@ -330,7 +330,7 @@ void SequenceManagerImpl::UnregisterTaskQueueImpl(
 
   // Remove |task_queue| from the linked list if present.
   // This is O(n).  We assume this will be a relatively infrequent operation.
-  RemoveFromIncomingImmediateWorkList(task_queue.get());
+  RemoveFromEmptyQueuesToReloadList(task_queue.get());
 
   // Add |task_queue| to |main_thread_only().queues_to_delete| so we can prevent
   // it from being freed while any of our structures hold hold a raw pointer to
@@ -349,8 +349,8 @@ void SequenceManagerImpl::ReloadEmptyWorkQueues() {
   {
     AutoLock lock(any_thread_lock_);
 
-    for (internal::IncomingImmediateWorkList* iter =
-             any_thread().incoming_immediate_work_list;
+    for (internal::EmptyQueuesToReloadList* iter =
+             any_thread().empty_queues_to_reload_list;
          iter; iter = iter->next) {
       DCHECK_LT(num_queues_to_reload,
                 main_thread_only().queues_to_reload.size());
@@ -358,7 +358,7 @@ void SequenceManagerImpl::ReloadEmptyWorkQueues() {
       iter->queue = nullptr;
     }
 
-    any_thread().incoming_immediate_work_list = nullptr;
+    any_thread().empty_queues_to_reload_list = nullptr;
   }
 
   // There are two cases where a queue needs reloading.  First, it might be
@@ -366,9 +366,10 @@ void SequenceManagerImpl::ReloadEmptyWorkQueues() {
   // case). Secondly if the work queue becomes empty in when calling
   // WorkQueue::TakeTaskFromWorkQueue (handled there).
   for (size_t i = 0; i < num_queues_to_reload; i++) {
-    // It's important we call ReloadImmediateWorkQueueIfEmpty out side of
-    // |any_thread_lock_| avoid lock order inversion.
-    main_thread_only().queues_to_reload[i]->ReloadImmediateWorkQueueIfEmpty();
+    // It's important we call
+    // ReloadEmptyImmediateWorkQueue out side of
+    // |any_thread_lock_| to avoid lock order inversion.
+    main_thread_only().queues_to_reload[i]->ReloadEmptyImmediateWorkQueue();
     main_thread_only().queues_to_reload[i] =
         nullptr;  // Not strictly necessary.
   }
@@ -413,11 +414,13 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
     main_thread_only().observer->OnExitNestedRunLoop();
 }
 
-void SequenceManagerImpl::OnQueueHasIncomingImmediateWork(
+void SequenceManagerImpl::OnEmptyQueueHasIncomingImmediateWork(
     internal::TaskQueueImpl* queue,
     internal::EnqueueOrder enqueue_order,
     bool schedule_work) {
-  if (AddToIncomingImmediateWorkList(queue, enqueue_order) && schedule_work)
+  bool success = AddToEmptyQueuesToReloadList(queue, enqueue_order);
+  DCHECK(success);
+  if (schedule_work)
     controller_->ScheduleWork();
 }
 
@@ -525,8 +528,8 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
   // hasn't been called yet. This check catches the case of fresh incoming work.
   {
     AutoLock lock(any_thread_lock_);
-    for (const internal::IncomingImmediateWorkList* iter =
-             any_thread().incoming_immediate_work_list;
+    for (const internal::EmptyQueuesToReloadList* iter =
+             any_thread().empty_queues_to_reload_list;
          iter; iter = iter->next) {
       if (iter->queue->CouldTaskRun(iter->order))
         return TimeDelta();
@@ -778,8 +781,8 @@ SequenceManagerImpl::AsValueWithSelectorResult(
   {
     AutoLock lock(any_thread_lock_);
     state->BeginArray("has_incoming_immediate_work");
-    for (const internal::IncomingImmediateWorkList* iter =
-             any_thread().incoming_immediate_work_list;
+    for (const internal::EmptyQueuesToReloadList* iter =
+             any_thread().empty_queues_to_reload_list;
          iter; iter = iter->next) {
       state->AppendString(iter->queue->GetName());
     }
