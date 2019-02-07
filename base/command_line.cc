@@ -217,7 +217,7 @@ bool CommandLine::Init(int argc, const char* const* argv) {
   current_process_commandline_ = new CommandLine(NO_PROGRAM);
 #if defined(OS_WIN)
   current_process_commandline_->ParseFromString(
-      WideToUTF16(::GetCommandLineW()));
+      as_u16cstr(::GetCommandLineW()));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   current_process_commandline_->InitFromArgv(argc, argv);
 #else
@@ -247,7 +247,7 @@ bool CommandLine::InitializedForCurrentProcess() {
 
 #if defined(OS_WIN)
 // static
-CommandLine CommandLine::FromString(const string16& command_line) {
+CommandLine CommandLine::FromString(StringPiece16 command_line) {
   CommandLine cmd(NO_PROGRAM);
   cmd.ParseFromString(command_line);
   return cmd;
@@ -431,15 +431,14 @@ void CommandLine::PrependWrapper(const CommandLine::StringType& wrapper) {
 }
 
 #if defined(OS_WIN)
-void CommandLine::ParseFromString(const string16& command_line) {
-  string16 command_line_string;
-  TrimWhitespace(command_line, TRIM_ALL, &command_line_string);
-  if (command_line_string.empty())
+void CommandLine::ParseFromString(StringPiece16 command_line) {
+  command_line = TrimWhitespace(command_line, TRIM_ALL);
+  if (command_line.empty())
     return;
 
   int num_args = 0;
   wchar_t** args = NULL;
-  args = ::CommandLineToArgvW(as_wcstr(command_line_string), &num_args);
+  args = ::CommandLineToArgvW(as_wcstr(command_line), &num_args);
 
   DPLOG_IF(FATAL, !args) << "CommandLineToArgvW failed on command line: "
                          << UTF16ToUTF8(command_line);
