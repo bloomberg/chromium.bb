@@ -245,17 +245,20 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
       raster_capability.value().document_sheet_back;
 
   PwgRasterSettings result;
-  result.odd_page_transform = TRANSFORM_NORMAL;
   switch (duplex_value) {
     case cloud_devices::printer::NO_DUPLEX:
+      result.duplex_mode = DuplexMode::SIMPLEX;
+      result.odd_page_transform = TRANSFORM_NORMAL;
       break;
     case cloud_devices::printer::LONG_EDGE:
+      result.duplex_mode = DuplexMode::LONG_EDGE;
       if (document_sheet_back == cloud_devices::printer::ROTATED)
         result.odd_page_transform = TRANSFORM_ROTATE_180;
       else if (document_sheet_back == cloud_devices::printer::FLIPPED)
         result.odd_page_transform = TRANSFORM_FLIP_VERTICAL;
       break;
     case cloud_devices::printer::SHORT_EDGE:
+      result.duplex_mode = DuplexMode::SHORT_EDGE;
       if (document_sheet_back == cloud_devices::printer::MANUAL_TUMBLE)
         result.odd_page_transform = TRANSFORM_ROTATE_180;
       else if (document_sheet_back == cloud_devices::printer::FLIPPED)
