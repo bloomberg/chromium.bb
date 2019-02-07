@@ -183,7 +183,9 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
       LogCommittedPreview(previews_data, PreviewsType::NOSCRIPT);
       return content::NOSCRIPT_ON;
     }
-    return content::PREVIEWS_OFF;
+    // Remove NOSCRIPT_ON from |previews_state| since we decided not to
+    // commit to it.
+    previews_state = previews_state & ~content::NOSCRIPT_ON;
   }
   if (previews_state & content::CLIENT_LOFI_ON) {
     LogCommittedPreview(previews_data, PreviewsType::LOFI);
