@@ -15053,4 +15053,159 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(delete_c.deleted());
 }
 
+// This test verifies that when scrolling an OOPIF in a pinched-zoomed page,
+// that the scroll-delta matches the distance between TouchStart/End as seen
+// by the oopif, i.e. the oopif content 'sticks' to the finger during scrolling.
+// The relation is not exact, but should be close.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ScrollOopifInPinchZoomedPage) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  ASSERT_TRUE(child);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Make B scrollable. The call to document.write will erase the html inside
+  // the OOPIF, leaving just a vertical column of 'Hello's.
+  std::string script =
+      "var s = '<div>Hello</div>\\n';\n"
+      "document.write(s.repeat(200));";
+  EXPECT_TRUE(ExecuteScript(child, script));
+
+  RenderFrameSubmissionObserver observer_a(root);
+  RenderFrameSubmissionObserver observer_b(child);
+
+  // We need to observe a root frame submission to pick up the initial page
+  // scale factor.
+  observer_a.WaitForAnyFrameSubmission();
+
+  const float kPageScaleDelta = 2.f;
+  // On desktop systems we expect |current_page_scale| to be 1.f, but on
+  // Android it will typically be less than 1.f, and may take on arbitrary
+  // values.
+  float original_page_scale =
+      observer_a.LastRenderFrameMetadata().page_scale_factor;
+  float target_page_scale = original_page_scale * kPageScaleDelta;
+
+  SyntheticPinchGestureParams params;
+  auto* host = static_cast<RenderWidgetHostImpl*>(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostViewBase* root_view = host->GetView();
+  RenderWidgetHostViewBase* child_view =
+      static_cast<RenderWidgetHostImpl*>(
+          child->current_frame_host()->GetRenderWidgetHost())
+          ->GetView();
+  gfx::Rect bounds(root_view->GetViewBounds().size());
+  // The synthetic gesture code expects a location in root-view coordinates.
+  params.anchor = gfx::PointF(bounds.CenterPoint().x(), 70.f);
+  // In SyntheticPinchGestureParams, |scale_factor| is really a delta.
+  params.scale_factor = kPageScaleDelta;
+#if defined(OS_MACOSX)
+  auto synthetic_pinch_gesture =
+      std::make_unique<SyntheticTouchpadPinchGesture>(params);
+#else
+  auto synthetic_pinch_gesture =
+      std::make_unique<SyntheticTouchscreenPinchGesture>(params);
+#endif
+
+  // Send pinch gesture and verify we receive the ack.
+  {
+    InputEventAckWaiter ack_waiter(host,
+                                   blink::WebInputEvent::kGesturePinchEnd);
+    host->QueueSyntheticGesture(
+        std::move(synthetic_pinch_gesture),
+        base::BindOnce([](SyntheticGesture::Result result) {
+          EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+        }));
+    ack_waiter.Wait();
+  }
+
+  // Make sure all the page scale values behave as expected.
+  const float kScaleTolerance = 0.07f;
+  observer_a.WaitForPageScaleFactor(target_page_scale, kScaleTolerance);
+  observer_b.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
+  float final_page_scale =
+      observer_a.LastRenderFrameMetadata().page_scale_factor;
+
+  // Verify scroll position of OOPIF.
+  float initial_child_scroll = EvalJs(child, "window.scrollY").ExtractDouble();
+
+  // Send touch-initiated gesture scroll sequence to OOPIF.
+  // TODO(wjmaclean): GetViewBounds() is broken for OOPIFs when PSF != 1.f, so
+  // we calculate it manually. This will need to be update when GetViewBounds()
+  // in RenderWidgetHostViewBase is fixed. See https://crbug.com/928825.
+  auto child_bounds = child_view->GetViewBounds();
+  gfx::PointF child_upper_left =
+      child_view->TransformPointToRootCoordSpaceF(gfx::PointF(0, 0));
+  gfx::PointF child_lower_right = child_view->TransformPointToRootCoordSpaceF(
+      gfx::PointF(child_bounds.width(), child_bounds.height()));
+  gfx::PointF scroll_start_location_in_screen =
+      gfx::PointF((child_upper_left.x() + child_lower_right.x()) / 2.f,
+                  child_lower_right.y() - 10);
+  const float kScrollDelta = 100.f;
+  gfx::PointF scroll_end_location_in_screen =
+      scroll_start_location_in_screen + gfx::Vector2dF(0, -kScrollDelta);
+
+  // Create touch move sequence with discrete touch moves. Include a brief
+  // pause at the end to avoid the scroll flinging.
+  std::string actions_template = R"HTML(
+      [{
+        "source" : "touch",
+        "actions" : [
+          { "name": "pointerDown", "x": %f, "y": %f},
+          { "name": "pointerMove", "x": %f, "y": %f},
+          { "name": "pause", "duration": 0.3 },
+          { "name": "pointerUp"}
+        ]
+      }]
+  )HTML";
+  std::string touch_move_sequence_json = base::StringPrintf(
+      actions_template.c_str(), scroll_start_location_in_screen.x(),
+      scroll_start_location_in_screen.y(), scroll_end_location_in_screen.x(),
+      scroll_end_location_in_screen.y());
+  base::JSONReader json_reader;
+  std::unique_ptr<base::Value> touch_params =
+      json_reader.ReadToValue(touch_move_sequence_json);
+  ASSERT_TRUE(touch_params.get()) << json_reader.GetErrorMessage();
+  ActionsParser actions_parser(touch_params.get());
+
+  ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
+  auto synthetic_scroll_gesture =
+      SyntheticGesture::Create(actions_parser.gesture_params());
+
+  {
+    auto* child_host = static_cast<RenderWidgetHostImpl*>(
+        child->current_frame_host()->GetRenderWidgetHost());
+    InputEventAckWaiter ack_waiter(child_host,
+                                   blink::WebInputEvent::kGestureScrollEnd);
+    host->QueueSyntheticGesture(
+        std::move(synthetic_scroll_gesture),
+        base::BindOnce([](SyntheticGesture::Result result) {
+          EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+        }));
+    ack_waiter.Wait();
+  }
+
+  // Verify new scroll position of OOPIF, should match touch sequence delta.
+  float expected_scroll_delta = kScrollDelta / final_page_scale;
+  float actual_scroll_delta =
+      EvalJs(child, "window.scrollY").ExtractDouble() - initial_child_scroll;
+
+  const float kScrollTolerance = 0.2f;
+  EXPECT_GT((1.f + kScrollTolerance) * expected_scroll_delta,
+            actual_scroll_delta);
+  EXPECT_LT((1.f - kScrollTolerance) * expected_scroll_delta,
+            actual_scroll_delta);
+}
+
 }  // namespace content

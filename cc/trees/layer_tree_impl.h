@@ -367,9 +367,23 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetRasterColorSpace(int raster_color_space_id,
                            const gfx::ColorSpace& raster_color_space);
+  // OOPIFs need to know the page scale factor used in the main frame, but it
+  // is distributed differently (via VisualPropertiesSync), and used only to
+  // set raster-scale (page_scale_factor has geometry implications that are
+  // inappropriate for OOPIFs).
   void SetExternalPageScaleFactor(float external_page_scale_factor);
   float external_page_scale_factor() const {
     return external_page_scale_factor_;
+  }
+  // A function to provide page scale information for scaling scroll
+  // deltas. In top-level frames we store this value in page_scale_factor_, but
+  // for cross-process subframes it's stored in external_page_scale_factor_, so
+  // that it only affects raster scale. These cases are mutually exclusive, so
+  // only one of the values should ever vary from 1.f.
+  float page_scale_factor_for_scroll() const {
+    DCHECK(external_page_scale_factor_ == 1.f ||
+           current_page_scale_factor() == 1.f);
+    return external_page_scale_factor_ * current_page_scale_factor();
   }
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;

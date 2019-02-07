@@ -4687,14 +4687,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   auto* root_view = static_cast<RenderWidgetHostViewBase*>(
       contents->GetRenderWidgetHostView());
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      child_frame_host->GetRenderWidgetHost()->GetView());
 
   const float scale_factor =
       render_frame_submission_observer.LastRenderFrameMetadata()
           .page_scale_factor;
-  const gfx::Point root_location(gfx::ToCeiledInt(100 * scale_factor),
-                                 gfx::ToCeiledInt(100 * scale_factor));
-  blink::WebMouseEvent dummy_event_for_location;
-  SetWebEventPositions(&dummy_event_for_location, root_location, root_view);
+  gfx::PointF point_in_screen(child_view->GetViewBounds().CenterPoint());
+  point_in_screen.Scale(scale_factor);
+  // It might seem weird to not also scale the root_view's view bounds, but
+  // since the origin should be unaffected by page scale we don't need to.
+  const gfx::PointF root_location(
+      point_in_screen - root_view->GetViewBounds().OffsetFromOrigin());
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
 
@@ -4703,10 +4707,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::kWebGestureDeviceTouchpad);
-  double_tap_zoom.SetPositionInWidget(
-      dummy_event_for_location.PositionInWidget());
-  double_tap_zoom.SetPositionInScreen(
-      dummy_event_for_location.PositionInScreen());
+  double_tap_zoom.SetPositionInWidget(root_location);
+  double_tap_zoom.SetPositionInScreen(point_in_screen);
   double_tap_zoom.data.tap.tap_count = 1;
   double_tap_zoom.SetNeedsWheelEvent(true);
 

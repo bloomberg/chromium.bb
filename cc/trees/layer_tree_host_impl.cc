@@ -3832,7 +3832,7 @@ gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
     const ScrollNode& scroll_node,
     const gfx::Vector2dF& delta) {
   ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
-  float scale_factor = active_tree()->current_page_scale_factor();
+  float scale_factor = active_tree()->page_scale_factor_for_scroll();
 
   gfx::Vector2dF adjusted_scroll(delta);
   adjusted_scroll.Scale(1.f / scale_factor);
@@ -4167,10 +4167,14 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
   // can just apply them directly, but the page scale factor is applied to the
   // scroll delta.
   if (is_direct_manipulation) {
+    // For touch-scroll we need to scale the delta here, as the transform tree
+    // won't know anything about the external page scale factors used by OOPIFs.
+    gfx::Vector2dF scaled_delta(delta);
+    scaled_delta.Scale(1 / active_tree()->external_page_scale_factor());
     return ScrollNodeWithViewportSpaceDelta(
-        scroll_node, gfx::PointF(viewport_point), delta, scroll_tree);
+        scroll_node, gfx::PointF(viewport_point), scaled_delta, scroll_tree);
   }
-  float scale_factor = active_tree()->current_page_scale_factor();
+  float scale_factor = active_tree()->page_scale_factor_for_scroll();
   return ScrollNodeWithLocalDelta(scroll_node, delta, scale_factor,
                                   active_tree());
 }
@@ -4480,7 +4484,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   scroll_result.current_visual_offset =
       ScrollOffsetToVector2dF(GetVisualScrollOffset(*scroll_node));
-  float scale_factor = active_tree()->current_page_scale_factor();
+  float scale_factor = active_tree()->page_scale_factor_for_scroll();
   scroll_result.current_visual_offset.Scale(scale_factor);
 
   // Run animations which need to respond to updated scroll offset.
@@ -4544,7 +4548,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
         animation_controller->WillUpdateScroll();
     }
     gfx::Vector2dF scaled_delta(delta);
-    scaled_delta.Scale(active_tree()->current_page_scale_factor());
+    scaled_delta.Scale(active_tree()->page_scale_factor_for_scroll());
     viewport()->ScrollAnimated(scaled_delta, base::TimeDelta());
   } else {
     ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
@@ -4577,7 +4581,7 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
     return false;
 
   const SnapContainerData& data = scroll_node->snap_container_data.value();
-  float scale_factor = active_tree()->current_page_scale_factor();
+  float scale_factor = active_tree()->page_scale_factor_for_scroll();
   gfx::Vector2dF natural_displacement_in_content =
       gfx::ScaleVector2d(natural_displacement_in_viewport, 1.f / scale_factor);
 
@@ -5490,7 +5494,7 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     ScrollNode* scroll_node,
     const gfx::Vector2dF& scroll_delta,
     base::TimeDelta delayed_by) {
-  float scale_factor = active_tree()->current_page_scale_factor();
+  float scale_factor = active_tree()->page_scale_factor_for_scroll();
   gfx::Vector2dF scaled_delta =
       gfx::ScaleVector2d(scroll_delta, 1.f / scale_factor);
   return mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
