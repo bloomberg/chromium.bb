@@ -2577,4 +2577,9 @@ void WebLocalFrameImpl::BindDevToolsAgent(
                          std::move(devtools_agent_request)));
 }
 
+void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {
+  DCHECK(GetFrame());
+  GetFrame()->SetLifecycleState(state);
+}
+
 }  // namespace blink

@@ -240,7 +240,7 @@ void FrameLoader::Init() {
   // generate start notifications.
   document_loader_->SetSentDidFinishLoad();
   if (frame_->GetPage()->Paused())
-    SetDefersLoading(true);
+    frame_->SetLifecycleState(mojom::FrameLifecycleState::kPaused);
 
   TakeObjectSnapshot();
 }
@@ -250,19 +250,10 @@ LocalFrameClient* FrameLoader::Client() const {
 }
 
 void FrameLoader::SetDefersLoading(bool defers) {
-  if (Document* document = frame_->GetDocument()) {
-    document->Fetcher()->SetDefersLoading(defers);
-    if (defers)
-      document->PauseScheduledTasks(PauseState::kPaused);
-    else
-      document->UnpauseScheduledTasks();
-  }
-
   if (document_loader_)
     document_loader_->SetDefersLoading(defers);
   if (provisional_document_loader_)
     provisional_document_loader_->SetDefersLoading(defers);
-
   if (!defers)
     frame_->GetNavigationScheduler().StartTimer();
 }

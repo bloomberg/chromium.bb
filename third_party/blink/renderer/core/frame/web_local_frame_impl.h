@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
@@ -322,6 +323,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool CreatePlaceholderDocumentLoader(
       const WebNavigationInfo&,
       std::unique_ptr<WebDocumentLoader::ExtraData>) override;
+
+  void SetLifecycleState(mojom::FrameLifecycleState state) override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   LocalFrame* GetFrame() const { return frame_.Get(); }

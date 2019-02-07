@@ -9,6 +9,7 @@ namespace blink {
 
 // This enum represents the pausing state of the ExecutionContext.
 
+// TODO(dtapuska): Remove this enum and use FrameLifecycleState instead.
 enum class PauseState {
   // Pause tasks only. Used for nested event loops (alert, print).
   kPaused,

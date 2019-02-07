@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/platform/reporting.mojom-blink.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/execution_context/pause_state.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -433,6 +435,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // To be called from OomInterventionImpl.
   void ForciblyPurgeV8Memory();
 
+  void SetLifecycleState(mojom::FrameLifecycleState state);
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -477,6 +481,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
 
   void SetFrameColorOverlay(SkColor color);
+
+  void PauseContext();
+  void UnpauseContext();
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -563,6 +570,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const bool is_save_data_enabled_;
 
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
+
+  mojom::FrameLifecycleState lifecycle_state_ =
+      mojom::FrameLifecycleState::kRunning;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

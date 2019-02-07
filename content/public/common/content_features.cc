@@ -171,6 +171,10 @@ const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
     "FramebustingNeedsSameOriginOrUserGesture",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables freezing frame support based on feature policies.
+const base::Feature kFreezeFramesOnVisibility{
+    "FreezeFramesOnVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kFreezePurgeMemoryBackgroundedOnly{
     "FreezePurgeMemoryBackgroundedOnly", base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -58,6 +58,9 @@ interface Frame {
   // activated.
   OnPortalActivated();
 
+  // Set the lifecycle state.
+  SetLifecycleState(blink.mojom.FrameLifecycleState state);
+
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.
   [EnableIf=is_android]

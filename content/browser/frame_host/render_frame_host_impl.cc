@@ -3024,6 +3024,7 @@ void RenderFrameHostImpl::UpdateUserGestureCarryoverInfo() {
 void RenderFrameHostImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   visibility_ = visibility;
+  UpdateFrameFrozenState();
 }
 
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
@@ -3384,6 +3385,8 @@ void RenderFrameHostImpl::OnDidStopLoading() {
   // of this RenderFrameHost is being tracked.
   if (is_active())
     frame_tree_node_->DidStopLoading();
+
+  UpdateFrameFrozenState();
 }
 
 void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {
@@ -6573,6 +6576,29 @@ RenderFrameHostImpl::BuildNavigationClientCommitFailedNavigationCallback(
   return base::BindOnce(
       &RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation,
       base::Unretained(this), navigation_request);
+}
+
+void RenderFrameHostImpl::UpdateFrameFrozenState() {
+  if (!base::FeatureList::IsEnabled(features::kFreezeFramesOnVisibility))
+    return;
+
+  // If the document is in the loading state keep it still loading.
+  if (is_loading_)
+    return;
+
+  // TODO(dtapuska): Adjust these based on feature policies when
+  // they are available.
+  // Feature policies don't support parameterized values yet.
+  // crbug.com/924568, crbug.com/907125
+  if (visibility_ == blink::mojom::FrameVisibility::kNotRendered) {
+    frame_->SetLifecycleState(blink::mojom::FrameLifecycleState::kFrozen);
+  } else if (visibility_ ==
+             blink::mojom::FrameVisibility::kRenderedOutOfViewport) {
+    frame_->SetLifecycleState(
+        blink::mojom::FrameLifecycleState::kFrozenAutoResumeMedia);
+  } else {
+    frame_->SetLifecycleState(blink::mojom::FrameLifecycleState::kRunning);
+  }
 }
 
 }  // namespace content
