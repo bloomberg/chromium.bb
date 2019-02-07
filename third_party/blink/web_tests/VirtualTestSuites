@@ -1040,6 +1040,11 @@
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
   },
   {
+    "prefix": "freeze-frames",
+    "base": "external/wpt/lifecycle",
+    "args": ["--enable-features=FreezeFramesOnVisibility"]
+  },
+  {
     "prefix": "feature-policy-for-sandbox",
     "base": "http/tests/navigation",
     "args": ["--enable-blink-features=FeaturePolicyForSandbox"]

@@ -13,3 +13,17 @@ enum FrameVisibility {
   // Not visible, no layout object created. ie. display: none
   kNotRendered,
 };
+
+// The frame lifecycle state.
+enum FrameLifecycleState {
+  // State is normal running.
+  kRunning,
+  // Paused state is used for nested event loops. Does not fire
+  // frozen, resumed events on the document.
+  kPaused,
+  // State is frozen, pause all media. Do not resume media
+  // when moving to kRunning.
+  kFrozen,
+  // State is frozen, auto resume media when moving to kRunning.
+  kFrozenAutoResumeMedia,
+};

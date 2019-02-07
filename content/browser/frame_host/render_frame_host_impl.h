@@ -1496,6 +1496,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // - Speculative RenderFrameHost.
   void ResetNavigationsForPendingDeletion();
 
+  // Update the frozen state of the frame applying current inputs (visibility,
+  // loaded state) to determine the new state.
+  void UpdateFrameFrozenState();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring

@@ -49,6 +49,7 @@ CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
 CONTENT_EXPORT extern const base::Feature
     kFramebustingNeedsSameOriginOrUserGesture;
+CONTENT_EXPORT extern const base::Feature kFreezeFramesOnVisibility;
 CONTENT_EXPORT extern const base::Feature kFreezePurgeMemoryBackgroundedOnly;
 CONTENT_EXPORT extern const base::Feature kGamepadVibration;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;

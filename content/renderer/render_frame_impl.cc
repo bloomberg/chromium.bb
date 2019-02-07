@@ -2617,6 +2617,11 @@ void RenderFrameImpl::OnPortalActivated() {
   frame_->OnPortalActivated();
 }
 
+void RenderFrameImpl::SetLifecycleState(
+    blink::mojom::FrameLifecycleState state) {
+  frame_->SetLifecycleState(state);
+}
+
 void RenderFrameImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   GetFrameHost()->VisibilityChanged(visibility);

@@ -1753,4 +1753,54 @@ void LocalFrame::ForciblyPurgeV8Memory() {
   Loader().StopAllLoaders();
 }
 
+void LocalFrame::PauseContext() {
+  // TODO(dtapuska): Eventually get rid of PauseState.
+  PauseState pause_state =
+      lifecycle_state_ == mojom::FrameLifecycleState::kFrozenAutoResumeMedia
+          ? PauseState::kFrozen
+          : PauseState::kPaused;
+  if (Document* document = GetDocument()) {
+    document->Fetcher()->SetDefersLoading(true);
+    document->PauseScheduledTasks(pause_state);
+  }
+  Loader().SetDefersLoading(true);
+  GetFrameScheduler()->SetPaused(true);
+}
+
+void LocalFrame::UnpauseContext() {
+  if (Document* document = GetDocument()) {
+    document->Fetcher()->SetDefersLoading(false);
+    document->UnpauseScheduledTasks();
+  }
+  Loader().SetDefersLoading(false);
+  GetFrameScheduler()->SetPaused(false);
+}
+
+void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
+  if (state == lifecycle_state_)
+    return;
+  bool is_frozen = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
+  bool freeze = state != mojom::FrameLifecycleState::kRunning;
+
+  // TODO(dtapuska): Determine if we should dispatch events if we are
+  // transitioning across frozen states. ie. kPaused->kFrozen should
+  // pause media.
+
+  // If we are transitioning from one frozen state to another just return.
+  if (is_frozen == freeze)
+    return;
+  mojom::FrameLifecycleState old_state = lifecycle_state_;
+  lifecycle_state_ = state;
+
+  if (freeze) {
+    if (lifecycle_state_ != mojom::FrameLifecycleState::kPaused)
+      DidFreeze();
+    PauseContext();
+  } else {
+    UnpauseContext();
+    if (old_state != mojom::FrameLifecycleState::kPaused)
+      DidResume();
+  }
+}
+
 }  // namespace blink

@@ -363,13 +363,14 @@ void Page::SetPaused(bool paused) {
     return;
 
   paused_ = paused;
+  mojom::FrameLifecycleState state = paused
+                                         ? mojom::FrameLifecycleState::kPaused
+                                         : mojom::FrameLifecycleState::kRunning;
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
-    LocalFrame* local_frame = ToLocalFrame(frame);
-    local_frame->Loader().SetDefersLoading(paused);
-    local_frame->GetFrameScheduler()->SetPaused(paused);
+    ToLocalFrame(frame)->SetLifecycleState(state);
   }
 }
 

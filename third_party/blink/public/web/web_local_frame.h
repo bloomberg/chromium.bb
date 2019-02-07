@@ -14,6 +14,7 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -730,6 +731,8 @@ class WebLocalFrame : public WebFrame {
   // given location.
   virtual void PerformMediaPlayerAction(const WebPoint&,
                                         const WebMediaPlayerAction&) = 0;
+
+  virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
