@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,7 +13,21 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/browser_switcher/browser_switcher_service_win.h"
+#endif
+
 namespace browser_switcher {
+
+namespace {
+
+#if defined(OS_WIN)
+using BrowserSwitcherServiceImpl = BrowserSwitcherServiceWin;
+#else
+using BrowserSwitcherServiceImpl = BrowserSwitcherService;
+#endif
+
+}  // namespace
 
 // static
 BrowserSwitcherServiceFactory* BrowserSwitcherServiceFactory::GetInstance() {
@@ -35,7 +50,7 @@ BrowserSwitcherServiceFactory::~BrowserSwitcherServiceFactory() {}
 
 KeyedService* BrowserSwitcherServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new BrowserSwitcherService(Profile::FromBrowserContext(context));
+  return new BrowserSwitcherServiceImpl(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* BrowserSwitcherServiceFactory::GetBrowserContextToUse(

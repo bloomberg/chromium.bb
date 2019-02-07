@@ -4,13 +4,10 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 
-#include <sstream>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
@@ -21,29 +18,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/simple_url_loader.h"
-
-#if defined(OS_WIN)
-#include "base/files/file.h"
-#include "base/files/file_util.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/path_service.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
-#include "base/win/registry.h"
-#endif
 
 namespace browser_switcher {
 
 namespace {
-
-#if defined(OS_WIN)
-const wchar_t kIeSiteListKey[] =
-    L"SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main\\EnterpriseMode";
-const wchar_t kIeSiteListValue[] = L"SiteList";
-#endif
 
 // How long to wait after |BrowserSwitcherService| is created before initiating
 // the sitelist fetch.
@@ -86,100 +64,7 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
             "It needs to be enabled through policies."
         })");
 
-#if defined(OS_WIN)
-const int kCurrentFileVersion = 1;
-
-base::FilePath GetCacheDir() {
-  base::FilePath path;
-  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
-    return path;
-  path = path.AppendASCII("Google");
-  path = path.AppendASCII("BrowserSwitcher");
-  return path;
-}
-
-// Serialize prefs to a string for writing to cache.dat.
-std::string SerializeCacheFile(const BrowserSwitcherPrefs& prefs) {
-  std::ostringstream buffer;
-
-  buffer << kCurrentFileVersion << std::endl;
-
-  buffer << prefs.GetAlternativeBrowserPath() << std::endl;
-  buffer << base::JoinString(prefs.GetAlternativeBrowserParameters(), " ")
-         << std::endl;
-
-  // TODO(nicolaso): Use GetChromePath() and GetChromeParameters once the
-  // policies are implemented. For now, those are just ${chrome} with no
-  // arguments, to ensure the BHO works correctly.
-  buffer << "${chrome}" << std::endl;
-  buffer << base::JoinString(std::vector<std::string>(), " ") << std::endl;
-
-  const auto& rules = prefs.GetRules();
-  buffer << rules.sitelist.size() << std::endl;
-  if (!rules.sitelist.empty())
-    buffer << base::JoinString(rules.sitelist, "\n") << std::endl;
-
-  buffer << rules.greylist.size() << std::endl;
-  if (!rules.greylist.empty())
-    buffer << base::JoinString(rules.greylist, "\n") << std::endl;
-
-  return buffer.str();
-}
-
-void SavePrefsToFile(std::string data) {
-  // Ensure the directory exists
-  base::FilePath dir = GetCacheDir();
-
-  bool success = base::CreateDirectory(dir);
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkDirSuccess", success);
-  if (!success) {
-    LOG(ERROR) << "Could not create directory: " << dir.LossyDisplayName();
-    return;
-  }
-
-  base::FilePath tmp_path;
-  success = base::CreateTemporaryFileInDir(dir, &tmp_path);
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkTempSuccess", success);
-  if (!success) {
-    LOG(ERROR) << "Could not open file for writing: "
-               << tmp_path.LossyDisplayName();
-    return;
-  }
-
-  base::WriteFile(tmp_path, data.c_str(), data.size());
-
-  base::FilePath dest_path = dir.AppendASCII("cache.dat");
-  success = base::Move(tmp_path, dest_path);
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MoveSuccess", success);
-}
-#endif
-
 }  // namespace
-
-class XmlDownloader {
- public:
-  // Posts a task to start downloading+parsing the rules after |delay|. Calls
-  // |done_callback| when done, so the caller can apply the parsed rules and
-  // clean up this object.
-  XmlDownloader(Profile* profile,
-                GURL url,
-                base::TimeDelta delay,
-                base::OnceCallback<void(ParsedXml)> done_callback);
-  virtual ~XmlDownloader() = default;
-
- private:
-  void FetchXml();
-  void ParseXml(std::unique_ptr<std::string> bytes);
-  void DoneParsing(ParsedXml xml);
-
-  GURL url_;
-  scoped_refptr<network::SharedURLLoaderFactory> factory_;
-
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
-  base::OnceCallback<void(ParsedXml)> done_callback_;
-
-  base::WeakPtrFactory<XmlDownloader> weak_ptr_factory_;
-};
 
 XmlDownloader::XmlDownloader(Profile* profile,
                              GURL url,
@@ -196,6 +81,8 @@ XmlDownloader::XmlDownloader(Profile* profile,
       base::BindOnce(&XmlDownloader::FetchXml, weak_ptr_factory_.GetWeakPtr()),
       delay);
 }
+
+XmlDownloader::~XmlDownloader() = default;
 
 void XmlDownloader::FetchXml() {
   auto request = std::make_unique<network::ResourceRequest>();
@@ -240,30 +127,6 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
         base::BindOnce(&BrowserSwitcherService::OnExternalSitelistParsed,
                        weak_ptr_factory_.GetWeakPtr()));
   }
-
-#if defined(OS_WIN)
-  if (prefs_.UseIeSitelist()) {
-    GURL sitelist_url = GetIeemSitelistUrl();
-    if (sitelist_url.is_valid()) {
-      ieem_downloader_ = std::make_unique<XmlDownloader>(
-          profile, std::move(sitelist_url), fetch_delay_,
-          base::BindOnce(&BrowserSwitcherService::OnIeemSitelistParsed,
-                         weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-
-  if (prefs_.IsEnabled()) {
-    // TODO(nicolaso): also write cache.dat when policies change (e.g. after
-    // loading cloud policies or after enabling LBS while Chrome is running).
-    //
-    // Write the cache.dat file.
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::BindOnce(&SavePrefsToFile, SerializeCacheFile(prefs_)));
-  }
-#endif
 }
 
 BrowserSwitcherService::~BrowserSwitcherService() {}
@@ -307,43 +170,5 @@ base::TimeDelta BrowserSwitcherService::fetch_delay_ = kFetchSitelistDelay;
 void BrowserSwitcherService::SetFetchDelayForTesting(base::TimeDelta delay) {
   fetch_delay_ = delay;
 }
-
-#if defined(OS_WIN)
-base::Optional<std::string>
-    BrowserSwitcherService::ieem_sitelist_url_for_testing_;
-
-// static
-void BrowserSwitcherService::SetIeemSitelistUrlForTesting(
-    const std::string& spec) {
-  ieem_sitelist_url_for_testing_ = spec;
-}
-
-// static
-GURL BrowserSwitcherService::GetIeemSitelistUrl() {
-  if (ieem_sitelist_url_for_testing_ != base::nullopt)
-    return GURL(*ieem_sitelist_url_for_testing_);
-
-  base::win::RegKey key;
-  if (ERROR_SUCCESS != key.Open(HKEY_LOCAL_MACHINE, kIeSiteListKey, KEY_READ) &&
-      ERROR_SUCCESS != key.Open(HKEY_CURRENT_USER, kIeSiteListKey, KEY_READ)) {
-    return GURL();
-  }
-  std::wstring url_string;
-  if (ERROR_SUCCESS != key.ReadValue(kIeSiteListValue, &url_string))
-    return GURL();
-  return GURL(base::UTF16ToUTF8(url_string));
-}
-
-void BrowserSwitcherService::OnIeemSitelistParsed(ParsedXml xml) {
-  if (xml.error) {
-    LOG(ERROR) << "Unable to parse IEEM SiteList: " << *xml.error;
-  } else {
-    VLOG(2) << "Done parsing IEEM SiteList. "
-            << "Applying rules to future navigations.";
-    sitelist()->SetIeemSitelist(std::move(xml));
-  }
-  ieem_downloader_.reset();
-}
-#endif
 
 }  // namespace browser_switcher
