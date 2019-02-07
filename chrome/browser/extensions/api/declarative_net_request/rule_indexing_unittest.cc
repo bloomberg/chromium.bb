@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -312,26 +313,30 @@ TEST_P(RuleIndexingTest, TooManyParseFailures) {
         extension()->install_warnings();
     ASSERT_EQ(1u + kMaxUnparsedRulesWarnings, expected_warnings.size());
 
-    InstallWarning warning(ErrorUtils::FormatErrorMessage(
-        kTooManyParseFailuresWarning,
-        std::to_string(kMaxUnparsedRulesWarnings)));
+    InstallWarning warning("");
     warning.key = manifest_keys::kDeclarativeNetRequestKey;
     warning.specific = manifest_keys::kDeclarativeRuleResourcesKey;
-    EXPECT_EQ(warning, expected_warnings[0]);
 
-    // The subsequent warnings should correspond to the first
+    // The initial warnings should correspond to the first
     // |kMaxUnparsedRulesWarnings| rules, which couldn't be parsed.
     for (size_t i = 0; i < kMaxUnparsedRulesWarnings; i++) {
-      warning.message = ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning,
-                                                       std::to_string(i));
-      EXPECT_EQ(expected_warnings[i + 1], warning);
+      warning.message = ErrorUtils::FormatErrorMessage(
+          kRuleNotParsedWarning, std::to_string(i),
+          "'RuleActionType': expected \"block\" or \"redirect\" or \"allow\", "
+          "got \"invalid_action_type\"");
+      EXPECT_EQ(expected_warnings[i], warning);
     }
+
+    warning.message = ErrorUtils::FormatErrorMessage(
+        kTooManyParseFailuresWarning,
+        std::to_string(kMaxUnparsedRulesWarnings));
+    EXPECT_EQ(warning, expected_warnings[kMaxUnparsedRulesWarnings]);
   }
 }
 
 // Ensures that rules which can't be parsed are ignored and cause an install
 // warning.
-TEST_P(RuleIndexingTest, InvalidJSONRule) {
+TEST_P(RuleIndexingTest, InvalidJSONRules_StrongTypes) {
   {
     TestRule rule = CreateGenericRule();
     rule.id = 1;
@@ -368,11 +373,76 @@ TEST_P(RuleIndexingTest, InvalidJSONRule) {
     std::vector<InstallWarning> expected_warnings;
 
     expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "1"),
+        ErrorUtils::FormatErrorMessage(
+            kRuleNotParsedWarning, "1",
+            "'RuleActionType': expected \"block\" or \"redirect\" or \"allow\","
+            " got \"invalid action\""),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "3"),
+        ErrorUtils::FormatErrorMessage(
+            kRuleNotParsedWarning, "3",
+            "'DomainType': expected \"firstParty\" or \"thirdParty\", got "
+            "\"invalid_domain_type\""),
+        manifest_keys::kDeclarativeNetRequestKey,
+        manifest_keys::kDeclarativeRuleResourcesKey);
+    EXPECT_EQ(expected_warnings, extension()->install_warnings());
+  }
+}
+
+// Ensures that rules which can't be parsed are ignored and cause an install
+// warning.
+TEST_P(RuleIndexingTest, InvalidJSONRules_Parsed) {
+  const char* kRules = R"(
+    [
+      {
+        "id" : 1,
+        "condition" : [],
+        "action" : {"type" : "block" }
+      },
+      {
+        "id" : 2,
+        "condition" : {"urlFilter" : "abc"},
+        "action" : {"type" : "block" }
+      },
+      {
+        "id" : 3,
+        "invalidKey" : "invalidKeyValue",
+        "condition" : {"urlFilter" : "example"},
+        "action" : {"type" : "block" }
+      },
+      {
+        "id" : "4",
+        "condition" : {"urlFilter" : "google"},
+        "action" : {"type" : "block" }
+      }
+    ]
+  )";
+  SetRules(base::JSONReader::Read(kRules));
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+  LoadAndExpectSuccess(1 /* rules count */);
+
+  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
+  // which causes it to lose the install warning. This should be fixed.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    ASSERT_EQ(3u, extension()->install_warnings().size());
+    std::vector<InstallWarning> expected_warnings;
+
+    expected_warnings.emplace_back(
+        ErrorUtils::FormatErrorMessage(
+            kRuleNotParsedWarning, "0",
+            "'condition': expected dictionary, got list"),
+        manifest_keys::kDeclarativeNetRequestKey,
+        manifest_keys::kDeclarativeRuleResourcesKey);
+    expected_warnings.emplace_back(
+        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "2",
+                                       "found unexpected key 'invalidKey'"),
+        manifest_keys::kDeclarativeNetRequestKey,
+        manifest_keys::kDeclarativeRuleResourcesKey);
+    expected_warnings.emplace_back(
+        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "3",
+                                       "'id': expected id, got string"),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     EXPECT_EQ(expected_warnings, extension()->install_warnings());

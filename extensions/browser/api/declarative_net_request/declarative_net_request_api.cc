@@ -132,8 +132,12 @@ ExtensionFunction::ResponseAction
 DeclarativeNetRequestAddAllowedPagesFunction::Run() {
   using Params = api::declarative_net_request::AddAllowedPages::Params;
 
-  std::unique_ptr<Params> params(Params::Create(*args_));
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
   EXTENSION_FUNCTION_VALIDATE(params);
+
+  // EXTENSION_FUNCTION_VALIDATE should validate that the arguments are in the
+  // correct format. Ignore |error|.
 
   return UpdateAllowedPages(params->page_patterns, Action::ADD);
 }
@@ -147,8 +151,12 @@ ExtensionFunction::ResponseAction
 DeclarativeNetRequestRemoveAllowedPagesFunction::Run() {
   using Params = api::declarative_net_request::AddAllowedPages::Params;
 
-  std::unique_ptr<Params> params(Params::Create(*args_));
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
   EXTENSION_FUNCTION_VALIDATE(params);
+
+  // EXTENSION_FUNCTION_VALIDATE should validate that the arguments are in the
+  // correct format. Ignore |error|.
 
   return UpdateAllowedPages(params->page_patterns, Action::REMOVE);
 }

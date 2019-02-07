@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "components/url_pattern_index/url_pattern_index.h"
@@ -164,9 +165,8 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
 
   // Limit the maximum number of rule unparsed warnings to 5.
   const size_t kMaxUnparsedRulesWarnings = 5;
-  std::vector<int> unparsed_indices;
-  unparsed_indices.reserve(kMaxUnparsedRulesWarnings);
   bool unparsed_warnings_limit_exeeded = false;
+  size_t unparsed_warning_count = 0;
 
   base::ElapsedTimer timer;
   {
@@ -175,16 +175,22 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
 
     const auto& rules_list = rules.GetList();
     for (size_t i = 0; i < rules_list.size(); i++) {
-      parsed_rule = dnr_api::Rule::FromValue(rules_list[i]);
+      base::string16 parse_error;
+      parsed_rule = dnr_api::Rule::FromValue(rules_list[i], &parse_error);
 
       // Ignore rules which can't be successfully parsed and show an install
       // warning for them. A hard error is not thrown to maintain backwards
       // compatibility.
-      if (!parsed_rule) {
-        if (unparsed_indices.size() < kMaxUnparsedRulesWarnings)
-          unparsed_indices.push_back(i);
-        else
+      if (!parsed_rule || !parse_error.empty()) {
+        if (unparsed_warning_count < kMaxUnparsedRulesWarnings) {
+          ++unparsed_warning_count;
+          warnings->push_back(
+              CreateInstallWarning(ErrorUtils::FormatErrorMessage(
+                  kRuleNotParsedWarning, std::to_string(i),
+                  base::UTF16ToUTF8(parse_error))));
+        } else {
           unparsed_warnings_limit_exeeded = true;
+        }
         continue;
       }
 
@@ -216,15 +222,10 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
     warnings->push_back(CreateInstallWarning(kRuleCountExceeded));
 
   if (unparsed_warnings_limit_exeeded) {
-    DCHECK_EQ(kMaxUnparsedRulesWarnings, unparsed_indices.size());
+    DCHECK_EQ(kMaxUnparsedRulesWarnings, unparsed_warning_count);
     warnings->push_back(CreateInstallWarning(ErrorUtils::FormatErrorMessage(
         kTooManyParseFailuresWarning,
         std::to_string(kMaxUnparsedRulesWarnings))));
-  }
-
-  for (int rule_index : unparsed_indices) {
-    warnings->push_back(CreateInstallWarning(ErrorUtils::FormatErrorMessage(
-        kRuleNotParsedWarning, std::to_string(rule_index))));
   }
 
   UMA_HISTOGRAM_TIMES(kIndexAndPersistRulesTimeHistogram, timer.Elapsed());
