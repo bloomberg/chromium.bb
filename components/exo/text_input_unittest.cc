@@ -4,6 +4,8 @@
 
 #include "components/exo/text_input.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
@@ -117,6 +119,16 @@ class TextInputTest : public test::ExoTestBase {
     return surface_->window()->GetHost()->GetInputMethod();
   }
 
+  void SetCompositionText(const std::string& utf8) {
+    ui::CompositionText t;
+    t.text = base::UTF8ToUTF16(utf8);
+    t.selection = gfx::Range(1u);
+    t.ime_text_spans.push_back(
+        ui::ImeTextSpan(0, t.text.size(), ui::ImeTextSpan::Thickness::kThick));
+    EXPECT_CALL(*delegate(), SetCompositionText(t)).Times(1);
+    text_input()->SetCompositionText(t);
+  }
+
  private:
   std::unique_ptr<TextInput> text_input_;
 
@@ -224,31 +236,17 @@ TEST_F(TextInputTest, CaretBounds) {
 }
 
 TEST_F(TextInputTest, CompositionText) {
-  ui::CompositionText t;
-  t.text = base::ASCIIToUTF16("composition");
-  t.selection = gfx::Range(1u);
-  t.ime_text_spans.push_back(
-      ui::ImeTextSpan(0, t.text.size(), ui::ImeTextSpan::Thickness::kThick));
+  SetCompositionText("composition");
 
   ui::CompositionText empty;
-  EXPECT_CALL(*delegate(), SetCompositionText(t)).Times(1);
   EXPECT_CALL(*delegate(), SetCompositionText(empty)).Times(1);
-
-  text_input()->SetCompositionText(t);
   text_input()->ClearCompositionText();
 }
 
 TEST_F(TextInputTest, CommitCompositionText) {
-  ui::CompositionText t;
-  t.text = base::ASCIIToUTF16("composition");
-  t.selection = gfx::Range(1u);
-  t.ime_text_spans.push_back(
-      ui::ImeTextSpan(0, t.text.size(), ui::ImeTextSpan::Thickness::kThick));
+  SetCompositionText("composition");
 
-  EXPECT_CALL(*delegate(), SetCompositionText(t)).Times(1);
-  EXPECT_CALL(*delegate(), Commit(t.text)).Times(1);
-
-  text_input()->SetCompositionText(t);
+  EXPECT_CALL(*delegate(), Commit(base::UTF8ToUTF16("composition"))).Times(1);
   text_input()->ConfirmCompositionText();
 }
 
@@ -273,6 +271,67 @@ TEST_F(TextInputTest, InsertCharNormalKey) {
   EXPECT_CALL(*delegate(), Commit(base::string16(1, ch))).Times(1);
   EXPECT_CALL(*delegate(), SendKey(_)).Times(0);
   text_input()->InsertChar(ev);
+}
+
+TEST_F(TextInputTest, SurroundingText) {
+  gfx::Range range;
+  EXPECT_FALSE(text_input()->GetTextRange(&range));
+  EXPECT_FALSE(text_input()->GetCompositionTextRange(&range));
+  EXPECT_FALSE(text_input()->GetEditableSelectionRange(&range));
+  base::string16 got_text;
+  EXPECT_FALSE(text_input()->GetTextFromRange(gfx::Range(0, 1), &got_text));
+
+  base::string16 text = base::UTF8ToUTF16("surrounding\xE3\x80\x80text");
+  text_input()->SetSurroundingText(text, 11, 12);
+
+  EXPECT_TRUE(text_input()->GetTextRange(&range));
+  EXPECT_EQ(gfx::Range(0, text.size()).ToString(), range.ToString());
+
+  EXPECT_FALSE(text_input()->GetCompositionTextRange(&range));
+  EXPECT_TRUE(text_input()->GetEditableSelectionRange(&range));
+  EXPECT_EQ(gfx::Range(11, 12).ToString(), range.ToString());
+  EXPECT_TRUE(text_input()->GetTextFromRange(gfx::Range(11, 12), &got_text));
+  EXPECT_EQ(text.substr(11, 1), got_text);
+
+  // DeleteSurroundingText receives the range in UTF8 -- so (11, 14) range is
+  // expected.
+  EXPECT_CALL(*delegate(), DeleteSurroundingText(gfx::Range(11, 14))).Times(1);
+  text_input()->ExtendSelectionAndDelete(0, 0);
+
+  size_t composition_size = std::string("composition").size();
+  SetCompositionText("composition");
+  EXPECT_TRUE(text_input()->GetCompositionTextRange(&range));
+  EXPECT_EQ(gfx::Range(11, 11 + composition_size).ToString(), range.ToString());
+  EXPECT_TRUE(text_input()->GetTextRange(&range));
+  EXPECT_EQ(gfx::Range(0, text.size() - 1 + composition_size).ToString(),
+            range.ToString());
+  EXPECT_TRUE(text_input()->GetEditableSelectionRange(&range));
+  EXPECT_EQ(gfx::Range(11, 12).ToString(), range.ToString());
+}
+
+TEST_F(TextInputTest, GetTextRange) {
+  base::string16 text = base::UTF8ToUTF16("surrounding text");
+  text_input()->SetSurroundingText(text, 11, 12);
+
+  SetCompositionText("composition");
+
+  const struct {
+    gfx::Range range;
+    std::string expected;
+  } kTestCases[] = {
+      {gfx::Range(0, 3), "sur"},
+      {gfx::Range(10, 13), "gco"},
+      {gfx::Range(10, 23), "gcompositiont"},
+      {gfx::Range(12, 15), "omp"},
+      {gfx::Range(12, 23), "ompositiont"},
+      {gfx::Range(22, 25), "tex"},
+  };
+  for (auto& c : kTestCases) {
+    base::string16 result;
+    EXPECT_TRUE(text_input()->GetTextFromRange(c.range, &result))
+        << c.range.ToString();
+    EXPECT_EQ(base::UTF8ToUTF16(c.expected), result) << c.range.ToString();
+  }
 }
 
 }  // anonymous namespace
