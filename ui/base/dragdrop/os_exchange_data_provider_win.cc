@@ -345,8 +345,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       ClipboardFormatType::GetUrlType().ToFormatEtc(), storage));
 
-  // TODO(beng): add CF_HTML.
-  // http://code.google.com/p/chromium/issues/detail?id=6767GetIDListStorageForFileName
+  // TODO(https://crbug.com/6767): add CF_HTML.
 
   // Also add text representations (these should be last since they're the
   // least preferable).
@@ -715,11 +714,10 @@ DataObjectImpl::~DataObjectImpl() {
 }
 
 void DataObjectImpl::StopDownloads() {
-  for (StoredData::iterator iter = contents_.begin();
-       iter != contents_.end(); ++iter) {
-    if ((*iter)->downloader.get()) {
-      (*iter)->downloader->Stop();
-      (*iter)->downloader = 0;
+  for (const std::unique_ptr<StoredDataInfo>& content : contents_) {
+    if (content->downloader.get()) {
+      content->downloader->Stop();
+      content->downloader = 0;
     }
   }
 }
@@ -741,44 +739,32 @@ void DataObjectImpl::RemoveData(const FORMATETC& format) {
 }
 
 void DataObjectImpl::OnDownloadCompleted(const base::FilePath& file_path) {
-  DataObjectImpl::StoredData::iterator iter = contents_.begin();
-  for (; iter != contents_.end(); ++iter) {
-    if ((*iter)->format_etc.cfFormat == CF_HDROP) {
-      // Release the old storage.
-      if ((*iter)->owns_medium) {
-        ReleaseStgMedium((*iter)->medium);
-        delete (*iter)->medium;
-      }
-
-      // Update the storage.
+  for (std::unique_ptr<StoredDataInfo>& content : contents_) {
+    if (content->format_etc.cfFormat == CF_HDROP) {
+      // Replace stored data.
       STGMEDIUM* storage =
           GetStorageForFileNames({FileInfo(file_path, base::FilePath())});
-      if (storage) {
-        (*iter)->owns_medium = true;
-        (*iter)->medium = storage;
-      }
+      content.reset(new StoredDataInfo(
+          ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage));
 
       break;
     }
   }
-  DCHECK(iter != contents_.end());
 }
 
-void DataObjectImpl::OnDownloadAborted() {
-}
+void DataObjectImpl::OnDownloadAborted() {}
 
 HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
   if (is_aborting_)
     return DV_E_FORMATETC;
 
-  StoredData::iterator iter = contents_.begin();
-  while (iter != contents_.end()) {
-    if ((*iter)->format_etc.cfFormat == format_etc->cfFormat &&
-        (*iter)->format_etc.lindex == format_etc->lindex &&
-        ((*iter)->format_etc.tymed & format_etc->tymed)) {
+  for (const std::unique_ptr<StoredDataInfo>& content : contents_) {
+    if (content->format_etc.cfFormat == format_etc->cfFormat &&
+        content->format_etc.lindex == format_etc->lindex &&
+        (content->format_etc.tymed & format_etc->tymed)) {
       // If medium is NULL, delay-rendering will be used.
-      if ((*iter)->medium) {
-        DuplicateMedium((*iter)->format_etc.cfFormat, (*iter)->medium, medium);
+      if (content->medium) {
+        DuplicateMedium(content->format_etc.cfFormat, content->medium, medium);
       } else {
         // Fail all GetData() attempts for DownloadURL data if the drag and drop
         // operation is still in progress.
@@ -803,9 +789,9 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
           observer_->OnWaitForData();
 
         // Now we can start the download.
-        if ((*iter)->downloader.get()) {
-          (*iter)->downloader->Start(this);
-          if (!(*iter)->downloader->Wait()) {
+        if (content->downloader.get()) {
+          content->downloader->Start(this);
+          if (!content->downloader->Wait()) {
             is_aborting_ = true;
             return DV_E_FORMATETC;
           }
@@ -817,7 +803,6 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
       }
       return S_OK;
     }
-    ++iter;
   }
 
   return DV_E_FORMATETC;
@@ -829,11 +814,9 @@ HRESULT DataObjectImpl::GetDataHere(FORMATETC* format_etc,
 }
 
 HRESULT DataObjectImpl::QueryGetData(FORMATETC* format_etc) {
-  StoredData::const_iterator iter = contents_.begin();
-  while (iter != contents_.end()) {
-    if ((*iter)->format_etc.cfFormat == format_etc->cfFormat)
+  for (const std::unique_ptr<StoredDataInfo>& content : contents_) {
+    if (content->format_etc.cfFormat == format_etc->cfFormat)
       return S_OK;
-    ++iter;
   }
   return DV_E_FORMATETC;
 }
@@ -1014,7 +997,7 @@ static STGMEDIUM* GetStorageForFileNames(
   // For example,
   //| DROPFILES | FILENAME 1 | NULL | ... | FILENAME n | NULL | NULL |
   // For more details, please refer to
-  // https://docs.microsoft.com/ko-kr/windows/desktop/shell/clipboard#cf_hdrop
+  // https://docs.microsoft.com/en-us/windows/desktop/shell/clipboard#cf_hdrop
 
   if (filenames.empty())
     return nullptr;
