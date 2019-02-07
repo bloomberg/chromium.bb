@@ -49,7 +49,7 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const base::DictionaryValue* app = nullptr;
     std::string app_id_or_package;
     if (pref->GetDictionary(index, &app) &&
-        app->GetString(kPinnedAppsPrefAppIDPath, &app_id_or_package) &&
+        app->GetString(kPinnedAppsPrefAppIDKey, &app_id_or_package) &&
         (app_id == app_id_or_package ||
          arc_app_package_name == app_id_or_package)) {
       if (chromeos::DemoSession::Get() &&
