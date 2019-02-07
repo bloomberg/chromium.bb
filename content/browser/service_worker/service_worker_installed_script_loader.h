@@ -16,6 +16,8 @@
 
 namespace content {
 
+class ServiceWorkerVersion;
+
 // S13nServiceWorker: A URLLoader that loads an installed service worker script
 // for a service worker that doesn't have a
 // ServiceWorkerInstalledScriptsManager.
@@ -34,7 +36,10 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   ServiceWorkerInstalledScriptLoader(
       uint32_t options,
       network::mojom::URLLoaderClientPtr client,
-      std::unique_ptr<ServiceWorkerResponseReader> response_reader);
+      std::unique_ptr<ServiceWorkerResponseReader> response_reader,
+      scoped_refptr<ServiceWorkerVersion>
+          version_for_main_script_http_response_info,
+      const GURL& request_url);
   ~ServiceWorkerInstalledScriptLoader() override;
 
   // ServiceWorkerInstalledScriptReader::Client overrides:
@@ -67,6 +72,8 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
 
   uint32_t options_ = network::mojom::kURLLoadOptionNone;
   network::mojom::URLLoaderClientPtr client_;
+  scoped_refptr<ServiceWorkerVersion>
+      version_for_main_script_http_response_info_;
   base::TimeTicks request_start_;
   std::unique_ptr<ServiceWorkerInstalledScriptReader> reader_;
 
