@@ -950,12 +950,11 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
     const blink::WebGestureEvent& event,
     const RenderWidgetHostViewBase* view) {
-#if 0
-  // For now, we've disabled the DumpWithoutCrashing as it's no longer
-  // providing useful information.
-  // TODO(828422): Determine useful crash keys and reenable the report.
+  static auto* device_key = base::debug::AllocateCrashKeyString(
+      "same-view-bubble-source-device", base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString device_key_value(
+      device_key, std::to_string(event.SourceDevice()));
   base::debug::DumpWithoutCrashing();
-#endif
 }
 
 namespace {
