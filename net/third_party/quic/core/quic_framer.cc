@@ -3072,6 +3072,14 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
     return false;
   }
 
+  if (largest_acked.ToUint64() <= delta_from_largest_observed) {
+    set_detailed_error(QuicStrCat("delta_from_largest_observed too high: ",
+                                  delta_from_largest_observed,
+                                  ", largest_acked: ", largest_acked.ToUint64())
+                           .c_str());
+    return false;
+  }
+
   // Time delta from the framer creation.
   uint32_t time_delta_us;
   if (!reader->ReadUInt32(&time_delta_us)) {
@@ -3089,6 +3097,14 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
   for (uint8_t i = 1; i < num_received_packets; ++i) {
     if (!reader->ReadUInt8(&delta_from_largest_observed)) {
       set_detailed_error("Unable to read sequence delta in received packets.");
+      return false;
+    }
+    if (largest_acked.ToUint64() <= delta_from_largest_observed) {
+      set_detailed_error(
+          QuicStrCat("delta_from_largest_observed too high: ",
+                     delta_from_largest_observed,
+                     ", largest_acked: ", largest_acked.ToUint64())
+              .c_str());
       return false;
     }
     seq_num = largest_acked - delta_from_largest_observed;

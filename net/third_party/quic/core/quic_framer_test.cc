@@ -24,6 +24,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/simple_data_producer.h"
@@ -4279,6 +4280,260 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
     EXPECT_EQ(2u, frame.received_packet_times.size());
   }
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
+}
+
+TEST_P(QuicFramerTest, AckFrameTimeStampDeltaTooHigh) {
+  // clang-format off
+  unsigned char packet[] = {
+      // public flags (8 byte connection_id)
+      0x28,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x78, 0x56, 0x34, 0x12,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x01,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x01,
+      // num timestamps.
+      0x01,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+  };
+
+  unsigned char packet39[] = {
+      // public flags (8 byte connection_id)
+      0x28,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x01,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x01,
+      // num timestamps.
+      0x01,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+  };
+
+  unsigned char packet44[] = {
+      // type (short header, 4 byte packet number)
+      0x32,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x01,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x01,
+      // num timestamps.
+      0x01,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+  };
+
+  unsigned char packet46[] = {
+      // type (short header, 4 byte packet number)
+      0x43,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x01,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x01,
+      // num timestamps.
+      0x01,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+  };
+  // clang-format on
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    return;
+  }
+  QuicEncryptedPacket encrypted(
+      AsChars(framer_.transport_version() > QUIC_VERSION_45
+                  ? packet46
+                  : (framer_.transport_version() > QUIC_VERSION_43
+                         ? packet44
+                         : (framer_.transport_version() == QUIC_VERSION_35
+                                ? packet
+                                : packet39))),
+      QUIC_ARRAYSIZE(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_TRUE(QuicTextUtils::StartsWith(
+      framer_.detailed_error(), "delta_from_largest_observed too high"));
+}
+
+TEST_P(QuicFramerTest, AckFrameTimeStampSecondDeltaTooHigh) {
+  // clang-format off
+  unsigned char packet[] = {
+      // public flags (8 byte connection_id)
+      0x28,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x78, 0x56, 0x34, 0x12,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x03,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x03,
+      // num timestamps.
+      0x02,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+      // Delta from largest observed.
+      0x03,
+      // Delta time.
+      0x10, 0x32,
+  };
+
+  unsigned char packet39[] = {
+      // public flags (8 byte connection_id)
+      0x28,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x03,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x03,
+      // num timestamps.
+      0x02,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+      // Delta from largest observed.
+      0x03,
+      // Delta time.
+      0x10, 0x32,
+  };
+
+  unsigned char packet44[] = {
+      // type (short header, 4 byte packet number)
+      0x32,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x03,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x03,
+      // num timestamps.
+      0x02,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+      // Delta from largest observed.
+      0x03,
+      // Delta time.
+      0x10, 0x32,
+  };
+
+  unsigned char packet46[] = {
+      // type (short header, 4 byte packet number)
+      0x43,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+
+      // frame type (ack frame)
+      // (no ack blocks, 1 byte largest observed, 1 byte block length)
+      0x40,
+      // largest acked
+      0x03,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x03,
+      // num timestamps.
+      0x02,
+      // Delta from largest observed.
+      0x01,
+      // Delta time.
+      0x10, 0x32, 0x54, 0x76,
+      // Delta from largest observed.
+      0x03,
+      // Delta time.
+      0x10, 0x32,
+  };
+  // clang-format on
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    return;
+  }
+  QuicEncryptedPacket encrypted(
+      AsChars(framer_.transport_version() > QUIC_VERSION_45
+                  ? packet46
+                  : (framer_.transport_version() > QUIC_VERSION_43
+                         ? packet44
+                         : (framer_.transport_version() == QUIC_VERSION_35
+                                ? packet
+                                : packet39))),
+      QUIC_ARRAYSIZE(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_TRUE(QuicTextUtils::StartsWith(
+      framer_.detailed_error(), "delta_from_largest_observed too high"));
 }
 
 TEST_P(QuicFramerTest, NewStopWaitingFrame) {
