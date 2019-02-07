@@ -136,6 +136,8 @@ class CONTENT_EXPORT TouchActionFilter {
   // sequence due to fling.
   base::Optional<cc::TouchAction> active_touch_action_;
 
+  // TODO(xidachen): consider giving this a default value of Auto, instead of
+  // Optional.
   // Whitelisted touch action received from the compositor.
   base::Optional<cc::TouchAction> white_listed_touch_action_;
 

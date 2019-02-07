@@ -470,7 +470,8 @@ class InputRouterImplTestBase : public testing::Test {
   void OnTouchEventAckWithAckState(
       InputEventAckSource source,
       InputEventAckState ack_state,
-      base::Optional<cc::TouchAction> expected_touch_action) {
+      base::Optional<cc::TouchAction> expected_touch_action,
+      base::Optional<cc::TouchAction> expected_white_listed_touch_action) {
     input_router_->OnHasTouchEventHandlers(true);
     EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
     PressTouchPoint(1, 1);
@@ -478,6 +479,8 @@ class InputRouterImplTestBase : public testing::Test {
     input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
                                    source, ack_state);
     EXPECT_EQ(input_router_->AllowedTouchAction(), expected_touch_action);
+    EXPECT_EQ(input_router_->touch_action_filter_.white_listed_touch_action(),
+              expected_white_listed_touch_action);
   }
 
   const float radius_x_ = 20.0f;
@@ -712,7 +715,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_CONSUMED,
-                              cc::kTouchActionAuto);
+                              cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
@@ -720,7 +723,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-                              cc::kTouchActionAuto);
+                              cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
@@ -729,7 +732,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(source,
                               INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE,
-                              cc::kTouchActionAuto);
+                              cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
@@ -737,7 +740,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-                              cc::kTouchActionAuto);
+                              cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
@@ -745,7 +748,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_IGNORED,
-                              cc::kTouchActionAuto);
+                              cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
@@ -753,7 +756,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
-                              cc::kTouchActionAuto);
+                              cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
@@ -762,7 +765,7 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
                                    : InputEventAckSource::MAIN_THREAD;
   OnTouchEventAckWithAckState(
       source, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING,
-      cc::kTouchActionAuto);
+      cc::kTouchActionAuto, cc::kTouchActionAuto);
 }
 
 // Tests that touch-events are sent properly.
