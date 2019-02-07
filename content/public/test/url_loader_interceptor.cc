@@ -388,6 +388,9 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback,
     RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
         &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
         base::Unretained(this)));
+    SharedWorkerHost::SetNetworkFactoryForTesting(base::BindRepeating(
+        &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+        base::Unretained(this)));
     // Note: This URLLoaderFactory creation callback will be used not only for
     // subresource loading from service workers (i.e., fetch()), but also for
     // loading non-installed service worker scripts.
@@ -436,6 +439,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
           blink::features::kServiceWorkerServicification) ||
       base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     RenderFrameHostImpl::SetNetworkFactoryForTesting(
+        RenderFrameHostImpl::CreateNetworkFactoryCallback());
+    SharedWorkerHost::SetNetworkFactoryForTesting(
         RenderFrameHostImpl::CreateNetworkFactoryCallback());
     EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
         RenderFrameHostImpl::CreateNetworkFactoryCallback());

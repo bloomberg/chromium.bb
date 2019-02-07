@@ -57,6 +57,17 @@ class CONTENT_EXPORT SharedWorkerHost
                    int process_id);
   ~SharedWorkerHost() override;
 
+  // Allows overriding the URLLoaderFactory creation for subresources.
+  // Passing a null callback will restore the default behavior.
+  // This method must be called either on the UI thread or before threads start.
+  // This callback is run on the UI thread.
+  using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
+      network::mojom::URLLoaderFactoryRequest request,
+      int process_id,
+      network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
+  static void SetNetworkFactoryForTesting(
+      const CreateNetworkFactoryCallback& url_loader_factory_callback);
+
   // Starts the SharedWorker in the renderer process.
   //
   // S13nServiceWorker:
