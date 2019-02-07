@@ -656,7 +656,7 @@ MediaDrmStorageImpl::~MediaDrmStorageImpl() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (init_cb_)
-    std::move(init_cb_).Run(base::UnguessableToken::Null());
+    std::move(init_cb_).Run(false, base::UnguessableToken());
 }
 
 void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
@@ -665,7 +665,7 @@ void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
   DCHECK(!init_cb_);
 
   if (is_initialized_) {
-    std::move(callback).Run(origin_id_);
+    std::move(callback).Run(true, origin_id_);
     return;
   }
   DCHECK(!origin_id_);
@@ -686,7 +686,7 @@ void MediaDrmStorageImpl::OnOriginIdObtained(
     const base::UnguessableToken& origin_id) {
   is_initialized_ = true;
   origin_id_ = origin_id;
-  std::move(init_cb_).Run(origin_id_);
+  std::move(init_cb_).Run(true, origin_id_);
 }
 
 void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {

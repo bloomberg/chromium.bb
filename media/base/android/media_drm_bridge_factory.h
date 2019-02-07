@@ -42,7 +42,7 @@ class MEDIA_EXPORT MediaDrmBridgeFactory : public CdmFactory {
 
  private:
   // Callback for Initialize() on |storage_|.
-  void OnStorageInitialized();
+  void OnStorageInitialized(bool success);
 
   // Creates |media_drm_bridge_|, and call SetMediaCryptoReadyCB() to wait for
   // MediaCrypto to be ready.

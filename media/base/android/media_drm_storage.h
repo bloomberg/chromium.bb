@@ -49,7 +49,8 @@ class MEDIA_EXPORT MediaDrmStorage
 
   // Callback for storage initialization.
   using InitCB =
-      base::OnceCallback<void(const base::UnguessableToken& origin_id)>;
+      base::OnceCallback<void(bool success,
+                              const base::UnguessableToken& origin_id)>;
 
   // Callback to return the result of LoadPersistentSession. |key_set_id| and
   // |mime_type| must be non-empty if |success| is true, and vice versa.

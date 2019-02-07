@@ -30,8 +30,10 @@ const char kTestOrigin[] = "https://www.testorigin.com:80";
 const char kTestOrigin2[] = "https://www.testorigin2.com:80";
 
 void OnMediaDrmStorageInit(base::UnguessableToken* out_origin_id,
+                           bool success,
                            const base::UnguessableToken& origin_id) {
   DCHECK(out_origin_id);
+  DCHECK(success);
   DCHECK(origin_id);
   *out_origin_id = origin_id;
 }

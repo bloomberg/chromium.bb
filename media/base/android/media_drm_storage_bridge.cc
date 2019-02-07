@@ -38,7 +38,7 @@ MediaDrmStorageBridge::MediaDrmStorageBridge()
 MediaDrmStorageBridge::~MediaDrmStorageBridge() = default;
 
 void MediaDrmStorageBridge::Initialize(const CreateStorageCB& create_storage_cb,
-                                       base::OnceClosure init_cb) {
+                                       InitCB init_cb) {
   DCHECK(create_storage_cb);
   impl_ = create_storage_cb.Run();
 
@@ -147,14 +147,20 @@ void MediaDrmStorageBridge::RunAndroidBoolCallback(JavaObjectPtr j_callback,
 }
 
 void MediaDrmStorageBridge::OnInitialized(
-    base::OnceClosure init_cb,
+    InitCB init_cb,
+    bool success,
     const base::UnguessableToken& origin_id) {
-  DCHECK(origin_id_.empty());
-
-  if (origin_id)
+  // Note: It's possible that |success| is true but |origin_id| is empty,
+  // to indicate per-device provisioning. In this case, we cannot use
+  // ToString() which would be the string 0000000000000000. Instead, do
+  // not set |origin_id_| so that it remains empty.
+  if (success && origin_id) {
     origin_id_ = origin_id.ToString();
+  } else {
+    DCHECK(!origin_id);
+  }
 
-  std::move(init_cb).Run();
+  std::move(init_cb).Run(success);
 }
 
 void MediaDrmStorageBridge::OnSessionDataLoaded(
