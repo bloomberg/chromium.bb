@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/dice_response_handler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -126,6 +127,7 @@ class DiceResponseHandlerTest : public testing::Test,
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
+    signin_manager_.Initialize(&pref_service_);
     account_fetcher_service_.Initialize(&signin_client_, &token_service_,
                                         &account_tracker_service_,
                                         std::make_unique<TestImageDecoder>());

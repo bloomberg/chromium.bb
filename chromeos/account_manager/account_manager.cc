@@ -374,6 +374,11 @@ AccountManager::GetUrlLoaderFactory() {
   return url_loader_factory_;
 }
 
+void AccountManager::SetUrlLoaderFactoryForTests(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = url_loader_factory;
+}
+
 std::unique_ptr<OAuth2AccessTokenFetcher>
 AccountManager::CreateAccessTokenFetcher(
     const AccountKey& account_key,

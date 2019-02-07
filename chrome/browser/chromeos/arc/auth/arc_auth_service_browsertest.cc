@@ -291,11 +291,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
-    account_manager->Initialize(
-        profile()->GetPath(), test_shared_loader_factory_,
-        base::BindRepeating([](base::OnceClosure closure) -> void {
-          std::move(closure).Run();
-        }));
+    account_manager->SetUrlLoaderFactoryForTests(test_shared_loader_factory_);
     auth_service_->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
     // It is non-trivial to navigate through the merge session in a testing
     // context; currently we just skip it.
@@ -548,19 +544,6 @@ class ArcAuthServiceAccountManagerTest : public ArcAuthServiceTest {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::switches::kAccountManager);
     ArcAuthServiceTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Configure primary profile to be a guest profile, because the
-    // AccountManager can't deal with regular profiles in tests.
-    // https://crbug.com/915628
-    command_line->AppendSwitch(chromeos::switches::kGuestSession);
-    command_line->AppendSwitch(switches::kIncognito);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginUser,
-        user_manager::GuestAccountId().GetUserEmail());
-    ArcAuthServiceTest::SetUpCommandLine(command_line);
   }
 
   AccountInfo SetupGaiaAccount(const std::string& email,

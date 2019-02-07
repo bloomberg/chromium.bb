@@ -136,7 +136,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -417,6 +420,16 @@ void TestingProfile::Init() {
     base::CreateDirectory(profile_path_);
 
 #if defined(OS_CHROMEOS)
+  // Initialize |chromeos::AccountManager|.
+  chromeos::AccountManagerFactory* factory =
+      g_browser_process->platform_part()->GetAccountManagerFactory();
+  chromeos::AccountManager* account_manager =
+      factory->GetAccountManager(profile_path_.value());
+  account_manager->Initialize(
+      profile_path_, GetURLLoaderFactory(),
+      base::BindRepeating(&chromeos::DelayNetworkCall,
+                          base::TimeDelta::FromMilliseconds(
+                              chromeos::kDefaultNetworkRetryDelayMS)));
   if (!chromeos::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(
         new chromeos::ScopedCrosSettingsTestHelper);

@@ -103,11 +103,15 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   AccountInfo SetPrimaryAccount(const std::string& email);
 
   // Sets a refresh token for the primary account (which must already be set).
-  // Blocks until the refresh token is set.
+  // Before updating the refresh token, blocks until refresh tokens are loaded.
+  // After updating the token, blocks until the update is processed by
+  // |identity_manager|.
   void SetRefreshTokenForPrimaryAccount();
 
   // Sets a special invalid refresh token for the primary account (which must
-  // already be set). Blocks until the refresh token is set.
+  // already be set). Before updating the refresh token, blocks until refresh
+  // tokens are loaded. After updating the token, blocks until the update is
+  // processed by |identity_manager|.
   void SetInvalidRefreshTokenForPrimaryAccount();
 
   // Removes any refresh token for the primary account, if present. Blocks until
@@ -136,13 +140,17 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   AccountInfo MakeAccountAvailable(const std::string& email);
 
   // Sets a refresh token for the given account (which must already be
-  // available). Blocks until the refresh token is set. NOTE: See disclaimer at
-  // top of file re: direct usage.
+  // available). Before updating the refresh token, blocks until refresh tokens
+  // are loaded. After updating the token, blocks until the update is processed
+  // by |identity_manager|. NOTE: See disclaimer at top of file re: direct
+  // usage.
   void SetRefreshTokenForAccount(const std::string& account_id);
 
   // Sets a special invalid refresh token for the given account (which must
-  // already be available). Blocks until the refresh token is set. NOTE: See
-  // disclaimer at top of file re: direct usage.
+  // already be available). Before updating the refresh token, blocks until
+  // refresh tokens are loaded. After updating the token, blocks until the
+  // update is processed by |identity_manager|. NOTE: See disclaimer at top of
+  // file re: direct usage.
   void SetInvalidRefreshTokenForAccount(const std::string& account_id);
 
   // Removes any refresh token that is present for the given account. Blocks

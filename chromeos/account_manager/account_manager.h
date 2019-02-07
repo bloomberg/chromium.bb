@@ -158,6 +158,10 @@ class CHROMEOS_EXPORT AccountManager {
   // Gets AccountManager's URL Loader Factory.
   scoped_refptr<network::SharedURLLoaderFactory> GetUrlLoaderFactory();
 
+  // Sets the provided URL Loader Factory. Used only by tests.
+  void SetUrlLoaderFactoryForTests(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   // Creates and returns an |OAuth2AccessTokenFetcher| using the refresh token
   // stored for |account_key|. |IsTokenAvailable| should be |true| for
   // |account_key|, otherwise a |nullptr| is returned.

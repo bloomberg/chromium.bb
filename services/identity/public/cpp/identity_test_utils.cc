@@ -22,6 +22,7 @@ namespace {
 enum class IdentityManagerEvent {
   PRIMARY_ACCOUNT_SET,
   PRIMARY_ACCOUNT_CLEARED,
+  REFRESH_TOKENS_LOADED,
   REFRESH_TOKEN_UPDATED,
   REFRESH_TOKEN_REMOVED,
   ACCOUNTS_IN_COOKIE_UPDATED,
@@ -39,6 +40,7 @@ class OneShotIdentityManagerObserver : public IdentityManager::Observer {
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
+  void OnRefreshTokensLoaded() override;
   void OnRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
@@ -85,6 +87,14 @@ void OneShotIdentityManagerObserver::OnPrimaryAccountCleared(
   std::move(done_closure_).Run();
 }
 
+void OneShotIdentityManagerObserver::OnRefreshTokensLoaded() {
+  if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKENS_LOADED)
+    return;
+
+  DCHECK(done_closure_);
+  std::move(done_closure_).Run();
+}
+
 void OneShotIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(
     const AccountInfo& account_info) {
   if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_UPDATED)
@@ -113,8 +123,26 @@ void OneShotIdentityManagerObserver::OnAccountsInCookieUpdated(
   std::move(done_closure_).Run();
 }
 
+void WaitForLoadCredentialsToComplete(IdentityManager* identity_manager) {
+  base::RunLoop run_loop;
+  OneShotIdentityManagerObserver load_credentials_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::REFRESH_TOKENS_LOADED);
+
+  if (identity_manager->AreRefreshTokensLoaded())
+    return;
+
+  // Do NOT explicitly load credentials here:
+  // 1. It is not re-entrant and will DCHECK fail.
+  // 2. It should have been called by IdentityManager during its initialization.
+
+  run_loop.Run();
+}
+
 // Helper function that updates the refresh token for |account_id| to
-// |new_token|. Blocks until the update is processed by |identity_manager|.
+// |new_token|. Before updating the refresh token, blocks until refresh tokens
+// are loaded. After updating the token, blocks until the update is processed by
+// |identity_manager|.
 void UpdateRefreshTokenForAccount(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
@@ -125,6 +153,13 @@ void UpdateRefreshTokenForAccount(
             account_id)
       << "To set the refresh token for an unknown account, use "
          "MakeAccountAvailable()";
+
+  // Ensure that refresh tokens are loaded; some platforms enforce the invariant
+  // that refresh token mutation cannot occur until refresh tokens are loaded,
+  // and it is desired to eventually enforce that invariant across all
+  // platforms.
+  WaitForLoadCredentialsToComplete(identity_manager);
+
   base::RunLoop run_loop;
   OneShotIdentityManagerObserver token_updated_observer(
       identity_manager, run_loop.QuitClosure(),
@@ -134,6 +169,7 @@ void UpdateRefreshTokenForAccount(
 
   run_loop.Run();
 }
+
 }  // namespace
 
 AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
