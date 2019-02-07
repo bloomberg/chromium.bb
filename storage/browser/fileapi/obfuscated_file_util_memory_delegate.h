@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_DISK_DELEGATE_H_
-#define STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_DISK_DELEGATE_H_
+#ifndef STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_MEMORY_DELEGATE_H_
+#define STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_MEMORY_DELEGATE_H_
 
 #include "base/component_export.h"
 #include "base/files/file.h"
@@ -13,13 +13,14 @@
 
 namespace storage {
 
-// This delegate performs all ObfuscatedFileUtil tasks that actually touch disk.
+// This delegate performs all ObfuscatedFileUtil tasks that require touching
+// disk and peforms them in memory.
 
-class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDiskDelegate
+class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
     : public ObfuscatedFileUtilDelegate {
  public:
-  ObfuscatedFileUtilDiskDelegate();
-  ~ObfuscatedFileUtilDiskDelegate() override;
+  ObfuscatedFileUtilMemoryDelegate();
+  ~ObfuscatedFileUtilMemoryDelegate() override;
 
   bool DirectoryExists(const base::FilePath& path) override;
   bool DeleteFileOrDirectory(const base::FilePath& path,
@@ -50,9 +51,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDiskDelegate
       NativeFileUtil::CopyOrMoveMode mode) override;
   base::File::Error DeleteFile(const base::FilePath& path) override;
 
-  DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilDiskDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilMemoryDelegate);
 };
 
 }  // namespace storage
 
-#endif  // STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_DISK_DELEGATE_H_
+#endif  // STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_MEMORY_DELEGATE_H_
