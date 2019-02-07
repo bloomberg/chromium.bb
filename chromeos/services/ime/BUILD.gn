@@ -65,6 +65,7 @@ source_set("services_unittests") {
     "//base/test:test_support",
     "//chromeos/services/ime/public/mojom",
     "//mojo/public/cpp/bindings",
+    "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

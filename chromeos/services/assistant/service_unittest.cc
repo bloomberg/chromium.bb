@@ -5,6 +5,7 @@
 #include "chromeos/services/assistant/service.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -19,6 +20,9 @@
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -194,6 +198,9 @@ class AssistantServiceTest : public testing::Test {
   void SetUp() override {
     GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
                         fake_device_actions_.CreateInterfacePtrAndBind());
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &url_loader_factory_);
     platform_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
@@ -232,6 +239,9 @@ class AssistantServiceTest : public testing::Test {
 
   FakeAssistantManagerServiceImpl* fake_assistant_manager_;
   chromeos::FakePowerManagerClient* power_manager_client_;
+
+  network::TestURLLoaderFactory url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   std::unique_ptr<base::OneShotTimer> mock_timer_;

@@ -41,6 +41,7 @@ component("lib") {
     "//components/account_id",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
+    "//services/network/public/cpp:cpp",
     "//ui/accessibility:ax_assistant",
   ]
 
@@ -129,6 +130,8 @@ source_set("tests") {
     "//mojo/public/cpp/bindings:bindings",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

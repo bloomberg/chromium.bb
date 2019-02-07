@@ -41,6 +41,7 @@ class OneShotTimer;
 
 namespace network {
 class NetworkConnectionTracker;
+class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
 namespace power_manager {
@@ -61,7 +62,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
  public:
   Service(service_manager::mojom::ServiceRequest request,
           network::NetworkConnectionTracker* network_connection_tracker,
-          scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+          std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+              url_loader_factory_info);
   ~Service() override;
 
   mojom::Client* client() { return client_.get(); }
@@ -88,10 +90,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   }
 
   ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
-  // net::URLRequestContextGetter requires a base::SingleThreadTaskRunner.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
-    return io_task_runner_;
-  }
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
     return main_task_runner_;
@@ -202,7 +200,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   ash::AssistantStateProxy assistant_state_;
 
   network::NetworkConnectionTracker* network_connection_tracker_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // non-null until |assistant_manager_service_| is created.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 
