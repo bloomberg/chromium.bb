@@ -126,6 +126,7 @@ struct av1_extracfg {
   int reduced_tx_type_set;
   int use_intra_dct_only;
   int use_inter_dct_only;
+  int use_intra_default_tx_only;
   int quant_b_adapt;
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
@@ -225,6 +226,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,            // reduced_tx_type_set
   0,            // use_intra_dct_only
   0,            // use_inter_dct_only
+  0,            // use_intra_default_tx_only
   0,            // quant_b_adapt
   COST_UPD_SB,  // coeff_cost_upd_freq
   COST_UPD_SB,  // mode_cost_upd_freq
@@ -591,6 +593,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->reduced_tx_type_set = extra_cfg->reduced_tx_type_set;
   oxcf->use_intra_dct_only = extra_cfg->use_intra_dct_only;
   oxcf->use_inter_dct_only = extra_cfg->use_inter_dct_only;
+  oxcf->use_intra_default_tx_only = extra_cfg->use_intra_default_tx_only;
   oxcf->quant_b_adapt = extra_cfg->quant_b_adapt;
   oxcf->coeff_cost_upd_freq = (COST_UPDATE_TYPE)extra_cfg->coeff_cost_upd_freq;
   oxcf->mode_cost_upd_freq = (COST_UPDATE_TYPE)extra_cfg->mode_cost_upd_freq;
@@ -1331,6 +1334,14 @@ static aom_codec_err_t ctrl_set_inter_dct_only(aom_codec_alg_priv_t *ctx,
                                                va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.use_inter_dct_only = CAST(AV1E_SET_INTER_DCT_ONLY, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_intra_default_tx_only(aom_codec_alg_priv_t *ctx,
+                                                      va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.use_intra_default_tx_only =
+      CAST(AV1E_SET_INTRA_DEFAULT_TX_ONLY, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2078,6 +2089,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_REDUCED_TX_TYPE_SET, ctrl_set_reduced_tx_type_set },
   { AV1E_SET_INTRA_DCT_ONLY, ctrl_set_intra_dct_only },
   { AV1E_SET_INTER_DCT_ONLY, ctrl_set_inter_dct_only },
+  { AV1E_SET_INTRA_DEFAULT_TX_ONLY, ctrl_set_intra_default_tx_only },
   { AV1E_SET_QUANT_B_ADAPT, ctrl_set_quant_b_adapt },
   { AV1E_SET_COEFF_COST_UPD_FREQ, ctrl_set_coeff_cost_upd_freq },
   { AV1E_SET_MODE_COST_UPD_FREQ, ctrl_set_mode_cost_upd_freq },

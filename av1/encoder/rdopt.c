@@ -11106,7 +11106,8 @@ static void set_params_rd_pick_inter_mode(
 
   init_mode_skip_mask(mode_skip_mask, cpi, x, bsize);
 
-  if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
+  if (cpi->sf.tx_type_search.fast_intra_tx_type_search ||
+      cpi->oxcf.use_intra_default_tx_only)
     x->use_default_intra_tx_type = 1;
   else
     x->use_default_intra_tx_type = 0;
@@ -11121,6 +11122,7 @@ static void set_params_rd_pick_inter_mode(
   }
   x->comp_rd_stats_idx = 0;
 }
+
 // TODO(kyslov): now this is very similar to set_params_rd_pick_inter_mode
 // (except that doesn't set ALTREF parameters)
 //               consider passing a flag to select non-rd path (similar to

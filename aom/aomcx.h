@@ -980,6 +980,9 @@ enum aome_enc_control_id {
   /*!\brief Control to use dct only for inter modes */
   AV1E_SET_INTER_DCT_ONLY,
 
+  /*!\brief Control to use default tx type only for intra modes */
+  AV1E_SET_INTRA_DEFAULT_TX_ONLY,
+
   /*!\brief Control to use adaptive quantize_b */
   AV1E_SET_QUANT_B_ADAPT,
 
@@ -1385,6 +1388,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_INTRA_DCT_ONLY, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_INTER_DCT_ONLY, unsigned int)
 #define AOM_CTRL_AV1E_SET_INTER_DCT_ONLY
+
+AOM_CTRL_USE_TYPE(AV1E_SET_INTRA_DEFAULT_TX_ONLY, unsigned int)
+#define AOM_CTRL_AV1E_SET_INTRA_DEFAULT_TX_ONLY
 
 AOM_CTRL_USE_TYPE(AV1E_SET_QUANT_B_ADAPT, unsigned int)
 #define AOM_CTRL_AV1E_SET_QUANT_B_ADAPT

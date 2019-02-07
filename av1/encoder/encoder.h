@@ -383,6 +383,7 @@ typedef struct AV1EncoderConfig {
   int reduced_tx_type_set;
   int use_intra_dct_only;
   int use_inter_dct_only;
+  int use_intra_default_tx_only;
   int quant_b_adapt;
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
