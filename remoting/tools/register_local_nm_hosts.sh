@@ -26,8 +26,14 @@ install_manifest() {
 
   echo Registering ${host_path} in ${target_manifest}
   mkdir -p "${target_dir}"
-  sed -e "s#{{ ${host_path_var_name} }}#${host_path}#g" \
-    < "$manifest_template" > "$target_manifest"
+
+  "$SRC_DIR/remoting/tools/build/remoting_localize.py" \
+    --define "${host_path_var_name}=${host_path}" \
+    --define IT2ME_HOST_DESCRIPTION=dev \
+    --define ME2ME_HOST_DESCRIPTION=dev \
+    --template "${manifest_template}" \
+    --output "${target_manifest}" \
+    en
 }
 
 register_hosts() {
