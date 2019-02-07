@@ -5,31 +5,29 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_
 
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
 class Label;
 class Widget;
 }  // namespace views
+
+class Tab;
 struct TabRendererData;
 
 // Dialog that displays an informational hover card containing page information.
 class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
  public:
-  TabHoverCardBubbleView(views::View* anchor_view, TabRendererData data);
+  explicit TabHoverCardBubbleView(Tab* tab);
 
   ~TabHoverCardBubbleView() override;
 
-  // Creates (if not already created) and shows the widget.
-  void Show();
+  // Updates card content and anchoring and shows the tab hover card.
+  void UpdateAndShow(Tab* tab);
 
   void Hide();
-
-  // Updates and formats title and domain with given data.
-  void UpdateCardContent(TabRendererData data);
-
-  // Updates where the card should be anchored.
-  void UpdateCardAnchor(View* tab);
 
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
@@ -37,9 +35,19 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
  private:
   friend class TabHoverCardBubbleViewBrowserTest;
 
+  base::OneShotTimer delayed_show_timer_;
+
   views::Widget* widget_ = nullptr;
   views::Label* title_label_;
   views::Label* domain_label_;
+
+  // Get delay in milliseconds based on tab width.
+  base::TimeDelta GetDelay(int tab_width) const;
+
+  void ShowImmediately();
+
+  // Updates and formats title and domain with given data.
+  void UpdateCardContent(TabRendererData data);
 
   gfx::Size CalculatePreferredSize() const override;
 };

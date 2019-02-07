@@ -1143,17 +1143,13 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
     // not trying to show it.
     if (!should_show)
       return;
-    hover_card_ = new TabHoverCardBubbleView(tab, tab->data());
+    hover_card_ = new TabHoverCardBubbleView(tab);
     hover_card_->views::View::AddObserver(this);
   }
-
-  if (should_show) {
-    hover_card_->UpdateCardContent(tab->data());
-    hover_card_->UpdateCardAnchor(tab);
-    hover_card_->Show();
-  } else {
+  if (should_show)
+    hover_card_->UpdateAndShow(tab);
+  else
     hover_card_->Hide();
-  }
 }
 
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {
