@@ -60,7 +60,7 @@ isolation](https://www.chromium.org/administrators/policy-list-3#IsolateOrigins)
 
 ## Solutions To This Puzzle
 
-Chrome Security Team will generally not approve for landing a CL or new feature
+Chrome Security Team will generally not approve landing a CL or new feature
 that involves all 3 of untrustworthy inputs, unsafe language, and high
 privilege. To solve this problem, you need to get rid of at least 1 of those 3
 things. Here are some ways to do that.
