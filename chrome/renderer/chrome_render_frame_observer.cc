@@ -359,7 +359,8 @@ void ChromeRenderFrameObserver::DidCreateNewDocument() {
   blink::WebDocumentLoader* doc_loader =
       render_frame()->GetWebFrame()->GetDocumentLoader();
   DCHECK(doc_loader);
-  if (!doc_loader->IsArchive())
+
+  if (!doc_loader->HasBeenLoadedAsWebArchive())
     return;
 
   // Connect to Mojo service on browser to notify it of the page's archive
@@ -370,7 +371,8 @@ void ChromeRenderFrameObserver::DidCreateNewDocument() {
   DCHECK(mhtml_notifier);
   blink::WebArchiveInfo info = doc_loader->GetArchiveInfo();
 
-  mhtml_notifier->NotifyIsMhtmlPage(info.url, info.date);
+  mhtml_notifier->NotifyMhtmlPageLoadAttempted(info.load_result, info.url,
+                                               info.date);
 #endif
 }
 

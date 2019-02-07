@@ -7,10 +7,13 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
@@ -24,6 +27,10 @@
 namespace {
 const GURL kTestPageUrl("http://mystery.site/foo.html");
 const GURL kTestFileUrl("file://foo");
+const base::Time kTestMhtmlCreationTime =
+    base::Time::FromJsTime(1522339419011L);
+const char kLoadResultUmaNameAsync[] =
+    "OfflinePages.MhtmlLoadResult.async_loading";
 
 #if defined(OS_ANDROID)
 const GURL kTestContentUrl("content://foo");
@@ -33,6 +40,9 @@ const char kTestHeader[] = "reason=download";
 }  // namespace
 
 namespace offline_pages {
+namespace {
+
+using blink::mojom::MHTMLLoadResult;
 
 class TestMetricsCollector : public OfflineMetricsCollector {
  public:
@@ -76,6 +86,10 @@ class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
   content::BrowserContext* CreateBrowserContext() override;
 
   void CreateNavigationSimulator(const GURL& url);
+
+  void SimulateOfflinePageLoad(const GURL& mhtml_url,
+                               base::Time mhtml_creation_time,
+                               MHTMLLoadResult load_result);
 
   OfflinePageTabHelper* tab_helper() const { return tab_helper_; }
   PrefetchService* prefetch_service() const { return prefetch_service_; }
@@ -124,6 +138,30 @@ void OfflinePageTabHelperTest::CreateNavigationSimulator(const GURL& url) {
   navigation_simulator_ =
       content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
   navigation_simulator_->SetTransition(ui::PAGE_TRANSITION_LINK);
+}
+
+void OfflinePageTabHelperTest::SimulateOfflinePageLoad(
+    const GURL& mhtml_url,
+    base::Time mhtml_creation_time,
+    MHTMLLoadResult load_result) {
+  tab_helper()->SetCurrentTargetFrameForTest(web_contents()->GetMainFrame());
+
+  // Simulate navigation
+  CreateNavigationSimulator(kTestFileUrl);
+  navigation_simulator()->Start();
+
+  OfflinePageItem offlinePage(mhtml_url, 0, ClientId("async_loading", "1234"),
+                              base::FilePath(), 0, mhtml_creation_time);
+  OfflinePageHeader offlineHeader(kTestHeader);
+  tab_helper()->SetOfflinePage(
+      offlinePage, offlineHeader,
+      OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR, false);
+
+  navigation_simulator()->SetContentsMimeType("multipart/related");
+
+  tab_helper()->NotifyMhtmlPageLoadAttempted(load_result, mhtml_url,
+                                             mhtml_creation_time);
+  navigation_simulator()->Commit();
 }
 
 // Checks the test setup.
@@ -268,47 +306,112 @@ TEST_F(OfflinePageTabHelperTest,
 }
 #endif
 
-TEST_F(OfflinePageTabHelperTest, TestNotifyIsMhtmlPage) {
+TEST_F(OfflinePageTabHelperTest, TestNotifyMhtmlPageLoadAttempted_Success) {
   GURL mhtml_url("https://www.example.com");
-  base::Time mhtml_creation_time = base::Time::FromJsTime(1522339419011L);
-  tab_helper()->SetCurrentTargetFrameForTest(web_contents()->GetMainFrame());
 
-  CreateNavigationSimulator(kTestFileUrl);
-  navigation_simulator()->Start();
-  navigation_simulator()->SetContentsMimeType("multipart/related");
-  tab_helper()->NotifyIsMhtmlPage(mhtml_url, mhtml_creation_time);
-  navigation_simulator()->Commit();
+  // Simulate navigation and check UMA reporting.
+  base::HistogramTester histogram_tester;
+  SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kSuccess);
+  histogram_tester.ExpectUniqueSample(kLoadResultUmaNameAsync,
+                                      MHTMLLoadResult::kSuccess, 1);
 
-  EXPECT_EQ(OfflinePageTrustedState::UNTRUSTED, tab_helper()->trusted_state());
-  EXPECT_FALSE(tab_helper()->IsShowingTrustedOfflinePage());
-  EXPECT_EQ(OfflinePageHeader::Reason::NONE,
+  EXPECT_EQ(OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR,
+            tab_helper()->trusted_state());
+  EXPECT_TRUE(tab_helper()->IsShowingTrustedOfflinePage());
+  EXPECT_EQ(OfflinePageHeader::Reason::DOWNLOAD,
             tab_helper()->offline_header().reason);
 
   const OfflinePageItem* offline_page = tab_helper()->offline_page();
   ASSERT_NE(nullptr, offline_page);
   EXPECT_EQ(mhtml_url, offline_page->url);
-  EXPECT_EQ(mhtml_creation_time, offline_page->creation_time);
+  EXPECT_EQ(kTestMhtmlCreationTime, offline_page->creation_time);
 }
 
-TEST_F(OfflinePageTabHelperTest, TestNotifyIsMhtmlPage_BadUrl) {
+TEST_F(OfflinePageTabHelperTest,
+       TestNotifyMhtmlPageLoadAttempted_BadUrlScheme) {
   GURL mhtml_url("sftp://www.example.com");
-  base::Time mhtml_creation_time = base::Time::FromJsTime(1522339419011L);
-  tab_helper()->SetCurrentTargetFrameForTest(web_contents()->GetMainFrame());
 
-  CreateNavigationSimulator(kTestFileUrl);
-  navigation_simulator()->Start();
-  navigation_simulator()->SetContentsMimeType("multipart/related");
-  tab_helper()->NotifyIsMhtmlPage(mhtml_url, mhtml_creation_time);
-  navigation_simulator()->Commit();
+  base::HistogramTester histogram_tester;
+  SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kUrlSchemeNotAllowed);
+  histogram_tester.ExpectUniqueSample(kLoadResultUmaNameAsync,
+                                      MHTMLLoadResult::kUrlSchemeNotAllowed, 1);
 
-  EXPECT_EQ(OfflinePageTrustedState::UNTRUSTED, tab_helper()->trusted_state());
-  EXPECT_FALSE(tab_helper()->IsShowingTrustedOfflinePage());
-  EXPECT_EQ(OfflinePageHeader::Reason::NONE,
+  EXPECT_EQ(OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR,
+            tab_helper()->trusted_state());
+  EXPECT_TRUE(tab_helper()->IsShowingTrustedOfflinePage());
+  EXPECT_EQ(OfflinePageHeader::Reason::DOWNLOAD,
             tab_helper()->offline_header().reason);
 
   const OfflinePageItem* offline_page = tab_helper()->offline_page();
-  EXPECT_EQ(kTestFileUrl, offline_page->url);
-  EXPECT_EQ(base::Time(), offline_page->creation_time);
+  EXPECT_EQ(mhtml_url, offline_page->url);
+  EXPECT_EQ(kTestMhtmlCreationTime, offline_page->creation_time);
 }
 
+TEST_F(OfflinePageTabHelperTest,
+       TestNotifyMhtmlPageLoadAttempted_MhtmlEmptyFile) {
+  // Test empty file. For now, there's no need to actually load an empty file
+  // since we're calling NotifyMhtmlPageLoadAttempted directly with
+  // MHTMLLoadResult::kEmptyFile.
+  GURL mhtml_url("https://www.example.com");
+
+  base::HistogramTester histogram_tester;
+  SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kEmptyFile);
+  histogram_tester.ExpectUniqueSample(kLoadResultUmaNameAsync,
+                                      MHTMLLoadResult::kEmptyFile, 1);
+}
+
+TEST_F(OfflinePageTabHelperTest,
+       TestNotifyMhtmlPageLoadAttempted_MhtmlInvalidArchive) {
+  GURL mhtml_url("https://www.example.com");
+
+  base::HistogramTester histogram_tester;
+  SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kInvalidArchive);
+  histogram_tester.ExpectUniqueSample(kLoadResultUmaNameAsync,
+                                      MHTMLLoadResult::kInvalidArchive, 1);
+}
+
+TEST_F(OfflinePageTabHelperTest,
+       TestNotifyMhtmlPageLoadAttempted_MhtmlMissingMainResource) {
+  GURL mhtml_url("https://www.example.com");
+
+  base::HistogramTester histogram_tester;
+  SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
+                          MHTMLLoadResult::kMissingMainResource);
+  histogram_tester.ExpectUniqueSample(kLoadResultUmaNameAsync,
+                                      MHTMLLoadResult::kMissingMainResource, 1);
+}
+
+TEST_F(OfflinePageTabHelperTest, TestNotifyMhtmlPageLoadAttempted_Untrusted) {
+  GURL mhtml_url("https://www.example.com");
+  base::HistogramTester histogram_tester;
+
+  tab_helper()->SetCurrentTargetFrameForTest(web_contents()->GetMainFrame());
+
+  // Simulate navigation
+  CreateNavigationSimulator(kTestFileUrl);
+  navigation_simulator()->Start();
+
+  // We force use of the untrusted page histogram by using an empty namespace.
+  OfflinePageItem offlinePage(mhtml_url, 0, ClientId("", "1234"),
+                              base::FilePath(), 0, kTestMhtmlCreationTime);
+  OfflinePageHeader offlineHeader(kTestHeader);
+  tab_helper()->SetOfflinePage(offlinePage, offlineHeader,
+                               OfflinePageTrustedState::UNTRUSTED, false);
+
+  navigation_simulator()->SetContentsMimeType("multipart/related");
+
+  tab_helper()->NotifyMhtmlPageLoadAttempted(MHTMLLoadResult::kSuccess,
+                                             mhtml_url, kTestMhtmlCreationTime);
+  navigation_simulator()->Commit();
+
+  // Check histogram
+  histogram_tester.ExpectUniqueSample("OfflinePages.MhtmlLoadResultUntrusted",
+                                      MHTMLLoadResult::kSuccess, 1);
+}
+
+}  // namespace
 }  // namespace offline_pages

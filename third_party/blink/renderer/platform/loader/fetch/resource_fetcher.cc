@@ -465,6 +465,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           *properties_,
           init.frame_scheduler)),
       archive_(init.archive),
+      archive_load_result_(mojom::MHTMLLoadResult::kSuccess),
       resource_timing_report_timer_(
           task_runner_,
           this,
@@ -1647,7 +1648,10 @@ ArchiveResource* ResourceFetcher::CreateArchive(
   }
 
   archive_ = MHTMLArchive::Create(url, buffer);
-  if (!archive_) {
+  archive_load_result_ = archive_->LoadResult();
+  if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
+    archive_.Clear();
+
     // Log if attempting to load an invalid archive resource.
     console_logger_->AddErrorMessage(
         ConsoleLogger::Source::kScript,

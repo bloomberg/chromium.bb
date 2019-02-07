@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
+#include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -35,6 +37,8 @@
 
 namespace offline_pages {
 
+using blink::mojom::MHTMLLoadResult;
+
 namespace {
 bool SchemeIsForUntrustedOfflinePages(const GURL& url) {
 #if defined(OS_ANDROID)
@@ -42,6 +46,16 @@ bool SchemeIsForUntrustedOfflinePages(const GURL& url) {
     return true;
 #endif
   return url.SchemeIsFile();
+}
+
+void ReportMhtmlLoadResult(const std::string& name_space,
+                           MHTMLLoadResult load_result) {
+  if (name_space.empty())
+    return;
+
+  base::UmaHistogramEnumeration(model_utils::AddHistogramSuffix(
+                                    name_space, "OfflinePages.MhtmlLoadResult"),
+                                load_result);
 }
 }  // namespace
 
@@ -90,31 +104,51 @@ OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
 
 OfflinePageTabHelper::~OfflinePageTabHelper() {}
 
-void OfflinePageTabHelper::NotifyIsMhtmlPage(const GURL& main_frame_url,
-                                             base::Time creation_time) {
+void OfflinePageTabHelper::NotifyMhtmlPageLoadAttempted(
+    MHTMLLoadResult load_result,
+    const GURL& main_frame_url,
+    base::Time date) {
   if (mhtml_page_notifier_bindings_.GetCurrentTargetFrame() !=
       web_contents()->GetMainFrame()) {
     return;
   }
 
+  bool is_trusted = provisional_offline_info_.trusted_state !=
+                    OfflinePageTrustedState::UNTRUSTED;
+
+  // We shouldn't have a trusted page without valid offline info and namespace.
+  DCHECK(!(!provisional_offline_info_.IsValid() && is_trusted));
+
+  // If file is untrusted or we are missing the namespace, MHTML load result is
+  // reported on the "untrusted" histogram.
+  if (is_trusted) {
+    // Ensure we have a non-empy namespace.
+    DCHECK(
+        provisional_offline_info_.offline_page &&
+        !provisional_offline_info_.offline_page->client_id.name_space.empty());
+
+    ReportMhtmlLoadResult(
+        provisional_offline_info_.offline_page->client_id.name_space,
+        load_result);
+
+    // If we're here, we have valid offline info, so since the page is trusted,
+    // we should not use the renderer's information.
+    return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.MhtmlLoadResultUntrusted",
+                            load_result);
+
   // Sanity checking the input URL.
   if (!main_frame_url.is_valid() || !main_frame_url.SchemeIsHTTPOrHTTPS())
     return;
-
-  // The renderer's info should only be used if the offline page is not trusted,
-  // so ignore this information if we have a trusted page already.
-  if (provisional_offline_info_.IsValid() &&
-      provisional_offline_info_.trusted_state !=
-          OfflinePageTrustedState::UNTRUSTED) {
-    return;
-  }
 
   if (!provisional_offline_info_.IsValid())
     provisional_offline_info_ = LoadedOfflinePageInfo::MakeUntrusted();
   provisional_offline_info_.offline_page->url = main_frame_url;
 
-  if (!creation_time.is_null())
-    provisional_offline_info_.offline_page->creation_time = creation_time;
+  if (!date.is_null())
+    provisional_offline_info_.offline_page->creation_time = date;
 }
 
 void OfflinePageTabHelper::DidStartNavigation(

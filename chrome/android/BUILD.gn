@@ -707,6 +707,7 @@ android_library("chrome_test_java") {
     "//third_party/blink/public:android_mojo_bindings_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
+    "//third_party/blink/public/mojom:mojom_mhtml_load_result_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cct_dynamic_module:cct_dynamic_module_java",

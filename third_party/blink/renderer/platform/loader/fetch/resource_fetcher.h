@@ -32,6 +32,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -178,6 +179,9 @@ class PLATFORM_EXPORT ResourceFetcher
   Vector<KURL> GetUrlsOfUnusedPreloads();
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
+  mojom::MHTMLLoadResult ArchiveLoadResult() const {
+    return archive_load_result_;
+  }
   ArchiveResource* CreateArchive(const KURL&,
                                  scoped_refptr<const SharedBuffer>);
 
@@ -355,6 +359,7 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashMap<PreloadKey, Member<Resource>> preloads_;
   HeapVector<Member<Resource>> matched_preloads_;
   Member<MHTMLArchive> archive_;
+  mojom::MHTMLLoadResult archive_load_result_;
 
   TaskRunnerTimer<ResourceFetcher> resource_timing_report_timer_;
 
