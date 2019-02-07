@@ -871,7 +871,6 @@ class CORE_EXPORT LocalFrameView final
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
-  Member<LocalFrameView> parent_;
 
   IntRect frame_rect_;
   bool is_attached_;
