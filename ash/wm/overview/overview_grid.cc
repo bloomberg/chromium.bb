@@ -17,6 +17,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -395,6 +396,8 @@ SkColor OverviewGrid::GetShieldColor() {
 }
 
 void OverviewGrid::Shutdown() {
+  ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
+
   for (const auto& window : window_list_)
     window->Shutdown();
 
@@ -426,6 +429,11 @@ void OverviewGrid::PrepareForOverview() {
   for (const auto& window : window_list_)
     window->PrepareForOverview();
   prepared_for_overview_ = true;
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
+    ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
+  }
 }
 
 void OverviewGrid::PositionWindows(
@@ -895,6 +903,21 @@ void OverviewGrid::OnPostWindowStateTypeChange(
     (*iter)->OnMinimizedStateChanged();
     PositionWindows(/*animate=*/false);
   }
+}
+
+void OverviewGrid::OnScreenCopiedBeforeRotation() {
+  for (auto& window : window_list()) {
+    window->set_disable_mask(true);
+    window->UpdateMaskAndShadow();
+  }
+}
+
+void OverviewGrid::OnScreenRotationAnimationFinished(
+    ScreenRotationAnimator* animator,
+    bool canceled) {
+  for (auto& window : window_list())
+    window->set_disable_mask(false);
+  Shell::Get()->overview_controller()->DelayedUpdateMaskAndShadow();
 }
 
 void OverviewGrid::OnStartingAnimationComplete() {

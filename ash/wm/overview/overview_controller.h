@@ -68,6 +68,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();
 
+  // Post a task to update the shadow and mask of overview windows.
+  void DelayedUpdateMaskAndShadow();
+
   // OverviewDelegate:
   void OnSelectionEnded() override;
   void AddDelayedAnimationObserver(
@@ -114,6 +117,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void OnStartingAnimationComplete(bool canceled);
   void OnEndingAnimationComplete(bool canceled);
   void ResetPauser();
+
+  void UpdateMaskAndShadow();
 
   // Collection of DelayedAnimationObserver objects that own widgets that may be
   // still animating after overview mode ends. If shell needs to shut down while

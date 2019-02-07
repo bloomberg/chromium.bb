@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
@@ -50,7 +51,8 @@ class OverviewItem;
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
 class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
-                                public wm::WindowStateObserver {
+                                public wm::WindowStateObserver,
+                                public ScreenRotationAnimatorObserver {
  public:
   OverviewGrid(aura::Window* root_window,
                const std::vector<aura::Window*>& window_list,
@@ -147,6 +149,11 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override;
+
+  // ScreenRotationAnimatorObserver:
+  void OnScreenCopiedBeforeRotation() override;
+  void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
+                                         bool canceled) override;
 
   // Called when overview starting animation completes.
   void OnStartingAnimationComplete();
