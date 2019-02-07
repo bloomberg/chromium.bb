@@ -346,14 +346,21 @@ void DecoderStream<StreamType>::OnDecoderSelected(
     DCHECK(decoder_);
   }
 
-  decoder_ = std::move(selected_decoder);
+  auto* original_stream = stream_;
+  bool is_decrypting_demuxer_stream_selected = !!decrypting_demuxer_stream;
+
   if (decrypting_demuxer_stream) {
+    // Override |stream_| with the decrypted stream provided by
+    // DecryptingDemuxerStream.
     decrypting_demuxer_stream_ = std::move(decrypting_demuxer_stream);
     stream_ = decrypting_demuxer_stream_.get();
+
     // Also clear |cdm_context_|, it shouldn't be passed during reinitialize for
-    // a sream that isn't encrypted.
+    // a stream that isn't encrypted.
     cdm_context_ = nullptr;
   }
+
+  decoder_ = std::move(selected_decoder);
   if (decoder_change_observer_cb_)
     decoder_change_observer_cb_.Run(decoder_.get());
 
@@ -388,6 +395,13 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   media_log_->SetBooleanProperty(
       "is_platform_" + GetStreamTypeString() + "_decoder",
       decoder_->IsPlatformDecoder());
+
+  if (is_decrypting_demuxer_stream_selected) {
+    MEDIA_LOG(INFO, media_log_)
+        << "Selected DecryptingDemuxerStream for " << GetStreamTypeString()
+        << " decryption, config: "
+        << traits_->GetDecoderConfig(original_stream).AsHumanReadableString();
+  }
 
   MEDIA_LOG(INFO, media_log_)
       << "Selected " << decoder_->GetDisplayName() << " for "
