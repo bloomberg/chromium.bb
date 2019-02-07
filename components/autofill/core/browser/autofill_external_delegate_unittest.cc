@@ -753,8 +753,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
 TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIcon) {
   IssueOnQuery(kQueryId);
 
-  auto element_icons = testing::ElementsAre(
-      base::string16(), base::ASCIIToUTF16("googlePay"));
+  auto element_icons = testing::ElementsAre(std::string(), "googlePay");
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
                                 false, _));
@@ -777,8 +776,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIconOniOS) {
   IssueOnQuery(kQueryId);
 
   auto element_icons =
-      testing::ElementsAre(base::ASCIIToUTF16("googlePay"), base::string16(),
-                           base::ASCIIToUTF16("googlePay"));
+      testing::ElementsAre("googlePay", std::string(), "googlePay");
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
                                 false, _));
@@ -801,8 +799,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
   IssueOnQuery(kQueryId);
 
   auto element_icons = testing::ElementsAre(
-      base::string16(),
-      base::string16() /* Autofill setting item does not have icon. */);
+      std::string(),
+      std::string() /* Autofill setting item does not have icon. */);
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
                                 false, _));
@@ -822,8 +820,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
   IssueOnQuery(kQueryId);
 
   auto element_icons = testing::ElementsAre(
-      base::string16(),
-      base::string16() /* Autofill setting item does not have icon. */);
+      std::string(),
+      std::string() /* Autofill setting item does not have icon. */);
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
                                 false, _));

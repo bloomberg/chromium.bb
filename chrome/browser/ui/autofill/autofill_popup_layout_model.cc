@@ -137,7 +137,7 @@ int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
     row_size += kNamePadding;
 
   // Add the Autofill icon size, if required.
-  const base::string16& icon = suggestions[row].icon;
+  const std::string& icon = suggestions[row].icon;
   if (!icon.empty()) {
     row_size += GetIconImage(row).width() + kIconPadding;
   }
@@ -213,7 +213,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   if (!suggestions[index].custom_icon.IsEmpty())
     return suggestions[index].custom_icon.AsImageSkia();
 
-  const base::string16& icon_str = suggestions[index].icon;
+  const std::string& icon_str = suggestions[index].icon;
   if (icon_str.empty())
     return gfx::ImageSkia();
 
@@ -221,19 +221,19 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
 
   // For http warning message, get icon images from VectorIcon, which is the
   // same as security indicator icons in location bar.
-  if (icon_str == base::ASCIIToUTF16("httpWarning")) {
+  if (icon_str == "httpWarning") {
     return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
                                  gfx::kChromeIconGrey);
   }
-  if (icon_str == base::ASCIIToUTF16("httpsInvalid")) {
+  if (icon_str == "httpsInvalid") {
     return gfx::CreateVectorIcon(omnibox::kHttpsInvalidIcon, kIconSize,
                                  gfx::kGoogleRed700);
   }
-  if (icon_str == base::ASCIIToUTF16("keyIcon"))
+  if (icon_str == "keyIcon")
     return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
-  if (icon_str == base::ASCIIToUTF16("globeIcon"))
+  if (icon_str == "globeIcon")
     return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
-  if (icon_str == base::ASCIIToUTF16("google")) {
+  if (icon_str == "google") {
     return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
                                  gfx::kPlaceholderColor);
   }
@@ -274,10 +274,10 @@ gfx::Rect AutofillPopupLayoutModel::GetRowBounds(size_t index) const {
 }
 
 int AutofillPopupLayoutModel::GetIconResourceID(
-    const base::string16& resource_name) const {
+    const std::string& resource_name) const {
   int result = kResourceNotFoundId;
   for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name)) {
+    if (resource_name == kDataResources[i].name) {
       result = kDataResources[i].icon_id;
       break;
     }
@@ -287,11 +287,9 @@ int AutofillPopupLayoutModel::GetIconResourceID(
 }
 
 int AutofillPopupLayoutModel::GetIconAccessibleNameResourceId(
-    const base::string16& resource_name) const {
+    const std::string& resource_name) const {
   for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    // TODO(crbug.com/850597): Remove UTF conversion once AutofillSuggestion
-    // no longer stores the resource name as a string16.
-    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name))
+    if (resource_name == kDataResources[i].name)
       return kDataResources[i].accessible_string_id;
   }
   return kResourceNotFoundId;

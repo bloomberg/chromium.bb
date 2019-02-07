@@ -2047,7 +2047,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       Suggestion* suggestion = &suggestions.back();
 
       suggestion->value = credit_card->GetInfo(type, app_locale_);
-      suggestion->icon = base::UTF8ToUTF16(credit_card->network());
+      suggestion->icon = credit_card->network();
       suggestion->backend_id = credit_card->guid();
       suggestion->match = prefix_matched_suggestion
                               ? Suggestion::PREFIX_MATCH

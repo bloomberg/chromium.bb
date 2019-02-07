@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "ui/gfx/font_list.h"
@@ -88,14 +89,13 @@ class AutofillPopupLayoutModel {
 
   // Gets the resource value for the given resource, returning 0 if the
   // resource isn't recognized.
-  int GetIconResourceID(const base::string16& resource_name) const;
+  int GetIconResourceID(const std::string& resource_name) const;
 
   // Returns the string id for an accessible name which should be used to
   // describe the given resource. Returns 0 if the resource isn't recognized;
   // note that this doesn't necessarily mean anything went wrong, as some valid
   // resources are intentionally omitted for screen readers.
-  int GetIconAccessibleNameResourceId(
-      const base::string16& resource_name) const;
+  int GetIconAccessibleNameResourceId(const std::string& resource_name) const;
 
   bool is_credit_card_popup() const { return is_credit_card_popup_; }
 

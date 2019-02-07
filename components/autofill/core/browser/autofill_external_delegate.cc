@@ -86,7 +86,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     Suggestion scan_credit_card(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
     scan_credit_card.frontend_id = POPUP_ITEM_ID_SCAN_CREDIT_CARD;
-    scan_credit_card.icon = base::ASCIIToUTF16("scanCreditCardIcon");
+    scan_credit_card.icon = "scanCreditCardIcon";
     suggestions.push_back(scan_credit_card);
   }
 
@@ -104,7 +104,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     suggestions.emplace_back(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS));
     suggestions.back().frontend_id = POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS;
-    suggestions.back().icon = base::ASCIIToUTF16("google");
+    suggestions.back().icon = "google";
   }
 
   if (has_autofill_suggestions_)
@@ -353,7 +353,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // On Android and Desktop, Google Pay branding is shown along with Settings.
   // So Google Pay Icon is just attached to an existing menu item.
   if (is_all_server_suggestions)
-    suggestions->back().icon = base::ASCIIToUTF16("googlePay");
+    suggestions->back().icon = "googlePay";
 
 // On iOS, GooglePayIcon comes at the begining and hence prepended to the list.
 #if defined(OS_IOS)
@@ -361,7 +361,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
           features::kAutofillDownstreamUseGooglePayBrandingOniOS) &&
       is_all_server_suggestions) {
     Suggestion googlepay_icon;
-    googlepay_icon.icon = base::ASCIIToUTF16("googlePay");
+    googlepay_icon.icon = "googlePay";
     googlepay_icon.frontend_id = POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
     suggestions->insert(suggestions->begin(), googlepay_icon);
   }
@@ -369,10 +369,10 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
 
 #if defined(OS_ANDROID)
   if (IsKeyboardAccessoryEnabled()) {
-    suggestions->back().icon = base::ASCIIToUTF16("settings");
+    suggestions->back().icon = "settings";
     if (IsHintEnabledInKeyboardAccessory() && !query_field_.is_autofilled) {
       Suggestion create_icon;
-      create_icon.icon = base::ASCIIToUTF16("create");
+      create_icon.icon = "create";
       create_icon.frontend_id = POPUP_ITEM_ID_CREATE_HINT;
       suggestions->push_back(create_icon);
     }
