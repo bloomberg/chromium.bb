@@ -136,12 +136,14 @@ public class VrBrowserControllerInputTest {
 
     private void waitForScrollQuiescence(final Callable<Integer> getCoord) {
         final AtomicInteger lastCoord = new AtomicInteger(-1);
+        // Half-second poll period to be sure that the scroll has actually finished instead of
+        // being stuck in flaky scroll jank or taking longer than usual to start.
         CriteriaHelper.pollInstrumentationThread(() -> {
             Integer curCoord = getCoord.call();
             if (curCoord.equals(lastCoord.get())) return true;
             lastCoord.set(curCoord);
             return false;
-        }, "Did not reach scroll quiescence", POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        }, "Did not reach scroll quiescence", POLL_TIMEOUT_LONG_MS, 500);
     }
 
     private void testControllerScrollingImpl(String url, Runnable waitScrollable,
