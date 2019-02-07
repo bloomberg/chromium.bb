@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/debug/crash_logging.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_installed_script_loader.h"
@@ -164,6 +165,10 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
   // or importScripts() (RESOURCE_TYPE_SCRIPT).
   if (resource_request.resource_type != RESOURCE_TYPE_SERVICE_WORKER &&
       resource_request.resource_type != RESOURCE_TYPE_SCRIPT) {
+    static auto* key = base::debug::AllocateCrashKeyString(
+        "swslf_bad_type", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(
+        key, base::NumberToString(resource_request.resource_type));
     mojo::ReportBadMessage("SWSLF_BAD_RESOURCE_TYPE");
     return false;
   }

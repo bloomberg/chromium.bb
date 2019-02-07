@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -15,8 +16,24 @@
 #include "ipc/ipc_message.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+// TODO(https://crbug.com/929042): Remove this after the linked bug is fixed.
+void CrashBecauseNotMainScriptRequest(const blink::WebURLRequest& request) {
+  GURL url(request.Url());
+  DEBUG_ALIAS_FOR_GURL(url_buf, url);
+  blink::mojom::RequestContextType context = request.GetRequestContext();
+  base::debug::Alias(&context);
+  CHECK(false);
+}
+
+}  // namespace
 
 ServiceWorkerNetworkProviderForServiceWorker::
     ServiceWorkerNetworkProviderForServiceWorker(
@@ -61,6 +78,11 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
   // We only get here for the main script request from the shadow page.
   // importScripts() and other subresource fetches are handled on the worker
   // thread by ServiceWorkerFetchContextImpl.
+  if (request.GetRequestContext() !=
+      blink::mojom::RequestContextType::SERVICE_WORKER) {
+    CrashBecauseNotMainScriptRequest(request);
+    return nullptr;
+  }
   DCHECK_EQ(blink::mojom::RequestContextType::SERVICE_WORKER,
             request.GetRequestContext());
 
