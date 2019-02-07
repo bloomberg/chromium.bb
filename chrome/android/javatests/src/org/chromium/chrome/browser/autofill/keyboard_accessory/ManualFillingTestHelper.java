@@ -18,29 +18,29 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
+import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -50,6 +50,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
@@ -60,11 +61,17 @@ import java.util.concurrent.atomic.AtomicReference;
  * Helpers in this class simplify interactions with the Keyboard Accessory and the sheet below it.
  */
 public class ManualFillingTestHelper {
+    private final static String PASSWORD_NODE_ID = "password_field";
+    private final static String USERNAME_NODE_ID = "username_field";
+    private final static String SUBMIT_NODE_ID = "input_submit_button";
+
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
     private Provider<AccessorySheetData> mSheetSuggestionsProvider =
             new KeyboardAccessoryData.PropertyProvider<>();
+
+    private EmbeddedTestServer mEmbeddedTestServer;
 
     public FakeKeyboard getKeyboard() {
         return (FakeKeyboard) mActivityTestRule.getKeyboardDelegate();
@@ -75,16 +82,14 @@ public class ManualFillingTestHelper {
     }
 
     public void loadTestPage(boolean isRtl) throws InterruptedException {
+        loadTestPage("/chrome/test/data/password/password_form.html", isRtl);
+    }
+
+    public void loadTestPage(String url, boolean isRtl) throws InterruptedException {
+        mEmbeddedTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         ChromeWindow.setKeyboardVisibilityDelegateFactory(FakeKeyboard::new);
-        mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html"
-                + (isRtl ? " dir=\"rtl\"" : "") + "><head>"
-                + "<meta name=\"viewport\""
-                + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-                + "<body><form method=\"POST\">"
-                + "<input type=\"password\" id=\"password\"/><br>"
-                + "<input type=\"text\" id=\"email\" autocomplete=\"email\" /><br>"
-                + "<input type=\"submit\" id=\"submit\" />"
-                + "</form></body></html>"));
+        mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeTabbedActivity activity = mActivityTestRule.getActivity();
@@ -103,20 +108,57 @@ public class ManualFillingTestHelper {
             activity.getManualFillingController().registerPasswordProvider(
                     mSheetSuggestionsProvider);
         });
-        DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), "password");
-        sendCredentials(createEmptyCredentials());
+        DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
+        cacheCredentials(new String[0], new String[0]); // This caches the empty state.
     }
 
     public void clear() {
+        if (mEmbeddedTestServer != null) mEmbeddedTestServer.stopAndDestroyServer();
         ChromeWindow.resetKeyboardVisibilityDelegateFactory();
     }
 
-    public void waitForKeyboard() {
-        CriteriaHelper.pollUiThread(() -> {
-            Activity activity = mActivityTestRule.getActivity();
-            return getKeyboard().isAndroidSoftKeyboardShowing(activity, activity.getCurrentFocus());
-        });
+    // --------------------------------------
+    // Helpers interacting with the web page.
+    // --------------------------------------
+
+    public void focusPasswordField() throws TimeoutException, InterruptedException {
+        DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getWebContents().scrollFocusedEditableNodeIntoView(); });
+        getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
+
+    public String getPasswordText() throws TimeoutException, InterruptedException {
+        return DOMUtils.getNodeValue(mWebContentsRef.get(), PASSWORD_NODE_ID);
+    }
+
+    public void clickEmailField(boolean forceAccessory)
+            throws TimeoutException, InterruptedException {
+        // TODO(fhorschig): This should be |focusNode|. Change with autofill popup deprecation.
+        DOMUtils.clickNode(mWebContentsRef.get(), USERNAME_NODE_ID);
+        if (forceAccessory) {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                mActivityTestRule.getActivity()
+                        .getManualFillingController()
+                        .getMediatorForTesting()
+                        .showWhenKeyboardIsVisible();
+            });
+        };
+        getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+    }
+
+    /**
+     * Although the submit button has no effect, it takes the focus from the input field and should
+     * hide the keyboard.
+     */
+    public void clickSubmit() throws TimeoutException, InterruptedException {
+        DOMUtils.clickNode(mWebContentsRef.get(), SUBMIT_NODE_ID);
+        getKeyboard().hideAndroidSoftKeyboard(null);
+    }
+
+    // ---------------------------------
+    // Helpers to wait for accessory UI.
+    // ---------------------------------
 
     public void waitForKeyboardToDisappear() {
         CriteriaHelper.pollUiThread(() -> {
@@ -126,16 +168,30 @@ public class ManualFillingTestHelper {
         });
     }
 
-    public void clickPasswordField() throws TimeoutException, InterruptedException {
-        DOMUtils.clickNode(mWebContentsRef.get(), "password");
-        requestShowKeyboardAccessory();
-        getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+    public void waitForKeyboardAccessoryToDisappear() {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
+                                                             .getManualFillingController()
+                                                             .getKeyboardAccessory();
+            return accessory != null && !accessory.isShown();
+        });
+        CriteriaHelper.pollUiThread(() -> {
+            View accessory = mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
+            return accessory != null && !accessory.isShown();
+        });
     }
 
-    public void clickEmailField() throws TimeoutException, InterruptedException {
-        DOMUtils.clickNode(mWebContentsRef.get(), "email");
-        requestHideKeyboardAccessory();
-        getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+    public void waitForKeyboardAccessoryToBeShown() {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
+                                                             .getManualFillingController()
+                                                             .getKeyboardAccessory();
+            return accessory != null && accessory.isShown();
+        });
+        CriteriaHelper.pollUiThread(() -> {
+            View accessory = mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
+            return accessory != null && accessory.isShown();
+        });
     }
 
     public DropdownPopupWindowInterface waitForAutofillPopup(String filterInput) {
@@ -159,7 +215,7 @@ public class ManualFillingTestHelper {
         Assert.assertTrue(anchorView.getTag() instanceof DropdownPopupWindowInterface);
         final DropdownPopupWindowInterface popup =
                 (DropdownPopupWindowInterface) anchorView.getTag();
-        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup anchor view was never added.") {
+        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup view never showed!") {
             @Override
             public boolean isSatisfied() {
                 // Wait until the popup is showing and onLayout() has happened.
@@ -171,22 +227,45 @@ public class ManualFillingTestHelper {
         return popup;
     }
 
+    // ----------------------------------
+    // Helpers to set up the native side.
+    // ----------------------------------
+
     /**
-     * Although the submit button has no effect, it takes the focus from the input field and should
-     * hide the keyboard.
+     * Calls cacheCredentials with two simple credentials.
+     * @see ManualFillingTestHelper#cacheCredentials(String, String)
      */
-    public void clickSubmit() throws TimeoutException, InterruptedException {
-        DOMUtils.clickNode(mWebContentsRef.get(), "submit");
-        getKeyboard().hideAndroidSoftKeyboard(null);
+    public void cacheTestCredentials() {
+        cacheCredentials(new String[] {"mpark@gmail.com", "mayapark@googlemail.com"},
+                new String[] {"TestPassword", "SomeReallyLongPassword"});
     }
 
     /**
-     * Creates and adds a password tab to keyboard accessory and sheet.
+     * @see ManualFillingTestHelper#cacheCredentials(String, String)
+     * @param username A {@link String} to be used as display text for a username chip.
+     * @param password A {@link String} to be used as display text for a password chip.
      */
-    public void sendCredentials(AccessorySheetData testCrendentials) {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mSheetSuggestionsProvider.notifyObservers(testCrendentials); });
+    public void cacheCredentials(String username, String password) {
+        cacheCredentials(new String[] {username}, new String[] {password});
     }
+
+    /**
+     * Creates credential pairs from these strings and writes them into the cache of the native
+     * controller. The controller will only refresh this cache on page load.
+     * @param usernames {@link String}s to be used as display text for username chips.
+     * @param passwords {@link String}s to be used as display text for password chips.
+     */
+    public void cacheCredentials(String[] usernames, String[] passwords) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ManualFillingBridge.cachePasswordSheetData(
+                    mActivityTestRule.getWebContents(), usernames, passwords);
+        });
+    }
+
+    // --------------------------------------------------
+    // Generic helpers to match, check or wait for views.
+    // TODO(fhorschig): Consider Moving to ViewUtils.
+    // --------------------------------------------------
 
     /**
      * Use in a |onView().perform| action to select the tab at |tabIndex| for the found tab layout.
@@ -249,6 +328,24 @@ public class ManualFillingTestHelper {
     }
 
     /**
+     * Matches any {@link TextView} which applies a {@link PasswordTransformationMethod}.
+     * @return The matcher checking the transformation method.
+     */
+    public static Matcher<View> isTransformed() {
+        return new BoundedMatcher<View, TextView>(TextView.class) {
+            @Override
+            public boolean matchesSafely(TextView textView) {
+                return textView.getTransformationMethod() instanceof PasswordTransformationMethod;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("is a transformed password.");
+            }
+        };
+    }
+
+    /**
      * Use like {@link android.support.test.espresso.Espresso#onView}. It waits for a view matching
      * the given |matcher| to be displayed and allows to chain checks/performs on the result.
      * @param matcher The matcher matching exactly the view that is expected to be displayed.
@@ -259,37 +356,16 @@ public class ManualFillingTestHelper {
         return onView(matcher);
     }
 
-    public void waitToBeHidden(Matcher<View> matcher) {
+    public static void waitToBeHidden(Matcher<View> matcher) {
         onView(isRoot()).check((r, e) -> {
             waitForView((ViewGroup) r, matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE);
         });
     }
 
-    /**
-     * In order to make sure the keyboard accessory is only shown on appropriate fields, a request
-     * to show is usually sent from the native side. This method simulates that request.
-     */
-    public void requestShowKeyboardAccessory() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivityTestRule.getActivity()
-                    .getManualFillingController()
-                    .getMediatorForTesting()
-                    .showWhenKeyboardIsVisible();
-        });
-    }
-
-    /**
-     * In order to make sure the keyboard accessory is only shown on appropriate fields, a request
-     * from the native side can request to hide it. This method simulates that request.
-     */
-    private void requestHideKeyboardAccessory() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivityTestRule.getActivity()
-                    .getManualFillingController()
-                    .getMediatorForTesting()
-                    .hide();
-        });
-    }
+    // --------------------------------------------
+    // Helpers that force override the native side.
+    // TODO(fhorschig): Search alternatives.
+    // --------------------------------------------
 
     public void addGenerationButton() {
         KeyboardAccessoryData
@@ -298,9 +374,11 @@ public class ManualFillingTestHelper {
                         AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
         mActivityTestRule.getActivity().getManualFillingController().registerActionProvider(
                 generationActionProvider);
-        generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
-                new KeyboardAccessoryData.Action("Generate Password",
-                        AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, result -> {})});
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
+                    new KeyboardAccessoryData.Action("Generate Password",
+                            AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, result -> {})});
+        });
     }
 
     public void addAutofillChips() {
@@ -328,36 +406,5 @@ public class ManualFillingTestHelper {
                     new AutofillSuggestion("Marcus", "McSpartangregor", DropdownItem.NO_ICON, false,
                             2, false, false, false)});
         });
-    }
-
-    public static AccessorySheetData createTestCredentials() {
-        AccessorySheetData testCredentials =
-                new AccessorySheetData("Saved passwords for this site");
-        testCredentials.getUserInfoList().add(createUserInfo("mpark@gmail.com", "TestPassword"));
-        testCredentials.getUserInfoList().add(
-                createUserInfo("mayapark@googlemail.com", "SomeReallyLongPassword"));
-        testCredentials.getFooterCommands().add(
-                new FooterCommand("Manage Passwords...", (item) -> {}));
-        return testCredentials;
-    }
-
-    public static AccessorySheetData createEmptyCredentials() {
-        AccessorySheetData testCredentials =
-                new AccessorySheetData("No Saved passwords for this site");
-        testCredentials.getFooterCommands().add(
-                new FooterCommand("Manage Passwords...", (item) -> {}));
-        return testCredentials;
-    }
-
-    public static UserInfo createUserInfo(String username, String password) {
-        return createUserInfo(username, password, null);
-    }
-
-    public static UserInfo createUserInfo(
-            String username, String password, @Nullable Callback<UserInfo.Field> userCallback) {
-        UserInfo info = new UserInfo(null);
-        info.addField(new UserInfo.Field(username, username, false, userCallback));
-        info.addField(new UserInfo.Field(password, "Password for " + username, true, result -> {}));
-        return info;
     }
 }

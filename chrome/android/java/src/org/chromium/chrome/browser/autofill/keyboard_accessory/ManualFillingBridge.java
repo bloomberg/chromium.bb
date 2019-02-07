@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.support.annotation.Px;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -15,6 +16,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 class ManualFillingBridge {
@@ -145,6 +147,12 @@ class ManualFillingBridge {
         nativeOnFaviconRequested(mNativeView, desiredSize, faviconCallback);
     }
 
+    @VisibleForTesting
+    public static void cachePasswordSheetData(
+            WebContents webContents, String[] userNames, String[] passwords) {
+        nativeCachePasswordSheetDataForTesting(webContents, userNames, passwords);
+    }
+
     private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
             int desiredSizeInPx, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
@@ -152,4 +160,7 @@ class ManualFillingBridge {
     private native void nativeOnOptionSelected(
             long nativeManualFillingViewAndroid, String selectedOption);
     private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);
+
+    private static native void nativeCachePasswordSheetDataForTesting(
+            WebContents webContents, String[] userNames, String[] passwords);
 }

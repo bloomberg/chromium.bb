@@ -12,7 +12,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createTestCredentials;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
@@ -72,16 +71,15 @@ public class ManualFillingUiCaptureTest {
     public void testCaptureKeyboardAccessoryWithPasswords()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
+        mHelper.cacheTestCredentials();
         mHelper.addGenerationButton();
 
-        mHelper.clickPasswordField();
-        mHelper.sendCredentials(createTestCredentials());
+        mHelper.focusPasswordField();
+        mHelper.waitForKeyboardAccessoryToBeShown();
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBar");
-
-        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
@@ -101,15 +99,14 @@ public class ManualFillingUiCaptureTest {
     public void testCaptureKeyboardAccessoryWithPasswordsRTL()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(true);
+        mHelper.cacheTestCredentials();
+        mHelper.focusPasswordField();
+        mHelper.waitForKeyboardAccessoryToBeShown();
         mHelper.addGenerationButton();
-        mHelper.clickPasswordField();
-        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBarRTL");
-
-        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
@@ -129,16 +126,16 @@ public class ManualFillingUiCaptureTest {
     public void testCaptureKeyboardAccessoryV2WithPasswords()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
+        mHelper.cacheTestCredentials();
+        mHelper.focusPasswordField();
+        mHelper.waitForKeyboardAccessoryToBeShown();
         mHelper.addGenerationButton();
-        mHelper.clickPasswordField();
         mHelper.addAutofillChips();
-        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBarV2");
 
-        mHelper.sendCredentials(createTestCredentials());
         whenDisplayed(withId(R.id.bar_items_view))
                 .perform(scrollTo(isAssignableFrom(KeyboardAccessoryTabLayoutView.class)),
                         actionOnItem(isAssignableFrom(KeyboardAccessoryTabLayoutView.class),
@@ -161,16 +158,15 @@ public class ManualFillingUiCaptureTest {
     public void testCaptureKeyboardAccessoryV2WithPasswordsRTL()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(true);
+        mHelper.cacheTestCredentials();
+        mHelper.focusPasswordField();
+        mHelper.waitForKeyboardAccessoryToBeShown();
         mHelper.addGenerationButton();
-        mHelper.clickPasswordField();
         mHelper.addAutofillChips();
-        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBarV2RTL");
-
-        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.bar_items_view))
                 .perform(scrollTo(isAssignableFrom(KeyboardAccessoryTabLayoutView.class)),

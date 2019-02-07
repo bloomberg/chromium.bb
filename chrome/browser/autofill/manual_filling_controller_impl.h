@@ -57,6 +57,10 @@ class ManualFillingControllerImpl
   // Returns the held view for testing.
   ManualFillingViewInterface* view() const { return view_.get(); }
 #endif  // defined(UNIT_TEST)
+  // Returns the connected password accessory controller for testing.
+  PasswordAccessoryController* password_controller_for_testing() const {
+    return pwd_controller_.get();
+  }
 
  private:
   friend class content::WebContentsUserData<ManualFillingControllerImpl>;
