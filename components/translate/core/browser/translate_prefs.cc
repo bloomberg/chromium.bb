@@ -11,6 +11,7 @@
 
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -74,18 +75,6 @@ const char TranslatePrefs::kPrefExplicitLanguageAskShown[] =
 // * translate_last_denied_time
 // * translate_too_often_denied
 // * translate_language_blacklist
-
-namespace {
-
-// Extract a timestamp from a base::Value.
-// Will return base::Time() if no valid timestamp exists.
-base::Time GetTimeStamp(const base::Value& value) {
-  base::TimeDelta delta;
-  base::GetValueAsTimeDelta(value, &delta);
-  return base::Time::FromDeltaSinceWindowsEpoch(delta);
-}
-
-}  // namespace
 
 const base::Feature kRegionalLocalesAsDisplayUI{
     "RegionalLocalesAsDisplayUI", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -484,8 +473,7 @@ void TranslatePrefs::BlacklistSite(const std::string& site) {
   BlacklistValue(kPrefTranslateSiteBlacklistDeprecated, site);
   DictionaryPrefUpdate update(prefs_, kPrefTranslateSiteBlacklistWithTime);
   base::DictionaryValue* dict = update.Get();
-  dict->SetKey(site, base::CreateTimeDeltaValue(
-                         base::Time::Now().ToDeltaSinceWindowsEpoch()));
+  dict->SetKey(site, base::CreateTimeValue(base::Time::Now()));
 }
 
 void TranslatePrefs::RemoveSiteFromBlacklist(const std::string& site) {
@@ -503,7 +491,9 @@ std::vector<std::string> TranslatePrefs::GetBlacklistedSitesBetween(
   auto* dict = prefs_->GetDictionary(kPrefTranslateSiteBlacklistWithTime);
   for (const auto& entry : *dict) {
     std::string site = entry.first;
-    base::Time time = GetTimeStamp(*entry.second);
+    base::Time time;
+    // TODO(crbug.com/928787): Handle base::GetValueAsTime() failure.
+    ignore_result(base::GetValueAsTime(*entry.second, &time));
     if (begin <= time && time < end)
       result.push_back(site);
   }

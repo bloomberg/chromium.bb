@@ -4,6 +4,7 @@
 
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
@@ -54,11 +55,9 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
   value->GetString("protocol", &protocol);
   value->GetString("url", &url);
   const base::Value* time_value = value->FindKey("last_modified");
-  if (time_value) {
-    base::TimeDelta time_delta;
-    if (base::GetValueAsTimeDelta(*time_value, &time_delta))
-      time = base::Time::FromDeltaSinceWindowsEpoch(time_delta);
-  }
+  // Treat invalid times as the default value.
+  if (time_value)
+    ignore_result(base::GetValueAsTime(*time_value, &time));
   return ProtocolHandler(protocol, GURL(url), time);
 }
 
@@ -74,8 +73,7 @@ std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
   auto d = std::make_unique<base::DictionaryValue>();
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
-  d->SetKey("last_modified", base::CreateTimeDeltaValue(
-                                 last_modified_.ToDeltaSinceWindowsEpoch()));
+  d->SetKey("last_modified", base::CreateTimeValue(last_modified_));
   return d;
 }
 
