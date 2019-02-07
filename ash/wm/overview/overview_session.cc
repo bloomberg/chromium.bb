@@ -574,11 +574,11 @@ void OverviewSession::UpdateMaskAndShadow() {
 
 void OverviewSession::OnStartingAnimationComplete(bool canceled) {
   if (!canceled) {
+    UpdateMaskAndShadow();
     if (overview_focus_widget_)
       overview_focus_widget_->Show();
     for (auto& grid : grid_list_)
       grid->OnStartingAnimationComplete();
-    Shell::Get()->overview_controller()->DelayedUpdateMaskAndShadow();
   }
 }
 

@@ -20,7 +20,6 @@
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/window.h"
-#include "ui/base/class_property.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -41,8 +40,6 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/window_util.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
-
 namespace ash {
 
 namespace {
@@ -56,12 +53,6 @@ const int kRotationDurationInMs = 250;
 // The rotation factors.
 const int kCounterClockWiseRotationFactor = 1;
 const int kClockWiseRotationFactor = -1;
-
-// A property key to store the ScreenRotationAnimator of the window; Used for
-// screen rotation.
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ScreenRotationAnimator,
-                                   kScreenRotationAnimatorKey,
-                                   nullptr);
 
 display::Display::Rotation GetCurrentScreenRotation(int64_t display_id) {
   return Shell::Get()
@@ -169,24 +160,6 @@ class ScreenRotationAnimationMetricsReporter
 };
 
 }  // namespace
-
-// static
-ScreenRotationAnimator* ScreenRotationAnimator::GetForRootWindow(
-    aura::Window* root_window) {
-  auto* animator = root_window->GetProperty(kScreenRotationAnimatorKey);
-  if (!animator) {
-    animator = new ScreenRotationAnimator(root_window);
-    root_window->SetProperty(kScreenRotationAnimatorKey, animator);
-  }
-  return animator;
-}
-
-// static
-void ScreenRotationAnimator::SetScreenRotationAnimatorForTest(
-    aura::Window* root_window,
-    std::unique_ptr<ScreenRotationAnimator> animator) {
-  root_window->SetProperty(kScreenRotationAnimatorKey, animator.release());
-}
 
 ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
     : root_window_(root_window),
@@ -326,10 +299,6 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(
   animation_scale_mode_ =
       std::make_unique<ui::ScopedAnimationDurationScaleMode>(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-
-  for (auto& observer : screen_rotation_animator_observers_)
-    observer.OnScreenCopiedBeforeRotation();
-
   SetRotation(rotation_request->display_id, rotation_request->old_rotation,
               rotation_request->new_rotation, rotation_request->source);
 
@@ -343,10 +312,8 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedAfterRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request,
     std::unique_ptr<viz::CopyOutputResult> result) {
   animation_scale_mode_.reset();
-  if (IgnoreCopyResult(rotation_request->id, rotation_request_id_)) {
-    NotifyAnimationFinished(/*canceled=*/true);
+  if (IgnoreCopyResult(rotation_request->id, rotation_request_id_))
     return;
-  }
   // In the following cases, abort animation:
   // 1) if the display was removed,
   // 2) if the |root_window| was changed for |display_id|,
@@ -528,12 +495,12 @@ void ScreenRotationAnimator::Rotate(
   }
 }
 
-void ScreenRotationAnimator::AddObserver(
+void ScreenRotationAnimator::AddScreenRotationAnimatorObserver(
     ScreenRotationAnimatorObserver* observer) {
   screen_rotation_animator_observers_.AddObserver(observer);
 }
 
-void ScreenRotationAnimator::RemoveObserver(
+void ScreenRotationAnimator::RemoveScreenRotationAnimatorObserver(
     ScreenRotationAnimatorObserver* observer) {
   screen_rotation_animator_observers_.RemoveObserver(observer);
 }
@@ -551,7 +518,9 @@ void ScreenRotationAnimator::ProcessAnimationQueue() {
     return;
   }
 
-  NotifyAnimationFinished(/*canceled=*/false);
+  // This is only used in test to notify animator observer.
+  for (auto& observer : screen_rotation_animator_observers_)
+    observer.OnScreenRotationAnimationFinished(this);
 }
 
 bool ScreenRotationAnimator::IsRotating() const {
@@ -570,11 +539,6 @@ void ScreenRotationAnimator::StopAnimating() {
   if (new_layer_tree_owner_)
     new_layer_tree_owner_->root()->GetAnimator()->StopAnimating();
   mask_layer_tree_owner_.reset();
-}
-
-void ScreenRotationAnimator::NotifyAnimationFinished(bool canceled) {
-  for (auto& observer : screen_rotation_animator_observers_)
-    observer.OnScreenRotationAnimationFinished(this, canceled);
 }
 
 }  // namespace ash
