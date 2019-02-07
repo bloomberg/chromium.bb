@@ -81,7 +81,9 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       device_poll_thread_("V4L2ImageProcessorDevicePollThread"),
       output_buffer_queued_count_(0),
       num_buffers_(num_buffers),
-      error_cb_(error_cb) {}
+      error_cb_(error_cb) {
+  DETACH_FROM_THREAD(device_thread_checker_);
+}
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
@@ -434,7 +436,7 @@ bool V4L2ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> input_frame,
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   DVLOGF(4) << "Reusing output buffer, index="
             << job_record->output_buffer_index;
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   EnqueueOutput(job_record.get());
   input_job_queue_.emplace(std::move(job_record));
@@ -474,7 +476,7 @@ void V4L2ImageProcessor::Destroy() {
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
   VLOGF(2);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
   DCHECK_EQ(input_queue_, nullptr);
 
   struct v4l2_control control;
@@ -537,7 +539,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   VLOGF(2);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
   DCHECK_EQ(output_queue_, nullptr);
 
   struct v4l2_rect visible_rect;
@@ -596,14 +598,14 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 
 void V4L2ImageProcessor::DestroyInputBuffers() {
   VLOGF(2);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   input_queue_->DeallocateBuffers();
 }
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
   VLOGF(2);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   output_buffer_map_.clear();
 
@@ -629,7 +631,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 
 void V4L2ImageProcessor::ServiceDeviceTask() {
   DVLOGF(4);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
   // * device_poll_thread_ is running normally
@@ -664,7 +666,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
 
 void V4L2ImageProcessor::EnqueueInput() {
   DVLOGF(4);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
   while (!input_job_queue_.empty() && input_queue_->FreeBuffersCount() > 0) {
@@ -686,7 +688,7 @@ void V4L2ImageProcessor::EnqueueInput() {
 
 void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   const int old_outputs_queued = output_buffer_queued_count_;
   if (!EnqueueOutputRecord(job_record))
@@ -707,7 +709,7 @@ void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
 
 void V4L2ImageProcessor::Dequeue() {
   DVLOGF(4);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
   DCHECK(input_queue_->IsStreaming());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
@@ -840,7 +842,7 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
 void V4L2ImageProcessor::AllocateBuffersTask(bool* result,
                                              base::WaitableEvent* done) {
   VLOGF(2);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   *result = CreateInputBuffers() && CreateOutputBuffers();
   done->Signal();
@@ -848,7 +850,7 @@ void V4L2ImageProcessor::AllocateBuffersTask(bool* result,
 
 void V4L2ImageProcessor::DestroyBuffersTask() {
   VLOGF(2);
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   DestroyInputBuffers();
   DestroyOutputBuffers();
@@ -856,7 +858,7 @@ void V4L2ImageProcessor::DestroyBuffersTask() {
 
 void V4L2ImageProcessor::StartDevicePoll() {
   DVLOGF(3) << "starting device poll";
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
   DCHECK(!device_poll_thread_.IsRunning());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
@@ -874,7 +876,7 @@ void V4L2ImageProcessor::StartDevicePoll() {
 
 void V4L2ImageProcessor::StopDevicePoll() {
   DVLOGF(3) << "stopping device poll";
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   bool result = device_->SetDevicePollInterrupt();
