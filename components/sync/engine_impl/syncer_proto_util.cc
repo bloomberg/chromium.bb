@@ -430,15 +430,10 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
 }
 
 // static
-SyncerError SyncerProtoUtil::PostClientToServerMessage(
-    ClientToServerMessage* msg,
-    ClientToServerResponse* response,
-    SyncCycle* cycle,
-    ModelTypeSet* partial_failure_data_types) {
-  DCHECK(response);
-  DCHECK(!msg->get_updates().has_from_timestamp());   // Deprecated.
-
-  // Add must-have fields.
+void SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(
+    const SyncCycle* cycle,
+    sync_pb::ClientToServerMessage* msg) {
+  DCHECK(msg);
   SetProtocolVersion(msg);
   AddRequestBirthday(cycle->context()->directory(), msg);
   DCHECK(msg->has_store_birthday() || !IsBirthdayRequired(*msg));
@@ -446,12 +441,26 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   msg->set_api_key(google_apis::GetAPIKey());
   msg->mutable_client_status()->CopyFrom(cycle->context()->client_status());
   msg->set_invalidator_client_id(cycle->context()->invalidator_client_id());
+}
 
-  syncable::Directory* dir = cycle->context()->directory();
+// static
+SyncerError SyncerProtoUtil::PostClientToServerMessage(
+    const ClientToServerMessage& msg,
+    ClientToServerResponse* response,
+    SyncCycle* cycle,
+    ModelTypeSet* partial_failure_data_types) {
+  DCHECK(response);
+  DCHECK(msg.has_protocol_version());
+  DCHECK(msg.has_store_birthday() || !IsBirthdayRequired(msg));
+  DCHECK(msg.has_bag_of_chips());
+  DCHECK(msg.has_api_key());
+  DCHECK(msg.has_client_status());
+  DCHECK(msg.has_invalidator_client_id());
+  DCHECK(!msg.get_updates().has_from_timestamp());  // Deprecated.
 
-  LogClientToServerMessage(*msg);
-  if (!PostAndProcessHeaders(cycle->context()->connection_manager(), cycle,
-                             *msg, response)) {
+  LogClientToServerMessage(msg);
+  if (!PostAndProcessHeaders(cycle->context()->connection_manager(), cycle, msg,
+                             response)) {
     // There was an error establishing communication with the server.
     // We can not proceed beyond this point.
     const HttpResponse::ServerConnectionCode server_status =
@@ -466,6 +475,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   }
   LogClientToServerResponse(*response);
 
+  syncable::Directory* dir = cycle->context()->directory();
   // Persist a bag of chips if it has been sent by the server.
   PersistBagOfChips(dir, *response);
 
