@@ -2842,7 +2842,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {
   SetBrowserClientForTesting(old_client);
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetPageFrozen) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/pause_schedule_task.html");
@@ -2862,8 +2862,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
       break;
   }
 
-  // Suspend blink schedule tasks.
-  shell()->web_contents()->PausePageScheduledTasks(true);
+  // Freeze the blink page.
+  shell()->web_contents()->WasHidden();
+  shell()->web_contents()->SetPageFrozen(true);
 
   // Make the javascript work.
   for (int i = 0; i < 10; i++) {
@@ -2883,8 +2884,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
       &next_text_length));
   EXPECT_EQ(text_length, next_text_length);
 
-  // Resume the paused blink schedule tasks.
-  shell()->web_contents()->PausePageScheduledTasks(false);
+  // Wake the frozen page up.
+  shell()->web_contents()->WasHidden();
+  shell()->web_contents()->SetPageFrozen(false);
 
   // Wait for an amount of time in order to give the javascript time to
   // work again. If the javascript doesn't work again, the test will fail due to

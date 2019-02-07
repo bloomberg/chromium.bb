@@ -460,7 +460,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ClearFocusedElement() override;
   bool IsShowingContextMenu() override;
   void SetShowingContextMenu(bool showing) override;
-  void PausePageScheduledTasks(bool paused) override;
   base::UnguessableToken GetAudioGroupId() override;
   bool CompletedFirstVisuallyNonEmptyPaint() override;
 
