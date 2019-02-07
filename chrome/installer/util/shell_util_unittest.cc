@@ -17,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/md5.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -982,4 +981,3 @@ TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
   ASSERT_GE(size, 1U);
   ASSERT_STREQ(user_name, suffix.substr(1).c_str());
 }
-

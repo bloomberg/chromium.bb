@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"

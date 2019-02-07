@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/md5.h"
 #include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"

@@ -15,7 +15,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

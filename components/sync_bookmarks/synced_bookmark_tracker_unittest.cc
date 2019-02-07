@@ -5,7 +5,6 @@
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
 #include "base/base64.h"
-#include "base/sha1.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/bookmarks/browser/bookmark_model.h"

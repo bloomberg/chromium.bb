@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chromecast/renderer/extensions/extension_hooks_delegate.h"
