@@ -9,7 +9,7 @@ source_set("unit_tests") {
   deps = [
     "//components/gwp_asan/common:unit_tests",
   ]
-  if (enable_gwp_asan || is_mac) {
+  if (enable_gwp_asan) {
     deps += [
       "//components/gwp_asan/client:unit_tests",
       "//components/gwp_asan/crash_handler:unit_tests",
