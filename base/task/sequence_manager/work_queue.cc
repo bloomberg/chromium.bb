@@ -115,10 +115,10 @@ void WorkQueue::PushNonNestableTaskToFront(Task task) {
   }
 }
 
-void WorkQueue::ReloadEmptyImmediateQueue() {
+void WorkQueue::TakeImmediateIncomingQueueTasks() {
   DCHECK(tasks_.empty());
 
-  task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+  task_queue_->TakeImmediateIncomingQueueTasks(&tasks_);
   if (tasks_.empty())
     return;
 
@@ -139,7 +139,7 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
     if (queue_type_ == QueueType::kImmediate) {
       // Short-circuit the queue reload so that OnPopQueue does the right
       // thing.
-      task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+      task_queue_->TakeImmediateIncomingQueueTasks(&tasks_);
     }
     // Since the queue is empty, now is a good time to consider reducing it's
     // capacity if we're wasting memory.
@@ -167,7 +167,7 @@ bool WorkQueue::RemoveAllCanceledTasksFromFront() {
       if (queue_type_ == QueueType::kImmediate) {
         // Short-circuit the queue reload so that OnPopQueue does the right
         // thing.
-        task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+        task_queue_->TakeImmediateIncomingQueueTasks(&tasks_);
       }
       // Since the queue is empty, now is a good time to consider reducing it's
       // capacity if we're wasting memory.

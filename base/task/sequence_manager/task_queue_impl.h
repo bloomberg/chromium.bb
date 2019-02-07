@@ -39,8 +39,11 @@ class SequenceManagerImpl;
 class WorkQueue;
 class WorkQueueSets;
 
-struct IncomingImmediateWorkList {
-  IncomingImmediateWorkList* next = nullptr;
+// The SequenceManagerImpl maintains a list of TaskQueueImpl's with empty
+// |immediate_incoming_queue_| and non-empty immediate_work_queue| which it
+// should reload before task selection. This struct backs that list.
+struct EmptyQueuesToReloadList {
+  EmptyQueuesToReloadList* next = nullptr;
   TaskQueueImpl* queue = nullptr;
   internal::EnqueueOrder order;
 };
@@ -135,7 +138,7 @@ class BASE_EXPORT TaskQueueImpl {
   bool CouldTaskRun(EnqueueOrder enqueue_order) const;
 
   // Must only be called from the thread this task queue was created on.
-  void ReloadImmediateWorkQueueIfEmpty();
+  void ReloadEmptyImmediateWorkQueue();
 
   void AsValueInto(TimeTicks now,
                    trace_event::TracedValue* state,
@@ -173,8 +176,8 @@ class BASE_EXPORT TaskQueueImpl {
   }
 
   // Protected by SequenceManagerImpl's AnyThread lock.
-  IncomingImmediateWorkList* immediate_work_list_storage() {
-    return &immediate_work_list_storage_;
+  EmptyQueuesToReloadList* empty_queues_to_reload_list_storage() {
+    return &empty_queues_to_reload_list_storage_;
   }
 
   // Enqueues any delayed tasks which should be run now on the
@@ -394,7 +397,7 @@ class BASE_EXPORT TaskQueueImpl {
   // Extracts all the tasks from the immediate incoming queue and swaps it with
   // |queue| which must be empty.
   // Can be called from any thread.
-  void ReloadEmptyImmediateQueue(TaskDeque* queue);
+  void TakeImmediateIncomingQueueTasks(TaskDeque* queue);
 
   void TraceQueueSize() const;
   static void QueueAsValueInto(const TaskDeque& queue,
@@ -416,6 +419,11 @@ class BASE_EXPORT TaskQueueImpl {
 
   // Activate a delayed fence if a time has come.
   void ActivateDelayedFenceIfNeeded(TimeTicks now);
+
+  // Updates state protected by immediate_incoming_queue_lock_.
+  void UpdateCrossThreadQueueState();
+  void UpdateCrossThreadQueueStateLocked()
+      EXCLUSIVE_LOCKS_REQUIRED(immediate_incoming_queue_lock_);
 
   const char* name_;
   SequenceManagerImpl* const sequence_manager_;
@@ -446,18 +454,20 @@ class BASE_EXPORT TaskQueueImpl {
   }
 
   mutable Lock immediate_incoming_queue_lock_;
-  TaskDeque immediate_incoming_queue_;
-  TaskDeque& immediate_incoming_queue() {
-    immediate_incoming_queue_lock_.AssertAcquired();
-    return immediate_incoming_queue_;
-  }
-  const TaskDeque& immediate_incoming_queue() const {
-    immediate_incoming_queue_lock_.AssertAcquired();
-    return immediate_incoming_queue_;
-  }
+  TaskDeque immediate_incoming_queue_
+      GUARDED_BY(immediate_incoming_queue_lock_);
+  // True if main_thread_only().immediate_work_queue is empty.
+  bool immediate_work_queue_empty_ GUARDED_BY(immediate_incoming_queue_lock_) =
+      true;
+  bool post_immediate_task_should_schedule_work_
+      GUARDED_BY(immediate_incoming_queue_lock_) = true;
 
   // Protected by SequenceManagerImpl's AnyThread lock.
-  IncomingImmediateWorkList immediate_work_list_storage_;
+  // Pre-allocated struct used by
+  // SequenceManagerImpl::AddToEmptyQueuesToReloadList to reduce overhead of
+  // new & delete when posting immediate tasks. Queues added to this list will
+  // be reloaded before task selection.
+  EmptyQueuesToReloadList empty_queues_to_reload_list_storage_;
 
   const bool should_monitor_quiescence_;
   const bool should_notify_observers_;
