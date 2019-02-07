@@ -3,7 +3,7 @@
 // of the review process and to clean up flags that have become obsolete or
 // unused. For more details, see:
 //
-//    https://sites.google.com/a/chromium.org/dev/developers/contributing-code/flag-ownership
+//    https://chromium.googlesource.com/chromium/src/+/master/docs/flag_ownership.md
 //
 // This file is a list of json objects; each object contains these keys:
 //
@@ -23,7 +23,8 @@
 //   Specifically, after the milestone with the given number branches, this flag
 //   may freely be deleted and defaulted to either enabled or disabled where
 //   used. The special value -1 means "never expires", which should only be used
-//   in consultation with top-level OWNERS.
+//   in consultation with top-level OWNERS. The use of the -1 value must be
+//   accompanied by a comment explaining why the flag must not expire.
 
 [
   {
