@@ -76,6 +76,10 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
     return host_queue_;
   }
 
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   class OutputVectorRef;
 
