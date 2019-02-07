@@ -30,7 +30,7 @@ const char AnimationWorkletProxyClient::kSupplementName[] =
     "AnimationWorkletProxyClient";
 
 /* static */
-const wtf_size_t AnimationWorkletProxyClient::kNumStatelessGlobalScopes = 2u;
+const int8_t AnimationWorkletProxyClient::kNumStatelessGlobalScopes = 2;
 
 AnimationWorkletProxyClient::AnimationWorkletProxyClient(
     int worklet_id,
@@ -67,6 +67,16 @@ void AnimationWorkletProxyClient::SynchronizeAnimatorName(
     const String& animator_name) {
   if (state_ == RunState::kDisposed)
     return;
+  // Only proceed to synchronization when the animator has been registered on
+  // all global scopes.
+  auto* it = registered_animators_.insert(animator_name, 0).stored_value;
+  ++it->value;
+  if (it->value != kNumStatelessGlobalScopes) {
+    DCHECK_LT(it->value, kNumStatelessGlobalScopes)
+        << "We should not have registered the same name more than the number "
+           "of scopes times.";
+    return;
+  }
 
   // Animator registration is processed before the loading promise being
   // resolved which is also done with a posted task (See
@@ -135,6 +145,7 @@ void AnimationWorkletProxyClient::Dispose() {
   // AnimationWorkletGlobalScope and AnimationWorkletProxyClient.
   global_scopes_.clear();
   mutator_items_.clear();
+  registered_animators_.clear();
 }
 
 std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(

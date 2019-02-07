@@ -29,7 +29,8 @@ AnimationWorklet::~AnimationWorklet() = default;
 
 bool AnimationWorklet::NeedsToCreateGlobalScope() {
   return GetNumberOfGlobalScopes() <
-         AnimationWorkletProxyClient::kNumStatelessGlobalScopes;
+         static_cast<wtf_size_t>(
+             AnimationWorkletProxyClient::kNumStatelessGlobalScopes);
 }
 
 WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {

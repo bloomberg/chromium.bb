@@ -34,7 +34,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
 
  public:
   static const char kSupplementName[];
-  static const wtf_size_t kNumStatelessGlobalScopes;
+  static const int8_t kNumStatelessGlobalScopes;
 
   // This client is hooked to the given |mutatee|, on the given
   // |mutatee_runner|.
@@ -65,6 +65,8 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   FRIEND_TEST_ALL_PREFIXES(AnimationWorkletGlobalScopeTest, SelectGlobalScope);
   FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
                            AnimationWorkletProxyClientConstruction);
+  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
+                           RegisteredAnimatorNameShouldSyncOnce);
 
   // Separate global scope selectors are used instead of overriding
   // Worklet::SelectGlobalScope since two different selection mechanisms are
@@ -91,6 +93,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   WTF::Vector<MutatorItem> mutator_items_;
 
   Vector<CrossThreadPersistent<AnimationWorkletGlobalScope>> global_scopes_;
+  HashMap<String, int8_t> registered_animators_;
 
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
 
