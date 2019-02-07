@@ -11,15 +11,15 @@ namespace media {
 
 namespace {
 // Keyframe period.
-const size_t kKFPeriod = 3000;
+constexpr size_t kKFPeriod = 3000;
 
 // Arbitrarily chosen bitrate window size for rate control, in ms.
-const int kCPBWindowSizeMs = 1500;
+constexpr int kCPBWindowSizeMs = 1500;
 
 // Based on WebRTC's defaults.
-const int kMinQP = 4;
-const int kMaxQP = 112;
-const int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
+constexpr int kMinQP = 4;
+constexpr int kMaxQP = 112;
+constexpr int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
 }  // namespace
 
 VP8Encoder::EncodeParams::EncodeParams()
