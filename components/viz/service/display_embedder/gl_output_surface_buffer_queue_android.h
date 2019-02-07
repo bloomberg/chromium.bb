@@ -21,11 +21,6 @@ class GLOutputSurfaceBufferQueueAndroid : public GLOutputSurfaceBufferQueue {
   ~GLOutputSurfaceBufferQueueAndroid() override;
 
   // GLOutputSurfaceBufferQueue implementation:
-  void HandlePartialSwap(
-      const gfx::Rect& sub_buffer_rect,
-      uint32_t flags,
-      gpu::ContextSupport::SwapCompletedCallback swap_callback,
-      gpu::ContextSupport::PresentationCallback presentation_callback) override;
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
 
  private:
