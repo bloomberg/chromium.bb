@@ -755,6 +755,18 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
          'refs/heads/%s:refs/heads/%s' % (branch, branch)],
         cwd=self.PathListRegexFor(project))
 
+  def AssertRemoteBranchDeleted(self, project, branch):
+    """Assert given branch deleted on remote for given project.
+
+    Args:
+      project: Project ID.
+      branch: Expected name for the branch.
+    """
+    self.rc_mock.assertCommandContains(
+        ['git', 'push', self.RemoteFor(project), '--delete',
+         'refs/heads/%s' % branch],
+        cwd=self.PathListRegexFor(project))
+
   def AssertNoPush(self, project):
     """Assert no push operation run inside the given project.
 
@@ -857,6 +869,24 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
       self.AssertBranchDeleted(project, 'branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertBranchNotModified(project)
+
+  def testDeleteRequiresForceForRemotePush(self):
+    """Verify Delete does nothing when push is True but force is False."""
+    with self.assertRaises(BranchError):
+      self.branch.Delete(push=True)
+    for project in PROJECTS.values():
+      self.AssertBranchNotModified(project)
+      self.AssertNoPush(project)
+
+  def testDeletePushesDeletions(self):
+    """Verify delete deletes remote branches when push=force=True."""
+    self.branch.Delete(push=True, force=True)
+    for project in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertRemoteBranchDeleted(project, 'branch')
+    for project in MULTI_CHECKOUT_PROJECTS:
+      self.AssertRemoteBranchDeleted(project, 'branch-' + project)
+    for project in NON_BRANCHED_PROJECTS:
+      self.AssertNoPush(project)
 
 
 class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):

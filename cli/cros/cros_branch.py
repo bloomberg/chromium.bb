@@ -462,6 +462,14 @@ class Branch(object):
       # TODO(evanhernandez): Add check to see if branch exists.
       self.checkout.RunGit(project, cmd)
 
+  def _DeleteBranchesOnRemote(self):
+    """Deletes this branch for all projects on the remote."""
+    for project, branch in self._project_branches:
+      self.checkout.RunGit(
+          project,
+          ['push', project.Remote().GitName(),
+           '--delete', git.NormalizeRef(branch)])
+
   def Create(self, push=False, force=False):
     """Creates a new branch from the given version.
 
@@ -502,9 +510,11 @@ class Branch(object):
       push: Whether to push the deletion to remote.
       force: Are you *really* sure you want to delete this branch on remote?
     """
-    if push or force:
-      raise NotImplementedError('--push and --force unavailable.')
+    if push and not force:
+      raise BranchError('Must set --force to delete remote branches.')
     self._DeleteLocalBranches()
+    if push:
+      self._DeleteBranchesOnRemote()
 
 
 class StandardBranch(Branch):
