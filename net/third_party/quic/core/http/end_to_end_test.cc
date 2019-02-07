@@ -275,10 +275,11 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         server_hostname_("test.example.com"),
         client_writer_(nullptr),
         server_writer_(nullptr),
-        negotiated_version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
+        negotiated_version_(UnsupportedQuicVersion()),
         chlo_multiplier_(0),
         stream_factory_(nullptr),
-        support_server_push_(false) {
+        support_server_push_(false),
+        override_connection_id_(nullptr) {
     FLAGS_quic_supports_tls_handshake = true;
     SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, true);
     SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, true);
@@ -327,6 +328,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     client->UseWriter(writer);
     if (!pre_shared_key_client_.empty()) {
       client->client()->SetPreSharedKey(pre_shared_key_client_);
+    }
+    if (override_connection_id_ != nullptr) {
+      client->UseConnectionId(*override_connection_id_);
     }
     client->Connect();
     return client;
@@ -640,6 +644,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool support_server_push_;
   QuicString pre_shared_key_client_;
   QuicString pre_shared_key_server_;
+  QuicConnectionId* override_connection_id_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -730,6 +735,28 @@ TEST_P(EndToEndTest, SimpleRequestResponseVariableLengthConnectionIDClient) {
   }
   EXPECT_EQ(expected_num_client_hellos,
             client_->client()->GetNumSentClientHellos());
+}
+
+TEST_P(EndToEndTest, SimpleRequestResponseZeroConnectionID) {
+  QuicConnectionId connection_id = QuicUtils::CreateZeroConnectionId(
+      GetParam().negotiated_version.transport_version);
+  override_connection_id_ = &connection_id;
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+  int expected_num_client_hellos = 2;
+  if (ServerSendsVersionNegotiation()) {
+    ++expected_num_client_hellos;
+    if (BothSidesSupportStatelessRejects()) {
+      ++expected_num_client_hellos;
+    }
+  }
+  EXPECT_EQ(expected_num_client_hellos,
+            client_->client()->GetNumSentClientHellos());
+  EXPECT_EQ(client_->client()->client_session()->connection()->connection_id(),
+            QuicUtils::CreateZeroConnectionId(
+                GetParam().negotiated_version.transport_version));
 }
 
 // TODO(dschinazi) remove this test once the flags are deprecated

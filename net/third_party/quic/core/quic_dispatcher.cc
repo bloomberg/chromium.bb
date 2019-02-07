@@ -242,9 +242,9 @@ class ChloValidator : public ChloAlpnExtractor {
     if (helper_->CanAcceptClientHello(chlo, client_address_, peer_address_,
                                       self_address_, &error_details_)) {
       can_accept_ = true;
-      rejector_->OnChlo(version, connection_id,
-                        helper_->GenerateConnectionIdForReject(connection_id),
-                        chlo);
+      rejector_->OnChlo(
+          version, connection_id,
+          helper_->GenerateConnectionIdForReject(version, connection_id), chlo);
     }
   }
 
@@ -404,16 +404,13 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       if (ShouldCreateSessionForUnknownVersion(framer_.last_version_label())) {
         return true;
       }
-      if (!GetQuicReloadableFlag(quic_limit_version_negotiation) ||
-          current_packet_->length() >= kMinPacketSizeForVersionNegotiation) {
+      if (current_packet_->length() >= kMinPacketSizeForVersionNegotiation) {
         // Since the version is not supported, send a version negotiation
         // packet and stop processing the current packet.
         time_wait_list_manager()->SendVersionNegotiationPacket(
             connection_id, header.form != GOOGLE_QUIC_PACKET,
             GetSupportedVersions(), current_self_address_,
             current_peer_address_, GetPerPacketContext());
-      } else {
-        QUIC_RELOADABLE_FLAG_COUNT(quic_limit_version_negotiation);
       }
       return false;
     }

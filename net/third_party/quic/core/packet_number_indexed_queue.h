@@ -5,7 +5,6 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_PACKET_NUMBER_INDEXED_QUEUE_H_
 #define NET_THIRD_PARTY_QUIC_CORE_PACKET_NUMBER_INDEXED_QUEUE_H_
 
-#include "base/logging.h"
 #include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"

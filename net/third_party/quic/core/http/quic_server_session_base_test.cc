@@ -656,7 +656,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
 
   EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(stream_helper_, GenerateConnectionIdForReject(_))
+  EXPECT_CALL(stream_helper_, GenerateConnectionIdForReject(_, _))
       .WillOnce(testing::Return(TestConnectionId(12345)));
 
   // Set the current packet

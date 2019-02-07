@@ -680,6 +680,7 @@ class QuicCryptoServerConfig::ProcessClientHelloAfterGetProofCallback
           validate_chlo_result,
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
+      ParsedQuicVersion version,
       const ParsedQuicVersionVector& supported_versions,
       const QuicClock* clock,
       QuicRandom* rand,
@@ -696,6 +697,7 @@ class QuicCryptoServerConfig::ProcessClientHelloAfterGetProofCallback
         validate_chlo_result_(std::move(validate_chlo_result)),
         connection_id_(connection_id),
         client_address_(client_address),
+        version_(version),
         supported_versions_(supported_versions),
         clock_(clock),
         rand_(rand),
@@ -709,7 +711,7 @@ class QuicCryptoServerConfig::ProcessClientHelloAfterGetProofCallback
     config_->ProcessClientHelloAfterCalculateSharedKeys(
         !ok, std::move(proof_source_details_), key_exchange_factory_,
         std::move(out_), public_value_, *validate_chlo_result_, connection_id_,
-        client_address_, supported_versions_, clock_, rand_, params_,
+        client_address_, version_, supported_versions_, clock_, rand_, params_,
         signed_config_, requested_config_, primary_config_,
         std::move(done_cb_));
   }
@@ -724,6 +726,7 @@ class QuicCryptoServerConfig::ProcessClientHelloAfterGetProofCallback
       validate_chlo_result_;
   QuicConnectionId connection_id_;
   const QuicSocketAddress client_address_;
+  ParsedQuicVersion version_;
   const ParsedQuicVersionVector supported_versions_;
   const QuicClock* clock_;
   QuicRandom* rand_;
@@ -868,11 +871,11 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     const QuicReferenceCountedPointer<Config>& requested_config,
     const QuicReferenceCountedPointer<Config>& primary_config,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const {
-  if (connection_id.length() != kQuicDefaultConnectionIdLength) {
-    QUIC_BUG << "ProcessClientHelloAfterGetProof called with connection ID "
-             << connection_id << " of unsupported length "
-             << connection_id.length();
-  }
+  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
+      connection_id, version.transport_version))
+      << "ProcessClientHelloAfterGetProof: attempted to use connection ID "
+      << connection_id << " which is invalid with version "
+      << QuicVersionToString(version.transport_version);
   if (!QuicConnectionIdSupportsVariableLength(Perspective::IS_SERVER)) {
     connection_id = QuicConnectionIdFromUInt64(
         QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id)));
@@ -969,8 +972,8 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   auto cb = QuicMakeUnique<ProcessClientHelloAfterGetProofCallback>(
       this, std::move(proof_source_details), key_exchange->GetFactory(),
       std::move(out), public_value, validate_chlo_result, connection_id,
-      client_address, supported_versions, clock, rand, params, signed_config,
-      requested_config, primary_config, std::move(done_cb));
+      client_address, version, supported_versions, clock, rand, params,
+      signed_config, requested_config, primary_config, std::move(done_cb));
   key_exchange->CalculateSharedKey(
       public_value, &params->initial_premaster_secret, std::move(cb));
 }
@@ -984,6 +987,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     QuicConnectionId connection_id,
     const QuicSocketAddress& client_address,
+    ParsedQuicVersion version,
     const ParsedQuicVersionVector& supported_versions,
     const QuicClock* clock,
     QuicRandom* rand,
@@ -992,12 +996,12 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     const QuicReferenceCountedPointer<Config>& requested_config,
     const QuicReferenceCountedPointer<Config>& primary_config,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const {
-  if (connection_id.length() != kQuicDefaultConnectionIdLength) {
-    QUIC_BUG << "ProcessClientHelloAfterCalculateSharedKeys called with "
-                "connection ID "
-             << connection_id << " of unsupported length "
-             << connection_id.length();
-  }
+  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
+      connection_id, version.transport_version))
+      << "ProcessClientHelloAfterCalculateSharedKeys:"
+         " attempted to use connection ID "
+      << connection_id << " which is invalid with version "
+      << QuicVersionToString(version.transport_version);
   ProcessClientHelloHelper helper(&done_cb);
 
   if (found_error) {
@@ -1616,12 +1620,11 @@ void QuicCryptoServerConfig::BuildRejection(
       out->SetValue(kRCID, QuicEndian::HostToNet64(QuicConnectionIdToUInt64(
                                server_designated_connection_id)));
     } else {
-      if (server_designated_connection_id.length() !=
-              kQuicDefaultConnectionIdLength &&
-          version < QUIC_VERSION_99) {
-        QUIC_BUG << "Tried to send connection ID "
-                 << server_designated_connection_id << " of bad length "
-                 << server_designated_connection_id.length() << " with version "
+      if (!QuicUtils::IsConnectionIdValidForVersion(
+              server_designated_connection_id, version)) {
+        QUIC_BUG << "Tried to send server designated connection ID "
+                 << server_designated_connection_id
+                 << " which is invalid with version "
                  << QuicVersionToString(version);
         return;
       }

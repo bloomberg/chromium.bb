@@ -342,7 +342,9 @@ QuicConnection::QuicConnection(
       processing_ack_frame_(false),
       supports_release_time_(false),
       release_time_into_future_(QuicTime::Delta::Zero()),
-      no_version_negotiation_(supported_versions.size() == 1) {
+      no_version_negotiation_(supported_versions.size() == 1),
+      clear_probing_mark_after_packet_processing_(GetQuicReloadableFlag(
+          quic_clear_probing_mark_after_packet_processing)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_enable_ack_decimation);
   }
@@ -350,10 +352,11 @@ QuicConnection::QuicConnection(
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
                   << QuicVersionToString(transport_version());
-  QUIC_BUG_IF(connection_id.length() != kQuicDefaultConnectionIdLength &&
-              transport_version() < QUIC_VERSION_99)
-      << "Cannot use connection ID of length "
-      << static_cast<uint32_t>(connection_id.length()) << " with version "
+
+  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(connection_id,
+                                                        transport_version()))
+      << "QuicConnection: attempted to use connection ID " << connection_id
+      << " which is invalid with version "
       << QuicVersionToString(transport_version());
 
   framer_.set_visitor(this);
@@ -1794,6 +1797,13 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
                   << "Unable to process packet.  Last packet processed: "
                   << last_header_.packet_number;
     current_packet_data_ = nullptr;
+    if (clear_probing_mark_after_packet_processing_) {
+      if (is_current_packet_connectivity_probing_) {
+        QUIC_RELOADABLE_FLAG_COUNT_N(
+            quic_clear_probing_mark_after_packet_processing, 1, 2);
+      }
+      is_current_packet_connectivity_probing_ = false;
+    }
     return;
   }
 
@@ -1818,6 +1828,13 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
   MaybeSendInResponseToPacket();
   SetPingAlarm();
   current_packet_data_ = nullptr;
+  if (clear_probing_mark_after_packet_processing_) {
+    if (is_current_packet_connectivity_probing_) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(
+          quic_clear_probing_mark_after_packet_processing, 2, 2);
+    }
+    is_current_packet_connectivity_probing_ = false;
+  }
 }
 
 void QuicConnection::OnBlockedWriterCanWrite() {

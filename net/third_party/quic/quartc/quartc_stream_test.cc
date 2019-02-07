@@ -22,6 +22,7 @@
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
@@ -223,9 +224,10 @@ class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
     alarm_factory_ = QuicMakeUnique<test::MockAlarmFactory>();
 
     connection_ = QuicMakeUnique<QuicConnection>(
-        test::TestConnectionId(0), QuicSocketAddress(ip, 0),
-        this /*QuicConnectionHelperInterface*/, alarm_factory_.get(),
-        new DummyPacketWriter(), owns_writer, perspective,
+        QuicUtils::CreateZeroConnectionId(
+            CurrentSupportedVersions()[0].transport_version),
+        QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
+        alarm_factory_.get(), new DummyPacketWriter(), owns_writer, perspective,
         ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<MockQuicSession>(connection_.get(), QuicConfig(),

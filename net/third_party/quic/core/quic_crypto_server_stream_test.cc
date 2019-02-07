@@ -104,7 +104,7 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
     server_session_.reset(server_session);
     EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
         .Times(testing::AnyNumber());
-    EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_))
+    EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_, _))
         .Times(testing::AnyNumber());
     crypto_test_utils::FakeServerOptions options;
     options.token_binding_params = QuicTagVector{kTB10};

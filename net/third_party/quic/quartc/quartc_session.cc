@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/quartc/quartc_session.h"
 
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
@@ -105,8 +106,9 @@ class InsecureProofVerifier : public ProofVerifier {
 }  // namespace
 
 QuicConnectionId QuartcCryptoServerStreamHelper::GenerateConnectionIdForReject(
+    QuicTransportVersion version,
     QuicConnectionId connection_id) const {
-  return EmptyQuicConnectionId();
+  return QuicUtils::CreateZeroConnectionId(version);
 }
 
 bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
@@ -135,8 +137,10 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
       packet_writer_(std::move(packet_writer)),
       connection_(std::move(connection)),
       helper_(helper),
-      clock_(clock) {
-  packet_writer_->set_connection(connection_.get());
+      clock_(clock),
+      per_packet_options_(QuicMakeUnique<QuartcPerPacketOptions>()) {
+  per_packet_options_->connection = connection_.get();
+  connection_->set_per_packet_options(per_packet_options_.get());
 
   // Initialization with default crypto configuration.
   if (perspective_ == Perspective::IS_CLIENT) {

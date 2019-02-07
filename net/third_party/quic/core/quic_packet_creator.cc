@@ -708,7 +708,7 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
     header->nonce = nullptr;
   }
   if (!packet_.packet_number.IsInitialized()) {
-    packet_.packet_number = FirstSendingPacketNumber();
+    packet_.packet_number = framer_->first_sending_packet_number();
   } else {
     ++packet_.packet_number;
   }

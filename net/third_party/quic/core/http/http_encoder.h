@@ -24,14 +24,14 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
 
   ~HttpEncoder();
 
-  // Serializes the header of a DATA frame into a new buffer stored in |output|.
+  // Serializes a DATA frame header into a new buffer stored in |output|.
   // Returns the length of the buffer on success, or 0 otherwise.
-  QuicByteCount SerializeDataFrameHeader(QuicByteCount length,
+  QuicByteCount SerializeDataFrameHeader(QuicByteCount payload_length,
                                          std::unique_ptr<char[]>* output);
 
-  // Serializes the header of a HEADERS frame into a new buffer stored in
-  // |output|. Returns the length of the buffer on success, or 0 otherwise.
-  QuicByteCount SerializeHeadersFrameHeader(const HeadersFrame& headers,
+  // Serializes a HEADERS frame header into a new buffer stored in |output|.
+  // Returns the length of the buffer on success, or 0 otherwise.
+  QuicByteCount SerializeHeadersFrameHeader(QuicByteCount payload_length,
                                             std::unique_ptr<char[]>* output);
 
   // Serializes a PRIORITY frame into a new buffer stored in |output|.

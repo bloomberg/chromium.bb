@@ -33,8 +33,8 @@ size_t GetPacketHeaderSize(
       // Long header.
       return kPacketHeaderTypeSize + kConnectionIdLengthSize +
              destination_connection_id_length + source_connection_id_length +
-             (version == QUIC_VERSION_99 ? packet_number_length
-                                         : PACKET_4BYTE_PACKET_NUMBER) +
+             (version > QUIC_VERSION_45 ? packet_number_length
+                                        : PACKET_4BYTE_PACKET_NUMBER) +
              kQuicVersionSize +
              (include_diversification_nonce ? kDiversificationNonceSize : 0);
     }
@@ -74,8 +74,7 @@ QuicPacketHeader::QuicPacketHeader()
       version_flag(false),
       has_possible_stateless_reset_token(false),
       packet_number_length(PACKET_4BYTE_PACKET_NUMBER),
-      version(
-          ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED)),
+      version(UnsupportedQuicVersion()),
       nonce(nullptr),
       form(GOOGLE_QUIC_PACKET),
       long_packet_type(INITIAL),

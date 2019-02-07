@@ -18,11 +18,9 @@ class HttpEncoderTest : public QuicTest {
 };
 
 TEST_F(HttpEncoderTest, SerializeDataFrameHeader) {
-  DataFrame data;
-  data.data = "Data!";
   std::unique_ptr<char[]> buffer;
   uint64_t length =
-      encoder_.SerializeDataFrameHeader(data.data.length(), &buffer);
+      encoder_.SerializeDataFrameHeader(/* payload_length = */ 5, &buffer);
   char output[] = {// length
                    0x05,
                    // type (DATA)
@@ -33,10 +31,9 @@ TEST_F(HttpEncoderTest, SerializeDataFrameHeader) {
 }
 
 TEST_F(HttpEncoderTest, SerializeHeadersFrameHeader) {
-  HeadersFrame headers;
-  headers.headers = "Headers";
   std::unique_ptr<char[]> buffer;
-  uint64_t length = encoder_.SerializeHeadersFrameHeader(headers, &buffer);
+  uint64_t length =
+      encoder_.SerializeHeadersFrameHeader(/* payload_length = */ 7, &buffer);
   char output[] = {// length
                    0x07,
                    // type (HEADERS)

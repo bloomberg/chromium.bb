@@ -342,7 +342,7 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void CloseStream(QuicStreamId id) {
-    if (transport_version() != QUIC_VERSION_99) {
+    if (!IsVersion99()) {
       EXPECT_CALL(*connection_, SendControlFrame(_))
           .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
     } else {
@@ -359,6 +359,8 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
   QuicTransportVersion transport_version() const {
     return connection_->transport_version();
   }
+
+  bool IsVersion99() const { return transport_version() == QUIC_VERSION_99; }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
     return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
@@ -393,7 +395,7 @@ INSTANTIATE_TEST_SUITE_P(Tests,
                          ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdySessionTestServer, ShouldBufferIncomingStreamUnidirectional) {
-  if (connection_->transport_version() != QUIC_VERSION_99) {
+  if (!IsVersion99()) {
     return;
   }
   EXPECT_TRUE(session_.ShouldBufferIncomingStream(
@@ -402,7 +404,7 @@ TEST_P(QuicSpdySessionTestServer, ShouldBufferIncomingStreamUnidirectional) {
 }
 
 TEST_P(QuicSpdySessionTestServer, ShouldBufferIncomingStreamBidirectional) {
-  if (connection_->transport_version() != QUIC_VERSION_99) {
+  if (!IsVersion99()) {
     return;
   }
   EXPECT_FALSE(session_.ShouldBufferIncomingStream(
@@ -481,7 +483,7 @@ TEST_P(QuicSpdySessionTestServer, IsClosedStreamPeerCreated) {
 }
 
 TEST_P(QuicSpdySessionTestServer, MaximumAvailableOpenedStreams) {
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // For IETF QUIC, we should be able to obtain the max allowed
     // stream ID, the next ID should fail. Since the actual limit
     // is not the number of open streams, we allocate the max and the max+2.
@@ -532,7 +534,7 @@ TEST_P(QuicSpdySessionTestServer, TooManyAvailableStreams) {
   // A stream ID which is too large to create.
   stream_id2 = GetNthClientInitiatedBidirectionalId(
       2 * session_.MaxAvailableBidirectionalStreams() + 4);
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
   } else {
     EXPECT_CALL(*connection_,
@@ -670,7 +672,7 @@ TEST_P(QuicSpdySessionTestServer, TestBatchedWrites) {
 }
 
 TEST_P(QuicSpdySessionTestServer, OnCanWriteBundlesStreams) {
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     EXPECT_CALL(*connection_, SendControlFrame(_))
         .WillRepeatedly(Invoke(
             this, &QuicSpdySessionTestServer::ClearMaxStreamIdControlFrame));
@@ -906,7 +908,7 @@ TEST_P(QuicSpdySessionTestServer,
 }
 
 TEST_P(QuicSpdySessionTestServer, SendGoAway) {
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // GoAway frames are not in version 99
     return;
   }
@@ -930,7 +932,7 @@ TEST_P(QuicSpdySessionTestServer, SendGoAway) {
 }
 
 TEST_P(QuicSpdySessionTestServer, DoNotSendGoAwayTwice) {
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // TODO(b/118808809): Enable this test for version 99 when GOAWAY is
     // supported.
     return;
@@ -943,7 +945,7 @@ TEST_P(QuicSpdySessionTestServer, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicSpdySessionTestServer, InvalidGoAway) {
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // TODO(b/118808809): Enable this test for version 99 when GOAWAY is
     // supported.
     return;
@@ -965,7 +967,7 @@ TEST_P(QuicSpdySessionTestServer, ServerReplyToConnecitivityProbe) {
 
   EXPECT_CALL(*connection_,
               SendConnectivityProbingResponsePacket(new_peer_address));
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // Need to explicitly do this to emulate the reception of a PathChallenge,
     // which stores its payload for use in generating the response.
     connection_->OnPathChallengeFrame(
@@ -1099,10 +1101,9 @@ TEST_P(QuicSpdySessionTestServer,
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     EXPECT_CALL(*connection_, SendControlFrame(_))
-        .Times(1)
-        .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
+        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
   } else {
     EXPECT_CALL(*connection_, SendControlFrame(_))
         .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
@@ -1212,7 +1213,7 @@ TEST_P(QuicSpdySessionTestServer,
   const QuicStreamOffset kByteOffset =
       1 + kInitialSessionFlowControlWindowForTest / 2;
 
-  if (transport_version() != QUIC_VERSION_99) {
+  if (!IsVersion99()) {
     EXPECT_CALL(*connection_, SendControlFrame(_))
         .Times(2)
         .WillRepeatedly(Invoke(&session_, &TestSession::ClearControlFrame));
@@ -1427,7 +1428,7 @@ TEST_P(QuicSpdySessionTestServer,
     QuicStreamFrame data1(i, false, 0, QuicStringPiece("HT"));
     session_.OnStreamFrame(data1);
     // EXPECT_EQ(1u, session_.GetNumOpenStreams());
-    if (transport_version() != QUIC_VERSION_99) {
+    if (!IsVersion99()) {
       EXPECT_CALL(*connection_, SendControlFrame(_))
           .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
     } else {
@@ -1443,7 +1444,7 @@ TEST_P(QuicSpdySessionTestServer,
     session_.CloseStream(i);
   }
   // Try and open a stream that exceeds the limit.
-  if (transport_version() != QUIC_VERSION_99) {
+  if (!IsVersion99()) {
     // On versions other than 99, opening such a stream results in a
     // RST_STREAM.
     EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
@@ -1464,7 +1465,7 @@ TEST_P(QuicSpdySessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   // Verify that a draining stream (which has received a FIN but not consumed
   // it) does not count against the open quota (because it is closed from the
   // protocol point of view).
-  if (transport_version() == QUIC_VERSION_99) {
+  if (IsVersion99()) {
     // Version 99 will result in a MAX_STREAM_ID frame as streams are consumed
     // (via the OnStreamFrame call) and then released (via
     // StreamDraining). Eventually this node will believe that the peer is

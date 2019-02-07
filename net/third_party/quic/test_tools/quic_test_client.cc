@@ -204,7 +204,8 @@ MockableQuicClient::MockableQuicClient(
                                                                this),
           QuicWrapUnique(
               new RecordingProofVerifier(std::move(proof_verifier)))),
-      override_connection_id_(EmptyQuicConnectionId()) {}
+      override_connection_id_(EmptyQuicConnectionId()),
+      connection_id_overridden_(false) {}
 
 MockableQuicClient::~MockableQuicClient() {
   if (connected()) {
@@ -225,12 +226,12 @@ MockableQuicClient::mockable_network_helper() const {
 }
 
 QuicConnectionId MockableQuicClient::GenerateNewConnectionId() {
-  return !override_connection_id_.IsEmpty()
-             ? override_connection_id_
-             : QuicClient::GenerateNewConnectionId();
+  return connection_id_overridden_ ? override_connection_id_
+                                   : QuicClient::GenerateNewConnectionId();
 }
 
 void MockableQuicClient::UseConnectionId(QuicConnectionId connection_id) {
+  connection_id_overridden_ = true;
   override_connection_id_ = connection_id;
 }
 

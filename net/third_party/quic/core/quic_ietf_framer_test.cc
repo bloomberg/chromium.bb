@@ -944,7 +944,7 @@ TEST_F(QuicIetfFramerTest, AckFrameNoRanges) {
       &framer_, transmit_frame, &writer));
 
   uint8_t packet[] = {
-      0x1a,  // type
+      0x02,  // type, IETF_ACK
       0x01,  // largest_acked,
       0x00,  // delay
       0x00,  // count of additional ack blocks
@@ -1081,7 +1081,8 @@ TEST_F(QuicIetfFramerTest, MaxDataFrame) {
     // Now check that the received data equals the sent data.
     EXPECT_EQ(transmit_frame.byte_offset, window_size);
     EXPECT_EQ(transmit_frame.byte_offset, receive_frame.byte_offset);
-    EXPECT_EQ(0u, receive_frame.stream_id);
+    EXPECT_EQ(QuicUtils::GetInvalidStreamId(framer_.transport_version()),
+              receive_frame.stream_id);
   }
 }
 
@@ -1173,7 +1174,8 @@ TEST_F(QuicIetfFramerTest, BlockedFrame) {
     // Set up the writer and transmit QuicBlockedFrame
     QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
                           NETWORK_BYTE_ORDER);
-    QuicBlockedFrame transmit_frame(0, 0, offset);
+    QuicBlockedFrame transmit_frame(
+        0, QuicUtils::GetInvalidStreamId(framer_.transport_version()), offset);
 
     // Add the frame.
     EXPECT_TRUE(QuicFramerPeer::AppendIetfBlockedFrame(&framer_, transmit_frame,
@@ -1192,7 +1194,8 @@ TEST_F(QuicIetfFramerTest, BlockedFrame) {
                                                         &receive_frame));
 
     // Check that received and sent data are equivalent
-    EXPECT_EQ(0u, receive_frame.stream_id);
+    EXPECT_EQ(QuicUtils::GetInvalidStreamId(framer_.transport_version()),
+              receive_frame.stream_id);
     EXPECT_EQ(offset, receive_frame.offset);
     EXPECT_EQ(transmit_frame.offset, receive_frame.offset);
   }

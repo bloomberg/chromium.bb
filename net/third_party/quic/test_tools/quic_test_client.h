@@ -70,7 +70,9 @@ class MockableQuicClient : public QuicClient {
   const MockableQuicClientEpollNetworkHelper* mockable_network_helper() const;
 
  private:
-  QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
+  // ConnectionId to use, if connection_id_overridden_
+  QuicConnectionId override_connection_id_;
+  bool connection_id_overridden_;
   CachedNetworkParameters cached_network_paramaters_;
 };
 

@@ -522,9 +522,11 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     CryptoHandshakeMessage* out,
     QuicString* error_details) const {
   DCHECK(error_details != nullptr);
-  QUIC_BUG_IF(connection_id.length() != kQuicDefaultConnectionIdLength)
-      << "FillClientHello called with connection ID " << connection_id
-      << " of unsupported length " << connection_id.length();
+  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
+      connection_id, preferred_version.transport_version))
+      << "FillClientHello: attempted to use connection ID " << connection_id
+      << " which is invalid with version "
+      << QuicVersionToString(preferred_version.transport_version);
 
   FillInchoateClientHello(server_id, preferred_version, cached, rand,
                           /* demand_x509_proof= */ true, out_params, out);
@@ -871,10 +873,9 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       }
       connection_id = QuicConnectionId(connection_id_bytes.data(),
                                        connection_id_bytes.length());
-      if (connection_id.length() != kQuicDefaultConnectionIdLength) {
+      if (!QuicUtils::IsConnectionIdValidForVersion(connection_id, version)) {
         QUIC_PEER_BUG << "Received server-designated connection ID "
-                      << connection_id << " of bad length "
-                      << connection_id.length() << " with version "
+                      << connection_id << " which is invalid with version "
                       << QuicVersionToString(version);
         *error_details = "Bad kRCID length";
         return QUIC_CRYPTO_INTERNAL_ERROR;

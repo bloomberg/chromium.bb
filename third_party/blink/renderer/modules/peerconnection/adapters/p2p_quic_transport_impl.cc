@@ -176,6 +176,7 @@ class DummyCryptoServerStreamHelper
   ~DummyCryptoServerStreamHelper() override {}
 
   quic::QuicConnectionId GenerateConnectionIdForReject(
+      quic::QuicTransportVersion /*version*/,
       quic::QuicConnectionId connection_id) const override {
     return quic::QuicUtils::CreateRandomConnectionId(random_);
   }

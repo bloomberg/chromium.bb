@@ -107,7 +107,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   CryptoServerTest()
       : rand_(QuicRandom::GetInstance()),
         client_address_(QuicIpAddress::Loopback4(), 1234),
-        client_version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
+        client_version_(UnsupportedQuicVersion()),
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
                 crypto_test_utils::ProofSourceForTesting(),

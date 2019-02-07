@@ -46,15 +46,15 @@
 #define QUIC_DVLOG_IF_IMPL(verbose_level, condition) \
   DVLOG_IF(verbose_level, condition)
 
-#define QUIC_LOG_INFO_IS_ON_IMPL 0
+#define QUIC_LOG_INFO_IS_ON_IMPL() 0
 #ifdef NDEBUG
-#define QUIC_LOG_WARNING_IS_ON_IMPL 0
-#define QUIC_LOG_ERROR_IS_ON_IMPL 0
+#define QUIC_LOG_WARNING_IS_ON_IMPL() 0
+#define QUIC_LOG_ERROR_IS_ON_IMPL() 0
 #else
-#define QUIC_LOG_WARNING_IS_ON_IMPL 1
-#define QUIC_LOG_ERROR_IS_ON_IMPL 1
+#define QUIC_LOG_WARNING_IS_ON_IMPL() 1
+#define QUIC_LOG_ERROR_IS_ON_IMPL() 1
 #endif
-#define QUIC_DLOG_INFO_IS_ON_IMPL 0
+#define QUIC_DLOG_INFO_IS_ON_IMPL() 0
 
 #if defined(OS_WIN)
 // wingdi.h defines ERROR to be 0. When we call QUIC_DLOG(ERROR), it gets

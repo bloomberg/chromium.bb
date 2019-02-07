@@ -347,6 +347,11 @@ void QuicSpdySession::Initialize() {
               QuicUtils::GetHeadersStreamId(connection()->transport_version()));
   }
 
+  if (connection()->transport_version() == QUIC_VERSION_99) {
+    qpack_encoder_ = QuicMakeUnique<QpackEncoder>(this, this);
+    qpack_decoder_ = QuicMakeUnique<QpackDecoder>(this, this);
+  }
+
   headers_stream_ = QuicMakeUnique<QuicHeadersStream>((this));
   DCHECK_EQ(QuicUtils::GetHeadersStreamId(connection()->transport_version()),
             headers_stream_->id());
@@ -358,6 +363,34 @@ void QuicSpdySession::Initialize() {
 
   // Limit HPACK buffering to 2x header list size limit.
   set_max_decode_buffer_size_bytes(2 * max_inbound_header_list_size_);
+}
+
+void QuicSpdySession::OnDecoderStreamError(QuicStringPiece error_message) {
+  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+
+  // TODO(112770235): Signal connection error on decoder stream errors.
+  QUIC_NOTREACHED();
+}
+
+void QuicSpdySession::WriteEncoderStreamData(QuicStringPiece data) {
+  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+
+  // TODO(112770235): Send encoder stream data on encoder stream.
+  QUIC_NOTREACHED();
+}
+
+void QuicSpdySession::OnEncoderStreamError(QuicStringPiece error_message) {
+  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+
+  // TODO(112770235): Signal connection error on encoder stream errors.
+  QUIC_NOTREACHED();
+}
+
+void QuicSpdySession::WriteDecoderStreamData(QuicStringPiece data) {
+  DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
+
+  // TODO(112770235): Send decoder stream data on decoder stream.
+  QUIC_NOTREACHED();
 }
 
 void QuicSpdySession::OnStreamHeadersPriority(QuicStreamId stream_id,
