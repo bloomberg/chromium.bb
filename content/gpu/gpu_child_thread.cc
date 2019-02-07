@@ -82,11 +82,11 @@ class QueueingConnectionFilter : public ConnectionFilter {
     DCHECK(io_thread_checker_.CalledOnValidThread());
   }
 
-  base::Closure GetReleaseCallback() {
-    return base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                      io_task_runner_, FROM_HERE,
-                      base::Bind(&QueueingConnectionFilter::Release,
-                                 weak_factory_.GetWeakPtr()));
+  base::OnceClosure GetReleaseCallback() {
+    return base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                          io_task_runner_, FROM_HERE,
+                          base::BindOnce(&QueueingConnectionFilter::Release,
+                                         weak_factory_.GetWeakPtr()));
   }
 
 #if defined(USE_OZONE)
@@ -233,13 +233,14 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
   blink::AssociatedInterfaceRegistry* associated_registry =
       &associated_interfaces_;
-  associated_registry->AddInterface(base::Bind(
+  associated_registry->AddInterface(base::BindRepeating(
       &GpuChildThread::CreateVizMainService, base::Unretained(this)));
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(base::Bind(&GpuChildThread::BindServiceFactoryRequest,
-                                    weak_factory_.GetWeakPtr()),
-                         base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
+      base::BindRepeating(&GpuChildThread::BindServiceFactoryRequest,
+                          weak_factory_.GetWeakPtr()),
+      base::ThreadTaskRunnerHandle::Get());
   if (GetContentClient()->gpu())  // nullptr in tests.
     GetContentClient()->gpu()->InitializeRegistry(registry.get());
 
@@ -292,8 +293,9 @@ void GpuChildThread::OnInitializationFailed() {
 void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
   media::AndroidOverlayMojoFactoryCB overlay_factory_cb;
 #if defined(OS_ANDROID)
-  overlay_factory_cb = base::Bind(&GpuChildThread::CreateAndroidOverlay,
-                                  base::ThreadTaskRunnerHandle::Get());
+  overlay_factory_cb =
+      base::BindRepeating(&GpuChildThread::CreateAndroidOverlay,
+                          base::ThreadTaskRunnerHandle::Get());
   gpu_service->media_gpu_channel_manager()->SetOverlayFactory(
       overlay_factory_cb);
 #endif
@@ -311,7 +313,8 @@ void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
         gpu_service->gpu_preferences());
   }
 
-  release_pending_requests_closure_.Run();
+  DCHECK(release_pending_requests_closure_);
+  std::move(release_pending_requests_closure_).Run();
 }
 
 void GpuChildThread::PostCompositorThreadCreated(

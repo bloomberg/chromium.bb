@@ -33,7 +33,6 @@ class GURL;
 
 namespace gpu {
 struct GpuPreferences;
-struct VideoMemoryUsageStats;
 }
 
 namespace content {
@@ -52,8 +51,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RequestCompleteGpuInfoIfNeeded() override;
   bool IsEssentialGpuInfoAvailable() const override;
   void RequestVideoMemoryUsageStatsUpdate(
-      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-          callback) const override;
+      VideoMemoryUsageStatsCallback callback) const override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's

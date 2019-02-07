@@ -111,11 +111,6 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kDisableGpuEarlyInit);
   }
 
-  void OnContextLost(const base::Closure callback, int* counter) {
-    (*counter)++;
-    callback.Run();
-  }
-
   void Signal(bool* event,
               scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
     CHECK_EQ(*event, false);
@@ -287,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
-                           base::Bind([](GpuProcessHost* host) {
+                           base::BindOnce([](GpuProcessHost* host) {
                              if (host)
                                host->gpu_service()->Crash();
                            }));

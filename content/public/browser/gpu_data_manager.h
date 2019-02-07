@@ -28,6 +28,9 @@ class GpuDataManagerObserver;
 // This class is fully thread-safe.
 class GpuDataManager {
  public:
+  using VideoMemoryUsageStatsCallback =
+      base::OnceCallback<void(const gpu::VideoMemoryUsageStats&)>;
+
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
@@ -53,8 +56,7 @@ class GpuDataManager {
 
   // Requests that the GPU process report its current video memory usage stats.
   virtual void RequestVideoMemoryUsageStatsUpdate(
-      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-          callback) const = 0;
+      VideoMemoryUsageStatsCallback callback) const = 0;
 
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;

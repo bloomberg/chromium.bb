@@ -234,21 +234,19 @@ enum BlockStatusHistogram {
 };
 
 void OnVideoMemoryUsageStats(
-    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-        callback,
+    GpuDataManager::VideoMemoryUsageStatsCallback callback,
     const gpu::VideoMemoryUsageStats& stats) {
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, stats));
+                           base::BindOnce(std::move(callback), stats));
 }
 
 void RequestVideoMemoryUsageStats(
-    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-        callback,
+    GpuDataManager::VideoMemoryUsageStatsCallback callback,
     GpuProcessHost* host) {
   if (!host)
     return;
   host->gpu_service()->GetVideoMemoryUsageStats(
-      base::BindOnce(&OnVideoMemoryUsageStats, callback));
+      base::BindOnce(&OnVideoMemoryUsageStats, std::move(callback)));
 }
 
 #if defined(OS_WIN)
@@ -390,7 +388,7 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
   complete_gpu_info_already_requested_ = true;
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
                            true /* force_create */,
-                           base::Bind([](GpuProcessHost* host) {
+                           base::BindOnce([](GpuProcessHost* host) {
                              if (!host)
                                return;
                              host->gpu_service()->RequestCompleteGpuInfo(
@@ -440,11 +438,10 @@ gpu::GpuFeatureStatus GpuDataManagerImplPrivate::GetFeatureStatus(
 }
 
 void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate(
-    const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-        callback) const {
-  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           false /* force_create */,
-                           base::Bind(&RequestVideoMemoryUsageStats, callback));
+    GpuDataManager::VideoMemoryUsageStatsCallback callback) const {
+  GpuProcessHost::CallOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::BindOnce(&RequestVideoMemoryUsageStats, std::move(callback)));
 }
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
@@ -691,7 +688,7 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
   // Pass the notification to the GPU process to notify observers there.
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
-                           base::Bind([](GpuProcessHost* host) {
+                           base::BindOnce([](GpuProcessHost* host) {
                              if (host)
                                host->gpu_service()->GpuSwitched();
                            }));

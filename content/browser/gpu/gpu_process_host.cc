@@ -275,9 +275,9 @@ GpuProcessHost* g_gpu_process_hosts[GpuProcessHost::GPU_PROCESS_KIND_COUNT];
 
 void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
                      bool force_create,
-                     const base::Callback<void(GpuProcessHost*)>& callback) {
+                     base::OnceCallback<void(GpuProcessHost*)> callback) {
   GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
-  callback.Run(host);
+  std::move(callback).Run(host);
 }
 
 void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
@@ -484,11 +484,12 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
   explicit ConnectionFilterImpl(int gpu_process_id) {
     auto task_runner =
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
-    registry_.AddInterface(base::Bind(&FieldTrialRecorder::Create),
+    registry_.AddInterface(base::BindRepeating(&FieldTrialRecorder::Create),
                            task_runner);
 #if defined(OS_ANDROID)
     registry_.AddInterface(
-        base::Bind(&BindJavaInterface<media::mojom::AndroidOverlayProvider>),
+        base::BindRepeating(
+            &BindJavaInterface<media::mojom::AndroidOverlayProvider>),
         task_runner);
 #endif
   }
@@ -599,13 +600,13 @@ void GpuProcessHost::GetHasGpuProcess(base::OnceCallback<void(bool)> callback) {
 void GpuProcessHost::CallOnIO(
     GpuProcessKind kind,
     bool force_create,
-    const base::Callback<void(GpuProcessHost*)>& callback) {
+    base::OnceCallback<void(GpuProcessHost*)> callback) {
 #if !defined(OS_WIN)
   DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
 #endif
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&RunCallbackOnIO, kind, force_create, callback));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&RunCallbackOnIO, kind, force_create,
+                                          std::move(callback)));
 }
 
 void GpuProcessHost::BindInterface(

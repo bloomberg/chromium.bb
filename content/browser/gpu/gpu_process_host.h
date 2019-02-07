@@ -85,7 +85,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   CONTENT_EXPORT static void CallOnIO(
       GpuProcessKind kind,
       bool force_create,
-      const base::Callback<void(GpuProcessHost*)>& callback);
+      base::OnceCallback<void(GpuProcessHost*)> callback);
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
