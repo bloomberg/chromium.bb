@@ -643,6 +643,10 @@ async function checkMyFilesRootItemContextMenu(itemName) {
         commandId}"][disabled][hidden]`;
     await remoteCall.waitForElement(appId, query);
   }
+
+  // Check that the delete button isn't visible.
+  const deleteButton = await remoteCall.waitForElement(appId, '#delete-button');
+  chrome.test.assertTrue(deleteButton.hidden, 'delete button should be hidden');
 }
 
 /**

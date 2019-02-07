@@ -462,7 +462,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("checkPasteEnabledForReadWriteFolderInTree").EnableDriveFs(),
         TestCase("checkPasteDisabledForReadOnlyFolderInTree").EnableDriveFs(),
         TestCase("checkContextMenuForTeamDriveRoot").EnableDriveFs(),
-        TestCase("checkDownloadsContextMenu"),
         TestCase("checkDownloadsContextMenu").EnableMyFilesVolume(),
         TestCase("checkPlayFilesContextMenu"),
         TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),

@@ -147,7 +147,11 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
 
   // Update visibility of the delete button.
   this.deleteButton_.hidden =
-      selection.totalCount === 0 || this.directoryModel_.isReadOnly();
+      (selection.totalCount === 0 || selection.hasReadOnlyEntry() ||
+       (util.isMyFilesVolumeEnabled() &&
+        this.directoryModel_.getCurrentRootType() ==
+            VolumeManagerCommon.RootType.DOWNLOADS &&
+        selection.entries.some(entry => entry.fullPath === '/Downloads')));
 
   // Set .selecting class to containing element to change the view accordingly.
   // TODO(fukino): This code changes the state of body, not the toolbar, to
