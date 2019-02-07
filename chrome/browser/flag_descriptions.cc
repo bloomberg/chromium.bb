@@ -3646,6 +3646,15 @@ const char kForceEnableSystemAecDescription[] =
 
 #endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
+const char kWebContentsOcclusionName[] = "Enable occlusion of web contents";
+const char kWebContentsOcclusionDescription[] =
+    "If enabled, web contents will behave as hidden when it is occluded by "
+    "other windows.";
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 const char kExperimentalUiName[] = "Use all upcoming UI features";
 const char kExperimentalUiDescription[] = "Use all upcoming UI features.";
 

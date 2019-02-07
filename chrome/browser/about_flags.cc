@@ -4300,6 +4300,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    {"web-contents-occlusion", flag_descriptions::kWebContentsOcclusionName,
+     flag_descriptions::kWebContentsOcclusionDescription,
+     kOsWin | kOsMac | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

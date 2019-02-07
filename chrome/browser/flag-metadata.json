@@ -266,7 +266,7 @@
     "owners": [ "ftirelo" ],
     "expiry_milestone": 73
   },
-   {
+  {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
     "expiry_milestone": 77
@@ -670,7 +670,7 @@
   },
   {
     "name": "document-passive-event-listeners",
-    "owners": ["nzolghadr, input-dev" ],
+    "owners": [ "nzolghadr, input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -910,7 +910,7 @@
   },
   {
     "name": "enable-avoid-flash-between-navigation",
-    "owners": [ "schenney", "paint-dev"],
+    "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -1295,7 +1295,7 @@
   },
   {
     "name": "enable-implicit-root-scroller",
-    "owners": [ "bokan" , "input-dev"],
+    "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 75
   },
   {
@@ -1856,7 +1856,7 @@
   },
   {
     "name": "enable-touch-drag-drop",
-    "owners": ["eirage", "input-dev" ],
+    "owners": [ "eirage", "input-dev" ],
     "expiry_milestone": 78
   },
   {
@@ -2054,7 +2054,7 @@
   },
   {
     "name": "enable_android_messages_integration",
-    "owners": [ "azeemarshad", "jlklein", "khorimoto"],
+    "owners": [ "azeemarshad", "jlklein", "khorimoto" ],
     "expiry_milestone": 76
   },
   {
@@ -2209,7 +2209,7 @@
   },
   {
     "name": "google-password-manager",
-    "owners": ["ioanap", "jdoerrie"],
+    "owners": [ "ioanap", "jdoerrie" ],
     "expiry_milestone": 76
   },
   {
@@ -2219,7 +2219,7 @@
   },
   {
     "name": "handwriting-gesture",
-    "owners": ["shend"],
+    "owners": [ "shend" ],
     "expiry_milestone": 76
   },
   {
@@ -2659,12 +2659,12 @@
   },
   {
     "name": "passive-event-listeners-due-to-fling",
-    "owners": ["sahel", "input-dev" ],
+    "owners": [ "sahel", "input-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "passive-listener-default",
-    "owners": ["nzolghadr", "input-dev" ],
+    "owners": [ "nzolghadr", "input-dev" ],
     "expiry_milestone": 78
   },
   {
@@ -2719,7 +2719,7 @@
   },
   {
     "name": "promos-on-local-ntp",
-    "owners": ["kmilka", "ramyan"],
+    "owners": [ "kmilka", "ramyan" ],
     "expiry_milestone": 74
   },
   {
@@ -2799,7 +2799,7 @@
   },
   {
     "name": "search-suggestions-on-local-ntp",
-    "owners": ["kmilka", "ramyan"],
+    "owners": [ "kmilka", "ramyan" ],
     "expiry_milestone": 74
   },
   {
@@ -2961,7 +2961,7 @@
   },
   {
     "name": "tab-groups",
-    "owners": ["chrome-desktop-ui-seattle@google.com", "bsep"],
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "bsep" ],
     "expiry_milestone": 76
   },
   {
@@ -2991,7 +2991,7 @@
   },
   {
     "name": "touch-events",
-    "owners": ["eirage", "input-dev" ],
+    "owners": [ "eirage", "input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -3001,7 +3001,7 @@
   },
   {
     "name": "touchpad-overscroll-history-navigation",
-    "owners": ["chaopeng", "input-dev" ],
+    "owners": [ "chaopeng", "input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -3173,6 +3173,11 @@
     "name": "web-payments",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "web-contents-occlusion",
+    "owners": [ "davidbienvenu" ],
+    "expiry_milestone": 77
   },
   {
     "name": "web-payments-modifiers",
