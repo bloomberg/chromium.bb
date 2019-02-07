@@ -33,7 +33,8 @@ const char kFeaturePolicyBlocked[] =
     "policy.";
 const char kNotAvailable[] = "Picture-in-Picture is not available.";
 const char kUserGestureRequired[] =
-    "Must be handling a user gesture to request picture in picture.";
+    "Must be handling a user gesture if there isn't already an element in "
+    "Picture-in-Picture.";
 const char kDisablePictureInPicturePresent[] =
     "\"disablePictureInPicture\" attribute is present.";
 }  // namespace
@@ -84,7 +85,8 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   // `kFrameDetached`.
   LocalFrame* frame = element.GetFrame();
   DCHECK(frame);
-  if (!LocalFrame::ConsumeTransientUserActivation(frame)) {
+  if (!controller.PictureInPictureElement() &&
+      !LocalFrame::ConsumeTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                            kUserGestureRequired));
