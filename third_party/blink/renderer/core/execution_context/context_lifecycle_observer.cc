@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -60,4 +60,4 @@ LocalFrame* DOMWindowClient::GetFrame() const {
 void DOMWindowClient::Trace(Visitor* visitor) {
   visitor->Trace(dom_window_);
 }
-}
+}  // namespace blink

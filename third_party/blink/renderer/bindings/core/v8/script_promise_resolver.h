@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -45,8 +45,6 @@ class CORE_EXPORT ScriptPromiseResolver
     return MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   }
 
-  // You need to call suspendIfNeeded after the construction because
-  // this is an PausableObject.
   explicit ScriptPromiseResolver(ScriptState*);
   virtual ~ScriptPromiseResolver();
 

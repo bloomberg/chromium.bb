@@ -8,7 +8,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 #include "third_party/blink/renderer/modules/event_modules.h"

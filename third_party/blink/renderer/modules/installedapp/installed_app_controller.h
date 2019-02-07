@@ -11,7 +11,7 @@
 #include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_apps_fetcher.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/supplementable.h"

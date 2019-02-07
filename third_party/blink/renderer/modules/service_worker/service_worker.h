@@ -95,7 +95,7 @@ class MODULES_EXPORT ServiceWorker final
   ScriptPromise InternalsTerminate(ScriptState*);
 
  private:
-  // PausableObject overrides.
+  // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
   bool was_stopped_;
