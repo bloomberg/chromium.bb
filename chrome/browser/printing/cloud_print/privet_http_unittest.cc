@@ -752,6 +752,8 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   EXPECT_TRUE(SuccessfulResponse(kSubmitDocURL, kSampleLocalPrintResponse));
   EXPECT_EQ("foobar", GetUploadData(kSubmitDocURL));
 
+  EXPECT_EQ(printing::DuplexMode::SIMPLEX,
+            pwg_converter_->bitmap_settings().duplex_mode);
   EXPECT_EQ(printing::TRANSFORM_NORMAL,
             pwg_converter_->bitmap_settings().odd_page_transform);
   EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
@@ -788,6 +790,8 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
       SuccessfulResponse(kSubmitDocWithJobIDURL, kSampleLocalPrintResponse));
   EXPECT_EQ("foobar", GetUploadData(kSubmitDocWithJobIDURL));
 
+  EXPECT_EQ(printing::DuplexMode::SHORT_EDGE,
+            pwg_converter_->bitmap_settings().duplex_mode);
   EXPECT_EQ(printing::TRANSFORM_ROTATE_180,
             pwg_converter_->bitmap_settings().odd_page_transform);
   EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
