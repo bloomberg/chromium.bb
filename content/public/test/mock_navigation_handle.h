@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_NAVIGATION_HANDLE_H_
 #define CONTENT_PUBLIC_TEST_MOCK_NAVIGATION_HANDLE_H_
 
-#include "base/memory/ref_counted.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -73,7 +72,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD1(RemoveRequestHeader, void(const std::string&));
   MOCK_METHOD2(SetRequestHeader, void(const std::string&, const std::string&));
   const net::HttpResponseHeaders* GetResponseHeaders() override {
-    return response_headers_.get();
+    return response_headers_;
   }
   MOCK_METHOD0(GetConnectionInfo, net::HttpResponseInfo::ConnectionInfo());
   const net::SSLInfo& GetSSLInfo() override { return ssl_info_; }
@@ -118,9 +117,8 @@ class MockNavigationHandle : public NavigationHandle {
   void set_request_headers(const net::HttpRequestHeaders& request_headers) {
     request_headers_ = request_headers;
   }
-  void set_response_headers(
-      scoped_refptr<net::HttpResponseHeaders> response_headers) {
-    response_headers_ = response_headers;
+  void set_response_headers(net::HttpResponseHeaders* reponse_headers) {
+    response_headers_ = reponse_headers;
   }
   void set_ssl_info(const net::SSLInfo& ssl_info) { ssl_info_ = ssl_info; }
   void set_is_form_submission(bool is_form_submission) {
@@ -148,7 +146,7 @@ class MockNavigationHandle : public NavigationHandle {
   bool has_committed_ = false;
   bool is_error_page_ = false;
   net::HttpRequestHeaders request_headers_;
-  scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  net::HttpResponseHeaders* response_headers_ = nullptr;
   net::SSLInfo ssl_info_;
   bool is_form_submission_ = false;
   bool was_response_cached_ = false;
