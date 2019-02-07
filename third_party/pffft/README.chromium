@@ -13,6 +13,3 @@ Description:
 PFFFT does 1D Fast Fourier Transforms, of single precision real and complex vectors. It tries do it fast, it tries to be correct, and it tries to be small. Computations do take advantage of SSE1 instructions on x86 cpus, Altivec on powerpc cpus, and NEON on ARM cpus.
 
 Local Modifications:
- * 01-add_m_pi.diff: define M_PI if not defined
- * 02-rmv_printf.diff: remove printf and stop including stdio.h
- * 03-decl_validate_simd.diff: declare validate_pffft_simd() in pffft.h
