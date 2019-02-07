@@ -208,6 +208,9 @@ extern const char kDeviceUnaffiliatedCrostiniAllowed[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmAllowed[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmLicenseKey[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceRebootAfterUserSignout[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

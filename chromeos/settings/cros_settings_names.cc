@@ -364,4 +364,9 @@ const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
 // A string pref that specifies PluginVm license key for this device.
 const char kPluginVmLicenseKey[] = "cros.device.plugin_vm_license_key";
 
+// An enum pref specifying the case when device needs to reboot after user sign
+// out.
+const char kDeviceRebootAfterUserSignout[] =
+    "cros.device.reboot_after_user_signout";
+
 }  // namespace chromeos

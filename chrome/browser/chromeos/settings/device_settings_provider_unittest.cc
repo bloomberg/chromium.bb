@@ -262,6 +262,18 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetDeviceRebootAfterUserSignout(
+      em::DeviceRebootAfterUserSignoutProto::RebootOnSignoutMode value) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::DeviceRebootAfterUserSignoutProto* proto =
+        device_policy_.payload().mutable_device_reboot_after_user_signout();
+    proto->set_reboot_after_signout_mode(value);
+    device_policy_.Build();
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -678,6 +690,30 @@ TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {
 TEST_F(DeviceSettingsProviderTest, DecodePluginVmLicenseKeySetting) {
   SetPluginVmLicenseKeySetting("LICENSE_KEY");
   EXPECT_EQ(base::Value("LICENSE_KEY"), *provider_->Get(kPluginVmLicenseKey));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceRebootAfterUserSignout) {
+  using PolicyProto = em::DeviceRebootAfterUserSignoutProto;
+
+  VerifyPolicyValue(kDeviceRebootAfterUserSignout, nullptr);
+
+  {
+    SetDeviceRebootAfterUserSignout(PolicyProto::NEVER);
+    base::Value expected_value(PolicyProto::NEVER);
+    VerifyPolicyValue(kDeviceRebootAfterUserSignout, &expected_value);
+  }
+
+  {
+    SetDeviceRebootAfterUserSignout(PolicyProto::ARC_SESSION);
+    base::Value expected_value(PolicyProto::ARC_SESSION);
+    VerifyPolicyValue(kDeviceRebootAfterUserSignout, &expected_value);
+  }
+
+  {
+    SetDeviceRebootAfterUserSignout(PolicyProto::ALWAYS);
+    base::Value expected_value(PolicyProto::ALWAYS);
+    VerifyPolicyValue(kDeviceRebootAfterUserSignout, &expected_value);
+  }
 }
 
 }  // namespace chromeos
