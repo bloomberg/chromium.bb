@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/experimental/safe_search_url_reporter.h"
@@ -31,7 +30,6 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -74,13 +72,10 @@ ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile),
       active_(false),
       family_fetch_backoff_(&kFamilyFetchBackoffPolicy),
-      gaia_cookie_manager_(
-          GaiaCookieManagerServiceFactory::GetForProfile(profile)),
-      weak_ptr_factory_(this) {
-}
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
+      weak_ptr_factory_(this) {}
 
-ChildAccountService::~ChildAccountService() {
-}
+ChildAccountService::~ChildAccountService() {}
 
 // static
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
@@ -100,17 +95,14 @@ void ChildAccountService::RegisterProfilePrefs(
 
 void ChildAccountService::Init() {
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
-  gaia_cookie_manager_->AddObserver(this);
-  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
+  identity_manager_->AddObserver(this);
 
   PropagateChildStatusToUser(profile_->IsChild());
 
   // If we're already signed in, check the account immediately just to be sure.
   // (We might have missed an update before registering as an observer.)
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile_);
-  if (identity_manager->HasPrimaryAccount())
-    OnAccountUpdated(identity_manager->GetPrimaryAccountInfo());
+  if (identity_manager_->HasPrimaryAccount())
+    OnAccountUpdated(identity_manager_->GetPrimaryAccountInfo());
 }
 
 bool ChildAccountService::IsChildAccountStatusKnown() {
@@ -119,8 +111,7 @@ bool ChildAccountService::IsChildAccountStatusKnown() {
 
 void ChildAccountService::Shutdown() {
   family_fetcher_.reset();
-  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
-  gaia_cookie_manager_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(nullptr);
   DCHECK(!active_);
 }
@@ -134,12 +125,17 @@ void ChildAccountService::AddChildStatusReceivedCallback(
 }
 
 ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts))
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_manager_->GetAccountsInCookieJar();
+  if (!accounts_in_cookie_jar_info.accounts_are_fresh)
     return AuthState::PENDING;
-  return (accounts.empty() || !accounts[0].valid) ? AuthState::NOT_AUTHENTICATED
-                                                  : AuthState::AUTHENTICATED;
+
+  bool first_account_authenticated =
+      !accounts_in_cookie_jar_info.signed_in_accounts.empty() &&
+      accounts_in_cookie_jar_info.signed_in_accounts[0].valid;
+
+  return first_account_authenticated ? AuthState::AUTHENTICATED
+                                     : AuthState::NOT_AUTHENTICATED;
 }
 
 std::unique_ptr<base::CallbackList<void()>::Subscription>
@@ -260,8 +256,7 @@ void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
     return;
   }
 
-  std::string auth_account_id =
-      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId();
+  std::string auth_account_id = identity_manager_->GetPrimaryAccountId();
   if (info.account_id != auth_account_id)
     return;
 
@@ -307,16 +302,15 @@ void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
   ScheduleNextFamilyInfoUpdate(family_fetch_backoff_.GetTimeUntilRelease());
 }
 
-void ChildAccountService::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+void ChildAccountService::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   google_auth_state_observers_.Notify();
 }
 
 void ChildAccountService::StartFetchingFamilyInfo() {
   family_fetcher_.reset(new FamilyInfoFetcher(
-      this, IdentityManagerFactory::GetForProfile(profile_),
+      this, identity_manager_,
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess()));
   family_fetcher_->StartGetFamilyMembers();
