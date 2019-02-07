@@ -269,7 +269,7 @@ class DeployChrome(object):
     if not self.device.HasRsync():
       raise DeployFailure(
           'rsync is not found on the device.\n'
-          'Run dev_install on the device to get rsync installed')
+          'Run dev_install on the device to get rsync installed.')
     self.device.CopyToDevice('%s/' % os.path.abspath(self.staging_dir),
                              self.options.target_dir,
                              mode='rsync', inplace=True,

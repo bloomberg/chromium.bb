@@ -365,10 +365,8 @@ To install the debug symbols for all available packages, run:
       if pname == 'browser':
         all_chrome_pids = set(device.GetRunningPids(
             '/opt/google/chrome/chrome'))
-        sandbox_pids = set(device.GetRunningPids(
-            '/opt/google/chrome/chrome-sandbox'))
         non_main_chrome_pids = set(device.GetRunningPids('type='))
-        pids = list(all_chrome_pids - sandbox_pids - non_main_chrome_pids)
+        pids = list(all_chrome_pids - non_main_chrome_pids)
       elif pname == 'renderer' or pname == 'gpu-process':
         pids = device.GetRunningPids('type=%s'% pname)
       else:
