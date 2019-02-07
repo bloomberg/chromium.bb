@@ -245,7 +245,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool HasNonZeroEffectiveOpacity() const;
 
  protected:
-  void EnsureIdForTesting() { fragment_.EnsureIdForTesting(); };
+  void EnsureIdForTesting() { fragment_.EnsureIdForTesting(); }
 
  private:
   // DisplayItemClient methods.
@@ -2504,13 +2504,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   unsigned as_image_observer_count_ : 20;
 #endif
 
-#define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase) \
- private:                                                 \
-  unsigned field_name_ : 1;                               \
-                                                          \
- public:                                                  \
-  bool MethodNameBase() const { return field_name_; }     \
-  void Set##MethodNameBase(bool new_value) { field_name_ = new_value; }
+#define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase)               \
+ public:                                                                \
+  bool MethodNameBase() const { return field_name_; }                   \
+  void Set##MethodNameBase(bool new_value) { field_name_ = new_value; } \
+                                                                        \
+ private:                                                               \
+  unsigned field_name_ : 1
 
   class LayoutObjectBitfields {
     enum PositionedState {

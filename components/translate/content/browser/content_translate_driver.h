@@ -41,20 +41,20 @@ class ContentTranslateDriver : public TranslateDriver,
   class Observer {
    public:
     // Handles when the value of IsPageTranslated is changed.
-    virtual void OnIsPageTranslatedChanged(content::WebContents* source) {};
+    virtual void OnIsPageTranslatedChanged(content::WebContents* source) {}
 
     // Handles when the value of translate_enabled is changed.
-    virtual void OnTranslateEnabledChanged(content::WebContents* source) {};
+    virtual void OnTranslateEnabledChanged(content::WebContents* source) {}
 
     // Called when the page language has been determined.
     virtual void OnLanguageDetermined(
-        const translate::LanguageDetectionDetails& details) {};
+        const translate::LanguageDetectionDetails& details) {}
 
     // Called when the page has been translated.
-    virtual void OnPageTranslated(
-        const std::string& original_lang,
-        const std::string& translated_lang,
-        translate::TranslateErrors::Type error_type) {};
+    virtual void OnPageTranslated(const std::string& original_lang,
+                                  const std::string& translated_lang,
+                                  translate::TranslateErrors::Type error_type) {
+    }
 
    protected:
     virtual ~Observer() {}

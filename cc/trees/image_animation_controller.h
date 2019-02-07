@@ -99,7 +99,7 @@ class CC_EXPORT ImageAnimationController {
   size_t GetFrameIndexForImage(PaintImage::Id paint_image_id,
                                WhichTree tree) const;
 
-  void set_did_navigate() { did_navigate_ = true; };
+  void set_did_navigate() { did_navigate_ = true; }
 
   const base::flat_set<AnimationDriver*>& GetDriversForTesting(
       PaintImage::Id paint_image_id) const;

@@ -109,7 +109,7 @@ class CORE_EXPORT FontBuilder {
   }
   static FontVariantNumeric InitialVariantNumeric() {
     return FontVariantNumeric();
-  };
+  }
   static LayoutLocale* InitialLocale() { return nullptr; }
   static FontDescription::Kerning InitialKerning() {
     return FontDescription::kAutoKerning;

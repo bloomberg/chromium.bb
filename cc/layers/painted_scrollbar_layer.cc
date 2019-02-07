@@ -13,7 +13,7 @@
 
 namespace {
 static constexpr int kMaxScrollbarDimension = 8192;
-};
+}
 
 namespace cc {
 

@@ -227,26 +227,26 @@ template <class ElementType>
 inline TraversalDescendantRange<Traversal<ElementType>>
 Traversal<ElementType>::DescendantsOf(const Node& root) {
   return TraversalDescendantRange<Traversal<ElementType>>(&root);
-};
+}
 
 template <class ElementType>
 inline TraversalInclusiveDescendantRange<Traversal<ElementType>>
 Traversal<ElementType>::InclusiveDescendantsOf(const ElementType& root) {
   return TraversalInclusiveDescendantRange<Traversal<ElementType>>(&root);
-};
+}
 
 template <class ElementType>
 inline TraversalNextRange<Traversal<ElementType>>
 Traversal<ElementType>::StartsAt(const ElementType& start) {
   return TraversalNextRange<Traversal<ElementType>>(&start);
-};
+}
 
 template <class ElementType>
 inline TraversalNextRange<Traversal<ElementType>>
 Traversal<ElementType>::StartsAfter(const Node& start) {
   return TraversalNextRange<Traversal<ElementType>>(
       Traversal<ElementType>::Next(start));
-};
+}
 
 // Specialized for pure Element to exploit the fact that Elements parent is
 // always either another Element or the root.

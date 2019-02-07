@@ -206,13 +206,13 @@ static bool g_has_paint_flags[kNumOpTypes] = {TYPES(M)};
 #define M(T)                                         \
   static_assert(sizeof(T) <= sizeof(LargestPaintOp), \
                 #T " must be no bigger than LargestPaintOp");
-TYPES(M);
+TYPES(M)
 #undef M
 
 #define M(T)                                               \
   static_assert(alignof(T) <= PaintOpBuffer::PaintOpAlign, \
                 #T " must have alignment no bigger than PaintOpAlign");
-TYPES(M);
+TYPES(M)
 #undef M
 
 using AnalyzeOpFunc = void (*)(PaintOpBuffer*, const PaintOp*);

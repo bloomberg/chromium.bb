@@ -17,7 +17,7 @@ namespace content {
 class NotificationDetails;
 class NotificationSource;
 class WebContents;
-};
+}  // namespace content
 
 // Base class for bubbles that are shown from location bar icons. The bubble
 // will automatically close when the browser transitions in or out of fullscreen

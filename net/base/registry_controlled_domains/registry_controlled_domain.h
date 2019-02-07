@@ -125,7 +125,7 @@ class GURL;
 
 namespace url {
 class Origin;
-};
+}
 
 struct DomainRule;
 

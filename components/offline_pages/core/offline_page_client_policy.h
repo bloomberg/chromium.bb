@@ -105,7 +105,7 @@ struct OfflinePageClientPolicy {
       : name_space(namespace_val),
         lifetime_policy(lifetime_policy_val),
         pages_allowed_per_url(pages_allowed_per_url_val),
-        feature_policy(feature_policy_val){};
+        feature_policy(feature_policy_val) {}
 
   OfflinePageClientPolicy(std::string namespace_val,
                           LifetimePolicy lifetime_policy_val,

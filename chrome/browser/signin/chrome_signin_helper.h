@@ -83,6 +83,6 @@ void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
                                               const GURL& redirect_url,
                                               bool is_off_the_record);
 
-};  // namespace signin
+}  // namespace signin
 
 #endif  // CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_HELPER_H_

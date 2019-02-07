@@ -284,7 +284,7 @@ class ScopedResultPtr {
     other.result_ = nullptr;
     other.transfer_buffer_ = nullptr;
     return *this;
-  };
+  }
 
   // Dereferencing behaviors
   T& operator*() const { return *result_; }

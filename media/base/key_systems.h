@@ -76,7 +76,7 @@ class MEDIA_EXPORT KeySystems {
       const std::string& key_system) const = 0;
 
  protected:
-  virtual ~KeySystems() {};
+  virtual ~KeySystems() {}
 };
 
 // TODO(ddorwin): WebContentDecryptionModuleSessionImpl::initializeNewSession()

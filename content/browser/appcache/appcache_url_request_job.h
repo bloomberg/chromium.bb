@@ -18,7 +18,7 @@
 
 namespace net {
 class GrowableIOBuffer;
-};
+}
 
 namespace content {
 class AppCacheHost;

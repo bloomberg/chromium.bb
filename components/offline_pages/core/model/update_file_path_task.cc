@@ -58,7 +58,7 @@ UpdateFilePathTask::UpdateFilePathTask(OfflinePageMetadataStore* store,
   DCHECK(store_);
 }
 
-UpdateFilePathTask::~UpdateFilePathTask(){};
+UpdateFilePathTask::~UpdateFilePathTask() {}
 
 void UpdateFilePathTask::Run() {
   store_->Execute(base::BindOnce(&UpdateFilePathSync, file_path_, offline_id_),

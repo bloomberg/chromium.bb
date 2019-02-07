@@ -27,6 +27,6 @@ enum BubbleViewMode {
   BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
 };
 
-};  // namespace profiles
+}  // namespace profiles
 
 #endif  // CHROME_BROWSER_UI_PROFILE_CHOOSER_CONSTANTS_H_

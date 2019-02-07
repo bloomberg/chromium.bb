@@ -48,7 +48,7 @@ std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(Observer* observer) {
 
 UdevWatcher::~UdevWatcher() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-};
+}
 
 void UdevWatcher::EnumerateExistingDevices() {
   DCHECK(sequence_checker_.CalledOnValidSequence());

@@ -112,7 +112,7 @@ class MEDIA_EXPORT Picture {
   // without requesting new PictureBuffers. GpuVideoDecoder should read this
   // as a signal to update the size of the corresponding PicutreBuffer using
   // visible_rect() upon receiving this Picture from a VDA.
-  bool size_changed() const { return size_changed_; };
+  bool size_changed() const { return size_changed_; }
 
   void set_size_changed(bool size_changed) { size_changed_ = size_changed; }
 
