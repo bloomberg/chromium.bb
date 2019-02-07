@@ -204,6 +204,12 @@ class ProfileSyncService : public syncer::SyncService,
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
+  void AddPreferenceProvider(
+      syncer::SyncTypePreferenceProvider* provider) override;
+  void RemovePreferenceProvider(
+      syncer::SyncTypePreferenceProvider* provider) override;
+  bool HasPreferenceProvider(
+      syncer::SyncTypePreferenceProvider* provider) const override;
   syncer::UserShare* GetUserShare() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
@@ -224,16 +230,6 @@ class ProfileSyncService : public syncer::SyncService,
   base::WeakPtr<syncer::JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
-
-  // Add a sync type preference provider. Each provider may only be added once.
-  void AddPreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
-  // Remove a sync type preference provider. May only be called for providers
-  // that have been added. Providers must not remove themselves while being
-  // called back.
-  void RemovePreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
-  // Check whether a given sync type preference provider has been added.
-  bool HasPreferenceProvider(
-      syncer::SyncTypePreferenceProvider* provider) const;
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(

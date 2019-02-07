@@ -38,10 +38,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -167,8 +167,8 @@ void SupervisedUserService::Init() {
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
 
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   // Can be null in tests.
   if (sync_service)
     sync_service->AddPreferenceProvider(this);
@@ -394,8 +394,8 @@ void SupervisedUserService::SetActive(bool active) {
     theme_service->UseDefaultTheme();
 #endif
 
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   sync_service->GetUserSettings()->SetEncryptEverythingAllowed(!active_);
 
   GetSettingsService()->SetActive(active_);
@@ -720,8 +720,8 @@ void SupervisedUserService::Shutdown() {
   }
   SetActive(false);
 
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   // Can be null in tests.
   if (sync_service)
     sync_service->RemovePreferenceProvider(this);
