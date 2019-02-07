@@ -77,7 +77,12 @@ Polymer({
 
   /** @private */
   publishUrl_: function() {
+    // Disable pushing urls into the history stack, so that we only push one
+    // state.
+    this.$['iron-location'].dwellTime = Infinity;
     this.publishQueryParams_();
+    // Re-enable pushing urls into the history stack.
+    this.$['iron-location'].dwellTime = 0;
     this.publishPath_();
   },
 
