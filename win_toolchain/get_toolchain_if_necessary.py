@@ -496,8 +496,9 @@ def main():
   if desired_hash not in current_hashes:
     if options.no_download:
       raise SystemExit('Toolchain is out of date. Run "gclient runhooks" to '
-                      'update the toolchain, or set DEPOT_TOOLS_WIN_TOOLCHAIN=0'
-                      'to use the locally installed toolchain.')
+                       'update the toolchain, or set '
+                       'DEPOT_TOOLS_WIN_TOOLCHAIN=0 to use the locally '
+                       'installed toolchain.')
     should_use_file = False
     should_use_http = False
     should_use_gs = False
