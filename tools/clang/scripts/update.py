@@ -538,6 +538,8 @@ def UpdateClang(args):
                      '-DCLANG_PLUGIN_SUPPORT=OFF',
                      '-DCLANG_ENABLE_STATIC_ANALYZER=OFF',
                      '-DCLANG_ENABLE_ARCMT=OFF',
+                     # TODO(crbug.com/929645): Use newer toolchain to host.
+                     '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
                      ]
 
   if sys.platform != 'win32':
