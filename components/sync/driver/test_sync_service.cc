@@ -188,6 +188,17 @@ bool TestSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return false;
 }
 
+void TestSyncService::AddPreferenceProvider(
+    SyncTypePreferenceProvider* provider) {}
+
+void TestSyncService::RemovePreferenceProvider(
+    SyncTypePreferenceProvider* provider) {}
+
+bool TestSyncService::HasPreferenceProvider(
+    SyncTypePreferenceProvider* provider) const {
+  return false;
+}
+
 UserShare* TestSyncService::GetUserShare() const {
   return nullptr;
 }
