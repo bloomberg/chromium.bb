@@ -316,9 +316,9 @@ public class ExternalNavigationHandler {
             //                          protocols.
             // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
             //                not break the world.
-            if (isRedirectFromFormSubmit && !params.hasUserGesture()
+            if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
                     && ChromeFeatureList.isEnabled(
-                               ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
+                            ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
                 if (DEBUG) {
                     Log.i(TAG,
                             "NO_OVERRIDE: Incoming form intent attempting to redirect without "
