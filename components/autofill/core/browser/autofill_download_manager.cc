@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/submission_source.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -649,17 +650,10 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
     resource_request->headers.SetHeader(kGoogEncodeResponseIfExecutable,
                                         "base64");
 
-  // Put API key in request's header if there is.
-  // Note: variations::AppendVariationsHeaderUnknownsignedIn() returned true
-  // when the vadiations header was added, but variations header is not set if
-  // variations::Incognito::kYes is passed. On the other hand, the API key is
-  // needed even for variations::Incognito::kYes. So, we need to call
-  // variations::ShouldAppendVariationsHeader() below to check the condition
-  // without variations::Incognito value. Probably we want to factor out some
-  // code to know if the URL needs the API key.
-  if (!api_key_.empty() &&
-      variations::ShouldAppendVariationsHeader(request_url)) {
-    // Make sure that we only send the API key to endpoints trusted by Chrome.
+  // Put API key in request's header if a key exists, and the endpoint is
+  // trusted by Google.
+  if (!api_key_.empty() && request_url.SchemeIs(url::kHttpsScheme) &&
+      google_util::IsGoogleAssociatedDomainUrl(request_url)) {
     resource_request->headers.SetHeader(kGoogApiKey, api_key_);
   }
 

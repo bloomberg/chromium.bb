@@ -33,26 +33,6 @@ namespace {
 // Note that prior to M33 this header was named X-Chrome-Variations.
 const char kClientDataHeader[] = "X-Client-Data";
 
-const char* kSuffixesToSetHeadersFor[] = {
-    ".android.com",
-    ".doubleclick.com",
-    ".doubleclick.net",
-    ".ggpht.com",
-    ".googleadservices.com",
-    ".googleapis.com",
-    ".googlesyndication.com",
-    ".googleusercontent.com",
-    ".googlevideo.com",
-    ".gstatic.com",
-    ".litepages.googlezip.net",
-    ".ytimg.com",
-};
-
-// Exact hostnames in lowercase to set headers for.
-const char* kHostsToSetHeadersFor[] = {
-    "googleweblight.com",
-};
-
 // The result of checking if a URL should have variations headers appended.
 // This enum is used to record UMA histogram values, and should not be
 // reordered.
@@ -66,37 +46,32 @@ enum URLValidationResult {
   URL_VALIDATION_RESULT_SIZE,
 };
 
-// Checks whether headers should be appended to the |url|, based on the domain
-// of |url|. |url| is assumed to be valid, and to have an http/https scheme.
-bool IsGoogleDomain(const GURL& url) {
-  if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
-    return true;
-  }
-  if (google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
-    return true;
-  }
-
-  // Some domains don't have international TLD extensions, so testing for them
-  // is very straight forward.
-  const std::string host = url.host();
-  for (size_t i = 0; i < base::size(kSuffixesToSetHeadersFor); ++i) {
-    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
-                       base::CompareCase::INSENSITIVE_ASCII))
-      return true;
-  }
-  for (size_t i = 0; i < base::size(kHostsToSetHeadersFor); ++i) {
-    if (base::LowerCaseEqualsASCII(host, kHostsToSetHeadersFor[i]))
-      return true;
-  }
-
-  return false;
-}
-
 void LogUrlValidationHistogram(URLValidationResult result) {
   UMA_HISTOGRAM_ENUMERATION("Variations.Headers.URLValidationResult", result,
                             URL_VALIDATION_RESULT_SIZE);
+}
+
+bool ShouldAppendVariationsHeader(const GURL& url) {
+  if (!url.is_valid()) {
+    LogUrlValidationHistogram(INVALID_URL);
+    return false;
+  }
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    LogUrlValidationHistogram(NEITHER_HTTP_HTTPS);
+    return false;
+  }
+  if (!google_util::IsGoogleAssociatedDomainUrl(url)) {
+    LogUrlValidationHistogram(NOT_GOOGLE_DOMAIN);
+    return false;
+  }
+  // We check https here, rather than before the IsGoogleDomain() check, to know
+  // how many Google domains are being rejected by the change to https only.
+  if (!url.SchemeIs(url::kHttpsScheme)) {
+    LogUrlValidationHistogram(IS_GOOGLE_NOT_HTTPS);
+    return false;
+  }
+  LogUrlValidationHistogram(SHOULD_APPEND);
+  return true;
 }
 
 constexpr network::ResourceRequest* null_resource_request = nullptr;
@@ -257,27 +232,8 @@ bool HasVariationsHeader(const network::ResourceRequest& request) {
   return !request.client_data_header.empty();
 }
 
-bool ShouldAppendVariationsHeader(const GURL& url) {
-  if (!url.is_valid()) {
-    LogUrlValidationHistogram(INVALID_URL);
-    return false;
-  }
-  if (!url.SchemeIsHTTPOrHTTPS()) {
-    LogUrlValidationHistogram(NEITHER_HTTP_HTTPS);
-    return false;
-  }
-  if (!IsGoogleDomain(url)) {
-    LogUrlValidationHistogram(NOT_GOOGLE_DOMAIN);
-    return false;
-  }
-  // We check https here, rather than before the IsGoogleDomain() check, to know
-  // how many Google domains are being rejected by the change to https only.
-  if (!url.SchemeIs("https")) {
-    LogUrlValidationHistogram(IS_GOOGLE_NOT_HTTPS);
-    return false;
-  }
-  LogUrlValidationHistogram(SHOULD_APPEND);
-  return true;
+bool ShouldAppendVariationsHeaderForTesting(const GURL& url) {
+  return ShouldAppendVariationsHeader(url);
 }
 
 }  // namespace variations
