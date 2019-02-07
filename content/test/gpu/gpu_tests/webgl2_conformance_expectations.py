@@ -1326,14 +1326,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Basic failures that need to be investigated on multiple devices
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['android'], bug=709351)
-    # Video uploads to some texture formats new in WebGL 2.0 are
-    # failing.
-    self.Fail('conformance2/textures/video/' +
-        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-        ['android'], bug=906735)
-    self.Fail('conformance2/textures/video/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['android'], bug=906735)
 
     # Qualcomm (Pixel 2) failures
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
@@ -1344,9 +1336,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'], bug=906742)
     self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
         ['android', 'qualcomm'], bug=906743)
-    self.Fail('conformance2/textures/video/' +
-        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['android', 'qualcomm'], bug=906735)
     self.Fail('conformance2/textures/misc/tex-new-formats.html',
         ['android', 'qualcomm'], bug=906740)
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
