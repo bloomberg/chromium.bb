@@ -6,18 +6,13 @@
 
 #include "build/build_config.h"
 
-bool OpaqueBrowserFrameViewPlatformSpecific::IsUsingSystemTheme() {
-  return false;
-}
-
 #if !defined(OS_LINUX)
 
 // static
 OpaqueBrowserFrameViewPlatformSpecific*
 OpaqueBrowserFrameViewPlatformSpecific::Create(
     OpaqueBrowserFrameView* view,
-    OpaqueBrowserFrameViewLayout* layout,
-    ThemeService* theme_service) {
+    OpaqueBrowserFrameViewLayout* layout) {
   return new OpaqueBrowserFrameViewPlatformSpecific();
 }
 

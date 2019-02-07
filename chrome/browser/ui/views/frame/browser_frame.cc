@@ -164,6 +164,20 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
   browser_frame_view_->OnBrowserViewInitViewsComplete();
 }
 
+bool BrowserFrame::ShouldUseTheme() const {
+  // Main browser windows are always themed.
+  if (browser_view_->IsBrowserTypeNormal())
+    return true;
+
+  // The system GTK theme should always be respected if the user has opted to
+  // use it.
+  if (IsUsingGtkTheme(browser_view_->browser()->profile()))
+    return true;
+
+  // Other window types (popups, hosted apps) on non-GTK use the default theme.
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 
@@ -262,20 +276,6 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
 
 void BrowserFrame::OnMenuClosed() {
   menu_runner_.reset();
-}
-
-bool BrowserFrame::ShouldUseTheme() const {
-  // Main browser windows are always themed.
-  if (browser_view_->IsBrowserTypeNormal())
-    return true;
-
-  // The system GTK theme should always be respected if the user has opted to
-  // use it.
-  if (IsUsingGtkTheme(browser_view_->browser()->profile()))
-    return true;
-
-  // Other window types (popups, hosted apps) on non-GTK use the default theme.
-  return false;
 }
 
 void BrowserFrame::OnTouchUiChanged() {
