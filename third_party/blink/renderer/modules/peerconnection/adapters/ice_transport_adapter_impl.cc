@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
 
+#include <memory>
+
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_packet_transport_adapter.h"
+#include "third_party/webrtc/api/ice_transport_factory.h"
 
 namespace blink {
 
@@ -30,29 +33,28 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
                              cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI);
   port_allocator_->Initialize();
 
-  p2p_transport_channel_ = std::make_unique<cricket::P2PTransportChannel>(
-      "", 0, port_allocator_.get(), async_resolver_factory.get());
-  p2p_transport_channel_->SignalGatheringState.connect(
+  ice_transport_channel_ = webrtc::CreateIceTransport(port_allocator_.get());
+  p2p_transport_channel()->SignalGatheringState.connect(
       this, &IceTransportAdapterImpl::OnGatheringStateChanged);
-  p2p_transport_channel_->SignalCandidateGathered.connect(
+  p2p_transport_channel()->SignalCandidateGathered.connect(
       this, &IceTransportAdapterImpl::OnCandidateGathered);
-  p2p_transport_channel_->SignalStateChanged.connect(
+  p2p_transport_channel()->SignalStateChanged.connect(
       this, &IceTransportAdapterImpl::OnStateChanged);
-  p2p_transport_channel_->SignalNetworkRouteChanged.connect(
+  p2p_transport_channel()->SignalNetworkRouteChanged.connect(
       this, &IceTransportAdapterImpl::OnNetworkRouteChanged);
-  p2p_transport_channel_->SignalRoleConflict.connect(
+  p2p_transport_channel()->SignalRoleConflict.connect(
       this, &IceTransportAdapterImpl::OnRoleConflict);
   // We need to set the ICE role even before Start is called since the Port
   // assumes that the role has been set before receiving incoming connectivity
   // checks. These checks can race with the information signaled for Start.
-  p2p_transport_channel_->SetIceRole(cricket::ICEROLE_CONTROLLING);
+  p2p_transport_channel()->SetIceRole(cricket::ICEROLE_CONTROLLING);
   // The ICE tiebreaker is used to determine which side is controlling/
   // controlled when both sides start in the same role. The number is randomly
   // generated so that each peer can calculate a.tiebreaker <= b.tiebreaker
   // consistently.
-  p2p_transport_channel_->SetIceTiebreaker(rtc::CreateRandomId64());
-  quic_packet_transport_adapter_ = std::make_unique<QuicPacketTransportAdapter>(
-      p2p_transport_channel_.get());
+  p2p_transport_channel()->SetIceTiebreaker(rtc::CreateRandomId64());
+  quic_packet_transport_adapter_ =
+      std::make_unique<QuicPacketTransportAdapter>(p2p_transport_channel());
 }
 
 IceTransportAdapterImpl::~IceTransportAdapterImpl() = default;
@@ -78,9 +80,9 @@ void IceTransportAdapterImpl::StartGathering(
                                     port_allocator_->candidate_pool_size(),
                                     port_allocator_->prune_turn_ports());
 
-  p2p_transport_channel_->SetIceParameters(local_parameters);
-  p2p_transport_channel_->MaybeStartGathering();
-  DCHECK_EQ(p2p_transport_channel_->gathering_state(),
+  p2p_transport_channel()->SetIceParameters(local_parameters);
+  p2p_transport_channel()->MaybeStartGathering();
+  DCHECK_EQ(p2p_transport_channel()->gathering_state(),
             cricket::kIceGatheringGathering);
 }
 
@@ -88,22 +90,22 @@ void IceTransportAdapterImpl::Start(
     const cricket::IceParameters& remote_parameters,
     cricket::IceRole role,
     const std::vector<cricket::Candidate>& initial_remote_candidates) {
-  p2p_transport_channel_->SetRemoteIceParameters(remote_parameters);
-  p2p_transport_channel_->SetIceRole(role);
+  p2p_transport_channel()->SetRemoteIceParameters(remote_parameters);
+  p2p_transport_channel()->SetIceRole(role);
   for (const auto& candidate : initial_remote_candidates) {
-    p2p_transport_channel_->AddRemoteCandidate(candidate);
+    p2p_transport_channel()->AddRemoteCandidate(candidate);
   }
 }
 
 void IceTransportAdapterImpl::HandleRemoteRestart(
     const cricket::IceParameters& new_remote_parameters) {
-  p2p_transport_channel_->RemoveAllRemoteCandidates();
-  p2p_transport_channel_->SetRemoteIceParameters(new_remote_parameters);
+  p2p_transport_channel()->RemoveAllRemoteCandidates();
+  p2p_transport_channel()->SetRemoteIceParameters(new_remote_parameters);
 }
 
 void IceTransportAdapterImpl::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
-  p2p_transport_channel_->AddRemoteCandidate(candidate);
+  p2p_transport_channel()->AddRemoteCandidate(candidate);
 }
 
 P2PQuicPacketTransport* IceTransportAdapterImpl::packet_transport() const {
@@ -112,27 +114,28 @@ P2PQuicPacketTransport* IceTransportAdapterImpl::packet_transport() const {
 
 void IceTransportAdapterImpl::OnGatheringStateChanged(
     cricket::IceTransportInternal* transport) {
-  DCHECK_EQ(transport, p2p_transport_channel_.get());
-  delegate_->OnGatheringStateChanged(p2p_transport_channel_->gathering_state());
+  DCHECK_EQ(transport, p2p_transport_channel());
+  delegate_->OnGatheringStateChanged(
+      p2p_transport_channel()->gathering_state());
 }
 
 void IceTransportAdapterImpl::OnCandidateGathered(
     cricket::IceTransportInternal* transport,
     const cricket::Candidate& candidate) {
-  DCHECK_EQ(transport, p2p_transport_channel_.get());
+  DCHECK_EQ(transport, p2p_transport_channel());
   delegate_->OnCandidateGathered(candidate);
 }
 
 void IceTransportAdapterImpl::OnStateChanged(
     cricket::IceTransportInternal* transport) {
-  DCHECK_EQ(transport, p2p_transport_channel_.get());
-  delegate_->OnStateChanged(p2p_transport_channel_->GetState());
+  DCHECK_EQ(transport, p2p_transport_channel());
+  delegate_->OnStateChanged(p2p_transport_channel()->GetState());
 }
 
 void IceTransportAdapterImpl::OnNetworkRouteChanged(
     absl::optional<rtc::NetworkRoute> new_network_route) {
   const cricket::CandidatePairInterface* selected_connection =
-      p2p_transport_channel_->selected_connection();
+      p2p_transport_channel()->selected_connection();
   if (!selected_connection) {
     // The selected connection will only be null if the ICE connection has
     // totally failed, at which point we'll get a StateChanged signal. The
@@ -170,13 +173,13 @@ static cricket::IceRole IceRoleReversed(cricket::IceRole role) {
 
 void IceTransportAdapterImpl::OnRoleConflict(
     cricket::IceTransportInternal* transport) {
-  DCHECK_EQ(transport, p2p_transport_channel_.get());
+  DCHECK_EQ(transport, p2p_transport_channel());
   // This logic is copied from JsepTransportController.
   cricket::IceRole reversed_role =
-      IceRoleReversed(p2p_transport_channel_->GetIceRole());
+      IceRoleReversed(p2p_transport_channel()->GetIceRole());
   LOG(INFO) << "Got role conflict; switching to "
             << IceRoleToString(reversed_role) << " role.";
-  p2p_transport_channel_->SetIceRole(reversed_role);
+  p2p_transport_channel()->SetIceRole(reversed_role);
 }
 
 }  // namespace blink
