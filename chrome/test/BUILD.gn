@@ -5219,6 +5219,13 @@ if (!is_android) {
       # target should be deleted and this line removed. See the
       # chrome_extensions_interactive_uitests target for more.
       deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
+
+      if (include_js_tests) {
+        sources += [
+          "../browser/ui/webui/extensions/extension_settings_browsertest.cc",
+          "../browser/ui/webui/extensions/extension_settings_browsertest.h",
+        ]
+      }
     }
 
     if (!enable_native_notifications) {
