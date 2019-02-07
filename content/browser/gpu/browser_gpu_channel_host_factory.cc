@@ -129,7 +129,8 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
 void BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout() {
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
-  factory->RestartTimeout();
+  if (factory)
+    factory->RestartTimeout();
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
