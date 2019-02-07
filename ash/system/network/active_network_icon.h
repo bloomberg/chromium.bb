@@ -26,24 +26,47 @@ class ImageSkia;
 namespace ash {
 
 // Tracks changes to the active networks and provides an interface to
-// network_icon for the default network. NOTE: This class is tested in
-// network_icon_unittest.cc.
+// network_icon for the default network. This class supports two interfaces:
+// * Single: A single icon is shown to represent the active network state.
+// * Dual: One or two icons are shown to represent the active network state:
+// ** Primary: The state of the primary active network. If Cellular, a
+//    a technology badge is used to represent the network.
+// ** Cellular (enabled devices only): The state of the Cellular connection if
+//    available regardless of whether it is the active network.
+// NOTE : GetSingleDefaultImage and GetDefaultLabel are tested in
+// network_icon_unittest.cc. TODO(stevenjb): Test other public methods.
 class ASH_EXPORT ActiveNetworkIcon
     : public chromeos::NetworkStateHandlerObserver {
  public:
   ActiveNetworkIcon();
   ~ActiveNetworkIcon() override;
 
-  // Returns the default image and sets |animating| if provided.
-  gfx::ImageSkia GetDefaultImage(network_icon::IconType icon_type,
-                                 bool* animating);
-
-  // Returns the label for the default image.
+  // Returns the label for the primary active network..
   base::string16 GetDefaultLabel(network_icon::IconType icon_type);
 
+  // Single image mode. Returns a network icon (which may be empty) and sets
+  // |animating| if provided.
+  gfx::ImageSkia GetSingleImage(network_icon::IconType icon_type,
+                                bool* animating);
+
+  // Dual image mode. Returns the primary icon (which may be empty) and sets
+  // |animating| if provided.
+  gfx::ImageSkia GetDualImagePrimary(network_icon::IconType icon_type,
+                                     bool* animating);
+
+  // Dual image mode. Returns the Cellular icon (which may be empty) and sets
+  // |animating| if provided.
+  gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
+                                      bool* animating);
+
  private:
-  // Returns the default image and sets |animating| if provided when there is
-  // no default network.
+  gfx::ImageSkia GetDefaultImageImpl(
+      const chromeos::NetworkState* default_network,
+      network_icon::IconType icon_type,
+      bool* animating);
+
+  // Called when there is no default network., Provides an empty or disabled
+  // wifi icon and sets |animating| if provided to false.
   gfx::ImageSkia GetDefaultImageForNoNetwork(network_icon::IconType icon_type,
                                              bool* animating);
 
@@ -57,6 +80,8 @@ class ASH_EXPORT ActiveNetworkIcon
 
   chromeos::NetworkStateHandler* network_state_handler_ = nullptr;
   const chromeos::NetworkState* default_network_ = nullptr;
+  const chromeos::NetworkState* active_non_cellular_ = nullptr;
+  const chromeos::NetworkState* active_cellular_ = nullptr;
   const chromeos::NetworkState* active_vpn_ = nullptr;
   int cellular_uninitialized_msg_ = 0;
 
