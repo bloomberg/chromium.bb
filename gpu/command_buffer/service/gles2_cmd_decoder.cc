@@ -10399,11 +10399,11 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
           if (!texture_ref) {
             LOCAL_RENDER_WARNING(
                 std::string("there is no texture bound to the unit ") +
-                base::UintToString(texture_unit_index));
+                base::NumberToString(texture_unit_index));
           } else {
             LOCAL_RENDER_WARNING(
                 std::string("texture bound to texture unit ") +
-                base::UintToString(texture_unit_index) +
+                base::NumberToString(texture_unit_index) +
                 " is not renderable. It maybe non-power-of-2 and have"
                 " incompatible texture filtering.");
           }
@@ -10413,7 +10413,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
           LOCAL_SET_GL_ERROR(
               GL_INVALID_OPERATION, function_name,
               (std::string("Texture bound to texture unit ") +
-               base::UintToString(texture_unit_index) +
+               base::NumberToString(texture_unit_index) +
                " with internal format " +
                GLES2Util::GetStringEnum(
                    texture_ref->texture()->GetInternalFormatOfBaseLevel()) +

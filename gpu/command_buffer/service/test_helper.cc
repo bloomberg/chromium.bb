@@ -919,7 +919,7 @@ void TestHelper::SetupProgramSuccessExpectations(
         }
         for (GLsizei jj = 1; jj < info.size; ++jj) {
           std::string element_name(std::string(base_name) + "[" +
-                                   base::IntToString(jj) + "]");
+                                   base::NumberToString(jj) + "]");
           EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(element_name)))
               .WillOnce(Return(info.real_location + jj * 2))
               .RetiresOnSaturation();
