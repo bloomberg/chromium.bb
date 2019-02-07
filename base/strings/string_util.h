@@ -234,28 +234,29 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
 #if defined(WCHAR_T_IS_UTF16)
 // Utility functions to access the underlying string buffer as a wide char
 // pointer.
-inline wchar_t* wdata(char16* str) {
+inline wchar_t* as_writable_wcstr(char16* str) {
   return bit_cast<wchar_t*>(str);
 }
 
-inline wchar_t* wdata(string16& str) {
+inline wchar_t* as_writable_wcstr(string16& str) {
   return bit_cast<wchar_t*>(data(str));
 }
 
-inline const wchar_t* wdata(StringPiece16 str) {
+inline const wchar_t* as_wcstr(StringPiece16 str) {
   return bit_cast<const wchar_t*>(str.data());
 }
 
-// In case wchar_t is UTF-16 StringPiece16 and WStringPiece can be effieciently
-// converted into each other.
-// Note: These functions will only become useful once base::char16 is char16_t
-// on all platforms: https://crbug.com/911896
-inline StringPiece16 CastToStringPiece16(WStringPiece wide) {
-  return StringPiece16(bit_cast<const char16*>(wide.data()), wide.size());
+// Utility functions to access the underlying string buffer as a char16 pointer.
+inline char16* as_writable_u16cstr(wchar_t* str) {
+  return bit_cast<char16*>(str);
 }
 
-inline WStringPiece CastToWStringPiece(StringPiece16 utf16) {
-  return WStringPiece(wdata(utf16), utf16.size());
+inline char16* as_writable_u16cstr(std::wstring& str) {
+  return bit_cast<char16*>(data(str));
+}
+
+inline const char16* as_u16cstr(WStringPiece str) {
+  return bit_cast<const char16*>(str.data());
 }
 #endif  // defined(WCHAR_T_IS_UTF16)
 

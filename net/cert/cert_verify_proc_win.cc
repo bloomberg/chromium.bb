@@ -1113,7 +1113,7 @@ int CertVerifyProcWin::VerifyInternal(
   // routine that has better support for RFC 6125 name matching.
   extra_policy_para.fdwChecks =
       0x00001000;  // SECURITY_FLAG_IGNORE_CERT_CN_INVALID
-  extra_policy_para.pwszServerName = base::wdata(hostname16);
+  extra_policy_para.pwszServerName = base::as_writable_wcstr(hostname16);
 
   CERT_CHAIN_POLICY_PARA policy_para;
   memset(&policy_para, 0, sizeof(policy_para));

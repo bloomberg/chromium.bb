@@ -35,7 +35,7 @@ void DumbBstrTests() {
 }
 
 void GiveMeABstr(BSTR* ret) {
-  *ret = SysAllocString(wdata(kTestString1));
+  *ret = SysAllocString(as_wcstr(kTestString1));
 }
 
 void BasicBstrTests() {
@@ -47,10 +47,10 @@ void BasicBstrTests() {
   b1.Swap(b2);
   EXPECT_EQ(test1_len, b2.Length());
   EXPECT_EQ(0u, b1.Length());
-  EXPECT_STREQ(b2, wdata(kTestString1));
+  EXPECT_STREQ(b2, as_wcstr(kTestString1));
   BSTR tmp = b2.Release();
   EXPECT_TRUE(tmp != NULL);
-  EXPECT_STREQ(tmp, wdata(kTestString1));
+  EXPECT_STREQ(tmp, as_wcstr(kTestString1));
   EXPECT_TRUE(b2 == NULL);
   SysFreeString(tmp);
 
@@ -60,7 +60,7 @@ void BasicBstrTests() {
   EXPECT_TRUE(b2.AllocateBytes(100) != NULL);
   EXPECT_EQ(100u, b2.ByteLength());
   EXPECT_EQ(100 / sizeof(kTestString1[0]), b2.Length());
-  lstrcpy(static_cast<BSTR>(b2), wdata(kTestString1));
+  lstrcpy(static_cast<BSTR>(b2), as_wcstr(kTestString1));
   EXPECT_EQ(test1_len, static_cast<size_t>(lstrlen(b2)));
   EXPECT_EQ(100 / sizeof(kTestString1[0]), b2.Length());
   b2.SetByteLen(lstrlen(b2) * sizeof(kTestString2[0]));

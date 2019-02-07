@@ -44,7 +44,7 @@ bool FileEnumerator::FileInfo::IsDirectory() const {
 }
 
 FilePath FileEnumerator::FileInfo::GetName() const {
-  return FilePath(CastToStringPiece16(find_data_.cFileName));
+  return FilePath(as_u16cstr(find_data_.cFileName));
 }
 
 int64_t FileEnumerator::FileInfo::GetSize() const {
@@ -56,8 +56,8 @@ int64_t FileEnumerator::FileInfo::GetSize() const {
   return static_cast<int64_t>(size.QuadPart);
 }
 
-base::Time FileEnumerator::FileInfo::GetLastModifiedTime() const {
-  return base::Time::FromFileTime(find_data_.ftLastWriteTime);
+Time FileEnumerator::FileInfo::GetLastModifiedTime() const {
+  return Time::FromFileTime(find_data_.ftLastWriteTime);
 }
 
 // FileEnumerator --------------------------------------------------------------
@@ -123,7 +123,7 @@ FilePath FileEnumerator::Next() {
       // Start a new find operation.
       const FilePath src =
           BuildSearchFilter(folder_search_policy_, root_path_, pattern_);
-      find_handle_ = FindFirstFileEx(base::wdata(src.value()),
+      find_handle_ = FindFirstFileEx(as_wcstr(src.value()),
                                      FindExInfoBasic,  // Omit short name.
                                      &find_data_, FindExSearchNameMatch,
                                      nullptr, FIND_FIRST_EX_LARGE_FETCH);
@@ -153,7 +153,7 @@ FilePath FileEnumerator::Next() {
       continue;
     }
 
-    const FilePath filename(CastToStringPiece16(find_data_.cFileName));
+    const FilePath filename(as_u16cstr(find_data_.cFileName));
     if (ShouldSkip(filename))
       continue;
 
@@ -167,7 +167,7 @@ FilePath FileEnumerator::Next() {
       // add it to pending_paths_ so we scan it after we finish scanning this
       // directory. However, don't do recursion through reparse points or we
       // may end up with an infinite cycle.
-      DWORD attributes = GetFileAttributes(base::wdata(abs_path.value()));
+      DWORD attributes = GetFileAttributes(as_wcstr(abs_path.value()));
       if (!(attributes & FILE_ATTRIBUTE_REPARSE_POINT))
         pending_paths_.push(abs_path);
     }
@@ -187,8 +187,7 @@ bool FileEnumerator::IsPatternMatched(const FilePath& src) const {
     case FolderSearchPolicy::ALL:
       // ALL policy enumerates all files, we need to check pattern match
       // manually.
-      return PathMatchSpec(base::wdata(src.value()), base::wdata(pattern_)) ==
-             TRUE;
+      return PathMatchSpec(as_wcstr(src.value()), as_wcstr(pattern_)) == TRUE;
   }
   NOTREACHED();
   return false;

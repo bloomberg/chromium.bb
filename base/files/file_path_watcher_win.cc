@@ -203,7 +203,7 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
                                            HANDLE* handle) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   *handle = FindFirstChangeNotification(
-      base::wdata(dir.value()), recursive,
+      as_wcstr(dir.value()), recursive,
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE |
           FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_DIR_NAME |
           FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SECURITY);

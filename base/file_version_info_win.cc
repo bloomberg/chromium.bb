@@ -80,7 +80,7 @@ FileVersionInfoWin::CreateFileVersionInfoWin(const FilePath& file_path) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   DWORD dummy;
-  const wchar_t* path = base::wdata(file_path.value());
+  const wchar_t* path = base::as_wcstr(file_path.value());
   const DWORD length = ::GetFileVersionInfoSize(path, &dummy);
   if (length == 0)
     return nullptr;
@@ -187,7 +187,7 @@ bool FileVersionInfoWin::GetValue(const base::char16* name,
     WORD code_page = lang_codepage[i++];
     _snwprintf_s(sub_block, MAX_PATH, MAX_PATH,
                  L"\\StringFileInfo\\%04x%04x\\%ls", language, code_page,
-                 base::wdata(name));
+                 base::as_wcstr(name));
     LPVOID value = NULL;
     uint32_t size;
     BOOL r = ::VerQueryValue(data_, sub_block, &value, &size);

@@ -31,8 +31,8 @@ bool SimpleCacheDeleteFile(const base::FilePath& path) {
       path.DirName().AppendASCII(base::StringPrintf("todelete_%016" PRIx64,
                                                     base::RandUint64()));
 
-  bool rename_succeeded =
-      !!MoveFile(base::wdata(path.value()), base::wdata(rename_target.value()));
+  bool rename_succeeded = !!MoveFile(base::as_wcstr(path.value()),
+                                     base::as_wcstr(rename_target.value()));
   if (rename_succeeded)
     return DeleteCacheFile(rename_target);
 

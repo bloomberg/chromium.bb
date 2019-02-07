@@ -200,7 +200,7 @@ uint64_t TickCount() {
 
 void DeleteFilePath(const PathString& log_name) {
 #if defined(OS_WIN)
-  DeleteFile(base::wdata(log_name));
+  DeleteFile(base::as_wcstr(log_name));
 #elif defined(OS_NACL)
   // Do nothing; unlink() isn't supported on NaCl.
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -214,7 +214,7 @@ PathString GetDefaultLogFile() {
 #if defined(OS_WIN)
   // On Windows we use the same path as the exe.
   base::char16 module_name[MAX_PATH];
-  GetModuleFileName(nullptr, base::wdata(module_name), MAX_PATH);
+  GetModuleFileName(nullptr, base::as_writable_wcstr(module_name), MAX_PATH);
 
   PathString log_name = module_name;
   PathString::size_type last_backslash = log_name.rfind('\\', log_name.size());
@@ -319,7 +319,7 @@ bool InitializeLogFileHandle() {
     // appended to across accesses from multiple threads.
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364399(v=vs.85).aspx
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx
-    g_log_file = CreateFile(base::wdata(*g_log_file_name), FILE_APPEND_DATA,
+    g_log_file = CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
@@ -332,7 +332,7 @@ bool InitializeLogFileHandle() {
       base::char16 system_buffer[MAX_PATH];
       system_buffer[0] = 0;
       DWORD len = ::GetCurrentDirectory(base::size(system_buffer),
-                                        base::wdata(system_buffer));
+                                        base::as_writable_wcstr(system_buffer));
       if (len == 0 || len > base::size(system_buffer))
         return false;
 
@@ -342,9 +342,10 @@ bool InitializeLogFileHandle() {
         *g_log_file_name += STRING16_LITERAL("\\");
       *g_log_file_name += STRING16_LITERAL("debug.log");
 
-      g_log_file = CreateFile(base::wdata(*g_log_file_name), FILE_APPEND_DATA,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-                              OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+      g_log_file =
+          CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
+                     FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
+                     FILE_ATTRIBUTE_NORMAL, nullptr);
       if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
         g_log_file = nullptr;
         return false;

@@ -307,11 +307,11 @@ std::wstring UTF8ToWide(StringPiece utf8) {
 // Easy case since we can use the "utf" versions we already wrote above.
 
 bool WideToUTF8(const wchar_t* src, size_t src_len, std::string* output) {
-  return UTF16ToUTF8(bit_cast<const char16*>(src), src_len, output);
+  return UTF16ToUTF8(as_u16cstr(src), src_len, output);
 }
 
 std::string WideToUTF8(WStringPiece wide) {
-  return UTF16ToUTF8(CastToStringPiece16(wide));
+  return UTF16ToUTF8(StringPiece16(as_u16cstr(wide), wide.size()));
 }
 
 #elif defined(WCHAR_T_IS_UTF32)

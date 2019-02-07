@@ -66,8 +66,8 @@ BASE_EXPORT void InitializeWindowClass(const char16* class_name,
   class_out->hIcon = large_icon;
   class_out->hCursor = cursor;
   class_out->hbrBackground = background;
-  class_out->lpszMenuName = wdata(menu_name);
-  class_out->lpszClassName = wdata(class_name);
+  class_out->lpszMenuName = as_wcstr(menu_name);
+  class_out->lpszClassName = as_wcstr(class_name);
   class_out->hIconSm = small_icon;
 
   // Check if |window_proc| is valid.

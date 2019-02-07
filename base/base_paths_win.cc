@@ -28,7 +28,7 @@ bool PathProviderWin(int key, FilePath* result) {
   // handling it.
   char16 system_buffer[MAX_PATH];
   system_buffer[0] = 0;
-  wchar_t* wsystem_buffer = wdata(system_buffer);
+  wchar_t* wsystem_buffer = as_writable_wcstr(system_buffer);
 
   FilePath cur;
   switch (key) {
@@ -144,7 +144,7 @@ bool PathProviderWin(int key, FilePath* result) {
                                       &path_buf)))
         return false;
 
-      cur = FilePath(CastToStringPiece16(path_buf.get()));
+      cur = FilePath(as_u16cstr(path_buf.get()));
       break;
     }
     case base::DIR_USER_DESKTOP:

@@ -56,13 +56,13 @@ int AcquireExplicitCredentials(SSPILibrary* library,
   SEC_WINNT_AUTH_IDENTITY identity;
   identity.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
   identity.User = reinterpret_cast<unsigned short*>(
-      const_cast<wchar_t*>(base::wdata(user)));
+      const_cast<wchar_t*>(base::as_wcstr(user)));
   identity.UserLength = user.size();
   identity.Domain = reinterpret_cast<unsigned short*>(
-      const_cast<wchar_t*>(base::wdata(domain)));
+      const_cast<wchar_t*>(base::as_wcstr(domain)));
   identity.DomainLength = domain.size();
   identity.Password = reinterpret_cast<unsigned short*>(
-      const_cast<wchar_t*>(base::wdata(password)));
+      const_cast<wchar_t*>(base::as_wcstr(password)));
   identity.PasswordLength = password.size();
 
   TimeStamp expiry;
@@ -422,18 +422,18 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
   DWORD context_attribute;
   base::string16 spn16 = base::ASCIIToUTF16(spn);
   SECURITY_STATUS status = library_->InitializeSecurityContext(
-      &cred_,                // phCredential
-      ctxt_ptr,              // phContext
-      base::wdata(spn16),    // pszTargetName
-      context_flags,         // fContextReq
-      0,                     // Reserved1 (must be 0)
-      SECURITY_NATIVE_DREP,  // TargetDataRep
-      in_buffer_desc_ptr,    // pInput
-      0,                     // Reserved2 (must be 0)
-      &ctxt_,                // phNewContext
-      &out_buffer_desc,      // pOutput
-      &context_attribute,    // pfContextAttr
-      nullptr);              // ptsExpiry
+      &cred_,                          // phCredential
+      ctxt_ptr,                        // phContext
+      base::as_writable_wcstr(spn16),  // pszTargetName
+      context_flags,                   // fContextReq
+      0,                               // Reserved1 (must be 0)
+      SECURITY_NATIVE_DREP,            // TargetDataRep
+      in_buffer_desc_ptr,              // pInput
+      0,                               // Reserved2 (must be 0)
+      &ctxt_,                          // phNewContext
+      &out_buffer_desc,                // pOutput
+      &context_attribute,              // pfContextAttr
+      nullptr);                        // ptsExpiry
   int rv = MapInitializeSecurityContextStatusToError(status);
   if (rv != OK) {
     ResetSecurityContext();

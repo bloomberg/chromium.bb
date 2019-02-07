@@ -85,14 +85,15 @@ PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
   ATOM clazz = RegisterClassEx(&window_class);
   DCHECK(clazz);
 
-  message_hwnd_ = CreateWindowEx(WS_EX_NOACTIVATE, wdata(kWindowClassName),
-      NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, instance_, NULL);
+  message_hwnd_ =
+      CreateWindowEx(WS_EX_NOACTIVATE, as_wcstr(kWindowClassName), NULL,
+                     WS_POPUP, 0, 0, 0, 0, NULL, NULL, instance_, NULL);
 }
 
 PowerMonitorDeviceSource::PowerMessageWindow::~PowerMessageWindow() {
   if (message_hwnd_) {
     DestroyWindow(message_hwnd_);
-    UnregisterClass(wdata(kWindowClassName), instance_);
+    UnregisterClass(as_wcstr(kWindowClassName), instance_);
   }
 }
 

@@ -54,8 +54,8 @@ void GetDebugInfoForModule(HMODULE module_handle,
 
   const int kGUIDSize = 39;
   string16 buffer;
-  int result =
-      ::StringFromGUID2(guid, wdata(WriteInto(&buffer, kGUIDSize)), kGUIDSize);
+  int result = ::StringFromGUID2(
+      guid, as_writable_wcstr(WriteInto(&buffer, kGUIDSize)), kGUIDSize);
   if (result != kGUIDSize)
     return;
   RemoveChars(buffer, STRING16_LITERAL("{}-"), &buffer);
