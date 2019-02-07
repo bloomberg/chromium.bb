@@ -43,6 +43,7 @@ class HTMLSummaryElement final : public HTMLElement {
   void DefaultEventHandler(Event&) override;
   bool HasActivationBehavior() const override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  void WillRecalcStyle(const StyleRecalcChange) override;
   HTMLDetailsElement* DetailsElement() const;
 
   bool SupportsFocus() const override;

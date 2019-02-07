@@ -482,6 +482,11 @@ class CORE_EXPORT Node : public EventTarget {
 
   void MarkAncestorsWithChildNeedsReattachLayoutTree();
 
+  // Mark node for forced layout tree re-attach during next lifecycle update.
+  // This is to trigger layout tree re-attachment when we cannot detect that we
+  // need to re-attach based on the computed style changes. This can happen when
+  // re-slotting shadow host children, for instance.
+  void SetForceReattachLayoutTree();
   bool GetForceReattachLayoutTree() const {
     return GetFlag(kForceReattachLayoutTree);
   }
@@ -684,6 +689,10 @@ class CORE_EXPORT Node : public EventTarget {
     ReattachLayoutTree(context);
   }
   void ReattachLayoutTree(AttachContext&);
+
+  // TODO(futhark): Get rid of this method by replacing it with
+  // SetForceReattachLayoutTree + SetNeedsStyleRecalc, or DetachLayoutTree as
+  // appropriate.
   void LazyReattachIfAttached();
 
   // ---------------------------------------------------------------------------
@@ -853,6 +862,13 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void CheckSlotChangeBeforeRemoved() {
     CheckSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+  }
+
+  void FlatTreeParentChanged();
+  void RemovedFromFlatTree() {
+    // This node was previously part of the flat tree, but due to slot re-
+    // assignment it no longer is. We need to detach the layout tree.
+    DetachLayoutTree();
   }
 
   void SetHasDuplicateAttributes() { SetFlag(kHasDuplicateAttributes); }
