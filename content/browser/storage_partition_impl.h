@@ -21,6 +21,7 @@
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/idle/idle_manager.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -151,6 +152,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   BlobRegistryWrapper* GetBlobRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
+  DevToolsBackgroundServicesContext* GetDevToolsBackgroundServicesContext();
 
   // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
@@ -338,6 +340,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
+  scoped_refptr<DevToolsBackgroundServicesContext>
+      devtools_background_services_context_;
 
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during
