@@ -1140,10 +1140,10 @@ Element* EnclosingElementWithTag(const Position& p,
     return nullptr;
 
   ContainerNode* root = HighestEditableRoot(p);
-  Element* ancestor = p.AnchorNode()->IsElementNode()
-                          ? ToElement(p.AnchorNode())
-                          : p.AnchorNode()->parentElement();
-  for (; ancestor; ancestor = ancestor->parentElement()) {
+  for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*p.AnchorNode())) {
+    if (!runner.IsElementNode())
+      continue;
+    Element* ancestor = ToElement(&runner);
     if (root && !HasEditableStyle(*ancestor))
       continue;
     if (ancestor->HasTagName(tag_name))
