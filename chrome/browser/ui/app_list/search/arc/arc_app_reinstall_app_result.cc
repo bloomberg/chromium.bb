@@ -25,16 +25,14 @@ constexpr float kAppReinstallRelevance = 0.7;
 
 ArcAppReinstallAppResult::ArcAppReinstallAppResult(
     const arc::mojom::AppReinstallCandidatePtr& mojom_data,
-    const gfx::ImageSkia& skia_icon,
-    bool is_recommendation) {
+
+    const gfx::ImageSkia& skia_icon) {
   ash::mojom::SearchResultMetadataPtr metadata = {base::in_place};
   set_id(kPlayStoreAppUrlPrefix + mojom_data->package_name);
-  SetResultType(ash::SearchResultType::kPlayStoreApp);
+  SetResultType(ash::SearchResultType::kPlayStoreReinstallApp);
   SetTitle(base::UTF8ToUTF16(mojom_data->title));
   SetDetails(base::UTF8ToUTF16(metadata->id));
-  SetDisplayType(is_recommendation
-                     ? ash::SearchResultDisplayType::kRecommendation
-                     : ash::SearchResultDisplayType::kTile);
+  SetDisplayType(ash::SearchResultDisplayType::kRecommendation);
   set_relevance(kAppReinstallRelevance);
 
   SetIcon(skia_icon);

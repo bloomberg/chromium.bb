@@ -47,6 +47,7 @@ enum class SearchResultType {
   kOmnibox,         // Results from Omnibox.
   kLauncher,        // Results from launcher search (currently only from Files).
   kAnswerCard,      // WebContents based answer card.
+  kPlayStoreReinstallApp,  // Reinstall recommendations from PlayStore.
   // Add new values here.
 };
 

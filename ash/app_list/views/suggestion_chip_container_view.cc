@@ -13,6 +13,8 @@
 #include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
@@ -61,10 +63,14 @@ int SuggestionChipContainerView::DoUpdate() {
   if (IgnoreUpdateAndLayout())
     return num_results();
 
+  auto exclude_reinstall_filter = [](const SearchResult& r) -> bool {
+    return r.display_type() == ash::SearchResultDisplayType::kRecommendation &&
+           r.result_type() != ash::SearchResultType::kPlayStoreReinstallApp;
+  };
   std::vector<SearchResult*> display_results =
-      SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kRecommendation,
-          /*excludes=*/{}, AppListConfig::instance().num_start_page_tiles());
+      SearchModel::FilterSearchResultsByFunction(
+          results(), base::BindRepeating(exclude_reinstall_filter),
+          AppListConfig::instance().num_start_page_tiles());
 
   // Update search results here, but wait until layout to add them as child
   // views when we know this view's bounds.

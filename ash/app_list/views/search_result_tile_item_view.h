@@ -115,6 +115,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
   const bool is_play_store_app_search_enabled_;
+  const bool is_app_reinstall_recommendation_enabled_;
   const bool show_in_apps_page_;  // True if shown in app list's apps page.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
