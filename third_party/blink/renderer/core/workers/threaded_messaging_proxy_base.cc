@@ -146,8 +146,12 @@ void ThreadedMessagingProxyBase::TerminateGlobalScope() {
 
   terminate_sync_load_event_.Signal();
 
-  if (!worker_thread_)
+  if (!worker_thread_) {
+    // Worker has been terminated before any backing thread was attached to the
+    // messaging proxy.
+    keep_alive_.Clear();
     return;
+  }
   worker_thread_->Terminate();
   DevToolsAgent::WorkerThreadTerminated(execution_context_.Get(),
                                         worker_thread_.get());
