@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
+import org.chromium.chrome.test.omaha.MockRequestGenerator.SignedInStatus;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -87,8 +88,8 @@ public class OmahaBaseTest {
 
         @Override
         protected RequestGenerator createRequestGenerator(Context context) {
-            mMockGenerator = new MockRequestGenerator(
-                    context, mIsOnTablet ? DeviceType.TABLET : DeviceType.HANDSET);
+            mMockGenerator = new MockRequestGenerator(context,
+                    mIsOnTablet ? DeviceType.TABLET : DeviceType.HANDSET, SignedInStatus.FALSE);
             return mMockGenerator;
         }
 
