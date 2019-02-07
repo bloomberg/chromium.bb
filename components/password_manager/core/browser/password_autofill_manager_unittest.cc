@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -133,13 +134,11 @@ std::vector<base::string16> GetSuggestionList(
   return credentials;
 }
 
-std::vector<base::string16> GetIconsList(std::vector<std::string> icons) {
-  std::vector<base::string16> ret(icons.size());
-  std::transform(icons.begin(), icons.end(), ret.begin(), &base::ASCIIToUTF16);
+std::vector<std::string> GetIconsList(std::vector<std::string> icons) {
   // On older Android versions the item "Manage passwords" is absent.
   if (!IsPreLollipopAndroid())
-    ret.push_back(base::string16());
-  return ret;
+    icons.push_back(std::string());
+  return icons;
 }
 
 }  // namespace

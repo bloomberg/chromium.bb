@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_SUGGESTION_TEST_HELPERS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_SUGGESTION_TEST_HELPERS_H_
 
+#include <string>
+
 #include "components/autofill/core/browser/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,8 +87,8 @@ template <class EltsAreMatcher>
 inline testing::Matcher<const std::vector<Suggestion>&>
 SuggestionVectorIconsAre(const EltsAreMatcher& elts_are_matcher) {
   return testing::MakeMatcher(
-      new SuggestionVectorMembersAreMatcher<base::string16>(elts_are_matcher,
-                                                            &Suggestion::icon));
+      new SuggestionVectorMembersAreMatcher<std::string>(elts_are_matcher,
+                                                         &Suggestion::icon));
 }
 
 }  // namespace autofill

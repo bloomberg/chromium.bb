@@ -538,7 +538,7 @@ autofillManagerFromWebState:(web::WebState*)webState
     FormSuggestion* suggestion = [FormSuggestion
         suggestionWithValue:value
          displayDescription:displayDescription
-                       icon:base::SysUTF16ToNSString(popup_suggestion.icon)
+                       icon:base::SysUTF8ToNSString(popup_suggestion.icon)
                  identifier:popup_suggestion.frontend_id];
 
     // Put "clear form" entry at the front of the suggestions. If
