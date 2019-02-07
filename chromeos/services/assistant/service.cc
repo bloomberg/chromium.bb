@@ -24,6 +24,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -56,7 +57,8 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 
 Service::Service(service_manager::mojom::ServiceRequest request,
                  network::NetworkConnectionTracker* network_connection_tracker,
-                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+                 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                     url_loader_factory_info)
     : service_binding_(this, std::move(request)),
       platform_binding_(this),
       session_observer_binding_(this),
@@ -64,7 +66,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       power_manager_observer_(this),
       network_connection_tracker_(network_connection_tracker),
-      io_task_runner_(std::move(io_task_runner)),
+      url_loader_factory_info_(std::move(url_loader_factory_info)),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));
@@ -296,9 +298,12 @@ void Service::CreateAssistantManagerService() {
   device::mojom::BatteryMonitorPtr battery_monitor;
   service_binding_.GetConnector()->BindInterface(
       device::mojom::kServiceName, mojo::MakeRequest(&battery_monitor));
+
+  // |assistant_manager_service_| is only created once.
+  DCHECK(url_loader_factory_info_);
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
       service_binding_.GetConnector(), std::move(battery_monitor), this,
-      network_connection_tracker_);
+      network_connection_tracker_, std::move(url_loader_factory_info_));
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();

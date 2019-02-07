@@ -34,6 +34,10 @@ class AssistantManager;
 class AssistantManagerInternal;
 }  // namespace assistant_client
 
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
+
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
@@ -85,7 +89,9 @@ class AssistantManagerServiceImpl
       service_manager::Connector* connector,
       device::mojom::BatteryMonitorPtr battery_monitor,
       Service* service,
-      network::NetworkConnectionTracker* network_connection_tracker);
+      network::NetworkConnectionTracker* network_connection_tracker,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info);
 
   ~AssistantManagerServiceImpl() override;
 

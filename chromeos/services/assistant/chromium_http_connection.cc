@@ -8,143 +8,84 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
-#include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "net/base/io_buffer.h"
+#include "base/task/post_task.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher_response_writer.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
-using net::URLFetcher;
-using net::URLRequestStatus;
-using HttpResponseHeaders = net::HttpResponseHeaders;
 using assistant_client::HttpConnection;
+using network::SharedURLLoaderFactory;
+using network::SharedURLLoaderFactoryInfo;
 
 namespace chromeos {
 namespace assistant {
 
 namespace {
 
-// Passes response data to ChromiumHttpConnection's Delegate as it's received
-// from URLFetcher. Only should be active if EnablePartialResults() has been
-// called.
-class URLFetcherPartialResponseWriter : public ::net::URLFetcherResponseWriter {
- public:
-  URLFetcherPartialResponseWriter(HttpConnection::Delegate* delegate,
-                                  const ::net::URLFetcher* fetcher)
-      : delegate_(delegate) {
-    DCHECK(delegate_);
-    DCHECK(fetcher);
-    // See comments in Initialize(). This class assumes URLFetcher is not setup
-    // to automatically retry on error (which is URLFetcher's default behavior).
-    DCHECK_EQ(fetcher->GetMaxRetriesOn5xx(), 0);
-  }
-
-  ~URLFetcherPartialResponseWriter() override = default;
-
-  // ::net::URLFetcherResponseWriter implementation:
-  int Initialize(::net::CompletionOnceCallback callback) override {
-    // The API states that "Calling this method again after a Initialize()
-    // success results in discarding already written data". Libassistant's
-    // HttpConnection API does not provide a way of doing this. However, this is
-    // not an issue because URLFetcher only calls Initialize() multiple times
-    // for:
-    // * Automatic retries of a 500 status.
-    // * Automatic retries when the network changes.
-    // Both of these automatic retries are explicitly disabled in
-    // ChromiumHttpConnection, so no action is required here. The DCHECK below
-    // should fail if this assumption is wrong.
-    DCHECK_EQ(total_bytes_written_, 0);
-    return ::net::OK;
-  }
-
-  int Write(::net::IOBuffer* buffer,
-            int num_bytes,
-            ::net::CompletionOnceCallback callback) override {
-    DCHECK(buffer);
-    VLOG(2) << "Notifying Delegate of partial response data";
-    std::string response(buffer->data(), num_bytes);
-    delegate_->OnPartialResponse(response);
-    total_bytes_written_ += num_bytes;
-    return num_bytes;
-  }
-
-  int Finish(int net_error, ::net::CompletionOnceCallback callback) override {
-    return ::net::OK;
-  }
-
- private:
-  // ChromiumHttpConnection owns URLFetcher, which owns
-  // URLFetcherPartialResponseWriter. Since HttpConnection::Delegate must
-  // outlive the top-level ChromiumHttpConnection, a raw pointer is safe here.
-  HttpConnection::Delegate* const delegate_;
-  int64_t total_bytes_written_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(URLFetcherPartialResponseWriter);
-};
+// Invalid/Unknown HTTP response code.
+constexpr int kResponseCodeInvalid = -1;
 
 }  // namespace
 
 ChromiumHttpConnectionFactory::ChromiumHttpConnectionFactory(
-    scoped_refptr<::net::URLRequestContextGetter> url_request_context_getter)
-    : url_request_context_getter_(url_request_context_getter) {}
+    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info)
+    : url_loader_factory_(
+          SharedURLLoaderFactory::Create(std::move(url_loader_factory_info))) {}
 
 ChromiumHttpConnectionFactory::~ChromiumHttpConnectionFactory() = default;
 
 HttpConnection* ChromiumHttpConnectionFactory::Create(
     HttpConnection::Delegate* delegate) {
-  return new ChromiumHttpConnection(url_request_context_getter_, delegate);
+  return new ChromiumHttpConnection(url_loader_factory_->Clone(), delegate);
 }
 
 ChromiumHttpConnection::ChromiumHttpConnection(
-    scoped_refptr<::net::URLRequestContextGetter> url_request_context_getter,
+    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
     Delegate* delegate)
-    : url_request_context_getter_(url_request_context_getter),
-      delegate_(delegate),
-      network_task_runner_(url_request_context_getter->GetNetworkTaskRunner()) {
-  DCHECK(url_request_context_getter_);
+    : delegate_(delegate),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+      url_loader_factory_info_(std::move(url_loader_factory_info)) {
   DCHECK(delegate_);
-  DCHECK(network_task_runner_);
+  DCHECK(url_loader_factory_info_);
 
   // Add a reference, so |this| cannot go away until Close() is called.
   AddRef();
 }
 
 ChromiumHttpConnection::~ChromiumHttpConnection() {
-  // The destructor may be called on non-network thread when the connection
+  // The destructor may be called on another sequence when the connection
   // is cancelled early, for example due to a reconfigure event.
-  DCHECK(state_ == State::DESTROYED);
+  DCHECK_EQ(state_, State::DESTROYED);
 }
 
 void ChromiumHttpConnection::SetRequest(const std::string& url, Method method) {
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChromiumHttpConnection::SetRequestOnThread, this,
-                            url, method));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ChromiumHttpConnection::SetRequestOnTaskRunner,
+                                this, url, method));
 }
 
-void ChromiumHttpConnection::SetRequestOnThread(const std::string& url,
-                                                Method method) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == State::NEW);
+void ChromiumHttpConnection::SetRequestOnTaskRunner(const std::string& url,
+                                                    Method method) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::NEW);
   url_ = GURL(url);
   method_ = method;
 }
 
 void ChromiumHttpConnection::AddHeader(const std::string& name,
                                        const std::string& value) {
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChromiumHttpConnection::AddHeaderOnThread, this,
-                            name, value));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ChromiumHttpConnection::AddHeaderOnTaskRunner,
+                                this, name, value));
 }
 
-void ChromiumHttpConnection::AddHeaderOnThread(const std::string& name,
-                                               const std::string& value) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == State::NEW);
+void ChromiumHttpConnection::AddHeaderOnTaskRunner(const std::string& name,
+                                                   const std::string& value) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::NEW);
   // From https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2:
   // "Multiple message-header fields with the same field-name MAY be present in
   // a message if and only if the entire field-value for that header field is
@@ -162,16 +103,17 @@ void ChromiumHttpConnection::AddHeaderOnThread(const std::string& name,
 
 void ChromiumHttpConnection::SetUploadContent(const std::string& content,
                                               const std::string& content_type) {
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChromiumHttpConnection::SetUploadContentOnThread,
-                            this, content, content_type));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::SetUploadContentOnTaskRunner,
+                     this, content, content_type));
 }
 
-void ChromiumHttpConnection::SetUploadContentOnThread(
+void ChromiumHttpConnection::SetUploadContentOnTaskRunner(
     const std::string& content,
     const std::string& content_type) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == State::NEW);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::NEW);
   upload_content_ = content;
   upload_content_type_ = content_type;
   chunked_upload_content_type_ = "";
@@ -179,16 +121,17 @@ void ChromiumHttpConnection::SetUploadContentOnThread(
 
 void ChromiumHttpConnection::SetChunkedUploadContentType(
     const std::string& content_type) {
-  network_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ChromiumHttpConnection::SetChunkedUploadContentTypeOnThread,
-                 this, content_type));
+      base::BindOnce(
+          &ChromiumHttpConnection::SetChunkedUploadContentTypeOnTaskRunner,
+          this, content_type));
 }
 
-void ChromiumHttpConnection::SetChunkedUploadContentTypeOnThread(
+void ChromiumHttpConnection::SetChunkedUploadContentTypeOnTaskRunner(
     const std::string& content_type) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == State::NEW);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::NEW);
   upload_content_ = "";
   upload_content_type_ = "";
   chunked_upload_content_type_ = content_type;
@@ -199,72 +142,81 @@ void ChromiumHttpConnection::EnableHeaderResponse() {
 }
 
 void ChromiumHttpConnection::EnablePartialResults() {
-  network_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ChromiumHttpConnection::EnablePartialResultsOnThread, this));
+      base::BindOnce(&ChromiumHttpConnection::EnablePartialResultsOnTaskRunner,
+                     this));
 }
 
-void ChromiumHttpConnection::EnablePartialResultsOnThread() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == State::NEW);
+void ChromiumHttpConnection::EnablePartialResultsOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::NEW);
   handle_partial_response_ = true;
 }
 
 void ChromiumHttpConnection::Start() {
   VLOG(2) << "Requested to start connection";
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChromiumHttpConnection::StartOnThread, this));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::StartOnTaskRunner, this));
 }
 
-void ChromiumHttpConnection::StartOnThread() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == State::NEW);
+void ChromiumHttpConnection::StartOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::NEW);
   state_ = State::STARTED;
 
   if (!url_.is_valid()) {
-    // Handle invalid URL to prevent URLFetcher crashes.
     state_ = State::COMPLETED;
     VLOG(2) << "Completing connection with invalid URL";
-    delegate_->OnNetworkError(-1, "Invalid GURL");
+    delegate_->OnNetworkError(kResponseCodeInvalid, "Invalid GURL");
     return;
   }
 
-  URLFetcher::RequestType request_type;
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+  resource_request->headers = headers_;
   switch (method_) {
     case Method::GET:
-      request_type = URLFetcher::RequestType::GET;
+      resource_request->method = "GET";
       break;
     case Method::POST:
-      request_type = URLFetcher::RequestType::POST;
+      resource_request->method = "POST";
       break;
     case Method::HEAD:
-      request_type = URLFetcher::RequestType::HEAD;
+      resource_request->method = "HEAD";
       break;
   }
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DO_NOT_SEND_COOKIES;
 
-  DCHECK(!url_fetcher_);
-  url_fetcher_ = URLFetcher::Create(url_, request_type, this);
-  url_fetcher_->SetLoadFlags(::net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                             ::net::LOAD_DO_NOT_SAVE_COOKIES |
-                             ::net::LOAD_DO_NOT_SEND_COOKIES);
-  url_fetcher_->SetExtraRequestHeaders(headers_.ToString());
-  url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(false);
+  const bool chunked_upload =
+      !chunked_upload_content_type_.empty() && method_ == Method::POST;
+  if (chunked_upload) {
+    // Attach a chunked upload body.
+    network::mojom::ChunkedDataPipeGetterPtr data_pipe;
+    binding_set_.AddBinding(this, mojo::MakeRequest(&data_pipe));
+    resource_request->request_body = new network::ResourceRequestBody();
+    resource_request->request_body->SetToChunkedDataPipe(std::move(data_pipe));
+  }
 
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 NO_TRAFFIC_ANNOTATION_YET);
+  url_loader_->SetRetryOptions(
+      /*max_retries=*/0, network::SimpleURLLoader::RETRY_NEVER);
+  if (!upload_content_type_.empty())
+    url_loader_->AttachStringForUpload(upload_content_, upload_content_type_);
+
+  auto factory =
+      SharedURLLoaderFactory::Create(std::move(url_loader_factory_info_));
   if (handle_partial_response_) {
-    url_fetcher_->SaveResponseWithWriter(
-        std::make_unique<URLFetcherPartialResponseWriter>(delegate_,
-                                                          url_fetcher_.get()));
+    url_loader_->DownloadAsStream(factory.get(), this);
+  } else {
+    url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        factory.get(),
+        base::BindOnce(&ChromiumHttpConnection::OnURLLoadComplete, this));
   }
-
-  if (!upload_content_type_.empty()) {
-    url_fetcher_->SetUploadData(upload_content_type_, upload_content_);
-  } else if (!chunked_upload_content_type_.empty() && method_ == Method::POST) {
-    url_fetcher_->SetChunkedUpload(chunked_upload_content_type_);
-  }
-
-  url_fetcher_->SetRequestContext(url_request_context_getter_.get());
-  url_fetcher_->Start();
 }
 
 void ChromiumHttpConnection::Pause() {
@@ -277,93 +229,191 @@ void ChromiumHttpConnection::Resume() {
 
 void ChromiumHttpConnection::Close() {
   VLOG(2) << "Requesting to close connection object";
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChromiumHttpConnection::CloseOnThread, this));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::CloseOnTaskRunner, this));
 }
 
-void ChromiumHttpConnection::CloseOnThread() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+void ChromiumHttpConnection::CloseOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (state_ == State::DESTROYED)
     return;
 
   VLOG(2) << "Closing connection object";
   state_ = State::DESTROYED;
-  url_fetcher_ = nullptr;
+  url_loader_.reset();
 
   delegate_->OnConnectionDestroyed();
 
   Release();
 }
 
-void ChromiumHttpConnection::UploadData(const std::string& data,
-                                        bool is_last_chunk) {
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChromiumHttpConnection::UploadDataOnThread, this,
-                            data, is_last_chunk));
+void ChromiumHttpConnection::GetSize(GetSizeCallback get_size_callback) {
+  if (has_last_chunk_)
+    std::move(get_size_callback).Run(net::OK, upload_body_size_);
+  else
+    get_size_callback_ = std::move(get_size_callback);
 }
 
-void ChromiumHttpConnection::UploadDataOnThread(const std::string& data,
-                                                bool is_last_chunk) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  if (state_ != State::STARTED)
-    return;
+void ChromiumHttpConnection::StartReading(
+    mojo::ScopedDataPipeProducerHandle pipe) {
+  // Delete any existing pipe, if any.
+  upload_pipe_watcher_.reset();
+  upload_pipe_ = std::move(pipe);
+  upload_pipe_watcher_ = std::make_unique<mojo::SimpleWatcher>(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
+  upload_pipe_watcher_->Watch(
+      upload_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      base::BindRepeating(&ChromiumHttpConnection::OnUploadPipeWriteable,
+                          base::Unretained(this)));
 
-  // URLFetcher does not expose async IO to know when to add more data
-  // to the buffer. The write callback is received by
-  // HttpStreamParser::DoSendBody() and DoSendBodyComplete(), but there
-  // appears to be no way to know that it has happened.
-  if (url_fetcher_)
-    url_fetcher_->AppendChunkToUpload(data, is_last_chunk);
+  // Will attempt to start sending the request body, if any data is available.
+  SendData();
 }
 
-void ChromiumHttpConnection::OnURLFetchComplete(const URLFetcher* source) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+void ChromiumHttpConnection::OnDataReceived(base::StringPiece string_piece,
+                                            base::OnceClosure resume) {
+  DCHECK(handle_partial_response_);
+  delegate_->OnPartialResponse(string_piece.as_string());
+  std::move(resume).Run();
+}
+
+void ChromiumHttpConnection::OnComplete(bool success) {
+  DCHECK(handle_partial_response_);
+
   if (state_ != State::STARTED)
     return;
 
   state_ = State::COMPLETED;
 
-  DCHECK(url_fetcher_.get() == source);
-  int response_code = source->GetResponseCode();
-  if (response_code != URLFetcher::RESPONSE_CODE_INVALID) {
-    std::string response;
-    if (!source->GetResponseAsString(&response)) {
-      DCHECK(handle_partial_response_) << "Partial responses are disabled. "
-                                          "URLFetcher should be writing "
-                                          "response data to string";
-    }
+  int response_code = kResponseCodeInvalid;
+  std::string raw_headers;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    raw_headers = url_loader_->ResponseInfo()->headers->raw_headers();
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  }
 
-    VLOG(2) << "ChromiumHttpConnection completed with response_code="
-            << response_code;
-    std::string response_headers;
-    HttpResponseHeaders* headers = source->GetResponseHeaders();
-    if (headers)
-      response_headers = headers->raw_headers();
-
-    delegate_->OnCompleteResponse(response_code, response_headers, response);
+  if (success) {
+    DCHECK_NE(response_code, kResponseCodeInvalid);
+    delegate_->OnCompleteResponse(response_code, raw_headers, "");
     return;
   }
 
-  std::string message;
-  int error = source->GetStatus().error();
-  switch (source->GetStatus().status()) {
-    case URLRequestStatus::IO_PENDING:
-      message = "IO Pending";
-      break;
-    case URLRequestStatus::CANCELED:
-      message = "Canceled";
-      break;
-    case URLRequestStatus::FAILED:
-      message = "Failed";
-      break;
-    default:
-      message = "Unexpected URLFetcher status";
-      break;
+  if (url_loader_->NetError() != net::OK) {
+    delegate_->OnNetworkError(kResponseCodeInvalid,
+                              net::ErrorToString(url_loader_->NetError()));
+    return;
   }
 
-  VLOG(2) << "ChromiumHttpConnection completed with network error=" << error
-          << ": " << message;
-  delegate_->OnNetworkError(error, message);
+  const std::string message = net::ErrorToString(url_loader_->NetError());
+  VLOG(2) << "ChromiumHttpConnection completed with network error="
+          << response_code << ": " << message;
+  delegate_->OnNetworkError(response_code, message);
+}
+
+void ChromiumHttpConnection::OnRetry(base::OnceClosure start_retry) {
+  DCHECK(handle_partial_response_);
+  // Retries are not enabled for these requests.
+  NOTREACHED();
+}
+
+// Attempts to send more of the upload body, if more data is available, and
+// |upload_pipe_| is valid.
+void ChromiumHttpConnection::SendData() {
+  if (!upload_pipe_.is_valid() || upload_body_.empty())
+    return;
+
+  uint32_t write_bytes = upload_body_.size();
+  MojoResult result = upload_pipe_->WriteData(upload_body_.data(), &write_bytes,
+                                              MOJO_WRITE_DATA_FLAG_NONE);
+
+  if (result == MOJO_RESULT_SHOULD_WAIT) {
+    // Wait for the pipe to have more capacity available.
+    upload_pipe_watcher_->ArmOrNotify();
+    return;
+  }
+
+  // Depend on |url_loader_| to notice the other pipes being closed on error.
+  if (result != MOJO_RESULT_OK)
+    return;
+
+  upload_body_.erase(0, write_bytes);
+
+  // If more data is available, arm the watcher again. Don't write again in a
+  // loop, even if WriteData would allow it, to avoid blocking the current
+  // thread.
+  if (!upload_body_.empty())
+    upload_pipe_watcher_->ArmOrNotify();
+}
+
+void ChromiumHttpConnection::OnUploadPipeWriteable(MojoResult unused) {
+  SendData();
+}
+
+void ChromiumHttpConnection::UploadData(const std::string& data,
+                                        bool is_last_chunk) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ChromiumHttpConnection::UploadDataOnTaskRunner,
+                                this, data, is_last_chunk));
+}
+
+void ChromiumHttpConnection::UploadDataOnTaskRunner(const std::string& data,
+                                                    bool is_last_chunk) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (state_ != State::STARTED)
+    return;
+
+  upload_body_ += data;
+
+  upload_body_size_ += data.size();
+  if (is_last_chunk) {
+    // Send size before the rest of the body. While it doesn't matter much, if
+    // the other side receives the size before the last chunk, which Mojo does
+    // not guarantee, some protocols can merge the data and the last chunk
+    // itself into a single frame.
+    has_last_chunk_ = is_last_chunk;
+    if (get_size_callback_)
+      std::move(get_size_callback_).Run(net::OK, upload_body_size_);
+  }
+
+  SendData();
+}
+
+void ChromiumHttpConnection::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
+  DCHECK(!handle_partial_response_);
+
+  if (state_ != State::STARTED)
+    return;
+
+  state_ = State::COMPLETED;
+
+  if (url_loader_->NetError() != net::OK) {
+    delegate_->OnNetworkError(kResponseCodeInvalid,
+                              net::ErrorToString(url_loader_->NetError()));
+    return;
+  }
+
+  int response_code = kResponseCodeInvalid;
+  std::string raw_headers;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    raw_headers = url_loader_->ResponseInfo()->headers->raw_headers();
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  }
+
+  if (response_code == kResponseCodeInvalid) {
+    std::string message = net::ErrorToString(url_loader_->NetError());
+
+    VLOG(2) << "ChromiumHttpConnection completed with network error="
+            << response_code << ": " << message;
+    delegate_->OnNetworkError(response_code, message);
+    return;
+  }
+
+  VLOG(2) << "ChromiumHttpConnection completed with response_code="
+          << response_code;
+
+  delegate_->OnCompleteResponse(response_code, raw_headers, *response_body);
 }
 
 }  // namespace assistant
