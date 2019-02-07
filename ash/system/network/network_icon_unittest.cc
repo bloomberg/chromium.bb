@@ -124,7 +124,7 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
                                       gfx::ImageSkia* image,
                                       base::string16* label,
                                       bool* animating) {
-    *image = active_network_icon_->GetDefaultImage(icon_type, animating);
+    *image = active_network_icon_->GetSingleImage(icon_type, animating);
     *label = active_network_icon_->GetDefaultLabel(icon_type);
   }
 
@@ -613,7 +613,7 @@ TEST_F(NetworkIconTest, DefaultImageWhileNonDefaultNetworkReconnecting) {
 
 // Tests that the default network image shows a cellular network icon if
 // cellular network is connected while wifi is connecting.
-TEST_F(NetworkIconTest, DefaultImageConnectingToWifiWileCellularConnected) {
+TEST_F(NetworkIconTest, DefaultImageConnectingToWifiWhileCellularConnected) {
   // Connect cellular network, and set the wifi as connecting.
   SetServiceProperty(wifi1_path(), shill::kSignalStrengthProperty,
                      base::Value(45));

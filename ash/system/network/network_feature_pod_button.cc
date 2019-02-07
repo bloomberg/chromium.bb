@@ -90,7 +90,7 @@ void NetworkFeaturePodButton::NetworkStateChanged(bool notify_a11y) {
 void NetworkFeaturePodButton::Update() {
   bool animating = false;
   gfx::ImageSkia image =
-      Shell::Get()->system_tray_model()->active_network_icon()->GetDefaultImage(
+      Shell::Get()->system_tray_model()->active_network_icon()->GetSingleImage(
           network_icon::ICON_TYPE_DEFAULT_VIEW, &animating);
   if (animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
