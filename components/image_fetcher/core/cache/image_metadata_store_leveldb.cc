@@ -23,6 +23,12 @@ namespace image_fetcher {
 
 namespace {
 
+leveldb::ReadOptions CreateReadOptions() {
+  leveldb::ReadOptions opts;
+  opts.fill_cache = false;
+  return opts;
+}
+
 int64_t ToDatabaseTime(base::Time time) {
   return time.since_origin().InMicroseconds();
 }
@@ -143,7 +149,8 @@ void ImageMetadataStoreLevelDB::UpdateImageMetadata(const std::string& key) {
   }
 
   database_->LoadEntriesWithFilter(
-      base::BindRepeating(&KeyMatcherFilter, key),
+      base::BindRepeating(&KeyMatcherFilter, key), CreateReadOptions(),
+      /* target_prefix */ "",
       base::BindOnce(&ImageMetadataStoreLevelDB::UpdateImageMetadataImpl,
                      weak_ptr_factory_.GetWeakPtr()));
 }
