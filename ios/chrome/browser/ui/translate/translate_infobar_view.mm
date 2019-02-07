@@ -87,8 +87,6 @@ const CGFloat kIconTrailingMargin = 12;
   if (!self.superview)
     return;
 
-  self.state = TranslateInfobarViewStateBeforeTranslate;
-
   [NamedGuide guideWithName:kTranslateInfobarOptionsGuide
                        view:self.optionsButton]
       .constrainedView = self.optionsButton;
@@ -138,26 +136,10 @@ const CGFloat kIconTrailingMargin = 12;
 
 - (void)setState:(TranslateInfobarViewState)state {
   _state = state;
-  switch (state) {
-    case TranslateInfobarViewStateBeforeTranslate:
-      self.languagesView.sourceLanguageTabState =
-          TranslateInfobarLanguageTabViewStateSelected;
-      self.languagesView.targetLanguageTabState =
-          TranslateInfobarLanguageTabViewStateDefault;
-      break;
-    case TranslateInfobarViewStateTranslating:
-      self.languagesView.sourceLanguageTabState =
-          TranslateInfobarLanguageTabViewStateDefault;
-      self.languagesView.targetLanguageTabState =
-          TranslateInfobarLanguageTabViewStateLoading;
-      break;
-    case TranslateInfobarViewStateAfterTranslate:
-      self.languagesView.sourceLanguageTabState =
-          TranslateInfobarLanguageTabViewStateDefault;
-      self.languagesView.targetLanguageTabState =
-          TranslateInfobarLanguageTabViewStateSelected;
-      break;
-  }
+  self.languagesView.sourceLanguageTabState =
+      [self sourceLanguageTabStateFromTranslateInfobarViewState:state];
+  self.languagesView.targetLanguageTabState =
+      [self targetLanguageTabStateFromTranslateInfobarViewState:state];
 }
 
 #pragma mark - Public
@@ -219,7 +201,11 @@ const CGFloat kIconTrailingMargin = 12;
   self.languagesView = languagesView;
   self.languagesView.translatesAutoresizingMaskIntoConstraints = NO;
   self.languagesView.sourceLanguage = self.sourceLanguage;
+  self.languagesView.sourceLanguageTabState =
+      [self sourceLanguageTabStateFromTranslateInfobarViewState:self.state];
   self.languagesView.targetLanguage = self.targetLanguage;
+  self.languagesView.targetLanguageTabState =
+      [self targetLanguageTabStateFromTranslateInfobarViewState:self.state];
   self.languagesView.delegate = self;
   [contentView addSubview:self.languagesView];
 
@@ -264,6 +250,34 @@ const CGFloat kIconTrailingMargin = 12;
   AddSameCenterYConstraint(contentView, self.iconView);
   AddSameCenterYConstraint(contentView, self.optionsButton);
   AddSameCenterYConstraint(contentView, self.dismissButton);
+}
+
+// Returns the source language tab view state for the given infobar view state.
+- (TranslateInfobarLanguageTabViewState)
+    sourceLanguageTabStateFromTranslateInfobarViewState:
+        (TranslateInfobarViewState)state {
+  switch (state) {
+    case TranslateInfobarViewStateBeforeTranslate:
+      return TranslateInfobarLanguageTabViewStateSelected;
+    case TranslateInfobarViewStateTranslating:
+      return TranslateInfobarLanguageTabViewStateDefault;
+    case TranslateInfobarViewStateAfterTranslate:
+      return TranslateInfobarLanguageTabViewStateDefault;
+  }
+}
+
+// Returns the target language tab view state for the given infobar view state.
+- (TranslateInfobarLanguageTabViewState)
+    targetLanguageTabStateFromTranslateInfobarViewState:
+        (TranslateInfobarViewState)state {
+  switch (state) {
+    case TranslateInfobarViewStateBeforeTranslate:
+      return TranslateInfobarLanguageTabViewStateDefault;
+    case TranslateInfobarViewStateTranslating:
+      return TranslateInfobarLanguageTabViewStateLoading;
+    case TranslateInfobarViewStateAfterTranslate:
+      return TranslateInfobarLanguageTabViewStateSelected;
+  }
 }
 
 - (ToolbarButton*)toolbarButtonWithImageNamed:(NSString*)name

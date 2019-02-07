@@ -111,6 +111,9 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
   infobarView.sourceLanguage = self.sourceLanguage;
   infobarView.targetLanguage = self.targetLanguage;
   infobarView.delegate = self;
+  infobarView.state =
+      [self translateInfobarViewStateForTranslateStep:self.infoBarDelegate
+                                                          ->translate_step()];
   _infobarView = infobarView;
   return infobarView;
 }
@@ -120,22 +123,10 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
-  switch (step) {
-    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
-      _infobarView.state = TranslateInfobarViewStateBeforeTranslate;
-      break;
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
-      _infobarView.state = TranslateInfobarViewStateTranslating;
-      break;
-    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
-      _infobarView.state = TranslateInfobarViewStateAfterTranslate;
-      break;
-    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
-      // Noop.
-      break;
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
-      _infobarView.state = TranslateInfobarViewStateBeforeTranslate;
-      [self.translateNotificationHandler showTranslateErrorNotification];
+  _infobarView.state = [self translateInfobarViewStateForTranslateStep:step];
+
+  if (step == translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR) {
+    [self.translateNotificationHandler showTranslateErrorNotification];
   }
 }
 
@@ -342,6 +333,23 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
 }
 
 #pragma mark - Private
+
+// Returns the infobar view state for the given translate::TranslateStep.
+- (TranslateInfobarViewState)translateInfobarViewStateForTranslateStep:
+    (translate::TranslateStep)step {
+  switch (step) {
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      return TranslateInfobarViewStateBeforeTranslate;
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
+      return TranslateInfobarViewStateTranslating;
+    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
+      return TranslateInfobarViewStateAfterTranslate;
+    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
+      NOTREACHED() << "Translate infobar should never be in this state.";
+      return TranslateInfobarViewStateBeforeTranslate;
+  }
+}
 
 - (void)showTranslateOptionSelector {
   [self.translateOptionSelectionHandler
