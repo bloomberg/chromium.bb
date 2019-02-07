@@ -645,9 +645,6 @@ class EmbeddedWorkerInstance::StartTask {
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(status_ == EmbeddedWorkerStatus::STOPPING ||
-         status_ == EmbeddedWorkerStatus::STOPPED)
-      << static_cast<int>(status_);
   devtools_proxy_.reset();
   if (registry_->GetWorker(embedded_worker_id_))
     registry_->RemoveWorker(process_id(), embedded_worker_id_);

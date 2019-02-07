@@ -688,21 +688,6 @@ TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
-  RunningStateListener listener;
-  version_->AddObserver(&listener);
-  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, listener.last_status);
-
-  // Destruct |version_| by releasing all references, including the provider
-  // host's.
-  helper_->context()->RemoveProviderHost(
-      version_->provider_host()->process_id(),
-      version_->provider_host()->provider_id());
-  version_ = nullptr;
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, listener.last_status);
-}
-
 // Test that update isn't triggered for a non-stale worker.
 TEST_F(ServiceWorkerVersionTest, StaleUpdate_FreshWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);

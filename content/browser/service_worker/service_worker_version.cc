@@ -256,6 +256,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
+  // TODO(falken): Investigate whether this can be removed. The destructor used
+  // to be more complicated and could result in various methods being called.
   in_dtor_ = true;
 
   // Record UMA if the worker was trying to start. One way we get here is if the
@@ -271,10 +273,6 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
   if (context_)
     context_->RemoveLiveVersion(version_id_);
 
-  if (running_status() == EmbeddedWorkerStatus::STARTING ||
-      running_status() == EmbeddedWorkerStatus::RUNNING) {
-    embedded_worker_->Stop();
-  }
   embedded_worker_->RemoveObserver(this);
 }
 
