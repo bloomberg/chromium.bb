@@ -225,6 +225,7 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightTransformChange;
   friend class InFlightVisibleChange;
   friend class ParentAllocator;  // For OnWindowMusBoundsChanged().
+  friend class TopLevelAllocator;  // For OnWindowMusBoundsChanged().
   friend class TopmostWindowTracker;
   friend class WindowPortMus;
   friend class WindowTreeClientTestApi;
@@ -288,8 +289,8 @@ class AURA_EXPORT WindowTreeClient
       WindowMusType window_mus_type,
       const ws::mojom::WindowData& window_data,
       int64_t display_id,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id =
-          base::nullopt);
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation = base::nullopt);
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
                                      const ws::mojom::WindowData& window_data);
@@ -315,7 +316,8 @@ class AURA_EXPORT WindowTreeClient
                    int64_t display_id,
                    ws::Id focused_window_id,
                    bool drawn,
-                   const base::Optional<viz::LocalSurfaceId>& local_surface_id);
+                   const base::Optional<viz::LocalSurfaceIdAllocation>&
+                       local_surface_id_allocation);
 
   // Returns the EmbedRoot whose root is |window|, or null if there isn't one.
   EmbedRoot* GetEmbedRootWithRootWindow(aura::Window* window);
@@ -332,7 +334,14 @@ class AURA_EXPORT WindowTreeClient
   void SetWindowBoundsFromServer(
       WindowMus* window,
       const gfx::Rect& revert_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
+      bool from_server,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation);
+
+  // Applies |WindowTreeHostMus::pending_local_surface_id_from_server_| to
+  // the window, and potentially generates a new LocalSurfaceId.
+  void ApplyPendingSurfaceIdFromServer(WindowMus* window);
+
   void SetWindowTransformFromServer(WindowMus* window,
                                     const gfx::Transform& transform);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
@@ -371,40 +380,40 @@ class AURA_EXPORT WindowTreeClient
                                   const void* key,
                                   int64_t old_value,
                                   std::unique_ptr<ui::PropertyData> data);
-
   void RequestNewLocalSurfaceId(WindowMus* window);
 
-  // Overridden from WindowTreeClient:
+  // WindowTreeClient:
   void OnClientId(uint32_t client_id) override;
-  void OnEmbed(
-      ws::mojom::WindowDataPtr root,
-      ws::mojom::WindowTreePtr tree,
-      int64_t display_id,
-      ws::Id focused_window_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
-  void OnEmbedFromToken(
-      const base::UnguessableToken& token,
-      ws::mojom::WindowDataPtr root,
-      int64_t display_id,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnEmbed(ws::mojom::WindowDataPtr root,
+               ws::mojom::WindowTreePtr tree,
+               int64_t display_id,
+               ws::Id focused_window_id,
+               bool drawn,
+               const base::Optional<viz::LocalSurfaceIdAllocation>&
+                   local_surface_id_allocation) override;
+  void OnEmbedFromToken(const base::UnguessableToken& token,
+                        ws::mojom::WindowDataPtr root,
+                        int64_t display_id,
+                        const base::Optional<viz::LocalSurfaceIdAllocation>&
+                            local_surface_id_allocation) override;
   void OnEmbeddedAppDisconnected(ws::Id window_id) override;
   void OnUnembed(ws::Id window_id) override;
   void OnCaptureChanged(ws::Id new_capture_window_id,
                         ws::Id old_capture_window_id) override;
   void OnFrameSinkIdAllocated(ws::Id window_id,
                               const viz::FrameSinkId& frame_sink_id) override;
-  void OnTopLevelCreated(
-      uint32_t change_id,
-      ws::mojom::WindowDataPtr data,
-      int64_t display_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnTopLevelCreated(uint32_t change_id,
+                         ws::mojom::WindowDataPtr data,
+                         int64_t display_id,
+                         bool drawn,
+                         const viz::LocalSurfaceIdAllocation&
+                             local_surface_id_allocation) override;
   void OnWindowBoundsChanged(
       ws::Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation) override;
   void OnWindowTransformChanged(ws::Id window_id,
                                 const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
@@ -479,7 +488,7 @@ class AURA_EXPORT WindowTreeClient
                          int64_t internal_display_id,
                          int64_t display_id_for_new_windows) override;
 
-  // Overriden from WindowTreeHostMusDelegate:
+  // WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(
       WindowTreeHostMus* window_tree_host,
       const gfx::Rect& bounds_in_pixels) override;
@@ -506,19 +515,19 @@ class AURA_EXPORT WindowTreeClient
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
 
-  // Override from client::TransientWindowClientObserver:
+  // client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(Window* parent,
                                    Window* transient_child) override;
   void OnTransientChildWindowRemoved(Window* parent,
                                      Window* transient_child) override;
 
-  // Overriden from DragDropControllerHost:
+  // DragDropControllerHost:
   uint32_t CreateChangeIdForDrag(WindowMus* window) override;
 
-  // Overrided from CaptureSynchronizerDelegate:
+  // CaptureSynchronizerDelegate:
   uint32_t CreateChangeIdForCapture(WindowMus* window) override;
 
-  // Overrided from FocusSynchronizerDelegate:
+  // FocusSynchronizerDelegate:
   uint32_t CreateChangeIdForFocus(WindowMus* window) override;
 
   // The one int in |cursor_location_mapping_|. When we read from this

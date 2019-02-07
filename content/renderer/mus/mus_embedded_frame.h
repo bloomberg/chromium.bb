@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "services/ws/common/types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -31,8 +31,9 @@ class MusEmbeddedFrame {
   ~MusEmbeddedFrame();
 
   // Sets the bounds (in pixels) of the embedded frame.
-  void SetWindowBounds(const viz::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& bounds);
+  void SetWindowBounds(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation,
+      const gfx::Rect& bounds);
 
  private:
   friend class RendererWindowTreeClient;
@@ -44,7 +45,7 @@ class MusEmbeddedFrame {
     ~PendingState();
 
     base::UnguessableToken token;
-    viz::LocalSurfaceId local_surface_id;
+    viz::LocalSurfaceIdAllocation local_surface_id_allocation;
     gfx::Rect bounds;
     // True if SetWindowBounds() was called.
     bool was_set_window_bounds_called = false;

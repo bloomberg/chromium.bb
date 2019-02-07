@@ -5,10 +5,12 @@
 #include "ui/aura/mus/window_tree_host_mus.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/input_method_mus.h"
+#include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
@@ -186,12 +188,9 @@ WindowTreeHostMus* WindowTreeHostMus::ForWindow(aura::Window* window) {
 
 void WindowTreeHostMus::SetBoundsFromServerInPixels(
     const gfx::Rect& bounds_in_pixels,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   base::AutoReset<bool> resetter(&in_set_bounds_from_server_, true);
-  // TODO(jonross): Update Mus to pass the correct allocation time.
-  SetBoundsInPixels(
-      bounds_in_pixels,
-      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now()));
+  SetBoundsInPixels(bounds_in_pixels, local_surface_id_allocation);
 }
 
 void WindowTreeHostMus::SetClientArea(
@@ -246,6 +245,19 @@ display::Display WindowTreeHostMus::GetDisplay() const {
   return display;
 }
 
+void WindowTreeHostMus::SetPendingLocalSurfaceIdFromServer(
+    const viz::LocalSurfaceIdAllocation& id) {
+  DCHECK(id.IsValid());
+  pending_local_surface_id_from_server_ = id;
+}
+
+base::Optional<viz::LocalSurfaceIdAllocation>
+WindowTreeHostMus::TakePendingLocalSurfaceIdFromServer() {
+  base::Optional<viz::LocalSurfaceIdAllocation> id;
+  std::swap(id, pending_local_surface_id_from_server_);
+  return id;
+}
+
 void WindowTreeHostMus::HideImpl() {
   WindowTreeHostPlatform::HideImpl();
   window()->Hide();
@@ -254,10 +266,22 @@ void WindowTreeHostMus::HideImpl() {
 void WindowTreeHostMus::SetBoundsInPixels(
     const gfx::Rect& bounds,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  if (!in_set_bounds_from_server_)
+  viz::LocalSurfaceIdAllocation actual_local_surface_id_allocation =
+      local_surface_id_allocation;
+  if (!in_set_bounds_from_server_) {
+    // Update the LocalSurfaceIdAllocation here, rather than in WindowTreeHost
+    // as WindowTreeClient (the delegate) needs that information before
+    // OnWindowTreeHostBoundsWillChange().
+    if (!local_surface_id_allocation.IsValid() &&
+        ShouldAllocateLocalSurfaceIdOnResize()) {
+      window()->AllocateLocalSurfaceId();
+      actual_local_surface_id_allocation =
+          window()->GetLocalSurfaceIdAllocation();
+    }
     delegate_->OnWindowTreeHostBoundsWillChange(this, bounds);
+  }
   WindowTreeHostPlatform::SetBoundsInPixels(bounds,
-                                            local_surface_id_allocation);
+                                            actual_local_surface_id_allocation);
 }
 
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
@@ -282,6 +306,13 @@ void WindowTreeHostMus::OnCloseRequest() {
 
 int64_t WindowTreeHostMus::GetDisplayId() {
   return display_id_;
+}
+
+bool WindowTreeHostMus::ShouldAllocateLocalSurfaceIdOnResize() {
+  return WindowPortMus::Get(window())->window_mus_type() ==
+             WindowMusType::TOP_LEVEL &&
+         (window()->GetLocalSurfaceIdAllocation().IsValid() ||
+          pending_local_surface_id_from_server_);
 }
 
 void WindowTreeHostMus::SetTextInputState(ui::mojom::TextInputStatePtr state) {

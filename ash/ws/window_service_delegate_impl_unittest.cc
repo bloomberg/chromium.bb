@@ -156,8 +156,7 @@ TEST_F(WindowServiceDelegateImplTest, SetWindowBoundsToDifferentDisplay) {
 
   GetWindowTreeClientChanges()->clear();
   GetWindowTreeTestHelper()->window_tree()->SetWindowBounds(
-      21, GetTopLevelWindowId(), gfx::Rect(600, 100, 100, 100),
-      base::Optional<viz::LocalSurfaceId>());
+      21, GetTopLevelWindowId(), gfx::Rect(600, 100, 100, 100), base::nullopt);
   EXPECT_EQ(gfx::Point(600, 100), top_level_->GetBoundsInScreen().origin());
   EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
             top_level_->GetRootWindow());

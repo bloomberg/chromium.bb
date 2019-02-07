@@ -285,23 +285,24 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
       wait_state_->run_loop.Quit();
     }
   }
-  void OnEmbed(
-      WindowDataPtr root,
-      mojom::WindowTreePtr tree,
-      int64_t display_id,
-      Id focused_window_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
+  void OnEmbed(WindowDataPtr root,
+               mojom::WindowTreePtr tree,
+               int64_t display_id,
+               Id focused_window_id,
+               bool drawn,
+               const base::Optional<viz::LocalSurfaceIdAllocation>&
+                   local_surface_id_allocation) override {
     TestWindowTreeClient::OnEmbed(std::move(root), std::move(tree), display_id,
-                                  focused_window_id, drawn, local_surface_id);
+                                  focused_window_id, drawn,
+                                  local_surface_id_allocation);
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
-  void OnEmbedFromToken(
-      const base::UnguessableToken& token,
-      mojom::WindowDataPtr root,
-      int64_t display_id,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {}
+  void OnEmbedFromToken(const base::UnguessableToken& token,
+                        mojom::WindowDataPtr root,
+                        int64_t display_id,
+                        const base::Optional<viz::LocalSurfaceIdAllocation>&
+                            local_surface_id_allocation) override {}
   void OnEmbeddedAppDisconnected(Id window_id) override {
     tracker()->OnEmbeddedAppDisconnected(window_id);
   }
@@ -312,26 +313,28 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   }
   void OnFrameSinkIdAllocated(Id window_id,
                               const viz::FrameSinkId& frame_sink_id) override {}
-  void OnTopLevelCreated(
-      uint32_t change_id,
-      mojom::WindowDataPtr data,
-      int64_t display_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
-    tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
+  void OnTopLevelCreated(uint32_t change_id,
+                         mojom::WindowDataPtr data,
+                         int64_t display_id,
+                         bool drawn,
+                         const viz::LocalSurfaceIdAllocation&
+                             local_surface_id_allocation) override {
+    tracker()->OnTopLevelCreated(change_id, std::move(data), drawn,
+                                 local_surface_id_allocation);
   }
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation) override {
     // The bounds of the root may change during startup on Android at random
     // times. As this doesn't matter, and shouldn't impact test exepctations,
     // it is ignored.
     if (window_id == root_window_id_ && !track_root_bounds_changes_)
       return;
     tracker()->OnWindowBoundsChanged(window_id, old_bounds, new_bounds,
-                                     local_surface_id);
+                                     local_surface_id_allocation);
   }
   void OnWindowTransformChanged(Id window_id,
                                 const gfx::Transform& old_transform,
@@ -1226,10 +1229,10 @@ TEST_F(WindowTreeClientTest, DISABLED_SetWindowBounds) {
 
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
-  viz::LocalSurfaceId local_surface_id =
-      allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation =
+      allocator.GetCurrentLocalSurfaceIdAllocation();
   wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100),
-                         local_surface_id);
+                         local_surface_id_allocation);
   ASSERT_TRUE(wt_client1()->WaitForChangeCompleted(10));
 
   wt_client2_->WaitForChangeCount(1);
@@ -1238,7 +1241,7 @@ TEST_F(WindowTreeClientTest, DISABLED_SetWindowBounds) {
       BuildWindowId(client_id_1(), ClientWindowIdFromTransportId(window_1_1));
   EXPECT_EQ("BoundsChanged window=" + IdToString(window11_in_wt2) +
                 " old_bounds=0,0 0x0 new_bounds=0,0 100x100 local_surface_id=" +
-                local_surface_id.ToString(),
+                local_surface_id_allocation.ToString(),
             SingleChangeToDescription(*changes2()));
 
   // Should not be possible to change the bounds of a window created by another

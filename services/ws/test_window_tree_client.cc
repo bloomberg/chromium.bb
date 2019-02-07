@@ -72,7 +72,8 @@ void TestWindowTreeClient::OnEmbed(
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   root_window_id_ = root->window_id;
   tree_ = std::move(tree);
   tracker_.OnEmbed(std::move(root), drawn);
@@ -82,8 +83,13 @@ void TestWindowTreeClient::OnEmbedFromToken(
     const base::UnguessableToken& token,
     mojom::WindowDataPtr root,
     int64_t display_id,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-  tracker_.OnEmbedFromToken(std::move(root), display_id, local_surface_id);
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
+  tracker_.OnEmbedFromToken(
+      std::move(root), display_id,
+      local_surface_id_allocation
+          ? local_surface_id_allocation->local_surface_id()
+          : viz::LocalSurfaceId());
 }
 
 void TestWindowTreeClient::OnEmbeddedAppDisconnected(Id window_id) {
@@ -110,22 +116,24 @@ void TestWindowTreeClient::OnTopLevelCreated(
     mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-  tracker_.OnTopLevelCreated(change_id, std::move(data), drawn);
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  tracker_.OnTopLevelCreated(change_id, std::move(data), drawn,
+                             local_surface_id_allocation);
 }
 
 void TestWindowTreeClient::OnWindowBoundsChanged(
     Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   // The bounds of the root may change during startup on Android at random
   // times. As this doesn't matter, and shouldn't impact test exepctations,
   // it is ignored.
   if (window_id == root_window_id_ && !track_root_bounds_changes_)
     return;
   tracker_.OnWindowBoundsChanged(window_id, old_bounds, new_bounds,
-                                 local_surface_id);
+                                 local_surface_id_allocation);
 }
 
 void TestWindowTreeClient::OnWindowTransformChanged(

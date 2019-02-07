@@ -284,6 +284,17 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       const gfx::Size& size_in_pixel,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
 
+  // Updates the LocalSurfaceIdAllocation from the parent.
+  viz::LocalSurfaceIdAllocation UpdateLocalSurfaceIdFromParent(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+
+  // Returns the current LocalSurfaceIdAllocation, which may not be valid.
+  viz::LocalSurfaceIdAllocation GetLocalSurfaceIdAllocation() const;
+
+  // Returns a new LocalSurfaceIdAllocation by incrementing the child sequence
+  // number.
+  viz::LocalSurfaceIdAllocation RequestNewChildLocalSurfaceId();
+
   // Set the output color profile into which this compositor should render.
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
 

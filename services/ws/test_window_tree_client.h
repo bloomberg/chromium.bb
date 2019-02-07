@@ -84,35 +84,36 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   // mojom::WindowTreeClient:
   void OnClientId(uint32_t client_id) override;
-  void OnEmbed(
-      mojom::WindowDataPtr root,
-      mojom::WindowTreePtr tree,
-      int64_t display_id,
-      Id focused_window_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
-  void OnEmbedFromToken(
-      const base::UnguessableToken& token,
-      mojom::WindowDataPtr root,
-      int64_t display_id,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnEmbed(mojom::WindowDataPtr root,
+               mojom::WindowTreePtr tree,
+               int64_t display_id,
+               Id focused_window_id,
+               bool drawn,
+               const base::Optional<viz::LocalSurfaceIdAllocation>&
+                   local_surface_id_allocation) override;
+  void OnEmbedFromToken(const base::UnguessableToken& token,
+                        mojom::WindowDataPtr root,
+                        int64_t display_id,
+                        const base::Optional<viz::LocalSurfaceIdAllocation>&
+                            local_surface_id_allocation) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
   void OnCaptureChanged(Id new_capture_window_id,
                         Id old_capture_window_id) override;
   void OnFrameSinkIdAllocated(Id window_id,
                               const viz::FrameSinkId& frame_sink_id) override;
-  void OnTopLevelCreated(
-      uint32_t change_id,
-      mojom::WindowDataPtr data,
-      int64_t display_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnTopLevelCreated(uint32_t change_id,
+                         mojom::WindowDataPtr data,
+                         int64_t display_id,
+                         bool drawn,
+                         const viz::LocalSurfaceIdAllocation&
+                             local_surface_id_allocation) override;
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation) override;
   void OnWindowTransformChanged(Id window_id,
                                 const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;

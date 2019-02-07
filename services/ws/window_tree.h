@@ -299,11 +299,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // mapping, there may not be a window with the returned id.
   ClientWindowId MakeClientWindowId(Id transport_window_id) const;
 
-  // Returns true if the local-surface id for |window| is assigned by this
-  // client. A return value of false means the LocalSurfaceId is assigned by
-  // either another client, or by the WindowService itself.
-  bool IsLocalSurfaceIdAssignedByClient(aura::Window* window);
-
   std::vector<mojom::WindowDataPtr> WindowsToWindowDatas(
       const std::vector<aura::Window*>& windows);
   mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
@@ -345,10 +340,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                  mojom::WindowTreeClient* window_tree_client,
                  uint32_t flags);
   bool SetWindowOpacityImpl(const ClientWindowId& window_id, float opacity);
-  bool SetWindowBoundsImpl(
-      const ClientWindowId& window_id,
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
+  bool SetWindowBoundsImpl(const ClientWindowId& window_id,
+                           const gfx::Rect& bounds,
+                           const base::Optional<viz::LocalSurfaceIdAllocation>&
+                               local_surface_id_allocation);
   bool ReorderWindowImpl(const ClientWindowId& window_id,
                          const ClientWindowId& relative_window_id,
                          mojom::OrderDirection direction);
@@ -391,11 +386,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void ReleaseCapture(uint32_t change_id, Id transport_window_id) override;
   void ObserveEventTypes(
       const std::vector<ui::mojom::EventType>& types) override;
-  void SetWindowBounds(
-      uint32_t change_id,
-      Id window_id,
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void SetWindowBounds(uint32_t change_id,
+                       Id window_id,
+                       const gfx::Rect& bounds,
+                       const base::Optional<viz::LocalSurfaceIdAllocation>&
+                           local_surface_id_allocation) override;
+  void UpdateLocalSurfaceIdFromChild(Id transport_window_id,
+                                     const viz::LocalSurfaceIdAllocation&
+                                         local_surface_id_allocation) override;
   void AllocateLocalSurfaceId(Id transport_window_id) override;
   void SetWindowTransform(uint32_t change_id,
                           Id window_id,

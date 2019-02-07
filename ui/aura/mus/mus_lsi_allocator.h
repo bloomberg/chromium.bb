@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -34,7 +36,13 @@ enum class MusLsiAllocatorType {
 
   // A local window that has a FrameSinkId associated with it.
   kLocal,
+
+  // Used for top-level windows.
+  kTopLevel,
 };
+
+class ParentAllocator;
+class TopLevelAllocator;
 
 // MusLsiAllocator is used by WindowPortMus to handle management of
 // LocalSurfaceIdAllocation, and associated data.
@@ -49,13 +57,13 @@ class MusLsiAllocator {
 
   MusLsiAllocatorType type() const { return type_; }
 
+  virtual ParentAllocator* AsParentAllocator();
+  virtual TopLevelAllocator* AsTopLevelAllocator();
+
   virtual void AllocateLocalSurfaceId() = 0;
   virtual viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceClosure allocation_task) = 0;
   virtual void InvalidateLocalSurfaceId() = 0;
-  virtual void UpdateLocalSurfaceIdFromEmbeddedClient(
-      const viz::LocalSurfaceIdAllocation&
-          embedded_client_local_surface_id_allocation) = 0;
   virtual void OnDeviceScaleFactorChanged() = 0;
   virtual void OnDidChangeBounds(const gfx::Size& size_in_pixels,
                                  bool from_server) = 0;
@@ -74,8 +82,6 @@ class MusLsiAllocator {
 // a ParentLocalSurfaceIdAllocator to generate a LocalSurfaceIdAllocation.
 // Additionally ParenAllocator may creates a ClientSurfaceEmbedder| to handle
 // associating the FrameSinkId with Viz.
-//
-// This is an implementation detail and only public for tests to poke at.
 class ParentAllocator : public MusLsiAllocator {
  public:
   ParentAllocator(MusLsiAllocatorType type,
@@ -83,14 +89,16 @@ class ParentAllocator : public MusLsiAllocator {
                   WindowTreeClient* window_tree_client);
   ~ParentAllocator() override;
 
+  void UpdateLocalSurfaceIdFromEmbeddedClient(
+      const viz::LocalSurfaceIdAllocation&
+          embedded_client_local_surface_id_allocation);
+
   // MusLsiAllocator:
+  ParentAllocator* AsParentAllocator() override;
   void AllocateLocalSurfaceId() override;
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceClosure allocation_task) override;
   void InvalidateLocalSurfaceId() override;
-  void UpdateLocalSurfaceIdFromEmbeddedClient(
-      const viz::LocalSurfaceIdAllocation&
-          embedded_client_local_surface_id_allocation) override;
   void OnDeviceScaleFactorChanged() override;
   void OnDidChangeBounds(const gfx::Size& size_in_pixels,
                          bool from_server) override;
@@ -114,6 +122,51 @@ class ParentAllocator : public MusLsiAllocator {
 
   DISALLOW_COPY_AND_ASSIGN(ParentAllocator);
 };
+
+// TopLevelAllocator is used for TOP_LEVEL windows.
+class TopLevelAllocator : public MusLsiAllocator,
+                          public ui::CompositorObserver {
+ public:
+  explicit TopLevelAllocator(WindowPortMus* window,
+                             WindowTreeClient* window_tree_client);
+  ~TopLevelAllocator() override;
+
+  void UpdateLocalSurfaceIdFromParent(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+
+  // MusLsiAllocator:
+  TopLevelAllocator* AsTopLevelAllocator() override;
+  void AllocateLocalSurfaceId() override;
+  viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
+      base::OnceClosure allocation_task) override;
+  void InvalidateLocalSurfaceId() override;
+  void OnDeviceScaleFactorChanged() override;
+  void OnDidChangeBounds(const gfx::Size& size_in_pixels,
+                         bool from_server) override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() override;
+  void OnFrameSinkIdChanged() override;
+
+ private:
+  Window* GetWindow();
+  void NotifyServerOfLocalSurfaceId();
+
+  // ui::CompositorObserver:
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+  void DidGenerateLocalSurfaceIdAllocation(
+      ui::Compositor* compositor,
+      const viz::LocalSurfaceIdAllocation& allocation) override;
+
+  friend class WindowPortMusTestHelper;
+
+  WindowPortMus* window_;
+  WindowTreeClient* window_tree_client_;
+  // This is null if the compositor is deleted before this.
+  ui::Compositor* compositor_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
+
+  DISALLOW_COPY_AND_ASSIGN(TopLevelAllocator);
+};
+
 }  // namespace aura
 
 #endif  // UI_AURA_MUS_MUS_LSI_ALLOCATOR_H_

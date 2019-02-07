@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,8 +61,11 @@ void TestWindowTree::AddEmbedRootForToken(const base::UnguessableToken& token) {
       (kFakeEmbedderClientId << 32) | kFakeEmbedderWindowId;
   embedder_window_data->bounds = gfx::Rect(320, 240);
 
-  client_->OnEmbedFromToken(token, std::move(embedder_window_data), 0,
-                            base::nullopt);
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
+  client_->OnEmbedFromToken(
+      token, std::move(embedder_window_data), 0,
+      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
 }
 
 void TestWindowTree::RemoveEmbedderWindow(ws::Id embedder_window_id) {
@@ -168,12 +172,23 @@ void TestWindowTree::SetWindowBounds(
     uint32_t change_id,
     ws::Id window_id,
     const gfx::Rect& bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   window_id_ = window_id;
-  last_local_surface_id_ = local_surface_id;
+  if (local_surface_id_allocation)
+    last_local_surface_id_ = local_surface_id_allocation->local_surface_id();
+  else
+    last_local_surface_id_.reset();
   second_last_set_window_bounds_ = last_set_window_bounds_;
   last_set_window_bounds_ = bounds;
   OnChangeReceived(change_id, WindowTreeChangeType::BOUNDS);
+}
+
+void TestWindowTree::UpdateLocalSurfaceIdFromChild(
+    ws::Id transport_window_id,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  ++update_local_surface_id_from_child_count_;
+  last_local_surface_id_ = local_surface_id_allocation.local_surface_id();
 }
 
 void TestWindowTree::SetWindowTransform(uint32_t change_id,

@@ -214,9 +214,10 @@ void BrowserPlugin::Detach() {
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
 }
 
-const viz::LocalSurfaceId& BrowserPlugin::GetLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-      .local_surface_id();
+const viz::LocalSurfaceIdAllocation&
+BrowserPlugin::GetLocalSurfaceIdAllocation() const {
+  return parent_local_surface_id_allocator_
+      .GetCurrentLocalSurfaceIdAllocation();
 }
 
 #if defined(USE_AURA)
@@ -234,8 +235,8 @@ void BrowserPlugin::CreateMusWindowAndEmbed(
   DCHECK(renderer_window_tree_client);
   mus_embedded_frame_ =
       renderer_window_tree_client->CreateMusEmbeddedFrame(this, embed_token);
-  if (attached() && GetLocalSurfaceId().is_valid()) {
-    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
+  if (attached() && GetLocalSurfaceIdAllocation().IsValid()) {
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceIdAllocation(),
                                          FrameRectInPixels());
   }
 }
@@ -287,7 +288,8 @@ void BrowserPlugin::SynchronizeVisualProperties() {
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
     compositing_helper_->SetSurfaceId(
-        viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
+        viz::SurfaceId(frame_sink_id_,
+                       GetLocalSurfaceIdAllocation().local_surface_id()),
         screen_space_rect().size(), deadline);
   }
 
@@ -313,7 +315,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
 
 #if defined(USE_AURA)
   if (features::IsMultiProcessMash() && mus_embedded_frame_) {
-    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceIdAllocation(),
                                          FrameRectInPixels());
   }
 #endif

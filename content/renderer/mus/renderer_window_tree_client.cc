@@ -177,7 +177,8 @@ void RendererWindowTreeClient::OnEmbedFromToken(
     const base::UnguessableToken& token,
     ws::mojom::WindowDataPtr root,
     int64_t display_id,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   // Renderers don't use ScheduleEmbedForExistingClient(), so this path should
   // never be hit.
   NOTREACHED();
@@ -195,7 +196,8 @@ void RendererWindowTreeClient::OnEmbed(
     int64_t display_id,
     ws::Id focused_window_id,
     bool drawn,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   const bool is_reembed = tree_.is_bound();
   if (is_reembed) {
     for (MusEmbeddedFrame* frame : embedded_frames_)
@@ -256,7 +258,7 @@ void RendererWindowTreeClient::OnTopLevelCreated(
     ws::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   NOTREACHED();
 }
 
@@ -264,7 +266,8 @@ void RendererWindowTreeClient::OnWindowBoundsChanged(
     ws::Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {}
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {}
 
 void RendererWindowTreeClient::OnWindowTransformChanged(
     ws::Id window_id,

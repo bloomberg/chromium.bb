@@ -160,7 +160,7 @@ TEST_F(DragTestInteractive, DragTest) {
   source_widget->Show();
 
   aura::test::ChangeCompletionWaiter source_waiter(aura::ChangeType::BOUNDS,
-                                                   false);
+                                                   true);
   source_widget->SetBounds(gfx::Rect(0, 0, 20, 20));
   ASSERT_TRUE(source_waiter.Wait());
 
@@ -172,7 +172,7 @@ TEST_F(DragTestInteractive, DragTest) {
   target_widget->Show();
 
   aura::test::ChangeCompletionWaiter target_waiter(aura::ChangeType::BOUNDS,
-                                                   false);
+                                                   true);
   target_widget->SetBounds(gfx::Rect(20, 20, 20, 20));
   ASSERT_TRUE(target_waiter.Wait());
 

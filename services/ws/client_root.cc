@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/debug/stack_trace.h"
+#include "base/memory/ptr_util.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/client_change.h"
@@ -23,9 +25,29 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/property_change_reason.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ws {
+namespace {
+
+bool ShouldAssignLocalSurfaceIdImpl(aura::Window* window, bool is_top_level) {
+  // The window service assigns LocalSurfaceIds in two cases:
+  // . Top-levels. This is because the window service is the one creating the
+  //   Window, and effectively embedding the client.
+  // . An embedding created by a WindowTree that was not itself embedded. This
+  //   scenario is similar to top-levels, where the Window is not itself
+  //   embedded in another window. An example of this is the app-list embedding
+  //   a Window that contains a WebContents, where the app-list runs in process
+  //   (not using the window-service APIs).
+  if (is_top_level)
+    return true;
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  return proxy_window->owning_window_tree() == nullptr;
+}
+
+}  // namespace
 
 ClientRoot::ClientRoot(WindowTree* window_tree,
                        aura::Window* window,
@@ -36,8 +58,10 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
     window->GetHost()->AddObserver(this);
   client_surface_embedder_ = std::make_unique<aura::ClientSurfaceEmbedder>(
       window_, is_top_level, gfx::Insets());
+  if (ShouldAssignLocalSurfaceIdImpl(window, is_top_level_))
+    parent_local_surface_id_allocator_.emplace();
   // Ensure there is a valid LocalSurfaceId (if necessary).
-  UpdateLocalSurfaceIdIfNecessary();
+  GenerateLocalSurfaceIdIfNecessary();
   if (!is_top_level) {
     root_position_monitor_ =
         std::make_unique<aura_extra::WindowPositionInRootMonitor>(
@@ -77,16 +101,7 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
   UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 }
 
-bool ClientRoot::ShouldAssignLocalSurfaceId() {
-  // First level embeddings have their LocalSurfaceId assigned by the
-  // WindowService. First level embeddings have no embeddings above them.
-  if (is_top_level_)
-    return true;
-  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
-  return proxy_window->owning_window_tree() == nullptr;
-}
-
-void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
+void ClientRoot::GenerateLocalSurfaceIdIfNecessary() {
   if (!ShouldAssignLocalSurfaceId())
     return;
 
@@ -96,27 +111,62 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
   // It's expected by cc code that any time the size changes a new
   // LocalSurfaceId is used.
   if (last_surface_size_in_pixels_ != size_in_pixels ||
-      !proxy_window->local_surface_id().has_value() ||
+      !proxy_window->local_surface_id_allocation().has_value() ||
       last_device_scale_factor_ != window_->layer()->device_scale_factor()) {
-    window_->AllocateLocalSurfaceId();
-    proxy_window->set_local_surface_id(
-        window_->GetLocalSurfaceIdAllocation().local_surface_id());
-    last_surface_size_in_pixels_ = size_in_pixels;
-    last_device_scale_factor_ = window_->layer()->device_scale_factor();
+    parent_local_surface_id_allocator_->GenerateId();
+    UpdateSurfacePropertiesCache();
   }
 }
 
-void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
-  UpdateLocalSurfaceIdIfNecessary();
+void ClientRoot::UpdateSurfacePropertiesCache() {
+  ProxyWindow::GetMayBeNull(window_)->set_local_surface_id_allocation(
+      parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation());
+  last_surface_size_in_pixels_ =
+      ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
+  last_device_scale_factor_ = window_->layer()->device_scale_factor();
+}
+
+bool ClientRoot::SetBoundsInScreenFromClient(
+    const gfx::Rect& bounds,
+    const base::Optional<viz::LocalSurfaceIdAllocation>& allocation) {
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
-  if (proxy_window->local_surface_id().has_value()) {
-    client_surface_embedder_->SetSurfaceId(viz::SurfaceId(
-        window_->GetFrameSinkId(), *proxy_window->local_surface_id()));
-    if (fallback_surface_info_) {
-      client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
-      fallback_surface_info_.reset();
-    }
+  const gfx::Rect starting_bounds = window_->GetBoundsInScreen();
+  const base::Optional<viz::LocalSurfaceIdAllocation> starting_allocation =
+      proxy_window->local_surface_id_allocation();
+  {
+    base::AutoReset<bool> resetter(&setting_bounds_from_client_, true);
+    display::Display dst_display =
+        display::Screen::GetScreen()->GetDisplayMatching(bounds);
+    window_->SetBoundsInScreen(bounds, dst_display);
   }
+  if (allocation)
+    parent_local_surface_id_allocator_->UpdateFromChild(*allocation);
+
+  const bool needs_new_surface_id =
+      !allocation || bounds.size() != window_->bounds().size();
+  if (needs_new_surface_id)
+    parent_local_surface_id_allocator_->GenerateId();
+  UpdateSurfacePropertiesCache();
+
+  if (starting_allocation != proxy_window->local_surface_id_allocation())
+    UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
+
+  const bool succeeded = bounds == window_->GetBoundsInScreen();
+  if (!succeeded)
+    NotifyClientOfNewBounds(starting_bounds);
+  return succeeded;
+}
+
+void ClientRoot::UpdateLocalSurfaceIdFromChild(
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  if (!parent_local_surface_id_allocator_->UpdateFromChild(
+          local_surface_id_allocation)) {
+    return;
+  }
+
+  UpdateSurfacePropertiesCache();
+
+  UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 }
 
 void ClientRoot::OnLocalSurfaceIdChanged() {
@@ -131,8 +181,9 @@ void ClientRoot::AllocateLocalSurfaceIdAndNotifyClient() {
   if (!ShouldAssignLocalSurfaceId())
     return;
 
-  // Setting a null LocalSurfaceId forces allocation.
-  ProxyWindow::GetMayBeNull(window_)->set_local_surface_id(base::nullopt);
+  // Setting a null LocalSurfaceIdAllocation forces allocating a new one.
+  ProxyWindow::GetMayBeNull(window_)->set_local_surface_id_allocation(
+      base::nullopt);
   UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
   NotifyClientOfNewBounds(last_bounds_);
 }
@@ -188,6 +239,23 @@ void ClientRoot::UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window) {
   }
 }
 
+void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
+  GenerateLocalSurfaceIdIfNecessary();
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
+  if (!proxy_window->local_surface_id_allocation().has_value())
+    return;
+
+  const viz::SurfaceId surface_id(
+      window_->GetFrameSinkId(),
+      proxy_window->local_surface_id_allocation()->local_surface_id());
+  client_surface_embedder_->SetSurfaceId(surface_id);
+  if (fallback_surface_info_) {
+    client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
+    fallback_surface_info_.reset();
+  }
+  client_surface_embedder_->UpdateSizeAndGutters();
+}
+
 void ClientRoot::CheckForScaleFactorChange() {
   if (!ShouldAssignLocalSurfaceId() ||
       last_device_scale_factor_ == window_->layer()->device_scale_factor()) {
@@ -199,18 +267,19 @@ void ClientRoot::CheckForScaleFactorChange() {
 }
 
 void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
+  if (setting_bounds_from_client_)
+    return;
+
   UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
-  client_surface_embedder_->UpdateSizeAndGutters();
-  // See comments in WindowTree::SetWindowBoundsImpl() for details on
-  // why this always notifies the client.
   NotifyClientOfNewBounds(old_bounds);
 }
 
 void ClientRoot::NotifyClientOfNewBounds(const gfx::Rect& old_bounds) {
   last_bounds_ = window_->GetBoundsInScreen();
+  auto id = ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation();
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), old_bounds, last_bounds_,
-      ProxyWindow::GetMayBeNull(window_)->local_surface_id());
+      ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation());
 }
 
 void ClientRoot::OnPositionInRootChanged() {
@@ -247,6 +316,8 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds,
                                        ui::PropertyChangeReason reason) {
+  if (setting_bounds_from_client_)
+    return;
   if (!is_top_level_) {
     HandleBoundsOrScaleFactorChange(old_bounds);
     return;
@@ -311,7 +382,7 @@ void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
 void ClientRoot::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
-  if (proxy_window->local_surface_id().has_value()) {
+  if (proxy_window->local_surface_id_allocation().has_value()) {
     DCHECK(!fallback_surface_info_);
     if (!client_surface_embedder_->HasPrimarySurfaceId())
       UpdateLocalSurfaceIdAndClientSurfaceEmbedder();

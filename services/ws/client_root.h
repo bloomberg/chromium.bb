@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -31,6 +32,7 @@ class Insets;
 }
 
 namespace viz {
+class LocalSurfaceIdAllocation;
 class SurfaceInfo;
 }
 
@@ -64,6 +66,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   bool is_top_level() const { return is_top_level_; }
 
+  // Sets the bounds from a client.
+  bool SetBoundsInScreenFromClient(
+      const gfx::Rect& bounds,
+      const base::Optional<viz::LocalSurfaceIdAllocation>& allocation);
+
+  // Updates the LocalSurfaceIdAllocation from the client.
+  void UpdateLocalSurfaceIdFromChild(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+
   // Called when the LocalSurfaceId of the embedder changes.
   void OnLocalSurfaceIdChanged();
 
@@ -84,14 +95,20 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   // Returns true if the WindowService should assign the LocalSurfaceId. A value
   // of false means the client is expected to providate the LocalSurfaceId.
-  bool ShouldAssignLocalSurfaceId();
+  bool ShouldAssignLocalSurfaceId() const {
+    return parent_local_surface_id_allocator_.has_value();
+  }
 
-  // If necessary, this updates the LocalSurfaceId. Generally you should call
-  // UpdateLocalSurfaceIdAndClientSurfaceEmbedder(), not this. If you call this,
-  // you need to ensure the ClientSurfaceEmbedder is updated at a later time.
-  void UpdateLocalSurfaceIdIfNecessary();
+  // If necessary, this generates a new LocalSurfaceId. Generally you should
+  // call UpdateLocalSurfaceIdAndClientSurfaceEmbedder(), not this. If you call
+  // this, you need to ensure the ClientSurfaceEmbedder is updated.
+  void GenerateLocalSurfaceIdIfNecessary();
 
-  // Calls UpdateLocalSurfaceIdIfNecessary() and if the current LocalSurfaceId
+  // Updates cached state specific to the current LocalSurfaceId. This is called
+  // any time |parent_local_surface_id_allocator_| has a new id.
+  void UpdateSurfacePropertiesCache();
+
+  // Calls GenerateLocalSurfaceIdIfNecessary() and if the current LocalSurfaceId
   // is valid, updates ClientSurfaceEmbedder.
   void UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 
@@ -156,6 +173,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   // Last bounds sent to the client.
   gfx::Rect last_bounds_;
+
+  // If true, SetBoundsInScreenFromClient() is setting the window bounds.
+  bool setting_bounds_from_client_ = false;
+
+  // Only used if ShouldAssignLocalSurfaceId() returns true. This is used
+  // instead of the ParentLocalSurfaceIdAllocator maintained by
+  // WindowPortLocal as ClientRoot needs to control when the allocations happen,
+  // and avoid allocations in the case of resizes and clients supplying their
+  // own LocalSurfaceId.
+  base::Optional<viz::ParentLocalSurfaceIdAllocator>
+      parent_local_surface_id_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientRoot);
 };

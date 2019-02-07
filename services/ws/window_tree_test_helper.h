@@ -65,16 +65,20 @@ class WindowTreeTestHelper {
   bool ReorderWindow(aura::Window* window,
                      aura::Window* relative_window,
                      mojom::OrderDirection direction);
-  bool SetWindowBounds(
-      aura::Window* window,
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id =
-          base::Optional<viz::LocalSurfaceId>());
+  bool SetWindowBounds(aura::Window* window,
+                       const gfx::Rect& bounds,
+                       const base::Optional<viz::LocalSurfaceIdAllocation>&
+                           local_surface_id_allocation =
+                               base::Optional<viz::LocalSurfaceIdAllocation>());
   // Same as SetWindowBounds(), but called in such a way that the ack
   // (OnChangeCompleted()) is called on the client.
-  void SetWindowBoundsWithAck(aura::Window* window,
-                              const gfx::Rect& bounds,
-                              uint32_t change_id = 1);
+  void SetWindowBoundsWithAck(
+      aura::Window* window,
+      const gfx::Rect& bounds,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation =
+              base::Optional<viz::LocalSurfaceIdAllocation>(),
+      uint32_t change_id = 1);
   void SetClientArea(
       aura::Window* window,
       const gfx::Insets& insets,

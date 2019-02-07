@@ -7,7 +7,7 @@ module ws.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
-import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id_allocation.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
@@ -66,7 +66,6 @@ interface WindowTree {
   // Requests the WindowManager to create a new top level window. On success
   // OnTopLevelCreated() is called with the WindowData for the new window. On
   // failure OnChangeCompleted() is called.
-  // TODO(sky): this likely needs context, maybe in |properties|.
   NewTopLevelWindow(uint32 change_id,
                     uint64 window_id,
                     map<string, array<uint8>> properties);
@@ -105,10 +104,26 @@ interface WindowTree {
 
   // Sets the specified bounds of the specified window. The window will paint
   // the frame in the provided |local_frame_id|, if any.
-  SetWindowBounds(uint32 change_id,
-                  uint64 window_id,
-                  gfx.mojom.Rect bounds,
-                  viz.mojom.LocalSurfaceId? local_surface_id);
+  // |local_surface_id_allocation| need only be supplied for roots.
+  // For top-levels, clients may supply a null LocalSurfaceIdAllocation, before
+  // OnTopLevelCreated() is called (clients receive the initial
+  // LocalSurfaceIdAllocation in OnTopLevelCreated()). While clients may supply
+  // a LocalSurfaceIdAllocation for top-levels, they are only allowed to
+  // change the child-sequence number portion of the id. Supplying a different
+  // embed token results in failure, and changes to the parent sequence number
+  // are ignored.
+  SetWindowBounds(
+      uint32 change_id,
+      uint64 window_id,
+      gfx.mojom.Rect bounds,
+      viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
+
+  // Updates the LocalSurfaceIdAllocation for a window from the child. Does
+  // nothing if |window_id| does not identify a top-level. See comment in
+  // SetWindowBounds() for allowable values of |local_surface_id_allocation|.
+  UpdateLocalSurfaceIdFromChild(
+      uint64 window_id,
+      viz.mojom.LocalSurfaceIdAllocation local_surface_id_allocation);
 
   // Asks the server to generate a new LocalSurfaceId for a window. The server
   // responds with the new LocalSurfaceId by way of OnWindowBoundsChanged().
@@ -446,14 +461,15 @@ interface WindowTreeClient {
           int64 display_id,
           uint64 focused_window,
           bool parent_drawn,
-          viz.mojom.LocalSurfaceId? local_surface_id);
+          viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   // See description in ScheduleEmbedForExistingClient() for details on this.
   // Supplied arguments match that of OnEmbed().
-  OnEmbedFromToken(mojo_base.mojom.UnguessableToken token,
-                   WindowData root,
-                   int64 display_id,
-                   viz.mojom.LocalSurfaceId? local_surface_id);
+  OnEmbedFromToken(
+      mojo_base.mojom.UnguessableToken token,
+      WindowData root,
+      int64 display_id,
+      viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called
@@ -477,20 +493,21 @@ interface WindowTreeClient {
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see
   // OnDrawnStateChanged() for details. |display_id| identifies the display this
-  // window is on. If the top level window has a size, |local_surface_id|
-  // identifies the ID to use to submit CompositorFrames.
-  OnTopLevelCreated(uint32 change_id,
-                    WindowData data,
-                    int64 display_id,
-                    bool parent_drawn,
-                    viz.mojom.LocalSurfaceId? local_surface_id);
+  // window is on.
+  OnTopLevelCreated(
+      uint32 change_id,
+      WindowData data,
+      int64 display_id,
+      bool parent_drawn,
+      viz.mojom.LocalSurfaceIdAllocation local_surface_id_allocation);
 
-  // Invoked when a window's bounds have changed. Only the client embedded in
-  // |window| gets a non_empty |local_surface_id|.
-  OnWindowBoundsChanged(uint64 window,
-                        gfx.mojom.Rect old_bounds,
-                        gfx.mojom.Rect new_bounds,
-                        viz.mojom.LocalSurfaceId? local_surface_id);
+  // Invoked when a window's bounds have changed. |local_surface_id_allocation|
+  // is only supplied for roots.
+  OnWindowBoundsChanged(
+      uint64 window,
+      gfx.mojom.Rect old_bounds,
+      gfx.mojom.Rect new_bounds,
+      viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   OnWindowTransformChanged(uint64 window,
                            gfx.mojom.Transform old_transform,

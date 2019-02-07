@@ -4,8 +4,6 @@
 
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 
-#include <stdint.h>
-
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -23,6 +21,16 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator(
 
 ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
     : ChildLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
+
+// static
+std::unique_ptr<ChildLocalSurfaceIdAllocator>
+ChildLocalSurfaceIdAllocator::CreateWithChildSequenceNumber(uint32_t value) {
+  std::unique_ptr<ChildLocalSurfaceIdAllocator> allocator =
+      std::make_unique<ChildLocalSurfaceIdAllocator>();
+  allocator->current_local_surface_id_allocation_.local_surface_id_
+      .child_sequence_number_ = value;
+  return allocator;
+}
 
 bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceIdAllocation& parent_local_surface_id_allocation) {

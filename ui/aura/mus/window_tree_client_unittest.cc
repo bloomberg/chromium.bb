@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -14,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/cpp/property_type_converters.h"
@@ -164,34 +167,70 @@ class WindowTreeClientTest : public test::AuraMusClientTestBase {
     std::unique_ptr<WindowTreeHostMus> host;
   };
 
-  std::unique_ptr<TopLevel> CreateWindowTreeHostForTopLevel() {
-    std::unique_ptr<TopLevel> top_level = std::make_unique<TopLevel>();
-    top_level->host = std::make_unique<WindowTreeHostMus>(
-        CreateInitParamsForTopLevel(window_tree_client_impl()));
-    top_level->host->InitHost();
-    Window* top_level_window = top_level->host->window();
+  void CreateCaptureClientForTopLevel(TopLevel* top_level) {
     top_level->capture_client =
         std::make_unique<client::DefaultCaptureClient>();
-    client::SetCaptureClient(top_level_window, top_level->capture_client.get());
+    client::SetCaptureClient(top_level->host->window(),
+                             top_level->capture_client.get());
     window_tree_client_impl()->capture_synchronizer()->AttachToCaptureClient(
         top_level->capture_client.get());
+  }
 
-    // Ack the request to the windowtree to create the new window.
-    uint32_t change_id = 0;
-    EXPECT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
-        WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-    EXPECT_EQ(window_tree()->window_id(), server_id(top_level_window));
+  viz::LocalSurfaceIdAllocation GenerateLocalSurfaceIdForNewTopLevel() {
+    parent_local_surface_id_allocator_.GenerateId();
+    return parent_local_surface_id_allocator_
+        .GetCurrentLocalSurfaceIdAllocation();
+  }
 
+  viz::LocalSurfaceIdAllocation GenerateChildLocalIdFromParentAllocator() {
+    viz::LocalSurfaceId current_id =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id();
+    return viz::LocalSurfaceIdAllocation(
+        viz::LocalSurfaceId(current_id.parent_sequence_number(),
+                            current_id.child_sequence_number() + 1,
+                            current_id.embed_token()),
+        base::TimeTicks::Now());
+  }
+
+  void AckNewTopLevelWindow(TopLevel* top_level, uint32_t change_id) {
+    Window* top_level_window = top_level->host->window();
     ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
     data->window_id = server_id(top_level_window);
     data->visible = true;
     window_tree_client()->OnTopLevelCreated(
-        change_id, std::move(data), next_display_id_++, true, base::nullopt);
+        change_id, std::move(data), next_display_id_++, true,
+        GenerateLocalSurfaceIdForNewTopLevel());
     EXPECT_EQ(0u, window_tree()->GetChangeCountForType(
                       WindowTreeChangeType::VISIBLE));
     EXPECT_TRUE(top_level_window->TargetVisibility());
+  }
+
+  void AckNewTopLevelWindow(TopLevel* top_level) {
+    // Ack the request to the windowtree to create the new window.
+    uint32_t change_id = 0;
+    EXPECT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+        WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
+    EXPECT_EQ(window_tree()->window_id(), server_id(top_level->host->window()));
+
+    AckNewTopLevelWindow(top_level, change_id);
+  }
+
+  // Returns a TopLevel with the |host| and |capture_client|.
+  std::unique_ptr<TopLevel> CreateTopLevel() {
+    std::unique_ptr<TopLevel> top_level = std::make_unique<TopLevel>();
+    top_level->host = std::make_unique<WindowTreeHostMus>(
+        CreateInitParamsForTopLevel(window_tree_client_impl()));
+    top_level->host->InitHost();
+    CreateCaptureClientForTopLevel(top_level.get());
+
+    // Ack the request to the windowtree to create the new window.
+    AckNewTopLevelWindow(top_level.get());
     return top_level;
   }
+
+ protected:
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
  private:
   int64_t next_display_id_ = 1;
@@ -250,16 +289,15 @@ TEST_F(WindowTreeClientTest, SetBoundsFailed) {
   EXPECT_EQ(original_bounds, window.bounds());
 }
 
-// Verifies bounds and the viz::LocalSurfaceId associated with the bounds are
-// reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   WindowPortMusTestHelper(&window).SimulateEmbedding();
-  // SimulateEmbedding() generates a bounds change.
+  // SimulateEmbedding() triggers a bounds change.
   ASSERT_TRUE(
       window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS, true));
 
+  // Create a new LocalSurfaceIdAllocation and change the bounds.
   const gfx::Rect original_bounds(window.bounds());
   const viz::LocalSurfaceId original_local_surface_id(
       window.GetLocalSurfaceIdAllocation().local_surface_id());
@@ -273,13 +311,11 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   const viz::LocalSurfaceId new_surface_id =
       window_mus->GetLocalSurfaceIdAllocation().local_surface_id();
 
-  // Reverting the change should also revert the viz::LocalSurfaceId.
+  // Return the bounds.
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS,
                                                    false));
   EXPECT_EQ(original_bounds, window.bounds());
   // Whenever the bounds changes a new LocalSurfaceId needs to be allocated.
-  EXPECT_NE(new_surface_id,
-            window.GetLocalSurfaceIdAllocation().local_surface_id());
   EXPECT_EQ(1u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
 }
@@ -480,14 +516,18 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
   ASSERT_NE(new_bounds, root_window.bounds());
   root_window.SetBounds(new_bounds);
   EXPECT_EQ(new_bounds, root_window.bounds());
+  const viz::LocalSurfaceIdAllocation initial_local_surface_id_allocation =
+      root_window.GetLocalSurfaceIdAllocation();
 
   // Simulate the server responding with a bounds change.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 101, 102));
-  const viz::LocalSurfaceId server_changed_local_surface_id(
-      1, base::UnguessableToken::Create());
+  const viz::LocalSurfaceIdAllocation
+      server_changed_local_surface_id_allocation(
+          viz::LocalSurfaceId(1, base::UnguessableToken::Create()),
+          base::TimeTicks::Now());
   window_tree_client()->OnWindowBoundsChanged(
       server_id(&root_window), original_bounds, server_changed_bounds,
-      server_changed_local_surface_id);
+      server_changed_local_surface_id_allocation);
 
   WindowMus* root_window_mus = WindowMus::Get(&root_window);
   ASSERT_NE(nullptr, root_window_mus);
@@ -500,6 +540,10 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS,
                                                    false));
   EXPECT_EQ(server_changed_bounds, root_window.bounds());
+  // LocalSurfaceIdAllocation, for non-embed/top-levels is entirely controlled
+  // by the client.
+  EXPECT_EQ(initial_local_surface_id_allocation,
+            root_window_mus->GetLocalSurfaceIdAllocation());
 
   // Simulate server changing back to original bounds. Should take immediately.
   window_tree_client()->OnWindowBoundsChanged(server_id(&root_window),
@@ -1563,8 +1607,9 @@ TEST_F(WindowTreeClientTest, NewTopLevelWindow) {
   ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
   data->window_id = server_id(top_level);
   const int64_t display_id = 1;
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, false, base::nullopt);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, false,
+      GenerateLocalSurfaceIdForNewTopLevel());
 
   EXPECT_FALSE(window_tree_host->window()->TargetVisibility());
 
@@ -1604,8 +1649,9 @@ TEST_F(WindowTreeClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true, base::nullopt);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true,
+      GenerateLocalSurfaceIdForNewTopLevel());
   EXPECT_EQ(
       0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
 
@@ -1656,9 +1702,9 @@ TEST_F(WindowTreeClientTest, NewWindowGetsAllChangesInFlight) {
   uint32_t new_window_in_flight_change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &new_window_in_flight_change_id));
-  window_tree_client()->OnTopLevelCreated(new_window_in_flight_change_id,
-                                          std::move(data), display_id, true,
-                                          base::nullopt);
+  window_tree_client()->OnTopLevelCreated(
+      new_window_in_flight_change_id, std::move(data), display_id, true,
+      GenerateLocalSurfaceIdForNewTopLevel());
 
   // The only value that should take effect is the property for 'yy' as it was
   // not in flight.
@@ -1678,12 +1724,6 @@ TEST_F(WindowTreeClientTest, NewWindowGetsAllChangesInFlight) {
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::VISIBLE, false));
   EXPECT_TRUE(top_level->TargetVisibility());
-  window_tree()->AckAllChangesOfType(WindowTreeChangeType::BOUNDS, false);
-  // The bounds of the top_level is always at the origin.
-  EXPECT_EQ(gfx::Rect(bounds_from_server.size()), top_level->bounds());
-  // But the bounds of the WindowTreeHost is display relative.
-  EXPECT_EQ(bounds_from_server,
-            top_level->GetRootWindow()->GetHost()->GetBoundsInPixels());
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::PROPERTY, false);
   EXPECT_EQ(server_test_property1_value,
             top_level->GetProperty(kTestPropertyKey1));
@@ -1935,8 +1975,9 @@ TEST_F(WindowTreeClientTest, TopLevelWindowDestroyedBeforeCreateComplete) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
 
   const int64_t display_id = 1;
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true, base::nullopt);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true,
+      GenerateLocalSurfaceIdForNewTopLevel());
   EXPECT_EQ(initial_root_count, window_tree_client_impl()->GetRoots().size());
 }
 
@@ -2217,8 +2258,8 @@ TEST_F(WindowTreeClientTest, OnWindowTreeCaptureChanged) {
 }
 
 TEST_F(WindowTreeClientTest, TwoWindowTreesRequestCapture) {
-  std::unique_ptr<TopLevel> top_level1 = CreateWindowTreeHostForTopLevel();
-  std::unique_ptr<TopLevel> top_level2 = CreateWindowTreeHostForTopLevel();
+  std::unique_ptr<TopLevel> top_level1 = CreateTopLevel();
+  std::unique_ptr<TopLevel> top_level2 = CreateTopLevel();
 
   aura::Window* root1 = top_level1->host->window();
   aura::Window* root2 = top_level2->host->window();
@@ -2387,7 +2428,7 @@ TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
   window_tree_client()->OnWindowBoundsChanged(
       server_id(root_window()), original_bounds, server_changed_bounds,
-      base::nullopt);
+      GenerateLocalSurfaceIdForNewTopLevel());
   EXPECT_EQ(server_changed_bounds, root_window()->bounds());
 }
 
@@ -2405,8 +2446,9 @@ TEST_F(WindowTreeClientTestHighDPI, NewTopLevelWindowBounds) {
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true, base::nullopt);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true,
+      GenerateLocalSurfaceIdForNewTopLevel());
 
   // aura::Window should operate in DIP and aura::WindowTreeHost should operate
   // in pixels. Only the size is compared for |top_level| as the WindowTreeHost
@@ -2701,6 +2743,130 @@ TEST_F(WindowTreeClientTest, OcclusionStateFromServer) {
         {{server_id(&window), test.changed_state_from_server}});
     EXPECT_EQ(test.expected_state, window.occlusion_state()) << test.name;
   }
+}
+
+// Assertions around LocalSurfaceIds for top-levels.
+TEST_F(WindowTreeClientTest, TopLevelSurfaceIds) {
+  std::unique_ptr<TopLevel> top_level = std::make_unique<TopLevel>();
+  top_level->host = std::make_unique<WindowTreeHostMus>(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  top_level->host->InitHost();
+  CreateCaptureClientForTopLevel(top_level.get());
+
+  viz::LocalSurfaceIdAllocation initial_lsia =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+  uint32_t new_top_level_change_id = 0;
+  ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+      WindowTreeChangeType::NEW_TOP_LEVEL, &new_top_level_change_id));
+  EXPECT_EQ(0u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  top_level->host->SetBoundsInPixels(gfx::Rect(1, 2, 3, 4));
+  EXPECT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  // As the initial LocalSurfaceId comes from the server, there shouldn't be
+  // a LocalSurfaceId in the client yet.
+  EXPECT_FALSE(window_tree()->last_local_surface_id());
+  EXPECT_FALSE(top_level->host->compositor()
+                   ->GetLocalSurfaceIdAllocation()
+                   .local_surface_id()
+                   .is_valid());
+
+  size_t number_of_changes = window_tree()->number_of_changes();
+  AckNewTopLevelWindow(top_level.get(), new_top_level_change_id);
+
+  // Still no surface id as bounds still in flight.
+  EXPECT_FALSE(window_tree()->last_local_surface_id());
+
+  // No new changes.
+  EXPECT_EQ(number_of_changes, window_tree()->number_of_changes());
+
+  EXPECT_EQ(
+      0u,
+      window_tree()->get_and_clear_update_local_surface_id_from_child_count());
+  // Ack the bounds change.
+  EXPECT_TRUE(
+      window_tree()->AckFirstChangeOfType(WindowTreeChangeType::BOUNDS, true));
+
+  EXPECT_EQ(
+      1u,
+      window_tree()->get_and_clear_update_local_surface_id_from_child_count());
+  viz::LocalSurfaceIdAllocation lsia =
+      GenerateChildLocalIdFromParentAllocator();
+  ASSERT_TRUE(window_tree()->last_local_surface_id());
+  Window* top_level_window = top_level->host->window();
+  EXPECT_EQ(top_level_window->GetLocalSurfaceIdAllocation().local_surface_id(),
+            *window_tree()->last_local_surface_id());
+  EXPECT_EQ(top_level->host->compositor()
+                ->GetLocalSurfaceIdAllocation()
+                .local_surface_id(),
+            *window_tree()->last_local_surface_id());
+  EXPECT_EQ(lsia.local_surface_id(),
+            top_level_window->GetLocalSurfaceIdAllocation().local_surface_id());
+}
+
+TEST_F(WindowTreeClientTest, TopLevelBoundsChangeFails) {
+  std::unique_ptr<TopLevel> top_level = std::make_unique<TopLevel>();
+  top_level->host = std::make_unique<WindowTreeHostMus>(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  top_level->host->InitHost();
+  CreateCaptureClientForTopLevel(top_level.get());
+
+  aura::Window* root = top_level->host->window();
+
+  AckNewTopLevelWindow(top_level.get());
+  EXPECT_EQ(0u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  ASSERT_TRUE(root->GetLocalSurfaceIdAllocation().IsValid());
+  EXPECT_EQ(
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id()
+          .parent_sequence_number(),
+      root->GetLocalSurfaceIdAllocation()
+          .local_surface_id()
+          .parent_sequence_number());
+
+  // Resize the window.
+  const gfx::Rect initial_bounds(1, 2, 3, 4);
+  top_level->host->SetBoundsInPixels(initial_bounds);
+  auto initial_lsia = root->GetLocalSurfaceIdAllocation();
+  EXPECT_TRUE(initial_lsia.IsValid());
+  EXPECT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  // The client should increment the child_sequence_number when asking for a new
+  // bounds.
+  auto expected_lsia = GenerateChildLocalIdFromParentAllocator();
+  EXPECT_EQ(expected_lsia.local_surface_id(),
+            window_tree()->last_local_surface_id());
+  parent_local_surface_id_allocator_.UpdateFromChild(expected_lsia);
+
+  // Server responds with a bounds change. This isn't immediately processed as
+  // client waiting for ack from SetBoundsInPixels() call above.
+  parent_local_surface_id_allocator_.GenerateId();
+  const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
+  window_tree_client()->OnWindowBoundsChanged(
+      server_id(root), server_changed_bounds, server_changed_bounds,
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+  const viz::LocalSurfaceId local_surface_id1 =
+      root->GetLocalSurfaceIdAllocation().local_surface_id();
+  EXPECT_EQ(expected_lsia.local_surface_id(), local_surface_id1);
+  // There should still only be 1 bounds change.
+  EXPECT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+
+  // Server responds with false to first bounds changes. Results in reverting to
+  // |server_changed_bounds| *and* increasing the parent_sequence_number.
+  EXPECT_TRUE(
+      window_tree()->AckFirstChangeOfType(WindowTreeChangeType::BOUNDS, false));
+  expected_lsia =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+  const viz::LocalSurfaceId local_surface_id2 =
+      root->GetLocalSurfaceIdAllocation().local_surface_id();
+  EXPECT_EQ(server_changed_bounds, root->bounds());
+  EXPECT_EQ(server_changed_bounds, top_level->host->GetBoundsInPixels());
+  EXPECT_EQ(expected_lsia.local_surface_id(), local_surface_id2);
+  // No new bounds changes should be generated.
+  EXPECT_EQ(0u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
 }
 
 }  // namespace aura

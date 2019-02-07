@@ -74,17 +74,20 @@ bool WindowTreeTestHelper::ReorderWindow(aura::Window* window,
 bool WindowTreeTestHelper::SetWindowBounds(
     aura::Window* window,
     const gfx::Rect& bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   return window_tree_->SetWindowBoundsImpl(ClientWindowIdForWindow(window),
-                                           bounds, local_surface_id);
+                                           bounds, local_surface_id_allocation);
 }
 
-void WindowTreeTestHelper::SetWindowBoundsWithAck(aura::Window* window,
-                                                  const gfx::Rect& bounds,
-                                                  uint32_t change_id) {
-  base::Optional<viz::LocalSurfaceId> local_surface_id;
+void WindowTreeTestHelper::SetWindowBoundsWithAck(
+    aura::Window* window,
+    const gfx::Rect& bounds,
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation,
+    uint32_t change_id) {
   window_tree_->SetWindowBounds(change_id, TransportIdForWindow(window), bounds,
-                                local_surface_id);
+                                local_surface_id_allocation);
 }
 
 void WindowTreeTestHelper::SetClientArea(
