@@ -55,11 +55,14 @@ def GetParser():
       '--manifest-file', type='path',
       help='Sync to an existing local manifest file.')
 
-  manifest_group.add_argument(
+  manifest_url_ex = manifest_group.add_mutually_exclusive_group()
+  manifest_url_ex.add_argument(
       '--external', action='store_true', default=False,
       help='Sync to the external version of a manifest. Switch from '
            'manifest-versions-internal to manifest-versions for buildspecs. '
            'Not usable with --manifest.')
+  manifest_url_ex.add_argument(
+      '--manifest-url', help='Manually set URL to fetch repo manifest from.')
 
   patch_group = parser.add_argument_group(
       'Patch',
@@ -179,7 +182,9 @@ def main(argv):
   if local_manifest:
     logging.info('Using local_manifest: %s', local_manifest)
 
-  if options.external:
+  if options.manifest_url:
+    manifest_url = options.manifest_url
+  elif options.external:
     manifest_url = config_lib.GetSiteParams().MANIFEST_URL
   else:
     manifest_url = config_lib.GetSiteParams().MANIFEST_INT_URL

@@ -35,6 +35,7 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
     self.manifest = os.path.join(self.tempdir, 'manifest.xml')
     self.mv_ext = os.path.join(self.tempdir, 'mv_ext')
     self.mv_int = os.path.join(self.tempdir, 'mv_int')
+    self.manifest_url = 'manifest.com'
 
     self.repo_mock = self.PatchObject(
         repository, 'RepoRepository', autospec=True)
@@ -88,6 +89,26 @@ class RepoSyncManifestTest(cros_test_lib.RunCommandTempDirTestCase):
         mock.call(
             directory=self.repo_dir,
             manifest_repo_url=self.EXT_MANIFEST_URL,
+            branch='master',
+            git_cache_dir=None,
+        ),
+        mock.call().Sync(detach=True, local_manifest=None)
+    ])
+
+  def testMinimalManifestUrl(self):
+    repo_sync_manifest.main([
+        '--repo-root', self.repo_dir,
+        '--manifest-url', self.manifest_url,
+    ])
+
+    # Ensure manifest_versions is not updated.
+    self.assertEqual(self.refresh_manifest_mock.mock_calls, [])
+
+    # Ensure RepoRepository created and Sync'd as expected.
+    self.assertEqual(self.repo_mock.mock_calls, [
+        mock.call(
+            directory=self.repo_dir,
+            manifest_repo_url=self.manifest_url,
             branch='master',
             git_cache_dir=None,
         ),
