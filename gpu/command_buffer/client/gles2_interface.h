@@ -34,7 +34,7 @@ class GLES2Interface {
   GLES2Interface() = default;
   virtual ~GLES2Interface() = default;
 
-  virtual void FreeSharedMemory(void*) {};
+  virtual void FreeSharedMemory(void*) {}
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

@@ -748,7 +748,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetReadyState(DocumentReadyState);
   bool IsLoadCompleted() const;
 
-  bool IsFreezingInProgress() const { return is_freezing_in_progress_; };
+  bool IsFreezingInProgress() const { return is_freezing_in_progress_; }
 
   enum ParsingState { kParsing, kInDOMContentLoaded, kFinishedParsing };
   void SetParsingState(ParsingState);
@@ -1676,7 +1676,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SetFreezingInProgress(bool is_freezing_in_progress) {
     is_freezing_in_progress_ = is_freezing_in_progress;
-  };
+  }
 
   DocumentLifecycle lifecycle_;
 

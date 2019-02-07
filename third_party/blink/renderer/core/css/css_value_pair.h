@@ -54,7 +54,7 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
 
   bool KeepIdenticalValues() const {
     return identical_values_policy_ == kKeepIdenticalValues;
-  };
+  }
 
   String CustomCSSText() const {
     String first = first_->CssText();

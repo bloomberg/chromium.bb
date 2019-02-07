@@ -118,17 +118,16 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
                           media::OUTPUT_DEVICE_STATUS_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::PipelineStatus,
-                          media::PipelineStatus::PIPELINE_STATUS_MAX);
+                          media::PipelineStatus::PIPELINE_STATUS_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCodec, media::kVideoCodecMax)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::WaitingReason,
-                          media::WaitingReason::kMaxValue);
+IPC_ENUM_TRAITS_MAX_VALUE(media::WaitingReason, media::WaitingReason::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::WatchTimeKey,
-                          media::WatchTimeKey::kWatchTimeKeyMax);
+                          media::WatchTimeKey::kWatchTimeKeyMax)
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MIN,
@@ -139,7 +138,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoRotation, media::VIDEO_ROTATION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::container_names::MediaContainerName,
-                          media::container_names::CONTAINER_MAX);
+                          media::container_names::CONTAINER_MAX)
 
 #if defined(OS_ANDROID)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::MediaDrmKeyType,
@@ -151,19 +150,19 @@ IPC_ENUM_TRAITS_VALIDATE(
     media::VideoColorSpace::PrimaryID,
     static_cast<int>(value) ==
         static_cast<int>(
-            media::VideoColorSpace::GetPrimaryID(static_cast<int>(value))));
+            media::VideoColorSpace::GetPrimaryID(static_cast<int>(value))))
 
 IPC_ENUM_TRAITS_VALIDATE(
     media::VideoColorSpace::TransferID,
     static_cast<int>(value) ==
         static_cast<int>(
-            media::VideoColorSpace::GetTransferID(static_cast<int>(value))));
+            media::VideoColorSpace::GetTransferID(static_cast<int>(value))))
 
 IPC_ENUM_TRAITS_VALIDATE(
     media::VideoColorSpace::MatrixID,
     static_cast<int>(value) ==
         static_cast<int>(
-            media::VideoColorSpace::GetMatrixID(static_cast<int>(value))));
+            media::VideoColorSpace::GetMatrixID(static_cast<int>(value))))
 
 // Struct traits.
 

@@ -212,7 +212,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
    public:
     iterator erase(iterator position) {
       return MidiPortStateBase::erase(position);
-    };
+    }
     void push_back(std::unique_ptr<MidiPort> port) {
       MidiPortStateBase::push_back(std::move(port));
     }
@@ -359,7 +359,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   struct SndMidiEventDeleter {
     void operator()(snd_midi_event_t* coder) const {
       snd_midi_event_free(coder);
-    };
+    }
   };
 
   using SourceMap = std::unordered_map<int, uint32_t>;

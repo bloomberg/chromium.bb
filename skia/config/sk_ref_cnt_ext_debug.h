@@ -47,17 +47,17 @@ inline SkRefCnt::~SkRefCnt() { }
 // Bootstrap for Blink's WTF::RefPtr
 
 namespace WTF {
-  inline void adopted(const SkRefCnt* object) {
-    if (!object)
-      return;
-    object->adopted();
-  }
-  inline void requireAdoption(const SkRefCnt* object) {
-    if (!object)
-      return;
-    object->requireAdoption();
-  }
-};
+inline void adopted(const SkRefCnt* object) {
+  if (!object)
+    return;
+  object->adopted();
+}
+inline void requireAdoption(const SkRefCnt* object) {
+  if (!object)
+    return;
+  object->requireAdoption();
+}
+}  // namespace WTF
 
 using WTF::adopted;
 using WTF::requireAdoption;

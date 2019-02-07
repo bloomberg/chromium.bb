@@ -59,9 +59,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   void SetResizeSizes(int resize_inside_bounds_size,
                       int resize_outside_bounds_size,
                       int resize_area_corner_size);
-  int resize_inside_bounds_size() const {
-    return resize_inside_bounds_size_;
-  };
+  int resize_inside_bounds_size() const { return resize_inside_bounds_size_; }
 
  private:
   // views::NonClientFrameView implementation.

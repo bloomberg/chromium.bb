@@ -36,7 +36,7 @@ bool IsEnabled(const PrefService& prefs);
 class ContextualSearchPreference {
  public:
   // No public constructor, use |GetInstance|.
-  ~ContextualSearchPreference(){};
+  ~ContextualSearchPreference() {}
 
   // Returns the singleton instance of this class, created when needed.
   static ContextualSearchPreference* GetInstance();

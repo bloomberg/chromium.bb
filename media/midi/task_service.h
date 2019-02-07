@@ -104,6 +104,6 @@ class MIDI_EXPORT TaskService final {
   DISALLOW_COPY_AND_ASSIGN(TaskService);
 };
 
-};  // namespace midi
+}  // namespace midi
 
 #endif  // MEDIA_MIDI_TASK_SERVICE_H_

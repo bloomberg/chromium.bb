@@ -88,7 +88,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
         needs_url_resolution_(false),
         has_font_units_(false),
         has_root_font_units_(false),
-        absolutized_(false){};
+        absolutized_(false) {}
 
   CSSVariableData(const CSSParserTokenRange&,
                   bool is_animation_tainted,
