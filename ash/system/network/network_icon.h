@@ -32,6 +32,12 @@ enum IconType {
 // Strength of a wireless signal.
 enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG, NOT_WIRELESS };
 
+// Returns an image to represent either a fully connected network or a
+// disconnected network.
+const gfx::ImageSkia GetBasicImage(IconType icon_type,
+                                   const std::string& network_type,
+                                   bool connected);
+
 // Returns and caches an image for non VPN |network| which must not be null.
 // Use this for non virtual networks and for the default (tray) icon.
 // |icon_type| determines the color theme.
@@ -50,22 +56,28 @@ ASH_EXPORT gfx::ImageSkia GetImageForVPN(const chromeos::NetworkState* vpn,
                                          IconType icon_type,
                                          bool* animating = nullptr);
 
-// Gets an image for a Wi-Fi network, either full strength or strike-through
+// Returns an image for a Wi-Fi network, either full strength or strike-through
 // based on |enabled|.
 ASH_EXPORT gfx::ImageSkia GetImageForWiFiEnabledState(
     bool enabled,
     IconType = ICON_TYPE_DEFAULT_VIEW);
 
-// Gets the connecting image for a shill network non-VPN type.
+// Returns the connecting image for a shill network non-VPN type.
 gfx::ImageSkia GetConnectingImageForNetworkType(const std::string& network_type,
                                                 IconType icon_type);
 
-// Gets the disconnected image for a shill network type.
+// Returns the connected image for |connected_network| and |network_type| with a
+// connecting VPN badge.
+gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
+    const chromeos::NetworkState* connected_network,
+    IconType icon_type);
+
+// Returns the disconnected image for a shill network type.
 gfx::ImageSkia GetDisconnectedImageForNetworkType(
     const std::string& network_type);
 
-// Gets the full strength image for a Wi-Fi network using |icon_color| for the
-// main icon and |badge_color| for the badge.
+// Returns the full strength image for a Wi-Fi network using |icon_color| for
+// the main icon and |badge_color| for the badge.
 ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
                                                     SkColor badge_color);
 
@@ -78,13 +90,6 @@ ASH_EXPORT base::string16 GetLabelForNetwork(
 // Updates and returns the appropriate message id if the cellular network
 // is uninitialized.
 ASH_EXPORT int GetCellularUninitializedMsg();
-
-// Sets the |icon| and |label| for |icon_type|. |animating| is an optional out
-// parameter that is set to true when the returned image should be animated.
-ASH_EXPORT void GetDefaultNetworkImageAndLabel(IconType icon_type,
-                                               gfx::ImageSkia* image,
-                                               base::string16* label,
-                                               bool* animating = nullptr);
 
 // Called when the list of networks changes. Retrieves the list of networks
 // from the global NetworkStateHandler instance and removes cached entries
