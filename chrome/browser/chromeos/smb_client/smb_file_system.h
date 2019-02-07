@@ -239,6 +239,11 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   // updated, |reply| is executed.
   void RequestUpdatedCredentials(base::OnceClosure reply);
 
+  // Requests updated share path for the mount. Once the share path have been,
+  // updated, |reply| is executed.
+  void RequestUpdatedSharePath(
+      SmbService::StartReadDirIfSuccessfulCallback reply);
+
   void HandleRequestUnmountCallback(
       storage::AsyncFileUtil::StatusCallback callback,
       smbprovider::ErrorType error);
