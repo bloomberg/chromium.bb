@@ -155,6 +155,37 @@ testcase.openQuickViewUsb = async function() {
 };
 
 /**
+ * Tests opening Quick View on a removable partition.
+ */
+testcase.openQuickViewRemovablePartitions = async function() {
+  const PARTITION_ONE_QUERY = '#directory-tree [entry-label="partition-1"]';
+
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount USB volume.
+  await sendTestMessage({name: 'mountFakePartitions'});
+
+  // Wait for removable partition-1 to appear in the directory tree.
+  const partition = await remoteCall.waitForElement(appId, PARTITION_ONE_QUERY);
+  chrome.test.assertEq(
+      'removable', partition.attributes['volume-type-for-testing']);
+
+  // Click to open the partition-1.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [PARTITION_ONE_QUERY]),
+      'fakeMouseClick failed');
+
+  // Check: the 'hello.txt' file should appear in the file list.
+  const files = [ENTRIES.hello.getExpectedRow()];
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
+
+  // Open the file in Quick View.
+  await openQuickView(appId, ENTRIES.hello.nameText);
+};
+
+/**
  * Tests opening Quick View on an MTP file.
  */
 testcase.openQuickViewMtp = async function() {
