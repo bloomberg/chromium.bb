@@ -62,7 +62,7 @@ function FileSelection(indexes, entries) {
    */
   this.additionalPromise_ = null;
 
-  entries.forEach(function(entry) {
+  entries.forEach(entry => {
     if (this.iconType == null) {
       this.iconType = FileType.getIcon(entry);
     } else if (this.iconType != 'unknown') {
@@ -78,7 +78,7 @@ function FileSelection(indexes, entries) {
       this.directoryCount += 1;
     }
     this.totalCount++;
-  }.bind(this));
+  });
 }
 
 FileSelection.prototype.computeAdditional = function(metadataModel) {
@@ -88,21 +88,21 @@ FileSelection.prototype.computeAdditional = function(metadataModel) {
             .get(
                 this.entries,
                 constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES)
-            .then(function(props) {
-              const present = props.filter(function(p) {
+            .then(props => {
+              const present = props.filter(p => {
                 // If no availableOffline property, then assume it's available.
                 return !('availableOffline' in p) || p.availableOffline;
               });
-              const hosted = props.filter(function(p) {
+              const hosted = props.filter(p => {
                 return p.hosted;
               });
               this.anyFilesNotInCache = present.length !== props.length;
               this.anyFilesHosted = !!hosted.length;
-              this.mimeTypes = props.map(function(value) {
+              this.mimeTypes = props.map(value => {
                 return value.contentMimeType || '';
               });
               return true;
-            }.bind(this));
+            });
   }
   return this.additionalPromise_;
 };
@@ -221,10 +221,10 @@ FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
  */
 FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   const indexes = this.listContainer_.selectionModel.selectedIndexes;
-  const entries = indexes.map(function(index) {
+  const entries = indexes.map(index => {
     return /** @type {!Entry} */ (
         this.directoryModel_.getFileList().item(index));
-  }.bind(this));
+  });
   this.selection = new FileSelection(indexes, entries);
 
   if (this.selectionUpdateTimer_) {
@@ -249,12 +249,12 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   this.lastFileSelectionTime_ = now;
 
   const selection = this.selection;
-  this.selectionUpdateTimer_ = setTimeout(function() {
+  this.selectionUpdateTimer_ = setTimeout(() => {
     this.selectionUpdateTimer_ = null;
     if (this.selection === selection) {
       this.updateFileSelectionAsync_(selection);
     }
-  }.bind(this), updateDelay);
+  }, updateDelay);
 
   cr.dispatchSimpleEvent(this, FileSelectionHandler.EventType.CHANGE);
 };
