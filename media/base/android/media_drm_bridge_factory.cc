@@ -83,20 +83,18 @@ void MediaDrmBridgeFactory::Create(
                      weak_factory_.GetWeakPtr()));
 }
 
-void MediaDrmBridgeFactory::OnStorageInitialized() {
+void MediaDrmBridgeFactory::OnStorageInitialized(bool success) {
   DCHECK(storage_);
+  DVLOG(2) << __func__ << ": success = " << success
+           << ", origin_id = " << storage_->origin_id();
 
-  // MediaDrmStorageBridge should always return a valid origin ID after
-  // initialize. Otherwise the pipe is broken and we should not create
-  // MediaDrmBridge here.
-  auto origin_id = storage_->origin_id();
-  DVLOG(2) << __func__ << ": origin_id = " << origin_id;
-  if (origin_id.empty()) {
+  // MediaDrmStorageBridge should only be created on a successful Initialize().
+  if (!success) {
     std::move(cdm_created_cb_).Run(nullptr, "Cannot fetch origin ID");
     return;
   }
 
-  CreateMediaDrmBridge(origin_id);
+  CreateMediaDrmBridge(storage_->origin_id());
 }
 
 void MediaDrmBridgeFactory::CreateMediaDrmBridge(const std::string& origin_id) {
