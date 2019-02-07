@@ -269,11 +269,14 @@ AtomicString MarkupAccumulator::LookupNamespaceURI(const AtomicString& prefix) {
 // https://w3c.github.io/DOM-Parsing/#dfn-generating-a-prefix
 AtomicString MarkupAccumulator::GeneratePrefix(
     const AtomicString& new_namespace) {
-  // 1. Let generated prefix be the concatenation of the string "ns" and the
-  // current numerical value of prefix index.
-  AtomicString generated_prefix = "ns" + String::Number(prefix_index_);
-  // 2. Let the value of prefix index be incremented by one.
-  ++prefix_index_;
+  AtomicString generated_prefix;
+  do {
+    // 1. Let generated prefix be the concatenation of the string "ns" and the
+    // current numerical value of prefix index.
+    generated_prefix = "ns" + String::Number(prefix_index_);
+    // 2. Let the value of prefix index be incremented by one.
+    ++prefix_index_;
+  } while (LookupNamespaceURI(generated_prefix));
   // 3. Add to map the generated prefix given the new namespace namespace.
   AddPrefix(generated_prefix, new_namespace);
   // 4. Return the value of generated prefix.
