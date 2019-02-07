@@ -1145,7 +1145,7 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
     return gfx::SizeF();
 
   return gfx::ScaleSize(gfx::SizeF(inner_node->container_bounds),
-                        1.0f / current_page_scale_factor());
+                        1.0f / page_scale_factor_for_scroll());
 }
 
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
