@@ -135,7 +135,7 @@ message BaseReply {
   optional CryptohomeErrorCode error = 1;
 
   extensions 1000 to max;
-  // Next ID to use for extensions: 1012
+  // Next ID to use for extensions: 1013
 }
 
 // The MountRequest call may return more than just success or failure
@@ -473,4 +473,26 @@ message MountGuestRequest {
 // but in the future we may implement per-user unmount, at which point we can
 // extend this proto with the necessary information.
 message UnmountRequest {
+}
+
+// Lock the device to single user use.
+message LockToSingleUserMountUntilRebootRequest {
+  optional AccountIdentifier account_id = 1;
+}
+
+// One of possible results when trying to disable the login until reboot.
+enum LockToSingleUserMountUntilRebootResult {
+  SUCCESS = 0;
+  FAILED_TO_READ_PCR = 1;
+  PCR_ALREADY_EXTENDED = 2;
+  FAILED_TO_EXTEND_PCR = 3;
+}
+
+// Informs the caller whether disabling succeeded.
+message LockToSingleUserMountUntilRebootReply {
+  extend BaseReply {
+    optional LockToSingleUserMountUntilRebootReply reply = 1012;
+  }
+  // One of the values from LockToSingleUserMountUntilRebootResult.
+  optional int32 result = 1;
 }
