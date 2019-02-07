@@ -594,6 +594,32 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindInPage_Issue627799) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, DetachFrameWithMatch) {
+  // Detaching an iframe with matches when the main document doesn't
+  // have matches should work and just remove the matches from the
+  // removed frame.
+  LoadAndWait("/find_in_page_two_frames.html");
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+
+  Find("result", options.Clone());
+  delegate()->WaitForFinalReply();
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(6, results.number_of_matches);
+  EXPECT_EQ(1, results.active_match_ordinal);
+  EXPECT_TRUE(ExecuteScript(shell(),
+                            "document.body.removeChild("
+                            "document.querySelectorAll('iframe')[0])"));
+
+  Find("result", options.Clone());
+  delegate()->WaitForFinalReply();
+  results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(3, results.number_of_matches);
+  EXPECT_EQ(1, results.active_match_ordinal);
+}
+
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
   TestNavigationObserver navigation_observer(contents());
   NavigateToURL(shell(), GURL("about:blank"));
