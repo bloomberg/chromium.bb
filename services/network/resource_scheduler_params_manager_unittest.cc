@@ -444,7 +444,7 @@ TEST_F(ResourceSchedulerParamsManagerTest, ReadInvalidConfigTest) {
   // Skip configuration parameters for index 2 to test that the parser stops
   // when it cannot find the parameters for an index.
   for (int range_index : {1, 3, 4}) {
-    std::string index_str = base::IntToString(range_index);
+    std::string index_str = base::NumberToString(range_index);
     params["EffectiveConnectionType" + index_str] = "Slow-2G";
     params["MaxDelayableRequests" + index_str] = index_str + "0";
     params["NonDelayableWeight" + index_str] = "0";

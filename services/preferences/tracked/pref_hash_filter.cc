@@ -112,7 +112,7 @@ void PrefHashFilter::RegisterProfilePrefs(
   // See GetResetTime for why this is a StringPref and not Int64Pref.
   registry->RegisterStringPref(
       user_prefs::kPreferenceResetTime,
-      base::Int64ToString(base::Time().ToInternalValue()));
+      base::NumberToString(base::Time().ToInternalValue()));
 }
 
 // static
@@ -254,7 +254,7 @@ void PrefHashFilter::FinalizeFilterOnLoad(
   if (did_reset) {
     pref_store_contents->SetString(
         user_prefs::kPreferenceResetTime,
-        base::Int64ToString(base::Time::Now().ToInternalValue()));
+        base::NumberToString(base::Time::Now().ToInternalValue()));
     FilterUpdate(user_prefs::kPreferenceResetTime);
 
     if (reset_on_load_observer_)

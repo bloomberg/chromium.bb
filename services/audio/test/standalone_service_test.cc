@@ -40,7 +40,7 @@ class StandaloneAudioServiceTest : public testing::Test {
   void SetUp() override {
     base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
     cmd_line->AppendSwitchASCII(switches::kAudioServiceQuitTimeoutMs,
-                                base::UintToString(10));
+                                base::NumberToString(10));
   }
 
  private:

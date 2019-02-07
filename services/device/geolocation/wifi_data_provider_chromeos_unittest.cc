@@ -46,8 +46,8 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
         base::DictionaryValue properties;
         std::string mac_address = base::StringPrintf(
             "%02X:%02X:%02X:%02X:%02X:%02X", i, j, 3, 4, 5, 6);
-        std::string channel = base::IntToString(i * 10 + j);
-        std::string strength = base::IntToString(i * 100 + j);
+        std::string channel = base::NumberToString(i * 10 + j);
+        std::string strength = base::NumberToString(i * 100 + j);
         properties.SetKey(shill::kGeoMacAddressProperty,
                           base::Value(mac_address));
         properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));

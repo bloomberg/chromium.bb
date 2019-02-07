@@ -688,7 +688,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
         base::TimeTicks::Now() - request->url_request()->creation_time();
     base::UmaHistogramMediumTimes(
         "ResourceScheduler.RequestQueuingDuration.Priority" +
-            base::IntToString(request->get_request_priority_params().priority),
+            base::NumberToString(
+                request->get_request_priority_params().priority),
         queuing_duration);
 
     InsertInFlightRequest(request);
