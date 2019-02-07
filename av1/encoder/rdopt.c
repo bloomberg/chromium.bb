@@ -7942,7 +7942,7 @@ static int64_t build_and_cost_compound_type(
     }
 
     RD_STATS rd_stats;
-    rd = estimate_yrd_for_sb(cpi, bsize, x, INT64_MAX, &rd_stats);
+    rd = estimate_yrd_for_sb(cpi, bsize, x, ref_best_rd, &rd_stats);
     if (rd != INT64_MAX) {
       rd =
           RDCOST(x->rdmult, *rs2 + *out_rate_mv + rd_stats.rate, rd_stats.dist);
@@ -8989,7 +8989,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
     }
 
     RD_STATS rd_stats;
-    rd = estimate_yrd_for_sb(cpi, bsize, x, INT64_MAX, &rd_stats);
+    rd = estimate_yrd_for_sb(cpi, bsize, x, ref_best_rd, &rd_stats);
     if (rd != INT64_MAX) {
       rd = RDCOST(x->rdmult, *rate_mv + rmode + rd_stats.rate + rwedge,
                   rd_stats.dist);
@@ -9085,7 +9085,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
       }
       // Evaluate closer to true rd
       RD_STATS rd_stats;
-      rd = estimate_yrd_for_sb(cpi, bsize, x, INT64_MAX, &rd_stats);
+      rd = estimate_yrd_for_sb(cpi, bsize, x, ref_best_rd, &rd_stats);
       if (rd != INT64_MAX) {
         rd = RDCOST(x->rdmult, rmode + tmp_rate_mv + rwedge + rd_stats.rate,
                     rd_stats.dist);
@@ -9794,7 +9794,7 @@ static int compound_type_rd(
           if (cur_type == COMPOUND_AVERAGE) *is_luma_interp_done = 1;
           RD_STATS est_rd_stats;
           const int64_t est_rd =
-              estimate_yrd_for_sb(cpi, bsize, x, INT64_MAX, &est_rd_stats);
+              estimate_yrd_for_sb(cpi, bsize, x, ref_best_rd, &est_rd_stats);
           if (comp_rate[cur_type] != INT_MAX) {
             assert(comp_rate[cur_type] == est_rd_stats.rate);
             assert(comp_dist[cur_type] == est_rd_stats.dist);
@@ -10042,17 +10042,8 @@ static int64_t handle_inter_mode(
       int rs = 0;
       int compmode_interinter_cost = 0;
       mbmi->compound_idx = comp_idx;
-      if (is_comp_pred && comp_idx == 0) {
-        *rd_stats = backup_rd_stats;
-        mbmi->interinter_comp.type = COMPOUND_DISTWTD;
-        mbmi->num_proj_ref = 0;
-        mbmi->motion_mode = SIMPLE_TRANSLATION;
-        mbmi->comp_group_idx = 0;
 
-        const int comp_index_ctx = get_comp_index_context(cm, xd);
-        compmode_interinter_cost +=
-            x->comp_idx_cost[comp_index_ctx][mbmi->compound_idx];
-      }
+      if (is_comp_pred && comp_idx == 0) *rd_stats = backup_rd_stats;
 
       int_mv cur_mv[2];
       if (!build_cur_mv(cur_mv, this_mode, cm, x)) {
@@ -10179,43 +10170,56 @@ static int64_t handle_inter_mode(
       }
 
       int skip_build_pred = 0;
-      if (is_comp_pred && comp_idx) {
-        // Find matching interp filter or set to default interp filter
-        const int need_search =
-            av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
-        int match_found = -1;
-        const InterpFilter assign_filter = cm->interp_filter;
-        int is_luma_interp_done = 0;
-        if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
-          match_found = find_interp_filter_in_stats(x, mbmi);
-        }
-        if (!need_search || match_found == -1) {
-          set_default_interp_filters(mbmi, assign_filter);
-        }
+      if (is_comp_pred) {
+        if (comp_idx == 0) {
+          mbmi->interinter_comp.type = COMPOUND_DISTWTD;
+          mbmi->num_proj_ref = 0;
+          mbmi->motion_mode = SIMPLE_TRANSLATION;
+          mbmi->comp_group_idx = 0;
 
-        int64_t best_rd_compound;
-        const int do_comp_distwtd = !SEPARATE_COMP_DISTWTD_RD;
-        compmode_interinter_cost = compound_type_rd(
-            cpi, x, bsize, mi_col, mi_row, cur_mv, do_comp_distwtd,
-            masked_compound_used, &orig_dst, &tmp_dst, rd_buffers, &rate_mv,
-            &best_rd_compound, rd_stats, ref_best_rd, &is_luma_interp_done);
-        if (ref_best_rd < INT64_MAX &&
-            (best_rd_compound >> 4) * 13 > ref_best_rd) {
-          restore_dst_buf(xd, orig_dst, num_planes);
-          continue;
+          const int comp_index_ctx = get_comp_index_context(cm, xd);
+          compmode_interinter_cost +=
+              x->comp_idx_cost[comp_index_ctx][mbmi->compound_idx];
         }
-        // No need to call av1_enc_build_inter_predictor for luma if
-        // COMPOUND_AVERAGE is selected because it is the first
-        // candidate in compound_type_rd, and the following
-        // compound types searching uses tmp_dst buffer
-
-        if (mbmi->interinter_comp.type == COMPOUND_AVERAGE &&
-            is_luma_interp_done) {
-          if (num_planes > 1) {
-            av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, &orig_dst,
-                                          bsize, AOM_PLANE_U, num_planes - 1);
+        if (comp_idx) {
+          // Find matching interp filter or set to default interp filter
+          const int need_search =
+              av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
+          int match_found = -1;
+          const InterpFilter assign_filter = cm->interp_filter;
+          int is_luma_interp_done = 0;
+          if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
+            match_found = find_interp_filter_in_stats(x, mbmi);
           }
-          skip_build_pred = 1;
+          if (!need_search || match_found == -1) {
+            set_default_interp_filters(mbmi, assign_filter);
+          }
+
+          int64_t best_rd_compound;
+          const int do_comp_distwtd = !SEPARATE_COMP_DISTWTD_RD;
+          compmode_interinter_cost = compound_type_rd(
+              cpi, x, bsize, mi_col, mi_row, cur_mv, do_comp_distwtd,
+              masked_compound_used, &orig_dst, &tmp_dst, rd_buffers, &rate_mv,
+              &best_rd_compound, rd_stats, ref_best_rd, &is_luma_interp_done);
+          if (ref_best_rd < INT64_MAX &&
+              (best_rd_compound >> 4) * (11 + 2 * SEPARATE_COMP_DISTWTD_RD) >
+                  ref_best_rd) {
+            restore_dst_buf(xd, orig_dst, num_planes);
+            continue;
+          }
+          // No need to call av1_enc_build_inter_predictor for luma if
+          // COMPOUND_AVERAGE is selected because it is the first
+          // candidate in compound_type_rd, and the following
+          // compound types searching uses tmp_dst buffer
+
+          if (mbmi->interinter_comp.type == COMPOUND_AVERAGE &&
+              is_luma_interp_done) {
+            if (num_planes > 1) {
+              av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, &orig_dst,
+                                            bsize, AOM_PLANE_U, num_planes - 1);
+            }
+            skip_build_pred = 1;
+          }
         }
       }
 
