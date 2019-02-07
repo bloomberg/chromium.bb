@@ -81,7 +81,7 @@ public class TabRedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    public void testEffectiveIntentRedirect() {
+    public void testEffectiveIntentRedirect_linkNavigation() {
         TabRedirectHandler handler = TabRedirectHandler.create(mContext);
         handler.updateIntent(sYtIntent);
         Assert.assertFalse(handler.isOnNavigation());
@@ -89,6 +89,26 @@ public class TabRedirectHandlerTest {
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
         Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
         handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
+        Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
+        Assert.assertFalse(handler.hasNewResolver(sMoblieYtIntent));
+        Assert.assertTrue(handler.hasNewResolver(sFooIntent));
+        Assert.assertFalse(handler.hasNewResolver(null));
+
+        Assert.assertTrue(handler.isOnNavigation());
+        Assert.assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"IntentHandling"})
+    public void testEffectiveIntentRedirect_formSubmit() {
+        TabRedirectHandler handler = TabRedirectHandler.create(mContext);
+        handler.updateIntent(sYtIntent);
+        Assert.assertFalse(handler.isOnNavigation());
+
+        handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
+        Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
+        handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT, false, false, 0, 1);
         Assert.assertTrue(handler.isOnEffectiveIntentRedirectChain());
         Assert.assertFalse(handler.hasNewResolver(sMoblieYtIntent));
         Assert.assertTrue(handler.hasNewResolver(sFooIntent));
@@ -151,7 +171,7 @@ public class TabRedirectHandlerTest {
         handler.updateIntent(sYtIntent);
         Assert.assertFalse(handler.isOnNavigation());
 
-        handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT, false, false, 0, 0);
+        handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
         Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());
         handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
         Assert.assertFalse(handler.isOnEffectiveIntentRedirectChain());

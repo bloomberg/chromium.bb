@@ -244,6 +244,20 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
+        // It doesn't make sense to allow intent picker without redirect, since form data
+        // is not encoded in the intent (although, in theory, it could be passed in as
+        // an extra data in the intent).
+        checkUrl("http://youtube.com://")
+                .withPageTransition(PageTransition.FORM_SUBMIT)
+                .withHasUserGesture(true)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
+    public void testRedirectFromFormSubmit_NoUserGesture() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
         // If the redirect is not associated with a user gesture, then continue loading in Chrome.
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
@@ -255,14 +269,36 @@ public class ExternalNavigationHandlerTest {
                 .withIsRedirect(true)
                 .withHasUserGesture(false)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
 
-        // It doesn't make sense to allow intent picker without redirect, since form data
-        // is not encoded in the intent (although, in theory, it could be passed in as
-        // an extra data in the intent).
+    @Test
+    @SmallTest
+    public void testRedirectFromFormSubmit_NoUserGesture_OnIntentRedirectChain() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext) {
+            @Override
+            public boolean isOnEffectiveIntentRedirectChain() {
+                return true;
+            }
+        };
+
+        // If the redirect is not associated with a user gesture but came from an incoming intent,
+        // then allow those to launch external intents.
+        checkUrl("market://1234")
+                .withPageTransition(PageTransition.FORM_SUBMIT)
+                .withIsRedirect(true)
+                .withHasUserGesture(false)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
         checkUrl("http://youtube.com://")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
-                .withHasUserGesture(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+                .withIsRedirect(true)
+                .withHasUserGesture(false)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @Test
