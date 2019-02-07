@@ -1131,9 +1131,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
   // Navigate the iframe cross-site.
   TestNavigationObserver load_observer(shell()->web_contents());
   GURL frame_url = embedded_test_server()->GetURL("b.com", "/title2.html");
-  EXPECT_TRUE(
-      ExecuteScript(root->child_at(0)->current_frame_host(),
-                    "window.location.href = '" + frame_url.spec() + "';"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            JsReplace("window.location.href = $1", frame_url)));
   load_observer.Wait();
 
   // Wait for the title to update and ensure it affects the right NavEntry.
@@ -4455,8 +4454,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   EXPECT_TRUE(ExecuteScript(
       shell(),
-      base::StringPrintf("frames['updated-name'].location.href = '%s';",
-                         foo_url.spec().c_str())));
+      JsReplace("frames['updated-name'].location.href = $1", foo_url)));
   frame_observer.Wait();
   EXPECT_EQ(foo_url, root->child_at(0)->current_url());
 }
@@ -5395,7 +5393,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // destroy |rfh| and |rvh| before they are checked in the test.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestFrameNavigationObserver commit_observer(root);
-  EXPECT_TRUE(ExecuteScript(shell(), "location = '" + b_url.spec() + "'"));
+  EXPECT_TRUE(ExecuteScript(shell(), JsReplace("location = $1", b_url)));
   commit_observer.WaitForCommit();
   EXPECT_FALSE(deleted_observer.deleted());
 
@@ -5762,9 +5760,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
   EXPECT_EQ(popup->web_contents()->GetLastCommittedURL(), cross_url);
 
   // Use new window to navigate main window.
-  std::string script =
-      "window.opener.location.href = '" + cross_url.spec() + "'";
-  EXPECT_TRUE(ExecuteScript(popup, script));
+  EXPECT_TRUE(ExecuteScript(
+      popup, JsReplace("window.opener.location.href = $1", cross_url)));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), cross_url);
 }
@@ -6220,10 +6217,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigate the nested frame.
   TestFrameNavigationObserver observer(root->child_at(0)->child_at(0));
-  ASSERT_TRUE(ExecuteScript(
-      root->child_at(0)->current_frame_host(),
-      base::StringPrintf("document.querySelector('iframe').src = '%s';",
-                         cross_site_url_a.spec().c_str())));
+  ASSERT_TRUE(
+      ExecuteScript(root->child_at(0)->current_frame_host(),
+                    JsReplace("document.querySelector('iframe').src = $1",
+                              cross_site_url_a)));
   observer.Wait();
 
   RenderWidgetHostViewChildFrame* first_child_view =
@@ -6342,8 +6339,8 @@ IN_PROC_BROWSER_TEST_F(
       embedded_test_server()->GetURL("c.com", "/counter.html");
   ASSERT_TRUE(ExecuteScript(
       web_contents(),
-      base::StringPrintf("document.getElementsByName('frame1')[0].src = '%s';",
-                         cross_site_url_c.spec().c_str())));
+      JsReplace("document.getElementsByName('frame1')[0].src = $1",
+                cross_site_url_c)));
   navigation_observer.Wait();
 
   // Now investigate compositor frame creation.
@@ -6891,7 +6888,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // Navigate the subframe to a blocked URL.
     TestNavigationObserver load_observer(shell()->web_contents());
     EXPECT_TRUE(ExecuteScript(
-        shell(), "frames[0].location.href = '" + blocked_url.spec() + "';"));
+        shell(), JsReplace("frames[0].location.href = $1", blocked_url)));
     load_observer.Wait();
 
     // The blocked frame's origin should become unique.
@@ -6978,8 +6975,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Try to navigate the subframe to a blocked URL.
   TestNavigationObserver load_observer(shell()->web_contents());
   GURL blocked_url = embedded_test_server()->GetURL("c.com", "/title3.html");
-  EXPECT_TRUE(ExecuteScript(root->child_at(0), "window.location.href = '" +
-                                                   blocked_url.spec() + "';"));
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(0), JsReplace("window.location.href = $1", blocked_url)));
 
   // The blocked frame should still fire a load event in its parent's process.
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -7189,8 +7186,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Have the child frame navigate its parent to its SiteInstance.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  std::string script =
-      base::StringPrintf("parent.location = '%s';", b_url.spec().c_str());
+  auto script = JsReplace("parent.location = $1", b_url);
 
   // Ensure the child has received a user gesture, so that it has permission
   // to framebust.
@@ -7371,7 +7367,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     TestFrameNavigationObserver commit_observer(child_0);
     EXPECT_TRUE(
-        ExecuteScript(child_0, "location.href = '" + data_url_0.spec() + "';"));
+        ExecuteScript(child_0, JsReplace("location.href = $1", data_url_0)));
     commit_observer.WaitForCommit();
   }
   EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -7383,7 +7379,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     TestFrameNavigationObserver commit_observer(child_1);
     EXPECT_TRUE(
-        ExecuteScript(child_1, "location.href = '" + data_url_1.spec() + "';"));
+        ExecuteScript(child_1, JsReplace("location.href = $1", data_url_1)));
     commit_observer.WaitForCommit();
   }
   EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -7479,7 +7475,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     TestFrameNavigationObserver commit_observer(child_0);
     EXPECT_TRUE(
-        ExecuteScript(child_0, "location.href = '" + blank_url.spec() + "';"));
+        ExecuteScript(child_0, JsReplace("location.href = $1", blank_url)));
     commit_observer.WaitForCommit();
   }
   EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -7490,8 +7486,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL blank_url_ref("about:blank#1");
   {
     TestFrameNavigationObserver commit_observer(child_1);
-    EXPECT_TRUE(ExecuteScript(
-        child_1, "location.href = '" + blank_url_ref.spec() + "';"));
+    EXPECT_TRUE(
+        ExecuteScript(child_1, JsReplace("location.href = $1", blank_url_ref)));
     commit_observer.WaitForCommit();
   }
   EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -7687,13 +7683,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DetachInUnloadHandler) {
       "window.onunload=function(e){\n"
       "    window.parent.document.getElementById('child-0').remove();\n"
       "};\n"));
-  std::string script =
-      std::string("window.document.getElementById('child-0').src = \"") +
-      embedded_test_server()
-          ->GetURL("c.com", "/cross_site_iframe_factory.html?c")
-          .spec() +
-      "\"";
-  EXPECT_TRUE(ExecuteScript(root->child_at(0), script.c_str()));
+  auto script = JsReplace("window.document.getElementById('child-0').src = $1",
+                          embedded_test_server()->GetURL(
+                              "c.com", "/cross_site_iframe_factory.html?c"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), script));
 
   deleted_observer.WaitUntilDeleted();
 
@@ -7990,7 +7983,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate main tab to a b.com URL that will not commit.
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
-  EXPECT_TRUE(ExecuteScript(shell(), "location = '" + stall_url.spec() + "'"));
+  EXPECT_TRUE(ExecuteScript(shell(), JsReplace("location = $1", stall_url)));
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // The pending RFH should be in the same process as the popup.
@@ -8049,7 +8042,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   NavigationHandleObserver handle_observer(shell()->web_contents(), stall_url);
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
-  EXPECT_TRUE(ExecuteScript(shell(), "location = '" + stall_url.spec() + "'"));
+  EXPECT_TRUE(ExecuteScript(shell(), JsReplace("location = $1", stall_url)));
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // Kill the b.com process, currently in use by the pending RenderFrameHost
@@ -8243,8 +8236,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   {
     TestFrameNavigationObserver commit_observer(child);
-    EXPECT_TRUE(
-        ExecuteScript(child, "location.href = '" + b_url.spec() + "';"));
+    EXPECT_TRUE(ExecuteScript(child, JsReplace("location.href = $1", b_url)));
     commit_observer.WaitForCommit();
   }
   RenderFrameHostImpl* child_rfh = child->current_frame_host();
@@ -8309,14 +8301,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
   // Navigate B's subframe to a cross-site C.
   RenderFrameDeletedObserver deleted_observer(
       root->child_at(0)->child_at(0)->current_frame_host());
-  std::string script =
-      std::string("window.document.getElementById('child-0').src = \"") +
-      embedded_test_server()
-          ->GetURL("c.com", "/cross_site_iframe_factory.html")
-          .spec() +
-      "\"";
-  EXPECT_TRUE(
-      ExecuteScript(root->child_at(0)->current_frame_host(), script.c_str()));
+  auto script = JsReplace("window.document.getElementById('child-0').src = $1",
+                          embedded_test_server()->GetURL(
+                              "c.com", "/cross_site_iframe_factory.html"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
 
   // Wait until B's subframe RenderFrameHost is destroyed.
   deleted_observer.WaitUntilDeleted();
@@ -8360,8 +8348,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       embedded_test_server()->GetURL("c.com", "/title1.html");
   TestNavigationManager transfer_manager(shell()->web_contents(),
                                          cross_site_url_2);
-  EXPECT_TRUE(ExecuteScript(
-      root, "location.href = '" + cross_site_url_2.spec() + "';"));
+  EXPECT_TRUE(
+      ExecuteScript(root, JsReplace("location.href = $1", cross_site_url_2)));
   EXPECT_TRUE(transfer_manager.WaitForResponse());
 
   // Now have the cross-process navigation commit and mark the current RFH as
@@ -8396,9 +8384,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigationHandleWatcher watcher(shell()->web_contents());
   TestNavigationObserver load_observer(shell()->web_contents());
   GURL frame_url = embedded_test_server()->GetURL("c.com", "/title1.html");
-  EXPECT_TRUE(ExecuteScript(
-      shell()->web_contents(),
-      "window.frames[0].location = \"" + frame_url.spec() + "\";"));
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(),
+                    JsReplace("window.frames[0].location = $1", frame_url)));
   load_observer.Wait();
 }
 
@@ -8744,8 +8732,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(success);
 
   TestNavigationObserver load_observer(shell()->web_contents());
-  EXPECT_TRUE(ExecuteScript(
-      root->child_at(0), "document.location.href=\"" + nav_url.spec() + "\""));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            JsReplace("document.location.href=$1", nav_url)));
   load_observer.Wait();
 
   // Verify that the child frame is sandboxed with an opaque origin.
@@ -8800,8 +8788,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_TRUE(success);
 
   TestNavigationObserver load_observer(shell()->web_contents());
-  EXPECT_TRUE(ExecuteScript(
-      root->child_at(0), "document.location.href=\"" + nav_url.spec() + "\""));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            JsReplace("document.location.href=$1", nav_url)));
   load_observer.Wait();
 
   // Verify that the child frame no longer has an opaque origin.
@@ -8884,8 +8872,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Do a remote-to-local navigation of the child frame from the parent frame.
   TestFrameNavigationObserver frame_observer(child);
   GURL frame_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  EXPECT_TRUE(ExecuteScript(root, "document.querySelector('iframe').src = '" +
-                                      frame_url.spec() + "';\n"));
+  EXPECT_TRUE(ExecuteScript(
+      root, JsReplace("document.querySelector('iframe').src = $1", frame_url)));
   frame_observer.Wait();
 
   EXPECT_TRUE(child->current_frame_host()->IsRenderFrameLive());
@@ -9088,13 +9076,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   // b.com(2) a.com(3)
   //                \
   //                b.com(4)
-  std::string create_subframe_script =
-      "var f = document.createElement('iframe'); f.src='" +
-      embedded_test_server()
-          ->GetURL("a.com",
-                   "/cross_site_iframe_factory.html?a(b{allow-autoplay})")
-          .spec() +
-      "'; document.body.appendChild(f);";
+  auto create_subframe_script = JsReplace(
+      "var f = document.createElement('iframe'); f.src=$1; "
+      "document.body.appendChild(f);",
+      embedded_test_server()->GetURL(
+          "a.com", "/cross_site_iframe_factory.html?a(b{allow-autoplay})"));
   EXPECT_TRUE(ExecuteScript(root, create_subframe_script));
   EXPECT_TRUE(WaitForLoadStop(contents));
 
@@ -9485,12 +9471,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
   // Make a form submission from the main frame and target the OOPIF.
   GURL form_url(embedded_test_server()->GetURL("/echoall"));
   TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), R"(
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), JsReplace(R"(
     var form = document.createElement('form');
 
     // POST form submission to /echoall.
     form.setAttribute("method", "POST");
-    form.setAttribute("action", ")" + form_url.spec() + R"(");
+    form.setAttribute("action", $1);
 
     // Target the OOPIF.
     form.setAttribute("target", "child-name-0");
@@ -9505,7 +9491,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
     // Submit the form.
     document.body.appendChild(form);
     form.submit();
-  )"));
+  )",
+                                                               form_url)));
   form_post_observer.Wait();
 
   NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
@@ -9539,12 +9526,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Make a form submission from the subframe and target its parent frame.
   GURL form_url(embedded_test_server()->GetURL("/echoall"));
   TestNavigationObserver form_post_observer(web_contents());
-  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), R"(
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            JsReplace(R"(
     var form = document.createElement('form');
 
     // POST form submission to /echoall.
     form.setAttribute("method", "POST");
-    form.setAttribute("action", ")" + form_url.spec() + R"(");
+    form.setAttribute("action", $1);
 
     // Target the parent.
     form.setAttribute("target", "_parent");
@@ -9559,7 +9547,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // Submit the form.
     document.body.appendChild(form);
     form.submit();
-  )"));
+  )",
+                                      form_url)));
   form_post_observer.Wait();
 
   // Verify that the FrameNavigationEntry's method is POST.
@@ -9884,8 +9873,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL new_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager manager1(web_contents(), new_url_1);
   TestNavigationManager manager2(web_contents(), new_url_2);
-  std::string script = "location = '" + new_url_1.spec() + "';" +
-                       "frames[0].location = '" + new_url_2.spec() + "';";
+  auto script = JsReplace("location = $1; frames[0].location = $2;", new_url_1,
+                          new_url_2);
   EXPECT_TRUE(ExecuteScript(web_contents(), script));
 
   // Wait for main frame request, but don't commit it yet.  This should create
@@ -9969,7 +9958,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL new_url_1(embedded_test_server()->GetURL("b.com", "/title1.html"));
   TestNavigationManager manager1(web_contents(), new_url_1);
   EXPECT_TRUE(
-      ExecuteScript(web_contents(), "location = '" + new_url_1.spec() + "';"));
+      ExecuteScript(web_contents(), JsReplace("location = $1", new_url_1)));
 
   // Wait for main frame request and check the frame tree.  There should be a
   // proxy for b.com at the root, but nowhere else at this point.
@@ -9985,8 +9974,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Now start navigating the first subframe to b.com.
   GURL new_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager manager2(web_contents(), new_url_2);
-  EXPECT_TRUE(ExecuteScript(
-      web_contents(), "frames[0].location = '" + new_url_2.spec() + "';"));
+  EXPECT_TRUE(ExecuteScript(web_contents(),
+                            JsReplace("frames[0].location = $1", new_url_2)));
 
   // Wait for subframe request.
   ASSERT_TRUE(manager2.WaitForRequestStart());
@@ -10076,7 +10065,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL new_url_1(embedded_test_server()->GetURL("b.com", "/title1.html"));
   TestNavigationManager manager(web_contents(), new_url_1);
   EXPECT_TRUE(
-      ExecuteScript(web_contents(), "location = '" + new_url_1.spec() + "';"));
+      ExecuteScript(web_contents(), JsReplace("location = $1", new_url_1)));
   ASSERT_TRUE(manager.WaitForRequestStart());
 
   // Before it commits, start and commit a navigation to b.com in the second
@@ -11622,13 +11611,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   const GURL kCrossSiteSubframeUrl(
       embedded_test_server()->GetURL("baz.com", "/title2.html"));
 
-  const auto kAddSameSiteDynamicSubframe = base::StringPrintf(
+  const auto kAddSameSiteDynamicSubframe = JsReplace(
       "var f = document.createElement(\"iframe\");"
-      "f.src=\"%s\";"
+      "f.src=$1;"
       "document.body.append(f);",
-      kSubframeSameSiteUrl.spec().c_str());
-  const auto kNavigateSubframeCrossSite = base::StringPrintf(
-      "f.src = \"%s\";", kCrossSiteSubframeUrl.spec().c_str());
+      kSubframeSameSiteUrl);
+  const auto kNavigateSubframeCrossSite =
+      JsReplace("f.src = $1;", kCrossSiteSubframeUrl);
   const std::string kExtractSubframeUrl =
       "window.domAutomationController.send(f.src);";
 
@@ -11724,7 +11713,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     TestNavigationObserver observer(shell()->web_contents());
     EXPECT_TRUE(
         ExecuteScript(iframe->current_frame_host(),
-                      "location.href=\"" + iframe_fragment_url.spec() + "\";"));
+                      JsReplace("location.href=$1", iframe_fragment_url)));
     observer.Wait();
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(iframe_fragment_url, iframe->current_url());
@@ -11735,9 +11724,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // and not as a normal load of the same URL. This should succeed.
   {
     TestNavigationObserver observer(shell()->web_contents());
-    EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
-                              "document.getElementById('child-0').src=\"" +
-                                  iframe_fragment_url.spec() + "\";"));
+    EXPECT_TRUE(
+        ExecuteScript(root->current_frame_host(),
+                      JsReplace("document.getElementById('child-0').src=$1",
+                                iframe_fragment_url)));
     observer.Wait();
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(iframe_fragment_url, iframe->current_url());
@@ -12659,7 +12649,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Just before this URL commits, close the page.
   ClosePageBeforeCommitHelper close_page_helper(web_contents());
   EXPECT_TRUE(
-      ExecuteScript(grandchild, "location = '" + same_site_url.spec() + "';"));
+      ExecuteScript(grandchild, JsReplace("location = $1", same_site_url)));
   close_page_helper.Wait();
 
   // Test passes if the a.com renderer doesn't crash. Ping to verify.
@@ -13451,7 +13441,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // https://crbug.com/825677 was triggered only when replaceState ran while
   // having a user gesture, which will be the case here since ExecuteScript
   // runs with a user gesture.
-  EXPECT_TRUE(ExecuteScript(root, "location.href = '" + url2.spec() + "';"));
+  EXPECT_TRUE(ExecuteScript(root, JsReplace("location.href = $1", url2)));
   EXPECT_TRUE(cross_site_navigation.WaitForRequestStart());
 
   // Now wait for the replaceState to commit while the cross-process navigation
@@ -13517,8 +13507,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL fragment_url = GURL(subframe->current_url().spec() + "#foo");
   {
     SameDocumentCommitObserver fragment_observer(web_contents());
-    EXPECT_TRUE(ExecuteScript(
-        subframe, "location.href=\"" + fragment_url.spec() + "\";"));
+    EXPECT_TRUE(
+        ExecuteScript(subframe, JsReplace("location.href=$1", fragment_url)));
     fragment_observer.Wait();
     EXPECT_EQ(fragment_url, subframe->current_url());
   }
@@ -13608,14 +13598,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // hung b.com URL once the first message is received.
   GURL hung_b_url(embedded_test_server()->GetURL("b.com", "/hung"));
   TestNavigationManager manager(new_shell->web_contents(), hung_b_url);
-  EXPECT_TRUE(ExecuteScript(shell(), base::StringPrintf(R"(
+  EXPECT_TRUE(ExecuteScript(shell(), JsReplace(R"(
       window.done = false;
       window.onmessage = () => {
         if (!window.done) {
-          window.open('%s', 'foo');
+          window.open($1, 'foo');
           window.done = true;
         }
-      };)", hung_b_url.spec().c_str())));
+      };)",
+                                               hung_b_url)));
 
   // In the popup, install an unload handler to send a lot of postMessages to
   // the opener.  This keeps the MessageLoop in the b.com process busy after
@@ -13632,9 +13623,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // b.com process, and hence initiates process shutdown.
   TestFrameNavigationObserver commit_observer(popup_root);
   GURL another_a_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
-  EXPECT_TRUE(ExecuteScript(
-      new_shell,
-      base::StringPrintf("location = '%s';", another_a_url.spec().c_str())));
+  EXPECT_TRUE(
+      ExecuteScript(new_shell, JsReplace("location = $1", another_a_url)));
   commit_observer.WaitForCommit();
 
   // At this point, popup's original RFH is pending deletion.
@@ -14125,9 +14115,7 @@ IN_PROC_BROWSER_TEST_P(CrossProcessNavigationObjectElementTest, FallbackShown) {
   // existing resource) and wait for 'load' event on <object>.
   std::string result;
   ASSERT_TRUE(ExecuteScriptAndExtractString(
-      web_contents(),
-      base::StringPrintf("setUrl('%s', true);",
-                         object_valid_url.spec().c_str()),
+      web_contents(), JsReplace("setUrl($1, true);", object_valid_url),
       &result));
   ASSERT_EQ("OBJECT_LOAD", result);
 
@@ -14141,12 +14129,12 @@ IN_PROC_BROWSER_TEST_P(CrossProcessNavigationObjectElementTest, FallbackShown) {
   // the 'load' event (the 404 content loads inside the <object>'s frame and the
   // 'load' event might fire before fallback is detected).
   fallback_visible = false;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      web_contents(),
-      base::StringPrintf("setUrl('%s', false);"
-                         "notifyWhenFallbackShown();",
-                         object_invalid_url.spec().c_str()),
-      &fallback_visible));
+  ASSERT_TRUE(
+      ExecuteScriptAndExtractBool(web_contents(),
+                                  JsReplace("setUrl($1, false);"
+                                            "notifyWhenFallbackShown();",
+                                            object_invalid_url),
+                                  &fallback_visible));
   ASSERT_TRUE(fallback_visible);
 }
 
@@ -14913,7 +14901,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                              "  object.notify = false;"
                              "  window.domAutomationController.send('done');"
                              "};",
-                             cross_origin.spec().c_str()))
+                             cross_origin))
           .ExtractString();
   ASSERT_EQ("done", msg);
   // To track the frame's visibility an EmbeddedContentView is needed. The
