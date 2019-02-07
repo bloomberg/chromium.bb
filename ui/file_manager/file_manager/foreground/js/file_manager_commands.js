@@ -603,6 +603,63 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
 });
 
 /**
+ * Unmounts external drive which contains partitions.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['unmount-all-partitions'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager The file manager instance.
+   */
+  execute: function(event, fileManager) {
+    const errorCallback = () => {
+      fileManager.ui.alertDialog.showHtml(
+          '', str('UNMOUNT_FAILED'), null, null, null);
+    };
+
+    const successCallback = () => {
+      const rootLabel = entry.label || '';
+      const msg = strf('A11Y_VOLUME_EJECT', rootLabel);
+      fileManager.ui.speakA11yMessage(msg);
+    };
+
+    const entry = event.target.entry;
+    if (!entry) {
+      errorCallback();
+      return;
+    }
+
+    // Eject partitions one by one.
+    const partitions = entry.getUIChildren();
+    for (let i = 0; i < partitions.length; i++) {
+      const volumeInfo = partitions[i].volumeInfo;
+      fileManager.volumeManager.unmount(
+          volumeInfo, (i == partitions.length) ? successCallback : () => {},
+          errorCallback);
+    }
+  },
+
+  /**
+   * @param {!Event} event Command event.
+   * @this {CommandHandler}
+   */
+  canExecute: function(event, fileManager) {
+    const entry = event.target.entry;
+    if (!entry) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    event.canExecute =
+        (entry.rootType === VolumeManagerCommon.VolumeType.REMOVABLE &&
+         entry.type_name === 'EntryList');
+    event.command.label = str('UNMOUNT_DEVICE_BUTTON_LABEL');
+    event.command.setHidden(!event.canExecute);
+  }
+});
+
+/**
  * Formats external drive.
  * @type {Command}
  */
