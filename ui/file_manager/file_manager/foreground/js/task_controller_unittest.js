@@ -108,32 +108,32 @@ function createTaskController(fileSelectionHandler) {
 
 /**
  * Mock FileSelectionHandler.
- * @constructor
  * @extends {FileSelectionHandler}
  */
-function MockFileSelectionHandler() {
-  this.computeAdditionalCallback = function() {};
-  this.selection = /** @type {!FileSelection} */ ({});
-  this.updateSelection([], []);
+class FakeFileSelectionHandler {
+  constructor() {
+    this.selection = /** @type {!FileSelection} */ ({});
+    this.updateSelection([], []);
+    this.eventTarget_ = new cr.EventTarget();
+  }
+  computeAdditionalCallback() {}
+  updateSelection(entries, mimeTypes) {
+    this.selection = /** @type {!FileSelection} */ ({
+      entries: entries,
+      mimeTypes: mimeTypes,
+      computeAdditional: (metadataModel) => {
+        this.computeAdditionalCallback();
+        return new Promise((resolve) => {
+          resolve();
+        });
+      },
+    });
+  }
+
+  addEventListener(...args) {
+    return this.eventTarget_.addEventListener(...args);
+  }
 }
-
-MockFileSelectionHandler.prototype = /** @struct */ {
-  __proto__: cr.EventTarget.prototype,
-};
-
-MockFileSelectionHandler.prototype.updateSelection = function(
-    entries, mimeTypes) {
-  this.selection = /** @type {!FileSelection} */ ({
-    entries: entries,
-    mimeTypes: mimeTypes,
-    computeAdditional: (metadataModel) => {
-      this.computeAdditionalCallback();
-      return new Promise((resolve) => {
-        resolve();
-      });
-    },
-  });
-};
 
 /**
  * Setup test case fileManagerPrivate.
@@ -165,7 +165,7 @@ function setupFileManagerPrivate() {
  * Tests that executeEntryTask() runs the expected task.
  */
 function testExecuteEntryTask(callback) {
-  var selectionHandler = new MockFileSelectionHandler();
+  var selectionHandler = new FakeFileSelectionHandler();
 
   var fileSystem = new MockFileSystem('volumeId');
   fileSystem.entries['/test.png'] = new MockFileEntry(fileSystem, '/test.png');
@@ -188,7 +188,7 @@ function testExecuteEntryTask(callback) {
  * multiple times when the selected entries are not changed.
  */
 function testGetFileTasksShouldNotBeCalledMultipleTimes(callback) {
-  var selectionHandler = new MockFileSelectionHandler();
+  var selectionHandler = new FakeFileSelectionHandler();
 
   var fileSystem = new MockFileSystem('volumeId');
   selectionHandler.updateSelection(
@@ -225,7 +225,7 @@ function testGetFileTasksShouldNotBeCalledMultipleTimes(callback) {
  * called.
  */
 function testGetFileTasksShouldNotReturnObsoletePromise(callback) {
-  var selectionHandler = new MockFileSelectionHandler();
+  var selectionHandler = new FakeFileSelectionHandler();
 
   var fileSystem = new MockFileSystem('volumeId');
   selectionHandler.updateSelection(
@@ -256,7 +256,7 @@ function testGetFileTasksShouldNotReturnObsoletePromise(callback) {
  * the getFileTasks() promise to reject.
  */
 function testGetFileTasksShouldNotCacheRejectedPromise(callback) {
-  var selectionHandler = new MockFileSelectionHandler();
+  var selectionHandler = new FakeFileSelectionHandler();
 
   var fileSystem = new MockFileSystem('volumeId');
   selectionHandler.updateSelection(
