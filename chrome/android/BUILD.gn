@@ -1085,7 +1085,7 @@ if (current_toolchain == default_toolchain) {
         if (_is_monochrome) {
           # Always use the 32-bit library's whitelist since the 64-bit one is
           # webview-only.
-          if (!android_64bit_target_cpu || android_64bit_browser) {
+          if (!android_64bit_target_cpu) {
             _fat_lib_toolchain = current_toolchain
           } else {
             _fat_lib_toolchain = android_secondary_abi_toolchain
@@ -1269,7 +1269,8 @@ template("libmonochrome_apk_or_bundle_tmpl") {
   }
 }
 
-if (!android_64bit_target_cpu || !current_abi_is_webview_only) {
+if (!android_64bit_target_cpu ||
+    current_toolchain == android_secondary_abi_toolchain) {
   # Monochrome APK native library.
   libmonochrome_apk_or_bundle_tmpl("monochrome") {
   }
