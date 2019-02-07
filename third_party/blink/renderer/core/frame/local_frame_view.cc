@@ -285,7 +285,6 @@ LocalFrameView::~LocalFrameView() {
 
 void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
-  visitor->Trace(parent_);
   visitor->Trace(fragment_anchor_);
   visitor->Trace(scrollable_areas_);
   visitor->Trace(animating_scrollable_areas_);
@@ -1970,8 +1969,10 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
 
   auto* detached_frame_view = this;
   while (detached_frame_view->is_attached_ &&
-         detached_frame_view != local_frame_view_root)
-    detached_frame_view = detached_frame_view->parent_.Get();
+         detached_frame_view != local_frame_view_root) {
+    detached_frame_view = detached_frame_view->ParentFrameView();
+    CHECK(detached_frame_view);
+  }
 
   if (detached_frame_view == local_frame_view_root)
     return;
@@ -3305,23 +3306,16 @@ void LocalFrameView::RemoveAnimatingScrollableArea(
 }
 
 void LocalFrameView::AttachToLayout() {
-  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!is_attached_);
   if (frame_->GetDocument())
     CHECK_NE(Lifecycle().GetState(), DocumentLifecycle::kStopping);
   is_attached_ = true;
-  parent_ = ParentFrameView();
-  if (!parent_) {
-    Frame* parent_frame = frame_->Tree().Parent();
-    CHECK(parent_frame);
-    CHECK(parent_frame->IsLocalFrame());
-    CHECK(parent_frame->View());
-  }
-  CHECK(parent_);
-  if (parent_->IsVisible())
+  LocalFrameView* parent_view = ParentFrameView();
+  CHECK(parent_view);
+  if (parent_view->IsVisible())
     SetParentVisible(true);
   SetupRenderThrottling();
-  subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
+  subtree_throttled_ = parent_view->CanThrottleRendering();
 
   // We may have updated paint properties in detached frame subtree for
   // printing (see UpdateLifecyclePhasesForPrinting()). The paint properties
@@ -3333,16 +3327,7 @@ void LocalFrameView::AttachToLayout() {
 }
 
 void LocalFrameView::DetachFromLayout() {
-  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(is_attached_);
-  LocalFrameView* parent = ParentFrameView();
-  if (!parent) {
-    Frame* parent_frame = frame_->Tree().Parent();
-    CHECK(parent_frame);
-    CHECK(parent_frame->IsLocalFrame());
-    CHECK(parent_frame->View());
-  }
-  CHECK(parent == parent_);
   SetParentVisible(false);
   is_attached_ = false;
 
