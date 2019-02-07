@@ -54,6 +54,12 @@ class ParkableStringTestBase : public ::testing::Test {
     return success;
   }
 
+  void WaitForDelayedParking() {
+    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
+        ParkableStringManager::kParkingDelayInSeconds));
+    RunPostedTasks();
+  }
+
   void SetUp() override { ParkableStringManager::Instance().ResetForTesting(); }
 
   void TearDown() override {
@@ -73,12 +79,6 @@ class ParkableStringTest : public ParkableStringTestBase {
   ParkableStringTest() : ParkableStringTestBase() {}
 
  protected:
-  void WaitForDelayedParking() {
-    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
-        ParkableStringManager::kParkingDelayInSeconds));
-    RunPostedTasks();
-  }
-
   void WaitForStatisticsRecording() {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kStatisticsRecordingDelayInSeconds));
@@ -711,6 +711,13 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(metadata))));
 }
 
+TEST_F(ParkableStringTest, ForegroundParkingIsNotEnabled) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  WaitForDelayedParking();
+  // No automatic parking.
+  EXPECT_FALSE(parkable.Impl()->is_parked());
+}
+
 class ParkableStringForegroundParkingTest : public ParkableStringTestBase {
  public:
   ParkableStringForegroundParkingTest() : ParkableStringTestBase() {}
@@ -869,6 +876,27 @@ TEST_F(ParkableStringForegroundParkingTest, AgingParkingInProgress) {
   EXPECT_EQ(1u, scoped_task_environment_.GetPendingMainThreadTaskCount());
 
   EXPECT_TRUE(parkable.Impl()->is_parked());
+}
+
+TEST_F(ParkableStringForegroundParkingTest,
+       NoBackgroundParkingWhenForegroundIsEnabled) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+
+  auto& manager = ParkableStringManager::Instance();
+  CHECK_EQ(1u, manager.Size());
+
+  {
+    // Prevents foreground parking.
+    String retained = parkable.ToString();
+    WaitForAging();
+    // As the reference is long-lived, the aging tick stops.
+    EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
+  }
+
+  manager.SetRendererBackgrounded(true);
+  WaitForDelayedParking();
+  // No foreground parking.
+  EXPECT_FALSE(parkable.Impl()->is_parked());
 }
 
 }  // namespace blink
