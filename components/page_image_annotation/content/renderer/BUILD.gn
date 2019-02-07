@@ -21,6 +21,10 @@ static_library("renderer") {
     "//third_party/blink/public/common",
     "//url",
   ]
+
+  public_deps = [
+    "//third_party/blink/public:blink_headers",
+  ]
 }
 
 source_set("unit_tests") {
