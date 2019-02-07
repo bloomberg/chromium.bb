@@ -662,7 +662,9 @@ DirectoryItem.prototype.setupEjectButton_ = function(rowElement) {
   ejectButton.setAttribute('tabindex', '0');
   ejectButton.addEventListener('click', (event) => {
     event.stopPropagation();
-    const unmountCommand = cr.doc.querySelector('command#unmount');
+    const unmountCommand = (this instanceof EntryListItem) ?
+        cr.doc.querySelector('command#unmount-all-partitions') :
+        cr.doc.querySelector('command#unmount');
     // Let's make sure 'canExecute' state of the command is properly set for
     // the root before executing it.
     unmountCommand.canExecuteChange(this);
