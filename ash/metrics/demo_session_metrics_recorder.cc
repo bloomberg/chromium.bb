@@ -58,6 +58,8 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
 
   if (app_id == extension_misc::kCameraAppId)
     return DemoModeApp::kCamera;
+  if (app_id == extension_misc::kChromeAppId)
+    return DemoModeApp::kBrowser;
   if (app_id == extension_misc::kFilesManagerAppId)
     return DemoModeApp::kFiles;
   if (app_id == extension_misc::kGeniusAppId)
@@ -165,10 +167,11 @@ class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
 
     const std::string* package_name = GetArcPackageName(window);
 
-    if (package_name != nullptr)
-      metrics_recorder_->RecordAppLaunch(*package_name);
-    else
+    if (package_name != nullptr) {
+      metrics_recorder_->RecordAppLaunch(*package_name, AppType::ARC_APP);
+    } else {
       VLOG(1) << "Got null ARC package name";
+    }
 
     window->RemoveObserver(this);
   }
@@ -221,14 +224,34 @@ DemoSessionMetricsRecorder::~DemoSessionMetricsRecorder() {
   ReportUniqueAppsLaunched();
 }
 
-// This method will only record 1 launch for each unique app_id, regardless of
-// how many times it is called with that app_id.
-void DemoSessionMetricsRecorder::RecordAppLaunch(const std::string& app_id) {
-  if (unique_apps_launched_recording_enabled_ &&
-      GetAppFromAppId(app_id) != DemoModeApp::kHighlights &&
-      GetAppFromAppId(app_id) != DemoModeApp::kScreensaver) {
-    unique_apps_launched_.insert(app_id);
+void DemoSessionMetricsRecorder::RecordAppLaunch(const std::string& id,
+                                                 AppType app_type) {
+  if (!ShouldRecordAppLaunch(id)) {
+    return;
   }
+  DemoModeApp app;
+  if (app_type == AppType::ARC_APP)
+    app = GetAppFromPackageName(id);
+  else
+    app = GetAppFromAppId(id);
+
+  if (!unique_apps_launched_.contains(id)) {
+    unique_apps_launched_.insert(id);
+    // Only log each app launch once.  This is determined by
+    // checking the package_name instead of the DemoApp enum,
+    // because the DemoApp enum collapses unknown apps into
+    // a single enum.
+    UMA_HISTOGRAM_ENUMERATION("DemoMode.AppLaunched", app);
+  }
+}
+
+// Indicates whether the specified app_id should be recorded for
+// the unique-apps-launched stat.
+bool DemoSessionMetricsRecorder::ShouldRecordAppLaunch(
+    const std::string& app_id) {
+  return unique_apps_launched_recording_enabled_ &&
+         GetAppFromAppId(app_id) != DemoModeApp::kHighlights &&
+         GetAppFromAppId(app_id) != DemoModeApp::kScreensaver;
 }
 
 void DemoSessionMetricsRecorder::OnWindowActivated(ActivationReason reason,
@@ -269,7 +292,7 @@ void DemoSessionMetricsRecorder::OnWindowActivated(ActivationReason reason,
   if (app_id.empty())
     return;
 
-  RecordAppLaunch(app_id);
+  RecordAppLaunch(app_id, app_type);
 }
 
 void DemoSessionMetricsRecorder::OnUserActivity(const ui::Event* event) {
@@ -318,7 +341,6 @@ void DemoSessionMetricsRecorder::ReportUniqueAppsLaunched() {
   if (unique_apps_launched_recording_enabled_)
     UMA_HISTOGRAM_COUNTS_100("DemoMode.UniqueAppsLaunched",
                              unique_apps_launched_.size());
-
   unique_apps_launched_.clear();
 }
 
