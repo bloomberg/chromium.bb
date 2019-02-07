@@ -15,7 +15,9 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/magnifier_type.h"
@@ -45,83 +47,68 @@ namespace {
 const char kSubkeyURL[] = "url";
 const char kSubkeyHash[] = "hash";
 
-bool GetSubkeyString(const base::DictionaryValue& dict,
-                     policy::PolicyErrorMap* errors,
-                     const std::string& policy,
-                     const std::string& subkey,
-                     std::string* value) {
-  const base::Value* raw_value = NULL;
-  if (!dict.GetWithoutPathExpansion(subkey, &raw_value)) {
+base::Optional<std::string> GetSubkeyString(const base::Value& dict,
+                                            policy::PolicyErrorMap* errors,
+                                            const std::string& policy,
+                                            const std::string& subkey) {
+  const base::Value* policy_value = dict.FindKey(subkey);
+  if (!policy_value) {
     errors->AddError(policy, subkey, IDS_POLICY_NOT_SPECIFIED_ERROR);
-    return false;
+    return base::nullopt;
   }
-  std::string string_value;
-  if (!raw_value->GetAsString(&string_value)) {
+  if (!policy_value->is_string()) {
     errors->AddError(policy, subkey, IDS_POLICY_TYPE_ERROR, "string");
-    return false;
+    return base::nullopt;
   }
-  if (string_value.empty()) {
+  if (policy_value->GetString().empty()) {
     errors->AddError(policy, subkey, IDS_POLICY_NOT_SPECIFIED_ERROR);
-    return false;
+    return base::nullopt;
   }
-  *value = string_value;
-  return true;
+  return policy_value->GetString();
 }
 
-const char kScreenDimDelayAC[] = "AC.Delays.ScreenDim";
-const char kScreenOffDelayAC[] = "AC.Delays.ScreenOff";
-const char kIdleWarningDelayAC[] = "AC.Delays.IdleWarning";
-const char kIdleDelayAC[] = "AC.Delays.Idle";
-const char kIdleActionAC[] = "AC.IdleAction";
+constexpr base::StringPiece kScreenDimDelayAC[] = {"AC", "Delays", "ScreenDim"};
+constexpr base::StringPiece kScreenOffDelayAC[] = {"AC", "Delays", "ScreenOff"};
+constexpr base::StringPiece kIdleWarningDelayAC[] = {"AC", "Delays",
+                                                     "IdleWarning"};
+constexpr base::StringPiece kIdleDelayAC[] = {"AC", "Delays", "Idle"};
+constexpr base::StringPiece kIdleActionAC[] = {"AC", "IdleAction"};
+constexpr base::StringPiece kScreenDimDelayBattery[] = {"Battery", "Delays",
+                                                        "ScreenDim"};
+constexpr base::StringPiece kScreenOffDelayBattery[] = {"Battery", "Delays",
+                                                        "ScreenOff"};
+constexpr base::StringPiece kIdleWarningDelayBattery[] = {"Battery", "Delays",
+                                                          "IdleWarning"};
+constexpr base::StringPiece kIdleDelayBattery[] = {"Battery", "Delays", "Idle"};
+constexpr base::StringPiece kIdleActionBattery[] = {"Battery", "IdleAction"};
 
-const char kScreenDimDelayBattery[] = "Battery.Delays.ScreenDim";
-const char kScreenOffDelayBattery[] = "Battery.Delays.ScreenOff";
-const char kIdleWarningDelayBattery[] = "Battery.Delays.IdleWarning";
-const char kIdleDelayBattery[] = "Battery.Delays.Idle";
-const char kIdleActionBattery[] = "Battery.IdleAction";
-
-const char kScreenLockDelayAC[] = "AC";
+constexpr char kScreenLockDelayAC[] = "AC";
 const char kScreenLockDelayBattery[] = "Battery";
 
-const char kActionSuspend[] = "Suspend";
-const char kActionLogout[] = "Logout";
-const char kActionShutdown[]  = "Shutdown";
-const char kActionDoNothing[] = "DoNothing";
+constexpr char kActionSuspend[] = "Suspend";
+constexpr char kActionLogout[] = "Logout";
+constexpr char kActionShutdown[] = "Shutdown";
+constexpr char kActionDoNothing[] = "DoNothing";
 
 constexpr char kScreenBrightnessPercentAC[] = "BrightnessAC";
 constexpr char kScreenBrightnessPercentBattery[] = "BrightnessBattery";
 
-std::unique_ptr<base::Value> GetValue(const base::DictionaryValue* dict,
-                                      const char* key) {
-  const base::Value* value = NULL;
-  if (!dict->Get(key, &value))
-    return std::unique_ptr<base::Value>();
-  return value->CreateDeepCopy();
-}
-
-std::unique_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
-                                       const char* key) {
-  std::unique_ptr<base::Value> value = GetValue(dict, key);
-  std::string action;
-  if (!value || !value->GetAsString(&action))
-    return std::unique_ptr<base::Value>();
-  if (action == kActionSuspend) {
-    return std::unique_ptr<base::Value>(
-        new base::Value(chromeos::PowerPolicyController::ACTION_SUSPEND));
-  }
-  if (action == kActionLogout) {
-    return std::unique_ptr<base::Value>(
-        new base::Value(chromeos::PowerPolicyController::ACTION_STOP_SESSION));
-  }
-  if (action == kActionShutdown) {
-    return std::unique_ptr<base::Value>(
-        new base::Value(chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
-  }
-  if (action == kActionDoNothing) {
-    return std::unique_ptr<base::Value>(
-        new base::Value(chromeos::PowerPolicyController::ACTION_DO_NOTHING));
-  }
-  return std::unique_ptr<base::Value>();
+// Converts the string held by |value| to an int Value holding the corresponding
+// |chromeos::PowerPolicyController| enum value. Returns an empty value if
+// |value| is nullptr, not a string or if |value| holds a string which does not
+// represent a known action.
+base::Value ConvertToActionEnumValue(const base::Value* value) {
+  if (!value || !value->is_string())
+    return base::Value();
+  if (value->GetString() == kActionSuspend)
+    return base::Value(chromeos::PowerPolicyController::ACTION_SUSPEND);
+  if (value->GetString() == kActionLogout)
+    return base::Value(chromeos::PowerPolicyController::ACTION_STOP_SESSION);
+  if (value->GetString() == kActionShutdown)
+    return base::Value(chromeos::PowerPolicyController::ACTION_SHUT_DOWN);
+  if (value->GetString() == kActionDoNothing)
+    return base::Value(chromeos::PowerPolicyController::ACTION_DO_NOTHING);
+  return base::Value();
 }
 
 }  // namespace
@@ -141,28 +128,25 @@ bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   const base::Value* value = policies.GetValue(policy);
   if (!value)
     return true;
-
-  const base::DictionaryValue* dict = NULL;
-  value->GetAsDictionary(&dict);
-  if (!dict) {
+  if (!value->is_dict()) {
     NOTREACHED();
     return false;
   }
-  std::string url_string;
-  std::string hash_string;
-  if (!GetSubkeyString(*dict, errors, policy, kSubkeyURL, &url_string) ||
-      !GetSubkeyString(*dict, errors, policy, kSubkeyHash, &hash_string)) {
+  base::Optional<std::string> url_string =
+      GetSubkeyString(*value, errors, policy, kSubkeyURL);
+  base::Optional<std::string> hash_string =
+      GetSubkeyString(*value, errors, policy, kSubkeyHash);
+  if (!url_string || !hash_string)
     return false;
-  }
 
-  const GURL url(url_string);
+  const GURL url(url_string.value());
   if (!url.is_valid()) {
     errors->AddError(policy, kSubkeyURL, IDS_POLICY_VALUE_FORMAT_ERROR);
     return false;
   }
 
   std::vector<uint8_t> hash;
-  if (!base::HexStringToBytes(hash_string, &hash) ||
+  if (!base::HexStringToBytes(hash_string.value(), &hash) ||
       hash.size() != crypto::kSHA256Length) {
     errors->AddError(policy, kSubkeyHash, IDS_POLICY_VALUE_FORMAT_ERROR);
     return false;
@@ -200,61 +184,53 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (!CheckAndGetValue(policies, errors, &value))
     return false;
 
-  if (value) {
-    std::string onc_blob;
-    value->GetAsString(&onc_blob);
-    std::unique_ptr<base::Value> root_dict =
-        chromeos::onc::ReadDictionaryFromJson(onc_blob);
-    if (!root_dict) {
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
-      errors->SetDebugInfo(policy_name(), "ERROR: JSON parse error");
-      return false;
-    }
+  if (!value)
+    return true;
 
-    // Validate the ONC dictionary. We are liberal and ignore unknown field
-    // names and ignore invalid field names in kRecommended arrays.
-    chromeos::onc::Validator validator(
-        false,  // Ignore unknown fields.
-        false,  // Ignore invalid recommended field names.
-        true,   // Fail on missing fields.
-        true,   // Validate for managed ONC.
-        true);  // Log warnings.
-    validator.SetOncSource(onc_source_);
-
-    // ONC policies are always unencrypted.
-    chromeos::onc::Validator::Result validation_result;
-    root_dict = validator.ValidateAndRepairObject(
-        &chromeos::onc::kToplevelConfigurationSignature, *root_dict,
-        &validation_result);
-
-    // Pass error/warning message and non-localized debug_info to
-    // PolicyErrorMap.
-    std::vector<base::StringPiece> messages;
-    for (const chromeos::onc::Validator::ValidationIssue& issue :
-         validator.validation_issues()) {
-      messages.push_back(issue.message);
-    }
-    std::string debug_info = base::JoinString(messages, "\n");
-
-    if (validation_result == chromeos::onc::Validator::VALID_WITH_WARNINGS)
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL,
-                       debug_info);
-    else if (validation_result == chromeos::onc::Validator::INVALID)
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED,
-                       debug_info);
-
-    if (!validator.validation_issues().empty()) {
-      std::vector<std::string> messages;
-      for (const chromeos::onc::Validator::ValidationIssue& issue :
-           validator.validation_issues()) {
-        messages.push_back(issue.message);
-      }
-      errors->SetDebugInfo(policy_name(), base::JoinString(messages, "\n"));
-    }
-
-    // In any case, don't reject the policy as some networks or certificates
-    // could still be applied.
+  std::unique_ptr<base::Value> root_dict =
+      chromeos::onc::ReadDictionaryFromJson(value->GetString());
+  if (!root_dict) {
+    errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
+    errors->SetDebugInfo(policy_name(), "ERROR: JSON parse error");
+    return false;
   }
+
+  // Validate the ONC dictionary. We are liberal and ignore unknown field
+  // names and ignore invalid field names in kRecommended arrays.
+  chromeos::onc::Validator validator(
+      false,  // Ignore unknown fields.
+      false,  // Ignore invalid recommended field names.
+      true,   // Fail on missing fields.
+      true,   // Validate for managed ONC.
+      true);  // Log warnings.
+  validator.SetOncSource(onc_source_);
+
+  // ONC policies are always unencrypted.
+  chromeos::onc::Validator::Result validation_result;
+  root_dict = validator.ValidateAndRepairObject(
+      &chromeos::onc::kToplevelConfigurationSignature, *root_dict,
+      &validation_result);
+
+  // Pass error/warning message and non-localized debug_info to PolicyErrorMap.
+  std::vector<base::StringPiece> messages;
+  for (const chromeos::onc::Validator::ValidationIssue& issue :
+       validator.validation_issues()) {
+    messages.push_back(issue.message);
+  }
+  std::string debug_info = base::JoinString(messages, "\n");
+
+  if (validation_result == chromeos::onc::Validator::VALID_WITH_WARNINGS)
+    errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL,
+                     debug_info);
+  else if (validation_result == chromeos::onc::Validator::INVALID)
+    errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED,
+                     debug_info);
+
+  if (!validator.validation_issues().empty())
+    errors->SetDebugInfo(policy_name(), debug_info);
+
+  // In any case, don't reject the policy as some networks or certificates could
+  // still be applied.
 
   return true;
 }
@@ -266,8 +242,7 @@ void NetworkConfigurationPolicyHandler::ApplyPolicySettings(
   if (!value)
     return;
 
-  std::string onc_blob;
-  value->GetAsString(&onc_blob);
+  const std::string& onc_blob = value->GetString();
 
   base::ListValue network_configs;
   base::ListValue certificates;
@@ -307,13 +282,12 @@ NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
 std::unique_ptr<base::Value>
 NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     const base::Value* config) {
-  std::string json_string;
-  if (!config->GetAsString(&json_string))
-    return NULL;
+  if (!config->is_string())
+    return nullptr;
 
   std::unique_ptr<base::DictionaryValue> toplevel_dict =
       base::DictionaryValue::From(
-          chromeos::onc::ReadDictionaryFromJson(json_string));
+          chromeos::onc::ReadDictionaryFromJson(config->GetString()));
   if (!toplevel_dict)
     return nullptr;
 
@@ -325,6 +299,7 @@ NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
       *toplevel_dict,
       kPlaceholder);
 
+  std::string json_string;
   base::JSONWriter::WriteWithOptions(
       *toplevel_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_string);
   return std::make_unique<base::Value>(json_string);
@@ -372,7 +347,7 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
-  if (value && EnsureInRange(value, &value_in_range, NULL)) {
+  if (value && EnsureInRange(value, &value_in_range, nullptr)) {
     // The "type" is only used to enable or disable the feature as a whole.
     // http://crbug.com/170850
     prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled,
@@ -434,63 +409,57 @@ void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   std::unique_ptr<base::Value> policy_value;
-  if (!CheckAndGetValue(policies, NULL, &policy_value))
+  if (!CheckAndGetValue(policies, nullptr, &policy_value) || !policy_value)
     return;
-  const base::DictionaryValue* dict = NULL;
-  if (!policy_value->GetAsDictionary(&dict)) {
-    NOTREACHED();
-    return;
-  }
-  std::unique_ptr<base::Value> value;
+  DCHECK(policy_value->is_dict());
 
-  value = GetValue(dict, kScreenDimDelayAC);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerAcScreenDimDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kScreenOffDelayAC);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerAcScreenOffDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kIdleWarningDelayAC);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerAcIdleWarningDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kIdleDelayAC);
+  const base::Value* value;
+  base::Value action_value;
+
+  value = policy_value->FindPath(kScreenDimDelayAC);
   if (value)
-    prefs->SetValue(ash::prefs::kPowerAcIdleDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  value = GetAction(dict, kIdleActionAC);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerAcIdleAction,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kScreenDimDelayBattery);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerBatteryScreenDimDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kScreenOffDelayBattery);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerBatteryScreenOffDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kIdleWarningDelayBattery);
+    prefs->SetValue(ash::prefs::kPowerAcScreenDimDelayMs, value->Clone());
+
+  value = policy_value->FindPath(kScreenOffDelayAC);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerAcScreenOffDelayMs, value->Clone());
+
+  value = policy_value->FindPath(kIdleWarningDelayAC);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerAcIdleWarningDelayMs, value->Clone());
+
+  value = policy_value->FindPath(kIdleDelayAC);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerAcIdleDelayMs, value->Clone());
+
+  action_value =
+      ConvertToActionEnumValue(policy_value->FindPath(kIdleActionAC));
+  if (!action_value.is_none())
+    prefs->SetValue(ash::prefs::kPowerAcIdleAction, std::move(action_value));
+
+  value = policy_value->FindPath(kScreenDimDelayBattery);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerBatteryScreenDimDelayMs, value->Clone());
+
+  value = policy_value->FindPath(kScreenOffDelayBattery);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerBatteryScreenOffDelayMs, value->Clone());
+
+  value = policy_value->FindPath(kIdleWarningDelayBattery);
   if (value) {
     prefs->SetValue(ash::prefs::kPowerBatteryIdleWarningDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
+                    value->Clone());
   }
-  value = GetValue(dict, kIdleDelayBattery);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerBatteryIdleDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetAction(dict, kIdleActionBattery);
-  if (value) {
+
+  value = policy_value->FindPath(kIdleDelayBattery);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerBatteryIdleDelayMs, value->Clone());
+
+  action_value =
+      ConvertToActionEnumValue(policy_value->FindPath(kIdleActionBattery));
+  if (!action_value.is_none()) {
     prefs->SetValue(ash::prefs::kPowerBatteryIdleAction,
-                    base::Value::FromUniquePtrValue(std::move(value)));
+                    std::move(action_value));
   }
 }
 
@@ -509,25 +478,18 @@ void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   std::unique_ptr<base::Value> policy_value;
-  if (!CheckAndGetValue(policies, NULL, &policy_value))
+  if (!CheckAndGetValue(policies, nullptr, &policy_value) || !policy_value)
     return;
-  const base::DictionaryValue* dict = NULL;
-  if (!policy_value->GetAsDictionary(&dict)) {
-    NOTREACHED();
-    return;
-  }
-  std::unique_ptr<base::Value> value;
+  DCHECK(policy_value->is_dict());
 
-  value = GetValue(dict, kScreenLockDelayAC);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerAcScreenLockDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
-  value = GetValue(dict, kScreenLockDelayBattery);
-  if (value) {
-    prefs->SetValue(ash::prefs::kPowerBatteryScreenLockDelayMs,
-                    base::Value::FromUniquePtrValue(std::move(value)));
-  }
+  const base::Value* value;
+  value = policy_value->FindKey(kScreenLockDelayAC);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerAcScreenLockDelayMs, value->Clone());
+
+  value = policy_value->FindKey(kScreenLockDelayBattery);
+  if (value)
+    prefs->SetValue(ash::prefs::kPowerBatteryScreenLockDelayMs, value->Clone());
 }
 
 ScreenBrightnessPercentPolicyHandler::ScreenBrightnessPercentPolicyHandler(
@@ -544,26 +506,19 @@ void ScreenBrightnessPercentPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   std::unique_ptr<base::Value> policy_value;
-  if (!CheckAndGetValue(policies, nullptr, &policy_value))
+  if (!CheckAndGetValue(policies, nullptr, &policy_value) || !policy_value)
     return;
+  DCHECK(policy_value->is_dict());
 
-  if (!policy_value)
-    return;
-
-  base::DictionaryValue* dict = nullptr;
-  if (!policy_value->GetAsDictionary(&dict))
-    return;
-
-  std::unique_ptr<base::Value> value;
-  value = GetValue(dict, kScreenBrightnessPercentAC);
+  const base::Value* value = policy_value->FindKey(kScreenBrightnessPercentAC);
   if (value) {
     prefs->SetValue(ash::prefs::kPowerAcScreenBrightnessPercent,
-                    base::Value::FromUniquePtrValue(std::move(value)));
+                    value->Clone());
   }
-  value = GetValue(dict, kScreenBrightnessPercentBattery);
+  value = policy_value->FindKey(kScreenBrightnessPercentBattery);
   if (value) {
     prefs->SetValue(ash::prefs::kPowerBatteryScreenBrightnessPercent,
-                    base::Value::FromUniquePtrValue(std::move(value)));
+                    value->Clone());
   }
 }
 
