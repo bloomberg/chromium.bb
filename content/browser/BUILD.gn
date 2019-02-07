@@ -1315,6 +1315,8 @@ jumbo_source_set("browser") {
     "renderer_host/dip_util.h",
     "renderer_host/display_util.cc",
     "renderer_host/display_util.h",
+    "renderer_host/dwrite_font_file_util_win.cc",
+    "renderer_host/dwrite_font_file_util_win.h",
     "renderer_host/dwrite_font_proxy_impl_win.cc",
     "renderer_host/dwrite_font_proxy_impl_win.h",
     "renderer_host/dwrite_font_uma_logging_win.cc",
