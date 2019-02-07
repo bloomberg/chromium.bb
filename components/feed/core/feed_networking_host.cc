@@ -85,7 +85,13 @@ class NetworkFetch {
   network::SharedURLLoaderFactory* loader_factory_;
   const std::string api_key_;
   const base::TickClock* tick_clock_;
-  base::TimeTicks start_ticks_;
+
+  // Set when the NetworkFetch is constructed, before token and article fetch.
+  const base::TimeTicks entire_send_start_ticks_;
+
+  // Should be set right before the article fetch, and after the token fetch if
+  // there is one.
+  base::TimeTicks loader_only_start_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFetch);
 };
@@ -104,7 +110,7 @@ NetworkFetch::NetworkFetch(const GURL& url,
       loader_factory_(loader_factory),
       api_key_(api_key),
       tick_clock_(tick_clock),
-      start_ticks_(tick_clock_->NowTicks()) {}
+      entire_send_start_ticks_(tick_clock_->NowTicks()) {}
 
 void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
   done_callback_ = std::move(done_callback);
@@ -138,6 +144,7 @@ void NetworkFetch::AccessTokenFetchFinished(
 }
 
 void NetworkFetch::StartLoader() {
+  loader_only_start_ticks_ = tick_clock_->NowTicks();
   simple_loader_ = MakeLoader();
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory_, base::BindOnce(&NetworkFetch::OnSimpleLoaderComplete,
@@ -250,9 +257,16 @@ void NetworkFetch::OnSimpleLoaderComplete(
     response_body.assign(begin, end);
   }
 
-  base::TimeDelta duration = tick_clock_->NowTicks() - start_ticks_;
+  base::TimeDelta entire_send_duration =
+      tick_clock_->NowTicks() - entire_send_start_ticks_;
   UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.Network.Duration",
-                             duration);
+                             entire_send_duration);
+
+  base::TimeDelta loader_only_duration =
+      tick_clock_->NowTicks() - loader_only_start_ticks_;
+  // This histogram purposefully matches name and bucket size used in
+  // RemoteSuggestionsFetcherImpl.
+  UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime", loader_only_duration);
 
   base::UmaHistogramSparse("ContentSuggestions.Feed.Network.RequestStatusCode",
                            status_code);
