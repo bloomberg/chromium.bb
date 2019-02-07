@@ -501,14 +501,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   const bool silent_install =
       (chrome::FindBrowserWithWebContents(contents_) == nullptr);
 
-// On Mac, shortcuts are automatically created for hosted apps when they are
-// installed, so there is no need to create them again.
-#if defined(OS_MACOSX)
-  if (!silent_install && !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             ::switches::kDisableHostedAppShimCreation)) {
-    web_app::RevealAppShimInFinderForApp(current_profile, extension);
-  }
-#else
   if (create_shortcuts_) {
 #if !defined(OS_CHROMEOS)
     web_app::ShortcutLocations creation_locations;
@@ -532,13 +524,22 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 #endif  // !defined(OS_CHROMEOS)
   }
 
-  // Reparent the tab into an app window immediately when opening as a window.
-  if (!silent_install &&
-      base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      launch_type == LAUNCH_TYPE_WINDOW && !profile_->IsOffTheRecord()) {
-    ReparentWebContentsIntoAppBrowser(contents_, extension);
-  }
+  if (!silent_install) {
+#if defined(OS_MACOSX)
+    // TODO(https://crbug.com/915571): Reparent the tab on Mac just like the
+    // other platforms.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kDisableHostedAppShimCreation)) {
+      web_app::RevealAppShimInFinderForApp(current_profile, extension);
+    }
+#else
+    // Reparent the tab into an app window immediately when opening as a window.
+    if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
+        launch_type == LAUNCH_TYPE_WINDOW && !profile_->IsOffTheRecord()) {
+      ReparentWebContentsIntoAppBrowser(contents_, extension);
+    }
 #endif  // !defined(OS_MACOSX)
+  }
 
   callback_.Run(extension, web_app_info_);
 }

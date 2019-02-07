@@ -228,33 +228,16 @@ bool ShouldCreateShortcutFor(ShortcutCreationReason reason,
     return true;
 
 #if defined(OS_MACOSX)
-  // A bookmark app installs itself as an extension, then automatically triggers
-  // a shortcut request with SHORTCUT_CREATION_AUTOMATED. Allow this flow, but
-  // do not automatically create shortcuts for default-installed extensions,
-  // until it is explicitly requested by the user.
-  if (extension->was_installed_by_default() &&
-      reason == SHORTCUT_CREATION_AUTOMATED)
+  if (extension->is_hosted_app() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHostedAppShimCreation)) {
     return false;
-
-  if (extension->from_bookmark())
-    return true;
-
-  // Otherwise, don't create shortcuts for automated codepaths.
-  if (reason == SHORTCUT_CREATION_AUTOMATED)
-    return false;
-
-  if (extension->is_hosted_app()) {
-    return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableHostedAppShimCreation);
   }
-
-  // Only reached for "legacy" packaged apps. Default to false on Mac.
-  return false;
-#else
-  // For other platforms, allow shortcut creation if it was explicitly
-  // requested by the user (i.e. is not automatic).
-  return reason == SHORTCUT_CREATION_BY_USER;
 #endif
+
+  // Allow shortcut creation if it was explicitly requested by the user (i.e. is
+  // not automatic).
+  return reason == SHORTCUT_CREATION_BY_USER;
 }
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
