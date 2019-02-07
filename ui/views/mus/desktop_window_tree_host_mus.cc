@@ -935,7 +935,8 @@ void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
 }
 
 void DesktopWindowTreeHostMus::OnCanActivateChanged() {
-  // TODO(crbug.com/928939): call to WindowTreeClient::SetCanFocus()
+  MusClient::Get()->window_tree_client()->SetCanFocus(
+      window(), native_widget_delegate_->CanActivate());
 }
 
 void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
