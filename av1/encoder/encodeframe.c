@@ -6384,7 +6384,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     if (xd->lossless[i]) {
       cpi->optimize_seg_arr[i] = 0;
     } else {
-      cpi->optimize_seg_arr[i] = cpi->optimize_speed_feature;
+      cpi->optimize_seg_arr[i] = cpi->sf.optimize_coefficients;
     }
   }
   cm->coded_lossless = is_coded_lossless(cm, xd);

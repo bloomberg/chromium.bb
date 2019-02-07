@@ -525,7 +525,7 @@ static const arg_def_t enable_angle_delta =
 static const arg_def_t disable_trellis_quant =
     ARG_DEF(NULL, "disable-trellis-quant", 1,
             "Disable trellis optimization of quantized coefficients (0: false ("
-            "default) 1: true)");
+            "default) 1: true  2: partial true)");
 static const arg_def_t enable_qm =
     ARG_DEF(NULL, "enable-qm", 1,
             "Enable quantisation matrices (0: false (default), 1: true)");
