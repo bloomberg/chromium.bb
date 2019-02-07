@@ -45,6 +45,9 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // state of TabletMode
   virtual void UpdateAfterLoginStatusChange(LoginStatus status);
 
+  // Sets the ink drop ripple to ACTIVATED immediately with no animations.
+  void SnapRippleToActivated();
+
   // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
 

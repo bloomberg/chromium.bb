@@ -7,6 +7,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/system/overview/overview_button_tray.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
@@ -108,6 +110,12 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);
   if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting()) {
+    OverviewButtonTray* overview_button_tray =
+        RootWindowController::ForWindow(dragged_window_)
+            ->GetStatusAreaWidget()
+            ->overview_button_tray();
+    DCHECK(overview_button_tray);
+    overview_button_tray->SnapRippleToActivated();
     controller->ToggleOverview(
         OverviewSession::EnterExitOverviewType::kWindowDragged);
   }
