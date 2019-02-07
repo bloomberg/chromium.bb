@@ -148,7 +148,7 @@ void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
 
 void SuggestionChipView::OnFocus() {
   SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 void SuggestionChipView::OnBlur() {
