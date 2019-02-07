@@ -7886,7 +7886,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ConnectionFailureReason">
-  <int value="0" label="Unknown"/>
+  <int value="0" label="Unknown (deprecated)"/>
   <int value="1" label="Bad Passphrase"/>
   <int value="2" label="Bad WEP Key"/>
   <int value="3" label="Failed to Connect"/>
@@ -7897,6 +7897,8 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="EAP Remote TLS"/>
   <int value="9" label="Out-of-range"/>
   <int value="10" label="Pin Missing"/>
+  <int value="11" label="Unknown"/>
+  <int value="12" label="No failure"/>
 </enum>
 
 <enum name="ConnectionInfo">
