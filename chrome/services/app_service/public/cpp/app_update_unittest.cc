@@ -38,6 +38,9 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::OptionalBool expect_installed_internally_;
   bool expect_installed_internally_changed_;
 
+  apps::mojom::OptionalBool expect_is_platform_app_;
+  bool expect_is_platform_app_changed_;
+
   apps::mojom::OptionalBool expect_show_in_launcher_;
   bool expect_show_in_launcher_changed_;
 
@@ -65,6 +68,7 @@ class AppUpdateTest : public testing::Test {
     expect_install_time_changed_ = false;
     expect_permissions_changed_ = false;
     expect_installed_internally_changed_ = false;
+    expect_is_platform_app_changed_ = false;
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
   }
@@ -95,6 +99,9 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_installed_internally_changed_,
               u.InstalledInternallyChanged());
 
+    EXPECT_EQ(expect_is_platform_app_, u.IsPlatformApp());
+    EXPECT_EQ(expect_is_platform_app_changed_, u.IsPlatformAppChanged());
+
     EXPECT_EQ(expect_show_in_launcher_, u.ShowInLauncher());
     EXPECT_EQ(expect_show_in_launcher_changed_, u.ShowInLauncherChanged());
 
@@ -117,6 +124,7 @@ class AppUpdateTest : public testing::Test {
     expect_install_time_ = base::Time();
     expect_permissions_.clear();
     expect_installed_internally_ = apps::mojom::OptionalBool::kUnknown;
+    expect_is_platform_app_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     ExpectNoChange();
@@ -269,6 +277,28 @@ class AppUpdateTest : public testing::Test {
       delta->installed_internally = apps::mojom::OptionalBool::kTrue;
       expect_installed_internally_ = apps::mojom::OptionalBool::kTrue;
       expect_installed_internally_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // IsPlatformApp tests.
+
+    if (state) {
+      state->is_platform_app = apps::mojom::OptionalBool::kFalse;
+      expect_is_platform_app_ = apps::mojom::OptionalBool::kFalse;
+      expect_is_platform_app_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->is_platform_app = apps::mojom::OptionalBool::kTrue;
+      expect_is_platform_app_ = apps::mojom::OptionalBool::kTrue;
+      expect_is_platform_app_changed_ = true;
       CheckExpects(u);
     }
 

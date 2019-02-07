@@ -51,6 +51,7 @@ class AppServiceAppItem : public ChromeAppListItem,
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
 
   apps::mojom::AppType app_type_;
+  bool is_platform_app_;
 
   std::unique_ptr<app_list::AppContextMenu> context_menu_;
 

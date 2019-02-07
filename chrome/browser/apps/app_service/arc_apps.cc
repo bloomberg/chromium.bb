@@ -400,6 +400,8 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
                                   ? apps::mojom::OptionalBool::kTrue
                                   : apps::mojom::OptionalBool::kFalse;
 
+  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+
   auto show = app_info.show_in_launcher ? apps::mojom::OptionalBool::kTrue
                                         : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;

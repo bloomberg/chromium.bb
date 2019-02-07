@@ -21,6 +21,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
                                          bool is_recommendation)
     : AppResult(profile, app_id, controller, is_recommendation),
       app_type_(apps::mojom::AppType::kUnknown),
+      is_platform_app_(false),
       show_in_launcher_(false),
       weak_ptr_factory_(this) {
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
@@ -28,6 +29,8 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
   if (proxy) {
     proxy->Cache().ForOneApp(app_id, [this](const apps::AppUpdate& update) {
       app_type_ = update.AppType();
+      is_platform_app_ =
+          update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
       show_in_launcher_ =
           update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
     });
@@ -80,10 +83,6 @@ void AppServiceAppResult::Open(int event_flags) {
 }
 
 void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
-  // TODO(crbug.com/826982): don't hard-code false. The App Service should
-  // probably provide this.
-  const bool is_platform_app = false;
-
   // TODO(crbug.com/826982): drop the (app_type_ == etc), and check
   // show_in_launcher_ for all app types?
   if ((app_type_ == apps::mojom::AppType::kBuiltIn) && !show_in_launcher_) {
@@ -92,7 +91,7 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   }
 
   context_menu_ = AppServiceAppItem::MakeAppContextMenu(
-      app_type_, this, profile(), app_id(), controller(), is_platform_app);
+      app_type_, this, profile(), app_id(), controller(), is_platform_app_);
   context_menu_->GetMenuModel(std::move(callback));
 }
 

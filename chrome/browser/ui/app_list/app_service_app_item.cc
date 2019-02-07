@@ -52,7 +52,8 @@ AppServiceAppItem::AppServiceAppItem(
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const apps::AppUpdate& app_update)
     : ChromeAppListItem(profile, app_update.AppId()),
-      app_type_(app_update.AppType()) {
+      app_type_(app_update.AppType()),
+      is_platform_app_(false) {
   OnAppUpdate(app_update, true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
@@ -86,6 +87,11 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
                                      weak_ptr_factory_.GetWeakPtr()));
     }
   }
+
+  if (in_constructor || app_update.IsPlatformAppChanged()) {
+    is_platform_app_ =
+        app_update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
+  }
 }
 
 void AppServiceAppItem::Activate(int event_flags) {
@@ -97,12 +103,8 @@ const char* AppServiceAppItem::GetItemType() const {
 }
 
 void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
-  // TODO(crbug.com/826982): don't hard-code false. The App Service should
-  // probably provide this.
-  const bool is_platform_app = false;
-
   context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
-                                     GetController(), is_platform_app);
+                                     GetController(), is_platform_app_);
   context_menu_->GetMenuModel(std::move(callback));
 }
 
