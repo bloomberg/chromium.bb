@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.usage_stats;
 
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +86,32 @@ public class UsageStatsBridge {
 
     public void setTokenMappings(Map<String, String> mappings, Callback<Boolean> callback) {
         assert mNativeUsageStatsBridge != 0;
-        nativeSetTokenMappings(mNativeUsageStatsBridge, mappings, callback);
+
+        // Split map into separate String arrays of tokens (keys) and FQDNs (values) for passing
+        // over JNI bridge.
+        String[] tokens = new String[mappings.size()];
+        String[] fqdns = new String[mappings.size()];
+
+        int i = 0;
+        for (Map.Entry<String, String> entry : mappings.entrySet()) {
+            tokens[i] = entry.getKey();
+            fqdns[i] = entry.getValue();
+            i++;
+        }
+
+        nativeSetTokenMappings(mNativeUsageStatsBridge, tokens, fqdns, callback);
+    }
+
+    @CalledByNative
+    private static void createMapAndRunCallback(
+            String[] keys, String[] values, Callback<Map<String, String>> callback) {
+        assert keys.length == values.length;
+        Map<String, String> map = new HashMap<>(keys.length);
+        for (int i = 0; i < keys.length; i++) {
+            map.put(keys[i], values[i]);
+        }
+
+        callback.onResult(map);
     }
 
     private native long nativeInit(Profile profile);
@@ -107,6 +134,6 @@ public class UsageStatsBridge {
             long nativeUsageStatsBridge, String[] domains, Callback<Boolean> callback);
     private native void nativeGetAllTokenMappings(
             long nativeUsageStatsBridge, Callback<Map<String, String>> callback);
-    private native void nativeSetTokenMappings(
-            long nativeUsageStatsBridge, Map<String, String> mappings, Callback<Boolean> callback);
+    private native void nativeSetTokenMappings(long nativeUsageStatsBridge, String[] tokens,
+            String[] fqdns, Callback<Boolean> callback);
 }
