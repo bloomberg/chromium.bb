@@ -33,6 +33,10 @@
 #include "ui/base/ime/input_method_initializer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "content/public/test/network_connection_change_simulator.h"
+#endif
+
 #if defined(USE_AURA) && defined(TOOLKIT_VIEWS)
 #include "ui/views/test/widget_test_api.h"  // nogncheck
 #endif
@@ -116,6 +120,11 @@ void ContentBrowserTest::TearDown() {
 }
 
 void ContentBrowserTest::PreRunTestOnMainThread() {
+#if defined(OS_CHROMEOS)
+  NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.InitializeChromeosConnectionType();
+#endif
+
   if (!switches::IsRunWebTestsSwitchPresent()) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];

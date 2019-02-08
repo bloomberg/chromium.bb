@@ -16,6 +16,10 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "ui/base/ui_base_features.h"
 
+#if defined(OS_CHROMEOS)
+#include "content/public/test/network_connection_change_simulator.h"
+#endif
+
 namespace extensions {
 
 AppShellTest::AppShellTest()
@@ -39,6 +43,11 @@ void AppShellTest::SetUp() {
 }
 
 void AppShellTest::PreRunTestOnMainThread() {
+#if defined(OS_CHROMEOS)
+  content::NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.InitializeChromeosConnectionType();
+#endif
+
   browser_context_ = ShellContentBrowserClient::Get()->GetBrowserContext();
 
   extension_system_ = static_cast<ShellExtensionSystem*>(

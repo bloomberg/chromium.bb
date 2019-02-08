@@ -21,6 +21,12 @@ class NetworkConnectionChangeSimulator
   NetworkConnectionChangeSimulator();
   ~NetworkConnectionChangeSimulator() override;
 
+#if defined(OS_CHROMEOS)
+  // Initializes the ChromeOS network connection type.
+  // This should be used in tests that don't have a DBus set up.
+  void InitializeChromeosConnectionType();
+#endif
+
   // Synchronously sets the connection type.
   void SetConnectionType(network::mojom::ConnectionType connection_type);
 
