@@ -66,11 +66,6 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
                               base::Value default_value,
                               uint32_t flags = NO_REGISTRATION_FLAGS);
 
-  // Deprecated: prefer to use the version that takes a base::Value by value.
-  void RegisterDictionaryPref(const std::string& path,
-                              std::unique_ptr<base::Value> default_value,
-                              uint32_t flags = NO_REGISTRATION_FLAGS);
-
   void RegisterInt64Pref(const std::string& path,
                          int64_t default_value,
                          uint32_t flags = NO_REGISTRATION_FLAGS);
