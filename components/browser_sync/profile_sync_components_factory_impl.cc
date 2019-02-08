@@ -432,8 +432,8 @@ ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     syncer::ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer) {
   return std::make_unique<DataTypeManagerImpl>(
-      sync_client_, initial_types, debug_info_listener, controllers,
-      encryption_handler, configurer, observer);
+      initial_types, debug_info_listener, controllers, encryption_handler,
+      configurer, observer);
 }
 
 std::unique_ptr<syncer::SyncEngine>

@@ -16,7 +16,6 @@
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/fake_data_type_controller.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,11 +67,6 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
   status_table.UpdateFailedDataTypes(error_map);
   return status_table;
 }
-
-class TestSyncClient : public FakeSyncClient {
- public:
-  bool HasPasswordStore() override { return true; }
-};
 
 // Fake ModelTypeConfigurer implementation that simply stores away the
 // callback passed into ConfigureDataTypes.
@@ -258,8 +252,8 @@ class SyncDataTypeManagerImplTest : public testing::Test {
  protected:
   void SetUp() override {
     dtm_ = std::make_unique<TestDataTypeManager>(
-        &sync_client_, ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(),
-        &controllers_, &encryption_handler_, &configurer_, &observer_);
+        ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(), &controllers_,
+        &encryption_handler_, &configurer_, &observer_);
   }
 
   void SetConfigureStartExpectation() { observer_.ExpectStart(); }
@@ -336,7 +330,6 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   DataTypeController::TypeMap controllers_;
-  TestSyncClient sync_client_;
   FakeModelTypeConfigurer configurer_;
   FakeDataTypeManagerObserver observer_;
   std::unique_ptr<TestDataTypeManager> dtm_;

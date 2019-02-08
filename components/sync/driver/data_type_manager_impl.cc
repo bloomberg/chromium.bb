@@ -22,7 +22,6 @@
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/data_type_debug_info_listener.h"
 
 namespace syncer {
@@ -47,7 +46,6 @@ DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo(
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
 DataTypeManagerImpl::DataTypeManagerImpl(
-    SyncClient* sync_client,
     ModelTypeSet initial_types,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const DataTypeController::TypeMap* controllers,
@@ -55,7 +53,6 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer)
     : downloaded_types_(initial_types),
-      sync_client_(sync_client),
       configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -88,12 +85,6 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
   for (const auto& kv : *controllers_) {
     allowed_types.Put(kv.first);
   }
-
-  // Remove types we cannot sync.
-  if (!sync_client_->HasPasswordStore())
-    allowed_types.Remove(PASSWORDS);
-  if (!sync_client_->GetHistoryService())
-    allowed_types.Remove(TYPED_URLS);
 
   ConfigureImpl(Intersection(desired_types, allowed_types), context);
 }
