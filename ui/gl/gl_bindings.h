@@ -428,6 +428,13 @@
 #define GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM 0x8AF6
 #endif /* GL_CHROMIUM_shared_image */
 
+#ifndef GL_NV_internalformat_sample_query
+#define GL_MULTISAMPLES_NV 0x9371
+#define GL_SUPERSAMPLE_SCALE_X_NV 0x9372
+#define GL_SUPERSAMPLE_SCALE_Y_NV 0x9373
+#define GL_CONFORMANT_NV 0x9374
+#endif /* GL_NV_internalformat_sample_query */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

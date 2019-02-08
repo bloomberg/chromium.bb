@@ -837,6 +837,11 @@ GL_FUNCTIONS = [
       'GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, '
       'GLsizei* length, GLint* params', },
 { 'return_type': 'void',
+  'versions': [{'name': 'glGetInternalformatSampleivNV',
+                'extensions': ['GL_NV_internalformat_sample_query']}],
+  'arguments': 'GLenum target, GLenum internalformat, GLsizei samples, '
+               'GLenum pname, GLsizei bufSize, GLint* params', },
+{ 'return_type': 'void',
   'versions': [{'name': 'glGetMultisamplefv',
                 'extensions': ['GL_ARB_texture_multisample']}],
   'arguments': 'GLenum pname, GLuint index, GLfloat* val', },

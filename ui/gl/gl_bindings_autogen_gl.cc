@@ -408,6 +408,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_NV_fence = gfx::HasExtension(extensions, "GL_NV_fence");
   ext.b_GL_NV_framebuffer_mixed_samples =
       gfx::HasExtension(extensions, "GL_NV_framebuffer_mixed_samples");
+  ext.b_GL_NV_internalformat_sample_query =
+      gfx::HasExtension(extensions, "GL_NV_internalformat_sample_query");
   ext.b_GL_NV_path_rendering =
       gfx::HasExtension(extensions, "GL_NV_path_rendering");
   ext.b_GL_OES_EGL_image = gfx::HasExtension(extensions, "GL_OES_EGL_image");
@@ -1295,6 +1297,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glGetInternalformativRobustANGLEFn =
         reinterpret_cast<glGetInternalformativRobustANGLEProc>(
             GetGLProcAddress("glGetInternalformativRobustANGLE"));
+  }
+
+  if (ext.b_GL_NV_internalformat_sample_query) {
+    fn.glGetInternalformatSampleivNVFn =
+        reinterpret_cast<glGetInternalformatSampleivNVProc>(
+            GetGLProcAddress("glGetInternalformatSampleivNV"));
   }
 
   if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 1u) ||
@@ -3810,6 +3818,16 @@ void GLApiBase::glGetInternalformativRobustANGLEFn(GLenum target,
                                                    GLint* params) {
   driver_->fn.glGetInternalformativRobustANGLEFn(target, internalformat, pname,
                                                  bufSize, length, params);
+}
+
+void GLApiBase::glGetInternalformatSampleivNVFn(GLenum target,
+                                                GLenum internalformat,
+                                                GLsizei samples,
+                                                GLenum pname,
+                                                GLsizei bufSize,
+                                                GLint* params) {
+  driver_->fn.glGetInternalformatSampleivNVFn(target, internalformat, samples,
+                                              pname, bufSize, params);
 }
 
 void GLApiBase::glGetMultisamplefvFn(GLenum pname, GLuint index, GLfloat* val) {
@@ -7076,6 +7094,18 @@ void TraceGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                 "TraceGLAPI::glGetInternalformativRobustANGLE")
   gl_api_->glGetInternalformativRobustANGLEFn(target, internalformat, pname,
                                               bufSize, length, params);
+}
+
+void TraceGLApi::glGetInternalformatSampleivNVFn(GLenum target,
+                                                 GLenum internalformat,
+                                                 GLsizei samples,
+                                                 GLenum pname,
+                                                 GLsizei bufSize,
+                                                 GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glGetInternalformatSampleivNV")
+  gl_api_->glGetInternalformatSampleivNVFn(target, internalformat, samples,
+                                           pname, bufSize, params);
 }
 
 void TraceGLApi::glGetMultisamplefvFn(GLenum pname,
@@ -11101,6 +11131,21 @@ void DebugGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                  << static_cast<const void*>(params) << ")");
   gl_api_->glGetInternalformativRobustANGLEFn(target, internalformat, pname,
                                               bufSize, length, params);
+}
+
+void DebugGLApi::glGetInternalformatSampleivNVFn(GLenum target,
+                                                 GLenum internalformat,
+                                                 GLsizei samples,
+                                                 GLenum pname,
+                                                 GLsizei bufSize,
+                                                 GLint* params) {
+  GL_SERVICE_LOG("glGetInternalformatSampleivNV"
+                 << "(" << GLEnums::GetStringEnum(target) << ", "
+                 << GLEnums::GetStringEnum(internalformat) << ", " << samples
+                 << ", " << GLEnums::GetStringEnum(pname) << ", " << bufSize
+                 << ", " << static_cast<const void*>(params) << ")");
+  gl_api_->glGetInternalformatSampleivNVFn(target, internalformat, samples,
+                                           pname, bufSize, params);
 }
 
 void DebugGLApi::glGetMultisamplefvFn(GLenum pname,
@@ -15214,6 +15259,15 @@ void NoContextGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                                         GLsizei* length,
                                                         GLint* params) {
   NoContextHelper("glGetInternalformativRobustANGLE");
+}
+
+void NoContextGLApi::glGetInternalformatSampleivNVFn(GLenum target,
+                                                     GLenum internalformat,
+                                                     GLsizei samples,
+                                                     GLenum pname,
+                                                     GLsizei bufSize,
+                                                     GLint* params) {
+  NoContextHelper("glGetInternalformatSampleivNV");
 }
 
 void NoContextGLApi::glGetMultisamplefvFn(GLenum pname,

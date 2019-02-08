@@ -892,8 +892,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=709351)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['linux', 'nvidia', 'opengl'], bug=680278)
-    self.Fail('conformance2/rendering/multisampling-fragment-evaluation.html',
-        ['linux', 'nvidia', 'no_passthrough'], bug=682815)
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
         ['linux', ('nvidia', 0xf02)], bug=680282)

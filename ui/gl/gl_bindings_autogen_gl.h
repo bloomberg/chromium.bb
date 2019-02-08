@@ -628,6 +628,13 @@ typedef void(GL_BINDING_CALL* glGetInternalformativRobustANGLEProc)(
     GLsizei bufSize,
     GLsizei* length,
     GLint* params);
+typedef void(GL_BINDING_CALL* glGetInternalformatSampleivNVProc)(
+    GLenum target,
+    GLenum internalformat,
+    GLsizei samples,
+    GLenum pname,
+    GLsizei bufSize,
+    GLint* params);
 typedef void(GL_BINDING_CALL* glGetMultisamplefvProc)(GLenum pname,
                                                       GLuint index,
                                                       GLfloat* val);
@@ -1838,6 +1845,7 @@ struct ExtensionsGL {
   bool b_GL_NV_blend_equation_advanced;
   bool b_GL_NV_fence;
   bool b_GL_NV_framebuffer_mixed_samples;
+  bool b_GL_NV_internalformat_sample_query;
   bool b_GL_NV_path_rendering;
   bool b_GL_OES_EGL_image;
   bool b_GL_OES_get_program_binary;
@@ -2032,6 +2040,7 @@ struct ProcsGL {
   glGetIntegervRobustANGLEProc glGetIntegervRobustANGLEFn;
   glGetInternalformativProc glGetInternalformativFn;
   glGetInternalformativRobustANGLEProc glGetInternalformativRobustANGLEFn;
+  glGetInternalformatSampleivNVProc glGetInternalformatSampleivNVFn;
   glGetMultisamplefvProc glGetMultisamplefvFn;
   glGetMultisamplefvRobustANGLEProc glGetMultisamplefvRobustANGLEFn;
   glGetnUniformfvRobustANGLEProc glGetnUniformfvRobustANGLEFn;
@@ -2873,6 +2882,12 @@ class GL_EXPORT GLApi {
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLint* params) = 0;
+  virtual void glGetInternalformatSampleivNVFn(GLenum target,
+                                               GLenum internalformat,
+                                               GLsizei samples,
+                                               GLenum pname,
+                                               GLsizei bufSize,
+                                               GLint* params) = 0;
   virtual void glGetMultisamplefvFn(GLenum pname,
                                     GLuint index,
                                     GLfloat* val) = 0;
@@ -4156,6 +4171,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glGetInternalformativFn
 #define glGetInternalformativRobustANGLE \
   ::gl::g_current_gl_context->glGetInternalformativRobustANGLEFn
+#define glGetInternalformatSampleivNV \
+  ::gl::g_current_gl_context->glGetInternalformatSampleivNVFn
 #define glGetMultisamplefv ::gl::g_current_gl_context->glGetMultisamplefvFn
 #define glGetMultisamplefvRobustANGLE \
   ::gl::g_current_gl_context->glGetMultisamplefvRobustANGLEFn

@@ -1562,6 +1562,10 @@ void FeatureInfo::InitializeFeatures() {
       AddExtensionString("GL_WEBGL_multi_draw_instanced");
     }
   }
+
+  if (gfx::HasExtension(extensions, "GL_NV_internalformat_sample_query")) {
+    feature_flags_.nv_internalformat_sample_query = true;
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
