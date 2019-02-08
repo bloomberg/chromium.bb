@@ -20,7 +20,7 @@ namespace test {
 
 // static
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
-    const std::vector<std::string>& frame_checksums) {
+    const std::vector<std::string>& expected_frame_checksums) {
   auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
   if (!video_frame_mapper) {
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
@@ -28,8 +28,8 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
   }
 
   auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
-      VideoFrameValidator::CHECK, base::FilePath(), frame_checksums,
-      base::File(), std::move(video_frame_mapper)));
+      VideoFrameValidator::CHECK, base::FilePath(), expected_frame_checksums,
+      std::move(video_frame_mapper)));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
     return nullptr;
@@ -42,18 +42,13 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     uint32_t flags,
     const base::FilePath& prefix_output_yuv,
-    const base::FilePath& md5_file_path,
+    const std::vector<std::string>& expected_frame_checksums,
     bool linear) {
   if ((flags & VideoFrameValidator::OUTPUTYUV) && prefix_output_yuv.empty()) {
     LOG(ERROR) << "Prefix of yuv files isn't specified with dump flags.";
     return nullptr;
   }
 
-  if ((flags & VideoFrameValidator::GENMD5) &&
-      (flags & VideoFrameValidator::CHECK)) {
-    LOG(ERROR) << "Generating and checking MD5 values at the same time is not "
-               << "supported.";
-  }
   auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(linear);
 
   if (!video_frame_mapper) {
@@ -61,27 +56,8 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     return nullptr;
   }
 
-  std::vector<std::string> md5_of_frames;
-  base::File md5_file;
-  if (flags & VideoFrameValidator::GENMD5) {
-    // Writes out computed md5 values to md5_file_path.
-    md5_file = base::File(md5_file_path, base::File::FLAG_CREATE_ALWAYS |
-                                             base::File::FLAG_WRITE |
-                                             base::File::FLAG_APPEND);
-    if (!md5_file.IsValid()) {
-      LOG(ERROR) << "Failed to create md5 file to write " << md5_file_path;
-      return nullptr;
-    }
-  } else if (flags & VideoFrameValidator::CHECK) {
-    md5_of_frames = ReadGoldenThumbnailMD5s(md5_file_path);
-    if (md5_of_frames.empty()) {
-      LOG(ERROR) << "Failed to read md5 values in " << md5_file_path;
-      return nullptr;
-    }
-  }
-
   auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
-      flags, prefix_output_yuv, std::move(md5_of_frames), std::move(md5_file),
+      flags, prefix_output_yuv, std::move(expected_frame_checksums),
       std::move(video_frame_mapper)));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
@@ -94,13 +70,11 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
 VideoFrameValidator::VideoFrameValidator(
     uint32_t flags,
     const base::FilePath& prefix_output_yuv,
-    std::vector<std::string> md5_of_frames,
-    base::File md5_file,
+    std::vector<std::string> expected_frame_checksums,
     std::unique_ptr<VideoFrameMapper> video_frame_mapper)
     : flags_(flags),
       prefix_output_yuv_(prefix_output_yuv),
-      md5_of_frames_(std::move(md5_of_frames)),
-      md5_file_(std::move(md5_file)),
+      expected_frame_checksums_(std::move(expected_frame_checksums)),
       video_frame_mapper_(std::move(video_frame_mapper)),
       num_frames_validating_(0),
       frame_validator_thread_("FrameValidatorThread"),
@@ -125,6 +99,10 @@ void VideoFrameValidator::Destroy() {
   frame_validator_thread_.Stop();
   base::AutoLock auto_lock(frame_validator_lock_);
   DCHECK_EQ(0u, num_frames_validating_);
+}
+
+const std::vector<std::string>& VideoFrameValidator::GetFrameChecksums() const {
+  return frame_checksums_;
 }
 
 std::vector<VideoFrameValidator::MismatchedFrameInfo>
@@ -177,17 +155,15 @@ void VideoFrameValidator::ProcessVideoFrameTask(
     return;
   }
   std::string computed_md5 = ComputeMD5FromVideoFrame(standard_frame);
-  if (flags_ & Flags::GENMD5) {
-    md5_file_.Write(0, computed_md5.data(), computed_md5.size());
-    md5_file_.Write(0, "\n", 1);
-  }
+
+  base::AutoLock auto_lock(frame_validator_lock_);
+  frame_checksums_.push_back(computed_md5);
 
   if (flags_ & Flags::CHECK) {
-    LOG_IF(FATAL, frame_index >= md5_of_frames_.size())
+    LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
         << "Frame number is over than the number of read md5 values in file.";
-    const auto& expected_md5 = md5_of_frames_[frame_index];
+    const auto& expected_md5 = expected_frame_checksums_[frame_index];
     if (computed_md5 != expected_md5) {
-      base::AutoLock auto_lock(frame_validator_lock_);
       mismatched_frames_.push_back(
           MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
     }
@@ -198,7 +174,6 @@ void VideoFrameValidator::ProcessVideoFrameTask(
         << "Failed to write yuv into file.";
   }
 
-  base::AutoLock auto_lock(frame_validator_lock_);
   num_frames_validating_--;
   frame_validator_cv_.Signal();
 }
