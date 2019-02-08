@@ -25,8 +25,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestEmptyUpdateTest, NoCrash) {
   InvokePaymentRequestUI();
   OpenShippingAddressSectionScreen();
 
-  ResetEventWaiterForSequence(
-      {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING});
 
   ClickOnChildInListViewAndWait(
       /* child_index=*/0, /*total_num_children=*/1,

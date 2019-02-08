@@ -57,7 +57,6 @@ public class PaymentRequestEmptyUpdateTest implements MainActivityStartCallback 
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
-                R.id.payments_first_radio_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Total required"});
+                R.id.payments_first_radio_button, mPaymentRequestTestRule.getReadyForInput());
     }
 }

@@ -1064,13 +1064,6 @@ void PaymentRequest::OnUpdatePaymentDetails(
     return;
   }
 
-  if (!details->hasTotal()) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kSyntaxError, "Total required"));
-    ClearResolversAndCloseMojoConnection();
-    return;
-  }
-
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
   ValidateAndConvertPaymentDetailsUpdate(
