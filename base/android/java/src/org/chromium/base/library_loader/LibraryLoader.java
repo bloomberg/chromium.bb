@@ -17,7 +17,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.system.Os;
 
-import org.chromium.base.BaseSwitches;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
@@ -25,7 +24,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -86,9 +84,6 @@ public class LibraryLoader {
 
     // SharedPreferences key for "don't prefetch libraries" flag
     private static final String DONT_PREFETCH_LIBRARIES_KEY = "dont_prefetch_libraries";
-
-    // Shared preferences key for the reached code profiler.
-    private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
 
     private static final EnumeratedHistogramSample sRelinkerCountHistogram =
             new EnumeratedHistogramSample("ChromiumAndroidLinker.RelinkerFallbackCount", 2);
@@ -308,33 +303,6 @@ public class LibraryLoader {
                     DONT_PREFETCH_LIBRARIES_KEY, false);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    /**
-     * Enables the reached code profiler. The value comes from "ReachedCodeProfiler"
-     * finch experiment, and is pushed on every run. I.e. the effect of the finch experiment
-     * lags by one run, which is the best we can do considering that the profiler has to be enabled
-     * before finch is initialized. Note that since LibraryLoader is in //base, it can't depend
-     * on ChromeFeatureList, and has to rely on external code pushing the value.
-     *
-     * @param enabled whether to enable the reached code profiler.
-     */
-    public static void setReachedCodeProfilerEnabledOnNextRuns(boolean enabled) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(REACHED_CODE_PROFILER_ENABLED_KEY, enabled)
-                .apply();
-    }
-
-    /**
-     * @return whether to enable reached code profiler (see
-     *         setReachedCodeProfilerEnabledOnNextRuns()).
-     */
-    private static boolean isReachedCodeProfilerEnabled() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            return ContextUtils.getAppSharedPreferences().getBoolean(
-                    REACHED_CODE_PROFILER_ENABLED_KEY, false);
         }
     }
 
@@ -616,13 +584,6 @@ public class LibraryLoader {
             return;
         }
         mLibraryProcessType = processType;
-
-        // Add a switch for the reached code profiler as late as possible since it requires a read
-        // from the shared preferences. At this point the shared preferences are usually warmed up.
-        if (mLibraryProcessType == LibraryProcessType.PROCESS_BROWSER
-                && isReachedCodeProfilerEnabled()) {
-            CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_REACHED_CODE_PROFILER);
-        }
 
         ensureCommandLineSwitchedAlreadyLocked();
 

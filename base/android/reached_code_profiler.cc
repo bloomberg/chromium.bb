@@ -13,10 +13,8 @@
 
 #include "base/android/library_loader/anchor_functions.h"
 #include "base/android/orderfile/orderfile_buildflags.h"
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -41,19 +39,6 @@ namespace base {
 namespace android {
 
 namespace {
-
-#if !defined(NDEBUG) || defined(COMPONENT_BUILD)
-// Always disabled for debug builds to avoid hitting a limit of signal
-// interrupts that can get delivered into a single HANDLE_EINTR. Also
-// debugging experience would be bad if there are a lot of signals flying
-// around.
-// Always disabled for component builds because in this case the code is not
-// organized in one contiguous region which is required for the reached code
-// profiler.
-constexpr const bool kConfigurationSupported = false;
-#else
-constexpr const bool kConfigurationSupported = true;
-#endif
 
 constexpr const char kDumpToFileFlag[] = "reached-code-profiler-dump-to-file";
 
@@ -305,11 +290,20 @@ class ReachedCodeProfiler {
 };
 
 bool ShouldEnableReachedCodeProfiler() {
-  if (!kConfigurationSupported)
-    return false;
-
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(switches::kEnableReachedCodeProfiler);
+#if !defined(NDEBUG) || defined(COMPONENT_BUILD)
+  // Always disabled for debug builds to avoid hitting a limit of signal
+  // interrupts that can get delivered into a single HANDLE_EINTR. Also
+  // debugging experience would be bad if there are a lot of signals flying
+  // around.
+  // Always disabled for component builds because in this case the code is not
+  // organized in one contiguous region which is required for the reached code
+  // profiler.
+  return false;
+#else
+  // TODO(crbug.com/916263): this should be set up according to the finch
+  // experiment.
+  return false;
+#endif
 }
 
 }  // namespace
@@ -327,10 +321,6 @@ void InitReachedCodeProfilerAtStartup(LibraryProcessType library_process_type) {
 
 bool IsReachedCodeProfilerEnabled() {
   return ReachedCodeProfiler::GetInstance()->IsEnabled();
-}
-
-bool IsReachedCodeProfilerSupported() {
-  return kConfigurationSupported;
 }
 
 }  // namespace android
