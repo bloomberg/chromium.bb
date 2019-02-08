@@ -58,7 +58,6 @@ def IsBuildStatusFinished(build_status):
   """Populates the 'artifacts_url' and 'stages' build_status fields.
 
   Args:
-    db: CIDBConnection.
     build_status: Single build_status dict returned by any Fetch method.
 
   Returns:
@@ -81,14 +80,14 @@ def FixUpBuildStatus(buildstore, build_status):
   """
   # We don't actually store the artifacts_url, but we store a URL for a specific
   # artifact we can use to derive it.
-  db = buildstore.GetCIDBHandle()
   build_status['artifacts_url'] = None
   if build_status['metadata_url']:
     build_status['artifacts_url'] = os.path.dirname(
         build_status['metadata_url'])
 
   # Find stage information.
-  build_status['stages'] = db.GetBuildsStages([build_status['id']])
+  build_status['stages'] = buildstore.GetBuildsStages(
+      buildbucket_ids=[build_status['buildbucket_id']])
 
   return build_status
 
