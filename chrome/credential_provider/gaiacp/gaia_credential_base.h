@@ -92,14 +92,32 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const CComBSTR& get_current_windows_password() const {
     return current_windows_password_;
   }
+  const base::DictionaryValue* get_authentication_results() const {
+    return authentication_results_.get();
+  }
   void set_username(BSTR username) { username_ = username; }
   void set_user_sid(BSTR sid) { user_sid_ = sid; }
   void set_current_windows_password(BSTR password) {
     current_windows_password_ = password;
   }
+
+  // Returns true if the current credentials stored in |username_| and
+  // |password_| are valid and should succeed a local Windows logon. This
+  // function is successful if we are able to create a logon token with the
+  // credentials.
   bool AreCredentialsValid() const;
-  bool AreWindowsCredentialsAvailable() const;
-  HRESULT AreWindowsCredentialsValid(BSTR password) const;
+
+  // Returns true if some kind of credential information is available so that a
+  // sign in can be attempled. Does not guarantee that the sign in will succeed
+  // with the current credentials.
+  bool CanAttemptWindowsLogon() const;
+
+  // Returns true if the specific password credential is valid for |username_|.
+  HRESULT IsWindowsPasswordValidForStoredUser(BSTR password) const;
+
+  // Updates the UI so that the password field is displayed and also sets the
+  // state of the credential to wait for a password.
+  void DisplayPasswordField(int password_message);
 
   // IGaiaCredential
   IFACEMETHODIMP Initialize(IGaiaCredentialProvider* provider) override;
@@ -210,6 +228,17 @@ class ATL_NO_VTABLE CGaiaCredentialBase
       CREDENTIAL_PROVIDER_STATUS_ICON* pcpsiOptionalStatusIcon) override;
   IFACEMETHODIMP GetUserSid(wchar_t** sid) override;
 
+  // Checks whether the submit button for the credential should be enabled
+  // (depending on the state of the credential) and enables / disables it
+  // accordingly. This generally occurs when processing is being done that does
+  // not require direct user input to the credential (user is entering
+  // credentials in  GLS) or a submit of the credential is not valid (user needs
+  // to enter the old Windows password but currently nothing has been entered in
+  // the password field).
+  void UpdateSubmitButtonInteractiveState();
+
+  // Stops the GLS process in case it is still executing. Often called when user
+  // switches credentials in the middle of a sign in through the GLS.
   void TerminateLogonProcess();
 
   // Checks if the information for the given |username| is valid and creates it
@@ -241,6 +270,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   CComBSTR username_;
   CComBSTR password_;
   CComBSTR user_sid_;
+
+  bool needs_windows_password_ = false;
+  bool needs_to_update_windows_password_ = false;
 
   // The password entered into the FID_CURRENT_PASSWORD_FIELD to update the
   // Windows password with the gaia password.

@@ -533,15 +533,16 @@ CGaiaCredentialBase::CGaiaCredentialBase()
 CGaiaCredentialBase::~CGaiaCredentialBase() {}
 
 bool CGaiaCredentialBase::AreCredentialsValid() const {
-  return AreWindowsCredentialsAvailable() &&
-         AreWindowsCredentialsValid(password_) == S_OK;
+  return CanAttemptWindowsLogon() &&
+         IsWindowsPasswordValidForStoredUser(password_) == S_OK;
 }
 
-bool CGaiaCredentialBase::AreWindowsCredentialsAvailable() const {
+bool CGaiaCredentialBase::CanAttemptWindowsLogon() const {
   return username_.Length() > 0 && password_.Length() > 0;
 }
 
-HRESULT CGaiaCredentialBase::AreWindowsCredentialsValid(BSTR password) const {
+HRESULT CGaiaCredentialBase::IsWindowsPasswordValidForStoredUser(
+    BSTR password) const {
   if (username_.Length() == 0 || user_sid_.Length() == 0)
     return S_FALSE;
 
@@ -588,6 +589,8 @@ void CGaiaCredentialBase::ResetInternalState() {
   password_.Empty();
   current_windows_password_.Empty();
   authentication_results_.reset();
+  needs_to_update_windows_password_ = false;
+  needs_windows_password_ = false;
 
   // Don't reset user_sid_ or username_ as those are set for existing gaia
   // users in CReauthCredential::SetGaiaUserInfo so that the user account
@@ -608,6 +611,7 @@ void CGaiaCredentialBase::ResetInternalState() {
                             current_windows_password_);
     events_->SetFieldState(this, FID_SUBMIT, CPFS_DISPLAY_IN_SELECTED_TILE);
     events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_DESCRIPTION);
+    UpdateSubmitButtonInteractiveState();
   }
 }
 
@@ -718,63 +722,54 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   DCHECK(cpgsr);
   DCHECK(cpcs);
 
-  if (!AreWindowsCredentialsAvailable())
+  if (!CanAttemptWindowsLogon())
     return S_FALSE;
 
   // If the credentials are not valid, check if the user entered their old
   // Windows password and it is valid. If it is, try to change the password
   // using the old password. If it isn't, return S_FALSE to state that the
   // login is not complete.
-  if (!AreCredentialsValid()) {
+  if (needs_windows_password_) {
     HRESULT windows_cred_hr =
-        AreWindowsCredentialsValid(current_windows_password_);
+        IsWindowsPasswordValidForStoredUser(current_windows_password_);
     if (windows_cred_hr == S_OK) {
-      OSUserManager* manager = OSUserManager::Get();
-      HRESULT changepassword_hr = manager->ChangeUserPassword(
-          username_, current_windows_password_, password_);
-      if (FAILED(changepassword_hr)) {
-        if (changepassword_hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
-          LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(changepassword_hr);
-          return changepassword_hr;
+      if (needs_to_update_windows_password_) {
+        OSUserManager* manager = OSUserManager::Get();
+        HRESULT changepassword_hr = manager->ChangeUserPassword(
+            username_, current_windows_password_, password_);
+        if (FAILED(changepassword_hr)) {
+          if (changepassword_hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
+            LOGFN(ERROR) << "ChangeUserPassword hr="
+                         << putHR(changepassword_hr);
+            return changepassword_hr;
+          }
+          LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
+          password_ = current_windows_password_;
         }
-        LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
+      } else {
         password_ = current_windows_password_;
       }
     } else {
-      if (events_) {
-        int message_id = IDS_INVALID_PASSWORD_BASE;
+      if (current_windows_password_.Length() && events_) {
+        UINT pasword_message_id = IDS_INVALID_PASSWORD_BASE;
         if (windows_cred_hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_LOCKED_OUT)) {
-          message_id = IDS_ACCOUNT_LOCKED_BASE;
+          pasword_message_id = IDS_ACCOUNT_LOCKED_BASE;
           LOGFN(ERROR) << "Account is locked.";
         }
 
-        events_->SetFieldState(this, FID_DESCRIPTION,
-                               CPFS_DISPLAY_IN_SELECTED_TILE);
         events_->SetFieldString(this, FID_DESCRIPTION,
-                                GetStringResource(message_id).c_str());
+                                GetStringResource(pasword_message_id).c_str());
+        events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
+                                          CPFIS_FOCUSED);
       }
       return S_FALSE;
     }
   }
 
-  // At this point the user and password stored in authentication_results_
-  // should match what is stored in username_ and password_ so the
-  // SaveAccountInfo process can be forked.
-  //
-  // The successful return from this function will tell winlogon that
-  // logging in is finished. It seems that winlogon will kill this process
-  // after a short time, which races with an attempt to save the account info
-  // to the registry if done here.  For this reason a child pocess is used.
-  CComBSTR status_text;
-  HRESULT hr = ForkSaveAccountInfoStub(authentication_results_, &status_text);
-  authentication_results_.reset();
-
-  if (FAILED(hr))
-    LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
-
   // The OS user has already been created, so return all the information
   // needed to log them in.
-  hr = BuildCredPackAuthenticationBuffer(get_username(), get_password(), cpcs);
+  HRESULT hr =
+      BuildCredPackAuthenticationBuffer(get_username(), get_password(), cpcs);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildCredPackAuthenticationBuffer hr=" << putHR(hr);
     return hr;
@@ -860,7 +855,7 @@ HRESULT CGaiaCredentialBase::UnAdvise(void) {
 }
 
 HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
-  *auto_login = AreCredentialsValid();
+  *auto_login = CanAttemptWindowsLogon();
   LOGFN(INFO) << "auto-login=" << *auto_login;
 
   // After this point the user is able to interact with the winlogon and thus
@@ -879,7 +874,6 @@ HRESULT CGaiaCredentialBase::SetDeselected(void) {
   // Whenever a different user is selected and then the original credential
   // is selected again, the password is cleared.
   ResetInternalState();
-  TerminateLogonProcess();
 
   return S_OK;
 }
@@ -984,7 +978,10 @@ HRESULT CGaiaCredentialBase::SetStringValue(DWORD field_id,
   HRESULT hr = E_INVALIDARG;
   switch (field_id) {
     case FID_CURRENT_PASSWORD_FIELD:
-      current_windows_password_ = W2COLE(psz);
+      if (needs_windows_password_) {
+        current_windows_password_ = W2COLE(psz);
+        UpdateSubmitButtonInteractiveState();
+      }
       hr = S_OK;
       break;
   }
@@ -1020,61 +1017,87 @@ HRESULT CGaiaCredentialBase::GetSerialization(
   *status_text = nullptr;
   *status_icon = CPSI_NONE;
 
-  HRESULT hr = HandleAutologon(cpgsr, cpcs);
-
-  // Clear the state of the credential on error or on autologon.
-  if (hr != S_FALSE)
-    ResetInternalState();
-
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "HandleAutologon hr=" << putHR(hr);
-    *cpgsr = CPGSR_RETURN_NO_CREDENTIAL_FINISHED;
-    return hr;
+  // This may be a long running function so disable user input while processing.
+  if (events_) {
+    events_->SetFieldInteractiveState(this, FID_SUBMIT, CPFIS_DISABLED);
+    events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
+                                      CPFIS_DISABLED);
   }
 
-  // If HandleAutologon returns S_FALSE, then there was not enough information
-  // to log the user on or they need to update their password and gave an
-  // invalid old password.  Display the Gaia sign in page if there is not
-  // sufficient Gaia credentials or just return CPGSR_NO_CREDENTIAL_NOT_FINISHED
-  // to wait for the user to try a new password.
-  if (hr == S_FALSE) {
+  HRESULT hr = HandleAutologon(cpgsr, cpcs);
+
+  // Don't clear the state of the credential on error. The error can occur
+  // because the user is locked out or entered an incorrect old password when
+  // trying to update their password. In these situations it may still be
+  // possible to sign in with the information that is currently available if
+  // the problem can be fixed externally so keep all the information for now.
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "HandleAutologon hr=" << putHR(hr);
+    *status_icon = CPSI_ERROR;
+    *cpgsr = CPGSR_RETURN_NO_CREDENTIAL_FINISHED;
+  } else if (hr == S_FALSE) {
+    // If HandleAutologon returns S_FALSE, then there was not enough information
+    // to log the user on or they need to update their password and gave an
+    // invalid old password.  Display the Gaia sign in page if there is not
+    // sufficient Gaia credentials or just return
+    // CPGSR_NO_CREDENTIAL_NOT_FINISHED to wait for the user to try a new
+    // password.
+
     // Logon process is still running or windows password needs to be updated,
     // return that serialization is not finished so that a second logon stub
     // isn't started.
-    if (logon_ui_process_ != INVALID_HANDLE_VALUE ||
-        AreWindowsCredentialsAvailable()) {
+    if (logon_ui_process_ != INVALID_HANDLE_VALUE || needs_windows_password_) {
       *cpgsr = CPGSR_NO_CREDENTIAL_NOT_FINISHED;
-      return S_OK;
+
+      // Warn that password needs update.
+      if (needs_to_update_windows_password_)
+        *status_icon = CPSI_WARNING;
+
+      hr = S_OK;
+    } else {
+      LOGFN(INFO) << "HandleAutologon hr=" << putHR(hr);
+      TellOmahaDidRun();
+
+      // If there is no internet connection, just abort right away.
+      if (provider_->HasInternetConnection() != S_OK) {
+        BSTR error_message = AllocErrorString(IDS_NO_NETWORK_BASE);
+        ::SHStrDupW(OLE2CW(error_message), status_text);
+        ::SysFreeString(error_message);
+
+        *status_icon = CPSI_NONE;
+        *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
+        LOGFN(INFO) << "No internet connection";
+        UpdateSubmitButtonInteractiveState();
+        hr = S_OK;
+      } else {
+        // The account creation is async so we are not done yet.
+        *cpgsr = CPGSR_NO_CREDENTIAL_NOT_FINISHED;
+
+        // The expectation is that the UI will eventually return the username,
+        // password, and auth to this CGaiaCredentialBase object, so that
+        // OnUserAuthenticated() can be called, followed by
+        // provider_->OnUserAuthenticated().
+        hr = CreateAndRunLogonStub();
+      }
     }
-
-    LOGFN(INFO) << "HandleAutologon hr=" << putHR(hr);
-    TellOmahaDidRun();
-
-    // If there is no internet connection, just abort right away.
-    if (provider_->HasInternetConnection() != S_OK) {
-      BSTR error_message = AllocErrorString(IDS_NO_NETWORK_BASE);
-      ::SHStrDupW(OLE2CW(error_message), status_text);
-      ::SysFreeString(error_message);
-
-      *status_icon = CPSI_NONE;
-      *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
-      LOGFN(INFO) << "No internet connection";
-      return S_OK;
-    }
-
-    if (events_)
-      events_->SetFieldState(this, FID_SUBMIT, CPFS_HIDDEN);
-
-    // The account creation is async so we are not done yet.
-    *cpgsr = CPGSR_NO_CREDENTIAL_NOT_FINISHED;
-
-    // The expectation is that the UI will eventually return the username,
-    // password, and auth to this CGaiaCredentialBase object, so that
-    // OnUserAuthenticated() can be called, followed by
-    // provider_->OnUserAuthenticated().
-    hr = CreateAndRunLogonStub();
+  } else {
+    *status_icon = CPSI_SUCCESS;
   }
 
+  // Logon is not complete, re-enable UI as needed.
+  if (*cpgsr != CPGSR_NO_CREDENTIAL_FINISHED &&
+      *cpgsr != CPGSR_RETURN_CREDENTIAL_FINISHED &&
+      *cpgsr != CPGSR_RETURN_NO_CREDENTIAL_FINISHED) {
+    if (events_) {
+      events_->SetFieldInteractiveState(
+          this, FID_CURRENT_PASSWORD_FIELD,
+          needs_windows_password_ ? CPFIS_FOCUSED : CPFIS_NONE);
+    }
+    UpdateSubmitButtonInteractiveState();
+  }
+  // Otherwise, keep the ui disable forever now. ReportResult will eventually
+  // be called on success or failure and the reset of the state of the
+  // credential will be done there.
   return hr;
 }
 
@@ -1425,6 +1448,21 @@ HRESULT CGaiaCredentialBase::ReportResult(
   LOGFN(INFO) << "status=" << putHR(status)
               << " substatus=" << putHR(substatus);
 
+  if (status == STATUS_SUCCESS && authentication_results_) {
+    // Update the password in |authentication_results_| with the real Windows
+    // password for the user so that the SaveAccountInfo process can correctly
+    // sign in to the user account.
+    authentication_results_->SetKey(
+        kKeyPassword, base::Value(base::UTF16ToUTF8((BSTR)password_)));
+
+    // At this point the user and password stored in authentication_results_
+    // should match what is stored in username_ and password_ so the
+    // SaveAccountInfo process can be forked.
+    CComBSTR status_text;
+    HRESULT hr = ForkSaveAccountInfoStub(authentication_results_, &status_text);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
+  }
   *ppszOptionalStatusText = nullptr;
   *pcpsiOptionalStatusIcon = CPSI_NONE;
   ResetInternalState();
@@ -1573,6 +1611,11 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   USES_CONVERSION;
   DCHECK(status_text);
 
+  // Logon UI process is no longer needed and should already be finished by now
+  // so clear the handle so that calls to HandleAutoLogon do not block further
+  // processing thinking that there is still a logon process active.
+  logon_ui_process_ = INVALID_HANDLE_VALUE;
+
   // Convert the string to a base::Dictionary and add the calculated username
   // to it to be passed to the SaveAccountInfo process.
   std::string json_string;
@@ -1622,21 +1665,18 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   dict->SetString(kKeyUsername, new_username);
   dict->SetString(kKeySID, OLE2CA(sid));
 
+  // Disable the submit button. Either the signon will succeed with the given
+  // credentials or a password update will be needed and that flow will handle
+  // re-enabling the submit button in HandleAutoLogon.
+  if (events_)
+    events_->SetFieldInteractiveState(this, FID_SUBMIT, CPFIS_DISABLED);
+
+  // Check if the credentials are valid for the user. If they aren't show the
+  // password update prompt and continue without authenticating on the provider.
   bool password_stale = hr == S_FALSE;
   if (password_stale) {
-    *status_text = AllocErrorString(IDS_PASSWORD_UPDATE_NEEDED_BASE);
-    if (events_) {
-      events_->SetFieldState(this, FID_DESCRIPTION,
-                             CPFS_DISPLAY_IN_SELECTED_TILE);
-      events_->SetFieldString(this, FID_DESCRIPTION, *status_text);
-      events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
-                             CPFS_DISPLAY_IN_SELECTED_TILE);
-      events_->SetFieldState(this, FID_SUBMIT, CPFS_DISPLAY_IN_SELECTED_TILE);
-      events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
-                                        CPFIS_FOCUSED);
-      events_->SetFieldSubmitButton(this, FID_SUBMIT,
-                                    FID_CURRENT_PASSWORD_FIELD);
-    }
+    needs_to_update_windows_password_ = true;
+    DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
   }
 
   username_ = new_username.c_str();
@@ -1669,14 +1709,12 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
   if (status_text != nullptr)
     result_status_text_.assign(OLE2CW(status_text));
 
-  if (events_)
-    events_->SetFieldState(this, FID_SUBMIT, CPFS_DISPLAY_IN_SELECTED_TILE);
-
   // If the user cancelled out of the logon, the process may be already
   // terminated, but if the handle to the process is still valid the
   // credential provider will not start a new GLS process when requested so
   // try to terminate the logon process now and clear the handle.
   TerminateLogonProcess();
+  UpdateSubmitButtonInteractiveState();
 
   // TODO(rogerta): for some reason the error info saved by ReportError()
   // never gets used because ReportResult() is never called by winlogon.exe
@@ -1686,6 +1724,29 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
 
   return provider_->OnUserAuthenticated(nullptr, CComBSTR(), CComBSTR(),
                                         CComBSTR(), FALSE);
+}
+
+void CGaiaCredentialBase::UpdateSubmitButtonInteractiveState() {
+  if (events_) {
+    bool should_enable =
+        logon_ui_process_ == INVALID_HANDLE_VALUE &&
+        (!needs_windows_password_ || current_windows_password_.Length());
+    events_->SetFieldInteractiveState(
+        this, FID_SUBMIT, should_enable ? CPFIS_NONE : CPFIS_DISABLED);
+  }
+}
+
+void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
+  needs_windows_password_ = true;
+  if (events_) {
+    events_->SetFieldString(this, FID_DESCRIPTION,
+                            GetStringResource(password_message).c_str());
+    events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
+                           CPFS_DISPLAY_IN_SELECTED_TILE);
+    events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
+                                      CPFIS_FOCUSED);
+    events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_CURRENT_PASSWORD_FIELD);
+  }
 }
 
 }  // namespace credential_provider

@@ -5,6 +5,9 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_TEST_TEST_CREDENTIAL_H_
 #define CHROME_CREDENTIAL_PROVIDER_TEST_TEST_CREDENTIAL_H_
 
+#include <memory>
+#include <string>
+
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlcomcli.h>
@@ -35,10 +38,11 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual HRESULT STDMETHODCALLTYPE
   SetStartGlsEventName(const base::string16& event_name) = 0;
   virtual BSTR STDMETHODCALLTYPE GetFinalUsername() = 0;
+  virtual std::string STDMETHODCALLTYPE GetFinalEmail() = 0;
   virtual BSTR STDMETHODCALLTYPE GetErrorText() = 0;
   virtual bool STDMETHODCALLTYPE AreCredentialsValid() = 0;
-  virtual bool STDMETHODCALLTYPE AreWindowsCredentialsAvailable() = 0;
-  virtual bool STDMETHODCALLTYPE AreWindowsCredentialsValid() = 0;
+  virtual bool STDMETHODCALLTYPE CanAttemptWindowsLogon() = 0;
+  virtual bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() = 0;
   virtual void STDMETHODCALLTYPE
   SetWindowsPassword(const CComBSTR& windows_password) = 0;
 };
@@ -49,12 +53,12 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
 // CGaiaCredentialBase should be the base for this test class.
 // A CGaiaCredentialBase is required to call base class functions in the
 // following ITestCredential implementations:
-// GetFinalUsername, AreCredentialsValid, AreWindowsCredentialsAvailable,
-// AreWindowsCredentialsValid.
-// Also the following IGaiaCredential/CGaiaCredentialBase functions need to
-// be overridden:
-// OnUserAuthenticated, ReportError, GetBaseGlsCommandline, DisplayErrorInUI,
-// ForkGaiaLogonStub, ResetInternalState.
+// GetFinalUsername, GetFinalEmail, AreCredentialsValid,
+// CanAttemptWindowsLogon, IsWindowsPasswordValidForStoredUser,
+// SetWindowsPassword.
+// Also the following IGaiaCredential/CGaiaCredentialBase functions need to be
+// overridden: OnUserAuthenticated, ReportError, GetBaseGlsCommandline,
+// DisplayErrorInUI, ForkGaiaLogonStub, ResetInternalState.
 template <class T>
 class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
  public:
@@ -68,10 +72,11 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   IFACEMETHODIMP SetStartGlsEventName(
       const base::string16& event_name) override;
   BSTR STDMETHODCALLTYPE GetFinalUsername() override;
+  std::string STDMETHODCALLTYPE GetFinalEmail() override;
   BSTR STDMETHODCALLTYPE GetErrorText() override;
   bool STDMETHODCALLTYPE AreCredentialsValid() override;
-  bool STDMETHODCALLTYPE AreWindowsCredentialsAvailable() override;
-  bool STDMETHODCALLTYPE AreWindowsCredentialsValid() override;
+  bool STDMETHODCALLTYPE CanAttemptWindowsLogon() override;
+  bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() override;
   void STDMETHODCALLTYPE
   SetWindowsPassword(const CComBSTR& windows_password) override;
 
@@ -153,6 +158,22 @@ BSTR CTestCredentialBase<T>::GetFinalUsername() {
 }
 
 template <class T>
+std::string CTestCredentialBase<T>::GetFinalEmail() {
+  const base::DictionaryValue* results = this->get_authentication_results();
+
+  if (!results)
+    return std::string();
+
+  const base::Value* email_value =
+      results->FindKeyOfType(kKeyEmail, base::Value::Type::STRING);
+
+  if (!email_value)
+    return std::string();
+
+  return email_value->GetString();
+}
+
+template <class T>
 BSTR CTestCredentialBase<T>::GetErrorText() {
   return error_text_;
 }
@@ -163,14 +184,14 @@ bool CTestCredentialBase<T>::AreCredentialsValid() {
 }
 
 template <class T>
-bool CTestCredentialBase<T>::AreWindowsCredentialsAvailable() {
-  return T::AreWindowsCredentialsAvailable();
+bool CTestCredentialBase<T>::CanAttemptWindowsLogon() {
+  return T::CanAttemptWindowsLogon();
 }
 
 template <class T>
-bool CTestCredentialBase<T>::AreWindowsCredentialsValid() {
-  return T::AreWindowsCredentialsValid(this->get_current_windows_password()) ==
-         S_OK;
+bool CTestCredentialBase<T>::IsWindowsPasswordValidForStoredUser() {
+  return T::IsWindowsPasswordValidForStoredUser(
+             this->get_current_windows_password()) == S_OK;
 }
 
 template <class T>
