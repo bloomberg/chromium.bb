@@ -869,11 +869,6 @@ const char* AppsGridView::GetClassName() const {
   return "AppsGridView";
 }
 
-void AppsGridView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kAlert;
-  node_data->SetName(accessible_name_);
-}
-
 void AppsGridView::Layout() {
   if (bounds_animator_.IsAnimating())
     bounds_animator_.Cancel();
@@ -1484,11 +1479,6 @@ void AppsGridView::OnFolderItemReparentTimer() {
     // Do not observe any data change since it is going to be hidden.
     item_list_->RemoveObserver(this);
     item_list_ = nullptr;
-
-    // Announce the folder close for dragging to the outside of the folder.
-    accessible_name_ = l10n_util::GetStringUTF16(
-        IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME);
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }
 
@@ -2759,12 +2749,15 @@ void AppsGridView::MaybeCreateFolderDroppingAccessibilityEvent() {
   DCHECK(drop_view);
 
   // Set a11y name to announce possible move to folder or creation of folder.
-  accessible_name_ = l10n_util::GetStringFUTF16(
-      IsFolderItem(drop_view->item())
-          ? IDS_APP_LIST_APP_DRAG_MOVE_TO_FOLDER_ACCESSIBILE_NAME
-          : IDS_APP_LIST_APP_DRAG_CREATE_FOLDER_ACCESSIBILE_NAME,
-      drag_view_->title()->text(), drop_view->title()->text());
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  auto* announcement_view =
+      contents_view_->app_list_view()->announcement_view();
+  announcement_view->GetViewAccessibility().OverrideName(
+      l10n_util::GetStringFUTF16(
+          IsFolderItem(drop_view->item())
+              ? IDS_APP_LIST_APP_DRAG_MOVE_TO_FOLDER_ACCESSIBILE_NAME
+              : IDS_APP_LIST_APP_DRAG_CREATE_FOLDER_ACCESSIBILE_NAME,
+          drag_view_->title()->text(), drop_view->title()->text()));
+  announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 void AppsGridView::MaybeCreateReorderAccessibilityEvent() {
@@ -2792,12 +2785,15 @@ void AppsGridView::MaybeCreateReorderAccessibilityEvent() {
   const int col_number = (drop_target_.slot % cols_) + 1;
 
   // Set accessible name to announce drop target location by row and column.
-  accessible_name_ = l10n_util::GetStringFUTF16(
-      IDS_APP_LIST_APP_DRAG_LOCATION_ACCESSIBILE_NAME,
-      base::NumberToString16(drop_target_.page + 1),
-      base::NumberToString16(row_number), base::NumberToString16(col_number));
-
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  auto* announcement_view =
+      contents_view_->app_list_view()->announcement_view();
+  announcement_view->GetViewAccessibility().OverrideName(
+      l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_APP_DRAG_LOCATION_ACCESSIBILE_NAME,
+          base::NumberToString16(drop_target_.page + 1),
+          base::NumberToString16(row_number),
+          base::NumberToString16(col_number)));
+  announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 }  // namespace app_list

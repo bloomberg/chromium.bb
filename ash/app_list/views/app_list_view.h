@@ -46,7 +46,7 @@ class TransitionAnimationObserver;
 namespace {
 // The background corner radius in peeking and fullscreen state.
 constexpr int kAppListBackgroundRadius = 28;
-}
+}  // namespace
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
@@ -228,6 +228,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   SearchBoxView* search_box_view() const { return search_box_view_; }
 
   AppListMainView* app_list_main_view() const { return app_list_main_view_; }
+
+  views::View* announcement_view() const { return announcement_view_; }
 
   bool is_fullscreen() const {
     return app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS ||
@@ -419,7 +421,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
-  // View used to announce the state transition for peeking and fullscreen.
+  // View used to announce:
+  // 1. state transition for peeking and fullscreen
+  // 2. folder opening and closing.
+  // 3. app dragging in AppsGridView.
   views::View* announcement_view_ = nullptr;  // Owned by AppListView.
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;

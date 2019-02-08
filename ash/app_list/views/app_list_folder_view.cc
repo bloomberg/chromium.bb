@@ -472,9 +472,6 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
-
-  announcement_view_ = new views::View();
-  AddChildView(announcement_view_);
 }
 
 AppListFolderView::~AppListFolderView() {
@@ -490,7 +487,6 @@ AppListFolderView::~AppListFolderView() {
 }
 
 void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
-  CreateOpenOrCloseFolderAccessibilityEvent(true);
   folder_item_ = folder;
   items_grid_view_->SetItemList(folder_item_->item_list());
   folder_header_view_->SetFolderItem(folder_item_);
@@ -500,6 +496,7 @@ void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
 
 void AppListFolderView::ScheduleShowHideAnimation(bool show,
                                                   bool hide_for_reparent) {
+  CreateOpenOrCloseFolderAccessibilityEvent(show);
   animation_start_frame_number_ =
       GetCompositorActivatedFrameCount(GetCompositor());
 
@@ -805,7 +802,6 @@ void AppListFolderView::HideViewImmediately() {
 
 void AppListFolderView::CloseFolderPage() {
   GiveBackFocusToSearchBox();
-  CreateOpenOrCloseFolderAccessibilityEvent(false);
   if (items_grid_view()->dragging())
     items_grid_view()->EndDrag(true);
   items_grid_view()->ClearAnySelectedView();
@@ -847,11 +843,13 @@ ui::Compositor* AppListFolderView::GetCompositor() {
 }
 
 void AppListFolderView::CreateOpenOrCloseFolderAccessibilityEvent(bool open) {
-  announcement_view_->GetViewAccessibility().OverrideName(
+  auto* announcement_view =
+      contents_view_->app_list_view()->announcement_view();
+  announcement_view->GetViewAccessibility().OverrideName(
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
           open ? IDS_APP_LIST_FOLDER_OPEN_FOLDER_ACCESSIBILE_NAME
                : IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME));
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 }  // namespace app_list
