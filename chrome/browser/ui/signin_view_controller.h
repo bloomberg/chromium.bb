@@ -81,10 +81,6 @@ class SigninViewController {
   // Sets the height of the modal signin dialog.
   void SetModalSigninHeight(int height);
 
-  // Either navigates back in the signin flow if the history state allows it or
-  // closes the flow otherwise.
-  // Does nothing if the signin flow does not exist.
-  void PerformNavigation();
 
   // Notifies this object that it's |delegate_| member has become invalid.
   void ResetModalSigninDelegate();

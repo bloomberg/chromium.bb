@@ -33,10 +33,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/signin_view_controller.h"
-#endif
-
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";
 
@@ -236,20 +232,13 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
 void InlineLoginHandler::HandleNavigationButtonClicked(
     const base::ListValue* args) {
 #if !defined(OS_CHROMEOS)
-  Browser* browser = signin::GetDesktopBrowser(web_ui());
-  DCHECK(browser);
-
-  browser->signin_view_controller()->PerformNavigation();
+  NOTREACHED() << "The inline login handler is no longer used in a browser "
+                  "or tab modal dialog.";
 #endif
 }
 
 void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
 #if !defined(OS_CHROMEOS)
-  Browser* browser = signin::GetDesktopBrowser(web_ui());
-  // If the dialog was opened in the User Manager browser will be null here.
-  if (browser)
-    browser->signin_view_controller()->CloseModalSignin();
-
   // Does nothing if user manager is not showing.
   UserManagerProfileDialog::HideDialog();
 #endif  // !defined(OS_CHROMEOS)

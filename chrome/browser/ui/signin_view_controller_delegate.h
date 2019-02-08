@@ -44,12 +44,6 @@ class SigninViewControllerDelegate {
   // so the caller should no longer use this object after calling this method.
   virtual void CloseModalSignin() = 0;
 
-  // Either navigates back in the signin flow if the history state allows it or
-  // closes the flow otherwise. Note that if view is closed, this method may
-  // destroy this object, so the caller should no longer use this object after
-  // calling this method.
-  virtual void PerformNavigation() = 0;
-
   // This will be called by the base class to request a resize of the native
   // view hosting the content to |height|. |height| is the total height of the
   // content, in pixels.
