@@ -28,11 +28,9 @@ class GcpCredentialProviderTest : public ::testing::Test {
                       const wchar_t* comment,
                       const wchar_t* gaia_id,
                       BSTR* sid) {
-    DWORD error;
-    ASSERT_EQ(S_OK, fake_os_user_manager_.AddUser(username, password, fullname,
-                                                  comment, true, sid, &error));
-    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(*sid), L"id", gaia_id));
-    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(*sid), L"email", email));
+    ASSERT_EQ(S_OK,
+              fake_os_user_manager_.CreateTestOSUser(
+                  username, password, fullname, comment, gaia_id, email, sid));
   }
 
   void CreateDeletedGCPWUser(BSTR* sid) {

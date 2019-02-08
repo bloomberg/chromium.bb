@@ -20,6 +20,8 @@ test("gcp_unittests") {
     "gcp_gls_output_unittest.cc",
     "gcp_setup_unittests.cc",
     "gcp_test_main.cc",
+    "gls_runner_test_base.cc",
+    "gls_runner_test_base.h",
     "test_credential.h",
   ]
 

@@ -1271,7 +1271,6 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   return S_OK;
 }
 
-// static
 HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
     const std::unique_ptr<base::DictionaryValue>& dict,
     BSTR* status_text) {

@@ -107,7 +107,7 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
                                      BSTR username,
                                      BSTR password,
                                      BSTR sid,
-                                     BOOL password_stale) override;
+                                     BOOL fire_credentials_changed) override;
   IFACEMETHODIMP HasInternetConnection() override;
 
   // IGaiaCredentialProviderForTesting
