@@ -181,6 +181,24 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryWithEmptyData) {
   EXPECT_EQ(response_time, received_response_time_);
 }
 
+TEST_F(GeneratedCodeCacheTest, WriteEntryFailure) {
+  GURL url(kInitialUrl);
+  GURL origin_lock = GURL(kInitialOrigin);
+
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
+  base::Time response_time = base::Time::Now();
+  std::string too_big_data(kMaxSizeInBytes * 8, 0);
+  WriteToCache(url, origin_lock, too_big_data, response_time);
+  scoped_task_environment_.RunUntilIdle();
+  FetchFromCache(url, origin_lock);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Fetch should return empty data, with invalid response time.
+  ASSERT_TRUE(received_);
+  ASSERT_TRUE(received_null_);
+  EXPECT_EQ(base::Time(), received_response_time_);
+}
+
 TEST_F(GeneratedCodeCacheTest, FetchEntryPendingOp) {
   GURL url(kInitialUrl);
   GURL origin_lock = GURL(kInitialOrigin);
