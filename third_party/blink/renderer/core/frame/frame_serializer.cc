@@ -85,7 +85,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
  public:
   SerializerMarkupAccumulator(FrameSerializer::Delegate&,
                               const Document&,
-                              HeapVector<Member<const Node>>&);
+                              HeapVector<Member<const Element>>&);
   ~SerializerMarkupAccumulator() override;
 
  protected:
@@ -94,7 +94,6 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   bool ShouldIgnoreElement(const Element&) const override;
   void AppendElement(const Element&) override;
   void AppendAttribute(const Element&, const Attribute&) override;
-  void AppendStartMarkup(const Node&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
@@ -106,11 +105,11 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   FrameSerializer::Delegate& delegate_;
   Member<const Document> document_;
 
-  // FIXME: |FrameSerializer| uses |m_nodes| for collecting nodes in document
-  // included into serialized text then extracts image, object, etc. The size
-  // of this vector isn't small for large document. It is better to use
+  // FIXME: |FrameSerializer| uses |elements_| for collecting elements in
+  // document included into serialized text then extracts image, object, etc.
+  // The size of this vector isn't small for large document. It is better to use
   // callback like functionality.
-  HeapVector<Member<const Node>>& nodes_;
+  HeapVector<Member<const Element>>& elements_;
 
   // Elements with links rewritten via appendAttribute method.
   HeapHashSet<Member<const Element>> elements_with_rewritten_links_;
@@ -119,11 +118,11 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     FrameSerializer::Delegate& delegate,
     const Document& document,
-    HeapVector<Member<const Node>>& nodes)
+    HeapVector<Member<const Element>>& elements)
     : MarkupAccumulator(kResolveAllURLs),
       delegate_(delegate),
       document_(&document),
-      nodes_(nodes) {}
+      elements_(elements) {}
 
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator() = default;
 
@@ -168,6 +167,7 @@ void SerializerMarkupAccumulator::AppendElement(const Element& element) {
     else
       markup_.Append("\">");
   }
+  elements_.push_back(&element);
 
   // FIXME: For object (plugins) tags and video tag we could replace them by an
   // image of their current contents.
@@ -202,11 +202,6 @@ void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
 
   // Fallback to appending the original attribute.
   MarkupAccumulator::AppendAttribute(element, attribute);
-}
-
-void SerializerMarkupAccumulator::AppendStartMarkup(const Node& node) {
-  MarkupAccumulator::AppendStartMarkup(node);
-  nodes_.push_back(&node);
 }
 
 std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
@@ -269,13 +264,13 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     return;
   }
 
-  HeapVector<Member<const Node>> serialized_nodes;
+  HeapVector<Member<const Element>> serialized_elements;
   {
     TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame HTML");
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.SerializationTime.Html");
     SerializerMarkupAccumulator accumulator(delegate_, document,
-                                            serialized_nodes);
+                                            serialized_elements);
     String text =
         accumulator.SerializeNodes<EditingStrategy>(document, kIncludeNode);
 
@@ -288,12 +283,9 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
 
   should_collect_problem_metric_ =
       delegate_.ShouldCollectProblemMetric() && frame.IsMainFrame();
-  for (const Node* node : serialized_nodes) {
+  for (const Element* node : serialized_elements) {
     DCHECK(node);
-    if (!node->IsElementNode())
-      continue;
-
-    const Element& element = ToElement(*node);
+    const Element& element = *node;
     // We have to process in-line style as it might contain some resources
     // (typically background images).
     if (element.IsStyledElement()) {

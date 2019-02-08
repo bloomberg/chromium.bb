@@ -57,7 +57,7 @@ void MarkupAccumulator::AppendString(const String& string) {
 }
 
 void MarkupAccumulator::AppendEndTag(const Element& element) {
-  AppendEndMarkup(element);
+  formatter_.AppendEndMarkup(markup_, element);
 }
 
 void MarkupAccumulator::AppendStartMarkup(const Node& node) {
@@ -66,7 +66,7 @@ void MarkupAccumulator::AppendStartMarkup(const Node& node) {
       formatter_.AppendText(markup_, ToText(node));
       break;
     case Node::kElementNode:
-      AppendElement(ToElement(node));
+      NOTREACHED();
       break;
     case Node::kAttributeNode:
       // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
@@ -77,10 +77,6 @@ void MarkupAccumulator::AppendStartMarkup(const Node& node) {
       formatter_.AppendStartMarkup(markup_, node);
       break;
   }
-}
-
-void MarkupAccumulator::AppendEndMarkup(const Element& element) {
-  formatter_.AppendEndMarkup(markup_, element);
 }
 
 void MarkupAccumulator::AppendCustomAttributes(const Element&) {}
@@ -239,8 +235,8 @@ EntityMask MarkupAccumulator::EntityMaskForText(const Text& text) const {
   return formatter_.EntityMaskForText(text);
 }
 
-void MarkupAccumulator::PushNamespaces(const Node& node) {
-  if (!node.IsElementNode() || SerializeAsHTMLDocument(node))
+void MarkupAccumulator::PushNamespaces(const Element& element) {
+  if (SerializeAsHTMLDocument(element))
     return;
   DCHECK_GT(namespace_stack_.size(), 0u);
   // TODO(tkent): Avoid to copy the whole map.
@@ -250,8 +246,8 @@ void MarkupAccumulator::PushNamespaces(const Node& node) {
   namespace_stack_.push_back(Namespaces(namespace_stack_.back()));
 }
 
-void MarkupAccumulator::PopNamespaces(const Node& node) {
-  if (!node.IsElementNode() || SerializeAsHTMLDocument(node))
+void MarkupAccumulator::PopNamespaces(const Element& element) {
+  if (SerializeAsHTMLDocument(element))
     return;
   namespace_stack_.pop_back();
 }
@@ -310,49 +306,50 @@ template <typename Strategy>
 void MarkupAccumulator::SerializeNodesWithNamespaces(
     const Node& target_node,
     EChildrenOnly children_only) {
-  if (target_node.IsElementNode() &&
-      ShouldIgnoreElement(ToElement(target_node))) {
+  if (!target_node.IsElementNode()) {
+    if (!children_only)
+      AppendStartMarkup(target_node);
+    for (const Node& child : Strategy::ChildrenOf(target_node))
+      SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
     return;
   }
 
-  PushNamespaces(target_node);
+  const Element& target_element = ToElement(target_node);
+  if (ShouldIgnoreElement(target_element))
+    return;
+
+  PushNamespaces(target_element);
 
   if (!children_only)
-    AppendStartMarkup(target_node);
+    AppendElement(target_element);
 
-  if (!(SerializeAsHTMLDocument(target_node) &&
-        ElementCannotHaveEndTag(target_node))) {
-    Node* current = IsHTMLTemplateElement(target_node)
-                        ? Strategy::FirstChild(
-                              *ToHTMLTemplateElement(target_node).content())
-                        : Strategy::FirstChild(target_node);
-    for (; current; current = Strategy::NextSibling(*current))
-      SerializeNodesWithNamespaces<Strategy>(*current, kIncludeNode);
+  bool has_end_tag = !(SerializeAsHTMLDocument(target_element) &&
+                       ElementCannotHaveEndTag(target_element));
+  if (has_end_tag) {
+    const Node* parent = &target_element;
+    if (auto* template_element = ToHTMLTemplateElementOrNull(target_element))
+      parent = template_element->content();
+    for (const Node& child : Strategy::ChildrenOf(*parent))
+      SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
 
     // Traverses other DOM tree, i.e., shadow tree.
-    if (target_node.IsElementNode()) {
-      std::pair<Node*, Element*> auxiliary_pair =
-          GetAuxiliaryDOMTree(ToElement(target_node));
-      Node* auxiliary_tree = auxiliary_pair.first;
-      Element* enclosing_element = auxiliary_pair.second;
-      if (auxiliary_tree) {
-        if (auxiliary_pair.second)
-          AppendStartMarkup(*enclosing_element);
-        current = Strategy::FirstChild(*auxiliary_tree);
-        for (; current; current = Strategy::NextSibling(*current)) {
-          SerializeNodesWithNamespaces<Strategy>(*current, kIncludeNode);
-        }
-        if (enclosing_element)
-          AppendEndTag(*enclosing_element);
-      }
+    std::pair<Node*, Element*> auxiliary_pair =
+        GetAuxiliaryDOMTree(target_element);
+    Node* auxiliary_tree = auxiliary_pair.first;
+    Element* enclosing_element = auxiliary_pair.second;
+    if (auxiliary_tree) {
+      if (auxiliary_pair.second)
+        AppendElement(*enclosing_element);
+      for (const Node& child : Strategy::ChildrenOf(*auxiliary_tree))
+        SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
+      if (enclosing_element)
+        AppendEndTag(*enclosing_element);
     }
   }
 
-  if ((!children_only && target_node.IsElementNode()) &&
-      !(SerializeAsHTMLDocument(target_node) &&
-        ElementCannotHaveEndTag(target_node)))
-    AppendEndTag(ToElement(target_node));
-  PopNamespaces(target_node);
+  if (!children_only && has_end_tag)
+    AppendEndTag(target_element);
+  PopNamespaces(target_element);
 }
 
 template <typename Strategy>

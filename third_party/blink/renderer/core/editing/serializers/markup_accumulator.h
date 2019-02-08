@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_MARKUP_ACCUMULATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_MARKUP_ACCUMULATOR_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/editing/editing_strategy.h"
 #include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
@@ -54,8 +56,6 @@ class MarkupAccumulator {
   String SerializeNodes(const Node&, EChildrenOnly);
 
  protected:
-  // Serialize a Node, without its children and its end tag.
-  virtual void AppendStartMarkup(const Node&);
   virtual void AppendElement(const Element&);
   virtual void AppendAttribute(const Element&, const Attribute&);
 
@@ -67,6 +67,8 @@ class MarkupAccumulator {
   String ToString() { return markup_.ToString(); }
 
   void AppendString(const String&);
+  // Serialize a Node, without its children and its end tag.
+  void AppendStartMarkup(const Node&);
   void AppendStartTagOpen(const Element&);
   void AppendStartTagClose(const Element&);
   bool ShouldAddNamespaceElement(const Element&);
@@ -79,12 +81,11 @@ class MarkupAccumulator {
                                           const Element& element);
 
   void AppendEndTag(const Element&);
-  void AppendEndMarkup(const Element&);
 
   EntityMask EntityMaskForText(const Text&) const;
 
-  void PushNamespaces(const Node& node);
-  void PopNamespaces(const Node& node);
+  void PushNamespaces(const Element& element);
+  void PopNamespaces(const Element& element);
   void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
   AtomicString LookupNamespaceURI(const AtomicString& prefix);
   AtomicString GeneratePrefix(const AtomicString& new_namespace);
