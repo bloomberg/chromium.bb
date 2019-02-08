@@ -50,16 +50,87 @@ void ReturnCtap2Response(
                                        data.value_or(std::vector<uint8_t>{}))));
 }
 
-bool AreGetAssertionOptionsValid(const AuthenticatorSupportedOptions& options,
-                                 const CtapGetAssertionRequest& request) {
-  if (request.user_presence_required() && !options.user_presence_required)
-    return false;
+// CheckUserVerification implements the first, common steps of
+// makeCredential and getAssertion from the CTAP2 spec.
+CtapDeviceResponseCode CheckUserVerification(
+    bool is_make_credential,
+    const AuthenticatorSupportedOptions& options,
+    const base::Optional<std::vector<uint8_t>>& pin_auth,
+    const base::Optional<uint8_t>& pin_protocol,
+    UserVerificationRequirement user_verification,
+    base::RepeatingCallback<void(void)> simulate_press_callback,
+    bool* out_user_verified) {
+  // The following quotes are from the CTAP2 spec:
 
-  return request.user_verification() !=
-             UserVerificationRequirement::kRequired ||
-         options.user_verification_availability ==
-             AuthenticatorSupportedOptions::UserVerificationAvailability::
-                 kSupportedAndConfigured;
+  // 1. "If authenticator supports clientPin and platform sends a zero length
+  // pinAuth, wait for user touch and then return either CTAP2_ERR_PIN_NOT_SET
+  // if pin is not set or CTAP2_ERR_PIN_INVALID if pin has been set."
+  const bool supports_pin =
+      options.client_pin_availability !=
+      AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
+  if (supports_pin && pin_auth && pin_auth->empty()) {
+    if (simulate_press_callback) {
+      simulate_press_callback.Run();
+    }
+    switch (options.client_pin_availability) {
+      case AuthenticatorSupportedOptions::ClientPinAvailability::
+          kSupportedAndPinSet:
+        return CtapDeviceResponseCode::kCtap2ErrPinInvalid;
+      case AuthenticatorSupportedOptions::ClientPinAvailability::
+          kSupportedButPinNotSet:
+        return CtapDeviceResponseCode::kCtap2ErrPinNotSet;
+      case AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported:
+        NOTREACHED();
+    }
+  }
+
+  // 2. "If authenticator supports clientPin and pinAuth parameter is present
+  // and the pinProtocol is not supported, return CTAP2_ERR_PIN_AUTH_INVALID
+  // error."
+  if (supports_pin && pin_auth && (!pin_protocol || *pin_protocol != 1)) {
+    return CtapDeviceResponseCode::kCtap2ErrPinInvalid;
+  }
+
+  // 3. "If authenticator is not protected by some form of user verification and
+  // platform has set "uv" or pinAuth to get the user verification, return
+  // CTAP2_ERR_INVALID_OPTION."
+  const bool can_do_uv =
+      options.user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured ||
+      options.client_pin_availability ==
+          AuthenticatorSupportedOptions::ClientPinAvailability::
+              kSupportedAndPinSet;
+  if (!can_do_uv &&
+      (user_verification == UserVerificationRequirement::kRequired ||
+       pin_auth)) {
+    return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+  }
+
+  // Step 4.
+  bool uv = false;
+  if (can_do_uv) {
+    if (user_verification == UserVerificationRequirement::kRequired) {
+      // Internal UV is assumed to always succeed.
+      if (simulate_press_callback) {
+        simulate_press_callback.Run();
+      }
+      uv = true;
+    }
+
+    if (pin_auth) {
+      DCHECK(pin_protocol && *pin_protocol == 1);
+      // The pin_auth argument is assumed to be correct.
+      uv = true;
+    }
+
+    if (is_make_credential && !uv) {
+      return CtapDeviceResponseCode::kCtap2ErrPinRequired;
+    }
+  }
+
+  *out_user_verified = uv;
+  return CtapDeviceResponseCode::kSuccess;
 }
 
 // Checks that whether the received MakeCredential request includes EA256
@@ -262,77 +333,15 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   CtapMakeCredentialRequest request = std::get<0>(*request_and_hash);
   CtapMakeCredentialRequest::ClientDataHash client_data_hash =
       std::get<1>(*request_and_hash);
-
   const AuthenticatorSupportedOptions& options = device_info_.options();
 
-  // The following quotes are from the CTAP2 spec:
-
-  // 1. "If authenticator supports clientPin and platform sends a zero length
-  // pinAuth, wait for user touch and then return either CTAP2_ERR_PIN_NOT_SET
-  // if pin is not set or CTAP2_ERR_PIN_INVALID if pin has been set."
-  const bool supports_pin =
-      options.client_pin_availability !=
-      AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
-  if (supports_pin && request.pin_auth() && request.pin_auth()->empty()) {
-    if (mutable_state()->simulate_press_callback) {
-      mutable_state()->simulate_press_callback.Run();
-    }
-    switch (device_info_.options().client_pin_availability) {
-      case AuthenticatorSupportedOptions::ClientPinAvailability::
-          kSupportedAndPinSet:
-        return CtapDeviceResponseCode::kCtap2ErrPinInvalid;
-      case AuthenticatorSupportedOptions::ClientPinAvailability::
-          kSupportedButPinNotSet:
-        return CtapDeviceResponseCode::kCtap2ErrPinNotSet;
-      case AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported:
-        NOTREACHED();
-    }
-  }
-
-  // 2. "If authenticator supports clientPin and pinAuth parameter is present
-  // and the pinProtocol is not supported, return CTAP2_ERR_PIN_AUTH_INVALID
-  // error."
-  if (supports_pin && request.pin_auth() &&
-      (!request.pin_protocol() || *request.pin_protocol() != 1)) {
-    return CtapDeviceResponseCode::kCtap2ErrPinInvalid;
-  }
-
-  // 3. "If authenticator is not protected by some form of user verification and
-  // platform has set "uv" or pinAuth to get the user verification, return
-  // CTAP2_ERR_INVALID_OPTION."
-  const bool can_do_uv =
-      options.user_verification_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured ||
-      options.client_pin_availability ==
-          AuthenticatorSupportedOptions::ClientPinAvailability::
-              kSupportedAndPinSet;
-  if (!can_do_uv &&
-      (request.user_verification() == UserVerificationRequirement::kRequired ||
-       request.pin_auth())) {
-    return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
-  }
-
-  // Step 4.
-  bool uv = false;
-  if (can_do_uv) {
-    if (request.user_verification() == UserVerificationRequirement::kRequired) {
-      // Internal UV is assumed to always succeed.
-      if (mutable_state()->simulate_press_callback) {
-        mutable_state()->simulate_press_callback.Run();
-      }
-      uv = true;
-    }
-
-    if (request.pin_auth()) {
-      DCHECK(request.pin_protocol() && *request.pin_protocol() == 1);
-      // The pin_auth argument is assumed to be correct.
-      uv = true;
-    }
-
-    if (!uv) {
-      return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
-    }
+  bool user_verified;
+  const CtapDeviceResponseCode uv_error = CheckUserVerification(
+      true /* is makeCredential */, options, request.pin_auth(),
+      request.pin_protocol(), request.user_verification(),
+      mutable_state()->simulate_press_callback, &user_verified);
+  if (uv_error != CtapDeviceResponseCode::kSuccess) {
+    return uv_error;
   }
 
   // 6. Check for already registered credentials.
@@ -394,7 +403,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   auto authenticator_data = ConstructAuthenticatorData(
-      rp_id_hash, uv, 01ul, std::move(attested_credential_data),
+      rp_id_hash, user_verified, 01ul, std::move(attested_credential_data),
       std::move(extensions));
   auto sign_buffer =
       ConstructSignatureBuffer(authenticator_data, client_data_hash);
@@ -436,23 +445,22 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   CtapGetAssertionRequest request = std::get<0>(*request_and_hash);
   CtapGetAssertionRequest::ClientDataHash client_data_hash =
       std::get<1>(*request_and_hash);
+  const AuthenticatorSupportedOptions& options = device_info_.options();
+
+  bool user_verified;
+  const CtapDeviceResponseCode uv_error = CheckUserVerification(
+      false /* not makeCredential */, options, request.pin_auth(),
+      request.pin_protocol(), request.user_verification(),
+      mutable_state()->simulate_press_callback, &user_verified);
+  if (uv_error != CtapDeviceResponseCode::kSuccess) {
+    return uv_error;
+  }
 
   // Resident keys are not supported.
   if (!request.allow_list() || request.allow_list()->empty()) {
     DLOG(ERROR) << "Allowed credential list is empty, but Virtual CTAP2 device "
                    "does not support resident keys.";
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
-  }
-
-  // Client pin option is not supported.
-  if (request.pin_auth()) {
-    DLOG(ERROR) << "Virtual CTAP2 device does not support client pin.";
-    return CtapDeviceResponseCode::kCtap2ErrOther;
-  }
-
-  if (!AreGetAssertionOptionsValid(device_info_.options(), request)) {
-    DLOG(ERROR) << "Unsupported options required from the request.";
-    return CtapDeviceResponseCode::kCtap2ErrOther;
   }
 
   const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp_id());
@@ -471,9 +479,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
 
   found_data->counter++;
-  auto authenticator_data = ConstructAuthenticatorData(
-      rp_id_hash, false /* user verified */, found_data->counter, base::nullopt,
-      base::nullopt);
+  auto authenticator_data =
+      ConstructAuthenticatorData(rp_id_hash, user_verified, found_data->counter,
+                                 base::nullopt, base::nullopt);
   auto signature_buffer =
       ConstructSignatureBuffer(authenticator_data, client_data_hash);
 
