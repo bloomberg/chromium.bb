@@ -22,11 +22,9 @@ cr.define('settings_passwords_section', function() {
       assert(node);
       const passwordInfo = passwordList[index];
       assertEquals(
-          passwordInfo.loginPair.urls.shown,
-          node.$$('#originUrl').textContent.trim());
-      assertEquals(
-          passwordInfo.loginPair.urls.link, node.$$('#originUrl').href);
-      assertEquals(passwordInfo.loginPair.username, node.$$('#username').value);
+          passwordInfo.urls.shown, node.$$('#originUrl').textContent.trim());
+      assertEquals(passwordInfo.urls.link, node.$$('#originUrl').href);
+      assertEquals(passwordInfo.username, node.$$('#username').value);
       assertEquals(
           passwordInfo.numCharactersInPassword,
           node.$$('#password').value.length);
@@ -146,7 +144,7 @@ cr.define('settings_passwords_section', function() {
    */
   function listContainsUrl(passwordList, url) {
     for (let i = 0; i < passwordList.length; ++i) {
-      if (passwordList[i].loginPair.urls.origin == url) {
+      if (passwordList[i].urls.origin == url) {
         return true;
       }
     }

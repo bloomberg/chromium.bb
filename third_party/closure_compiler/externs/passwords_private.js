@@ -39,14 +39,7 @@ chrome.passwordsPrivate.UrlCollection;
 /**
  * @typedef {{
  *   urls: !chrome.passwordsPrivate.UrlCollection,
- *   username: string
- * }}
- */
-chrome.passwordsPrivate.LoginPair;
-
-/**
- * @typedef {{
- *   loginPair: !chrome.passwordsPrivate.LoginPair,
+ *   username: string,
  *   numCharactersInPassword: number,
  *   federationText: (string|undefined),
  *   id: number
@@ -86,8 +79,8 @@ chrome.passwordsPrivate.changeSavedPassword = function(
     id, new_username, new_password) {};
 
 /**
- * Removes the saved password corresponding to |loginPair|. If no saved password
- * for this pair exists, this function is a no-op.
+ * Removes the saved password corresponding to |id|. If no saved password for
+ * this pair exists, this function is a no-op.
  * @param {number} id The id for the password entry being removed.
  */
 chrome.passwordsPrivate.removeSavedPassword = function(id) {};

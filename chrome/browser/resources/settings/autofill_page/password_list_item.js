@@ -46,6 +46,6 @@ Polymer({
     return loadTimeData.getStringF(
         (item.entry.federationText) ? 'passwordRowFederatedMoreActionsButton' :
                                       'passwordRowMoreActionsButton',
-        item.entry.loginPair.username, item.entry.loginPair.urls.shown);
+        item.entry.username, item.entry.urls.shown);
   },
 });

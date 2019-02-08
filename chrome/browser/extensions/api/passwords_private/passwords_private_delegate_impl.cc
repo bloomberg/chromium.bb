@@ -220,8 +220,8 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
 
   for (const auto& form : password_list) {
     api::passwords_private::PasswordUiEntry entry;
-    entry.login_pair.urls = CreateUrlCollectionFromForm(*form);
-    entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
+    entry.urls = CreateUrlCollectionFromForm(*form);
+    entry.username = base::UTF16ToUTF8(form->username_value);
     entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
     entry.num_characters_in_password = form->password_value.length();
