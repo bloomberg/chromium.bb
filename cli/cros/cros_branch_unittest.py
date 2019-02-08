@@ -596,31 +596,74 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
                                                return_value='local-branch')
     self.get_git_repo_revision = self.PatchObject(git, 'GetGitRepoRevision',
                                                   return_value='abcdef')
+    constants.CHROMITE_DIR = '/run-root/chromite'
 
-  def testSyncVersion(self):
-    """Test SyncVersion passes correct args to repo_sync_manifest."""
+  def testSyncVersionMinimal(self):
+    """Test SyncVersion passes minimal args to repo_sync_manifest."""
     checkout = CrosCheckout('/root')
     checkout.SyncVersion('1.2.3')
     self.rc_mock.assertCommandContains(
-        ['/root/chromite/scripts/repo_sync_manifest',
+        ['/run-root/chromite/scripts/repo_sync_manifest',
+         '--repo-root', '/root',
          '--manifest-versions-int', '/root/manifest-versions-internal',
          '--manifest-versions-ext', '/root/manifest-versions',
          '--version', '1.2.3'])
 
-  def testSyncBranch(self):
-    """Test SyncBranch passes correct args to repo_sync_manifest."""
+  def testSyncVersionAllOptions(self):
+    """Test SyncVersion passes all args to repo_sync_manifest."""
+    checkout = CrosCheckout(
+        '/root', repo_url='repo.com', manifest_url='manifest.com')
+    checkout.SyncVersion('1.2.3')
+    self.rc_mock.assertCommandContains(
+        ['/run-root/chromite/scripts/repo_sync_manifest',
+         '--repo-root', '/root',
+         '--manifest-versions-int', '/root/manifest-versions-internal',
+         '--manifest-versions-ext', '/root/manifest-versions',
+         '--version', '1.2.3',
+         '--repo-url', 'repo.com',
+         '--manifest-url', 'manifest.com'])
+
+  def testSyncBranchMinimal(self):
+    """Test SyncBranch passes minimal args to repo_sync_manifest."""
     checkout = CrosCheckout('/root')
     checkout.SyncBranch('branch')
     self.rc_mock.assertCommandContains(
-        ['/root/chromite/scripts/repo_sync_manifest', '--branch', 'branch'])
+        ['/run-root/chromite/scripts/repo_sync_manifest',
+         '--repo-root', '/root',
+         '--branch', 'branch'])
 
-  def testSyncFile(self):
+  def testSyncBranchAllOptions(self):
+    """Test SyncBranch passes all args to repo_sync_manifest."""
+    checkout = CrosCheckout(
+        '/root', repo_url='repo.com', manifest_url='manifest.com')
+    checkout.SyncBranch('branch')
+    self.rc_mock.assertCommandContains(
+        ['/run-root/chromite/scripts/repo_sync_manifest',
+         '--repo-root', '/root',
+         '--branch', 'branch',
+         '--repo-url', 'repo.com',
+         '--manifest-url', 'manifest.com'])
+
+  def testSyncFileMinimal(self):
     """Test SyncFile passes correct args to repo_sync_manifest."""
     checkout = CrosCheckout('/root')
     checkout.SyncFile('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['/root/chromite/scripts/repo_sync_manifest',
+        ['/run-root/chromite/scripts/repo_sync_manifest',
+         '--repo-root', '/root',
          '--manifest-file', 'manifest.xml'])
+
+  def testSyncFileAllOptions(self):
+    """Test SyncFile passes all args to repo_sync_manifest."""
+    checkout = CrosCheckout(
+        '/root', repo_url='repo.com', manifest_url='manifest.com')
+    checkout.SyncFile('manifest.xml')
+    self.rc_mock.assertCommandContains(
+        ['/run-root/chromite/scripts/repo_sync_manifest',
+         '--repo-root', '/root',
+         '--manifest-file', 'manifest.xml',
+         '--repo-url', 'repo.com',
+         '--manifest-url', 'manifest.com'])
 
   def testAbsolutePath(self):
     """Test AbsolutePath joins root to given path."""

@@ -231,15 +231,19 @@ class ManifestRepository(object):
 class CrosCheckout(object):
   """Represents a checkout of chromiumos on disk."""
 
-  def __init__(self, root, manifest=None):
+  def __init__(self, root, manifest=None, repo_url=None, manifest_url=None):
     """Read the checkout manifest.
 
     Args:
       root: The repo root.
       manifest: The checkout manifest. Read from `repo manifest` if None.
+      repo_url: Repo repository URL. Uses default googlesource repo if None.
+      manifest_url: Manifest repository URL. Uses manifest-internal if None.
     """
     self.root = root
     self.manifest = manifest or repo_util.Repository(root).Manifest()
+    self.repo_url = repo_url
+    self.manifest_url = manifest_url
 
   def _Sync(self, manifest_args):
     """Run repo_sync_manifest command and return the full synced manifest.
@@ -250,10 +254,13 @@ class CrosCheckout(object):
     Returns:
       The full synced manifest as a repo_manifest.Manifest.
     """
-    cros_build_lib.RunCommand([
-        self.AbsolutePath('chromite/scripts/repo_sync_manifest'),
-        '--repo-root', self.root
-    ] + manifest_args, quiet=True)
+    cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
+           '--repo-root', self.root] + manifest_args
+    if self.repo_url:
+      cmd += ['--repo-url', self.repo_url]
+    if self.manifest_url:
+      cmd += ['--manifest-url', self.manifest_url]
+    cros_build_lib.RunCommand(cmd, print_cmd=True)
     self.manifest = repo_util.Repository(self.root).Manifest()
 
   def SyncBranch(self, branch):
@@ -652,13 +659,6 @@ Delete Examples:
 
     # Common flags.
     parser.add_argument(
-        '--root',
-        dest='root',
-        default=constants.SOURCE_ROOT,
-        help='Repo root of local checkout to branch. If not specificed, this '
-        'tool will branch the checkout from which it is run. This flag is '
-        'primarily used for testing.')
-    parser.add_argument(
         '--push',
         dest='push',
         action='store_true',
@@ -671,6 +671,20 @@ Delete Examples:
         action='store_true',
         help='Required for any remote operation that would delete an existing '
         'branch.')
+
+    sync_group = parser.add_argument_group(
+        'Sync',
+        description='Arguments relating to how the checkout is synced. '
+        'These options are primarily used for testing.')
+    sync_group.add_argument(
+        '--root',
+        dest='root',
+        default=constants.SOURCE_ROOT,
+        help='Repo root of local checkout to branch. If not specificed, this '
+        'tool will branch the checkout from which it is run.')
+    sync_group.add_argument('--repo-url', help='Repo repository location.')
+    sync_group.add_argument(
+        '--manifest-url', help='URL of the manifest to be checked out.')
 
     # Create subcommand and flags.
     subparser = parser.add_subparsers(dest='subcommand')
@@ -743,7 +757,11 @@ Delete Examples:
     delete_parser.add_argument('branch', help='Name of the branch to delete.')
 
   def Run(self):
-    checkout = CrosCheckout(self.options.root)
+    checkout = CrosCheckout(
+        self.options.root,
+        repo_url=self.options.repo_url,
+        manifest_url=self.options.manifest_url)
+
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
@@ -751,19 +769,26 @@ Delete Examples:
         checkout.SyncFile(self.options.file)
       else:
         checkout.SyncVersion(self.options.version)
-      branch = (Branch(self.options.name, checkout) if self.options.name else
-                self.options.cls(checkout))
+
+      if self.options.name:
+        branch = Branch(self.options.name, checkout)
+      else:
+        branch = self.options.cls(checkout)
+
       branch.Create(push=self.options.push, force=self.options.force)
+
     elif self.options.subcommand == 'rename':
       checkout.SyncBranch(self.options.old)
-      Branch(self.options.new, checkout).Rename(
+      branch = Branch(self.options.new, checkout)
+      branch.Rename(
           self.options.old,
           push=self.options.push,
           force=self.options.force)
+
     elif self.options.subcommand == 'delete':
       checkout.SyncBranch(self.options.branch)
-      Branch(self.options.branch, checkout).Delete(
-          push=self.options.push,
-          force=self.options.force)
+      branch = Branch(self.options.branch, checkout)
+      branch.Delete(push=self.options.push, force=self.options.force)
+
     else:
       raise BranchError('Unrecognized option.')
