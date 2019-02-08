@@ -403,7 +403,7 @@ Polymer({
       origins: []
     };
     for (let i = 0; i < this.siteGroup.origins.length; ++i) {
-      const updatedOrigin = this.siteGroup.origins[i];
+      const updatedOrigin = Object.assign({}, this.siteGroup.origins[i]);
       if (updatedOrigin.numCookies > 0 || updatedOrigin.usage > 0) {
         updatedOrigin.hasPermissionSettings = false;
         updatedSiteGroup.origins.push(updatedOrigin);
@@ -448,7 +448,7 @@ Polymer({
       origins: []
     };
     for (let i = 0; i < this.siteGroup.origins.length; ++i) {
-      const updatedOrigin = this.siteGroup.origins[i];
+      const updatedOrigin = Object.assign({}, this.siteGroup.origins[i]);
       if (updatedOrigin.hasPermissionSettings) {
         updatedOrigin.numCookies = 0;
         updatedOrigin.usage = 0;
