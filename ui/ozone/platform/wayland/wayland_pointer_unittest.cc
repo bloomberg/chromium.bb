@@ -44,6 +44,27 @@ class WaylandPointerTest : public WaylandTest {
   DISALLOW_COPY_AND_ASSIGN(WaylandPointerTest);
 };
 
+ACTION_P(CloneEvent, ptr) {
+  *ptr = Event::Clone(*arg0);
+}
+
+TEST_P(WaylandPointerTest, Enter) {
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(), 0, 0);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsMouseEvent());
+  auto* mouse_event = event->AsMouseEvent();
+  EXPECT_EQ(ET_MOUSE_ENTERED, mouse_event->type());
+  EXPECT_EQ(0, mouse_event->button_flags());
+  EXPECT_EQ(0, mouse_event->changed_button_flags());
+  EXPECT_EQ(gfx::PointF(0, 0), mouse_event->location_f());
+}
+
 TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
   WaylandWindow other_window(&other_delegate, connection_.get());
@@ -68,15 +89,11 @@ TEST_P(WaylandPointerTest, Leave) {
                         0);
   wl_pointer_send_button(pointer_->resource(), 4, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
-  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(1);
+  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(2);
 
   // Do an extra Sync() here so that we process the second enter event before we
   // destroy |other_window|.
   Sync();
-}
-
-ACTION_P(CloneEvent, ptr) {
-  *ptr = Event::Clone(*arg0);
 }
 
 ACTION_P3(CloneEventAndCheckCapture, window, result, ptr) {
@@ -86,6 +103,9 @@ ACTION_P3(CloneEventAndCheckCapture, window, result, ptr) {
 
 TEST_P(WaylandPointerTest, Motion) {
   wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(), 0, 0);
+  Sync();  // We're interested in checking Motion event in this test case, so
+           // skip Enter event here.
+
   wl_pointer_send_motion(pointer_->resource(), 1002,
                          wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
