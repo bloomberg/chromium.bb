@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -27,11 +25,6 @@ source_set("lib") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
-}
-
-service_manifest("manifest") {
-  name = "identity"
-  source = "manifest.json"
 }
 
 source_set("tests") {

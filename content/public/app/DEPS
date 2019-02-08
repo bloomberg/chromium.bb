@@ -11,8 +11,8 @@ include_rules = [
 
 specific_include_rules = {
   "content_browser_manifest\.cc": [
-    "+services/content/manifest.h",
-    "+services/file/manifest.h",
+    "+services/content/public/cpp/manifest.h",
+    "+services/file/public/cpp/manifest.h",
   ],
   "content_packaged_services_manifest\.cc": [
     "+chromeos/assistant/buildflags.h",
@@ -21,8 +21,8 @@ specific_include_rules = {
     "+components/services/heap_profiling/public/cpp/manifest.h",
     "+media/mojo/services/cdm_manifest.h",
     "+media/mojo/services/media_manifest.h",
-    "+services/data_decoder/manifest.h",
-    "+services/device/manifest.h",
+    "+services/data_decoder/public/cpp/manifest.h",
+    "+services/device/public/cpp/manifest.h",
     "+services/media_session/manifest.h",
     "+services/metrics/manifest.h",
     "+services/network/manifest.h",

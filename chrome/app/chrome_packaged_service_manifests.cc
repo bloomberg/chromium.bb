@@ -71,7 +71,7 @@
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
     BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-#include "services/content/simple_browser/manifest.h"  // nogncheck
+#include "services/content/simple_browser/public/cpp/manifest.h"  // nogncheck
 #endif
 
 namespace {

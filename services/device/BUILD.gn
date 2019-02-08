@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -220,11 +219,6 @@ source_set("tests") {
       "sensorsapi.lib",
     ]
   }
-}
-
-service_manifest("manifest") {
-  name = "device"
-  source = "manifest.json"
 }
 
 source_set("test_support") {

@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//services/content/public/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 component("simple_browser") {
   public = [
@@ -50,9 +49,4 @@ component("simple_browser") {
       "//components/services/font/public/interfaces",
     ]
   }
-}
-
-service_manifest("manifest") {
-  name = "simple_browser"
-  source = "manifest.json"
 }
