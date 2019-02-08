@@ -166,6 +166,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
       break;
     }
+    case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
     case ui::AXEventGenerator::Event::COLLAPSED:
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:

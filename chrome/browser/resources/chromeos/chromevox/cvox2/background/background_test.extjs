@@ -1934,3 +1934,33 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ValidationTest', function() {
       .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'AutoCompleteChanged', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*
+    <div><input type="text" aria-autocomplete="off"></input></div>
+    <script>
+      var div = document.querySelector('div');
+      var input = div.firstElementChild;
+      var completion = input.getAttribute('aria-autocomplete');
+      div.addEventListener('click', () => {
+        completion = completion == 'off' ? 'both' : 'off';
+        input.setAttribute('aria-autocomplete', completion);
+      });
+    </script>
+  */}, function(root) {
+    var change = root.firstChild.doDefault.bind(root.firstChild);
+    mockFeedback.expectSpeech('Edit text')
+        .clearPendingOutput()
+        .call(change)
+        .expectSpeech('Edit text')
+        .call(change)
+        .expectSpeech('Edit text')
+        .call(change)
+        .expectNextSpeechUtteranceIsNot(
+            'Press up or down arrow for auto completions.')
+        .expectSpeech('Edit text')
+        .expectSpeech('Press up or down arrow for auto completions.')
+        .replay();
+  });
+});
