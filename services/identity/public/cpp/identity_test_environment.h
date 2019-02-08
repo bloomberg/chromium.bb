@@ -268,6 +268,17 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Enable interaction with AccountFetcherService in testing context.
   void EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
 
+  // Simulate account fetching using AccountTrackerService without sending
+  // network requests.
+  void SimulateSuccessfulFetchOfAccountInfo(const std::string& account_id,
+                                            const std::string& email,
+                                            const std::string& gaia,
+                                            const std::string& hosted_domain,
+                                            const std::string& full_name,
+                                            const std::string& given_name,
+                                            const std::string& locale,
+                                            const std::string& picture_url);
+
  private:
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;

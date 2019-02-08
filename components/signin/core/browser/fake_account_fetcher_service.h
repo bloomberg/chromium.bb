@@ -18,13 +18,6 @@ class KeyedService;
 // to prevent AccountTrackerService from sending network requests.
 class FakeAccountFetcherService : public AccountFetcherService {
  public:
-  void FakeUserInfoFetchSuccess(const std::string& email,
-                                const std::string& gaia,
-                                const std::string& hosted_domain,
-                                const std::string& full_name,
-                                const std::string& given_name,
-                                const std::string& locale,
-                                const std::string& picture_url);
   void FakeUserInfoFetchSuccess(const std::string& account_id,
                                 const std::string& email,
                                 const std::string& gaia,
