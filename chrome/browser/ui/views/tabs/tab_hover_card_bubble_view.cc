@@ -97,14 +97,14 @@ base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
   //           |___________________________________________ tab width
   //               |                                |
   //       pinned tab width               standard tab width
+  if (tab_width < TabStyle::GetPinnedWidth())
+    return kMinimumTriggerDelay;
   double logarithmic_fraction =
       std::log(tab_width - TabStyle::GetPinnedWidth() + 1) /
       std::log(TabStyle::GetStandardWidth() - TabStyle::GetPinnedWidth() + 1);
   base::TimeDelta scaling_factor = kMaximumTriggerDelay - kMinimumTriggerDelay;
   base::TimeDelta delay =
       logarithmic_fraction * scaling_factor + kMinimumTriggerDelay;
-  if (delay < kMinimumTriggerDelay)
-    delay = kMinimumTriggerDelay;
   return delay;
 }
 
