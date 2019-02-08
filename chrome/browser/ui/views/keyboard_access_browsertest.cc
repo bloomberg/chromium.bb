@@ -170,6 +170,7 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   // Opens the system menu on Windows with the Alt Space combination and selects
   // the New Tab option from the menu.
   void TestSystemMenuWithKeyboard();
+  void TestSystemMenuReopenClosedTabWithKeyboard();
 #endif
 
   // Uses the keyboard to select the app menu i.e. with the F10 key.
@@ -288,7 +289,7 @@ void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
                                       SystemMenuTestCBTHook,
                                       NULL,
                                       ::GetCurrentThreadId());
-  ASSERT_TRUE(cbt_hook != NULL);
+  ASSERT_TRUE(cbt_hook);
 
   bool ret = ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_SPACE, false, false, true, false);
@@ -298,8 +299,72 @@ void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
     // Wait for the new tab to appear.
     new_tab_observer.Wait();
     // Make sure that the new tab index is 1.
-    ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   }
+  ::UnhookWindowsHookEx(cbt_hook);
+}
+
+// This CBT hook is set for the duration of the
+// TestSystemMenuReopenClosedTabWithKeyboard test
+LRESULT CALLBACK SystemMenuReopenClosedTabTestCBTHook(int n_code,
+                                                      WPARAM w_param,
+                                                      LPARAM l_param) {
+  // Look for the system menu window getting created or becoming visible and
+  // then select the New Tab option from the menu.
+  if (n_code == HCBT_ACTIVATE || n_code == HCBT_CREATEWND) {
+    wchar_t class_name[MAX_PATH] = {0};
+    GetClassName(reinterpret_cast<HWND>(w_param), class_name,
+                 base::size(class_name));
+    if (base::LowerCaseEqualsASCII(class_name, "#32768")) {
+      // Send 'E' for the Reopen closed tab option.
+      ::PostMessage(reinterpret_cast<HWND>(w_param), WM_CHAR, 'E', 0);
+    }
+  }
+  return ::CallNextHookEx(0, n_code, w_param, l_param);
+}
+
+void KeyboardAccessTest::TestSystemMenuReopenClosedTabWithKeyboard() {
+  // Navigate to a page in the first tab, which makes sure that focus is
+  // set to the browser window.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:"));
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  content::WebContents* tab_to_close =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContentsDestroyedWatcher destroyed_watcher(tab_to_close);
+  browser()->tab_strip_model()->CloseSelectedTabs();
+  destroyed_watcher.Wait();
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  content::WindowedNotificationObserver new_tab_observer(
+      chrome::NOTIFICATION_TAB_PARENTED,
+      content::NotificationService::AllSources());
+  // Sending the Alt space keys to the browser will bring up the system menu
+  // which runs a model loop. We set a CBT hook to look for the menu and send
+  // keystrokes to it.
+  HHOOK cbt_hook =
+      ::SetWindowsHookEx(WH_CBT, SystemMenuReopenClosedTabTestCBTHook, NULL,
+                         ::GetCurrentThreadId());
+  ASSERT_TRUE(cbt_hook);
+
+  bool ret = ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_SPACE, false,
+                                             false, true, false);
+  EXPECT_TRUE(ret);
+
+  if (ret) {
+    // Wait for the new tab to appear.
+    new_tab_observer.Wait();
+    // Make sure that the new tab index is 1.
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  }
+
   ::UnhookWindowsHookEx(cbt_hook);
 }
 #endif
@@ -377,6 +442,11 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
 
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestSystemMenuWithKeyboard) {
   TestSystemMenuWithKeyboard();
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
+                       TestSystemMenuReopenClosedTabWithKeyboard) {
+  TestSystemMenuReopenClosedTabWithKeyboard();
 }
 #endif
 

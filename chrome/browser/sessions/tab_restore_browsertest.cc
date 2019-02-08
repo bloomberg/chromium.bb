@@ -18,6 +18,7 @@
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_load_waiter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -49,44 +50,6 @@
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/tab_loader.h"
 #endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
-
-// Class used to run a message loop waiting for the TabRestoreService to finish
-// loading. Does nothing if the TabRestoreService was already loaded.
-class WaitForLoadObserver : public sessions::TabRestoreServiceObserver {
- public:
-  explicit WaitForLoadObserver(Browser* browser)
-      : tab_restore_service_(
-          TabRestoreServiceFactory::GetForProfile(browser->profile())),
-        do_wait_(!tab_restore_service_->IsLoaded()) {
-    if (do_wait_)
-      tab_restore_service_->AddObserver(this);
-  }
-
-  ~WaitForLoadObserver() override {
-    if (do_wait_)
-      tab_restore_service_->RemoveObserver(this);
-  }
-
-  void Wait() {
-    if (do_wait_)
-      run_loop_.Run();
-  }
-
- private:
-  // Overridden from TabRestoreServiceObserver:
-  void TabRestoreServiceDestroyed(
-      sessions::TabRestoreService* service) override {}
-  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
-    DCHECK(do_wait_);
-    run_loop_.Quit();
-  }
-
-  sessions::TabRestoreService* tab_restore_service_;
-  const bool do_wait_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForLoadObserver);
-};
 
 class TabRestoreTest : public InProcessBrowserTest {
  public:
@@ -168,7 +131,7 @@ class TabRestoreTest : public InProcessBrowserTest {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     {
-      WaitForLoadObserver waiter(browser);
+      TabRestoreServiceLoadWaiter waiter(browser);
       chrome::RestoreTab(browser);
       waiter.Wait();
     }
@@ -892,3 +855,43 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   TabLoaderTester::SetConstructionCallbackForTesting(nullptr);
 }
 #endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_GetRestoreTabType) {
+  // The TabRestoreService should get initialized (Loaded)
+  // automatically upon launch.
+  // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
+  // does not flush the task scheduler.
+  TabRestoreServiceLoadWaiter waiter(browser());
+  waiter.Wait();
+
+  // When we start, we should get nothing.
+  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
+            TabStripModelDelegate::RESTORE_NONE);
+
+  // Add a tab and close it
+  AddSomeTabs(browser(), 1);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  content::WebContents* tab_to_close =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContentsDestroyedWatcher destroyed_watcher(tab_to_close);
+  browser()->tab_strip_model()->CloseSelectedTabs();
+  destroyed_watcher.Wait();
+
+  // We now should see a Tab as the restore type.
+  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
+            TabStripModelDelegate::RESTORE_TAB);
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
+  // The TabRestoreService should get initialized (Loaded)
+  // automatically upon launch.
+  // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
+  // does not flush the task scheduler.
+  TabRestoreServiceLoadWaiter waiter(browser());
+  waiter.Wait();
+
+  // When we start this time we should get a Tab.
+  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
+            TabStripModelDelegate::RESTORE_TAB);
+}

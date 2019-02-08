@@ -158,7 +158,8 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service) {
     tab_restore_service->AddObserver(this);
-    TabRestoreServiceChanged(tab_restore_service);
+    if (!tab_restore_service->IsLoaded())
+      tab_restore_service->LoadTabsFromLastSession();
   }
 }
 
