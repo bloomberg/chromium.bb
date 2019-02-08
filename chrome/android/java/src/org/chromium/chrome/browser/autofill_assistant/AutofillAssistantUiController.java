@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.PostTask;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -13,6 +15,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -25,8 +28,11 @@ import org.chromium.content_public.browser.WebContents;
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
 class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
+    private static final int GRACEFUL_SHUTDOWN_DELAY_MS = 5_000;
+
     private long mNativeUiController;
 
+    private final ChromeActivity mActivity;
     private final AssistantCoordinator mCoordinator;
 
     @CalledByNative
@@ -39,6 +45,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private AutofillAssistantUiController(
             ChromeActivity activity, WebContents webContents, long nativeUiController) {
         mNativeUiController = nativeUiController;
+        mActivity = activity;
         mCoordinator = new AssistantCoordinator(activity, webContents, this);
 
         initForCustomTab(activity);
@@ -55,7 +62,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
                 if (!isAttached) {
                     activityTab.removeObserver(this);
-                    mCoordinator.shutdownImmediately(DropOutReason.TAB_DETACHED);
+                    stop(DropOutReason.TAB_DETACHED);
                 }
             }
         });
@@ -68,20 +75,19 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                 // Shutdown the Autofill Assistant if the user switches to another tab.
                 if (!activityTab.equals(tab)) {
                     currentTabModel.removeObserver(this);
-                    mCoordinator.gracefulShutdown(
-                            /* showGiveUpMessage= */ true, DropOutReason.TAB_CHANGED);
+                    safeNativeOnFatalError(activity.getString(R.string.autofill_assistant_give_up),
+                            DropOutReason.TAB_CHANGED);
                 }
             }
         });
     }
 
-    /**
-     * Java => native methods.
-     */
+    // Java => native methods.
 
+    /** Shut down the Autofill Assistant immediately, without showing a message. */
     @Override
-    public void stop() {
-        safeNativeStop();
+    public void stop(@DropOutReason int reason) {
+        safeNativeStop(reason);
     }
 
     /**
@@ -104,19 +110,27 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mNativeUiController = 0;
     }
 
+    /** Destroys {@link AssistantCoordinator}. */
     @CalledByNative
-    private void onShutdown(@DropOutReason int reason) {
-        mCoordinator.shutdownImmediately(reason);
+    private void destroy(boolean delayed) {
+        if (delayed) {
+            // Give some time to the user to read any error message.
+            PostTask.postDelayedTask(
+                    UiThreadTaskTraits.DEFAULT, mCoordinator::destroy, GRACEFUL_SHUTDOWN_DELAY_MS);
+            return;
+        }
+        mCoordinator.destroy();
     }
 
+    /**
+     * Close CCT after the current task has finished running - usually after Autofill Assistant has
+     * finished shutting itself down.
+     */
     @CalledByNative
-    private void onShutdownGracefully(@DropOutReason int reason) {
-        mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ false, reason);
-    }
-
-    @CalledByNative
-    private void onClose() {
-        mCoordinator.close();
+    private void scheduleCloseCustomTab() {
+        if (mActivity instanceof CustomTabActivity) {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mActivity::finish);
+        }
     }
 
     @CalledByNative
@@ -140,9 +154,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     // Native methods.
-    void safeNativeStop() {
-        if (mNativeUiController != 0) nativeStop(mNativeUiController);
+    private void safeNativeStop(@DropOutReason int reason) {
+        if (mNativeUiController != 0) nativeStop(mNativeUiController, reason);
     }
-    private native void nativeStop(long nativeUiControllerAndroid);
+    private native void nativeStop(long nativeUiControllerAndroid, @DropOutReason int reason);
 
+    private void safeNativeOnFatalError(String message, @DropOutReason int reason) {
+        if (mNativeUiController != 0) nativeOnFatalError(mNativeUiController, message, reason);
+    }
+    private native void nativeOnFatalError(
+            long nativeUiControllerAndroid, String message, @DropOutReason int reason);
 }

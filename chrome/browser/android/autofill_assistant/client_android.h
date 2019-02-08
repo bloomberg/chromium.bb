@@ -65,7 +65,7 @@ class ClientAndroid : public Client,
   UiControllerAndroid* GetUiController() override;
   std::string GetLocale() override;
   std::string GetCountryCode() override;
-  void Stop() override;
+  void Shutdown(Metrics::DropOutReason reason) override;
 
   // Overrides AccessTokenFetcher
   void FetchAccessToken(

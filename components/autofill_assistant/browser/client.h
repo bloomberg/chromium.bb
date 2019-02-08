@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "components/autofill_assistant/browser/metrics.h"
+
 namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
@@ -48,7 +50,7 @@ class Client {
 
   // Stops autofill assistant for the current WebContents, both controller and
   // UI.
-  virtual void Stop() = 0;
+  virtual void Shutdown(Metrics::DropOutReason reason) = 0;
 
  protected:
   Client() = default;

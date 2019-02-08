@@ -32,13 +32,11 @@ class UiController {
   // Report that the status message has changed.
   virtual void OnStatusMessageChanged(const std::string& message) = 0;
 
-  // Shuts down Autofill Assistant: hide the UI and frees any associated state.
+  // Autofill Assistant is about to be shut down for this tab.
   //
-  // Warning: this indirectly deletes the caller.
-  virtual void Shutdown(Metrics::DropOutReason reason) = 0;
-
-  // Shuts down Autofill Assistant and closes Chrome.
-  virtual void Close() = 0;
+  // Pointer to UIDelegate will become invalid as soon as this method has
+  // returned.
+  virtual void WillShutdown(Metrics::DropOutReason reason) = 0;
 
   // Report that the set of chips has changed.
   virtual void OnChipsChanged(const std::vector<Chip>& chips) = 0;
