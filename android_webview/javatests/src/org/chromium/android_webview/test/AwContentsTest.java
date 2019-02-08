@@ -510,6 +510,34 @@ public class AwContentsTest {
         Assert.assertTrue(testContainer.isBackedByHardwareView());
     }
 
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testBasicCookieFunctionality() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            List<Pair<String, String>> responseHeaders = CommonResources.getTextHtmlHeaders(true);
+            final String cookie = "key=value";
+            responseHeaders.add(Pair.create("Set-Cookie", cookie));
+            final String url = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
+                    CommonResources.ABOUT_HTML, responseHeaders);
+            AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), url);
+
+            final String script = "document.cookie";
+            Assert.assertEquals("\"key=value\"",
+                    mActivityTestRule.executeJavaScriptAndWaitForResult(
+                            awContents, mContentsClient, script));
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
     /**
      * Verifies that Web Notifications and the Push API are not exposed in WebView.
      */
