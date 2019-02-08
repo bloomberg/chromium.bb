@@ -19,7 +19,10 @@
   readonly attribute AnimationTimeline? timeline;
   readonly attribute AnimationPlayState playState;
   readonly attribute double? currentTime;
+  readonly attribute double? startTime;
+
   [CallWith=ScriptState] attribute double playbackRate;
   [RaisesException] void play();
+  [RaisesException] void pause();
   void cancel();
 };
