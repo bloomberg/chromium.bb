@@ -968,4 +968,53 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   shutdown_B.Wait();
 }
 
+// Tests that running layout from an unload handler inside teardown of the
+// RenderWidget (inside WidgetMsg_Close) can succeed.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RendererInitiatedWindowCloseWithUnload) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // We will window.open() another URL on the same domain so they share a
+  // renderer. This window has an unload handler that forces layout to occur.
+  // Then we (in a new stack) close that window causing that layout. If all
+  // goes well the window closes. If it goes poorly, the renderer may crash.
+  //
+  // This path is special because the unload results from window.close() which
+  // avoids the user-initiated close path through ViewMsg_ClosePage. In that
+  // path the unload handlers are run early, before the actual teardown of
+  // the closing RenderWidget.
+  GURL open_url = embedded_test_server()->GetURL(
+      "a.com", "/unload_handler_force_layout.html");
+
+  // Listen for messages from the window that the test opens, and convert them
+  // into the document title, which we can wait on in the main test window.
+  EXPECT_TRUE(
+      ExecuteScript(root,
+                    "window.addEventListener('message', function(event) {\n"
+                    "  document.title = event.data;\n"
+                    "});"));
+
+  // This performs window.open() and waits for the title of the original
+  // document to change to signal that the unload handler has been registered.
+  {
+    base::string16 title_when_loaded = base::UTF8ToUTF16("loaded");
+    TitleWatcher title_watcher(shell()->web_contents(), title_when_loaded);
+    EXPECT_TRUE(
+        ExecuteScript(root, JsReplace("var w = window.open($1)", open_url)));
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_loaded);
+  }
+
+  // The closes the window and waits for the title of the original document to
+  // change again to signal that the unload handler has run.
+  {
+    base::string16 title_when_done = base::UTF8ToUTF16("unloaded");
+    TitleWatcher title_watcher(shell()->web_contents(), title_when_done);
+    EXPECT_TRUE(ExecuteScript(root, "w.close()"));
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_done);
+  }
+}
+
 }  // namespace content
