@@ -77,7 +77,6 @@ class CORE_EXPORT NGCaretNavigator {
   // TODO(xiaochengh): Handle the following
   // - Grapheme clusters
   // - Enterable atomic inlines
-  // - Editing-ignored contents
 
   enum class VisualMovementResultType {
     kWithinContext,
