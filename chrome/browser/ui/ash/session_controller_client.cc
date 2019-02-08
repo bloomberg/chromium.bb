@@ -476,7 +476,8 @@ void SessionControllerClient::OnSessionStateChanged() {
     if (chromeos::switches::IsAssistantEnabled()) {
       AssistantClient::Get()->MaybeInit(
           ProfileManager::GetPrimaryUserProfile());
-      AssistantClient::Get()->MaybeStartAssistantOptInFlow();
+      if (!chromeos::switches::ShouldSkipOobePostLogin())
+        AssistantClient::Get()->MaybeStartAssistantOptInFlow();
     }
 #endif
   }

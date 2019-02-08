@@ -68,7 +68,7 @@ void LaunchDialogForProfile(Profile* profile) {
 void TryLaunchFirstRunDialog(Profile* profile) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(switches::kOobeSkipPostLogin))
+  if (chromeos::switches::ShouldSkipOobePostLogin())
     return;
 
   if (command_line->HasSwitch(switches::kForceFirstRunUI)) {

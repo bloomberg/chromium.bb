@@ -214,6 +214,9 @@ CHROMEOS_EXPORT bool ShouldTetherHostScansIgnoreWiredConnections();
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
 CHROMEOS_EXPORT bool ShouldShowPlayStoreInDemoMode();
 
+// Returns true if we should skip all other OOBE pages after user login.
+CHROMEOS_EXPORT bool ShouldSkipOobePostLogin();
+
 }  // namespace switches
 }  // namespace chromeos
 

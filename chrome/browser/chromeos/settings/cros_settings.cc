@@ -77,8 +77,7 @@ void CrosSettings::ShutdownForTesting() {
 bool CrosSettings::IsUserWhitelisted(const std::string& username,
                                      bool* wildcard_match) const {
   // Skip whitelist check for tests.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kOobeSkipPostLogin)) {
+  if (chromeos::switches::ShouldSkipOobePostLogin()) {
     return true;
   }
 
