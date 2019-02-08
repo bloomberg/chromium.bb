@@ -239,6 +239,54 @@ TEST_F(DemoSessionMetricsRecorderTest, AppTypes) {
   histogram_tester_->ExpectTotalCount("DemoMode.ActiveApp", 10);
 }
 
+// Verify samples are correct when multiple windows types become active.
+TEST_F(DemoSessionMetricsRecorderTest, ActiveAppAfterDelayedArcPackageName) {
+  // Create an ARC window with an empty package name.
+  std::unique_ptr<aura::Window> arc_window = CreateArcWindow("");
+
+  wm::ActivateWindow(arc_window.get());
+  FireTimer();
+  SendUserActivity();
+
+  // There should be no app activity recorded yet, because there was
+  // no package name in the ARC window.
+  histogram_tester_->ExpectTotalCount("DemoMode.ActiveApp", 0);
+
+  // Set the package name after window creation/activation.
+  arc_window->SetProperty(kArcPackageNameKey,
+                          new std::string("com.google.Photos"));
+
+  // Trigger sample reporting by sending user activity.
+  SendUserActivity();
+
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.ActiveApp",
+      DemoSessionMetricsRecorder::DemoModeApp::kGooglePhotos, 1);
+
+  // Set the package name again.  The count shouldn't change because
+  // after getting the package name once, we stop observing the
+  // window.
+  arc_window->SetProperty(kArcPackageNameKey,
+                          new std::string("com.google.Photos"));
+  // Trigger sample reporting by sending user activity.
+  SendUserActivity();
+
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.ActiveApp",
+      DemoSessionMetricsRecorder::DemoModeApp::kGooglePhotos, 1);
+
+  // Delete the window.
+  arc_window.reset();
+
+  // Trigger sample reporting by sending user activity.
+  SendUserActivity();
+
+  // The count should not be affected.
+  histogram_tester_->ExpectBucketCount(
+      "DemoMode.ActiveApp",
+      DemoSessionMetricsRecorder::DemoModeApp::kGooglePhotos, 1);
+}
+
 // Verify popup windows are categorized as kOtherWindow.
 TEST_F(DemoSessionMetricsRecorderTest, PopupWindows) {
   std::unique_ptr<aura::Window> chrome_app_window =
@@ -515,6 +563,14 @@ TEST_F(DemoSessionMetricsRecorderTest,
   // Set the package name after window creation/activation.
   arc_window_1->SetProperty(kArcPackageNameKey,
                             new std::string("com.google.Photos"));
+
+  // Set the package name again. This shouldn't cause a double-recording
+  // of the stat.
+  arc_window_1->SetProperty(kArcPackageNameKey,
+                            new std::string("com.google.Photos"));
+
+  // Delete the window.
+  arc_window_1.reset();
 
   std::unique_ptr<aura::Window> arc_window_2 =
       CreateArcWindow("com.google.Maps");

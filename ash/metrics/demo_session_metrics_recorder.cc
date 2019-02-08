@@ -98,27 +98,43 @@ DemoModeApp GetAppFromPackageName(const std::string& package_name) {
   return DemoModeApp::kOtherArcApp;
 }
 
+AppType GetAppType(const aura::Window* window) {
+  return static_cast<AppType>(window->GetProperty(aura::client::kAppType));
+}
+
+bool IsArcWindow(const aura::Window* window) {
+  return (GetAppType(window) == AppType::ARC_APP);
+}
+
 const std::string* GetArcPackageName(const aura::Window* window) {
+  DCHECK(IsArcWindow(window));
   return window->GetProperty(kArcPackageNameKey);
+}
+
+bool CanGetAppFromWindow(const aura::Window* window) {
+  // For ARC apps we can only get the App if the package
+  // name is not null.
+  if (IsArcWindow(window)) {
+    return GetArcPackageName(window) != nullptr;
+  }
+  // We can always get the App for non-ARC windows.
+  return true;
 }
 
 const ShelfID GetShelfID(const aura::Window* window) {
   return ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
 }
 
-AppType GetAppType(const aura::Window* window) {
-  return static_cast<AppType>(window->GetProperty(aura::client::kAppType));
-}
-
 // Maps the app-like thing in |window| to a DemoModeApp value for metrics.
 DemoModeApp GetAppFromWindow(const aura::Window* window) {
+  DCHECK(CanGetAppFromWindow(window));
+
   AppType app_type = GetAppType(window);
   if (app_type == AppType::ARC_APP) {
     // The ShelfID app id isn't used to identify ARC++ apps since it's a hash of
     // both the package name and the activity.
     const std::string* package_name = GetArcPackageName(window);
-    return package_name ? GetAppFromPackageName(*package_name)
-                        : DemoModeApp::kOtherArcApp;
+    return GetAppFromPackageName(*package_name);
   }
 
   std::string app_id = GetShelfID(window).app_id;
@@ -150,6 +166,49 @@ DemoModeApp GetAppFromWindow(const aura::Window* window) {
 }  // namespace
 
 // Observes for changes in a window's ArcPackageName property for the purpose of
+// logging  of active app samples.
+class DemoSessionMetricsRecorder::ActiveAppArcPackageNameObserver
+    : public aura::WindowObserver {
+ public:
+  explicit ActiveAppArcPackageNameObserver(
+      DemoSessionMetricsRecorder* metrics_recorder)
+      : metrics_recorder_(metrics_recorder), scoped_observer_(this) {}
+
+  // aura::WindowObserver
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key != kArcPackageNameKey)
+      return;
+
+    const std::string* package_name = GetArcPackageName(window);
+
+    if (package_name) {
+      metrics_recorder_->RecordActiveAppSample(
+          GetAppFromPackageName(*package_name));
+    } else {
+      VLOG(1) << "Got null ARC package name";
+    }
+
+    scoped_observer_.Remove(window);
+  }
+
+  void OnWindowDestroyed(aura::Window* window) override {
+    if (scoped_observer_.IsObserving(window))
+      scoped_observer_.Remove(window);
+  }
+
+  void ObserveWindow(aura::Window* window) { scoped_observer_.Add(window); }
+
+ private:
+  DemoSessionMetricsRecorder* metrics_recorder_;
+  ScopedObserver<aura::Window, ActiveAppArcPackageNameObserver>
+      scoped_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveAppArcPackageNameObserver);
+};
+
+// Observes changes in a window's ArcPackageName property for the purpose of
 // logging of unique launches of ARC apps.
 class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
     : public aura::WindowObserver {
@@ -167,20 +226,21 @@ class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
 
     const std::string* package_name = GetArcPackageName(window);
 
-    if (package_name != nullptr) {
+    if (package_name) {
       metrics_recorder_->RecordAppLaunch(*package_name, AppType::ARC_APP);
     } else {
       VLOG(1) << "Got null ARC package name";
     }
 
-    window->RemoveObserver(this);
+    scoped_observer_.Remove(window);
+  }
+
+  void OnWindowDestroyed(aura::Window* window) override {
+    if (scoped_observer_.IsObserving(window))
+      scoped_observer_.Remove(window);
   }
 
   void ObserveWindow(aura::Window* window) { scoped_observer_.Add(window); }
-
-  void OnWindowDestroyed(aura::Window* window) override {
-    window->RemoveObserver(this);
-  }
 
  private:
   DemoSessionMetricsRecorder* metrics_recorder_;
@@ -195,7 +255,9 @@ DemoSessionMetricsRecorder::DemoSessionMetricsRecorder(
     : timer_(std::move(timer)),
       observer_(this),
       unique_apps_arc_package_name_observer_(
-          std::make_unique<UniqueAppsLaunchedArcPackageNameObserver>(this)) {
+          std::make_unique<UniqueAppsLaunchedArcPackageNameObserver>(this)),
+      active_app_arc_package_name_observer_(
+          std::make_unique<ActiveAppArcPackageNameObserver>(this)) {
   // Outside of tests, use a normal repeating timer.
   if (!timer_.get())
     timer_ = std::make_unique<base::RepeatingTimer>();
@@ -311,6 +373,10 @@ void DemoSessionMetricsRecorder::StartRecording() {
                 &DemoSessionMetricsRecorder::TakeSampleOrPause);
 }
 
+void DemoSessionMetricsRecorder::RecordActiveAppSample(DemoModeApp app) {
+  unreported_samples_.push_back(app);
+}
+
 void DemoSessionMetricsRecorder::TakeSampleOrPause() {
   // After enough inactive time, assume the user left.
   if (++periods_since_activity_ > kMaxPeriodsWithoutActivity) {
@@ -320,15 +386,21 @@ void DemoSessionMetricsRecorder::TakeSampleOrPause() {
     return;
   }
 
-  const aura::Window* window =
-      Shell::Get()->activation_client()->GetActiveWindow();
+  aura::Window* window = Shell::Get()->activation_client()->GetActiveWindow();
   if (!window)
     return;
+
+  // If there is no ARC package name available, set up a listener
+  // to be informed when it is available.
+  if (IsArcWindow(window) && !CanGetAppFromWindow(window)) {
+    active_app_arc_package_name_observer_->ObserveWindow(window);
+    return;
+  }
 
   DemoModeApp app = window->type() == aura::client::WINDOW_TYPE_NORMAL
                         ? GetAppFromWindow(window)
                         : DemoModeApp::kOtherWindow;
-  unreported_samples_.push_back(app);
+  RecordActiveAppSample(app);
 }
 
 void DemoSessionMetricsRecorder::ReportSamples() {
