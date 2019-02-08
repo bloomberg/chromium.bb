@@ -3,21 +3,17 @@
 # General, esp chrome/ UI and Android integration.
 kpaulhamus@chromium.org
 
-# General, esp U2F and CTAP2 code.
-hongjunchoi@chromium.org
-
 # TouchID, Windows Hello.
-martinkr@chromium.org
-
-# Bluetooth.
-jdoerrie@chromium.org
+martinkr@google.com
+martinkr@chromium.org # prefer @google.com
 
 # Attestation and legacy U2F implementation.
 agl@chromium.org
 
-# Emeritus; for occasional reviews, esp those in the depths of view & frame
-# lifetimes.
-engedy@chromium.org
+# Emeriti; for occasional reviews
+engedy@chromium.org # esp. view & frame lifetimes
+jdoerrie@chromium.org # Bluetooth
+hongjunchoi@chromium.org # CTAP2 implementation
 
 # TEAM: identity-dev@chromium.org
 # COMPONENT: Blink>WebAuthentication
