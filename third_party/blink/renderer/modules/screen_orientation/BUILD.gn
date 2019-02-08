@@ -12,8 +12,6 @@ blink_modules_sources("screen_orientation") {
     "screen_orientation.h",
     "screen_orientation_controller_impl.cc",
     "screen_orientation_controller_impl.h",
-    "screen_orientation_dispatcher.cc",
-    "screen_orientation_dispatcher.h",
     "screen_screen_orientation.cc",
     "screen_screen_orientation.h",
     "web_lock_orientation_callback.h",

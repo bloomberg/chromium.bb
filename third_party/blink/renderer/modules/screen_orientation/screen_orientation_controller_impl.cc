@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_dispatcher.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -39,7 +38,7 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame)
     : ScreenOrientationController(frame),
       ContextLifecycleObserver(frame.GetDocument()),
-      PlatformEventController(frame.GetDocument()),
+      PageVisibilityObserver(frame.GetPage()),
       dispatch_event_timer_(
           frame.GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
@@ -90,9 +89,8 @@ WebScreenOrientationType ScreenOrientationControllerImpl::ComputeOrientation(
 
 void ScreenOrientationControllerImpl::UpdateOrientation() {
   DCHECK(orientation_);
-  DCHECK(GetFrame());
-  DCHECK(GetFrame()->GetPage());
-  ChromeClient& chrome_client = GetFrame()->GetPage()->GetChromeClient();
+  DCHECK(GetPage());
+  ChromeClient& chrome_client = GetPage()->GetChromeClient();
   WebScreenInfo screen_info = chrome_client.GetScreenInfo();
   WebScreenOrientationType orientation_type = screen_info.orientation_type;
   if (orientation_type == kWebScreenOrientationUndefined) {
@@ -120,21 +118,15 @@ bool ScreenOrientationControllerImpl::IsActiveAndVisible() const {
 }
 
 void ScreenOrientationControllerImpl::PageVisibilityChanged() {
-  NotifyDispatcher();
-
   if (!IsActiveAndVisible())
     return;
 
-  DCHECK(GetFrame());
-  DCHECK(GetFrame()->GetPage());
+  DCHECK(GetPage());
 
   // The orientation type and angle are tied in a way that if the angle has
   // changed, the type must have changed.
-  unsigned short current_angle = GetFrame()
-                                     ->GetPage()
-                                     ->GetChromeClient()
-                                     .GetScreenInfo()
-                                     .orientation_angle;
+  unsigned short current_angle =
+      GetPage()->GetChromeClient().GetScreenInfo().orientation_angle;
 
   // FIXME: sendOrientationChangeEvent() currently send an event all the
   // children of the frame, so it should only be called on the frame on
@@ -181,7 +173,6 @@ void ScreenOrientationControllerImpl::SetOrientation(
   orientation_ = orientation;
   if (orientation_)
     UpdateOrientation();
-  NotifyDispatcher();
 }
 
 void ScreenOrientationControllerImpl::lock(
@@ -224,40 +215,16 @@ void ScreenOrientationControllerImpl::DispatchEventTimerFired(TimerBase*) {
   orientation_->DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
-void ScreenOrientationControllerImpl::DidUpdateData() {
-  // Do nothing.
-}
-
-void ScreenOrientationControllerImpl::RegisterWithDispatcher() {
-  ScreenOrientationDispatcher::Instance().AddController(this);
-}
-
-void ScreenOrientationControllerImpl::UnregisterWithDispatcher() {
-  ScreenOrientationDispatcher::Instance().RemoveController(this);
-}
-
-bool ScreenOrientationControllerImpl::HasLastData() {
-  return true;
-}
-
 void ScreenOrientationControllerImpl::ContextDestroyed(ExecutionContext*) {
-  StopUpdating();
   screen_orientation_service_ = nullptr;
   active_lock_ = false;
-}
-
-void ScreenOrientationControllerImpl::NotifyDispatcher() {
-  if (orientation_ && GetPage()->IsPageVisible())
-    StartUpdating();
-  else
-    StopUpdating();
 }
 
 void ScreenOrientationControllerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(orientation_);
   ContextLifecycleObserver::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
   Supplement<LocalFrame>::Trace(visitor);
-  PlatformEventController::Trace(visitor);
 }
 
 void ScreenOrientationControllerImpl::SetScreenOrientationAssociatedPtrForTests(

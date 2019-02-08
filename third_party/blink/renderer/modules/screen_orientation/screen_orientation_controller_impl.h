@@ -10,8 +10,8 @@
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 
@@ -25,7 +25,7 @@ using device::mojom::blink::ScreenOrientationLockResult;
 class MODULES_EXPORT ScreenOrientationControllerImpl final
     : public ScreenOrientationController,
       public ContextLifecycleObserver,
-      public PlatformEventController {
+      public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationControllerImpl);
   WTF_MAKE_NONCOPYABLE(ScreenOrientationControllerImpl);
 
@@ -56,17 +56,9 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
   static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
 
-  // Inherited from PlatformEventController.
-  void DidUpdateData() override;
-  void RegisterWithDispatcher() override;
-  void UnregisterWithDispatcher() override;
-  bool HasLastData() override;
-
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void ContextDestroyed(ExecutionContext*) override;
   void PageVisibilityChanged() override;
-
-  void NotifyDispatcher();
 
   void UpdateOrientation();
 

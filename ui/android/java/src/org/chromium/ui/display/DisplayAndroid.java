@@ -192,22 +192,6 @@ public class DisplayAndroid {
         mObservers.remove(observer);
     }
 
-    /**
-     * Toggle the accurate mode if it wasn't already doing so. The backend will
-     * keep track of the number of times this has been called.
-     */
-    public static void startAccurateListening() {
-        getManager().startAccurateListening();
-    }
-
-    /**
-     * Request to stop the accurate mode. It will effectively be stopped only if
-     * this method is called as many times as startAccurateListening().
-     */
-    public static void stopAccurateListening() {
-        getManager().stopAccurateListening();
-    }
-
     protected DisplayAndroid(int displayId) {
         mDisplayId = displayId;
         mObservers = new WeakHashMap<>();
