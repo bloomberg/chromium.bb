@@ -251,8 +251,7 @@ source_set("content_packaged_services_manifest") {
   if (is_chromeos) {
     deps += [ "//chromeos/assistant:buildflags" ]
     if (enable_cros_libassistant) {
-      deps +=
-          [ "//chromeos/services/assistant/public/cpp:audio_decoder_manifest" ]
+      deps += [ "//chromeos/services/assistant/audio_decoder:manifest" ]
     }
   }
 }

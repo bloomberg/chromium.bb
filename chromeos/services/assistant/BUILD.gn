@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromeos/assistant/assistant.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 assert(is_chromeos)
 assert(enable_cros_assistant)
@@ -111,6 +112,11 @@ component("lib") {
 
     libs = [ "$root_out_dir/libassistant.so" ]
   }
+}
+
+service_manifest("manifest") {
+  name = "assistant"
+  source = "manifest.json"
 }
 
 source_set("tests") {

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromeos/services/ime/public/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
@@ -42,6 +43,11 @@ source_set("sandbox_hook") {
     "//sandbox/linux:sandbox_services",
     "//services/service_manager/sandbox:sandbox",
   ]
+}
+
+service_manifest("manifest") {
+  name = "ime"
+  source = "manifest.json"
 }
 
 source_set("unit_tests") {
