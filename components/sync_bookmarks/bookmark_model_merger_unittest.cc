@@ -453,4 +453,99 @@ TEST(BookmarkModelMergerTest, ShouldMergeFaviconsForRemoteNodesOnly) {
       .Merge();
 }
 
+// This tests that canonical titles produced by legacy clients are properly
+// matched. Legacy clients append blank space to empty titles.
+TEST(BookmarkModelMergerTest,
+     ShouldMergeLocalAndRemoteNodesWhenRemoteHasLegacyCanonicalTitle) {
+  const std::string kLocalTitle = "";
+  const std::string kRemoteTitle = " ";
+  const std::string kId = "Id";
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0,
+      base::UTF8ToUTF16(kLocalTitle));
+  ASSERT_TRUE(folder);
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UniquePosition pos = syncer::UniquePosition::InitialPosition(suffix);
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kRemoteTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/pos));
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Both titles should have matched against each other and only node is in the
+  // model and the tracker.
+  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
+}
+
+// This tests that truncated titles produced by legacy clients are properly
+// matched.
+TEST(BookmarkModelMergerTest,
+     ShouldMergeLocalAndRemoteNodesWhenRemoteHasLegacyTruncatedTitle) {
+  const std::string kLocalLongTitle =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+      "uvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN"
+      "OPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"
+      "ijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzAB"
+      "CDEFGHIJKLMNOPQRSTUVWXYZ";
+  const std::string kRemoteTruncatedTitle =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+      "uvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN"
+      "OPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"
+      "ijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU";
+  const std::string kId = "Id";
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0,
+      base::UTF8ToUTF16(kLocalLongTitle));
+  ASSERT_TRUE(folder);
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UniquePosition pos = syncer::UniquePosition::InitialPosition(suffix);
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kRemoteTruncatedTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/pos));
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Both titles should have matched against each other and only node is in the
+  // model and the tracker.
+  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
+}
+
 }  // namespace sync_bookmarks
