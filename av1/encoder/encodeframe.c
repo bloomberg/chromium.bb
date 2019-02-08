@@ -388,7 +388,6 @@ static void update_state(const AV1_COMP *const cpi,
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       av1_cyclic_refresh_update_segment(cpi, mi_addr, mi_row, mi_col, bsize,
                                         ctx->rate, ctx->dist, x->skip);
-      reset_tx_size(x, mi_addr, cm->tx_mode);
     }
     if (mi_addr->uv_mode == UV_CFL_PRED && !is_cfl_allowed(xd))
       mi_addr->uv_mode = UV_DC_PRED;

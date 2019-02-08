@@ -31,9 +31,9 @@ struct CYCLIC_REFRESH {
   // excess of the cycle time, i.e., in the case of all zero motion, block
   // will be refreshed every (100/percent_refresh + time_for_refresh) frames.
   int time_for_refresh;
-  // Target number of (8x8) blocks that are set for delta-q.
+  // Target number of (4x4) blocks that are set for delta-q.
   int target_num_seg_blocks;
-  // Actual number of (8x8) blocks that were applied delta-q.
+  // Actual number of (4x4) blocks that were applied delta-q.
   int actual_num_seg1_blocks;
   int actual_num_seg2_blocks;
   // RD mult. parameters for segment 1.
@@ -94,15 +94,14 @@ static int apply_cyclic_refresh_bitrate(const AV1_COMMON *cm,
   // larger than bit cost of segmentation. Segment map bit cost should scale
   // with number of seg blocks, so compare available bits to number of blocks.
   // Average bits available per frame = avg_frame_bandwidth
-  // Number of (8x8) blocks in frame = mi_rows * mi_cols;
-  const float factor = 0.25;
+  // Number of (4x4) blocks in frame = mi_rows * mi_cols;
   const int number_blocks = cm->mi_rows * cm->mi_cols;
   // The condition below corresponds to turning off at target bitrates:
   // (at 30fps), ~12kbps for CIF, 36kbps for VGA, 100kps for HD/720p.
   // Also turn off at very small frame sizes, to avoid too large fraction of
   // superblocks to be refreshed per frame. Threshold below is less than QCIF.
-  if (rc->avg_frame_bandwidth < factor * number_blocks ||
-      number_blocks / 64 < 5)
+  if (rc->avg_frame_bandwidth < (0.1 * number_blocks) ||
+      number_blocks / 1024 < 4)
     return 0;
   else
     return 1;
@@ -158,11 +157,11 @@ int av1_cyclic_refresh_estimate_bits_at_q(const AV1_COMP *cpi,
   const CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   int estimated_bits;
   int mbs = cm->MBs;
-  int num8x8bl = mbs << 2;
+  int num4x4bl = mbs << 4;
   // Weight for non-base segments: use actual number of blocks refreshed in
-  // previous/just encoded frame. Note number of blocks here is in 8x8 units.
-  double weight_segment1 = (double)cr->actual_num_seg1_blocks / num8x8bl;
-  double weight_segment2 = (double)cr->actual_num_seg2_blocks / num8x8bl;
+  // previous/just encoded frame. Note number of blocks here is in 4x4 units.
+  double weight_segment1 = (double)cr->actual_num_seg1_blocks / num4x4bl;
+  double weight_segment2 = (double)cr->actual_num_seg2_blocks / num4x4bl;
   // Take segment weighted average for estimated bits.
   estimated_bits =
       (int)((1.0 - weight_segment1 - weight_segment2) *
@@ -190,14 +189,14 @@ int av1_cyclic_refresh_rc_bits_per_mb(const AV1_COMP *cpi, int i,
   const AV1_COMMON *const cm = &cpi->common;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   int bits_per_mb;
-  int num8x8bl = cm->MBs << 2;
+  int num4x4bl = cm->MBs << 4;
   // Weight for segment prior to encoding: take the average of the target
   // number for the frame to be encoded and the actual from the previous frame.
   double weight_segment =
       (double)((cr->target_num_seg_blocks + cr->actual_num_seg1_blocks +
                 cr->actual_num_seg2_blocks) >>
                1) /
-      num8x8bl;
+      num4x4bl;
   // Compute delta-q corresponding to qindex i.
   int deltaq = compute_deltaq(cpi, i, cr->rate_ratio_qdelta);
   // Take segment weighted average for bits per mb.
@@ -458,6 +457,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
 
 // Set cyclic refresh parameters.
 void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
+  // TODO(marpan): Parameters need to be tuned.
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1_COMMON *const cm = &cpi->common;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
