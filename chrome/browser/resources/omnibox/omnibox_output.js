@@ -539,6 +539,12 @@ cr.define('omnibox_output', function() {
   }
 
   class OutputProperty extends HTMLTableCellElement {
+    constructor() {
+      super();
+      /** @type {string} */
+      this.filterName;
+    }
+
     /**
      * @param {Column} column
      * @param {!Array<*>} values
@@ -547,7 +553,7 @@ cr.define('omnibox_output', function() {
     static create(column, values) {
       const outputProperty = new column.outputClass();
       outputProperty.classList.add(column.cellClassName);
-      outputProperty.name = column.headerText.join('.');
+      outputProperty.filterName = column.tooltip.split('\n', 1)[0];
       outputProperty.values = values;
       return outputProperty;
     }
@@ -698,7 +704,7 @@ cr.define('omnibox_output', function() {
     }
 
     get text() {
-      return (this.value ? 'is: ' : 'not: ') + this.name;
+      return (this.value ? 'is: ' : 'not: ') + this.filterName;
     }
   }
 
@@ -933,7 +939,7 @@ cr.define('omnibox_output', function() {
         ['image', 'contents', 'description', 'answer'], OutputAnswerProperty),
     new Column(
         ['D'], '', 'allowedToBeDefaultMatch', true,
-        'Can Be Default\nA green checkmark indicates that the result can be ' +
+        'Can be Default\nA green checkmark indicates that the result can be ' +
             'the default match (i.e., can be the match that pressing enter ' +
             'in the omnibox navigates to).',
         ['allowedToBeDefaultMatch'], OutputBooleanProperty),
