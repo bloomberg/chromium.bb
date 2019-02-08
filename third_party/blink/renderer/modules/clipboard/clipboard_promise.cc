@@ -21,9 +21,9 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
-#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 // And now, a brief note about clipboard permissions.
@@ -259,13 +259,13 @@ void ClipboardPromise::OnLoadBufferComplete(DOMArrayBuffer* array_buffer) {
   file_reader_.reset();
 
   if (blob_type == kMimeTypeImagePng) {
-    background_scheduler::PostOnBackgroundThread(
+    worker_pool::PostTask(
         FROM_HERE,
         CrossThreadBind(&ClipboardPromise::DecodeImageOnBackgroundThread,
                         WrapCrossThreadPersistent(this), GetTaskRunner(),
                         WrapCrossThreadPersistent(array_buffer)));
   } else if (blob_type == kMimeTypeTextPlain) {
-    background_scheduler::PostOnBackgroundThread(
+    worker_pool::PostTask(
         FROM_HERE,
         CrossThreadBind(&ClipboardPromise::DecodeTextOnBackgroundThread,
                         WrapCrossThreadPersistent(this), GetTaskRunner(),

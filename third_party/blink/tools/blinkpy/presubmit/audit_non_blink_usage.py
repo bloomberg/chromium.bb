@@ -236,7 +236,6 @@ _CONFIG = [
             'url::.+',
 
             # Nested namespaces under the blink namespace
-            'background_scheduler::.+',
             'canvas_heuristic_parameters::.+',
             'compositor_target_property::.+',
             'cors::.+',
@@ -264,11 +263,12 @@ _CONFIG = [
             'style_change_extra_data::.+',
             'style_change_reason::.+',
             'svg_path_parser::.+',
-            'trace_event::.+',
             'touch_action_util::.+',
+            'trace_event::.+',
             'unicode::.+',
             'vector_math::.+',
             'web_core_test_support::.+',
+            'worker_pool::.+',
             'xpath::.+',
             '[a-z_]+_names::.+',
 

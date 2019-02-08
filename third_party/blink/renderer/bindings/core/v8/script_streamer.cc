@@ -21,9 +21,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
@@ -445,7 +445,7 @@ void ScriptStreamer::NotifyAppendData() {
       // cancel the task.
       //
       // TODO(leszeks): Decrease the priority of these tasks where possible.
-      background_scheduler::PostOnBackgroundThreadWithTraits(
+      worker_pool::PostTaskWithTraits(
           FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
           CrossThreadBind(RunBlockingScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
@@ -498,7 +498,7 @@ void ScriptStreamer::NotifyFinished() {
       // The task creation shouldn't fail, since it didn't fail before during
       // NotifyAppendData.
       CHECK(script_streaming_task);
-      background_scheduler::PostOnBackgroundThreadWithTraits(
+      worker_pool::PostTaskWithTraits(
           FROM_HERE, {base::TaskPriority::USER_BLOCKING},
           CrossThreadBind(RunNonBlockingScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
