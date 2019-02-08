@@ -39,7 +39,7 @@ namespace {
 // Normalized value [0..1] where 1 is full quality and 0 is empty. This sets
 // the quality of the captured texture by reducing its dimensions by this
 // factor.
-constexpr float kFrameContentCaptureQuality = 0.5f;
+constexpr float kFrameContentCaptureQuality = 0.4f;
 
 }  // namespace
 
@@ -78,6 +78,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
   stale_content_layer_ =
       std::make_unique<ui::Layer>(ui::LayerType::LAYER_SOLID_COLOR);
   stale_content_layer_->SetVisible(false);
+  stale_content_layer_->SetColor(SK_ColorTRANSPARENT);
 }
 
 DelegatedFrameHost::~DelegatedFrameHost() {
@@ -428,10 +429,9 @@ void DelegatedFrameHost::DidCopyStaleContent(
 
   DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
 
-  if (frame_eviction_state_ == FrameEvictionState::kPendingEvictionRequests) {
-    frame_eviction_state_ = FrameEvictionState::kNotStarted;
-    ContinueDelegatedFrameEviction();
-  }
+  DCHECK_NE(frame_eviction_state_, FrameEvictionState::kNotStarted);
+  frame_eviction_state_ = FrameEvictionState::kNotStarted;
+  ContinueDelegatedFrameEviction();
 
   auto transfer_resource = viz::TransferableResource::MakeGL(
       result->GetTextureResult()->mailbox, GL_LINEAR, GL_TEXTURE_2D,
