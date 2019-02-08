@@ -14,5 +14,9 @@ bool IsReachedCodeProfilerEnabled() {
   return false;
 }
 
+bool IsReachedCodeProfilerSupported() {
+  return false;
+}
+
 }  // namespace android
 }  // namespace base

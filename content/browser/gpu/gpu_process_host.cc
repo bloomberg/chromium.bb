@@ -252,6 +252,7 @@ static const char* const kSwitchNames[] = {
     switches::kUseCmdDecoder,
     switches::kForceVideoOverlays,
 #if defined(OS_ANDROID)
+    switches::kEnableReachedCodeProfiler,
     switches::kOrderfileMemoryOptimization,
 #endif
     switches::kWebglAntialiasingMode,

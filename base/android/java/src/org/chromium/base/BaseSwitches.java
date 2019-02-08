@@ -27,6 +27,9 @@ public abstract class BaseSwitches {
     // Default country code to be used for search engine localization.
     public static final String DEFAULT_COUNTRY_CODE_AT_INSTALL = "default-country-code";
 
+    // Enables the reached code profiler.
+    public static final String ENABLE_REACHED_CODE_PROFILER = "enable-reached-code-profiler";
+
     // Prevent instantiation.
     private BaseSwitches() {}
 }
