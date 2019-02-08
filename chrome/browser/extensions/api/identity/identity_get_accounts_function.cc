@@ -47,15 +47,21 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   api::identity::AccountInfo account_info;
-  if (primary_account_only) {
-    // If extensions are restricted to the primary account, only return the
-    // account info when there is a valid primary account.
-    if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
-      account_info.id = identity_manager->GetPrimaryAccountInfo().gaia;
-      infos->Append(account_info.ToValue());
-    }
-  } else {
+
+  // Ensure that the primary account is inserted first; even though this
+  // semantics isn't documented, the implementation has always ensured it and it
+  // shouldn't be changed without determining that it is safe to do so.
+  if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
+    account_info.id = identity_manager->GetPrimaryAccountInfo().gaia;
+    infos->Append(account_info.ToValue());
+  }
+
+  // If secondary accounts are supported, add all the secondary accounts as
+  // well.
+  if (!primary_account_only) {
     for (const auto& account : accounts) {
+      if (account.account_id == identity_manager->GetPrimaryAccountId())
+        continue;
       account_info.id = account.gaia;
       infos->Append(account_info.ToValue());
     }
