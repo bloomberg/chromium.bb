@@ -197,9 +197,6 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // The compositor frame number when animation starts.
   int animation_start_frame_number_;
 
-  // View used to announce opening and closing a folder.
-  views::View* announcement_view_ = nullptr;  // Owned by AppListFolderView.
-
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };
 
