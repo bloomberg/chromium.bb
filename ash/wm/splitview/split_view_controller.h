@@ -32,7 +32,7 @@ class Layer;
 }  // namespace ui
 
 namespace ash {
-
+class OverviewSession;
 class SplitViewControllerTest;
 class SplitViewDivider;
 class SplitViewOverviewSessionTest;

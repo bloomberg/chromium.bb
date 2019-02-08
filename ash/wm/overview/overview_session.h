@@ -247,6 +247,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return grid_list_;
   }
 
+  size_t num_items_for_testing() const { return num_items_; }
+
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,

@@ -1788,6 +1788,52 @@ TEST_F(SplitViewControllerTest, PinnedWindowDisallowsSplitView) {
   EXPECT_FALSE(ShouldAllowSplitView());
 }
 
+// TestShellObserver which tracks how many overview items there are when
+// overview mode is about to end.
+class TestOverviewItemsOnOverviewModeEndObserver : public ShellObserver {
+ public:
+  TestOverviewItemsOnOverviewModeEndObserver() {
+    Shell::Get()->AddShellObserver(this);
+  }
+  ~TestOverviewItemsOnOverviewModeEndObserver() override {
+    Shell::Get()->RemoveShellObserver(this);
+  }
+  void OnOverviewModeEnding(OverviewSession* overview_session) override {
+    items_on_last_overview_end_ = overview_session->num_items_for_testing();
+  }
+  int items_on_last_overview_end() const { return items_on_last_overview_end_; }
+
+ private:
+  int items_on_last_overview_end_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOverviewItemsOnOverviewModeEndObserver);
+};
+
+TEST_F(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  ASSERT_EQ(2u, Shell::Get()
+                    ->overview_controller()
+                    ->overview_session()
+                    ->num_items_for_testing());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ASSERT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_EQ(1u, Shell::Get()
+                    ->overview_controller()
+                    ->overview_session()
+                    ->num_items_for_testing());
+
+  // Create |observer| after splitview is entered so that it gets notified after
+  // splitview does, and so will notice the changes splitview made to overview
+  // on overview end.
+  TestOverviewItemsOnOverviewModeEndObserver observer;
+  ToggleOverview();
+  EXPECT_EQ(0, observer.items_on_last_overview_end());
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.
