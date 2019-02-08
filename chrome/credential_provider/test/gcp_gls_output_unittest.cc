@@ -101,6 +101,9 @@ GcpUsingChromeTest::GcpUsingChromeTest()
     : proxy_server_(net::SpawnedTestServer::TYPE_PROXY, base::FilePath()) {}
 
 void GcpUsingChromeTest::SetUp() {
+  if (!ShouldRunTestOnThisOS())
+    return;
+
   // Redirect connections to signin related pages to a handler that will
   // generate the needed headers and content to move the signin flow
   // forward automatically.
@@ -120,6 +123,9 @@ void GcpUsingChromeTest::SetUp() {
 }
 
 void GcpUsingChromeTest::TearDown() {
+  if (!ShouldRunTestOnThisOS())
+    return;
+
   EXPECT_TRUE(gaia_server_.ShutdownAndWaitUntilComplete());
   EXPECT_TRUE(google_apis_server_.ShutdownAndWaitUntilComplete());
   EXPECT_TRUE(proxy_server_.Stop());
