@@ -59,7 +59,7 @@ class DeviceCountMetricsProviderTest : public testing::Test {
   void TestProvider(int expected_device_count) {
     base::HistogramTester histogram_tester;
     metrics_provider_.ProvideCurrentSessionData(nullptr);
-    histogram_tester.ExpectUniqueSample("Sync.DeviceCount",
+    histogram_tester.ExpectUniqueSample("Sync.DeviceCount2",
                                         expected_device_count, 1);
   }
 
