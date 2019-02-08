@@ -292,6 +292,9 @@ TEST_P(UrlRequestTest, InitChecks) {
 
   request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParams_http_method_set(request_params, "HEAD");
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_IDLE);
   // Check header validation
   Cronet_HttpHeaderPtr http_header = Cronet_HttpHeader_Create();
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
@@ -303,6 +306,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
 
   request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_LOWEST);
   Cronet_HttpHeader_name_set(http_header, "bad:name");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(
@@ -313,6 +319,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
 
   request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_LOW);
   Cronet_HttpHeader_value_set(http_header, "header value");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(
@@ -323,6 +332,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
 
   request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_HIGHEST);
   Cronet_HttpHeader_name_set(http_header, "header-name");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(Cronet_RESULT_SUCCESS, Cronet_UrlRequest_InitWithParams(
