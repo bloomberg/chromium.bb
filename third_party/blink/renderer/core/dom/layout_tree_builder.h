@@ -161,9 +161,9 @@ class CORE_EXPORT ReattachLegacyLayoutObjectList final {
  private:
   Member<Document> document_;
 
-  // A list of block formatting context or layout object associated to
-  // document element.
-  Vector<const LayoutObject*> blocks_;
+  // A list of elements establishing a block formatting context which need to
+  // be re-attached to use legacy fallback.
+  HeapVector<Member<Element>> reattach_elements_;
 
   enum class State {
     kInvalid,
