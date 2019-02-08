@@ -228,6 +228,12 @@
       <structure name="IDR_NUX_NTP_BACKGROUND_JS"
                  file="ntp_background\nux_ntp_background.js"
                  type="chrome_html" />
+      <structure name="IDR_NUX_NTP_BACKGROUND_PROXY_HTML"
+                 file="ntp_background\ntp_background_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_NUX_NTP_BACKGROUND_PROXY_JS"
+                 file="ntp_background\ntp_background_proxy.js"
+                 type="chrome_html" />
     </structures>
   </release>
 </grit>
