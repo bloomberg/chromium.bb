@@ -427,7 +427,7 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 shared_memory_handle ";
-  arguments += base::UintToString16(
+  arguments += base::NumberToString16(
       base::win::HandleToUint32(read_only_view.handle().GetHandle()));
 
   // Launch the app.
