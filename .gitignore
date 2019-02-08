@@ -176,6 +176,7 @@ vs-chromium-project.txt
 /components/test/data/js_dialogs/render_tests/*.png
 /components/test/data/payments/render_tests/*.png
 /components/test/data/permission_dialogs/render_tests/*.png
+/components/test/data/vr_browser_ui/render_tests/*.png
 /components/suggestions.xml
 /components/variations.xml
 /components/zucchini/testdata/*.exe
