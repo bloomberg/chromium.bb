@@ -2052,14 +2052,9 @@ LayoutRect LayoutText::LinesBoundingBox() const {
 LayoutRect LayoutText::VisualOverflowRect() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     LayoutRect rect;
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    for (const NGPaintFragment* fragment : fragments) {
-      LayoutRect child_rect = fragment->VisualRect();
-      child_rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
-      rect.Unite(child_rect);
-    }
-    ContainingBlock()->FlipForWritingMode(rect);
-    return rect;
+    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &rect))
+      return rect;
+    NOTREACHED();
   }
 
   if (!FirstTextBox())
@@ -2107,12 +2102,15 @@ LayoutRect LayoutText::VisualOverflowRect() const {
 }
 
 LayoutRect LayoutText::LocalVisualRectIgnoringVisibility() const {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    LayoutRect visual_rect;
-    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &visual_rect))
-      return visual_rect;
+  if (IsInLayoutNGInlineFormattingContext()) {
+    LayoutRect rect;
+    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &rect)) {
+      if (!IsSelected())
+        return rect;
+      return UnionRect(rect, LocalSelectionRect());
+    }
+    NOTREACHED();
   }
-
   return UnionRect(VisualOverflowRect(), LocalSelectionRect());
 }
 
