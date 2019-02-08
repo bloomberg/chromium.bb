@@ -986,7 +986,10 @@ Polymer({
    * @return {!chrome.languageSettingsPrivate.Language|undefined}
    */
   getLanguage: function(languageCode) {
-    return this.supportedLanguageMap_.get(languageCode);
+    // If a languageCode is not found, try language without location.
+    return this.supportedLanguageMap_.get(languageCode) ||
+        this.supportedLanguageMap_.get(
+            this.getLanguageCodeWithoutRegion(languageCode));
   },
 
   /**
