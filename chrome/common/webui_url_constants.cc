@@ -266,6 +266,7 @@ const char kChromeUISandboxHost[] = "sandbox";
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 const char kChromeUIBrowserSwitchHost[] = "browser-switch";
+const char kChromeUIBrowserSwitchURL[] = "chrome://browser-switch/";
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
