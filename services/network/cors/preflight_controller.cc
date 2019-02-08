@@ -125,8 +125,9 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     base::Optional<CorsErrorStatus>* detected_error_status) {
   DCHECK(detected_error_status);
 
+  const int response_code = head.headers ? head.headers->response_code() : 0;
   *detected_error_status = CheckPreflightAccess(
-      final_url, head.headers->response_code(),
+      final_url, response_code,
       GetHeaderString(head.headers, header_names::kAccessControlAllowOrigin),
       GetHeaderString(head.headers,
                       header_names::kAccessControlAllowCredentials),
@@ -136,7 +137,7 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     return nullptr;
 
   base::Optional<mojom::CorsError> error;
-  error = CheckPreflight(head.headers->response_code());
+  error = CheckPreflight(response_code);
   if (error) {
     *detected_error_status = CorsErrorStatus(*error);
     return nullptr;
@@ -375,6 +376,18 @@ PreflightController::CreatePreflightRequestForTesting(
     const ResourceRequest& request,
     bool tainted) {
   return CreatePreflightRequest(request, tainted);
+}
+
+// static
+std::unique_ptr<PreflightResult>
+PreflightController::CreatePreflightResultForTesting(
+    const GURL& final_url,
+    const ResourceResponseHead& head,
+    const ResourceRequest& original_request,
+    bool tainted,
+    base::Optional<CorsErrorStatus>* detected_error_status) {
+  return CreatePreflightResult(final_url, head, original_request, tainted,
+                               detected_error_status);
 }
 
 PreflightController::PreflightController() = default;

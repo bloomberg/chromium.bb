@@ -43,6 +43,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(
       const ResourceRequest& request,
       bool tainted = false);
+  // Creates a PreflightResult for a specified response parameters for testing.
+  static std::unique_ptr<PreflightResult> CreatePreflightResultForTesting(
+      const GURL& final_url,
+      const ResourceResponseHead& head,
+      const ResourceRequest& original_request,
+      bool tainted,
+      base::Optional<CorsErrorStatus>* detected_error_status);
 
   PreflightController();
   ~PreflightController();
