@@ -37,7 +37,6 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <drm.h>
 
 #if defined(__cplusplus)
@@ -734,7 +733,7 @@ extern void drmMsg(const char *format, ...) DRM_PRINTFLIKE(1, 2);
 
 extern int drmSetMaster(int fd);
 extern int drmDropMaster(int fd);
-extern bool drmIsMaster(int fd);
+extern int drmIsMaster(int fd);
 
 #define DRM_EVENT_CONTEXT_VERSION 4
 

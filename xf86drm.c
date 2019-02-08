@@ -2743,7 +2743,7 @@ drm_public int drmDropMaster(int fd)
         return drmIoctl(fd, DRM_IOCTL_DROP_MASTER, NULL);
 }
 
-drm_public bool drmIsMaster(int fd)
+drm_public int drmIsMaster(int fd)
 {
         /* Detect master by attempting something that requires master.
          *
