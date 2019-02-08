@@ -220,6 +220,9 @@ class AutotestPrivateGetPlayStoreStateFunction
   ResponseAction Run() override;
 };
 
+// Deprecated: use AutotestPrivateSetWhitelistedPrefFunction instead.
+// TODO(meilinw): remove this deprecated API after updating any existing
+// autotests (b/123957540).
 class AutotestPrivateSetPlayStoreEnabledFunction
     : public UIThreadExtensionFunction {
  public:
@@ -446,6 +449,7 @@ class AutotestPrivateSetAssistantEnabledFunction
   base::OneShotTimer timeout_timer_;
 };
 
+// Send text query to Assistant and return response.
 class AutotestPrivateSendAssistantTextQueryFunction
     : public UIThreadExtensionFunction,
       public chromeos::assistant::mojom::AssistantInteractionSubscriber {
@@ -492,6 +496,18 @@ class AutotestPrivateSendAssistantTextQueryFunction
       assistant_interaction_subscriber_binding_;
   base::OneShotTimer timeout_timer_;
   std::unique_ptr<base::DictionaryValue> result_;
+};
+
+// Set user pref value in the pref tree.
+class AutotestPrivateSetWhitelistedPrefFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setWhitelistedPref",
+                             AUTOTESTPRIVATE_SETWHITELISTEDPREF)
+
+ private:
+  ~AutotestPrivateSetWhitelistedPrefFunction() override;
+  ResponseAction Run() override;
 };
 
 // Enable/disable a Crostini app's "scaled" property.

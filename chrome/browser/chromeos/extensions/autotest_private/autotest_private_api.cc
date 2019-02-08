@@ -167,6 +167,36 @@ std::string GetPrinterType(chromeos::CupsPrintersManager::PrinterClass type) {
   }
 }
 
+// Helper function to set whitelisted user pref based on |pref_name| with any
+// specific pref validations. Returns error messages if any.
+std::string SetWhitelistedPref(Profile* profile,
+                               const std::string& pref_name,
+                               const base::Value& value) {
+  if (pref_name == arc::prefs::kArcLocationServiceEnabled) {
+    DCHECK(value.is_bool());
+
+    if (!arc::IsArcAllowedForProfile(profile))
+      return "ARC is not available for the current user";
+
+    if (!arc::SetArcPlayStoreEnabledForProfile(profile, value.GetBool()))
+      return "ARC enabled state cannot be changed for the current user";
+  } else if (pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
+    DCHECK(value.is_bool());
+
+    if (arc::IsAssistantAllowedForProfile(profile) !=
+        ash::mojom::AssistantAllowedState::ALLOWED) {
+      return "Assistant is not available for the current user";
+    }
+  } else {
+    return "The pref " + pref_name + "is not whitelisted.";
+  }
+
+  // Set value for the specified user pref after validation.
+  profile->GetPrefs()->Set(pref_name, value);
+
+  return std::string();
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -596,17 +626,14 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetPlayStoreEnabledFunction " << params->enabled;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (arc::IsArcAllowedForProfile(profile)) {
-    if (!arc::SetArcPlayStoreEnabledForProfile(profile, params->enabled)) {
-      return RespondNow(
-          Error("ARC enabled state cannot be changed for the current user"));
-    }
-    profile->GetPrefs()->SetBoolean(arc::prefs::kArcLocationServiceEnabled,
-                                    true);
-    return RespondNow(NoArguments());
-  } else {
-    return RespondNow(Error("ARC is not available for the current user"));
-  }
+  const std::string& err_msg =
+      SetWhitelistedPref(profile, arc::prefs::kArcLocationServiceEnabled,
+                         base::Value(params->enabled));
+
+  if (!err_msg.empty())
+    return RespondNow(Error(err_msg));
+
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1210,6 +1237,7 @@ void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSendAssistantTextQueryFunction
 ///////////////////////////////////////////////////////////////////////////////
+
 AutotestPrivateSendAssistantTextQueryFunction::
     AutotestPrivateSendAssistantTextQueryFunction()
     : assistant_interaction_subscriber_binding_(this),
@@ -1290,6 +1318,33 @@ void AutotestPrivateSendAssistantTextQueryFunction::OnInteractionFinished(
 
 void AutotestPrivateSendAssistantTextQueryFunction::Timeout() {
   Respond(Error("Assistant response timeout."));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetWhitelistedPrefFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetWhitelistedPrefFunction::
+    ~AutotestPrivateSetWhitelistedPrefFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetWhitelistedPrefFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetWhitelistedPrefFunction";
+
+  std::unique_ptr<api::autotest_private::SetWhitelistedPref::Params> params(
+      api::autotest_private::SetWhitelistedPref::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const std::string& pref_name = params->pref_name;
+  const base::Value& value = *(params->value);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const std::string& err_msg = SetWhitelistedPref(profile, pref_name, value);
+
+  if (!err_msg.empty())
+    return RespondNow(Error(err_msg));
+
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

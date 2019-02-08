@@ -251,6 +251,7 @@ namespace autotestPrivate {
     // Enable/disable the Play Store.
     // |enabled|: if set, enable the Play Store.
     // |callback|: Called when the operation has completed.
+    // [deprecated="Use setWhitelistedPref('kArcLocationServiceEnabled')"]
     static void setPlayStoreEnabled(boolean enabled, VoidCallback callback);
 
     // Get details about a histogram displayed at chrome://histogram.
@@ -291,6 +292,10 @@ namespace autotestPrivate {
     // |callback|: Called when response has been received.
     static void sendAssistantTextQuery(DOMString query, long timeout_ms,
                                        AssistantQueryResponseCallback callback);
+
+    // Set value for the specified user pref in the pref tree.
+    static void setWhitelistedPref(DOMString pref_name, any value,
+                                   VoidCallback callback);
 
     // Enable/disable a Crostini app's "scaled" property.
     // |appId|: The Crostini application ID.

@@ -235,6 +235,13 @@ var defaultTests = [
         chrome.test.callbackFail(
           'Assistant is not available for the current user'));
   },
+  function setWhitelistedPref() {
+    chrome.autotestPrivate.setWhitelistedPref(
+        'settings.voice_interaction.hotword.enabled' /* pref_name */,
+        true /* value */,
+        chrome.test.callbackFail(
+          'Assistant is not available for the current user'));
+  },
   // This test verifies that ARC is not provisioned by default.
   function isArcProvisioned() {
     chrome.autotestPrivate.isArcProvisioned(
