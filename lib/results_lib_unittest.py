@@ -245,7 +245,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def testSuccessTestWithDB(self):
     """Test BuildSucceededSoFar with DB instance"""
     build_id = self.db.InsertBuild('builder_name', 'build_number',
-                                   'build_config', 'bot_hostname')
+                                   'build_config', 'bot_hostname',
+                                   buildbucket_id=1234)
 
     results_lib.Results.Record('stage1', results_lib.Results.SUCCESS)
     results_lib.Results.Record('stage2', results_lib.Results.SKIPPED)
@@ -259,19 +260,23 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self.db.InsertBuildStage(
         build_id, 'stage4', status=constants.BUILDER_STATUS_PLANNED)
 
-    self.assertTrue(results_lib.Results.BuildSucceededSoFar(self.db, build_id))
+    self.buildstore = FakeBuildStore(self.db)
+    self.assertTrue(results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                            1234))
 
     self.db.InsertBuildStage(
         build_id, 'stage5', status=constants.BUILDER_STATUS_INFLIGHT)
 
     self.assertTrue(
-        results_lib.Results.BuildSucceededSoFar(self.db, build_id, 'stage5'))
+        results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                1234, 'stage5'))
 
     self.db.InsertBuildStage(
         build_id, 'stage6', status=constants.BUILDER_STATUS_FAILED)
 
     self.assertFalse(
-        results_lib.Results.BuildSucceededSoFar(self.db, build_id, 'stage5'))
+        results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                1234, 'stage5'))
 
   def _TestParallelStages(self, stage_objs):
     builder = simple_builders.SimpleBuilder(self._run, self.buildstore)

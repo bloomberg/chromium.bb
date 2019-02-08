@@ -936,7 +936,9 @@ class ReportStage(generic_stages.BuilderStage,
     """
     build_identifier, db = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
-    if results_lib.Results.BuildSucceededSoFar(db, build_id, self.name):
+    buildbucket_id = build_identifier.buildbucket_id
+    if results_lib.Results.BuildSucceededSoFar(self.buildstore, buildbucket_id,
+                                               self.name):
       final_status = constants.BUILDER_STATUS_PASSED
     else:
       final_status = constants.BUILDER_STATUS_FAILED

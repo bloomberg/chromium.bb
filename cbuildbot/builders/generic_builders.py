@@ -346,9 +346,10 @@ class Builder(object):
         raise
 
       exception_thrown = True
-      build_identifier, db = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
-      if results_lib.Results.BuildSucceededSoFar(db, build_id):
+      build_identifier, _ = self._run.GetCIDBHandle()
+      buildbucket_id = build_identifier.buildbucket_id
+      if results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                 buildbucket_id):
         # If the build is marked as successful, but threw exceptions, that's a
         # problem. Print the traceback for debugging.
         if isinstance(ex, failures_lib.CompoundFailure):
@@ -367,9 +368,10 @@ class Builder(object):
         results_lib.WriteCheckpoint(self._run.options.buildroot)
         completion_instance = self.GetCompletionInstance()
         self._RunStage(report_stages.ReportStage, completion_instance)
-        build_identifier, db = self._run.GetCIDBHandle()
-        build_id = build_identifier.cidb_id
-        success = results_lib.Results.BuildSucceededSoFar(db, build_id)
+        build_identifier, _ = self._run.GetCIDBHandle()
+        buildbucket_id = build_identifier.buildbucket_id
+        success = results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                          buildbucket_id)
         if exception_thrown and success:
           success = False
           logging.PrintBuildbotStepWarnings()
@@ -430,10 +432,10 @@ class PreCqBuilder(Builder):
     try:
       self.RunTestStages()
     finally:
-      build_identifier, db = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
+      build_identifier, _ = self._run.GetCIDBHandle()
+      buildbucket_id = build_identifier.buildbucket_id
       was_build_successful = results_lib.Results.BuildSucceededSoFar(
-          db, build_id)
+          self.buildstore, buildbucket_id)
 
       self.completion_instance = self._GetStageInstance(
           completion_stages.PreCQCompletionStage, self.sync_stage,
