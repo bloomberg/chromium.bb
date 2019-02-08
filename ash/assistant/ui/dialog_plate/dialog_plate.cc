@@ -327,7 +327,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT);
   textfield_->set_placeholder_text(textfield_hint);
   textfield_->SetAccessibleName(textfield_hint);
-  textfield_->set_placeholder_text_color(kTextColorHint);
+  textfield_->set_placeholder_text_color(kTextColorSecondary);
   textfield_->SetTextColor(kTextColorPrimary);
   keyboard_layout_container_->AddChildView(textfield_);
 
