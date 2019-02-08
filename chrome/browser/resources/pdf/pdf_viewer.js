@@ -1429,7 +1429,7 @@ class PluginController extends ContentController {
         this.viewer_.handleBeep();
         break;
       case 'documentDimensions':
-        viewer.setDocumentDimensions(message.data);
+        this.viewer_.setDocumentDimensions(message.data);
         break;
       case 'email':
         const href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
