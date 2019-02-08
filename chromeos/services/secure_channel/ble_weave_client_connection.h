@@ -111,7 +111,8 @@ class BluetoothLowEnergyWeaveClientConnection
  protected:
   enum BleWeaveConnectionResult {
     BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY = 0,
-    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_SETTING_CONNECTION_LATENCY = 1,
+    DEPRECATED_BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_SETTING_CONNECTION_LATENCY =
+        1,
     BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_CREATING_GATT_CONNECTION = 2,
     BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_STARTING_NOTIFY_SESSION = 3,
     BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_FINDING_GATT_CHARACTERISTICS = 4,
@@ -343,7 +344,8 @@ class BluetoothLowEnergyWeaveClientConnection
   void CreateGattConnection();
   void OnGattConnectionCreated(
       std::unique_ptr<device::BluetoothGattConnection> gatt_connection);
-  void OnSetConnectionLatencyError();
+  void OnSetConnectionLatencySuccess();
+  void OnSetConnectionLatencyErrorOrTimeout();
   void OnCreateGattConnectionError(
       device::BluetoothDevice::ConnectErrorCode error_code);
   void OnCharacteristicsFound(const RemoteAttribute& service,
