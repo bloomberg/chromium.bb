@@ -341,7 +341,7 @@ TEST(PropertyTestStatic, ReadWriteStringMap) {
   for (unsigned i = 0; i < base::size(items); ++i) {
     variant_array_writer.OpenDictEntry(&struct_entry_writer);
     struct_entry_writer.AppendString(items[i]);
-    struct_entry_writer.AppendString(base::UintToString(i + 1));
+    struct_entry_writer.AppendString(base::NumberToString(i + 1));
     variant_array_writer.CloseContainer(&struct_entry_writer);
   }
   variant_writer.CloseContainer(&variant_array_writer);
