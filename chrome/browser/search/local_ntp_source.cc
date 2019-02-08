@@ -1306,7 +1306,9 @@ void LocalNtpSource::MaybeServeSearchSuggestions(
   base::Optional<SearchSuggestData> data =
       search_suggest_service_->search_suggest_data();
 
-  search_suggest_service_->SuggestionsDisplayed();
+  if (data.has_value()) {
+    search_suggest_service_->SuggestionsDisplayed();
+  }
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(data), &js);
