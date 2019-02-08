@@ -982,10 +982,7 @@ target(link_target_type, "renderer") {
   }
 
   if (is_chromecast) {
-    defines += [
-      "IS_CHROMECAST",
-      "MEDIA_EVENT_LOG_UTILITY=LOG(INFO)",
-    ]
+    defines += [ "IS_CHROMECAST" ]
   }
 }
 

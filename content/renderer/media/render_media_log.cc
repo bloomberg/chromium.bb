@@ -16,10 +16,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
-
-#ifndef MEDIA_EVENT_LOG_UTILITY
-#define MEDIA_EVENT_LOG_UTILITY DVLOG(1)
-#endif
+#include "media/base/logging_override_if_enabled.h"
 
 namespace {
 
@@ -30,8 +27,8 @@ void Log(media::MediaLogEvent* event) {
     LOG(ERROR) << "MediaEvent: "
                << media::MediaLog::MediaEventToLogString(*event);
   } else if (event->type != media::MediaLogEvent::PROPERTY_CHANGE) {
-    MEDIA_EVENT_LOG_UTILITY << "MediaEvent: "
-                            << media::MediaLog::MediaEventToLogString(*event);
+    DVLOG(1) << "MediaEvent: "
+             << media::MediaLog::MediaEventToLogString(*event);
   }
 }
 
