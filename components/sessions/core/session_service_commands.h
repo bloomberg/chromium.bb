@@ -54,11 +54,9 @@ CreateSessionStorageAssociatedCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetActiveWindowCommand(
     const SessionID& window_id);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
-CreateTabNavigationPathPrunedFromBackCommand(const SessionID& tab_id,
-                                             int count);
-SESSIONS_EXPORT std::unique_ptr<SessionCommand>
-CreateTabNavigationPathPrunedFromFrontCommand(const SessionID& tab_id,
-                                              int count);
+CreateTabNavigationPathPrunedCommand(const SessionID& tab_id,
+                                     int index,
+                                     int count);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateUpdateTabNavigationCommand(
     const SessionID& tab_id,

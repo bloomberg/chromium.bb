@@ -76,9 +76,8 @@ struct EntryChangedDetails {
 
 // Details sent for NOTIFY_NAV_LIST_PRUNED.
 struct PrunedDetails {
-  // If true, count items were removed from the front of the list, otherwise
-  // count items were removed from the back of the list.
-  bool from_front;
+  // Index starting which |count| entries were removed.
+  int index;
 
   // Number of items removed.
   int count;

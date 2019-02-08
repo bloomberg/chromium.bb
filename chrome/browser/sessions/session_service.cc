@@ -382,32 +382,41 @@ void SessionService::SetWindowAppName(
   ScheduleCommand(sessions::CreateSetWindowAppNameCommand(window_id, app_name));
 }
 
-void SessionService::TabNavigationPathPrunedFromBack(const SessionID& window_id,
-                                                     const SessionID& tab_id,
-                                                     int count) {
+void SessionService::TabNavigationPathPruned(const SessionID& window_id,
+                                             const SessionID& tab_id,
+                                             int index,
+                                             int count) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  ScheduleCommand(
-      sessions::CreateTabNavigationPathPrunedFromBackCommand(tab_id, count));
-}
+  DCHECK_GE(index, 0);
+  DCHECK_GT(count, 0);
 
-void SessionService::TabNavigationPathPrunedFromFront(
-    const SessionID& window_id,
-    const SessionID& tab_id,
-    int count) {
-  if (!ShouldTrackChangesToWindow(window_id))
-    return;
-
-  // Update the range of indices.
+  // Update the range of available indices.
   if (tab_to_available_range_.find(tab_id) != tab_to_available_range_.end()) {
     std::pair<int, int>& range = tab_to_available_range_[tab_id];
-    range.first = std::max(0, range.first - count);
-    range.second = std::max(0, range.second - count);
+
+    // if both range.first and range.second are also deleted.
+    if (range.second >= index && range.second < index + count &&
+        range.first >= index && range.first < index + count) {
+      range.first = range.second = 0;
+    } else {
+      // Update range.first
+      if (range.first >= index + count)
+        range.first = range.first - count;
+      else if (range.first >= index && range.first < index + count)
+        range.first = index;
+
+      // Update range.second
+      if (range.second >= index + count)
+        range.second = std::max(range.first, range.second - count);
+      else if (range.second >= index && range.second < index + count)
+        range.second = std::max(range.first, index - 1);
+    }
   }
 
-  ScheduleCommand(
-      sessions::CreateTabNavigationPathPrunedFromFrontCommand(tab_id, count));
+  return ScheduleCommand(
+      sessions::CreateTabNavigationPathPrunedCommand(tab_id, index, count));
 }
 
 void SessionService::TabNavigationPathEntriesDeleted(const SessionID& window_id,
@@ -898,4 +907,19 @@ void SessionService::MaybeDeleteSessionOnlyData() {
 
 sessions::BaseSessionService* SessionService::GetBaseSessionServiceForTest() {
   return base_session_service_.get();
+}
+
+void SessionService::SetAvailableRangeForTest(const SessionID& tab_id,
+                                              const std::pair<int, int> range) {
+  tab_to_available_range_[tab_id] = range;
+}
+
+bool SessionService::GetAvailableRangeForTest(const SessionID& tab_id,
+                                              std::pair<int, int>& range) {
+  auto i = tab_to_available_range_.find(tab_id);
+  if (i == tab_to_available_range_.end())
+    return false;
+
+  range = i->second;
+  return true;
 }

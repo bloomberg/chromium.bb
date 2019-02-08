@@ -272,7 +272,17 @@ TEST_F(SessionServiceTest, Pruning) {
     nav->set_index(i);
     UpdateNavigation(window_id, tab_id, *nav, true);
   }
-  service()->TabNavigationPathPrunedFromBack(window_id, tab_id, 3);
+
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 5));
+
+  service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
+                                     3 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(2, available_range.second);
 
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
   ReadWindows(&windows, NULL);
@@ -624,8 +634,17 @@ TEST_F(SessionServiceTest, PruneFromFront) {
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
 
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
   // Prune the first two navigations from the front.
-  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 2);
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 0 /* index */,
+                                             2 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(2, available_range.second);
 
   // Read back in.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
@@ -651,6 +670,128 @@ TEST_F(SessionServiceTest, PruneFromFront) {
               tab->navigations[2].virtual_url());
 }
 
+// Tests pruning from the middle.
+TEST_F(SessionServiceTest, PruneFromMiddle) {
+  const std::string base_url("http://google.com/");
+  SessionID tab_id = SessionID::NewUnique();
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+
+  // Add 5 navigations, with the 4th selected.
+  for (int i = 0; i < 5; ++i) {
+    SerializedNavigationEntry nav =
+        SerializedNavigationEntryTestHelper::CreateNavigation(
+            base_url + base::IntToString(i), "a");
+    nav.set_index(i);
+    UpdateNavigation(window_id, tab_id, nav, (i == 3));
+  }
+
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
+  // Prune two navigations starting from second.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 1 /* index */,
+                                             2 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(2, available_range.second);
+
+  // Read back in.
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(0, windows[0]->selected_tab_index);
+  ASSERT_EQ(window_id, windows[0]->window_id);
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+
+  // There shouldn't be an app id.
+  EXPECT_TRUE(windows[0]->tabs[0]->extension_app_id.empty());
+
+  // We should be left with three navigations, the 2nd selected.
+  sessions::SessionTab* tab = windows[0]->tabs[0].get();
+  ASSERT_EQ(1, tab->current_navigation_index);
+  EXPECT_EQ(3U, tab->navigations.size());
+  EXPECT_EQ(GURL(base_url + base::IntToString(0)),
+            tab->navigations[0].virtual_url());
+  EXPECT_EQ(GURL(base_url + base::IntToString(3)),
+            tab->navigations[1].virtual_url());
+  EXPECT_EQ(GURL(base_url + base::IntToString(4)),
+            tab->navigations[2].virtual_url());
+}
+
+// Tests possible computations of available ranges.
+TEST_F(SessionServiceTest, AvailableRanges) {
+  const std::string base_url("http://google.com/");
+  SessionID tab_id = SessionID::NewUnique();
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+
+  // Set available range to a subset for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 1. Test when range starts after the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 1 /* index */,
+                                             2 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(2, available_range.first);
+  EXPECT_EQ(5, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 2. Test when range is before the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 8 /* index */,
+                                             2 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(4, available_range.first);
+  EXPECT_EQ(7, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 3. Test when range is within the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
+                                             5 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(0, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 4. Test when only range.first is within the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
+                                             3 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(3, available_range.first);
+  EXPECT_EQ(4, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 4. Test when only range.second is within the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 5 /* index */,
+                                             3 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(4, available_range.first);
+  EXPECT_EQ(4, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 4. Test when only range contains all the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 5 /* index */,
+                                             2 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(4, available_range.first);
+  EXPECT_EQ(5, available_range.second);
+}
+
 // Prunes from front so that we have no entries.
 TEST_F(SessionServiceTest, PruneToEmpty) {
   const std::string base_url("http://google.com/");
@@ -667,8 +808,17 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
 
-  // Prune the first two navigations from the front.
-  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 5);
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
+  // Prune all navigations from the front.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 0 /* index */,
+                                             5 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(0, available_range.second);
 
   // Read back in.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
@@ -894,8 +1044,17 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
     UpdateNavigation(window_id, tab_id, nav, true);
   }
 
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
   // Prune all those navigations.
-  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 5);
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 0 /* index */,
+                                             5 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(0, available_range.second);
 
   // Add another navigation to replace the last one.
   SerializedNavigationEntry nav =

@@ -85,14 +85,8 @@ void SessionTabHelper::NavigationListPruned(
   if (!session_service)
     return;
 
-  if (pruned_details.from_front) {
-    session_service->TabNavigationPathPrunedFromFront(window_id(), session_id(),
-                                                      pruned_details.count);
-  } else {
-    session_service->TabNavigationPathPrunedFromBack(
-        window_id(), session_id(),
-        web_contents()->GetController().GetEntryCount());
-  }
+  session_service->TabNavigationPathPruned(
+      window_id(), session_id(), pruned_details.index, pruned_details.count);
 }
 
 void SessionTabHelper::NavigationEntriesDeleted() {
