@@ -837,7 +837,7 @@ need to be translated for each locale.-->
         Remove this suggestion?
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing zero state suggestion">
-        Hiding this suggestion will not show it again from your account across all your devices.
+        Removing this suggestion will hide it from your account across all your devices.
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
         Remove

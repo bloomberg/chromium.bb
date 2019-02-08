@@ -8312,10 +8312,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <ph name="ACTION_NAME">$1<ex>Compose</ex></ph> with <ph name="APP_NAME">$2<ex>GMail</ex></ph>.
         </message>
         <message name="IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME" desc="The spoken feedback for removing suggestion button">
-          Remove this suggestion
+          Remove the suggestion <ph name="SUGGESTION_NAME">$1<ex>Harry Potter</ex></ph>
         </message>
         <message name="IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME" desc="The spoken feedback for appending suggestion button">
-           Append this suggestion to search box
+           Append the suggestion <ph name="SUGGESTION_NAME">$1<ex>Harry Potter</ex></ph> to search box
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
