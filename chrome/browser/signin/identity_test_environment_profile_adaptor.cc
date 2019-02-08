@@ -8,7 +8,6 @@
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_test_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -51,6 +50,15 @@ std::unique_ptr<KeyedService> BuildFakeAccountFetcherService(
       AccountTrackerServiceFactory::GetForProfile(profile),
       std::make_unique<TestImageDecoder>());
   return account_fetcher_service;
+}
+
+// Testing factory that creates a FakeProfileOAuth2TokenService.
+std::unique_ptr<KeyedService> BuildFakeProfileOAuth2TokenService(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  std::unique_ptr<FakeProfileOAuth2TokenService> service(
+      new FakeProfileOAuth2TokenService(profile->GetPrefs()));
+  return std::move(service);
 }
 }  // namespace
 
