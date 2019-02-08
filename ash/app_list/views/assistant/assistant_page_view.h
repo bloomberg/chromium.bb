@@ -32,6 +32,10 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
   gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
 
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
   // AppListPage:
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   gfx::Rect GetSearchBoxBounds() const override;

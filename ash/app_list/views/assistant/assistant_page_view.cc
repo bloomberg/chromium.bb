@@ -60,6 +60,32 @@ void AssistantPageView::RequestFocus() {
   assistant_main_view_->RequestFocus();
 }
 
+void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      // Prevents closing the AppListView when a click event is not handled.
+      event->StopPropagation();
+      break;
+    default:
+      break;
+  }
+}
+
+void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_DOUBLE_TAP:
+    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::ET_GESTURE_LONG_TAP:
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+      // Prevents closing the AppListView when a tap event is not handled.
+      event->StopPropagation();
+      break;
+    default:
+      break;
+  }
+}
+
 gfx::Rect AssistantPageView::GetPageBoundsForState(
     ash::AppListState state) const {
   gfx::Rect onscreen_bounds;
