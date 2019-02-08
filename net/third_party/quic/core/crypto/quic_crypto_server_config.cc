@@ -1015,10 +1015,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
   auto out_diversification_nonce = QuicMakeUnique<DiversificationNonce>();
 
   if (!info.sni.empty()) {
-    std::unique_ptr<char[]> sni_tmp(new char[info.sni.length() + 1]);
-    memcpy(sni_tmp.get(), info.sni.data(), info.sni.length());
-    sni_tmp[info.sni.length()] = 0;
-    params->sni = QuicHostnameUtils::NormalizeHostname(sni_tmp.get());
+    params->sni = QuicHostnameUtils::NormalizeHostname(info.sni);
   }
 
   QuicString hkdf_suffix;
