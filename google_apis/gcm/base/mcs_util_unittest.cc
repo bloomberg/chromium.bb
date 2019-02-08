@@ -57,7 +57,7 @@ TEST(MCSUtilTest, PersistentIds) {
     std::unique_ptr<google::protobuf::MessageLite> protobuf =
         BuildProtobufFromTag(tag);
     ASSERT_TRUE(protobuf.get());
-    SetPersistentId(base::IntToString(tag), protobuf.get());
+    SetPersistentId(base::NumberToString(tag), protobuf.get());
     int get_val = 0;
     base::StringToInt(GetPersistentId(*protobuf), &get_val);
     ASSERT_EQ(tag, get_val);

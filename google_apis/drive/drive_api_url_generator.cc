@@ -170,8 +170,8 @@ GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
     url = net::AppendOrReplaceQueryParameter(url, kTeamDriveId, team_drive_id);
   // maxResults is 100 by default.
   if (max_results != 100) {
-    url = net::AppendOrReplaceQueryParameter(
-        url, "maxResults", base::IntToString(max_results));
+    url = net::AppendOrReplaceQueryParameter(url, "maxResults",
+                                             base::NumberToString(max_results));
   }
 
   if (!page_token.empty())
@@ -217,8 +217,8 @@ GURL DriveApiUrlGenerator::GetChangesListUrl(
 
   // maxResults is "100" by default.
   if (max_results != 100) {
-    url = net::AppendOrReplaceQueryParameter(
-        url, "maxResults", base::IntToString(max_results));
+    url = net::AppendOrReplaceQueryParameter(url, "maxResults",
+                                             base::NumberToString(max_results));
   }
 
   if (!page_token.empty())
@@ -226,7 +226,7 @@ GURL DriveApiUrlGenerator::GetChangesListUrl(
 
   if (start_change_id > 0)
     url = net::AppendOrReplaceQueryParameter(
-        url, "startChangeId", base::Int64ToString(start_change_id));
+        url, "startChangeId", base::NumberToString(start_change_id));
 
   return url;
 }
@@ -345,7 +345,7 @@ GURL DriveApiUrlGenerator::GetTeamDriveListUrl(
   // maxResults is 10 by default.
   if (max_results != 10) {
     url = net::AppendOrReplaceQueryParameter(url, "maxResults",
-                                             base::IntToString(max_results));
+                                             base::NumberToString(max_results));
   }
   if (!page_token.empty())
     url = net::AppendOrReplaceQueryParameter(url, "pageToken", page_token);

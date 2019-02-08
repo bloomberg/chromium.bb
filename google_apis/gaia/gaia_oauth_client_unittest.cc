@@ -126,12 +126,12 @@ const int kTestExpiresIn = 3920;
 
 const std::string kDummyGetTokensResult =
     "{\"access_token\":\"" + kTestAccessToken + "\","
-    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + ","
+    "\"expires_in\":" + base::NumberToString(kTestExpiresIn) + ","
     "\"refresh_token\":\"" + kTestRefreshToken + "\"}";
 
 const std::string kDummyRefreshTokenResult =
     "{\"access_token\":\"" + kTestAccessToken + "\","
-    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+    "\"expires_in\":" + base::NumberToString(kTestExpiresIn) + "}";
 
 const std::string kDummyUserInfoResult =
     "{\"email\":\"" + kTestUserEmail + "\"}";
@@ -152,14 +152,14 @@ const std::string kDummyFullUserInfoResult =
     "}";
 
 const std::string kDummyTokenInfoResult =
-  "{\"issued_to\": \"1234567890.apps.googleusercontent.com\","
-  "\"audience\": \"1234567890.apps.googleusercontent.com\","
-  "\"scope\": \"https://googleapis.com/oauth2/v2/tokeninfo\","
-  "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+    "{\"issued_to\": \"1234567890.apps.googleusercontent.com\","
+    "\"audience\": \"1234567890.apps.googleusercontent.com\","
+    "\"scope\": \"https://googleapis.com/oauth2/v2/tokeninfo\","
+    "\"expires_in\":" + base::NumberToString(kTestExpiresIn) + "}";
 
 const std::string kDummyTokenHandleInfoResult =
     "{\"audience\": \"1234567890.apps.googleusercontent.com\","
-    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+    "\"expires_in\":" + base::NumberToString(kTestExpiresIn) + "}";
 
 }  // namespace
 

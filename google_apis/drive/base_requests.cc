@@ -652,8 +652,8 @@ std::vector<std::string>
 InitiateUploadRequestBase::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(kUploadContentType + content_type_);
-  headers.push_back(
-      kUploadContentLength + base::Int64ToString(content_length_));
+  headers.push_back(kUploadContentLength +
+                    base::NumberToString(content_length_));
   return headers;
 }
 
@@ -816,11 +816,10 @@ ResumeUploadRequestBase::GetExtraRequestHeaders() const {
   DCHECK_GE(content_length_, 0);
 
   std::vector<std::string> headers;
-  headers.push_back(
-      std::string(kUploadContentRange) +
-      base::Int64ToString(start_position_) + "-" +
-      base::Int64ToString(end_position_ - 1) + "/" +
-      base::Int64ToString(content_length_));
+  headers.push_back(std::string(kUploadContentRange) +
+                    base::NumberToString(start_position_) + "-" +
+                    base::NumberToString(end_position_ - 1) + "/" +
+                    base::NumberToString(content_length_));
   return headers;
 }
 
@@ -859,9 +858,8 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
   DCHECK_GE(content_length_, 0);
 
   std::vector<std::string> headers;
-  headers.push_back(
-      std::string(kUploadContentRange) + "*/" +
-      base::Int64ToString(content_length_));
+  headers.push_back(std::string(kUploadContentRange) + "*/" +
+                    base::NumberToString(content_length_));
   return headers;
 }
 

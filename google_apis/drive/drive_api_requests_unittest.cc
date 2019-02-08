@@ -423,7 +423,7 @@ class DriveApiRequestsTest : public testing::Test {
       // The header is annotated only when at least one byte is received.
       if (received_bytes_ > 0) {
         response->AddCustomHeader(
-            "Range", "bytes=0-" + base::Int64ToString(received_bytes_ - 1));
+            "Range", "bytes=0-" + base::NumberToString(received_bytes_ - 1));
       }
 
       return std::move(response);

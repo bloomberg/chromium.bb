@@ -701,7 +701,7 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
       base::DictionaryValue response_dict;
       response_dict.SetString("issueAdvice", "auto");
       response_dict.SetString("expiresIn",
-                              base::IntToString(token_info->expires_in));
+                              base::NumberToString(token_info->expires_in));
       response_dict.SetString("token", token_info->token);
       response_dict.SetString("id_token", token_info->id_token);
       FormatJSONResponse(response_dict, http_response);

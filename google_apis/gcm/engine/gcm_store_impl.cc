@@ -636,7 +636,7 @@ void GCMStoreImpl::Backend::SetLastCheckinInfo(
 
   int64_t last_checkin_time_internal = time.ToInternalValue();
   write_batch.Put(MakeSlice(kLastCheckinTimeKey),
-                  MakeSlice(base::Int64ToString(last_checkin_time_internal)));
+                  MakeSlice(base::NumberToString(last_checkin_time_internal)));
 
   std::string serialized_accounts;
   for (std::set<std::string>::iterator iter = accounts.begin();
@@ -777,9 +777,8 @@ void GCMStoreImpl::Backend::SetLastTokenFetchTime(
   write_options.sync = true;
 
   const leveldb::Status s =
-      db_->Put(write_options,
-               MakeSlice(kLastTokenFetchTimeKey),
-               MakeSlice(base::Int64ToString(time.ToInternalValue())));
+      db_->Put(write_options, MakeSlice(kLastTokenFetchTimeKey),
+               MakeSlice(base::NumberToString(time.ToInternalValue())));
 
   if (!s.ok())
     LOG(ERROR) << "LevelDB setting last token fetching time: " << s.ToString();
@@ -801,7 +800,7 @@ void GCMStoreImpl::Backend::AddHeartbeatInterval(
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
-  std::string data = base::IntToString(interval_ms);
+  std::string data = base::NumberToString(interval_ms);
   std::string key = MakeHeartbeatKey(scope);
   const leveldb::Status s =
       db_->Put(write_options, MakeSlice(key), MakeSlice(data));
@@ -1000,7 +999,7 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
       return false;
     }
     DVLOG(1) << "Found outgoing message with id " << id << " of type "
-             << base::UintToString(tag);
+             << base::NumberToString(tag);
     (*outgoing_messages)[id] = std::move(message);
   }
 

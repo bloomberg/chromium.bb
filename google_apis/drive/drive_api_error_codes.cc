@@ -90,7 +90,7 @@ std::string DriveApiErrorCodeToString(DriveApiErrorCode error) {
       return "DRIVE_RESPONSE_TOO_LARGE";
   }
 
-  return "UNKNOWN_ERROR_" + base::IntToString(error);
+  return "UNKNOWN_ERROR_" + base::NumberToString(error);
 }
 
 bool IsSuccessfulDriveApiErrorCode(DriveApiErrorCode error) {
