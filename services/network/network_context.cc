@@ -549,7 +549,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  InitializeCorsOriginAccessList();
+  InitializeCorsParams();
 }
 
 // TODO(mmenke): Share URLRequestContextBulder configuration between two
@@ -578,7 +578,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  InitializeCorsOriginAccessList();
+  InitializeCorsParams();
 }
 
 NetworkContext::NetworkContext(NetworkService* network_service,
@@ -2273,7 +2273,7 @@ void NetworkContext::TrustAnchorUsed() {
 }
 #endif
 
-void NetworkContext::InitializeCorsOriginAccessList() {
+void NetworkContext::InitializeCorsParams() {
   for (const auto& pattern : params_->cors_origin_access_list) {
     url::Origin origin = url::Origin::Create(GURL(pattern->source_origin));
     cors_origin_access_list_.SetAllowListForOrigin(origin,
@@ -2281,6 +2281,8 @@ void NetworkContext::InitializeCorsOriginAccessList() {
     cors_origin_access_list_.SetBlockListForOrigin(origin,
                                                    pattern->block_patterns);
   }
+  for (const auto& key : params_->cors_exempt_header_list)
+    cors_exempt_header_list_.insert(key);
 }
 
 }  // namespace network

@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -150,6 +151,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
+
+  const std::unordered_set<std::string>& cors_exempt_header_list() const {
+    return cors_exempt_header_list_;
+  }
 
 #if defined(OS_ANDROID)
   base::android::ApplicationStatusListener* app_status_listener() const {
@@ -436,7 +441,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnSetExpectCTTestReportFailure();
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
-  void InitializeCorsOriginAccessList();
+  void InitializeCorsParams();
 
   NetworkService* const network_service_;
 
@@ -570,6 +575,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
+
+  // Manages header keys that are allowed to be used in
+  // ResourceRequest::cors_exempt_headers.
+  std::unordered_set<std::string> cors_exempt_header_list_;
 
   // Manages CORS preflight requests and its cache.
   cors::PreflightController cors_preflight_controller_;
