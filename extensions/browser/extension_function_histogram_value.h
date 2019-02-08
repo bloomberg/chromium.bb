@@ -1376,6 +1376,7 @@ enum HistogramValue {
   AUTOFILLPRIVATE_GETLOCALCREDITCARDLIST = 1313,
   AUTOFILLPRIVATE_GETSERVERCREDITCARDLIST = 1314,
   PASSWORDSPRIVATE_CHANGESAVEDPASSWORD = 1315,
+  AUTOTESTPRIVATE_SETWHITELISTEDPREF = 1316,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
