@@ -371,6 +371,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   }
 
   void DoUnmount() {
+    EXPECT_CALL(*host_delegate_, OnUnmounted(_)).Times(0);
     host_->Unmount();
     binding_.Unbind();
     bootstrap_binding_.Unbind();

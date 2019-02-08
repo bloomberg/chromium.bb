@@ -69,18 +69,12 @@ DriveFsConnection::DriveFsConnection(
       &DriveFsConnection::OnMojoConnectionError, base::Unretained(this)));
 }
 
-DriveFsConnection::~DriveFsConnection() {
-  CleanUp();
-}
+DriveFsConnection::~DriveFsConnection() = default;
 
-void DriveFsConnection::CleanUp() {
+void DriveFsConnection::OnMojoConnectionError() {
   if (on_disconnected_ && bootstrap_listener_->is_connected()) {
     std::move(on_disconnected_).Run();
   }
-}
-
-void DriveFsConnection::OnMojoConnectionError() {
-  CleanUp();
 }
 
 }  // namespace drivefs
