@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/streams/queue_with_sizes.h"
 
+#include <math.h>
+
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
