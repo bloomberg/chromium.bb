@@ -1121,7 +1121,9 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (image_dxgi && use_decode_swap_chain) {
     D3D11_TEXTURE2D_DESC texture_desc = {};
     image_dxgi->texture()->GetDesc(&texture_desc);
+
     bool is_decoder_texture = texture_desc.BindFlags & D3D11_BIND_DECODER;
+
     // Decode swap chains do not support shared resources.
     // TODO(sunnyps): Find a workaround for when the decoder moves to its own
     // thread and D3D device.  See https://crbug.com/911847
@@ -1129,7 +1131,17 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
         texture_desc.MiscFlags &
         (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
          D3D11_RESOURCE_MISC_SHARED_NTHANDLE);
-    if (is_decoder_texture && !is_shared_texture) {
+
+    // Downscaled video isn't promoted to hardware overlays.  We prefer to blit
+    // into the smaller size so that it can be promoted to a hardware overlay.
+    float swap_chain_scale_x =
+        swap_chain_size.width() * 1.0f / params.content_rect.width();
+    float swap_chain_scale_y =
+        swap_chain_size.height() * 1.0f / params.content_rect.height();
+    bool is_downscale =
+        (swap_chain_scale_x < 1.0f) || (swap_chain_scale_y < 1.0f);
+
+    if (is_decoder_texture && !is_shared_texture && !is_downscale) {
       if (PresentToDecodeSwapChain(image_dxgi, params.content_rect,
                                    swap_chain_size, needs_commit)) {
         return true;
