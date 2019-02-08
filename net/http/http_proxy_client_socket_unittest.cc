@@ -8,7 +8,6 @@
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
-#include "net/log/test_net_log.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -21,18 +20,16 @@ namespace {
 
 TEST(HttpProxyClientSocketTest, Tag) {
   StaticSocketDataProvider data;
-  TestNetLog log;
   MockTaggingStreamSocket* tagging_sock =
-      new MockTaggingStreamSocket(std::unique_ptr<StreamSocket>(
-          new MockTCPClientSocket(AddressList(), &log, &data)));
+      new MockTaggingStreamSocket(std::make_unique<MockTCPClientSocket>(
+          AddressList(), nullptr /* net_log */, &data));
 
-  std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  // |connection| takes ownership of |tagging_sock|, but keep a
-  // non-owning pointer to it.
-  connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
-  HttpProxyClientSocket socket(
-      std::move(connection), "", HostPortPair(), ProxyServer(), nullptr, false,
-      false, NextProto(), nullptr, false, TRAFFIC_ANNOTATION_FOR_TESTS);
+  // |socket| takes ownership of |tagging_sock|, but the test keeps a non-owning
+  // pointer to it.
+  HttpProxyClientSocket socket(std::unique_ptr<StreamSocket>(tagging_sock), "",
+                               HostPortPair(), ProxyServer(), nullptr, false,
+                               false, NextProto(), nullptr, false,
+                               TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
 #if defined(OS_ANDROID)
