@@ -919,39 +919,33 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
 
-  bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerActionExecutor executor(outer_);
-  {
-    AutoSchedulerLock auto_lock(outer_->lock_);
+  AutoSchedulerLock auto_lock(outer_->lock_);
 
-    DCHECK(!incremented_max_tasks_since_blocked_);
-    DCHECK(read_worker().may_block_start_time.is_null());
-    incremented_max_tasks_since_blocked_ = true;
-    outer_->IncrementMaxTasksLockRequired(
-        read_worker().is_running_best_effort_task);
+  DCHECK(!incremented_max_tasks_since_blocked_);
+  DCHECK(read_worker().may_block_start_time.is_null());
+  incremented_max_tasks_since_blocked_ = true;
+  outer_->IncrementMaxTasksLockRequired(
+      read_worker().is_running_best_effort_task);
 
-    // If the number of workers was less than the old max tasks, PostTask
-    // would've handled creating extra workers during WakeUpOneWorker.
-    // Therefore, we don't need to do anything here.
-    if (outer_->workers_.size() < outer_->max_tasks_ - 1)
-      return;
+  // If the number of workers was less than the old max tasks, PostTask would've
+  // handled creating extra workers during WakeUpOneWorker. Therefore, we don't
+  // need to do anything here.
+  if (outer_->workers_.size() < outer_->max_tasks_ - 1)
+    return;
 
-    if (outer_->priority_queue_.IsEmpty()) {
-      outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
-    } else {
-      // TODO(crbug.com/757897): We may create extra workers in this case:
-      // |workers.size()| was equal to the old |max_tasks_|, we had multiple
-      // ScopedBlockingCalls in parallel and we had work on the PQ.
-      outer_->WakeUpOneWorkerLockRequired(&executor);
-    }
-
-    must_schedule_adjust_max_tasks =
-        outer_->MustScheduleAdjustMaxTasksLockRequired();
+  if (outer_->priority_queue_.IsEmpty()) {
+    outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
+  } else {
+    // TODO(crbug.com/757897): We may create extra workers in this case:
+    // |workers.size()| was equal to the old |max_tasks_|, we had multiple
+    // ScopedBlockingCalls in parallel and we had work on the PQ.
+    outer_->WakeUpOneWorkerLockRequired(&executor);
   }
-  // TODO(crbug.com/813857): This can be better handled in the PostTask()
-  // codepath. We really only should do this if there are tasks pending.
-  if (must_schedule_adjust_max_tasks)
-    outer_->ScheduleAdjustMaxTasks();
+
+  // Entering a WILL_BLOCK ScopedBlockingCall is not expected to require
+  // AdjustMaxTasks() to be scheduled.
+  DCHECK(!outer_->MustScheduleAdjustMaxTasksLockRequired());
 }
 
 bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
