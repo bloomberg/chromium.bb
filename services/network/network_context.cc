@@ -687,7 +687,7 @@ void NetworkContext::CreateURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(request), &cors_origin_access_list_));
+      std::move(request), &cors_origin_access_list_, nullptr));
 }
 
 void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {

@@ -227,15 +227,19 @@ bool SecurityPolicy::IsOriginAccessAllowed(
     const SecurityOrigin* active_origin,
     const SecurityOrigin* target_origin) {
   MutexLocker lock(GetMutex());
-  return GetOriginAccessList().IsAllowed(active_origin->ToUrlOrigin(),
-                                         target_origin->ToUrlOrigin().GetURL());
+  return GetOriginAccessList().CheckAccessState(
+             active_origin->ToUrlOrigin(),
+             target_origin->ToUrlOrigin().GetURL()) ==
+         network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
 bool SecurityPolicy::IsOriginAccessToURLAllowed(
     const SecurityOrigin* active_origin,
     const KURL& url) {
   MutexLocker lock(GetMutex());
-  return GetOriginAccessList().IsAllowed(active_origin->ToUrlOrigin(), url);
+  return GetOriginAccessList().CheckAccessState(active_origin->ToUrlOrigin(),
+                                                url) ==
+         network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
 void SecurityPolicy::AddOriginAccessAllowListEntry(

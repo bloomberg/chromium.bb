@@ -67,25 +67,36 @@ void OriginAccessList::ClearBlockList() {
   block_list_.clear();
 }
 
-bool OriginAccessList::IsAllowed(const url::Origin& source_origin,
-                                 const GURL& destination) const {
+OriginAccessList::AccessState OriginAccessList::CheckAccessState(
+    const url::Origin& source_origin,
+    const GURL& destination) const {
   if (source_origin.opaque())
-    return false;
+    return AccessState::kBlocked;
+
   std::string source = source_origin.Serialize();
   url::Origin destination_origin = url::Origin::Create(destination);
   network::mojom::CorsOriginAccessMatchPriority allow_list_priority =
       GetHighestPriorityOfRuleForOrigin(source, destination_origin,
                                         allow_list_);
-  if (allow_list_priority ==
-      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin)
-    return false;
   network::mojom::CorsOriginAccessMatchPriority block_list_priority =
       GetHighestPriorityOfRuleForOrigin(source, destination_origin,
                                         block_list_);
+
+  if (allow_list_priority ==
+      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin) {
+    return block_list_priority ==
+                   network::mojom::CorsOriginAccessMatchPriority::
+                       kNoMatchingOrigin
+               ? AccessState::kNotListed
+               : AccessState::kBlocked;
+  }
+
   if (block_list_priority ==
       network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin)
-    return true;
-  return allow_list_priority > block_list_priority;
+    return AccessState::kAllowed;
+
+  return (allow_list_priority > block_list_priority) ? AccessState::kAllowed
+                                                     : AccessState::kBlocked;
 }
 
 std::vector<mojo::StructPtr<mojom::CorsOriginAccessPatterns>>
