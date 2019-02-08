@@ -42,7 +42,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -65,7 +64,7 @@ class ArcAuthServiceFactory
  private:
   friend struct base::DefaultSingletonTraits<ArcAuthServiceFactory>;
 
-  ArcAuthServiceFactory() = default;
+  ArcAuthServiceFactory() { DependsOn(IdentityManagerFactory::GetInstance()); }
   ~ArcAuthServiceFactory() override = default;
 };
 
@@ -161,13 +160,27 @@ bool IsPrimaryAccount(const chromeos::AccountManager::AccountKey& account_key) {
 }
 
 std::string GetGaiaIdFromAccountName(
-    const AccountTrackerService* account_tracker_service,
+    const identity::IdentityManager* identity_manager,
     const std::string& account_name) {
   std::string gaia_id =
-      account_tracker_service->FindAccountInfoByEmail(account_name).gaia;
+      identity_manager
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              account_name)
+          ->gaia;
   DCHECK(!gaia_id.empty());
 
   return gaia_id;
+}
+
+chromeos::AccountManager* GetAccountManagerForProfile(Profile* profile) {
+  if (!chromeos::switches::IsAccountManagerEnabled())
+    return nullptr;
+
+  // TODO(sinhak): This will need to be independent of Profile, when
+  // Multi-Profile on Chrome OS is launched.
+  auto* factory =
+      g_browser_process->platform_part()->GetAccountManagerFactory();
+  return factory->GetAccountManager(profile->GetPath().value());
 }
 
 }  // namespace
@@ -184,6 +197,7 @@ ArcAuthService* ArcAuthService::GetForBrowserContext(
 ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
                                ArcBridgeService* arc_bridge_service)
     : profile_(Profile::FromBrowserContext(browser_context)),
+      account_manager_(GetAccountManagerForProfile(profile_)),
       account_tracker_service_(
           AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile_)),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)),
@@ -197,29 +211,15 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
   arc_bridge_service_->auth()->AddObserver(this);
 
   ArcSessionManager::Get()->AddObserver(this);
-
-  // |ArcAuthService| needs to listen on |AccountTrackerService| for account
-  // removals (See crbug.com/904978) and |AccountManager| for account updates
-  // (|ArcAuthService| cannot rely on |AccountTrackerService| for account
-  // updates because |AccountTrackerService| does not notify its observers when
-  // an account's LST changes).
-  account_tracker_service_->AddObserver(this);
-
-  if (chromeos::switches::IsAccountManagerEnabled()) {
-    // TODO(sinhak): This will need to be independent of Profile, when
-    // Multi-Profile on Chrome OS is launched.
-    chromeos::AccountManagerFactory* factory =
-        g_browser_process->platform_part()->GetAccountManagerFactory();
-    account_manager_ = factory->GetAccountManager(profile_->GetPath().value());
+  identity_manager_->AddObserver(this);
+  if (account_manager_)
     account_manager_->AddObserver(this);
-  }
 }
 
 ArcAuthService::~ArcAuthService() {
-  if (chromeos::switches::IsAccountManagerEnabled())
+  if (account_manager_)
     account_manager_->RemoveObserver(this);
 
-  account_tracker_service_->RemoveObserver(this);
   ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->auth()->RemoveObserver(this);
   arc_bridge_service_->auth()->SetHost(nullptr);
@@ -278,8 +278,7 @@ void ArcAuthService::OnAuthorizationComplete(
 
   if (!account_name.has_value() ||
       IsPrimaryAccount(chromeos::AccountManager::AccountKey{
-          GetGaiaIdFromAccountName(account_tracker_service_,
-                                   account_name.value()),
+          GetGaiaIdFromAccountName(identity_manager_, account_name.value()),
           chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
     // Reauthorization for the Primary Account.
     // The check for |!account_name.has_value()| is for backwards compatibility
@@ -396,7 +395,7 @@ void ArcAuthService::RequestAccountInfo(const std::string& account_name,
 
   // Check if |account_name| points to a Secondary Account.
   if (!IsPrimaryAccount(chromeos::AccountManager::AccountKey{
-          GetGaiaIdFromAccountName(account_tracker_service_, account_name),
+          GetGaiaIdFromAccountName(identity_manager_, account_name),
           chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
     FetchSecondaryAccountInfo(account_name, std::move(callback));
     return;
@@ -525,7 +524,7 @@ void ArcAuthService::OnAccountRemoved(
   // notifications. See crbug.com/904978.
 }
 
-void ArcAuthService::OnAccountRemoved(const AccountInfo& account_info) {
+void ArcAuthService::OnAccountRemovedWithInfo(const AccountInfo& account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!chromeos::switches::IsAccountManagerEnabled())
@@ -552,6 +551,10 @@ void ArcAuthService::OnAccountRemoved(const AccountInfo& account_info) {
 
 void ArcAuthService::OnArcInitialStart() {
   TriggerAccountsPushToArc();
+}
+
+void ArcAuthService::Shutdown() {
+  identity_manager_->RemoveObserver(this);
 }
 
 void ArcAuthService::OnActiveDirectoryEnrollmentTokenFetched(
@@ -632,8 +635,13 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     RequestAccountInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const std::string account_id =
-      account_tracker_service_->FindAccountInfoByEmail(account_name).account_id;
+  base::Optional<AccountInfo> account_info =
+      identity_manager_
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              account_name);
+  DCHECK(account_info.has_value());
+
+  const std::string& account_id = account_info->account_id;
   DCHECK(!account_id.empty());
 
   std::unique_ptr<ArcBackgroundAuthCodeFetcher> fetcher =

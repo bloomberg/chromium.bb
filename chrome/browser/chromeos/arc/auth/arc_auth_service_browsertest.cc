@@ -30,7 +30,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -59,10 +59,12 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -630,9 +632,15 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
       identity_manager->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
           kSecondaryAccountEmail);
   ASSERT_TRUE(maybe_account_info.has_value());
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile());
-  account_tracker_service->RemoveAccount(maybe_account_info.value().account_id);
+
+  AccountFetcherService* account_fetcher_service =
+      AccountFetcherServiceFactory::GetForProfile(profile());
+  // Necessary to ensure that the OnAccountRemovedWithInfo() observer will be
+  // sent.
+  account_fetcher_service->EnableNetworkFetchesForTest();
+  identity_manager->GetAccountsMutator()->RemoveAccount(
+      maybe_account_info.value().account_id,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, auth_instance().num_account_removed_calls());
