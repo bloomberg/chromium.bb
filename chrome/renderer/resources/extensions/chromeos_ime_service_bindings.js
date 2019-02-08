@@ -203,26 +203,24 @@ class ImeService {
   }
 
   /**
-   * Set a handler for the bound client delegate to process messages in text
-   * format. This should be called after an IME engine is activated.
+   * Set a handler for the client delegate to process plain text messages.
    *
    * @param {!function(string):string} callback Callback on text message.
    */
   setDelegateTextHandler(callback) {
-    if (this.clientChannel_ && this.clientChannel_.ptr.isBound()) {
+    if (this.clientChannel_) {
       this.clientChannel_.onTextMessage(callback);
     }
   }
 
   /**
-   * Set a handler for the bound client delegate to process messages in protobuf
-   * format. This should be called after an IME engine is activated.
+   * Set a handler for the client delegate to process protobuf messages.
    *
    * @param {!function(!Uint8Array):!Uint8Array} callback Callback on protobuf
    *     message.
    */
   setDelegateProtobufHandler(callback) {
-    if (this.clientChannel_ && this.clientChannel_.ptr.isBound()) {
+    if (this.clientChannel_) {
       this.clientChannel_.onProtobufMessage(callback);
     }
   }
