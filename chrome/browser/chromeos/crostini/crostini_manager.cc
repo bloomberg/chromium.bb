@@ -517,7 +517,6 @@ void CrostiniManager::AddRunningVmForTesting(std::string vm_name) {
 }
 
 LinuxPackageInfo::LinuxPackageInfo() = default;
-LinuxPackageInfo::LinuxPackageInfo(const LinuxPackageInfo&) = default;
 LinuxPackageInfo::~LinuxPackageInfo() = default;
 
 ContainerInfo::ContainerInfo(std::string container_name,
@@ -1163,23 +1162,6 @@ void CrostiniManager::GetLinuxPackageInfo(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::GetLinuxPackageInfoFromApt(
-    const std::string& vm_name,
-    const std::string& container_name,
-    const std::string& package_name,
-    GetLinuxPackageInfoCallback callback) {
-  vm_tools::cicerone::LinuxPackageInfoFromAptRequest request;
-  request.set_owner_id(owner_id_);
-  request.set_vm_name(vm_name);
-  request.set_container_name(container_name);
-  request.set_package_name(package_name);
-
-  GetCiceroneClient()->GetLinuxPackageInfoFromApt(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnGetLinuxPackageInfo,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void CrostiniManager::InstallLinuxPackage(
     std::string vm_name,
     std::string container_name,
@@ -1201,32 +1183,6 @@ void CrostiniManager::InstallLinuxPackage(
   request.set_file_path(std::move(package_path));
 
   GetCiceroneClient()->InstallLinuxPackage(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnInstallLinuxPackage,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void CrostiniManager::InstallLinuxPackageFromApt(
-    const std::string& vm_name,
-    const std::string& container_name,
-    const std::string& package_id,
-    InstallLinuxPackageCallback callback) {
-  if (!GetCiceroneClient()->IsInstallLinuxPackageProgressSignalConnected()) {
-    // Technically we could still start the install, but we wouldn't be able to
-    // detect when the install completes, successfully or otherwise.
-    LOG(ERROR)
-        << "Attempted to install package when progress signal not connected.";
-    std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
-    return;
-  }
-
-  vm_tools::cicerone::InstallLinuxPackageFromAptRequest request;
-  request.set_owner_id(owner_id_);
-  request.set_vm_name(vm_name);
-  request.set_container_name(container_name);
-  request.set_package_id(package_id);
-
-  GetCiceroneClient()->InstallLinuxPackageFromApt(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnInstallLinuxPackage,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -2315,7 +2271,6 @@ void CrostiniManager::OnGetLinuxPackageInfo(
   }
 
   result.success = true;
-  result.package_id = response.package_id();
   result.name = split[0];
   result.version = split[1];
   result.description = response.description();
