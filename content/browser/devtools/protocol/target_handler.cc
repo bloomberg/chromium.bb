@@ -28,7 +28,9 @@ namespace protocol {
 
 namespace {
 
-const char kNotAllowedError[] = "Not allowed.";
+static const char kNotAllowedError[] = "Not allowed.";
+static const char kMethod[] = "method";
+static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
 
 static const char kInitializerScript[] = R"(
   (function() {
@@ -313,8 +315,11 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
   void SendMessageToAgentHost(const std::string& message) {
     if (throttle_) {
-      std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-      if (DevToolsSession::IsRuntimeResumeCommand(value.get()))
+      std::unique_ptr<protocol::DictionaryValue> value =
+          protocol::DictionaryValue::cast(
+              protocol::StringUtil::parseJSON(message));
+      std::string method;
+      if (value->getString(kMethod, &method) && method == kResumeMethod)
         ResumeIfThrottled();
     }
 

@@ -59,13 +59,12 @@ void DevToolsManagerDelegate::ClientAttached(DevToolsAgentHost* agent_host,
 void DevToolsManagerDelegate::ClientDetached(DevToolsAgentHost* agent_host,
                                              DevToolsAgentHostClient* client) {}
 
-void DevToolsManagerDelegate::HandleCommand(
-    DevToolsAgentHost* agent_host,
-    DevToolsAgentHostClient* client,
-    std::unique_ptr<base::DictionaryValue> command,
-    const std::string& message,
-    NotHandledCallback callback) {
-  std::move(callback).Run(std::move(command), message);
+void DevToolsManagerDelegate::HandleCommand(DevToolsAgentHost* agent_host,
+                                            DevToolsAgentHostClient* client,
+                                            const std::string& method,
+                                            const std::string& message,
+                                            NotHandledCallback callback) {
+  std::move(callback).Run(message);
 }
 
 std::string DevToolsManagerDelegate::GetDiscoveryPageHTML() {

@@ -37,16 +37,6 @@ static const char kSessionId[] = "sessionId";
 
 }  // namespace
 
-// static
-bool DevToolsSession::IsRuntimeResumeCommand(base::Value* value) {
-  if (value && value->is_dict()) {
-    base::Value* method = value->FindKey(kMethod);
-    return method && method->is_string() &&
-           method->GetString() == kResumeMethod;
-  }
-  return false;
-}
-
 DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
     : binding_(this),
       client_(client),
@@ -144,28 +134,27 @@ void DevToolsSession::MojoConnectionDestroyed() {
 }
 
 bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
-  std::unique_ptr<base::DictionaryValue> parsed_message =
-      base::DictionaryValue::From(base::JSONReader::Read(message));
+  std::unique_ptr<protocol::DictionaryValue> value =
+      protocol::DictionaryValue::cast(protocol::StringUtil::parseJSON(message));
 
   std::string session_id;
-  if (!parsed_message || !parsed_message->GetString(kSessionId, &session_id))
-    return DispatchProtocolMessageInternal(message, std::move(parsed_message));
+  if (!value || !value->getString(kSessionId, &session_id))
+    return DispatchProtocolMessageInternal(message, std::move(value));
 
   auto it = child_sessions_.find(session_id);
   if (it == child_sessions_.end())
     return false;
   DevToolsSession* session = it->second;
-  return session->DispatchProtocolMessageInternal(message,
-                                                  std::move(parsed_message));
+  return session->DispatchProtocolMessageInternal(message, std::move(value));
 }
 
 bool DevToolsSession::DispatchProtocolMessageInternal(
     const std::string& message,
-    std::unique_ptr<base::DictionaryValue> parsed_message) {
-  if (!runtime_resume_.is_null() &&
-      IsRuntimeResumeCommand(parsed_message.get())) {
+    std::unique_ptr<protocol::DictionaryValue> value) {
+  std::string method;
+  bool has_method = value && value->getString(kMethod, &method);
+  if (!runtime_resume_.is_null() && has_method && method == kResumeMethod)
     std::move(runtime_resume_).Run();
-  }
 
   if (proxy_delegate_) {
     proxy_delegate_->SendMessageToBackend(this, message);
@@ -174,29 +163,26 @@ bool DevToolsSession::DispatchProtocolMessageInternal(
 
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
-  if (delegate && parsed_message) {
-    delegate->HandleCommand(agent_host_, client_, std::move(parsed_message),
-                            message,
-                            base::BindOnce(&DevToolsSession::HandleCommand,
-                                           weak_factory_.GetWeakPtr()));
+  if (delegate && has_method) {
+    delegate->HandleCommand(
+        agent_host_, client_, method, message,
+        base::BindOnce(&DevToolsSession::HandleCommand,
+                       weak_factory_.GetWeakPtr(), std::move(value)));
   } else {
-    HandleCommand(std::move(parsed_message), message);
+    HandleCommand(std::move(value), message);
   }
   return true;
 }
 
 void DevToolsSession::HandleCommand(
-    std::unique_ptr<base::DictionaryValue> parsed_message,
+    std::unique_ptr<protocol::DictionaryValue> value,
     const std::string& message) {
-  std::unique_ptr<protocol::Value> protocol_command =
-      protocol::toProtocolValue(parsed_message.get(), 1000);
   int call_id;
   std::string method;
-  if (!dispatcher_->parseCommand(protocol_command.get(), &call_id, &method))
+  if (!dispatcher_->parseCommand(value.get(), &call_id, &method))
     return;
   if (browser_only_ || dispatcher_->canDispatch(method)) {
-    dispatcher_->dispatch(call_id, method, std::move(protocol_command),
-                          message);
+    dispatcher_->dispatch(call_id, method, std::move(value), message);
   } else {
     fallThrough(call_id, method, message);
   }

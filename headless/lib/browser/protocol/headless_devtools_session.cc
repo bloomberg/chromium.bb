@@ -42,28 +42,23 @@ HeadlessDevToolsSession::~HeadlessDevToolsSession() {
 }
 
 void HeadlessDevToolsSession::HandleCommand(
-    std::unique_ptr<base::DictionaryValue> command,
+    const std::string& method,
     const std::string& message,
     content::DevToolsManagerDelegate::NotHandledCallback callback) {
-  if (!browser_) {
-    std::move(callback).Run(std::move(command), message);
+  if (!browser_ || !dispatcher_->canDispatch(method)) {
+    std::move(callback).Run(message);
     return;
   }
   int call_id;
-  std::string method;
-  std::unique_ptr<protocol::Value> protocolCommand =
-      protocol::toProtocolValue(command.get(), 1000);
-  if (!dispatcher_->parseCommand(protocolCommand.get(), &call_id, &method)) {
+  std::string unused;
+  std::unique_ptr<protocol::DictionaryValue> value =
+      protocol::DictionaryValue::cast(protocol::StringUtil::parseJSON(message));
+  if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
     return;
-  }
-  if (dispatcher_->canDispatch(method)) {
-    pending_commands_[call_id] =
-        std::make_pair(std::move(callback), std::move(command));
-    dispatcher_->dispatch(call_id, method, std::move(protocolCommand), message);
-    return;
-  }
-  std::move(callback).Run(std::move(command), message);
+  pending_commands_[call_id] = std::move(callback);
+  dispatcher_->dispatch(call_id, method, std::move(value), message);
 }
+
 void HeadlessDevToolsSession::AddHandler(
     std::unique_ptr<protocol::DomainHandler> handler) {
   handler->Wire(dispatcher_.get());
@@ -80,9 +75,9 @@ void HeadlessDevToolsSession::sendProtocolResponse(
 void HeadlessDevToolsSession::fallThrough(int call_id,
                                           const std::string& method,
                                           const std::string& message) {
-  PendingCommand command = std::move(pending_commands_[call_id]);
+  auto callback = std::move(pending_commands_[call_id]);
   pending_commands_.erase(call_id);
-  std::move(command.first).Run(std::move(command.second), message);
+  std::move(callback).Run(message);
 }
 
 void HeadlessDevToolsSession::sendProtocolNotification(

@@ -35,7 +35,7 @@ class HeadlessDevToolsSession : public FrontendChannel {
   ~HeadlessDevToolsSession() override;
 
   void HandleCommand(
-      std::unique_ptr<base::DictionaryValue> command,
+      const std::string& method,
       const std::string& message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
@@ -58,10 +58,8 @@ class HeadlessDevToolsSession : public FrontendChannel {
   content::DevToolsAgentHostClient* const client_;
   std::unique_ptr<UberDispatcher> dispatcher_;
   base::flat_map<std::string, std::unique_ptr<DomainHandler>> handlers_;
-  using PendingCommand =
-      std::pair<content::DevToolsManagerDelegate::NotHandledCallback,
-                std::unique_ptr<base::DictionaryValue>>;
-  base::flat_map<int, PendingCommand> pending_commands_;
+  base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>
+      pending_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsSession);
 };
