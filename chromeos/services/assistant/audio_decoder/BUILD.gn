@@ -4,8 +4,6 @@
 
 import("//chromeos/assistant/assistant.gni")
 
-import("//services/service_manager/public/service_manifest.gni")
-
 assert(enable_cros_libassistant)
 
 source_set("lib") {
@@ -30,9 +28,4 @@ source_set("lib") {
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp:cpp",
   ]
-}
-
-service_manifest("manifest") {
-  name = "assistant_audio_decoder"
-  source = "manifest.json"
 }
