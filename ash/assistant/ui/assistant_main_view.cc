@@ -168,7 +168,7 @@ void AssistantMainView::InitLayout() {
   // Notification overlay.
   if (chromeos::assistant::features::IsInAssistantNotificationsEnabled()) {
     auto notification_overlay =
-        std::make_unique<AssistantNotificationOverlay>();
+        std::make_unique<AssistantNotificationOverlay>(delegate_);
     notification_overlay->set_owned_by_client();
     overlays_.push_back(std::move(notification_overlay));
   }

@@ -8,6 +8,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_notification_controller.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -29,6 +30,11 @@ AssistantViewDelegateImpl::GetInteractionModel() const {
   return assistant_controller_->interaction_controller()->model();
 }
 
+const AssistantNotificationModel*
+AssistantViewDelegateImpl::GetNotificationModel() const {
+  return assistant_controller_->notification_controller()->model();
+}
+
 const AssistantUiModel* AssistantViewDelegateImpl::GetUiModel() const {
   return assistant_controller_->ui_controller()->model();
 }
@@ -37,6 +43,7 @@ void AssistantViewDelegateImpl::AddCacheModelObserver(
     AssistantCacheModelObserver* observer) {
   assistant_controller_->cache_controller()->AddModelObserver(observer);
 }
+
 void AssistantViewDelegateImpl::RemoveCacheModelObserver(
     AssistantCacheModelObserver* observer) {
   assistant_controller_->cache_controller()->RemoveModelObserver(observer);
@@ -46,9 +53,21 @@ void AssistantViewDelegateImpl::AddInteractionModelObserver(
     AssistantInteractionModelObserver* observer) {
   assistant_controller_->interaction_controller()->AddModelObserver(observer);
 }
+
 void AssistantViewDelegateImpl::RemoveInteractionModelObserver(
     AssistantInteractionModelObserver* observer) {
   assistant_controller_->interaction_controller()->RemoveModelObserver(
+      observer);
+}
+
+void AssistantViewDelegateImpl::AddNotificationModelObserver(
+    AssistantNotificationModelObserver* observer) {
+  assistant_controller_->notification_controller()->AddModelObserver(observer);
+}
+
+void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
+    AssistantNotificationModelObserver* observer) {
+  assistant_controller_->notification_controller()->RemoveModelObserver(
       observer);
 }
 
@@ -56,6 +75,7 @@ void AssistantViewDelegateImpl::AddUiModelObserver(
     AssistantUiModelObserver* observer) {
   assistant_controller_->ui_controller()->AddModelObserver(observer);
 }
+
 void AssistantViewDelegateImpl::RemoveUiModelObserver(
     AssistantUiModelObserver* observer) {
   assistant_controller_->ui_controller()->RemoveModelObserver(observer);
@@ -65,6 +85,7 @@ void AssistantViewDelegateImpl::AddViewDelegateObserver(
     AssistantViewDelegateObserver* observer) {
   view_delegate_observers_.AddObserver(observer);
 }
+
 void AssistantViewDelegateImpl::RemoveViewDelegateObserver(
     AssistantViewDelegateObserver* observer) {
   view_delegate_observers_.RemoveObserver(observer);
@@ -74,6 +95,7 @@ void AssistantViewDelegateImpl::AddVoiceInteractionControllerObserver(
     DefaultVoiceInteractionObserver* observer) {
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(observer);
 }
+
 void AssistantViewDelegateImpl::RemoveVoiceInteractionControllerObserver(
     DefaultVoiceInteractionObserver* observer) {
   Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(observer);

@@ -13,6 +13,8 @@
 #include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_notification_model.h"
+#include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
@@ -60,6 +62,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Gets the interaction model associated with the view delegate.
   virtual const AssistantInteractionModel* GetInteractionModel() const = 0;
 
+  // Gets the notification model associated with the view delegate.
+  virtual const AssistantNotificationModel* GetNotificationModel() const = 0;
+
   // Gets the ui model associated with the view delegate.
   virtual const AssistantUiModel* GetUiModel() const = 0;
 
@@ -74,6 +79,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       AssistantInteractionModelObserver* observer) = 0;
   virtual void RemoveInteractionModelObserver(
       AssistantInteractionModelObserver* observer) = 0;
+
+  // Adds/removes the notification model observer associated with the view
+  // delegate.
+  virtual void AddNotificationModelObserver(
+      AssistantNotificationModelObserver* observer) = 0;
+  virtual void RemoveNotificationModelObserver(
+      AssistantNotificationModelObserver* observer) = 0;
 
   // Adds/removes the ui model observer associated with the view delegate.
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;

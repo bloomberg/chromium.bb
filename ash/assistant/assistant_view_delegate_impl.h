@@ -23,6 +23,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   // AssistantViewDelegate:
   const AssistantCacheModel* GetCacheModel() const override;
   const AssistantInteractionModel* GetInteractionModel() const override;
+  const AssistantNotificationModel* GetNotificationModel() const override;
   const AssistantUiModel* GetUiModel() const override;
   void AddCacheModelObserver(AssistantCacheModelObserver* observer) override;
   void RemoveCacheModelObserver(AssistantCacheModelObserver* observer) override;
@@ -30,6 +31,10 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       AssistantInteractionModelObserver* observer) override;
   void RemoveInteractionModelObserver(
       AssistantInteractionModelObserver* observer) override;
+  void AddNotificationModelObserver(
+      AssistantNotificationModelObserver* observer) override;
+  void RemoveNotificationModelObserver(
+      AssistantNotificationModelObserver* observer) override;
   void AddUiModelObserver(AssistantUiModelObserver* observer) override;
   void RemoveUiModelObserver(AssistantUiModelObserver* observer) override;
   void AddViewDelegateObserver(
@@ -57,7 +62,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   bool VoiceInteractionControllerSetupCompleted() const override;
 
  private:
-  AssistantController* assistant_controller_;
+  AssistantController* const assistant_controller_;
   base::ObserverList<AssistantViewDelegateObserver> view_delegate_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantViewDelegateImpl);
