@@ -62,9 +62,12 @@ const wchar_t kWindowsCurrentVersionRegKeyName[] =
 // "C:\Program Files\Common Files\".
 const wchar_t kCommonProgramW6432[] = L"%CommonProgramW6432%";
 
-const wchar_t* company_white_list[] = {
-    L"Google Inc", L"Google Inc.", L"Intel Corporation",
-    L"Microsoft Corporation",
+constexpr const base::char16* kCompanyWhiteList[] = {
+    STRING16_LITERAL("Google LLC"),
+    STRING16_LITERAL("Google Inc"),
+    STRING16_LITERAL("Google Inc."),
+    STRING16_LITERAL("Intel Corporation"),
+    STRING16_LITERAL("Microsoft Corporation"),
 };
 
 // Built from various sources to try and include all the extensions that are
@@ -502,18 +505,9 @@ base::string16 FileInformationToString(
 bool IsExecutableOnDefaultReportingWhiteList(const base::FilePath& file_path) {
   std::unique_ptr<FileVersionInfo> file_information(
       FileVersionInfo::CreateFileVersionInfo(file_path));
-  if (!file_information)
-    return false;
-
-  bool white_listed = false;
-  base::string16 company_name = file_information->company_name();
-  for (const base::string16& white_listed_name : company_white_list) {
-    if (company_name.compare(white_listed_name) == 0) {
-      white_listed = true;
-      break;
-    }
-  }
-  return white_listed;
+  return file_information &&
+         base::ContainsValue(kCompanyWhiteList,
+                             file_information->company_name());
 }
 
 bool RetrieveDetailedFileInformation(
