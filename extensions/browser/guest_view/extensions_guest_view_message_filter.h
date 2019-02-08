@@ -44,10 +44,8 @@ class ExtensionsGuestViewMessageFilter
                                    content::BrowserContext* context);
 
  private:
-  class FrameNavigationHelper;
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ExtensionsGuestViewMessageFilter>;
-  friend class ExtensionsGuestViewMessageFilter::FrameNavigationHelper;
 
   ~ExtensionsGuestViewMessageFilter() override;
 
