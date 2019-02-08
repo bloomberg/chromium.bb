@@ -65,6 +65,8 @@ class WaylandPointer {
                    wl_fixed_t value);
 
   void MaybeSetOrResetImplicitGrab();
+  void FocusWindow(wl_surface* surface);
+  void UnfocusWindow(wl_surface* surface);
 
   WaylandConnection* connection_ = nullptr;
   std::unique_ptr<WaylandCursor> cursor_;
