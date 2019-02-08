@@ -335,6 +335,27 @@ class MediaRouterMojoTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
 };
 
+// An object whose Invoke method can be passed as a MediaRouteResponseCallback.
+class RouteResponseCallbackHandler {
+ public:
+  RouteResponseCallbackHandler();
+  ~RouteResponseCallbackHandler();
+
+  // Calls DoInvoke with the contents of |connection| and |result|.
+  void Invoke(mojom::RoutePresentationConnectionPtr connection,
+              const RouteRequestResult& result);
+
+  MOCK_METHOD5(DoInvoke,
+               void(const MediaRoute* route,
+                    const std::string& presentation_id,
+                    const std::string& error_text,
+                    RouteRequestResult::ResultCode result_code,
+                    mojom::RoutePresentationConnectionPtr& connection));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RouteResponseCallbackHandler);
+};
+
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_TEST_MEDIA_ROUTER_MOJO_TEST_H_

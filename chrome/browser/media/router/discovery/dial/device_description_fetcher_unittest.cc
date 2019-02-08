@@ -21,6 +21,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using testing::HasSubstr;
+
 namespace media_router {
 
 class TestDeviceDescriptionFetcher : public DeviceDescriptionFetcher {
@@ -55,18 +57,6 @@ class DeviceDescriptionFetcherTest : public testing::Test {
  public:
   DeviceDescriptionFetcherTest() : url_("http://127.0.0.1/description.xml") {}
 
-  void ExpectSuccess(const GURL& expected_app_url,
-                     const std::string& expected_description) {
-    expected_app_url_ = expected_app_url;
-    expected_description_ = expected_description;
-    EXPECT_CALL(*this, DoOnSuccess());
-  }
-
-  void ExpectError(const std::string expected_error) {
-    expected_error_ = expected_error;
-    EXPECT_CALL(*this, DoOnError());
-  }
-
   void StartRequest() {
     description_fetcher_ = std::make_unique<TestDeviceDescriptionFetcher>(
         url_,
@@ -80,41 +70,22 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   }
 
  protected:
+  MOCK_METHOD1(OnSuccess, void(const DialDeviceDescriptionData&));
+  MOCK_METHOD1(OnError, void(const std::string&));
+
   base::test::ScopedTaskEnvironment environment_;
   const GURL url_;
   network::TestURLLoaderFactory loader_factory_;
-  base::OnceCallback<void(const DialDeviceDescriptionData&)> success_cb_;
-  base::OnceCallback<void(const std::string&)> error_cb_;
   std::unique_ptr<TestDeviceDescriptionFetcher> description_fetcher_;
-  GURL expected_app_url_;
-  std::string expected_description_;
-  std::string expected_error_;
 
  private:
-  MOCK_METHOD0(DoOnSuccess, void());
-  MOCK_METHOD0(DoOnError, void());
-
-  void OnSuccess(const DialDeviceDescriptionData& description) {
-    EXPECT_EQ(expected_app_url_, description.app_url);
-    EXPECT_EQ(expected_description_, description.device_description);
-    DoOnSuccess();
-    description_fetcher_.reset();
-  }
-
-  void OnError(const std::string& message) {
-    EXPECT_TRUE(message.find(expected_error_) != std::string::npos)
-        << "[" << expected_error_ << "] not found in message [" << message
-        << "]";
-    DoOnError();
-    description_fetcher_.reset();
-  }
-
   DISALLOW_COPY_AND_ASSIGN(DeviceDescriptionFetcherTest);
 };
 
 TEST_F(DeviceDescriptionFetcherTest, FetchSuccessful) {
   std::string body("<xml>description</xml>");
-  ExpectSuccess(GURL("http://127.0.0.1/apps"), body);
+  EXPECT_CALL(*this, OnSuccess(DialDeviceDescriptionData(
+                         body, GURL("http://127.0.0.1/apps"))));
   network::ResourceResponseHead head;
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   head.headers->AddHeader("Application-URL: http://127.0.0.1/apps");
@@ -126,7 +97,8 @@ TEST_F(DeviceDescriptionFetcherTest, FetchSuccessful) {
 
 TEST_F(DeviceDescriptionFetcherTest, FetchSuccessfulAppUrlWithTrailingSlash) {
   std::string body("<xml>description</xml>");
-  ExpectSuccess(GURL("http://127.0.0.1/apps"), body);
+  EXPECT_CALL(*this, OnSuccess(DialDeviceDescriptionData(
+                         body, GURL("http://127.0.0.1/apps"))));
   network::ResourceResponseHead head;
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   head.headers->AddHeader("Application-URL: http://127.0.0.1/apps/");
@@ -137,7 +109,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchSuccessfulAppUrlWithTrailingSlash) {
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingDescription) {
-  ExpectError("404");
+  EXPECT_CALL(*this, OnError(HasSubstr("404")));
   loader_factory_.AddResponse(
       url_, network::ResourceResponseHead(), "",
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
@@ -146,7 +118,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingDescription) {
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingAppUrl) {
   std::string body("<xml>description</xml>");
-  ExpectError("Missing or empty Application-URL:");
+  EXPECT_CALL(*this, OnError(HasSubstr("Missing or empty Application-URL:")));
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
   loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
@@ -155,7 +127,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingAppUrl) {
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyAppUrl) {
-  ExpectError("Missing or empty Application-URL:");
+  EXPECT_CALL(*this, OnError(HasSubstr("Missing or empty Application-URL:")));
   std::string body("<xml>description</xml>");
   network::ResourceResponseHead head;
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
@@ -167,7 +139,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyAppUrl) {
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnInvalidAppUrl) {
-  ExpectError("Invalid Application-URL:");
+  EXPECT_CALL(*this, OnError(HasSubstr("Invalid Application-URL:")));
   std::string body("<xml>description</xml>");
   network::ResourceResponseHead head;
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
@@ -179,7 +151,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnInvalidAppUrl) {
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyDescription) {
-  ExpectError("Missing or empty response");
+  EXPECT_CALL(*this, OnError(HasSubstr("Missing or empty response")));
   network::ResourceResponseHead head;
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   head.headers->AddHeader("Application-URL: http://127.0.0.1/apps");
@@ -190,7 +162,7 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyDescription) {
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnBadDescription) {
-  ExpectError("Invalid response encoding");
+  EXPECT_CALL(*this, OnError(HasSubstr("Invalid response encoding")));
   std::string body("\xfc\x9c\xbf\x80\xbf\x80");
   network::ResourceResponseHead head;
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");

@@ -73,4 +73,10 @@ DialDeviceDescriptionData::DialDeviceDescriptionData(
     const GURL& app_url)
     : device_description(device_description), app_url(app_url) {}
 
+bool DialDeviceDescriptionData::operator==(
+    const DialDeviceDescriptionData& other_data) const {
+  return device_description == other_data.device_description &&
+         app_url == other_data.app_url;
+}
+
 }  // namespace media_router
