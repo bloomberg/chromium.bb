@@ -61,7 +61,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {QueryArgs} from './js/cottontail/src/util/query-args.js';
       import {FallbackHelper} from './js/cottontail/src/util/fallback-helper.js';
       import {UrlTexture} from './js/cottontail/src/core/texture.js';
-      import {mat4} from './js/cottontail/src/math/gl-matrix.js';
+      import {mat4, vec3} from './js/cottontail/src/math/gl-matrix.js';
+      import {ButtonNode} from './js/cottontail/src/nodes/button.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -461,7 +462,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.drawXRFrame(frame, pose);
 
         if (pose) {
-          resonance.setListenerFromMatrix({ elements: pose.poseModelMatrix });
+          resonance.setListenerFromMatrix({ elements: pose.transform.matrix });
         }
 
         scene.endFrame();

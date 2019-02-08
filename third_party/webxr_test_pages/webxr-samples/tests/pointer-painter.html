@@ -204,8 +204,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             continue;
           }
 
-          if (inputPose.gripMatrix) {
-            scene.inputRenderer.addController(inputPose.gripMatrix);
+          if (inputPose.gripTransform && inputPose.gripTransform.matrix) {
+            scene.inputRenderer.addController(inputPose.gripTransform.matrix);
           }
 
           if (inputPose.targetRay && selecting) {

@@ -50,8 +50,9 @@ let testFunction =
         let input_pose = xrFrame.getInputPose(source, referenceSpace);
 
         t.step( () => {
+          assert_not_equals(input_pose.gripTransform, null);
           assert_matrices_approx_equal(input_pose.targetRay.transformMatrix,
-            input_pose.gripMatrix, FLOAT_EPSILON,
+            input_pose.gripTransform.matrix, FLOAT_EPSILON,
             "Target ray matrix is incorrect.");
 
           assert_equals(input_pose.targetRay.origin.x, 4.0);

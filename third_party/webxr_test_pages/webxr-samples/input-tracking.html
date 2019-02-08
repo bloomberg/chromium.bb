@@ -59,6 +59,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {QueryArgs} from './js/cottontail/src/util/query-args.js';
       import {FallbackHelper} from './js/cottontail/src/util/fallback-helper.js';
       import {SkyboxNode} from './js/cottontail/src/nodes/skybox.js';
+      import {vec3} from './js/cottontail/src/math/gl-matrix.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -184,10 +185,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             continue;
           }
 
-          if (inputPose.gripMatrix) {
+          if (inputPose.gripTransform && inputPose.gripTransform.matrix) {
             // If we have a grip matrix use it to render a mesh showing the
             // position of the controller.
-            scene.inputRenderer.addController(inputPose.gripMatrix);
+            scene.inputRenderer.addController(inputPose.gripTransform.matrix);
           }
 
           if (inputPose.targetRay) {

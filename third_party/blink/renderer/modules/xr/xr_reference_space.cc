@@ -5,12 +5,17 @@
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_stage_bounds.h"
 
 namespace blink {
 
-XRReferenceSpace::XRReferenceSpace(XRSession* session) : XRSpace(session) {}
+// origin offset starts as identity transform
+XRReferenceSpace::XRReferenceSpace(XRSession* session)
+    : XRSpace(session),
+      origin_offset_(MakeGarbageCollected<XRRigidTransform>(nullptr, nullptr)) {
+}
 
 XRReferenceSpace::~XRReferenceSpace() = default;
 
@@ -38,7 +43,12 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
   return TransformBasePose(base_input_pose);
 }
 
+void XRReferenceSpace::setOriginOffset(XRRigidTransform* transform) {
+  origin_offset_ = transform;
+}
+
 void XRReferenceSpace::Trace(blink::Visitor* visitor) {
+  visitor->Trace(origin_offset_);
   XRSpace::Trace(visitor);
 }
 

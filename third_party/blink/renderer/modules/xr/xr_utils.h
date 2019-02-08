@@ -15,7 +15,10 @@ namespace blink {
 DOMFloat32Array* transformationMatrixToDOMFloat32Array(
     const TransformationMatrix&);
 
-DOMPointReadOnly* makeNormalizedQuaternion(DOMPointInit*);
+DOMPointReadOnly* makeNormalizedQuaternion(double x,
+                                           double y,
+                                           double z,
+                                           double w);
 
 }  // namespace blink
 

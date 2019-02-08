@@ -282,7 +282,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // for this draw.
           if (headset) {
             headset.visible = true;
-            headset.matrix = pose.poseModelMatrix;
+            headset.matrix = pose.transform.matrix;
           }
 
           // Draw the spectator view of the scene.

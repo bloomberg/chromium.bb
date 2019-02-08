@@ -43,7 +43,7 @@ test can query for whether each submitted frame used the correct pose.
       function checkFrameView(frame_id, eye, expected) {
         let frame_data = frame_data_array[frame_id];
         let pose = frame_data.getViewerPose(cached_frame_of_ref);
-        return MatrixCompare(pose.getViewMatrix(frame_data_array[frame_id].views[eye]), expected);
+        return MatrixCompare(pose.views[eye].viewMatrix, expected);
       }
 
       function checkFramePose(frame_id, expected) {
@@ -57,8 +57,8 @@ test can query for whether each submitted frame used the correct pose.
           return true;
         }
 
-        console.log("checkFramePose: " + pose.poseModelMatrix + "\n" + expected);
-        return MatrixCompare(pose.poseModelMatrix, expected);
+        console.log("checkFramePose: " + pose.transform.matrix + "\n" + expected);
+        return MatrixCompare(pose.transform.matrix, expected);
       }
 
       onImmersiveXRFrameCallback = function(session, frame, gl) {

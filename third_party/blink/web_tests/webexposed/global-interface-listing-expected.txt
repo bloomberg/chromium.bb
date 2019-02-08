@@ -10408,7 +10408,7 @@ interface XRHitResult
 interface XRInputPose
     attribute @@toStringTag
     getter emulatedPosition
-    getter gripMatrix
+    getter gripTransform
     getter targetRay
     method constructor
 interface XRInputSource
@@ -10437,8 +10437,10 @@ interface XRRay
 interface XRReferenceSpace : XRSpace
     attribute @@toStringTag
     getter onreset
+    getter originOffset
     method constructor
     setter onreset
+    setter originOffset
 interface XRRenderState
     attribute @@toStringTag
     getter baseLayer
@@ -10496,11 +10498,12 @@ interface XRView
     attribute @@toStringTag
     getter eye
     getter projectionMatrix
+    getter transform
     getter viewMatrix
     method constructor
 interface XRViewerPose
     attribute @@toStringTag
-    getter poseModelMatrix
+    getter transform
     getter views
     method constructor
 interface XRViewport

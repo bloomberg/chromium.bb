@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_RIGID_TRANSFORM_H_
 
 #include <memory>
+#include <utility>
 
 #include "third_party/blink/renderer/core/geometry/dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
@@ -19,6 +20,12 @@ class XRRigidTransform : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // deep copies
+  XRRigidTransform(const XRRigidTransform& other);
+  XRRigidTransform& operator=(const XRRigidTransform& other);
+
+  explicit XRRigidTransform(const TransformationMatrix&);
+  explicit XRRigidTransform(std::unique_ptr<TransformationMatrix>);
   XRRigidTransform(DOMPointInit*, DOMPointInit*);
   static XRRigidTransform* Create(DOMPointInit*, DOMPointInit*);
 
@@ -26,9 +33,14 @@ class XRRigidTransform : public ScriptWrappable {
   DOMPointReadOnly* orientation() const { return orientation_; }
   DOMFloat32Array* matrix();
 
+  TransformationMatrix InverseMatrix();
+
   void Trace(blink::Visitor*) override;
 
  private:
+  void DecomposeMatrix();
+  void EnsureMatrix();
+
   Member<DOMPointReadOnly> position_;
   Member<DOMPointReadOnly> orientation_;
   std::unique_ptr<TransformationMatrix> matrix_;
