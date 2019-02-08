@@ -21,6 +21,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
@@ -57,7 +58,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
         UiUtils.setDisableUrlFormattingForTests(true);
-        DummyUiActivity.setTestTheme(org.chromium.chrome.R.style.FullscreenWhiteActivityTheme);
+        DummyUiActivity.setTestTheme(R.style.Theme_Chromium_Activity_Fullscreen);
     }
 
     @Override

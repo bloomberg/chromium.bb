@@ -70,7 +70,7 @@ public class SignOutDialogFragment extends DialogFragment implements
         String message = domain == null
                 ? getString(R.string.signout_message)
                 : getString(R.string.signout_managed_account_message, domain);
-        return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.signout_title)
                 .setPositiveButton(R.string.continue_button, this)
                 .setNegativeButton(R.string.cancel, this)
@@ -83,7 +83,7 @@ public class SignOutDialogFragment extends DialogFragment implements
         String message = domain == null
                 ? getString(R.string.signout_message_legacy)
                 : getString(R.string.signout_managed_account_message, domain);
-        return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.signout_title_legacy)
                 .setPositiveButton(R.string.signout_dialog_positive_button, this)
                 .setNegativeButton(R.string.cancel, this)

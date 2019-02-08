@@ -95,7 +95,7 @@
         android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
         android:persistableMode="persistNever"
         android:taskAffinity=""
-        android:theme="@style/MainTheme"
+        android:theme="@style/Theme.Chromium.Activity"
         android:windowSoftInputMode="adjustResize"/>
     <activity
         android:autoRemoveFromRecents="false"
@@ -106,7 +106,7 @@
         android:name="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
         android:persistableMode="persistNever"
         android:taskAffinity=""
-        android:theme="@style/IncognitoTheme"
+        android:theme="@style/Theme.Chromium.Incognito"
         android:windowSoftInputMode="adjustResize"/>
     <activity
         android:autoRemoveFromRecents="false"
@@ -118,7 +118,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity=""
-        android:theme="@style/MainTheme"
+        android:theme="@style/Theme.Chromium.Activity"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -134,7 +134,7 @@
         android:name="org.chromium.chrome.browser.document.DocumentActivity"
         android:persistableMode="persistAcrossReboots"
         android:taskAffinity=""
-        android:theme="@style/MainTheme"
+        android:theme="@style/Theme.Chromium.Activity"
         android:windowSoftInputMode="adjustResize"/>
     <activity
         android:autoRemoveFromRecents="true"
@@ -143,7 +143,7 @@
         android:label="@string/fre_activity_label"
         android:launchMode="singleInstance"
         android:name="org.chromium.chrome.browser.firstrun.FirstRunActivity"
-        android:theme="@style/FirstRunTheme"
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateHidden|adjustPan"/>
     <activity
         android:autoRemoveFromRecents="true"
@@ -152,7 +152,7 @@
         android:label="@string/fre_activity_label"
         android:launchMode="singleInstance"
         android:name="org.chromium.chrome.browser.firstrun.LightweightFirstRunActivity"
-        android:theme="@style/SimpleDialog"
+        android:theme="@style/Theme.Chromium.AlertDialog.NoActionBar"
         android:windowSoftInputMode="stateHidden|adjustPan"/>
     <activity
         android:autoRemoveFromRecents="true"
@@ -161,12 +161,12 @@
         android:label="@string/fre_activity_label"
         android:launchMode="singleInstance"
         android:name="org.chromium.chrome.browser.firstrun.TabbedModeFirstRunActivity"
-        android:theme="@style/TabbedModeFirstRunTheme"
+        android:theme="@style/Theme.Chromium.TabbedMode"
         android:windowSoftInputMode="stateHidden|adjustPan"/>
     <activity
         android:autoRemoveFromRecents="true"
         android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
-        android:theme="@style/MainTheme"/>
+        android:theme="@style/Theme.Chromium.Activity"/>
     <activity
         android:clearTaskOnLaunch="true"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -177,7 +177,7 @@
         android:launchMode="singleTask"
         android:name="org.chromium.chrome.browser.searchwidget.SearchActivity"
         android:taskAffinity=""
-        android:theme="@style/SearchActivityTheme"
+        android:theme="@style/Theme.Chromium.SearchActivity"
         android:windowSoftInputMode="adjustResize"/>
     <activity
         android:configChanges="keyboardHidden|orientation|screenSize"
@@ -226,66 +226,66 @@
         android:launchMode="singleTask"
         android:name="org.chromium.chrome.browser.media.router.caf.remoting.CafExpandedControllerActivity"
         android:noHistory="true"
-        android:theme="@style/MainTheme"/>
+        android:theme="@style/Theme.Chromium.Activity"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/bookmark_choose_folder"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkFolderSelectActivity"
-        android:theme="@style/DialogWhenLarge"
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateAlwaysHidden"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/edit_bookmark"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkEditActivity"
-        android:theme="@style/DialogWhenLarge"
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateHidden"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/preferences"
         android:name="org.chromium.chrome.browser.preferences.Preferences"
-        android:theme="@style/PreferencesTheme"/>
+        android:theme="@style/Theme.Chromium.Preferences"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/storage_management_activity_label"
         android:name="org.chromium.chrome.browser.preferences.website.ManageSpaceActivity"
-        android:theme="@style/ManageSpaceTheme"/>
+        android:theme="@style/Theme.Chromium.Preferences.ManageSpace"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkActivity"
-        android:theme="@style/FullscreenWhiteActivityTheme"
+        android:theme="@style/Theme.Chromium.Activity.Fullscreen"
         android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddEditFolderActivity"
-        android:theme="@style/DialogWhenLarge"/>
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:name="org.chromium.chrome.browser.download.DownloadActivity"
-        android:theme="@style/FullscreenWhiteActivityTheme"
+        android:theme="@style/Theme.Chromium.Activity.Fullscreen"
         android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:name="org.chromium.chrome.browser.history.HistoryActivity"
-        android:theme="@style/FullscreenWhiteActivityTheme"
+        android:theme="@style/Theme.Chromium.Activity.Fullscreen"
         android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:name="org.chromium.chrome.browser.signin.SigninActivity"
-        android:theme="@style/DialogWhenLarge"/>
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="true"
         android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
-        android:theme="@style/FullscreenTransparentActivityTheme">
+        android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent">
       <intent-filter>
         <action android:name="androidx.browser.browseractions.browser_action_open"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -296,7 +296,7 @@
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
-        android:theme="@style/DialogWhenLarge"
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateHidden">
       <intent-filter>
         <action android:name="org.chromium.chrome.ADDBOOKMARK"/>
@@ -306,7 +306,7 @@
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:name="org.chromium.chrome.browser.signin.AccountSigninActivity"
-        android:theme="@style/DialogWhenLarge"/>
+        android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
         android:enableVrMode="@string/gvr_vr_mode_component"
@@ -332,7 +332,7 @@
         android:persistableMode="persistNever"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -351,7 +351,7 @@
         android:persistableMode="persistNever"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -390,7 +390,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity0"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -410,7 +410,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity1"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -430,7 +430,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity2"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -450,7 +450,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity3"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -470,7 +470,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity4"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -490,7 +490,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity5"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -510,7 +510,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity6"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -530,7 +530,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity7"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -550,7 +550,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity8"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -570,7 +570,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity9"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -590,7 +590,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity0"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -610,7 +610,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity1"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -630,7 +630,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity2"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -650,7 +650,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity3"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -670,7 +670,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity4"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -690,7 +690,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity5"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -710,7 +710,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity6"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -730,7 +730,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity7"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -750,7 +750,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity8"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -770,7 +770,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.webapps.WebappActivity9"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -787,7 +787,7 @@
         android:persistableMode="persistNever"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/WebappTheme"
+        android:theme="@style/Theme.Chromium.Webapp"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -804,7 +804,7 @@
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
         android:taskAffinity="org.chromium.chrome.ChromeTabbedActivity2"
-        android:theme="@style/TabbedModeTheme"
+        android:theme="@style/Theme.Chromium.TabbedMode"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -820,7 +820,7 @@
         android:name="org.chromium.chrome.browser.touchless.NoTouchActivity"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/MainTheme"
+        android:theme="@style/Theme.Chromium.Activity"
         android:windowSoftInputMode="adjustResize"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
@@ -829,7 +829,7 @@
         android:name="org.chromium.chrome.browser.customtabs.CustomTabActivity"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/MainTheme"
+        android:theme="@style/Theme.Chromium.Activity"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -844,7 +844,7 @@
         android:name="org.chromium.chrome.browser.customtabs.PaymentHandlerActivity"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/TranslucentMainTheme"
+        android:theme="@style/Theme.Chromium.Activity.Translucent"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -857,7 +857,7 @@
         android:exported="false"
         android:hardwareAccelerated="false"
         android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
-        android:theme="@style/TabbedModeTheme"
+        android:theme="@style/Theme.Chromium.TabbedMode"
         android:windowSoftInputMode="adjustResize"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
@@ -867,7 +867,7 @@
         android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/TabbedModeTheme"
+        android:theme="@style/Theme.Chromium.TabbedMode"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -929,15 +929,15 @@
     <activity
         android:exported="false"
         android:name="org.chromium.chrome.browser.browserservices.ClearDataDialogActivity"
-        android:theme="@style/ClearDataDialogActivityTheme"/>
+        android:theme="@style/Theme.Chromium.ClearDataDialogActivity"/>
     <activity
         android:exported="false"
         android:name="org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity"
-        android:theme="@style/FullscreenTransparentActivityTheme"/>
+        android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent"/>
     <activity
         android:exported="true"
         android:name="org.chromium.chrome.browser.browserservices.ManageTrustedWebActivityDataActivity"
-        android:theme="@style/FullscreenTransparentActivityTheme">
+        android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent">
       <intent-filter>
         <action
             android:name="android.support.customtabs.action.ACTION_MANAGE_TRUSTED_WEB_ACTIVITY_DATA"/>

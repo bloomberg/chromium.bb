@@ -154,7 +154,7 @@ public class AndroidPermissionRequester {
                     dialogText.setText(deniedStringId);
 
                     AlertDialog.Builder builder =
-                            new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
+                            new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
                     builder.setView(view);
                     builder.setPositiveButton(R.string.infobar_update_permissions_button_text,
                             new DialogInterface.OnClickListener() {

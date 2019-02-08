@@ -222,8 +222,8 @@ public class ListMenuButton
         ViewRectProvider rectProvider = new ViewRectProvider(this);
         rectProvider.setIncludePadding(true);
         mPopupMenu = new AnchoredPopupWindow(getContext(), this,
-                ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.popup_bg), contentView,
-                rectProvider);
+                ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.popup_bg_tinted),
+                contentView, rectProvider);
         mPopupMenu.setVerticalOverlapAnchor(true);
         mPopupMenu.setHorizontalOverlapAnchor(true);
         mPopupMenu.setMaxWidth(mMenuWidth);

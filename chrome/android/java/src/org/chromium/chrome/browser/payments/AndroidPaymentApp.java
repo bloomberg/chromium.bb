@@ -294,7 +294,7 @@ public class AndroidPaymentApp
             return;
         }
 
-        new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+        new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
                                 ? R.string.external_payment_app_leave_private_warning

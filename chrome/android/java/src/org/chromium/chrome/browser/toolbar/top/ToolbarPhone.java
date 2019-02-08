@@ -406,7 +406,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         Drawable drawable = ApiCompatibilityUtils.getDrawable(
                 resources, R.drawable.modern_toolbar_background_white);
         drawable.mutate();
-        drawable.setColorFilter(ApiCompatibilityUtils.getColor(resources, R.color.modern_grey_100),
+        drawable.setColorFilter(
+                ApiCompatibilityUtils.getColor(resources, R.color.toolbar_search_background),
                 PorterDuff.Mode.SRC_IN);
         return drawable;
     }
@@ -2422,9 +2423,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         DrawableCompat.setTint(mLocationBarBackground,
-                isIncognito()
-                        ? Color.WHITE
-                        : ApiCompatibilityUtils.getColor(getResources(), R.color.modern_grey_100));
+                isIncognito() ? Color.WHITE
+                              : ApiCompatibilityUtils.getColor(
+                                      getResources(), R.color.toolbar_search_background));
     }
 
     @Override

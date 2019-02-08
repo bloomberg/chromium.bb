@@ -58,12 +58,13 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
         instructionsView.setMovementMethod(LinkMovementMethod.getInstance());
         instructionsView.setText(getInstructionsText());
 
-        AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
-                .setView(view)
-                .setTitle(R.string.sync_passphrase_type_custom_dialog_title)
-                .setPositiveButton(R.string.save, null)
-                .setNegativeButton(R.string.cancel, null)
-                .create();
+        AlertDialog dialog =
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                        .setView(view)
+                        .setTitle(R.string.sync_passphrase_type_custom_dialog_title)
+                        .setPositiveButton(R.string.save, null)
+                        .setNegativeButton(R.string.cancel, null)
+                        .create();
         dialog.getDelegate().setHandleNativeActionModesEnabled(false);
         return dialog;
     }

@@ -51,7 +51,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
 
     public TranslateMenuHelper(Context context, View anchorView, TranslateOptions options,
             TranslateMenuListener itemListener, boolean isIncognito) {
-        mContextWrapper = new ContextThemeWrapper(context, R.style.OverflowMenuTheme);
+        mContextWrapper = new ContextThemeWrapper(context, R.style.OverflowMenuThemeOverlay);
         mAnchorView = anchorView;
         mOptions = options;
         mMenuListener = itemListener;
@@ -98,7 +98,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
             // caused an incorrectly drawn background.
             // TODO(martiw): We might need a new menu background here.
             mPopup.setBackgroundDrawable(
-                    ContextCompat.getDrawable(mContextWrapper, R.drawable.popup_bg));
+                    ContextCompat.getDrawable(mContextWrapper, R.drawable.popup_bg_tinted));
 
             mPopup.setOnItemClickListener(this);
 

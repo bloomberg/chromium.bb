@@ -93,7 +93,8 @@ def _CheckColorReferences(input_api, output_api):
   """Checks no (A)RGB values are defined outside colors.xml."""
   errors = []
   for f in IncludedFiles(input_api):
-    if f.LocalPath().endswith('/colors.xml'):
+    if (f.LocalPath().endswith('/colors.xml') or
+        f.LocalPath().endswith('/color_palette.xml')):
       continue
     # Ingnore vector drawable xmls
     contents = input_api.ReadFile(f)
@@ -123,7 +124,8 @@ def _CheckDuplicateColors(input_api, output_api):
   """Checks colors defined by (A)RGB values in colors.xml are unique."""
   errors = []
   for f in IncludedFiles(input_api):
-    if not f.LocalPath().endswith('/colors.xml'):
+    if not (f.LocalPath().endswith('/colors.xml')
+            or f.LocalPath().endswith('/color_palette.xml')):
       continue
     colors = defaultdict(int)
     contents = input_api.ReadFile(f)

@@ -184,7 +184,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         list.setSelection(adapter.getPositionForType(currentType));
 
         // Create and return the dialog
-        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setNegativeButton(R.string.cancel, this)
                 .setTitle(R.string.sync_passphrase_type_title)
                 .setView(v)

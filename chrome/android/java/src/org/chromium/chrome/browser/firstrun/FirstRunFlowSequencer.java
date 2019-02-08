@@ -429,12 +429,12 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * On tablets, where FRE activity is a dialog, transitions from fillscreen activities
-     * (the ones that use TabbedModeTheme, e.g. ChromeTabbedActivity) look ugly, because
+     * (the ones that use Theme.Chromium.TabbedMode, e.g. ChromeTabbedActivity) look ugly, because
      * when FRE is started from CTA.onCreate(), currently running animation for CTA window
      * is aborted. This is perceived as a flash of white and doesn't look good.
      *
      * To solve this, we added TabbedMode FRE activity, which has the same window background
-     * as TabbedModeTheme activities, but shows content in a FRE-like dialog.
+     * as Theme.Chromium.TabbedMode activities, but shows content in a FRE-like dialog.
      *
      * This function returns whether to use the TabbedModeFRE.
      */

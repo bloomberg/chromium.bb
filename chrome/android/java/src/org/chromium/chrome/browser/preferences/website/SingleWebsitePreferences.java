@@ -775,15 +775,16 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
 
         // Handle the Clear & Reset preference click by showing a confirmation.
-        new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
+        new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.website_reset)
                 .setMessage(R.string.website_reset_confirmation)
-                .setPositiveButton(R.string.website_reset, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        resetSite();
-                    }
-                })
+                .setPositiveButton(R.string.website_reset,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                resetSite();
+                            }
+                        })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
         return true;

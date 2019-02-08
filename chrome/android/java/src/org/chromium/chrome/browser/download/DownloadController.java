@@ -204,7 +204,7 @@ public class DownloadController {
                         null));
 
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+                new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog)
                         .setView(view)
                         .setPositiveButton(R.string.infobar_update_permissions_button_text,
                                 (DialogInterface.OnClickListener) (dialog, id)

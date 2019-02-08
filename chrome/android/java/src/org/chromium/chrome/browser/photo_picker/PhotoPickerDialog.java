@@ -83,7 +83,7 @@ public class PhotoPickerDialog extends AlertDialog {
      */
     public PhotoPickerDialog(Context context, PhotoPickerListener listener,
             boolean multiSelectionAllowed, List<String> mimeTypes) {
-        super(context, R.style.FullscreenWhite);
+        super(context, R.style.Theme_Chromium_Fullscreen);
         mContext = context;
         mListenerWrapper = new PhotoPickerListenerWrapper(listener);
 

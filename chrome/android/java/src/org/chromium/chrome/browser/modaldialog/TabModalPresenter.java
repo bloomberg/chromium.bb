@@ -141,10 +141,10 @@ public class TabModalPresenter
     @Override
     protected void addDialogView(PropertyModel model) {
         if (mDialogContainer == null) initDialogContainer();
-        mDialogView =
-                (ModalDialogView) LayoutInflater
-                        .from(new ContextThemeWrapper(mChromeActivity, R.style.ModalDialogTheme))
-                        .inflate(R.layout.modal_dialog_view, null);
+        mDialogView = (ModalDialogView) LayoutInflater
+                              .from(new ContextThemeWrapper(
+                                      mChromeActivity, R.style.Theme_Chromium_ModalDialog))
+                              .inflate(R.layout.modal_dialog_view, null);
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(model, mDialogView, new ViewBinder());
 
@@ -354,7 +354,7 @@ public class TabModalPresenter
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
-        dialogView.setBackgroundResource(R.drawable.popup_bg);
+        dialogView.setBackgroundResource(R.drawable.popup_bg_tinted);
         mDialogContainer.addView(dialogView, params);
         mDialogContainer.setAlpha(0f);
         mDialogContainer.setVisibility(View.VISIBLE);

@@ -25,7 +25,7 @@
     <!-- Other colors -->
     <color name="dark_action_bar_color">#263238</color>
     <color name="dark_status_bar_color">#161E21</color>
-    <color name="modal_dialog_scrim_color">#7F000000</color>
+    <color name="modal_dialog_scrim_color">@color/black_alpha_65</color>
 
     <!-- Modern color palette -->
     <color name="black_alpha_11">#1D000000</color>
@@ -35,7 +35,6 @@
     <color name="black_alpha_30">#4D000000</color>
     <color name="black_alpha_40">#66000000</color>
     <color name="black_alpha_65">#A6000000</color>
-    <color name="white_alpha_50">#80FFFFFF</color>
     <color name="white_alpha_65">#A6FFFFFF</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
 
@@ -112,14 +111,14 @@
 
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
-    <color name="signin_head_background">@android:color/white</color>
+    <color name="signin_head_background">@color/modern_primary_color</color>
     <color name="signin_body_background">@color/modern_grey_50</color>
     <color name="signin_header_animation_background">@color/modern_grey_50</color>
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">@color/default_primary_color</color>
     <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
-    <color name="suggestions_modern_bg">@android:color/white</color>
+    <color name="suggestions_modern_bg">@color/modern_primary_color</color>
     <color name="suggestions_offline_badge_tint">@color/default_icon_color_blue</color>
 
     <!-- Incognito NTP Colors. -->
@@ -136,9 +135,14 @@
     <color name="progress_bar_background">#3D4386F7</color>
 
     <!-- Theme colors. Also used for toolbar background -->
+    <!-- TODO(huayinz): Split incognito toolbar background color from primary color. -->
     <color name="incognito_primary_color">#505050</color>
     <color name="incognito_modern_primary_color">@color/modern_grey_800</color>
-    <color name="modern_primary_color">@android:color/white</color>
+
+    <!-- Toolbar colors -->
+    <color name="toolbar_background_primary">@android:color/white</color>
+    <color name="toolbar_search_background">@color/modern_grey_100</color>
+    <color name="toolbar_shadow_color">@color/black_alpha_11</color>
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>
@@ -182,7 +186,7 @@
     <color name="bookmark_widget_pressed_highlight">@color/black_alpha_11</color>
 
     <!-- Payments UI colors -->
-    <color name="payments_section_edit_background">@color/modern_grey_100</color>
+    <color name="payments_section_edit_background">@color/modern_secondary_color</color>
     <color name="payments_section_chevron">#B2B2B2</color>
     <color name="payments_section_separator">@color/modern_grey_300</color>
 
@@ -193,11 +197,10 @@
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0E0E0E</color>
     <color name="modern_blue_600_alpha_38_opaque">#A8CAF6</color>
-    <color name="toolbar_shadow_color">@color/black_alpha_11</color>
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="search_box_hint">@color/default_text_color_secondary</color>
-    <color name="thumbnail_placeholder_on_white_bg">@color/modern_grey_100</color>
+    <color name="thumbnail_placeholder_on_primary_bg">@color/modern_secondary_color</color>
     <color name="clear_browsing_data_selected_tab_color">@color/modern_blue_600</color>
 
 </resources>

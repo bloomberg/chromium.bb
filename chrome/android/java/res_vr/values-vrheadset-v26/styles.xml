@@ -5,7 +5,7 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="TabbedModeTheme" parent="TabbedModeThemeBase">
+    <style name="Theme.Chromium.TabbedMode" parent="Base.Theme.Chromium.TabbedMode">
         <item name="android:windowDisablePreview">true</item>
     </style>
 

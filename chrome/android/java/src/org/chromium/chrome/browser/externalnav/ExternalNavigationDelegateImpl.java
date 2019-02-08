@@ -437,7 +437,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (!(context instanceof Activity)) return;
 
         Activity activity = (Activity) context;
-        new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+        new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(R.string.external_app_leave_incognito_warning)
                 .setPositiveButton(R.string.external_app_leave_incognito_leave,

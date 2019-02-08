@@ -42,7 +42,7 @@ public class VrModalPresenter extends ModalDialogManager.Presenter {
         mVrDialog = new VrDialog(mContext, mVrDialogManager);
         ModalDialogView dialogView =
                 (ModalDialogView) LayoutInflater
-                        .from(new ContextThemeWrapper(mContext, R.style.ModalDialogTheme))
+                        .from(new ContextThemeWrapper(mContext, R.style.Theme_Chromium_ModalDialog))
                         .inflate(R.layout.modal_dialog_view, null);
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(model, dialogView, new ModalDialogViewBinder());

@@ -33,7 +33,7 @@ public class ContactsPickerDialog extends AlertDialog {
     public ContactsPickerDialog(Context context, ContactsPickerListener listener,
             boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
             String formattedOrigin) {
-        super(context, R.style.FullscreenWhite);
+        super(context, R.style.Theme_Chromium_Fullscreen);
 
         // Initialize the main content view.
         mCategoryView = new PickerCategoryView(

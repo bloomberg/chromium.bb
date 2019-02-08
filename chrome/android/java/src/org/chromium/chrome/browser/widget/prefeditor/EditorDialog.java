@@ -112,7 +112,7 @@ public class EditorDialog
      */
     public EditorDialog(
             Activity activity, EditorObserverForTest observerForTest, Runnable deleteRunnable) {
-        super(activity, R.style.FullscreenWhite);
+        super(activity, R.style.Theme_Chromium_Fullscreen);
         // Sets transparent background for animating content view.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mContext = activity;

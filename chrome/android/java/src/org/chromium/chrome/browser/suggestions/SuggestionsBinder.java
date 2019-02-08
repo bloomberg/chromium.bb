@@ -238,7 +238,7 @@ public class SuggestionsBinder {
                     new ColorDrawable(mSuggestion.getThumbnailDominantColor() != null
                                     ? mSuggestion.getThumbnailDominantColor()
                                     : ApiCompatibilityUtils.getColor(mThumbnailView.getResources(),
-                                              R.color.thumbnail_placeholder_on_white_bg));
+                                            R.color.thumbnail_placeholder_on_primary_bg));
             mThumbnailView.setImageDrawable(colorDrawable);
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);

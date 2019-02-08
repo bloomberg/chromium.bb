@@ -109,7 +109,8 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
             }
         };
 
-        AlertDialog.Builder alert = new AlertDialog.Builder(getContext(), R.style.AlertDialogTheme);
+        AlertDialog.Builder alert =
+                new AlertDialog.Builder(getContext(), R.style.Theme_Chromium_AlertDialog);
         AlertDialog alertDialog = alert
                 .setTitle(R.string.website_settings_add_site_dialog_title)
                 .setMessage(mDialogMessage)
