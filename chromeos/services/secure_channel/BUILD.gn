@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("secure_channel") {
@@ -172,11 +170,6 @@ static_library("secure_channel") {
     "//chrome/browser",
     "//chromeos/services/secure_channel/public/cpp/client:unit_tests",
   ]
-}
-
-service_manifest("manifest") {
-  name = "secure_channel"
-  source = "manifest.json"
 }
 
 static_library("test_support") {

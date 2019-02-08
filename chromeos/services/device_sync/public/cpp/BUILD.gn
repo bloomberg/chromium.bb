@@ -68,3 +68,17 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/services/device_sync/public/mojom",
+    "//services/preferences/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
+}

@@ -30,7 +30,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/audio_decoder/manifest.h"
+#include "chromeos/services/assistant/public/cpp/audio_decoder_manifest.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // defined(OS_CHROMEOS)
 
@@ -72,7 +72,8 @@ const service_manager::Manifest& GetContentPackagedServicesManifest() {
 #endif
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-        .PackageService(assistant_audio_decoder::GetManifest())
+        // TODO(https://crbug.com/929340): This doesn't belong here!
+        .PackageService(chromeos::assistant::GetAudioDecoderManifest())
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // defined(OS_CHROMEOS)
         .Build()

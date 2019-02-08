@@ -55,15 +55,15 @@
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"  // nogncheck
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"  // nogncheck
 #include "chromeos/assistant/buildflags.h"  // nogncheck
-#include "chromeos/services/device_sync/manifest.h"
+#include "chromeos/services/device_sync/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
-#include "chromeos/services/multidevice_setup/manifest.h"
+#include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "services/ws/common/switches.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"  // nogncheck
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chromeos/services/assistant/manifest.h"  // nogncheck
+#include "chromeos/services/assistant/public/cpp/manifest.h"  // nogncheck
 #endif
 #endif
 
@@ -252,10 +252,10 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .PackageService(image_annotation::GetManifest())
             .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
-            .PackageService(device_sync::GetManifest())
-            .PackageService(multidevice_setup::GetManifest())
+            .PackageService(chromeos::device_sync::GetManifest())
+            .PackageService(chromeos::multidevice_setup::GetManifest())
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-            .PackageService(assistant::GetManifest())
+            .PackageService(chromeos::assistant::GetManifest())
 #endif
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID)
