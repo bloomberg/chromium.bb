@@ -157,10 +157,7 @@ config("runtime_library") {
                            "list lines")
     foreach(ld_path, ld_paths) {
       ld_path = rebase_path(ld_path, root_build_dir)
-      ldflags += [
-        "-L" + ld_path,
-        "-Wl,-rpath-link=" + ld_path,
-      ]
+      ldflags += [ "-L" + ld_path ]
     }
   }
 }
