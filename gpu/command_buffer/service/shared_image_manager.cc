@@ -43,7 +43,7 @@ SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
                              MemoryTypeTracker* tracker) {
   DCHECK(backing->mailbox().IsSharedImage());
   if (images_.find(backing->mailbox()) != images_.end()) {
-    LOG(ERROR) << "ShraedImageManager::Register: Trying to register an "
+    LOG(ERROR) << "SharedImageManager::Register: Trying to register an "
                   "already registered mailbox.";
     backing->Destroy();
     return nullptr;
