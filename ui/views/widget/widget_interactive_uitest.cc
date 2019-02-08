@@ -998,7 +998,6 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
 }
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_CHROMEOS)
 // Provides functionality to create a window modal dialog.
 class ModalDialogDelegate : public DialogDelegateView {
  public:
@@ -1039,9 +1038,15 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   EXPECT_EQ(top_level_native_view, focus_changes[0]);
 
   // Create a modal dialog.
+  ui::ModalType modal_type = ui::MODAL_TYPE_WINDOW;
+#if defined(OS_CHROMEOS)
+  // On Chrome OS this only works for MODAL_TYPE_CHILD, which makes a widget
+  // backed by NativeWidgetAura. Restoring focus to the parent window from a
+  // closed MODAL_TYPE_WINDOW requires help from the window service.
+  modal_type = ui::MODAL_TYPE_CHILD;
+#endif
   // This instance will be destroyed when the dialog is destroyed.
-  ModalDialogDelegate* dialog_delegate =
-      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+  ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate(modal_type);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
       dialog_delegate, NULL, top_level_widget.GetNativeView());
@@ -1078,6 +1083,11 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 // was deprecated. It does have application modal windows, but only Ash requests
 // those.
 #if defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_SystemModalWindowReleasesCapture \
+  DISABLED_SystemModalWindowReleasesCapture
+#elif defined(OS_CHROMEOS)
+// Investigate enabling for Chrome OS. It probably requires help from the window
+// service.
 #define MAYBE_SystemModalWindowReleasesCapture \
     DISABLED_SystemModalWindowReleasesCapture
 #else
@@ -1123,8 +1133,6 @@ TEST_F(DesktopWidgetTestInteractive, MAYBE_SystemModalWindowReleasesCapture) {
   top_level_widget.CloseNow();
   WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
 }
-
-#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(DesktopWidgetTestInteractive, CanActivateFlagIsHonored) {
   Widget widget;
