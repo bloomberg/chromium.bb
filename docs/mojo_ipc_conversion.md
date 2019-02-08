@@ -348,7 +348,126 @@ support for legacy IPC serialization and all uses of it should therefore be
 treated as technical debt.
 ***
 
-## Typemaps For Content and Blink Types
+## Blink-Specific Advice
+
+### Variants
+Let's assume we have a mojom file such as this:
+
+``` cpp
+module example.mojom;
+
+interface Foo {
+  SendData(string param1, array<int32> param2);
+};
+```
+
+The following GN snippet will generate two concrete targets: `example` and
+`example_blink`:
+
+```
+mojom("example") {
+  sources = [ "example.mojom" ]
+}
+```
+
+The target `example` will generate Chromium-style C++ bindings using STL types:
+
+``` cpp
+// example.mojom.h
+namespace example {
+namespace mojom {
+
+class Example {
+  virtual void SendArray(const std::string& param1, const std::vector<int32_t>& param2) = 0;
+}
+
+} // namespace mojom
+} // namespace example
+```
+
+The target `example_blink` will generate Blink-style C++ bindings using WTF types:
+
+``` cpp
+// example.mojom-blink.h
+namespace example {
+namespace mojom {
+namespace blink {
+
+class Example {
+  virtual void SendArray(const WTF::String& param1, const WTF::Vector<int32_t>& param2) = 0;
+}
+
+} // namespace blink
+} // namespace mojom
+} // namespace example
+```
+
+Thanks to these separate sets of bindings no work is necessary to convert types
+between Blink-style code and Chromium-style code. It is handled automatically
+during message serialization and deserialization.
+
+For more information about variants, see
+[this section](/mojo/public/cpp/bindings/README.md#Variants) of the C++ bindings
+documentation.
+
+### Binding callbacks
+
+Mojo methods that return a value take an instance of `base::OnceCallback`.
+Use `WTF::Bind()` and an appropriate wrapper function depending on the type of
+object and the callback.
+
+For garbage-collected (Oilpan) classes owning the `InterfacePtr`, it is recommended
+to use `WrapPersistent(this)` for response callbacks and `WrapWeakPersistent(this)`
+for connection error handlers:
+
+``` cpp
+// src/third_party/blink/renderer/modules/vr/vr_controller.h
+service_.set_connection_error_handler(
+      WTF::Bind(&VRController::Dispose, WrapWeakPersistent(this)));
+service_->RequestDevice(
+      WTF::Bind(&VRController::OnRequestDeviceReturned, WrapPersistent(this)));
+```
+
+Non-garbage-collected objects can use `WTF::Unretained(this)` for both response
+and error handler callbacks when the `InterfacePtr` is owned by the object bound
+to the callback or the object is guaranteed to outlive the Mojo connection for
+another reason. Otherwise a weak pointer should be used. However, it is not a
+common pattern since using Oilpan is recommended for all Blink code.
+
+### Implementing Mojo interfaces in Blink
+
+Only a `mojo::Binding` or `mojo::BindingSet` should be used when implementing a
+Mojo interface in an Oilpan-managed object. The object must then have a pre-finalizer
+to close any open pipes when the object is about to be swept as lazy sweeping
+means that it may be invalid long before the destructor is called. This requires
+setup in both the object header and implementation.
+
+``` cpp
+// MyObject.h
+class MyObject : public GarbageCollected,
+                 public example::mojom::blink::Example {
+  USING_PRE_FINALIZER(MyObject, Dispose);
+
+ public:
+  MyObject();
+  void Dispose();
+
+  // Implementation of example::mojom::blink::Example.
+
+ private:
+  mojo::Binding<example::mojom::blink::Example> m_binding{this};
+};
+
+// MyObject.cpp
+void MyObject::Dispose() {
+  m_binding.Close();
+}
+```
+
+For more information about Blink's Garbage Collector, see
+[Blink GC API Reference](/third_party/blink/renderer/platform/heap/BlinkGCAPIReference.md).
+
+### Typemaps For Content and Blink Types
 
 Using typemapping for messages that go between Blink and content browser code
 can sometimes be tricky due to things like dependency cycles or confusion over
