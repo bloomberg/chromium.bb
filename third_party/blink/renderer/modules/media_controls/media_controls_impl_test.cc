@@ -35,7 +35,9 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_mute_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_list_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_play_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_slider_element.h"
@@ -259,6 +261,13 @@ class MediaControlsImplTest : public PageTestBase,
   MediaControlMuteButtonElement* MuteButtonElement() const {
     return media_controls_->mute_button_;
   }
+  MediaControlPlayButtonElement* PlayButtonElement() const {
+    return media_controls_->play_button_;
+  }
+  MediaControlOverflowMenuButtonElement* OverflowMenuButtonElement() const {
+    return media_controls_->overflow_menu_;
+  }
+
   MockWebMediaPlayerForImpl* WebMediaPlayer() {
     return static_cast<MockWebMediaPlayerForImpl*>(
         MediaControls().MediaElement().GetWebMediaPlayer());
@@ -1489,6 +1498,37 @@ TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
     EXPECT_EQ(3.0, style->MarginBottom().Pixels());
     EXPECT_EQ(4.0, style->MarginRight().Pixels());
   }
+}
+
+TEST_F(ModernMediaControlsImplTest, MediaControlsDisabledWithNoSource) {
+  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kNoSource);
+
+  EXPECT_TRUE(PlayButtonElement()->hasAttribute(html_names::kDisabledAttr));
+  EXPECT_TRUE(
+      OverflowMenuButtonElement()->hasAttribute(html_names::kDisabledAttr));
+  EXPECT_TRUE(TimelineElement()->hasAttribute(html_names::kDisabledAttr));
+
+  MediaControls().MediaElement().setAttribute(html_names::kPreloadAttr, "none");
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  test::RunPendingTasks();
+  SimulateLoadedMetadata();
+
+  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kNotLoaded);
+
+  EXPECT_FALSE(PlayButtonElement()->hasAttribute(html_names::kDisabledAttr));
+  EXPECT_FALSE(
+      OverflowMenuButtonElement()->hasAttribute(html_names::kDisabledAttr));
+  EXPECT_TRUE(TimelineElement()->hasAttribute(html_names::kDisabledAttr));
+
+  MediaControls().MediaElement().removeAttribute(html_names::kPreloadAttr);
+  SimulateLoadedMetadata();
+
+  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kLoadingMetadata);
+
+  EXPECT_FALSE(PlayButtonElement()->hasAttribute(html_names::kDisabledAttr));
+  EXPECT_FALSE(
+      OverflowMenuButtonElement()->hasAttribute(html_names::kDisabledAttr));
+  EXPECT_FALSE(TimelineElement()->hasAttribute(html_names::kDisabledAttr));
 }
 
 }  // namespace blink
