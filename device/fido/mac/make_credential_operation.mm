@@ -64,7 +64,7 @@ void MakeCredentialOperation::Run() {
   if (!std::any_of(key_params.begin(), key_params.end(), is_es256)) {
     DVLOG(1) << "No supported algorithm found.";
     std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithms,
+        .Run(CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm,
              base::nullopt);
     return;
   }

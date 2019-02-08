@@ -81,6 +81,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   const base::Optional<std::vector<uint8_t>>& pin_auth() const {
     return pin_auth_;
   }
+  const base::Optional<uint8_t>& pin_protocol() const { return pin_protocol_; }
 
   void set_is_u2f_only(bool is_u2f_only) { is_u2f_only_ = is_u2f_only; }
   bool is_u2f_only() { return is_u2f_only_; }
