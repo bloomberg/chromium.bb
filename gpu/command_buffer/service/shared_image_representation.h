@@ -43,15 +43,20 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
 
   // Indicates that the underlying graphics context has been lost, and the
   // backing should be treated as destroyed.
-  void OnContextLost() { backing_->OnContextLost(); }
+  void OnContextLost() {
+    has_context_ = false;
+    backing_->OnContextLost();
+  }
 
  protected:
   SharedImageBacking* backing() const { return backing_; }
+  bool has_context() const { return has_context_; }
 
  private:
   SharedImageManager* manager_;
   SharedImageBacking* backing_;
   MemoryTypeTracker* tracker_;
+  bool has_context_ = true;
 };
 
 class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
