@@ -808,15 +808,14 @@ size_t VideoFrame::Columns(size_t plane, VideoPixelFormat format, int width) {
 
 // static
 void VideoFrame::HashFrameForTesting(base::MD5Context* context,
-                                     const scoped_refptr<VideoFrame>& frame) {
+                                     const VideoFrame& frame) {
   DCHECK(context);
-  for (size_t plane = 0; plane < NumPlanes(frame->format()); ++plane) {
-    for (int row = 0; row < frame->rows(plane); ++row) {
-      base::MD5Update(
-          context,
-          base::StringPiece(reinterpret_cast<char*>(frame->data(plane) +
-                                                    frame->stride(plane) * row),
-                            frame->row_bytes(plane)));
+  for (size_t plane = 0; plane < NumPlanes(frame.format()); ++plane) {
+    for (int row = 0; row < frame.rows(plane); ++row) {
+      base::MD5Update(context, base::StringPiece(reinterpret_cast<const char*>(
+                                                     frame.data(plane) +
+                                                     frame.stride(plane) * row),
+                                                 frame.row_bytes(plane)));
     }
   }
 }

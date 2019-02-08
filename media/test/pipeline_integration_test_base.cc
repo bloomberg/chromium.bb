@@ -549,7 +549,7 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
     return;
   last_frame_ = frame;
   DVLOG(3) << __func__ << " pts=" << frame->timestamp().InSecondsF();
-  VideoFrame::HashFrameForTesting(&md5_context_, frame);
+  VideoFrame::HashFrameForTesting(&md5_context_, *frame.get());
 }
 
 void PipelineIntegrationTestBase::CheckDuration() {
