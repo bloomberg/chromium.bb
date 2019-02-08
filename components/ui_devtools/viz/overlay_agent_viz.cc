@@ -12,7 +12,7 @@ OverlayAgentViz::OverlayAgentViz(DOMAgentViz* dom_agent)
 OverlayAgentViz::~OverlayAgentViz() {}
 
 protocol::Response OverlayAgentViz::setInspectMode(
-    const String& in_mode,
+    const protocol::String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   return protocol::Response::OK();
 }

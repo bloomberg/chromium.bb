@@ -6,6 +6,8 @@ _inspector_protocol = "//third_party/inspector_protocol"
 import("$_inspector_protocol/inspector_protocol.gni")
 
 _protocol_generated = [
+  "base_string_adapter.cc",
+  "base_string_adapter.h",
   "CSS.cpp",
   "CSS.h",
   "DOM.cpp",
@@ -71,8 +73,6 @@ component("ui_devtools") {
     "overlay_agent.h",
     "root_element.cc",
     "root_element.h",
-    "string_util.cc",
-    "string_util.h",
     "switches.cc",
     "switches.h",
     "ui_element.cc",

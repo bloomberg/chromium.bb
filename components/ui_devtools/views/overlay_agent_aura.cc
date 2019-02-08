@@ -396,7 +396,7 @@ void OverlayAgentAura::SetPinnedNodeId(int node_id) {
 }
 
 protocol::Response OverlayAgentAura::setInspectMode(
-    const String& in_mode,
+    const protocol::String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
   if (in_mode.compare("searchForNode") == 0) {
