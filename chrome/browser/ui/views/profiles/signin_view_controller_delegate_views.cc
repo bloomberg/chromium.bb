@@ -23,17 +23,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
-#include "chrome/browser/ui/webui/signin/signin_utils.h"
-
-namespace {
-
-content::WebContents* GetAuthFrameWebContents(
-    content::WebContents* web_ui_web_contents) {
-  return signin::GetAuthFrameWebContents(web_ui_web_contents, "signin-frame");
-}
-
-}  // namespace
-
 namespace {
 
 const int kModalDialogWidth = 448;
@@ -116,11 +105,6 @@ int SigninViewControllerDelegateViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-void SigninViewControllerDelegateViews::PerformClose() {
-  if (modal_signin_widget_)
-    modal_signin_widget_->Close();
-}
-
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
   int max_height = browser()
                        ->window()
@@ -141,16 +125,10 @@ content::WebContents* SigninViewControllerDelegateViews::GetWebContents() {
   return web_contents_;
 }
 
-void SigninViewControllerDelegateViews::PerformNavigation() {
-  if (CanGoBack(web_contents_))
-    GetAuthFrameWebContents(web_contents_)->GetController().GoBack();
-  else
-    CloseModalSignin();
-}
-
 void SigninViewControllerDelegateViews::CloseModalSignin() {
   ResetSigninViewControllerDelegate();
-  PerformClose();
+  if (modal_signin_widget_)
+    modal_signin_widget_->Close();
 }
 
 void SigninViewControllerDelegateViews::DisplayModal() {
@@ -198,23 +176,6 @@ bool SigninViewControllerDelegateViews::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Discard the context menu
   return true;
-}
-
-void SigninViewControllerDelegateViews::LoadingStateChanged(
-    content::WebContents* source,
-    bool to_different_document) {
-  // The WebUI object can be missing for an error page, per
-  // https://crbug.com/860409.
-  if (!source->GetWebUI())
-    return;
-
-  if (CanGoBack(source)) {
-    source->GetWebUI()->CallJavascriptFunctionUnsafe(
-        "inline.login.showBackButton");
-  } else {
-    source->GetWebUI()->CallJavascriptFunctionUnsafe(
-        "inline.login.showCloseButton");
-  }
 }
 
 std::unique_ptr<views::WebView>
@@ -269,12 +230,6 @@ void SigninViewControllerDelegateViews::ResetSigninViewControllerDelegate() {
     signin_view_controller_->ResetModalSigninDelegate();
     signin_view_controller_ = nullptr;
   }
-}
-
-bool SigninViewControllerDelegateViews::CanGoBack(
-    content::WebContents* web_ui_web_contents) const {
-  auto* auth_web_contents = GetAuthFrameWebContents(web_ui_web_contents);
-  return auth_web_contents && auth_web_contents->GetController().CanGoBack();
 }
 
 // --------------------------------------------------------------------

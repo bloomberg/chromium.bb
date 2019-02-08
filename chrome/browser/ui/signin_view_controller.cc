@@ -167,11 +167,6 @@ void SigninViewController::SetModalSigninHeight(int height) {
     delegate_->ResizeNativeView(height);
 }
 
-void SigninViewController::PerformNavigation() {
-  if (delegate_)
-    delegate_->PerformNavigation();
-}
-
 void SigninViewController::ResetModalSigninDelegate() {
   delegate_ = nullptr;
 }

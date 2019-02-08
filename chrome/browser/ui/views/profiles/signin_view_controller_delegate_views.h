@@ -49,13 +49,10 @@ class SigninViewControllerDelegateViews
 
   // SigninViewControllerDelegate:
   void CloseModalSignin() override;
-  void PerformNavigation() override;
   void ResizeNativeView(int height) override;
   content::WebContents* GetWebContents() override;
 
   // content::WebContentsDelegate:
-  void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   bool HandleKeyboardEvent(
       content::WebContents* source,
@@ -91,14 +88,6 @@ class SigninViewControllerDelegateViews
 
   // Displays the modal dialog.
   void DisplayModal();
-
-  // Returns true if |web_ui_web_contents| can go back.
-  bool CanGoBack(content::WebContents* web_ui_web_contents) const;
-
-  // Close the platform-specific dialog window. Note that this
-  // method may destroy this object, so the caller should no longer use this
-  // object after calling this method.
-  void PerformClose();
 
   Browser* browser() { return browser_; }
 
