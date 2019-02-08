@@ -268,6 +268,11 @@ void MachineLevelUserCloudPolicyController::
     UMA_HISTOGRAM_TIMES(
         "Enterprise.MachineLevelUserCloudPolicyEnrollment.RequestFailureTime",
         enrollment_time);
+    MachineLevelUserCloudPolicyManager* policy_manager =
+        g_browser_process->browser_policy_connector()
+            ->machine_level_user_cloud_policy_manager();
+    if (policy_manager)
+      policy_manager->store()->InitWithoutToken();
     NotifyPolicyRegisterFinished(false);
     return;
   }
