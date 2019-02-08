@@ -97,12 +97,6 @@ class ParkableStringTest : public ParkableStringTestBase {
     EXPECT_TRUE(parkable.Impl()->is_parked());
     return parkable;
   }
-
-  void SetUp() override {
-    ParkableStringTestBase::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        kCompressParkableStringsInBackground);
-  }
 };
 
 // The main aim of this test is to check that the compressed size of a string

@@ -22,7 +22,7 @@ namespace blink {
 class ParkableString;
 
 const base::Feature kCompressParkableStringsInBackground{
-    "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompressParkableStringsInBackground", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCompressParkableStringsInForeground{
     "CompressParkableStringsInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
 
