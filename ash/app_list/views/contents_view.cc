@@ -113,7 +113,7 @@ void ContentsView::Init(AppListModel* model) {
 
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
     assistant_page_view_ =
-        new AssistantPageView(view_delegate->GetAssistantViewDelegate());
+        new AssistantPageView(this, view_delegate->GetAssistantViewDelegate());
     assistant_page_view_->SetVisible(false);
     AddLauncherPage(assistant_page_view_,
                     ash::AppListState::kStateEmbeddedAssistant);
@@ -407,9 +407,13 @@ void ContentsView::UpdateExpandArrowFocusBehavior(
 }
 
 void ContentsView::UpdateSearchBoxVisibility(ash::AppListState current_state) {
-  const bool show_search_box =
-      current_state != ash::AppListState::kStateEmbeddedAssistant;
-  GetSearchBoxView()->SetVisible(show_search_box);
+  auto* search_box_widget = GetSearchBoxView()->GetWidget();
+  if (search_box_widget) {
+    // Hide search box widget in order to click on the embedded Assistant UI.
+    const bool show_search_box =
+        current_state != ash::AppListState::kStateEmbeddedAssistant;
+    show_search_box ? search_box_widget->Show() : search_box_widget->Hide();
+  }
 }
 
 PaginationModel* ContentsView::GetAppsPaginationModel() {

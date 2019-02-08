@@ -1721,6 +1721,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_WINDOW" desc="The accessible description of the Assistant window.">
         Assistant
       </message>
+      <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_BACK_ACCNAME" desc="Accessibility name for a back image button when clicked back to previous launcher state.">
+        Back to launcher
+      </message>
       <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT" desc="Message shown as a placeholder in Assistant's input textfield when empty.">
         Type a message
       </message>

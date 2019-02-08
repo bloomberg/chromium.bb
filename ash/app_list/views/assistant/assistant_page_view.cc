@@ -29,7 +29,9 @@ constexpr int kSearchBoxHeight = 56;
 }  // namespace
 
 AssistantPageView::AssistantPageView(
-    ash::AssistantViewDelegate* assistant_view_delegate) {
+    ContentsView* contents_view,
+    ash::AssistantViewDelegate* assistant_view_delegate)
+    : contents_view_(contents_view) {
   assistant_main_view_ = new AssistantMainView(assistant_view_delegate);
   AddChildView(assistant_main_view_);
   InitLayout();
@@ -46,6 +48,10 @@ void AssistantPageView::InitLayout() {
           SK_ColorWHITE, search_box::kSearchBoxBorderCornerRadius)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
+}
+
+void AssistantPageView::Back() {
+  contents_view_->Back();
 }
 
 const char* AssistantPageView::GetClassName() const {

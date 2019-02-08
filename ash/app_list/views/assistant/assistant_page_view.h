@@ -17,15 +17,17 @@ class AssistantViewDelegate;
 namespace app_list {
 
 class AssistantMainView;
+class ContentsView;
 
 // The Assistant page for the app list.
 class APP_LIST_EXPORT AssistantPageView : public AppListPage {
  public:
-  explicit AssistantPageView(
-      ash::AssistantViewDelegate* assistant_view_delegate);
+  AssistantPageView(ContentsView* contents_view,
+                    ash::AssistantViewDelegate* assistant_view_delegate);
   ~AssistantPageView() override;
 
   void InitLayout();
+  void Back();
 
   // views::View:
   const char* GetClassName() const override;
@@ -44,6 +46,7 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
 
  private:
   // Owned by the views hierarchy.
+  ContentsView* contents_view_ = nullptr;
   AssistantMainView* assistant_main_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantPageView);

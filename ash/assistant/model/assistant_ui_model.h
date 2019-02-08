@@ -72,7 +72,8 @@ enum class AssistantButtonId {
   kKeyboardInputToggle = 4,
   kVoiceInputToggle = 5,
   kSettings = 6,
-  kMaxValue = kSettings,
+  kBackInLauncher = 7,
+  kMaxValue = kBackInLauncher
 };
 
 // Models the Assistant UI.
