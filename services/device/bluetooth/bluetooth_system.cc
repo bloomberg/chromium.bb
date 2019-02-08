@@ -140,9 +140,11 @@ void BluetoothSystem::SetPowered(bool powered, SetPoweredCallback callback) {
   switch (state_) {
     case State::kUnsupported:
     case State::kUnavailable:
-      std::move(callback).Run(SetPoweredResult::kBluetoothUnavailable);
+      std::move(callback).Run(SetPoweredResult::kFailedBluetoothUnavailable);
       return;
     case State::kTransitioning:
+      std::move(callback).Run(SetPoweredResult::kFailedInProgress);
+      return;
     case State::kPoweredOff:
     case State::kPoweredOn:
       break;
@@ -153,12 +155,9 @@ void BluetoothSystem::SetPowered(bool powered, SetPoweredCallback callback) {
     return;
   }
 
-  // Update the BluetoothSystem state to kTransitioning if a previous call to
-  // SetPowered() has not done so already.
-  if (state_ != State::kTransitioning) {
-    state_ = State::kTransitioning;
-    client_ptr_->OnStateChanged(state_);
-  }
+  DCHECK_NE(state_, State::kTransitioning);
+  state_ = State::kTransitioning;
+  client_ptr_->OnStateChanged(state_);
 
   GetBluetoothAdapterClient()
       ->GetProperties(active_adapter_.value())
@@ -193,7 +192,7 @@ void BluetoothSystem::StartScan(StartScanCallback callback) {
     case State::kUnavailable:
     case State::kPoweredOff:
     case State::kTransitioning:
-      std::move(callback).Run(StartScanResult::kBluetoothUnavailable);
+      std::move(callback).Run(StartScanResult::kFailedBluetoothUnavailable);
       return;
     case State::kPoweredOn:
       break;
@@ -211,7 +210,7 @@ void BluetoothSystem::StopScan(StopScanCallback callback) {
     case State::kUnavailable:
     case State::kPoweredOff:
     case State::kTransitioning:
-      std::move(callback).Run(StopScanResult::kBluetoothUnavailable);
+      std::move(callback).Run(StopScanResult::kFailedBluetoothUnavailable);
       return;
     case State::kPoweredOn:
       break;

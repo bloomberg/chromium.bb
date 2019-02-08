@@ -101,19 +101,27 @@ interface BluetoothSystem {
     // Unknown failure when sending the command to the BT radio.
     kFailedUnknownReason,
     // Can't use Bluetooth right now e.g. a BT radio is not present.
-    kBluetoothUnavailable,
+    kFailedBluetoothUnavailable,
+    // Can't change the radio state right now, there is an in-progress call.
+    kFailedInProgress,
   };
 
   // Attempts to change the state of the Bluetooth to `kPoweredOn` if |powered|
-  // and `kPoweredOff` otherwise . Callback is run with `kSuccess if the command
-  // was successfully sent to the BT radio. The state immediately changes to
-  // kTransitioning and once the BT radio actually changes state
-  // BluetoothSystemClient::OnStateChanged will be called.
-  // TODO(https://crbug.com/896113): This function is missing two features:
+  // and `kPoweredOff` otherwise . Callback is run with `kSuccess` if the
+  // command was successfully sent to the BT radio. The state immediately
+  // changes to kTransitioning and once the BT radio actually changes state
+  // BluetoothSystemClient::OnStateChanged will be called. Does not support
+  // concurrent calls.
+  //
+  // To keep the implementation simple and because no clients need it (UI
+  // clients disable the power toggle during `kTransitioning`), this function
+  // does not support concurrent calls. Meaning, if there is a pending call to
+  // SetPowered(), all new calls to SetPowered() will immediately fail with
+  // `kFailedInProgress`.
+  //
+  // TODO(https://crbug.com/896113): This function is missing one feature:
   //  1. The new state should be saved in the user's pref so that the next time
-  //     the machine turns off the state matches the user pref.
-  //  2. Support concurrent calls; currently BlueZ just drops other calls if
-  //     there is one in progress already.
+  //     the machine restarts the state matches the user pref.
   SetPowered(bool powered) => (SetPoweredResult result);
 
   // Whether the BT radio is scanning for devices.
@@ -137,7 +145,7 @@ interface BluetoothSystem {
     kFailedUnknownReason,
     // Can't use Bluetooth right now e.g. BT radio is off, not present, or
     // transitioning between states.
-    kBluetoothUnavailable,
+    kFailedBluetoothUnavailable,
     // TODO(https://crbug.com/897996): Add more specific error codes.
   };
 
@@ -157,7 +165,7 @@ interface BluetoothSystem {
     // Unknown failure when sending the command to the BT radio.
     kFailedUnknownReason,
     // Can't use Bluetooth right now e.g. BT radio is off, or not present.
-    kBluetoothUnavailable,
+    kFailedBluetoothUnavailable,
     // TODO(https://crbug.com/897996): Add more specific error codes.
   };
 
