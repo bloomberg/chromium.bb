@@ -13,7 +13,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/unified_consent/unified_consent_metrics.h"
-#include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace user_prefs {
@@ -27,9 +26,6 @@ class SyncService;
 }
 
 namespace unified_consent {
-
-using Service = UnifiedConsentServiceClient::Service;
-using ServiceState = UnifiedConsentServiceClient::ServiceState;
 
 enum class MigrationState : int {
   kNotInitialized = 0,
@@ -45,7 +41,6 @@ class UnifiedConsentService : public KeyedService,
                               public syncer::SyncServiceObserver {
  public:
   UnifiedConsentService(
-      std::unique_ptr<UnifiedConsentServiceClient> service_client,
       PrefService* pref_service,
       identity::IdentityManager* identity_manager,
       syncer::SyncService* sync_service);
@@ -57,8 +52,7 @@ class UnifiedConsentService : public KeyedService,
   // Rolls back changes made during migration. This method does nothing if the
   // user hasn't migrated to unified consent yet.
   static void RollbackIfNeeded(PrefService* user_pref_service,
-                               syncer::SyncService* sync_service,
-                               UnifiedConsentServiceClient* service_client);
+                               syncer::SyncService* sync_service);
 
   // Enables all Google services tied to unified consent.
   // Note: Sync has to be enabled through the SyncService. It is *not* enabled
@@ -88,7 +82,6 @@ class UnifiedConsentService : public KeyedService,
   // |OnStateChanged| when the sync engine is initialized.
   void UpdateSettingsForMigration();
 
-  std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;
   identity::IdentityManager* identity_manager_;
   syncer::SyncService* sync_service_;

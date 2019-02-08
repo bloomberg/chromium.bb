@@ -114,7 +114,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SafeBrowsingUIManager;
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
-  friend class ChromeUnifiedConsentServiceClient;
   friend bool nux::IsNuxOnboardingEnabled(Profile* profile);
 
   // Testing related friends.

@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_profile.h"
@@ -28,22 +27,6 @@ class UnifiedConsentBrowserTest : public SyncTest {
                                 UnifiedConsentFeatureState::kEnabled)
       : SyncTest(SINGLE_CLIENT), scoped_unified_consent_state_(feature_state) {}
   ~UnifiedConsentBrowserTest() override = default;
-
-  void DisableGoogleServices() {
-    ChromeUnifiedConsentServiceClient consent_service_client(
-        browser()->profile()->GetPrefs());
-    for (int i = 0;
-         i <= static_cast<int>(UnifiedConsentServiceClient::Service::kLast);
-         ++i) {
-      UnifiedConsentServiceClient::Service service =
-          static_cast<UnifiedConsentServiceClient::Service>(i);
-      if (consent_service_client.IsServiceSupported(service)) {
-        consent_service_client.SetServiceEnabled(service, false);
-        EXPECT_EQ(UnifiedConsentServiceClient::ServiceState::kDisabled,
-                  consent_service_client.GetServiceState(service));
-      }
-    }
-  }
 
   void EnableSync() {
     Profile* profile = browser()->profile();
@@ -83,10 +66,6 @@ class UnifiedConsentDisabledBrowserTest : public UnifiedConsentBrowserTest {
 
 // Tests that the settings histogram is recorded if unified consent is enabled.
 // The histogram is recorded during profile initialization.
-IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest, PRE_SettingsHistogram_None) {
-  DisableGoogleServices();
-}
-
 IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest, SettingsHistogram_None) {
   histogram_tester_.ExpectUniqueSample(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
@@ -95,11 +74,6 @@ IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest, SettingsHistogram_None) {
 
 // Tests that the settings histogram is recorded if unified consent is disabled.
 // The histogram is recorded during profile initialization.
-IN_PROC_BROWSER_TEST_F(UnifiedConsentDisabledBrowserTest,
-                       PRE_SettingsHistogram_None) {
-  DisableGoogleServices();
-}
-
 IN_PROC_BROWSER_TEST_F(UnifiedConsentDisabledBrowserTest,
                        SettingsHistogram_None) {
   histogram_tester_.ExpectUniqueSample(

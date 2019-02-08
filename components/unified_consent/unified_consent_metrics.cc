@@ -40,22 +40,6 @@ bool RecordSettingsHistogramFromPref(const char* pref_name,
   return true;
 }
 
-// Checks if a service is enabled and if so, records a sample in the
-// SyncAndGoogleServicesSettings histogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromService(
-    UnifiedConsentServiceClient* client,
-    UnifiedConsentServiceClient::Service service,
-    SettingsHistogramValue value) {
-  if (client->GetServiceState(service) !=
-      UnifiedConsentServiceClient::ServiceState::kEnabled) {
-    return false;
-  }
-
-  RecordSettingsHistogramSample(value);
-  return true;
-}
-
 void RecordSyncDataTypeSample(SyncDataType data_type) {
   UMA_HISTOGRAM_ENUMERATION(
       "UnifiedConsent.SyncAndGoogleServicesSettings.AfterAdvancedOptIn."
@@ -65,8 +49,7 @@ void RecordSyncDataTypeSample(SyncDataType data_type) {
 
 }  // namespace
 
-void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
-                             PrefService* pref_service) {
+void RecordSettingsHistogram(PrefService* pref_service) {
   bool metric_recorded = false;
 
   metric_recorded |= RecordSettingsHistogramFromPref(
@@ -75,14 +58,6 @@ void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
   metric_recorded |= RecordSettingsHistogramFromPref(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service,
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
-  metric_recorded |= RecordSettingsHistogramFromService(
-      service_client,
-      UnifiedConsentServiceClient::Service::kSafeBrowsingExtendedReporting,
-      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting);
-  metric_recorded |= RecordSettingsHistogramFromService(
-      service_client, UnifiedConsentServiceClient::Service::kSpellCheck,
-      metrics::SettingsHistogramValue::kSpellCheck);
-
   if (!metric_recorded)
     RecordSettingsHistogramSample(metrics::SettingsHistogramValue::kNone);
 }
