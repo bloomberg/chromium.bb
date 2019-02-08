@@ -865,7 +865,7 @@ class CC_EXPORT LayerTreeHostImpl
   // thread side to keep track of the frequency of scrolling with different
   // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
   // scroll source info for Use Counters.
-  void UpdateScrollSourceInfo(bool is_wheel_scroll);
+  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
@@ -952,6 +952,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   InputHandlerClient* input_handler_client_ = nullptr;
   bool did_lock_scrolling_layer_ = false;
+  bool touch_scrolling_ = false;
   bool wheel_scrolling_ = false;
   bool scroll_affects_scroll_handler_ = false;
   ElementId scroll_element_id_mouse_currently_over_;

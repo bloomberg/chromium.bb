@@ -95,9 +95,17 @@ cc::ScrollState CreateScrollStateForInertialUpdate(
 
 cc::InputHandler::ScrollInputType GestureScrollInputType(
     blink::WebGestureDevice device) {
-  return device == blink::kWebGestureDeviceTouchpad
-             ? cc::InputHandler::WHEEL
-             : cc::InputHandler::TOUCHSCREEN;
+  switch (device) {
+    case blink::kWebGestureDeviceTouchpad:
+      return cc::InputHandler::WHEEL;
+    case blink::kWebGestureDeviceTouchscreen:
+      return cc::InputHandler::TOUCHSCREEN;
+    case blink::kWebGestureDeviceSyntheticAutoscroll:
+      return cc::InputHandler::AUTOSCROLL;
+    default:
+      NOTREACHED();
+      return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
+  }
 }
 
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(
