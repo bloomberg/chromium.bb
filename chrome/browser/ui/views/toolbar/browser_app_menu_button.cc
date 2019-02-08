@@ -32,12 +32,16 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
@@ -57,6 +61,65 @@ namespace {
 // TODO(collinbaker): https://crbug.com/909747 handle themed toolbar colors, and
 // maybe move this into theme system.
 constexpr SkColor kFeaturePromoHighlightColor = gfx::kGoogleBlue600;
+
+// Cycle duration of ink drop pulsing animation used for in-product help.
+constexpr base::TimeDelta kFeaturePromoPulseDuration =
+    base::TimeDelta::FromMilliseconds(800);
+
+// Max inset for pulsing animation.
+constexpr float kFeaturePromoPulseInsetDip = 3.0f;
+
+// An InkDropMask used to animate the size of the BrowserAppMenuButton's ink
+// drop. This is used when showing in-product help.
+class PulsingInkDropMask : public gfx::AnimationDelegate,
+                           public views::InkDropMask {
+ public:
+  PulsingInkDropMask(const gfx::Size& layer_size,
+                     float normal_corner_radius,
+                     float max_inset)
+      : views::InkDropMask(layer_size),
+        normal_corner_radius_(normal_corner_radius),
+        max_inset_(max_inset),
+        throb_animation_(this) {
+    throb_animation_.SetThrobDuration(
+        kFeaturePromoPulseDuration.InMilliseconds());
+    throb_animation_.StartThrobbing(-1);
+  }
+
+ private:
+  // views::InkDropMask:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+
+    ui::PaintRecorder recorder(context, layer()->size());
+
+    gfx::RectF bounds(layer()->bounds());
+
+    const float current_inset =
+        throb_animation_.CurrentValueBetween(0.0f, max_inset_);
+    bounds.Inset(gfx::InsetsF(current_inset));
+    const float corner_radius = normal_corner_radius_ - current_inset;
+
+    recorder.canvas()->DrawRoundRect(bounds, corner_radius, flags);
+  }
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    DCHECK_EQ(animation, &throb_animation_);
+    layer()->SchedulePaint(gfx::Rect(layer()->size()));
+  }
+
+  // Normal corner radius of the ink drop without animation. This is also the
+  // corner radius at the largest instant of the animation.
+  const float normal_corner_radius_;
+
+  // Max inset, used at the smallest instant of the animation.
+  const float max_inset_;
+
+  gfx::ThrobAnimation throb_animation_;
+};
 
 }  // namespace
 #endif
@@ -106,11 +169,30 @@ void BrowserAppMenuButton::SetPromoFeature(
     return;
 
   promo_feature_ = promo_feature;
-  // We override GetInkDropBaseColor below when |promo_feature_| is non-null.
-  // This sets the ink drop into the activated state, which will highlight it in
-  // the desired color.
-  GetInkDrop()->AnimateToState(promo_feature_ ? views::InkDropState::ACTIVATED
-                                              : views::InkDropState::HIDDEN);
+
+  // We override GetInkDropBaseColor() and CreateInkDropMask(), returning the
+  // promo values if we are showing an in-product help promo. Calling
+  // HostSizeChanged() will force the new mask and color to be fetched.
+  //
+  // TODO(collinbaker): Consider adding explicit way to recreate mask instead of
+  // relying on HostSizeChanged() to do so.
+  GetInkDrop()->HostSizeChanged(size());
+
+  views::InkDropState next_state;
+  if (promo_feature_ || IsMenuShowing()) {
+    // If we are showing a promo, we must use the ACTIVATED state to show the
+    // highlight. Otherwise, if the menu is currently showing, we need to keep
+    // the ink drop in the ACTIVATED state.
+    next_state = views::InkDropState::ACTIVATED;
+  } else {
+    // If we are not showing a promo and the menu is hidden, we use the
+    // DEACTIVATED state.
+    next_state = views::InkDropState::DEACTIVATED;
+    // TODO(collinbaker): this is brittle since we don't know if something else
+    // should keep this ACTIVATED or in some other state. Consider adding code
+    // to track the correct state and restore to that.
+  }
+  GetInkDrop()->AnimateToState(next_state);
 
   UpdateIcon();
   SchedulePaint();
@@ -291,6 +373,20 @@ int BrowserAppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
 std::unique_ptr<views::InkDropHighlight>
 BrowserAppMenuButton::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight(this);
+}
+
+std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
+    const {
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  if (promo_feature_) {
+    const float corner_radius = height() / 2.0f;
+    return std::make_unique<PulsingInkDropMask>(ink_drop_container()->size(),
+                                                corner_radius,
+                                                kFeaturePromoPulseInsetDip);
+  }
+#endif
+
+  return AppMenuButton::CreateInkDropMask();
 }
 
 SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
