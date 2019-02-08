@@ -59,7 +59,8 @@ bool LabelledExample::operator<(const LabelledExample& rhs) const {
 LabelledExample& LabelledExample::operator=(const LabelledExample& rhs) =
     default;
 
-LabelledExample& LabelledExample::operator=(LabelledExample&& rhs) = default;
+LabelledExample& LabelledExample::operator=(LabelledExample&& rhs) noexcept =
+    default;
 
 TrainingData::TrainingData() = default;
 

@@ -23,6 +23,12 @@ Value::Value(const std::string& x) : value_(base::PersistentHash(x)) {}
 
 Value::Value(const Value& other) : value_(other.value_) {}
 
+Value::Value(Value&& rhs) noexcept = default;
+
+Value& Value::operator=(const Value& rhs) = default;
+
+Value& Value::operator=(Value&& rhs) noexcept = default;
+
 bool Value::operator==(const Value& rhs) const {
   return value_ == rhs.value_;
 }
