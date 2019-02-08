@@ -1686,11 +1686,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testCanSwitchToPrintPreviewDialog(self):
     old_handles = self._driver.GetWindowHandles()
+    print >> sys.stdout, "Test debug: actual len of old_handles: " \
+                         + str(len(old_handles))
     self.assertEquals(1, len(old_handles))
     self._driver.ExecuteScript('setTimeout(function(){window.print();}, 0);')
     new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
+    if new_window_handle is None:
+      print >> sys.stdout, "Test debug: new_window_handle is None"
+    else:
+      print >> sys.stdout, "Test debug: new_window_handle is not None"
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
+    print >> sys.stdout, "Test debug: actual GetCurrentUrl: " \
+                         + self._driver.GetCurrentUrl()
     self.assertEquals('chrome://print/', self._driver.GetCurrentUrl())
 
   def testCanClickInIframes(self):
