@@ -361,6 +361,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   bool did_set_frame_sink_ = false;
 
+  // TODO(sky): better factor this.
+  viz::LocalSurfaceIdAllocation embed_local_surface_id_allocation_;
+
   std::unique_ptr<PendingLayerTreeFrameSinkArgs>
       pending_layer_tree_frame_sink_args_;
 

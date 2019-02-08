@@ -572,6 +572,11 @@ void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
 const viz::LocalSurfaceIdAllocation&
 WindowPortMus::GetLocalSurfaceIdAllocation() {
   static base::NoDestructor<viz::LocalSurfaceIdAllocation> empty_allocation;
+  if (window_mus_type() == WindowMusType::EMBED) {
+    embed_local_surface_id_allocation_ =
+        window_->GetHost()->compositor()->GetLocalSurfaceIdAllocation();
+    return embed_local_surface_id_allocation_;
+  }
   return allocator_ ? allocator_->GetLocalSurfaceIdAllocation()
                     : *empty_allocation;
 }
