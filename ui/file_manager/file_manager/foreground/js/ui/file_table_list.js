@@ -5,7 +5,7 @@
 /**
  * Namespace for utility functions.
  */
-var filelist = {};
+const filelist = {};
 
 /**
  * File table list.
@@ -48,12 +48,12 @@ FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
   // Make sure that list item's selected attribute is updated just after the
   // mergeItems operation is done. This prevents checkmarks on selected items
   // from being animated unintentionally by redraw.
-  for (var i = beginIndex; i < endIndex; i++) {
-    var item = this.getListItemByIndex(i);
+  for (let i = beginIndex; i < endIndex; i++) {
+    const item = this.getListItemByIndex(i);
     if (!item) {
       continue;
     }
-    var isSelected = this.selectionModel.getIndexSelected(i);
+    const isSelected = this.selectionModel.getIndexSelected(i);
     if (item.selected != isSelected) {
       item.selected = isSelected;
     }
@@ -136,7 +136,7 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
   // not on an external backend, externalProps is not available.
-  var externalProps = metadataModel.getCache([entry], [
+  const externalProps = metadataModel.getCache([entry], [
     'hosted', 'availableOffline', 'customIconUrl', 'shared', 'isMachineRoot',
     'isExternalMedia'
   ])[0];
@@ -179,7 +179,7 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
  * @return {!HTMLDivElement} Created element.
  */
 filelist.renderFileTypeIcon = function(doc, entry, locationInfo, opt_mimeType) {
-  var icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  const icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   icon.className = 'detail-icon';
   icon.setAttribute(
       'file-type-icon',
@@ -197,9 +197,9 @@ filelist.renderFileTypeIcon = function(doc, entry, locationInfo, opt_mimeType) {
 filelist.renderFileNameLabel = function(doc, entry, locationInfo) {
   // Filename need to be in a '.filename-label' container for correct
   // work of inplace renaming.
-  var box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  const box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   box.className = 'filename-label';
-  var fileName = doc.createElement('span');
+  const fileName = doc.createElement('span');
   fileName.className = 'entry-name';
   fileName.textContent = util.getEntryLabel(locationInfo, entry);
   box.appendChild(fileName);
@@ -231,7 +231,7 @@ filelist.updateListItemExternalProps = function(
     }
   }
 
-  var iconDiv = li.querySelector('.detail-icon');
+  const iconDiv = li.querySelector('.detail-icon');
   if (!iconDiv) {
     return;
   }
@@ -263,7 +263,7 @@ filelist.updateListItemExternalProps = function(
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handleTap = function(e, index, eventType) {
-  var sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
+  const sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
       (this.selectionModel);
   if (eventType == FileTapHandler.TapEvent.TWO_FINGER_TAP) {
     // Prepare to open the context menu in the same manner as the right click.
@@ -276,7 +276,7 @@ filelist.handleTap = function(e, index, eventType) {
       // not produce mousedown/click events.
       sm.unselectAll();
     } else {
-      var indexSelected = sm.getIndexSelected(index);
+      const indexSelected = sm.getIndexSelected(index);
       if (!indexSelected) {
         // Prepare to open context menu of the new item by selecting only it.
         if (sm.getCheckSelectMode()) {
@@ -297,13 +297,13 @@ filelist.handleTap = function(e, index, eventType) {
   if (index == -1) {
     return false;
   }
-  var isTap = eventType == FileTapHandler.TapEvent.TAP ||
+  const isTap = eventType == FileTapHandler.TapEvent.TAP ||
       eventType == FileTapHandler.TapEvent.LONG_TAP;
   // Revert to click handling for single tap on checkbox or tap during rename.
   // Single tap on the checkbox in the list view mode should toggle select.
   // Single tap on input for rename should focus on input.
-  var isCheckbox = e.target.classList.contains('detail-checkmark');
-  var isRename = e.target.localName == 'input';
+  const isCheckbox = e.target.classList.contains('detail-checkmark');
+  const isRename = e.target.localName == 'input';
   if (eventType == FileTapHandler.TapEvent.TAP && (isCheckbox || isRename)) {
     return false;
   }
@@ -361,17 +361,17 @@ filelist.handleTap = function(e, index, eventType) {
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handlePointerDownUp = function(e, index) {
-  var sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
+  const sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
            (this.selectionModel);
-  var anchorIndex = sm.anchorIndex;
-  var isDown = (e.type == 'mousedown');
+  const anchorIndex = sm.anchorIndex;
+  const isDown = (e.type == 'mousedown');
 
-  var isTargetCheckmark = e.target.classList.contains('detail-checkmark') ||
+  const isTargetCheckmark = e.target.classList.contains('detail-checkmark') ||
                           e.target.classList.contains('checkmark');
   // If multiple selection is allowed and the checkmark is clicked without
   // modifiers(Ctrl/Shift), the click should toggle the item's selection.
   // (i.e. same behavior as Ctrl+Click)
-  var isClickOnCheckmark = isTargetCheckmark && sm.multiple && index != -1 &&
+  const isClickOnCheckmark = isTargetCheckmark && sm.multiple && index != -1 &&
                            !e.shiftKey && !e.ctrlKey && e.button == 0;
 
   sm.beginChange();
@@ -414,10 +414,10 @@ filelist.handlePointerDownUp = function(e, index) {
       }
     } else {
       // Right click for a context menu needs to not clear the selection.
-      var isRightClick = e.button == 2;
+      const isRightClick = e.button == 2;
 
       // If the index is selected this is handled in mouseup.
-      var indexSelected = sm.getIndexSelected(index);
+      const indexSelected = sm.getIndexSelected(index);
       if ((indexSelected && !isDown || !indexSelected && isDown) &&
           !(indexSelected && isRightClick)) {
         // 2) When non-checkmark area is clicked in check-select mode, disable
@@ -450,14 +450,14 @@ filelist.handlePointerDownUp = function(e, index) {
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handleKeyDown = function(e) {
-  var SPACE_KEY_CODE = 32;
-  var tagName = e.target.tagName;
+  const SPACE_KEY_CODE = 32;
+  const tagName = e.target.tagName;
 
   // If focus is in an input field of some kind, only handle navigation keys
   // that aren't likely to conflict with input interaction (e.g., text
   // editing, or changing the value of a checkbox or select).
   if (tagName == 'INPUT') {
-    var inputType = e.target.type;
+    const inputType = e.target.type;
     // Just protect space (for toggling) for checkbox and radio.
     if (inputType == 'checkbox' || inputType == 'radio') {
       if (e.keyCode == SPACE_KEY_CODE) {
@@ -473,11 +473,11 @@ filelist.handleKeyDown = function(e) {
     return;
   }
 
-  var sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
+  const sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
            (this.selectionModel);
-  var newIndex = -1;
-  var leadIndex = sm.leadIndex;
-  var prevent = true;
+  let newIndex = -1;
+  const leadIndex = sm.leadIndex;
+  let prevent = true;
 
   // Ctrl/Meta+A
   if (sm.multiple && e.keyCode == 65 &&
@@ -498,7 +498,7 @@ filelist.handleKeyDown = function(e) {
   // Space
   if (e.keyCode == SPACE_KEY_CODE) {
     if (leadIndex != -1) {
-      var selected = sm.getIndexSelected(leadIndex);
+      const selected = sm.getIndexSelected(leadIndex);
       if (e.ctrlKey || !selected) {
         sm.setIndexSelected(leadIndex, !selected || !sm.multiple);
         return;
@@ -540,7 +540,7 @@ filelist.handleKeyDown = function(e) {
 
     sm.leadIndex = newIndex;
     if (e.shiftKey) {
-      var anchorIndex = sm.anchorIndex;
+      const anchorIndex = sm.anchorIndex;
       if (sm.multiple) {
         sm.unselectAll();
       }
@@ -575,7 +575,7 @@ filelist.handleKeyDown = function(e) {
  * @param {!Event} event the touch event.
  */
 filelist.focusParentList = function(event) {
-  var element = event.target;
+  let element = event.target;
   while (element && !(element instanceof cr.ui.List)) {
     element = element.parentElement;
   }
