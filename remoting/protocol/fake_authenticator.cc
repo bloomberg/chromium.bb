@@ -167,7 +167,7 @@ void FakeAuthenticator::ProcessMessage(const jingle_xmpp::XmlElement* message,
   EXPECT_EQ(WAITING_MESSAGE, state());
   std::string id =
       message->TextNamed(jingle_xmpp::QName(kChromotingXmlNamespace, "id"));
-  EXPECT_EQ(id, base::IntToString(messages_));
+  EXPECT_EQ(id, base::NumberToString(messages_));
 
   // On the client receive the key in the last message.
   if (type_ == CLIENT && messages_ == config_.round_trips * 2 - 1) {
@@ -197,7 +197,7 @@ std::unique_ptr<jingle_xmpp::XmlElement> FakeAuthenticator::GetNextMessage() {
       jingle_xmpp::QName(kChromotingXmlNamespace, "authentication")));
   jingle_xmpp::XmlElement* id = new jingle_xmpp::XmlElement(
       jingle_xmpp::QName(kChromotingXmlNamespace, "id"));
-  id->AddText(base::IntToString(messages_));
+  id->AddText(base::NumberToString(messages_));
   result->AddElement(id);
 
   // Send local id in the first outgoing message.

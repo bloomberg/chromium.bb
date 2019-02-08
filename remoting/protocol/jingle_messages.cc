@@ -134,14 +134,14 @@ XmlElement* FormatIceCandidate(
   result->SetAttr(QName(kEmptyNamespace, "address"),
                   candidate.candidate.address().ipaddr().ToString());
   result->SetAttr(QName(kEmptyNamespace, "port"),
-                  base::UintToString(candidate.candidate.address().port()));
+                  base::NumberToString(candidate.candidate.address().port()));
   result->SetAttr(QName(kEmptyNamespace, "type"), candidate.candidate.type());
   result->SetAttr(QName(kEmptyNamespace, "protocol"),
                   candidate.candidate.protocol());
   result->SetAttr(QName(kEmptyNamespace, "priority"),
-                  base::UintToString(candidate.candidate.priority()));
+                  base::NumberToString(candidate.candidate.priority()));
   result->SetAttr(QName(kEmptyNamespace, "generation"),
-                  base::UintToString(candidate.candidate.generation()));
+                  base::NumberToString(candidate.candidate.generation()));
   return result;
 }
 

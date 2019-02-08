@@ -121,7 +121,7 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> sta
 
 std::string FakeSignalStrategy::GetNextId() {
   ++last_id_;
-  return base::IntToString(last_id_);
+  return base::NumberToString(last_id_);
 }
 
 // static

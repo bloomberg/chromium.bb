@@ -818,7 +818,7 @@ void JingleSession::SendSessionInitiateMessage() {
 }
 
 std::string JingleSession::GetNextOutgoingId() {
-  return outgoing_id_prefix_ + "_" + base::IntToString(++next_outgoing_id_);
+  return outgoing_id_prefix_ + "_" + base::NumberToString(++next_outgoing_id_);
 }
 
 }  // namespace protocol

@@ -743,8 +743,9 @@ void WebrtcTransport::OnIceCandidate(
   candidate_element->SetBodyText(candidate_str);
   candidate_element->SetAttr(QName(std::string(), "sdpMid"),
                              candidate->sdp_mid());
-  candidate_element->SetAttr(QName(std::string(), "sdpMLineIndex"),
-                             base::IntToString(candidate->sdp_mline_index()));
+  candidate_element->SetAttr(
+      QName(std::string(), "sdpMLineIndex"),
+      base::NumberToString(candidate->sdp_mline_index()));
 
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->AddElement(candidate_element.release());

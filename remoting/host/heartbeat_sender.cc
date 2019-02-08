@@ -334,7 +334,7 @@ std::unique_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
       new XmlElement(QName(kChromotingXmlNamespace, kHeartbeatQueryTag)));
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
-                 base::IntToString(sequence_id_));
+                     base::NumberToString(sequence_id_));
   if (!host_offline_reason_.empty()) {
     heartbeat->AddAttr(
         QName(kChromotingXmlNamespace, kHostOfflineReasonAttr),
@@ -373,7 +373,7 @@ std::unique_ptr<XmlElement> HeartbeatSender::CreateSignature() {
       new XmlElement(QName(kChromotingXmlNamespace, kHeartbeatSignatureTag)));
 
   std::string message = signal_strategy_->GetLocalAddress().jid() + ' ' +
-                        base::IntToString(sequence_id_);
+                        base::NumberToString(sequence_id_);
   std::string signature(host_key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 
