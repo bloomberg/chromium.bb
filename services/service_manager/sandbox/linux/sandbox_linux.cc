@@ -107,10 +107,15 @@ bool UpdateProcessTypeAndEnableSandbox(
   base::CommandLine::ForCurrentProcess()->InitFromArgv(exec);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(
-      switches::kProcessType,
-      command_line->GetSwitchValueASCII(switches::kProcessType)
-          .append("-broker"));
+  std::string new_process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (!new_process_type.empty()) {
+    new_process_type.append("-broker");
+  } else {
+    new_process_type = "broker";
+  }
+
+  command_line->AppendSwitchASCII(switches::kProcessType, new_process_type);
 
   if (broker_side_hook)
     CHECK(std::move(broker_side_hook).Run(options));
