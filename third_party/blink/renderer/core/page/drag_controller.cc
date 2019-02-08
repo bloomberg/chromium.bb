@@ -215,7 +215,6 @@ void DragController::ClearDragCaret() {
 void DragController::DragEnded() {
   drag_initiator_ = nullptr;
   did_initiate_drag_ = false;
-  drag_state_ = nullptr;
   page_->GetDragCaret().Clear();
 }
 
