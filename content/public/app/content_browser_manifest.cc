@@ -120,7 +120,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("file", "file:leveldb")
           .RequireCapability("network", "network_service")
           .RequireCapability("network", "test")
-          .RequireCapability("network", "url_loader")
           .RequireCapability(mojom::kRendererServiceName, "browser")
           .RequireCapability("media", "media:media")
           .RequireCapability("*", "app")

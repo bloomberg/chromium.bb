@@ -21,8 +21,6 @@ per-file expect_ct_reporter*=estark@chromium.org
 per-file cert_verifier_with_trust_anchors*=file://chromeos/policy/OWNERS
 per-file cert_verify_proc_chromeos*=file://chromeos/policy/OWNERS
 
-per-file manifest.json=set noparent
-per-file manifest.json=file://ipc/SECURITY_OWNERS
 per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 

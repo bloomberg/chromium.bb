@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 # There should be only one resource coordinator. It is currently
 # in the browser process. So, only //content/browser should link to this target.
 # Others modules should only need the public targets.
@@ -37,11 +35,6 @@ source_set("lib") {
     "//services/metrics/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]
-}
-
-service_manifest("manifest") {
-  name = "resource_coordinator"
-  source = "manifest.json"
 }
 
 source_set("tests") {

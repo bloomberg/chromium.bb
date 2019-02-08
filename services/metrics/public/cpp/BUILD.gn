@@ -97,3 +97,16 @@ static_library("ukm_builders") {
     "//base",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/metrics/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
+}

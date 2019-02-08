@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "host_resolver_mojo.cc",
@@ -56,9 +54,4 @@ source_set("tests") {
   ]
 
   configs += [ "//v8:external_startup_data" ]
-}
-
-service_manifest("proxy_resolver_manifest") {
-  name = "proxy_resolver"
-  source = "manifest.json"
 }

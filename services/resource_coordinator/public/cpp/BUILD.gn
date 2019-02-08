@@ -44,3 +44,18 @@ source_set("resource_coordinator_cpp") {
     "//services/service_manager/public/cpp",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/metrics/public/mojom",
+    "//services/resource_coordinator/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+  ]
+}
