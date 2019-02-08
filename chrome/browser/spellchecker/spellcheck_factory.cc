@@ -67,10 +67,9 @@ KeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
 
 void SpellcheckServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries,
-                               std::make_unique<base::ListValue>());
-  user_prefs->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries,
-                               std::make_unique<base::ListValue>());
+  user_prefs->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries);
+  user_prefs->RegisterListPref(
+      spellcheck::prefs::kSpellCheckForcedDictionaries);
   // Continue registering kSpellCheckDictionary for preference migration.
   // TODO(estade): remove: crbug.com/751275
   user_prefs->RegisterStringPref(
