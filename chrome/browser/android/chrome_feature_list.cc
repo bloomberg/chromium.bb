@@ -92,6 +92,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
     &kAndroidSiteSettingsUIRefresh,
+    &kBackgroundTaskSchedulerForBackgroundSync,
     &kCastDeviceFilter,
     &kCCTBackgroundTab,
     &kCCTExternalLinkHandling,
@@ -228,6 +229,10 @@ const base::Feature kAndroidSiteSettingsUIRefresh{
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBackgroundTaskSchedulerForBackgroundSync{
+    "BackgroundTaskSchedulerForBackgroundSync",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",

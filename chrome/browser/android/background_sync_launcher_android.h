@@ -40,7 +40,10 @@ class BackgroundSyncLauncherAndroid {
   void LaunchBrowserIfStoppedImpl(bool launch_when_next_online,
                                   int64_t min_delay_ms);
 
-  base::android::ScopedJavaGlobalRef<jobject> java_launcher_;
+  base::android::ScopedJavaGlobalRef<jobject>
+      java_gcm_network_manager_launcher_;
+  base::android::ScopedJavaGlobalRef<jobject>
+      java_background_sync_background_task_scheduler_launcher_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncLauncherAndroid);
 };
 

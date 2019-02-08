@@ -53,11 +53,10 @@ public class BackgroundSyncLauncherTest {
         // Use a semaphore to wait for the callback to be called.
         final Semaphore semaphore = new Semaphore(0);
 
-        BackgroundSyncLauncher.ShouldLaunchCallback callback =
-                shouldLaunch -> {
-                    mShouldLaunchResult = shouldLaunch;
-                    semaphore.release();
-                };
+        BackgroundSyncLauncher.ShouldLaunchCallback callback = shouldLaunch -> {
+            mShouldLaunchResult = shouldLaunch;
+            semaphore.release();
+        };
 
         BackgroundSyncLauncher.shouldLaunchBrowserIfStopped(callback);
         // Wait on the callback to be called.
