@@ -130,12 +130,6 @@ def _UpdateTestResultsLog(platform, commit_position, passed):
   _PutTestResultsLog(platform, log)
 
 
-def _GetVersion():
-  """Get the current chromedriver version."""
-  with open(os.path.join(_THIS_DIR, 'VERSION'), 'r') as f:
-    return f.read().strip()
-
-
 def _GetSupportedChromeVersions():
   """Get the minimum and maximum supported Chrome versions.
 
@@ -165,8 +159,8 @@ def _ArchiveGoodBuild(platform, commit_position):
   zip_path = util.Zip(os.path.join(chrome_paths.GetBuildDir([server_name]),
                                    server_name))
 
-  build_name = 'chromedriver_%s_%s.%s.zip' % (
-      platform, _GetVersion(), commit_position)
+  build_name = 'chromedriver_%s_%s.zip' % (
+      platform, commit_position)
   build_url = '%s/%s' % (GS_CONTINUOUS_URL, build_name)
   if slave_utils.GSUtilCopy(zip_path, build_url):
     util.MarkBuildStepError()
@@ -174,8 +168,8 @@ def _ArchiveGoodBuild(platform, commit_position):
   if util.IsWindows():
     zip_path = util.Zip(os.path.join(
         chrome_paths.GetBuildDir([server_name + '.pdb']), server_name + '.pdb'))
-    pdb_name = 'chromedriver_%s_pdb_%s.%s.zip' % (
-        platform, _GetVersion(), commit_position)
+    pdb_name = 'chromedriver_%s_pdb_%s.zip' % (
+        platform, commit_position)
     pdb_url = '%s/%s' % (GS_CONTINUOUS_URL, pdb_name)
     if slave_utils.GSUtilCopy(zip_path, pdb_url):
       util.MarkBuildStepError()
