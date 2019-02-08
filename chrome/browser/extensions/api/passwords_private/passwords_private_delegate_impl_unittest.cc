@@ -237,7 +237,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
         got_passwords = true;
         ASSERT_EQ(1u, password_list.size());
         EXPECT_EQ(sample_form.username_value,
-                  base::UTF8ToUTF16(password_list[0].login_pair.username));
+                  base::UTF8ToUTF16(password_list[0].username));
         EXPECT_EQ(sample_form.password_value.size(),
                   size_t{password_list[0].num_characters_in_password});
       }));
@@ -259,7 +259,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
         got_passwords = true;
         ASSERT_EQ(1u, password_list.size());
         EXPECT_EQ(base::ASCIIToUTF16("new_user"),
-                  base::UTF8ToUTF16(password_list[0].login_pair.username));
+                  base::UTF8ToUTF16(password_list[0].username));
         EXPECT_EQ(base::ASCIIToUTF16("new_pass").size(),
                   size_t{password_list[0].num_characters_in_password});
       }));

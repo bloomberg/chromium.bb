@@ -36,11 +36,10 @@ static const char kPlaintextPassword[] = "plaintext";
 
 api::passwords_private::PasswordUiEntry CreateEntry(int id) {
   api::passwords_private::PasswordUiEntry entry;
-  entry.login_pair.urls.shown = "test" + std::to_string(id) + ".com";
-  entry.login_pair.urls.origin =
-      "http://" + entry.login_pair.urls.shown + "/login";
-  entry.login_pair.urls.link = entry.login_pair.urls.origin;
-  entry.login_pair.username = "testName" + std::to_string(id);
+  entry.urls.shown = "test" + std::to_string(id) + ".com";
+  entry.urls.origin = "http://" + entry.urls.shown + "/login";
+  entry.urls.link = entry.urls.origin;
+  entry.username = "testName" + std::to_string(id);
   entry.num_characters_in_password = kNumCharactersInPassword;
   entry.id = id;
   return entry;
@@ -101,7 +100,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
     // PasswordUiEntry does not contain a password. Thus we are only updating
     // the username and the length of the password.
-    current_entries_[id].login_pair.username = base::UTF16ToUTF8(username);
+    current_entries_[id].username = base::UTF16ToUTF8(username);
     if (password)
       current_entries_[id].num_characters_in_password = password->size();
     SendSavedPasswordsList();

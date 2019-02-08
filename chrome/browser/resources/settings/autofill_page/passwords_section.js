@@ -252,7 +252,7 @@ Polymer({
     }
 
     return this.savedPasswords.filter(
-        p => [p.entry.loginPair.urls.shown, p.entry.loginPair.username].some(
+        p => [p.entry.urls.shown, p.entry.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
   },
 

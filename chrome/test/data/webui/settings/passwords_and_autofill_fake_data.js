@@ -25,14 +25,12 @@ FakeDataMaker.passwordEntry = function(url, username, passwordLength, id) {
   id = id || 0;
 
   return {
-    loginPair: {
-      urls: {
-        origin: 'http://' + url + '/login',
-        shown: url,
-        link: 'http://' + url + '/login',
-      },
-      username: username,
+    urls: {
+      origin: 'http://' + url + '/login',
+      shown: url,
+      link: 'http://' + url + '/login',
     },
+    username: username,
     numCharactersInPassword: passwordLength,
     id: id,
   };

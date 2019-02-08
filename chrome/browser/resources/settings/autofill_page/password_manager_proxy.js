@@ -134,9 +134,6 @@ class PasswordManagerProxy {
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
 PasswordManagerProxy.PasswordUiEntry;
 
-/** @typedef {chrome.passwordsPrivate.LoginPair} */
-PasswordManagerProxy.LoginPair;
-
 /** @typedef {chrome.passwordsPrivate.ExceptionEntry} */
 PasswordManagerProxy.ExceptionEntry;
 
