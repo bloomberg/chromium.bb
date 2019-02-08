@@ -85,7 +85,7 @@
     'content_perftests',
     'content_unittests',
     'courgette_unittests',
-    'crashpad_handler',
+    'chrome_crashpad_handler',
     'crypto_unittests',
     'device_unittests',
     'display_compositor_benchmark',
