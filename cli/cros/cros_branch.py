@@ -315,6 +315,7 @@ class CrosCheckout(object):
           'chrome_branch', 'build', 'branch, 'patch'.
       message: The commit message for the version bump.
     """
+    logging.info(message)
     new_version = self.ReadVersion(incr_type=which)
     new_version.IncrementVersion()
     new_version.UpdateVersionFile(message, dry_run=True)
@@ -645,12 +646,12 @@ Create Examples:
   cros branch create 11030.0.0 --custom my-custom-branch
 
 Rename Examples:
-  cros branch rename release-10509.0.B release-10508.0.B
-  cros branch --force --push rename release-10509.0.B release-10508.0.B
+  cros branch rename release-10509.B release-10508.B
+  cros branch --force --push rename release-10509.B release-10508.B
 
 Delete Examples:
-  cros branch delete release-10509.0.B
-  cros branch --force --push delete release-10509.0.B
+  cros branch delete release-10509.B
+  cros branch --force --push delete release-10509.B
 """
 
   @classmethod

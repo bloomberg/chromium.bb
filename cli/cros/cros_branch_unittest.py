@@ -27,14 +27,13 @@ from chromite.cli.cros.cros_branch import ReleaseBranch
 from chromite.cli.cros.cros_branch import StabilizeBranch
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
-
-
 
 
 def FileUrl(*args):
@@ -1153,6 +1152,44 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       self.CreateRef(repo_path, TOT)
       self.CreateRef(repo_path, self.RevisionFor(project))
 
+  def WriteVersionFile(self, milestone, build, branch, patch):
+    """Write chromeos_version.sh to the remote with given version numbers.
+
+    Args:
+      milestone: The Chrome branch number.
+      build: The Chrome OS build number.
+      branch: The branch build number.
+      patch: The patch build number.
+    """
+    content = '\n'.join([
+        '#!/bin/sh',
+        'CHROME_BRANCH=%d' % milestone,
+        'CHROMEOS_BUILD=%d' % build,
+        'CHROMEOS_BRANCH=%d' % branch,
+        'CHROMEOS_PATCH=%d' % patch,
+    ])
+    version_file_dir = self.CreateTempDir(
+        REMOTES.CROS,
+        self.NameFor(PROJECTS.CHROMIUMOS_OVERLAY),
+        'chromeos/config')
+    version_file_path = os.path.join(version_file_dir, 'chromeos_version.sh')
+    osutils.WriteFile(version_file_path, content)
+
+  def WriteManifest(self, manifest, path):
+    """Write the manifest to the given file name at the given path.
+
+    This method also repairs remote fetch paths, which is not known
+    when the test data is generated.
+
+    Args:
+      manifest: The repo_manifest.Manifest to write.
+      path: The path to write it at.
+    """
+    for remote in manifest.Remotes():
+      remote.fetch = (self.cros_root if remote.GitName() == REMOTES.CROS else
+                      self.cros_internal_root)
+    manifest.Write(path)
+
   def WriteManifestFiles(self, remote, project, files):
     """Write all manifest files to the given remote.
 
@@ -1167,10 +1204,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     repo_path = self.CreateTempDir(remote, self.NameFor(project))
     for filename, xml in files.iteritems():
       manifest = ParseManifestXml(xml)
-      for remote in manifest.Remotes():
-        remote.fetch = (self.cros_root if remote.GitName() == REMOTES.CROS else
-                        self.cros_internal_root)
-      manifest.Write(os.path.join(repo_path, filename))
+      self.WriteManifest(manifest, os.path.join(repo_path, filename))
     return repo_path
 
   def setUp(self):
@@ -1179,23 +1213,38 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.cros_root = self.CreateTempDir(REMOTES.CROS)
     self.cros_internal_root = self.CreateTempDir(REMOTES.CROS_INTERNAL)
 
+    # Add necessary files to remote before creating git repos.
+    self.WriteVersionFile(12, 3, 4, 0)
     self.WriteManifestFiles(REMOTES.CROS, PROJECTS.MANIFEST, MANIFEST_FILES)
-    manifest_internal_root = self.WriteManifestFiles(REMOTES.CROS_INTERNAL,
-                                                     PROJECTS.MANIFEST_INTERNAL,
-                                                     MANIFEST_INTERNAL_FILES)
+    self.manifest_internal_root = self.WriteManifestFiles(
+        REMOTES.CROS_INTERNAL,
+        PROJECTS.MANIFEST_INTERNAL,
+        MANIFEST_INTERNAL_FILES)
 
     self.CreateProjectsOnRemote(REMOTES.CROS, EXTERNAL_PROJECTS)
     self.CreateProjectsOnRemote(REMOTES.CROS_INTERNAL, INTERNAL_PROJECTS)
 
-    # "Locally" checkout the internal remote.
-    self.local_root = self.CreateTempDir('local')
-    repo = repo_util.Repository.Initialize(
-        root=self.local_root,
-        manifest_url=manifest_internal_root,
-        repo_url=FileUrl(constants.CHROOT_SOURCE_ROOT, '.repo/repo'),
-        repo_branch='default')
-    repo.Sync()
+    # We want to branch from the full manifest, so put it somewhere accessbile.
+    self.full_manifest_path = os.path.join(self.tempdir, 'manifest.xml')
+    self.WriteManifest(self.full_manifest, self.full_manifest_path)
 
-  def testSanity(self):
-    """Validate code runs without dying."""
-    pass
+    # "Locally" checkout the internal remote.
+    self.repo_url = FileUrl(constants.CHROOT_SOURCE_ROOT, '.repo/repo')
+    self.local_root = self.CreateTempDir('local')
+    repo_util.Repository.Initialize(
+        root=self.local_root,
+        manifest_url=self.manifest_internal_root,
+        repo_url=self.repo_url,
+        repo_branch='default')
+
+  def testCreate(self):
+    """Test create runs without dying."""
+    cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'create',
+         '--file', self.full_manifest_path,
+         '--custom', 'new-branch'])
