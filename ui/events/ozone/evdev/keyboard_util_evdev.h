@@ -5,10 +5,12 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_KEYBOARD_UTIL_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_KEYBOARD_UTIL_EVDEV_H_
 
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+
 namespace ui {
 
-int NativeCodeToEvdevCode(int native_code);
-int EvdevCodeToNativeCode(int evdev_code);
+int EVENTS_OZONE_EVDEV_EXPORT NativeCodeToEvdevCode(int native_code);
+int EVENTS_OZONE_EVDEV_EXPORT EvdevCodeToNativeCode(int evdev_code);
 
 }  // namespace ui
 
