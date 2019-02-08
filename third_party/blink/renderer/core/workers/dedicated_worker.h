@@ -36,7 +36,9 @@ class WorkerClients;
 // https://html.spec.whatwg.org/multipage/workers.html#worker
 //
 // Confusingly, the Worker interface is for dedicated workers, so this class is
-// called DedicatedWorker. This lives on the main thread.
+// called DedicatedWorker. This lives on the thread that created the worker (the
+// thread that called `new Worker()`), i.e., the main thread if a document
+// created the worker or a worker thread in the case of nested workers.
 class CORE_EXPORT DedicatedWorker final
     : public AbstractWorker,
       public ActiveScriptWrappable<DedicatedWorker> {
