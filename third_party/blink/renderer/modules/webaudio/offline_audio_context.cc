@@ -262,9 +262,12 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
     return promise;
   }
 
-  // Quantize (to the lower boundary) the suspend time by the render quantum.
+  // Find the sample frame and round up to the nearest render quantum
+  // boundary.  This assumes the render quantum is a power of two.
   size_t frame = when * sampleRate();
-  frame -= frame % DestinationHandler().RenderQuantumFrames();
+  frame = audio_utilities::kRenderQuantumFrames *
+          ((frame + audio_utilities::kRenderQuantumFrames - 1) /
+           audio_utilities::kRenderQuantumFrames);
 
   // The specified suspend time is in the past; reject the promise.
   if (frame < CurrentSampleFrame()) {

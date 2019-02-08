@@ -22,7 +22,9 @@
       // Calculate the index for actual start time.
       function getStartIndex(time) {
         let startIndex = time * sampleRate;
-        return startIndex -= (startIndex) % renderQuantum;
+        startIndex = renderQuantum *
+            Math.floor((startIndex + renderQuantum - 1) / renderQuantum);
+        return startIndex;
       }
 
       // Get the index of value change.
@@ -61,7 +63,6 @@
         // is found later than the first output sample.
         context.startRendering()
             .then(function(buffer) {
-
               let channelData = buffer.getChannelData(0);
               let startIndex = getStartIndex(startTime);
               let nonZeroValueIndex = getValueChangeIndex(channelData, 1.0);
@@ -73,7 +74,6 @@
               should(
                   nonZeroValueIndex, 'The index of the first non-zero sample')
                   .notBeEqualTo(0)
-
             })
             .then(() => task.done());
       });
