@@ -60,6 +60,7 @@ class FormField {
   // Initial values assigned to FieldCandidates by their corresponding parsers.
   static const float kBaseEmailParserScore;
   static const float kBasePhoneParserScore;
+  static const float kBaseTravelParserScore;
   static const float kBaseAddressParserScore;
   static const float kBaseCreditCardParserScore;
   static const float kBaseNameParserScore;

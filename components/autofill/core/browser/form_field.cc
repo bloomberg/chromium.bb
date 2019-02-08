@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
 #include "components/autofill/core/browser/search_field.h"
+#include "components/autofill/core/browser/travel_field.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -31,14 +32,15 @@
 namespace autofill {
 
 // There's an implicit precedence determined by the values assigned here. Email
-// is currently the most important followed by Phone, Address, Credit Card,
-// Name, and Search.
+// is currently the most important followed by Phone, Travel, Address,
+// Credit Card, Name, and Search.
 const float FormField::kBaseEmailParserScore = 1.4f;
 const float FormField::kBasePhoneParserScore = 1.3f;
-const float FormField::kBaseAddressParserScore = 1.2f;
-const float FormField::kBaseCreditCardParserScore = 1.1f;
-const float FormField::kBaseNameParserScore = 1.0f;
-const float FormField::kBaseSearchParserScore = 0.9f;
+const float FormField::kBaseTravelParserScore = 1.2f;
+const float FormField::kBaseAddressParserScore = 1.1f;
+const float FormField::kBaseCreditCardParserScore = 1.0f;
+const float FormField::kBaseNameParserScore = 0.9f;
+const float FormField::kBaseSearchParserScore = 0.8f;
 
 // static
 FieldCandidatesMap FormField::ParseFormFields(
@@ -68,6 +70,9 @@ FieldCandidatesMap FormField::ParseFormFields(
 
   // Phone pass.
   ParseFormFieldsPass(PhoneField::Parse, processed_fields, &field_candidates);
+
+  // Travel pass.
+  ParseFormFieldsPass(TravelField::Parse, processed_fields, &field_candidates);
 
   // Address pass.
   ParseFormFieldsPass(autofill::AddressField::Parse, processed_fields,

@@ -326,6 +326,9 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/input/149_checkout_qvc.com_non_hidden.html",
     "//components/test/data/autofill/heuristics/input/150_checkout_venus.com_search_field.html",
     "//components/test/data/autofill/heuristics/input/151_ticketmaster.com.html",
+    "//components/test/data/autofill/heuristics/input/153_fmm-en_inm.gob.mx.html",
+    "//components/test/data/autofill/heuristics/input/154_fmm-es_inm.gob.mx.html",
+    "//components/test/data/autofill/heuristics/input/155_fmm-ja_inm.gob.mx.html",
     "//components/test/data/autofill/heuristics/output/000_i18n_de.out",
     "//components/test/data/autofill/heuristics/output/001_i18n_de2.out",
     "//components/test/data/autofill/heuristics/output/002_i18n_en.out",
@@ -478,6 +481,9 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/output/149_checkout_qvc.com_non_hidden.out",
     "//components/test/data/autofill/heuristics/output/150_checkout_venus.com_search_field.out",
     "//components/test/data/autofill/heuristics/output/151_ticketmaster.com.out",
+    "//components/test/data/autofill/heuristics/output/153_fmm-en_inm.gob.mx.out",
+    "//components/test/data/autofill/heuristics/output/154_fmm-es_inm.gob.mx.out",
+    "//components/test/data/autofill/heuristics/output/155_fmm-ja_inm.gob.mx.out",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +

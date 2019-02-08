@@ -56,6 +56,10 @@ extern const char kPhonePrefixRe[];
 extern const char kPhoneSuffixRe[];
 extern const char kPhoneExtensionRe[];
 extern const char kSearchTermRe[];
+extern const char kPassportRe[];
+extern const char kTravelOriginRe[];
+extern const char kTravelDestinationRe[];
+extern const char kFlightRe[];
 
 // Used to match field data that might be a UPI Virtual Payment Address.
 // See:
