@@ -1228,7 +1228,16 @@ void HTMLDocumentParser::DocumentElementAvailable() {
       "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime", delta,
       base::TimeDelta::FromMicroseconds(1),
       base::TimeDelta::FromMilliseconds(1000), 50);
-  DCHECK(GetDocument()->documentElement());
+  Document* document = GetDocument();
+  DCHECK(document);
+  LocalFrame* frame = document->GetFrame();
+  if (frame && frame->IsMainFrame()) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime.MainFrame",
+        delta, base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(1000), 50);
+  }
+  DCHECK(document->documentElement());
   FetchQueuedPreloads();
 }
 
