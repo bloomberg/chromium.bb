@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -340,9 +341,11 @@ public class AutoFetchNotifier {
     }
 
     private static void reportCompleteNotificationAction(@NotificationAction int action) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "OfflinePages.AutoFetch.CompleteNotificationAction", action,
-                NotificationAction.NUM_ENTRIES);
+        // Native may or may not be running, so use CachedMetrics.EnumeratedHistogramSample.
+        EnumeratedHistogramSample sample =
+                new EnumeratedHistogramSample("OfflinePages.AutoFetch.CompleteNotificationAction",
+                        NotificationAction.NUM_ENTRIES);
+        sample.record(action);
     }
 
     private static boolean isShowingInProgressNotification() {
