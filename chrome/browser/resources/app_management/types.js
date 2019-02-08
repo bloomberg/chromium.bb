@@ -39,6 +39,15 @@ let Page;
  * @typedef {{
  *   apps: AppMap,
  *   currentPage: Page,
+ *   search: SearchState,
  * }}
  */
 let AppManagementPageState;
+
+/**
+ * @typedef {{
+ *   term: ?string,
+ *   results: ?Array<App>,
+ * }}
+ */
+let SearchState;

@@ -10,6 +10,11 @@ Polymer({
   ],
 
   properties: {
+    /** @private */
+    searchTerm_: {
+      type: String,
+    },
+
     /**
      * @private {Page}
      */
@@ -22,8 +27,22 @@ Polymer({
    * @override
    */
   attached: function() {
+    this.watch('searchTerm_', function(state) {
+      return state.search.term;
+    });
     this.watch('currentPage_', state => state.currentPage);
     this.updateFromStore();
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onSearchChanged_: function(e) {
+    const searchTerm = /** @type {string} */ (e.detail);
+    if (searchTerm != this.searchTerm_) {
+      this.dispatch(app_management.actions.setSearchTerm(searchTerm));
+    }
   },
 
   /**
@@ -37,6 +56,9 @@ Polymer({
 
       case (PageType.NOTIFICATIONS):
         return 'notifications-view';
+
+      case (PageType.SEARCH):
+        return 'search-view';
 
       case (PageType.DETAIL):
         const state = app_management.Store.getInstance().data;

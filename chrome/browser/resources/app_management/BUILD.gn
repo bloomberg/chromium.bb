@@ -25,6 +25,7 @@ if (!is_android) {
       ":pwa_permission_view",
       ":reducers",
       ":router",
+      ":search_view",
       ":store",
       ":store_client",
       ":types",
@@ -173,6 +174,14 @@ if (!is_android) {
       ":actions",
       ":constants",
       ":store_client",
+    ]
+  }
+
+  js_library("search_view") {
+    deps = [
+      ":app_item",
+      ":store_client",
+      "//ui/webui/resources/js:load_time_data",
     ]
   }
 
