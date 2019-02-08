@@ -211,7 +211,7 @@ bool NetLog::HasObserver(ThreadSafeObserver* observer) {
 std::string NetLog::TickCountToString(const base::TimeTicks& time) {
   int64_t delta_time = (time - base::TimeTicks()).InMilliseconds();
   // TODO(https://crbug.com/915391): Use NetLogNumberValue().
-  return base::Int64ToString(delta_time);
+  return base::NumberToString(delta_time);
 }
 
 // static

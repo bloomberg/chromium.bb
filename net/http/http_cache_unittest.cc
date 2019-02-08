@@ -2189,7 +2189,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationCouldConditionalize) {
   mock_transaction.data = kFullRangeData;
   std::string response_headers_str = base::StrCat(
       {"ETag: StrongOne\n",
-       "Content-Length:", base::IntToString(strlen(kFullRangeData)), "\n"});
+       "Content-Length:", base::NumberToString(strlen(kFullRangeData)), "\n"});
   mock_transaction.response_headers = response_headers_str.c_str();
 
   ScopedMockTransaction transaction(mock_transaction);
@@ -3368,7 +3368,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingHuge) {
   MockTransaction transaction(kSimpleGET_Transaction);
   std::string response_headers = base::StrCat(
       {kSimpleGET_Transaction.response_headers, "Content-Length: ",
-       base::IntToString(strlen(kSimpleGET_Transaction.data)), "\n"});
+       base::NumberToString(strlen(kSimpleGET_Transaction.data)), "\n"});
   transaction.response_headers = response_headers.c_str();
   AddMockTransaction(&transaction);
   MockHttpRequest request(transaction);

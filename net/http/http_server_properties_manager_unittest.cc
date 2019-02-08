@@ -1395,7 +1395,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   base::Time time_one_day_ago =
       base::Time::Now() - base::TimeDelta::FromDays(1);
   expired_dict->SetString(
-      "expiration", base::Int64ToString(time_one_day_ago.ToInternalValue()));
+      "expiration", base::NumberToString(time_one_day_ago.ToInternalValue()));
   alternative_service_list->Append(std::move(expired_dict));
 
   auto valid_dict = std::make_unique<base::DictionaryValue>();
@@ -1403,7 +1403,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   valid_dict->SetString("host", "valid.example.com");
   valid_dict->SetInteger("port", 443);
   valid_dict->SetString(
-      "expiration", base::Int64ToString(one_day_from_now_.ToInternalValue()));
+      "expiration", base::NumberToString(one_day_from_now_.ToInternalValue()));
   alternative_service_list->Append(std::move(valid_dict));
 
   base::DictionaryValue server_pref_dict;
@@ -1684,7 +1684,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // "cached_broken", the expiration time will be one day from now.
 
   std::string expiration_str =
-      base::Int64ToString(static_cast<int64_t>(one_day_from_now_.ToTimeT()));
+      base::NumberToString(static_cast<int64_t>(one_day_from_now_.ToTimeT()));
 
   std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
       "{"
@@ -1751,7 +1751,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service().port);
   EXPECT_EQ(
       "13756212000000000",
-      base::Int64ToString(
+      base::NumberToString(
           alternative_service_info_vector[0].expiration().ToInternalValue()));
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1762,7 +1762,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
             alternative_service_info_vector[1].alternative_service().port);
   EXPECT_EQ(
       "13758804000000000",
-      base::Int64ToString(
+      base::NumberToString(
           alternative_service_info_vector[1].expiration().ToInternalValue()));
 
   //
@@ -1780,7 +1780,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   EXPECT_EQ(444, alternative_service_info_vector[0].alternative_service().port);
   EXPECT_EQ(
       "9223372036854775807",
-      base::Int64ToString(
+      base::NumberToString(
           alternative_service_info_vector[0].expiration().ToInternalValue()));
 
   //

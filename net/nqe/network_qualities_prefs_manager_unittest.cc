@@ -220,7 +220,7 @@ TEST_F(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
   for (size_t i = 0; i < kMaxCacheSize; ++i) {
     estimator.SimulateNetworkChange(
         NetworkChangeNotifier::ConnectionType::CONNECTION_2G,
-        "test" + base::IntToString(i));
+        "test" + base::NumberToString(i));
 
     estimator.RunOneRequest();
     base::RunLoop().RunUntilIdle();

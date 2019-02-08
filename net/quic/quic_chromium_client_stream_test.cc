@@ -550,7 +550,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 
   spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
-  trailers[quic::kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
+  trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
 
   auto t = ProcessTrailers(trailers);
 
@@ -607,7 +607,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
-  trailers[quic::kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
+  trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
   quic::QuicHeaderList t = ProcessTrailers(trailers);
   EXPECT_FALSE(stream_->IsDoneReading());
 
@@ -662,7 +662,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   // Deliver trailers. Delegate notification is posted asynchronously.
   spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
-  trailers[quic::kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
+  trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
 
   quic::QuicHeaderList t = ProcessTrailers(trailers);
 

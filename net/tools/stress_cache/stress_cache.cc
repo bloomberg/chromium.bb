@@ -61,7 +61,7 @@ int RunSlave(int iteration) {
   base::PathService::Get(base::FILE_EXE, &exe);
 
   base::CommandLine cmdline(exe);
-  cmdline.AppendArg(base::IntToString(iteration));
+  cmdline.AppendArg(base::NumberToString(iteration));
 
   base::Process process = base::LaunchProcess(cmdline, base::LaunchOptions());
   if (!process.IsValid()) {

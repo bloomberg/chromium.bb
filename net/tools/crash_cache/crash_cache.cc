@@ -49,7 +49,7 @@ int RunSlave(RankCrashes action) {
   base::PathService::Get(base::FILE_EXE, &exe);
 
   base::CommandLine cmdline(exe);
-  cmdline.AppendArg(base::IntToString(action));
+  cmdline.AppendArg(base::NumberToString(action));
 
   base::Process process = base::LaunchProcess(cmdline, base::LaunchOptions());
   if (!process.IsValid()) {

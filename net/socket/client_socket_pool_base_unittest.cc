@@ -1187,7 +1187,7 @@ TEST_F(ClientSocketPoolBaseTest, CancelStalledSocketAtSocketLimit) {
     ClientSocketHandle handles[kDefaultMaxSockets];
     TestCompletionCallback callbacks[kDefaultMaxSockets];
     for (int i = 0; i < kDefaultMaxSockets; ++i) {
-      EXPECT_EQ(OK, handles[i].Init(base::IntToString(i), params_,
+      EXPECT_EQ(OK, handles[i].Init(base::NumberToString(i), params_,
                                     DEFAULT_PRIORITY, SocketTag(),
                                     ClientSocketPool::RespectLimits::ENABLED,
                                     callbacks[i].callback(), pool_.get(),
@@ -1226,7 +1226,7 @@ TEST_F(ClientSocketPoolBaseTest, CancelPendingSocketAtSocketLimit) {
       TestCompletionCallback callback;
       EXPECT_EQ(ERR_IO_PENDING,
                 handles[i].Init(
-                    base::IntToString(i), params_, DEFAULT_PRIORITY,
+                    base::NumberToString(i), params_, DEFAULT_PRIORITY,
                     SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                     callback.callback(), pool_.get(), NetLogWithSource()));
     }
@@ -1321,7 +1321,7 @@ TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketAtSocketLimitDeleteGroup) {
     ClientSocketHandle handle;
     TestCompletionCallback callback;
     EXPECT_EQ(
-        OK, handle.Init(base::IntToString(i), params_, DEFAULT_PRIORITY,
+        OK, handle.Init(base::NumberToString(i), params_, DEFAULT_PRIORITY,
                         SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), pool_.get(), NetLogWithSource()));
   }

@@ -1171,7 +1171,7 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
     // JSON cannot store int64_t, so expiration is converted to a string.
     alternative_service_dict->SetString(
         kExpirationKey,
-        base::Int64ToString(
+        base::NumberToString(
             alternative_service_info.expiration().ToInternalValue()));
     std::unique_ptr<base::ListValue> advertised_versions_list =
         std::make_unique<base::ListValue>();
@@ -1289,12 +1289,12 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
         DCHECK(result);
         DCHECK(!entry_dict->HasKey(kBrokenUntilKey));
         entry_dict->SetKey(kBrokenUntilKey,
-                           base::Value(base::Int64ToString(expiration_int64)));
+                           base::Value(base::NumberToString(expiration_int64)));
       } else {
         base::DictionaryValue entry_dict;
         AddAlternativeServiceFieldsToDictionaryValue(alt_service, &entry_dict);
         entry_dict.SetKey(kBrokenUntilKey,
-                          base::Value(base::Int64ToString(expiration_int64)));
+                          base::Value(base::NumberToString(expiration_int64)));
         json_list->GetList().push_back(std::move(entry_dict));
       }
     }

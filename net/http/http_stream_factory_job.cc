@@ -895,7 +895,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       GURL::Replacements replacements;
       replacements.SetSchemeStr(url::kHttpsScheme);
       replacements.SetHostStr(destination.host());
-      const std::string new_port = base::UintToString(destination.port());
+      const std::string new_port = base::NumberToString(destination.port());
       replacements.SetPortStr(new_port);
       replacements.ClearUsername();
       replacements.ClearPassword();

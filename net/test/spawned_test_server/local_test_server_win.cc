@@ -124,8 +124,9 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   // safe to truncate the handle (when passing it from 64-bit to
   // 32-bit) or sign-extend the handle (when passing it from 32-bit to
   // 64-bit)."
-  python_command.AppendArg("--startup-pipe=" +
-      base::IntToString(reinterpret_cast<uintptr_t>(child_write)));
+  python_command.AppendArg(
+      "--startup-pipe=" +
+      base::NumberToString(reinterpret_cast<uintptr_t>(child_write)));
 
   base::LaunchOptions launch_options;
 

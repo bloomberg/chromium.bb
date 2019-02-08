@@ -1073,7 +1073,7 @@ spdy::SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(
   headers[spdy::kHttp2SchemeHeader] = scheme.c_str();
   headers[spdy::kHttp2PathHeader] = path.c_str();
   if (content_length) {
-    std::string length_str = base::Int64ToString(*content_length);
+    std::string length_str = base::NumberToString(*content_length);
     headers["content-length"] = length_str;
   }
   return headers;

@@ -4073,7 +4073,7 @@ class URLRequestTestHTTP : public URLRequestTest {
     TestDelegate d;
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         test_server_.GetURL("/set-many-cookies?" +
-                            base::IntToString(num_cookies)),
+                            base::NumberToString(num_cookies)),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();

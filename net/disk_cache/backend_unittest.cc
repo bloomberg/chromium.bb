@@ -817,7 +817,7 @@ TEST_F(DiskCacheBackendTest, MemoryListensToMemoryPressure) {
 
   for (int i = 0; i < 0.9 * (kLimit / kEntrySize); ++i) {
     disk_cache::Entry* entry = nullptr;
-    ASSERT_EQ(net::OK, CreateEntry(base::IntToString(i), &entry));
+    ASSERT_EQ(net::OK, CreateEntry(base::NumberToString(i), &entry));
     EXPECT_EQ(kEntrySize,
               WriteData(entry, 0, 0, buffer.get(), kEntrySize, true));
     entry->Close();
@@ -3414,7 +3414,8 @@ void DiskCacheBackendTest::BackendEviction() {
   for (int i = 0; i < kWriteEntryCount; ++i) {
     AddDelay();
     disk_cache::Entry* entry = NULL;
-    ASSERT_THAT(CreateEntry(key_prefix + base::IntToString(i), &entry), IsOk());
+    ASSERT_THAT(CreateEntry(key_prefix + base::NumberToString(i), &entry),
+                IsOk());
     disk_cache::ScopedEntryPtr entry_closer(entry);
     EXPECT_EQ(kWriteSize,
               WriteData(entry, 1, 0, buffer.get(), kWriteSize, false));
@@ -3464,7 +3465,8 @@ TEST_F(DiskCacheBackendTest, MemoryOnlyUseAfterFree) {
   std::list<disk_cache::ScopedEntryPtr> open_entries;
   std::string key_prefix("prefix");
   for (int i = 0; i < kTooManyEntriesCount; ++i) {
-    ASSERT_THAT(CreateEntry(key_prefix + base::IntToString(i), &entry), IsOk());
+    ASSERT_THAT(CreateEntry(key_prefix + base::NumberToString(i), &entry),
+                IsOk());
     // Not checking the result because it will start to fail once the max size
     // is reached.
     WriteData(entry, 1, 0, buffer.get(), kWriteSize, false);
@@ -3504,7 +3506,8 @@ TEST_F(DiskCacheBackendTest, MemoryCapsWritesToMaxSize) {
   std::list<disk_cache::ScopedEntryPtr> open_entries;
   std::string key_prefix("prefix");
   for (int i = 0; i < kNumEntries; ++i) {
-    ASSERT_THAT(CreateEntry(key_prefix + base::IntToString(i), &entry), IsOk());
+    ASSERT_THAT(CreateEntry(key_prefix + base::NumberToString(i), &entry),
+                IsOk());
     WriteData(entry, 1, 0, buffer.get(), kWriteSize, false);
     open_entries.push_back(disk_cache::ScopedEntryPtr(entry));
   }

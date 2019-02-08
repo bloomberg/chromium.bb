@@ -46,7 +46,7 @@ std::unique_ptr<base::DictionaryValue> SCTToDictionary(
   base::TimeDelta time_since_unix_epoch =
       sct.timestamp - base::Time::UnixEpoch();
   out->SetString("timestamp",
-      base::Int64ToString(time_since_unix_epoch.InMilliseconds()));
+                 base::NumberToString(time_since_unix_epoch.InMilliseconds()));
   SetBinaryData("extensions", sct.extensions, out.get());
 
   out->SetString("hash_algorithm",

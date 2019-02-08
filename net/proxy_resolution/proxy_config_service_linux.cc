@@ -1004,7 +1004,7 @@ bool ProxyConfigServiceLinux::Delegate::GetProxyFromSettings(
   setting_getter_->GetInt(port_key, &port);
   if (port != 0) {
     // If a port is set and non-zero:
-    host += ":" + base::IntToString(port);
+    host += ":" + base::NumberToString(port);
   }
 
   // gsettings settings do not appear to distinguish between SOCKS version. We

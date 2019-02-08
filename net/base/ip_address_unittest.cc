@@ -22,7 +22,7 @@ std::string DumpIPAddress(const IPAddress& v) {
   for (size_t i = 0; i < v.bytes().size(); ++i) {
     if (i != 0)
       out.append(",");
-    out.append(base::UintToString(v.bytes()[i]));
+    out.append(base::NumberToString(v.bytes()[i]));
   }
   return out;
 }

@@ -126,11 +126,11 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   child_fd_.reset(pipefd[0]);
   base::ScopedFD write_closer(pipefd[1]);
 
-  python_command.AppendArg("--startup-pipe=" + base::IntToString(pipefd[1]));
+  python_command.AppendArg("--startup-pipe=" + base::NumberToString(pipefd[1]));
 
   // Try to kill any orphaned testserver processes that may be running.
   OrphanedTestServerFilter filter(testserver_path.value(),
-                                  base::UintToString(GetPort()));
+                                  base::NumberToString(GetPort()));
   if (!base::KillProcesses("python", -1, &filter)) {
     LOG(WARNING) << "Failed to clean up older orphaned testserver instances.";
   }
