@@ -142,7 +142,7 @@ std::unique_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
       new XmlElement(QName(kChromotingXmlNamespace, kSignatureTag)));
 
   int64_t time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
-  std::string time_str(base::Int64ToString(time));
+  std::string time_str(base::NumberToString(time));
   signature_tag->AddAttr(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 

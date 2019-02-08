@@ -66,7 +66,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   // read pattern.
   std::list<std::unique_ptr<EventMessage>> message_list;
   for (int pos = 0; pos < size;) {
-    SCOPED_TRACE("Input position: " + base::IntToString(pos));
+    SCOPED_TRACE("Input position: " + base::NumberToString(pos));
 
     // First generate the amount to feed the decoder.
     int read = std::min(size - pos, read_sequence[pos % sequence_size]);
@@ -94,7 +94,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
 
   unsigned int index = 0;
   for (const auto& message : message_list) {
-    SCOPED_TRACE("Message " + base::UintToString(index));
+    SCOPED_TRACE("Message " + base::NumberToString(index));
 
     // Partial update stream.
     EXPECT_TRUE(message->has_key_event());

@@ -111,7 +111,7 @@ class FakePlugin : public SessionPlugin {
  public:
    std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override {
      std::string tag_name = "test-tag-";
-     tag_name += base::IntToString(outgoing_messages_.size());
+     tag_name += base::NumberToString(outgoing_messages_.size());
      std::unique_ptr<jingle_xmpp::XmlElement> new_message(new jingle_xmpp::XmlElement(
          jingle_xmpp::QName("test-namespace", tag_name)));
      outgoing_messages_.push_back(*new_message);

@@ -154,14 +154,15 @@ void HeartbeatSenderTest::SendResponse(int message_index,
     XmlElement* set_interval =
         new XmlElement(QName(kChromotingXmlNamespace, "set-interval"));
     result->AddElement(set_interval);
-    set_interval->AddText(base::IntToString(interval.InSeconds()));
+    set_interval->AddText(base::NumberToString(interval.InSeconds()));
   }
 
   if (expected_sequence_id > 0) {
     XmlElement* expected_sequence_id_tag =
         new XmlElement(QName(kChromotingXmlNamespace, "expected-sequence-id"));
     result->AddElement(expected_sequence_id_tag);
-    expected_sequence_id_tag->AddText(base::IntToString(expected_sequence_id));
+    expected_sequence_id_tag->AddText(
+        base::NumberToString(expected_sequence_id));
   }
 
   bot_signal_strategy_.SendStanza(std::move(response));
@@ -216,7 +217,7 @@ TEST_F(HeartbeatSenderTest, ExpectedSequenceId) {
 
   ASSERT_EQ(bot_signal_strategy_.received_messages().size(), 2U);
   ValidateHeartbeatStanza(bot_signal_strategy_.received_messages()[1].get(),
-                          base::IntToString(kExpectedSequenceId).c_str(),
+                          base::NumberToString(kExpectedSequenceId).c_str(),
                           std::string());
 
   signal_strategy_.Disconnect();

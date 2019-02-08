@@ -71,7 +71,7 @@ XmlElement* FormatChannelConfig(const ChannelConfig& config,
 
   if (config.transport != ChannelConfig::TRANSPORT_NONE) {
     result->AddAttr(QName(kDefaultNs, kVersionAttr),
-                    base::IntToString(config.version));
+                    base::NumberToString(config.version));
 
     if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
       result->AddAttr(QName(kDefaultNs, kCodecAttr),
