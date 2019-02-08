@@ -1,5 +1,5 @@
 include_rules = [
-  "+services/identity/manifest.h",
+  "+services/identity/public/cpp/manifest.h",
 ]
 
 specific_include_rules = {

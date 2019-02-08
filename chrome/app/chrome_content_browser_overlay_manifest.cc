@@ -36,7 +36,7 @@
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
-#include "services/identity/manifest.h"
+#include "services/identity/public/cpp/manifest.h"
 #include "services/image_annotation/public/cpp/manifest.h"
 #include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"

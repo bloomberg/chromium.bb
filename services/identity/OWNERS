@@ -4,6 +4,3 @@ blundell@chromium.org
 droger@chromium.org
 msarda@chromium.org
 sdefresne@chromium.org
-
-per-file manifest.json=set noparent
-per-file manifest.json=file://ipc/SECURITY_OWNERS

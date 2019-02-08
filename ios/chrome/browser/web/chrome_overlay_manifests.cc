@@ -7,7 +7,7 @@
 #include "base/no_destructor.h"
 #include "components/services/unzip/public/cpp/manifest.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
-#include "services/identity/manifest.h"
+#include "services/identity/public/cpp/manifest.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 

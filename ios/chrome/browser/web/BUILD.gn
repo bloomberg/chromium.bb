@@ -236,7 +236,7 @@ source_set("web_internal") {
     "//ios/web",
     "//ios/web/public",
     "//net",
-    "//services/identity:manifest",
+    "//services/identity/public/cpp:manifest",
     "//services/identity/public/mojom",
     "//ui/base",
     "//ui/gfx",
