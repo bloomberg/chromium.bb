@@ -47,7 +47,7 @@ std::unique_ptr<base::Value> NetLogProbingDestinationCallback(
     const quic::QuicSocketAddress* peer_address,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("network", base::Int64ToString(network));
+  dict->SetString("network", base::NumberToString(network));
   dict->SetString("peer address", peer_address->ToString());
   return std::move(dict);
 }

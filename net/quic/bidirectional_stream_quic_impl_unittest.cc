@@ -926,7 +926,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
@@ -1154,7 +1154,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
@@ -1272,7 +1272,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
@@ -1405,7 +1405,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
@@ -1577,7 +1577,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
@@ -1671,7 +1671,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));
@@ -2381,7 +2381,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody));
+      base::NumberToString(strlen(kResponseBody));
   // Server sends trailers.
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers.Clone(), &spdy_trailers_frame_length, &offset));

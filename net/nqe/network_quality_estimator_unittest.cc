@@ -1161,7 +1161,7 @@ TEST_F(NetworkQualityEstimatorTest, TestGetMetricsSince) {
   const base::TimeDelta rtt_threshold_4g = base::TimeDelta::FromMilliseconds(1);
 
   variation_params["3G.ThresholdMedianHttpRTTMsec"] =
-      base::IntToString(rtt_threshold_3g.InMilliseconds());
+      base::NumberToString(rtt_threshold_3g.InMilliseconds());
   variation_params["HalfLifeSeconds"] = "300000";
   variation_params["add_default_platform_observations"] = "false";
 

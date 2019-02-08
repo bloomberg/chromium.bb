@@ -324,7 +324,7 @@ TEST(NetworkQualityStoreTest, TestLRUCacheMaximumSize) {
 
   for (size_t i = 0; i < network_count; ++i) {
     nqe::internal::NetworkID network_id(NetworkChangeNotifier::CONNECTION_2G,
-                                        "test" + base::IntToString(i), 0);
+                                        "test" + base::NumberToString(i), 0);
 
     const nqe::internal::CachedNetworkQuality network_quality(
         tick_clock.NowTicks(),
@@ -339,7 +339,7 @@ TEST(NetworkQualityStoreTest, TestLRUCacheMaximumSize) {
   size_t cache_match_count = 0;
   for (size_t i = 0; i < network_count; ++i) {
     nqe::internal::NetworkID network_id(NetworkChangeNotifier::CONNECTION_2G,
-                                        "test" + base::IntToString(i), 0);
+                                        "test" + base::NumberToString(i), 0);
 
     nqe::internal::CachedNetworkQuality read_network_quality(
         tick_clock.NowTicks(),

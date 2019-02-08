@@ -916,9 +916,9 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   }
 
   for (int priority = 0; priority < net::NUM_PRIORITIES; ++priority) {
-    histograms.ExpectTotalCount(
-        "Net.HttpJob.TotalTimeSuccess.Priority" + base::IntToString(priority),
-        priority + 1);
+    histograms.ExpectTotalCount("Net.HttpJob.TotalTimeSuccess.Priority" +
+                                    base::NumberToString(priority),
+                                priority + 1);
   }
 }
 

@@ -55,7 +55,8 @@ class TrustStoreNSSTest : public testing::Test {
   }
 
   std::string GetUniqueNickname() {
-    return "trust_store_nss_unittest" + base::UintToString(nickname_counter_++);
+    return "trust_store_nss_unittest" +
+           base::NumberToString(nickname_counter_++);
   }
 
   void AddCertToNSS(const ParsedCertificate* cert) {
@@ -323,7 +324,7 @@ class TrustStoreNSSTestDelegate {
  protected:
   std::string GetUniqueNickname() {
     return "cert_issuer_source_nss_unittest" +
-           base::UintToString(nickname_counter_++);
+           base::NumberToString(nickname_counter_++);
   }
 
   crypto::ScopedTestNSSDB test_nssdb_;

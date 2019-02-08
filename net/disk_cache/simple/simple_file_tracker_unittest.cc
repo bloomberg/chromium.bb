@@ -213,7 +213,7 @@ TEST_F(SimpleFileTrackerTest, PointerStability) {
         entries[0].get(), SimpleFileTracker::SubFile::FILE_0);
     for (int i = 1; i < kEntries; ++i) {
       std::unique_ptr<base::File> file_n = std::make_unique<base::File>(
-          cache_path_.AppendASCII(base::IntToString(i)),
+          cache_path_.AppendASCII(base::NumberToString(i)),
           base::File::FLAG_CREATE | base::File::FLAG_WRITE);
       ASSERT_TRUE(file_n->IsValid());
       file_tracker_.Register(entries[i].get(),

@@ -136,13 +136,13 @@ class HttpProxyClientSocketPoolTest
     std::map<std::string, std::string> params;
     if (!use_default_params) {
       params["ssl_http_rtt_multiplier"] =
-          base::IntToString(ssl_http_rtt_multiplier);
+          base::NumberToString(ssl_http_rtt_multiplier);
       params["non_ssl_http_rtt_multiplier"] =
-          base::IntToString(non_ssl_http_rtt_multiplier);
+          base::NumberToString(non_ssl_http_rtt_multiplier);
       params["min_proxy_connection_timeout_seconds"] =
-          base::IntToString(min_proxy_connection_timeout.InSeconds());
+          base::NumberToString(min_proxy_connection_timeout.InSeconds());
       params["max_proxy_connection_timeout_seconds"] =
-          base::IntToString(max_proxy_connection_timeout.InSeconds());
+          base::NumberToString(max_proxy_connection_timeout.InSeconds());
     }
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     EXPECT_TRUE(

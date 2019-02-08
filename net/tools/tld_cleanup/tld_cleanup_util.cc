@@ -56,7 +56,7 @@ bool WriteRules(const RuleMap& rules, const base::FilePath& outfile) {
     if (i->second.is_private) {
       type += kPrivateRule;
     }
-    data.append(base::IntToString(type));
+    data.append(base::NumberToString(type));
     data.append("\n");
   }
 

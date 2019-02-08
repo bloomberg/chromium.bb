@@ -274,7 +274,7 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
             "10000";
     variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     variation_params["hanging_request_duration_http_rtt_multiplier"] =
-        base::IntToString(test.hanging_request_duration_http_rtt_multiplier);
+        base::NumberToString(test.hanging_request_duration_http_rtt_multiplier);
 
     NetworkQualityEstimatorParams params(variation_params);
 
@@ -671,7 +671,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
     // Localhost requests are not allowed for estimation purposes.
     std::map<std::string, std::string> variation_params;
     variation_params["throughput_min_requests_in_flight"] =
-        base::IntToString(test.throughput_min_requests_in_flight);
+        base::NumberToString(test.throughput_min_requests_in_flight);
     variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     NetworkQualityEstimatorParams params(variation_params);
     // Set HTTP RTT to a large value so that the throughput observation window

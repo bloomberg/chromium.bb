@@ -329,7 +329,7 @@ TEST(VerifyNameMatchInvalidDataTest, FailOnInvalidPrintableStringChars) {
   size_t replace_location = der.find("0123456789");
   ASSERT_NE(std::string::npos, replace_location);
   for (int c = 0; c < 256; ++c) {
-    SCOPED_TRACE(base::IntToString(c));
+    SCOPED_TRACE(base::NumberToString(c));
     if (base::IsAsciiAlpha(c) || base::IsAsciiDigit(c))
       continue;
     switch (c) {
@@ -367,7 +367,7 @@ TEST(VerifyNameMatchInvalidDataTest, FailOnInvalidIA5StringChars) {
   size_t replace_location = der.find("eXaMple");
   ASSERT_NE(std::string::npos, replace_location);
   for (int c = 0; c < 256; ++c) {
-    SCOPED_TRACE(base::IntToString(c));
+    SCOPED_TRACE(base::NumberToString(c));
     der.replace(replace_location, 1, 1, c);
     bool expected_result = (c <= 127);
     EXPECT_EQ(expected_result, VerifyNameMatch(SequenceValueFromString(&der),

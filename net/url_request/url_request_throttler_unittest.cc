@@ -121,7 +121,7 @@ class MockURLRequestThrottlerManager : public URLRequestThrottlerManager {
           MockURLRequestThrottlerEntry::kDefaultEntryLifetimeMs + 1000);
     }
     std::string fake_url_string("http://www.fakeurl.com/");
-    fake_url_string.append(base::IntToString(create_entry_index_++));
+    fake_url_string.append(base::NumberToString(create_entry_index_++));
     GURL fake_url(fake_url_string);
     OverrideEntryForTests(
         fake_url,

@@ -949,7 +949,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
   trailers[quic::kFinalOffsetHeaderKey] =
-      base::IntToString(strlen(kResponseBody) + header.length());
+      base::NumberToString(strlen(kResponseBody) + header.length());
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, std::move(trailers), &spdy_trailers_frame_length, &offset));
 

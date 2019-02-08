@@ -310,7 +310,8 @@ base::DictionaryValue HostCache::Entry::GetAsValue(
     base::Time expiration_time =
         base::Time::Now() - (base::TimeTicks::Now() - expires());
     entry_dict.SetString(
-        kExpirationKey, base::Int64ToString(expiration_time.ToInternalValue()));
+        kExpirationKey,
+        base::NumberToString(expiration_time.ToInternalValue()));
   }
 
   if (error() != OK) {

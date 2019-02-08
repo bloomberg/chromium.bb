@@ -345,9 +345,9 @@ void SpdyStream::DecreaseRecvWindowSize(int32_t delta_window_size) {
   if (delta_window_size > recv_window_size_ - unacked_recv_window_bytes_) {
     session_->ResetStream(
         stream_id_, ERR_SPDY_FLOW_CONTROL_ERROR,
-        "delta_window_size is " + base::IntToString(delta_window_size) +
+        "delta_window_size is " + base::NumberToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
-            "window size of " + base::IntToString(recv_window_size_));
+            "window size of " + base::NumberToString(recv_window_size_));
     return;
   }
 

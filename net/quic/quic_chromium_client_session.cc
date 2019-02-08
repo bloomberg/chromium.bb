@@ -137,7 +137,7 @@ std::unique_ptr<base::Value> NetLogProbingResultCallback(
     bool is_success,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("network", base::Int64ToString(network));
+  dict->SetString("network", base::NumberToString(network));
   dict->SetString("peer address", peer_address->ToString());
   dict->SetBoolean("is_success", is_success);
   return std::move(dict);
@@ -2698,7 +2698,7 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (DynamicStreamMap::const_iterator it = dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
-    stream_list->AppendString(base::UintToString(it->second->id()));
+    stream_list->AppendString(base::NumberToString(it->second->id()));
   }
   dict->Set("active_streams", std::move(stream_list));
 

@@ -72,7 +72,7 @@ GURL GetMockUrl(const std::string& scheme,
   CHECK_LE(phase, URLRequestFailedJob::FailurePhase::READ_ASYNC);
   CHECK_LT(net_error, OK);
   return GURL(scheme + "://" + hostname + "/error?" + kFailurePhase[phase] +
-              "=" + base::IntToString(net_error));
+              "=" + base::NumberToString(net_error));
 }
 
 }  // namespace

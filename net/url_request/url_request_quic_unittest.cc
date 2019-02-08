@@ -165,8 +165,9 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
     host_resolver_.reset(new MappedHostResolver(std::move(resolver)));
     // Use a mapped host resolver so that request for test.example.com
     // reach the server running on localhost.
-    std::string map_rule = "MAP test.example.com test.example.com:" +
-                           base::IntToString(server_->server_address().port());
+    std::string map_rule =
+        "MAP test.example.com test.example.com:" +
+        base::NumberToString(server_->server_address().port());
     EXPECT_TRUE(host_resolver_->AddRuleFromString(map_rule));
   }
 

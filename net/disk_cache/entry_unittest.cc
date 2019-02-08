@@ -3806,7 +3806,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
       // will be checked for outliving the eviction.
       AddDelay();
     }
-    ASSERT_THAT(CreateEntry(key2 + base::IntToString(i), &entry), IsOk());
+    ASSERT_THAT(CreateEntry(key2 + base::NumberToString(i), &entry), IsOk());
     ScopedEntryPtr entry_closer(entry);
     EXPECT_EQ(kWriteSize,
               WriteData(entry, 1, 0, buffer.get(), kWriteSize, false));
@@ -3821,7 +3821,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
     // Generally there is no guarantee that at this point the backround eviction
     // is finished. We are testing the positive case, i.e. when the eviction
     // never reaches this entry, should be non-flaky.
-    ASSERT_EQ(net::OK, OpenEntry(key2 + base::IntToString(entry_no), &entry))
+    ASSERT_EQ(net::OK, OpenEntry(key2 + base::NumberToString(entry_no), &entry))
         << "Should not have evicted fresh entry " << entry_no;
     entry->Close();
   }
@@ -5120,11 +5120,11 @@ class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
                                    int trailer_speculative_size) {
     std::map<std::string, std::string> params;
     params[disk_cache::kSimpleCacheFullPrefetchBytesParam] =
-        base::IntToString(full_size);
+        base::NumberToString(full_size);
     params[disk_cache::kSimpleCacheTrailerPrefetchHintParam] =
         trailer_hint ? "true" : "false";
     params[disk_cache::kSimpleCacheTrailerPrefetchSpeculativeBytesParam] =
-        base::IntToString(trailer_speculative_size);
+        base::NumberToString(trailer_speculative_size);
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         disk_cache::kSimpleCachePrefetchExperiment, params);
   }

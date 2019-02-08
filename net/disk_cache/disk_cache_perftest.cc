@@ -526,7 +526,7 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
   disk_cache::Entry* cache_entry[kBatchSize];
   for (int i = 0; i < kBatchSize; ++i) {
     net::TestCompletionCallback cb;
-    int rv = cache_->CreateEntry(base::IntToString(i), net::HIGHEST,
+    int rv = cache_->CreateEntry(base::NumberToString(i), net::HIGHEST,
                                  &cache_entry[i], cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
 

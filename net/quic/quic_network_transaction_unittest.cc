@@ -146,7 +146,7 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
   for (const quic::QuicTransportVersion& version : versions) {
     if (!result.empty())
       result.append(",");
-    result.append(base::IntToString(version));
+    result.append(base::NumberToString(version));
   }
   return result;
 }

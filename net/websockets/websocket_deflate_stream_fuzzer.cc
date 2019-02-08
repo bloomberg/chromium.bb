@@ -109,9 +109,9 @@ void WebSocketDeflateStreamFuzz(const uint8_t* data, size_t size) {
   if (client_no_context_takeover)
     params.Add(WebSocketExtension::Parameter("client_no_context_takeover"));
   params.Add(WebSocketExtension::Parameter(
-      "server_max_window_bits", base::IntToString(server_max_window_bits)));
+      "server_max_window_bits", base::NumberToString(server_max_window_bits)));
   params.Add(WebSocketExtension::Parameter(
-      "client_max_window_bits", base::IntToString(client_max_window_bits)));
+      "client_max_window_bits", base::NumberToString(client_max_window_bits)));
   std::string failure_message;
   WebSocketDeflateParameters parameters;
   DCHECK(parameters.Initialize(params, &failure_message)) << failure_message;

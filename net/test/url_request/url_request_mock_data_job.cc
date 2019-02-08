@@ -67,7 +67,7 @@ GURL GetMockUrl(const std::string& scheme,
   url.append("?data=");
   url.append(data);
   url.append("&repeat=");
-  url.append(base::IntToString(data_repeat_count));
+  url.append(base::NumberToString(data_repeat_count));
   if (request_client_certificate)
     url += "&requestcert=1";
   return GURL(url);

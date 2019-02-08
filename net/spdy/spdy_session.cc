@@ -3164,7 +3164,7 @@ void SpdySession::OnWindowUpdate(spdy::SpdyStreamId stream_id,
       DoDrainSession(
           ERR_SPDY_PROTOCOL_ERROR,
           "Received WINDOW_UPDATE with an invalid delta_window_size " +
-              base::IntToString(delta_window_size));
+              base::NumberToString(delta_window_size));
       return;
     }
 
@@ -3403,9 +3403,9 @@ void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
     DoDrainSession(
         ERR_SPDY_PROTOCOL_ERROR,
         "Received WINDOW_UPDATE [delta: " +
-            base::IntToString(delta_window_size) +
+            base::NumberToString(delta_window_size) +
             "] for session overflows session_send_window_size_ [current: " +
-            base::IntToString(session_send_window_size_) + "]");
+            base::NumberToString(session_send_window_size_) + "]");
     return;
   }
 
@@ -3482,9 +3482,10 @@ void SpdySession::DecreaseRecvWindowSize(int32_t delta_window_size) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION);
     DoDrainSession(
         ERR_SPDY_FLOW_CONTROL_ERROR,
-        "delta_window_size is " + base::IntToString(delta_window_size) +
+        "delta_window_size is " + base::NumberToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
-            "window size of " + base::IntToString(session_recv_window_size_));
+            "window size of " +
+            base::NumberToString(session_recv_window_size_));
     return;
   }
 
