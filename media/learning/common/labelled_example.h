@@ -40,7 +40,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LabelledExample {
   bool operator<(const LabelledExample& rhs) const;
 
   LabelledExample& operator=(const LabelledExample& rhs);
-  LabelledExample& operator=(LabelledExample&& rhs);
+  LabelledExample& operator=(LabelledExample&& rhs) noexcept;
 
   // Observed feature values.
   // Note that to interpret these values, you probably need to have the

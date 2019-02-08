@@ -38,6 +38,10 @@ class COMPONENT_EXPORT(LEARNING_COMMON) Value {
   explicit Value(const std::string& x);
 
   Value(const Value& other);
+  Value(Value&&) noexcept;
+
+  Value& operator=(const Value&);
+  Value& operator=(Value&&) noexcept;
 
   bool operator==(const Value& rhs) const;
   bool operator!=(const Value& rhs) const;
