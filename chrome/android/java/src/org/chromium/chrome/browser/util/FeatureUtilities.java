@@ -194,13 +194,11 @@ public class FeatureUtilities {
         cacheNightModeAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
 
-        // Propagate DONT_PREFETCH_LIBRARIES and REACHED_CODE_PROFILER feature values to
-        // LibraryLoader. This can't be done in LibraryLoader itself because it lives in //base and
-        // can't depend on ChromeFeatureList.
+        // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
+        // be done in LibraryLoader itself because it lives in //base and can't depend
+        // on ChromeFeatureList.
         LibraryLoader.setDontPrefetchLibrariesOnNextRuns(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.DONT_PREFETCH_LIBRARIES));
-        LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
     }
 
     /**

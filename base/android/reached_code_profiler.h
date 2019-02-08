@@ -24,10 +24,6 @@ BASE_EXPORT void InitReachedCodeProfilerAtStartup(
 // Returns whether the reached code profiler is enabled.
 BASE_EXPORT bool IsReachedCodeProfilerEnabled();
 
-// Returns whether the reached code profiler can be possibly enabled for the
-// current build configuration.
-BASE_EXPORT bool IsReachedCodeProfilerSupported();
-
 }  // namespace android
 }  // namespace base
 
