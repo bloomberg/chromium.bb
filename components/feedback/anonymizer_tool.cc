@@ -473,6 +473,13 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
   return result;
 }
 
+bool WhitelistMatchedId(re2::StringPiece matched_id) {
+  bool is_safe_chrome_resource =
+      matched_id.starts_with("chrome://resources/") &&
+      !matched_id.contains("?");
+  return is_safe_chrome_resource;
+}
+
 std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
     const std::string& input,
     const CustomPatternWithoutContext& pattern,
@@ -488,6 +495,11 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
   re2::StringPiece skipped;
   re2::StringPiece matched_id;
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &matched_id)) {
+    if (WhitelistMatchedId(matched_id)) {
+      skipped.AppendToString(&result);
+      matched_id.AppendToString(&result);
+      continue;
+    }
     std::string matched_id_as_string = matched_id.as_string();
     std::string replacement_id = (*identifier_space)[matched_id_as_string];
     if (replacement_id.empty()) {

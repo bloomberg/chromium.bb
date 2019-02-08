@@ -269,7 +269,9 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "64:ff9b::a0a:a0a\n"       // IPv4-translated 6to4 IPV6 (private class A).
       "64:ff9b::6473:5c01\n"     // IPv4-translated 6to4 IPV6 (Chrome).
       "::0101:ffff:c0a8:640a\n"  // IP address.
-      "aa:aa:aa:aa:aa:aa";       // MAC address (BSSID).
+      "aa:aa:aa:aa:aa:aa\n"      // MAC address (BSSID).
+      "chrome://resources/foo\n"        // Secure chrome resource, whitelisted.
+      "chrome://resources/f?user=bar";  // Potentially PII in parameter.
   std::string result =
       "aaaaaaaa [SSID=1]aaaaa\n"
       "aaaaaaaa<URL: 1>\n"
@@ -336,7 +338,9 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "<T 10.0.0.0/8: 25>\n"
       "<T 100.115.92.1: 26>\n"
       "<IPv6: 27>\n"
-      "aa:aa:aa:00:00:01";
+      "aa:aa:aa:00:00:01\n"
+      "chrome://resources/foo\n"
+      "<URL: 2>";
   EXPECT_EQ(result, anonymizer_.Anonymize(data));
 }
 
