@@ -462,6 +462,10 @@ function sendThemeInfoToMostVisitedIframe() {
  * @private
  */
 function sendThemeInfoToEditCustomLinkIframe() {
+  if (!configData.isGooglePage) {
+    return;
+  }
+
   const info = getThemeBackgroundInfo();
   if (!info) {
     return;
