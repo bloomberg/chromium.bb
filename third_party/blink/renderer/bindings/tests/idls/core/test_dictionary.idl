@@ -65,4 +65,5 @@ dictionary TestDictionary {
     VoidCallbackFunction callbackFunctionMember;
     required VoidCallbackFunction requiredCallbackFunctionMember;
     boolean member-with-hyphen-in-name = false;
+    TreatNonObjectAsNullVoidFunction treatNonNullObjMember;
 };

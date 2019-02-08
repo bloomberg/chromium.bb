@@ -166,6 +166,10 @@ void TestDictionary::setTestObjectSequenceMember(const HeapVector<Member<TestObj
   has_test_object_sequence_member_ = true;
 }
 
+void TestDictionary::setTreatNonNullObjMember(V8TreatNonObjectAsNullVoidFunction* value) {
+  treat_non_null_obj_member_ = value;
+}
+
 void TestDictionary::setTreatNullAsStringSequenceMember(const Vector<String>& value) {
   treat_null_as_string_sequence_member_ = value;
   has_treat_null_as_string_sequence_member_ = true;
@@ -219,6 +223,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_interface_or_null_member_);
   visitor->Trace(test_interface_sequence_member_);
   visitor->Trace(test_object_sequence_member_);
+  visitor->Trace(treat_non_null_obj_member_);
   visitor->Trace(uint8_array_member_);
   visitor->Trace(union_in_record_member_);
   visitor->Trace(union_member_with_sequence_default_);

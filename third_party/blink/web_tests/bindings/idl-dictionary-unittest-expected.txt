@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 273: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 277: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -146,6 +146,10 @@ PASS dictionaryTest.set({elementMember: 42}) threw exception TypeError: Failed t
 PASS dictionaryTest.set({elementMember: testObject1}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
 PASS dictionaryTest.set({elementMember: []}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
 PASS dictionaryTest.set({elementMember: document}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member elementMember is not of type Element..
+
+
+Test for setting invalid callback function value
+PASS dictionaryTest.set({callbackFunctionMember: {}}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member callbackFunctionMember is not a function..
 
 
 Test for passing invalid dictionary values
