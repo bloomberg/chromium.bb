@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/tether_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -26,10 +26,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icon_types.h"
 
-using chromeos::NetworkConnectionHandler;
-using chromeos::NetworkHandler;
 using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
@@ -631,44 +628,7 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
   }
 }
 
-int GetCellularUninitializedMsg() {
-  static base::Time s_uninitialized_state_time;
-  static int s_uninitialized_msg(0);
-
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-
-  if (handler->GetTechnologyState(NetworkTypePattern::Cellular()) ==
-      NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
-    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
-    s_uninitialized_state_time = base::Time::Now();
-    return s_uninitialized_msg;
-  }
-
-  if (handler->GetScanningByType(NetworkTypePattern::Cellular())) {
-    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_MOBILE_SCANNING;
-    s_uninitialized_state_time = base::Time::Now();
-    return s_uninitialized_msg;
-  }
-
-  // There can be a delay between leaving the Initializing state and when
-  // a Cellular device shows up, so keep showing the initializing
-  // animation for a bit to avoid flashing the disconnect icon.
-  const int kInitializingDelaySeconds = 1;
-  base::TimeDelta dtime = base::Time::Now() - s_uninitialized_state_time;
-  if (dtime.InSeconds() < kInitializingDelaySeconds)
-    return s_uninitialized_msg;
-  return 0;
-}
-
-void PurgeNetworkIconCache() {
-  NetworkStateHandler::NetworkStateList networks;
-  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
-      &networks);
-  std::set<std::string> network_paths;
-  for (NetworkStateHandler::NetworkStateList::iterator iter = networks.begin();
-       iter != networks.end(); ++iter) {
-    network_paths.insert((*iter)->path());
-  }
+void PurgeNetworkIconCache(const std::set<std::string>& network_paths) {
   PurgeIconMap(ICON_TYPE_TRAY_OOBE, network_paths);
   PurgeIconMap(ICON_TYPE_TRAY_REGULAR, network_paths);
   PurgeIconMap(ICON_TYPE_DEFAULT_VIEW, network_paths);
