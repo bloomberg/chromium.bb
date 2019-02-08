@@ -32,6 +32,7 @@ class CastSessionIdMap {
   // be specified for the instance to run on. Any subsequent calls to this
   // function will return the same map instance, but will not change the task
   // runner.
+  // This must be called for the first time on the browser main thread.
   static CastSessionIdMap* GetInstance(
       base::SequencedTaskRunner* task_runner = nullptr);
   // Map a session id to a particular group id in the provided WebContents.
@@ -60,7 +61,7 @@ class CastSessionIdMap {
   // This call be called on any thread.
   void SetSessionIdInternal(std::string session_id,
                             base::UnguessableToken group_id,
-                            content::WebContents* web_contents);
+                            std::unique_ptr<GroupObserver> group_observer);
   // Retrieves the session id for the provided group id.
   // This must be called on the |task_runner_|.
   std::string GetSessionIdInternal(std::string group_id);
