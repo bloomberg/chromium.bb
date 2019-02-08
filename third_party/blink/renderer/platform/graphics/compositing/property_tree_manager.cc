@@ -588,7 +588,14 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const auto& lca =
         LowestCommonAncestor(*current_.clip, *target_clip).Unalias();
     while (current_.clip != &lca) {
-      DCHECK(IsCurrentCcEffectSynthetic());
+      if (!IsCurrentCcEffectSynthetic()) {
+        // This happens in pre-CompositeAfterPaint due to some clip-escaping
+        // corner cases that are very difficult to fix in legacy architecture.
+        // In CompositeAfterPaint this should never happen.
+        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+          NOTREACHED();
+        return delegated_blend;
+      }
       const auto* pre_exit_clip = current_.clip;
       CloseCcEffect();
       // We may run past the lowest common ancestor because it may not have
