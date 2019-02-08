@@ -113,21 +113,9 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
-  MOCK_METHOD5(DidPictureInPictureModeStart,
-               void(int,
-                    const viz::SurfaceId&,
-                    const gfx::Size&,
-                    blink::WebMediaPlayer::PipWindowOpenedCallback,
-                    bool));
-  MOCK_METHOD2(DidPictureInPictureModeEnd,
-               void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
   MOCK_METHOD2(DidSetPictureInPictureCustomControls,
                void(int,
                     const std::vector<blink::PictureInPictureControlInfo>&));
-  MOCK_METHOD4(DidPictureInPictureSurfaceChange,
-               void(int, const viz::SurfaceId&, const gfx::Size&, bool));
-  MOCK_METHOD2(RegisterPictureInPictureWindowResizeCallback,
-               void(int, blink::WebMediaPlayer::PipWindowResizedCallback));
 
   void DidPause(int delegate_id) override {
     EXPECT_EQ(delegate_id_, delegate_id);
@@ -616,6 +604,7 @@ class WebMediaPlayerMSTest
   void StopRendering() override;
   void DidReceiveFrame() override;
   bool IsDrivingFrameUpdates() const override { return true; }
+  void OnPictureInPictureStateChange() override {}
 
   // For test use
   void SetBackgroundRendering(bool background_rendering) {
@@ -1404,68 +1393,9 @@ TEST_P(WebMediaPlayerMSTest, HiddenPlayerTests) {
 }
 #endif
 
-// Tests delegate methods are called when Picture-in-Picture is triggered.
-TEST_P(WebMediaPlayerMSTest, PictureInPictureTriggerCallback) {
-  InitializeWebMediaPlayerMS();
-
-  // It works only a surface layer is used instead of a video layer.
-  if (!enable_surface_layer_for_video_) {
-    EXPECT_CALL(*this, DoSetCcLayer(false));
-    return;
-  }
-
-  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
-
-  int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
-                  333, 366, 400, 433, 466, 500, 533, 566, 600};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
-  provider->QueueFrames(timestamps);
-
-  EXPECT_CALL(*submitter_ptr_, StartRendering());
-  EXPECT_CALL(*this, DisplayType()).Times(2);
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
-  EXPECT_CALL(*this,
-              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  EXPECT_CALL(*this, DisplayType())
-      .WillRepeatedly(
-          Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
-
-  const gfx::Size natural_size = player_->NaturalSize();
-  EXPECT_CALL(delegate_, DidPictureInPictureSurfaceChange(
-                             delegate_.delegate_id(),
-                             surface_layer_bridge_ptr_->GetSurfaceId(),
-                             natural_size, false))
-      .Times(2);
-
-  player_->OnSurfaceIdUpdated(surface_layer_bridge_ptr_->GetSurfaceId());
-
-  EXPECT_CALL(delegate_, DidPictureInPictureModeStart(
-                             delegate_.delegate_id(),
-                             surface_layer_bridge_ptr_->GetSurfaceId(),
-                             natural_size, _, false));
-
-  player_->EnterPictureInPicture(base::DoNothing());
-  player_->OnSurfaceIdUpdated(surface_layer_bridge_ptr_->GetSurfaceId());
-
-  // Updating SurfaceId should NOT exit Picture-in-Picture.
-  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.delegate_id(), _))
-      .Times(0);
-
-  testing::Mock::VerifyAndClearExpectations(this);
-  EXPECT_CALL(*this, DoSetCcLayer(false));
-  EXPECT_CALL(*submitter_ptr_, StopUsingProvider());
-}
-
-INSTANTIATE_TEST_SUITE_P(,
-                         WebMediaPlayerMSTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool(),
-                                            ::testing::Bool()));
+INSTANTIATE_TEST_CASE_P(,
+                        WebMediaPlayerMSTest,
+                        ::testing::Combine(::testing::Bool(),
+                                           ::testing::Bool(),
+                                           ::testing::Bool()));
 }  // namespace content

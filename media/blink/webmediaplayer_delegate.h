@@ -16,10 +16,6 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
-namespace viz {
-class SurfaceId;
-}  // namespace viz
-
 namespace media {
 
 enum class MediaContentType;
@@ -118,37 +114,11 @@ class WebMediaPlayerDelegate {
   // Notify that the muted status of the media player has changed.
   virtual void DidPlayerMutedStatusChange(int delegate_id, bool muted) = 0;
 
-  // Notify that the source media player has entered Picture-in-Picture mode.
-  virtual void DidPictureInPictureModeStart(
-      int delegate_id,
-      const viz::SurfaceId&,
-      const gfx::Size&,
-      blink::WebMediaPlayer::PipWindowOpenedCallback,
-      bool show_play_pause_button) = 0;
-
-  // Notify that the source media player has exited Picture-in-Picture mode.
-  virtual void DidPictureInPictureModeEnd(int delegate_id,
-                                          base::OnceClosure) = 0;
-
   // Notify that custom controls have been sent to be assigned to the
   // Picture-in-Picture window.
   virtual void DidSetPictureInPictureCustomControls(
       int delegate_id,
       const std::vector<blink::PictureInPictureControlInfo>&) = 0;
-
-  // Notify that the media player in Picture-in-Picture had a change of surface.
-  virtual void DidPictureInPictureSurfaceChange(
-      int delegate_id,
-      const viz::SurfaceId&,
-      const gfx::Size&,
-      bool show_play_pause_button) = 0;
-
-  // Registers a callback associated with a player that will be called when
-  // receiving a notification from the browser process that the
-  // Picture-in-Picture associated to this player has been resized.
-  virtual void RegisterPictureInPictureWindowResizeCallback(
-      int player_id,
-      blink::WebMediaPlayer::PipWindowResizedCallback) = 0;
 
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.

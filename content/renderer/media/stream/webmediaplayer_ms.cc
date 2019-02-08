@@ -422,11 +422,8 @@ void WebMediaPlayerMS::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
   // the size of the video changes.
-  if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
-    delegate_->DidPictureInPictureSurfaceChange(
-        delegate_id_, surface_id, NaturalSize(),
-        false /* show_play_pause_button */);
-  }
+  if (client_)
+    client_->OnPictureInPictureStateChange();
 }
 
 void WebMediaPlayerMS::TrackAdded(const blink::WebMediaStreamTrack& track) {
@@ -455,6 +452,16 @@ void WebMediaPlayerMS::ActiveStateChanged(bool is_active) {
   // track is expected to produce a black frame after becoming inactive.
   if (audio_renderer_)
     audio_renderer_->Stop();
+}
+
+int WebMediaPlayerMS::GetDelegateId() {
+  return delegate_id_;
+}
+
+base::Optional<viz::SurfaceId> WebMediaPlayerMS::GetSurfaceId() {
+  if (bridge_)
+    return bridge_->GetSurfaceId();
+  return base::nullopt;
 }
 
 void WebMediaPlayerMS::Reload() {
@@ -636,44 +643,23 @@ void WebMediaPlayerMS::SetVolume(double volume) {
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
 }
 
-void WebMediaPlayerMS::EnterPictureInPicture(
-    blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
+void WebMediaPlayerMS::EnterPictureInPicture() {
   if (!bridge_)
     ActivateSurfaceLayerForVideo();
 
   DCHECK(bridge_);
-
-  const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
-  DCHECK(surface_id.is_valid());
-
-  // Notifies the browser process that the player should now be in
-  // Picture-in-Picture mode.
-  delegate_->DidPictureInPictureModeStart(delegate_id_, surface_id,
-                                          NaturalSize(), std::move(callback),
-                                          false /* show_play_pause_button */);
+  DCHECK(bridge_->GetSurfaceId().is_valid());
 }
 
-void WebMediaPlayerMS::ExitPictureInPicture(
-    blink::WebMediaPlayer::PipWindowClosedCallback callback) {
-  // Notifies the browser process that Picture-in-Picture has ended. It will
-  // clear out the states and close the window.
-  delegate_->DidPictureInPictureModeEnd(delegate_id_, std::move(callback));
-
+void WebMediaPlayerMS::ExitPictureInPicture() {
   // Internal cleanups.
+  // TODO(mlamouri): remove the need for this.
   OnPictureInPictureModeEnded();
 }
 
 void WebMediaPlayerMS::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
   delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
-}
-
-void WebMediaPlayerMS::RegisterPictureInPictureWindowResizeCallback(
-    blink::WebMediaPlayer::PipWindowResizedCallback callback) {
-  DCHECK(IsInPictureInPicture() && !client_->IsInAutoPIP());
-
-  delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
-                                                          std::move(callback));
 }
 
 void WebMediaPlayerMS::SetSinkId(

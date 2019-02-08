@@ -333,6 +333,8 @@ class CORE_EXPORT HTMLMediaElement
   // becomes visible again.
   bool PausedWhenVisible() const;
 
+  void SetCcLayerForTesting(cc::Layer* layer) { SetCcLayer(layer); }
+
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
