@@ -4,17 +4,22 @@
 
 #include "content/public/test/network_connection_change_simulator.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/test/browser_test_utils.h"
 #include "net/base/network_change_notifier.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+#if defined(OS_CHROMEOS)
+#include "net/base/network_change_notifier_chromeos.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#endif
 
 namespace content {
 
@@ -29,6 +34,33 @@ constexpr base::RunLoop::Type kRunLoopType =
 
 NetworkConnectionChangeSimulator::NetworkConnectionChangeSimulator() = default;
 NetworkConnectionChangeSimulator::~NetworkConnectionChangeSimulator() = default;
+
+#if defined(OS_CHROMEOS)
+void NetworkConnectionChangeSimulator::InitializeChromeosConnectionType() {
+  // Manually set the connection type since ChromeOS's NetworkChangeNotifier
+  // implementation relies on some other class controlling it (normally
+  // NetworkChangeManagerClient), which isn't used on content/.
+  net::NetworkChangeNotifierChromeos* network_change_notifier =
+      static_cast<net::NetworkChangeNotifierChromeos*>(
+          content::GetNetworkChangeNotifier());
+  network_change_notifier->OnConnectionChanged(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  // If the network service is enabled, set the connection type for its
+  // NetworkChangeNotifier instance as well.
+  if (IsOutOfProcessNetworkService()) {
+    network::mojom::NetworkChangeManagerPtr manager_ptr;
+    network::mojom::NetworkChangeManagerRequest request(
+        mojo::MakeRequest(&manager_ptr));
+    GetNetworkService()->GetNetworkChangeManager(std::move(request));
+    manager_ptr->OnNetworkChanged(
+        /*dns_changed=*/false, /*ip_address_changed=*/false,
+        /*connection_type_changed=*/true,
+        network::mojom::ConnectionType::CONNECTION_ETHERNET,
+        /*connection_subtype_changed=*/false,
+        network::mojom::ConnectionSubtype::SUBTYPE_UNKNOWN);
+  }
+}
+#endif
 
 void NetworkConnectionChangeSimulator::SetConnectionType(
     network::mojom::ConnectionType type) {
@@ -60,8 +92,7 @@ void NetworkConnectionChangeSimulator::SetConnectionType(
 // static
 void NetworkConnectionChangeSimulator::SimulateNetworkChange(
     network::mojom::ConnectionType type) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !IsNetworkServiceRunningInProcess()) {
+  if (IsOutOfProcessNetworkService()) {
     network::mojom::NetworkServiceTestPtr network_service_test;
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
         mojom::kNetworkServiceName, &network_service_test);
