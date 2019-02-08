@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
@@ -41,7 +42,10 @@ class IdentityManagerWrapper : public KeyedService,
                 ios::AccountTrackerServiceFactory::GetForBrowserState(
                     browser_state),
                 ios::SigninManagerFactory::GetForBrowserState(browser_state)),
-            nullptr) {}
+            nullptr,
+            std::make_unique<identity::AccountsCookieMutatorImpl>(
+                ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
+                    browser_state))) {}
 };
 
 IdentityManagerFactory::IdentityManagerFactory()
