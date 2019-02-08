@@ -217,7 +217,7 @@ source_set("web_internal") {
     "//components/prefs",
     "//components/resources",
     "//components/services/unzip:lib",
-    "//components/services/unzip:manifest",
+    "//components/services/unzip/public/cpp:manifest",
     "//components/services/unzip/public/interfaces",
     "//components/strings",
     "//components/version_info",

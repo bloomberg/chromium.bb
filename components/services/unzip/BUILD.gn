@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "unzip_service.cc",
@@ -54,9 +52,4 @@ source_set("unit_tests") {
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]
-}
-
-service_manifest("manifest") {
-  name = "unzip_service"
-  source = "manifest.json"
 }

@@ -21,3 +21,16 @@ source_set("factory") {
     "//services/service_manager/public/cpp",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/services/pdf_compositor/public/interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}

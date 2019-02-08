@@ -561,8 +561,8 @@ source_set("chrome_packaged_service_manifests") {
     "//chrome/common:mojo_bindings",
     "//chrome/services/file_util/public/cpp:manifest",
     "//chrome/services/noop/public/cpp:manifest",
-    "//components/services/patch:manifest",
-    "//components/services/unzip:manifest",
+    "//components/services/patch/public/cpp:manifest",
+    "//components/services/unzip/public/cpp:manifest",
     "//components/spellcheck/common:interfaces",
     "//components/startup_metric_utils/common:interfaces",
     "//device/vr/buildflags",
@@ -582,7 +582,7 @@ source_set("chrome_packaged_service_manifests") {
   }
 
   if (enable_basic_printing) {
-    deps += [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
+    deps += [ "//components/services/pdf_compositor/public/cpp:manifest" ]
   }
 
   if (enable_print_preview) {

@@ -5,7 +5,7 @@
 #include "headless/lib/browser/headless_overlay_manifests.h"
 
 #include "base/no_destructor.h"
-#include "components/services/pdf_compositor/pdf_compositor_manifest.h"
+#include "components/services/pdf_compositor/public/cpp/manifest.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -24,7 +24,7 @@ const service_manager::Manifest&
 GetHeadlessContentPackagedServicesOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
-          .PackageService(pdf_compositor::GetManifest())
+          .PackageService(printing::GetPdfCompositorManifest())
           .Build()};
 
   return *manifest;

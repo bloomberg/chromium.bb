@@ -223,7 +223,7 @@ source_set("content_packaged_services_manifest") {
 
   deps = [
     "//base",
-    "//components/services/heap_profiling:manifest",
+    "//components/services/heap_profiling/public/cpp:manifest",
     "//content/public/common:service_names",
     "//media/mojo/services:cdm_manifest",
     "//media/mojo/services:media_manifest",
