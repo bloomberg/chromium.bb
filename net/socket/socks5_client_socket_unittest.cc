@@ -17,7 +17,6 @@
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
@@ -67,7 +66,6 @@ class SOCKS5ClientSocketTest : public PlatformTest,
   // (which |user_sock| is set to).
   StreamSocket* tcp_sock_;
   TestCompletionCallback callback_;
-  std::unique_ptr<MockHostResolver> host_resolver_;
   std::unique_ptr<SocketDataProvider> data_;
 
  private:
@@ -75,24 +73,15 @@ class SOCKS5ClientSocketTest : public PlatformTest,
 };
 
 SOCKS5ClientSocketTest::SOCKS5ClientSocketTest()
-  : kNwPort(base::HostToNet16(80)),
-    host_resolver_(new MockHostResolver) {
-}
+    : kNwPort(base::HostToNet16(80)) {}
 
 // Set up platform before every test case
 void SOCKS5ClientSocketTest::SetUp() {
   PlatformTest::SetUp();
 
-  // Resolve the "localhost" AddressList used by the TCP connection to connect.
-  HostResolver::RequestInfo info(HostPortPair("www.socks-proxy.com", 1080));
-  TestCompletionCallback callback;
-  std::unique_ptr<HostResolver::Request> request;
-  int rv = host_resolver_->Resolve(info, DEFAULT_PRIORITY, &address_list_,
-                                   callback.callback(), &request,
-                                   NetLogWithSource());
-  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
-  ASSERT_THAT(rv, IsOk());
+  // Create the "localhost" AddressList used by the TCP connection to connect.
+  address_list_ =
+      AddressList::CreateFromIPAddress(IPAddress::IPv4Localhost(), 1080);
 }
 
 std::unique_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
