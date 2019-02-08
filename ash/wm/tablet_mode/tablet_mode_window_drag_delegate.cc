@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
@@ -19,7 +20,13 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_metrics.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/window_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -106,6 +113,8 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   OverviewController* controller = Shell::Get()->overview_controller();
   bool was_overview_open = controller->IsSelecting();
 
+  const bool was_splitview_active =
+      split_view_controller_->IsSplitViewModeActive();
   // If the dragged window is one of the snapped windows, SplitViewController
   // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);
@@ -135,6 +144,33 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   original_shadow_elevation_ =
       ::wm::GetShadowElevationConvertDefault(dragged_window_);
   ::wm::SetShadowElevation(dragged_window_, ::wm::kShadowElevationActiveWindow);
+
+  Shell* shell = Shell::Get();
+  TabletModeController* tablet_mode_controller =
+      shell->tablet_mode_controller();
+  if (wm::IsDraggingTabs(dragged_window_)) {
+    tablet_mode_controller->increment_tab_drag_count();
+    if (was_splitview_active)
+      tablet_mode_controller->increment_tab_drag_in_splitview_count();
+
+    // For tab drag, we only open the overview behind if the dragged window is
+    // the source window.
+    if (ShouldOpenOverviewWhenDragStarts())
+      RecordTabDragTypeHistogram(TabDragType::kDragSourceWindow);
+    else
+      RecordTabDragTypeHistogram(TabDragType::kDragTabOutOfWindow);
+  } else {
+    tablet_mode_controller->increment_app_window_drag_count();
+    if (was_splitview_active)
+      tablet_mode_controller->increment_app_window_drag_in_splitview_count();
+  }
+  if (controller->IsSelecting()) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Tablet.WindowDrag.OpenedWindowsNumber",
+        shell->mru_window_tracker()->BuildMruWindowList().size());
+    base::RecordAction(
+        base::UserMetricsAction("Tablet.WindowDrag.OpenedOverview"));
+  }
 }
 
 void TabletModeWindowDragDelegate::ContinueWindowDrag(
@@ -197,7 +233,8 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
   // The window might merge into an overview window or become a new window item
   // in overview mode.
-  if (GetOverviewSession()) {
+  OverviewSession* overview_session = GetOverviewSession();
+  if (overview_session) {
     GetOverviewSession()->OnWindowDragEnded(
         dragged_window_, location_in_screen,
         ShouldDropWindowIntoOverview(snap_position, location_in_screen));
@@ -212,6 +249,21 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
   // For child class to do its special handling if any.
   EndedWindowDrag(location_in_screen);
+
+  if (!wm::IsDraggingTabs(dragged_window_)) {
+    if (split_view_controller_->IsWindowInSplitView(dragged_window_)) {
+      RecordAppDragEndWindowStateHistogram(
+          AppWindowDragEndWindowState::kDraggedIntoSplitView);
+    } else if (overview_session &&
+               overview_session->IsWindowInOverview(dragged_window_)) {
+      RecordAppDragEndWindowStateHistogram(
+          AppWindowDragEndWindowState::kDraggedIntoOverview);
+    } else {
+      RecordAppDragEndWindowStateHistogram(
+          AppWindowDragEndWindowState::kBackToMaximizedOrFullscreen);
+    }
+  }
+
   occlusion_excluder_.reset();
   dragged_window_ = nullptr;
   did_move_ = false;

@@ -140,6 +140,15 @@ class ASH_EXPORT TabletModeController
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
 
+  void increment_app_window_drag_count() { ++app_window_drag_count_; }
+  void increment_app_window_drag_in_splitview_count() {
+    ++app_window_drag_in_splitview_count_;
+  }
+  void increment_tab_drag_count() { ++tab_drag_count_; }
+  void increment_tab_drag_in_splitview_count() {
+    ++tab_drag_in_splitview_count_;
+  }
+
  private:
   friend class TabletModeControllerTestApi;
 
@@ -271,6 +280,19 @@ class ASH_EXPORT TabletModeController
   // Tracks if the device has an external pointing device. The device will
   // not enter tablet mode if this is true.
   bool has_external_pointing_device_ = false;
+
+  // Counts the app window drag from top in tablet mode.
+  int app_window_drag_count_ = 0;
+
+  // Counts the app window drag from top when splitview is active.
+  int app_window_drag_in_splitview_count_ = 0;
+
+  // Counts of the tab drag from top in tablet mode, includes both non-source
+  // window and source window drag.
+  int tab_drag_count_ = 0;
+
+  // Counts of the tab drag from top when splitview is active.
+  int tab_drag_in_splitview_count_ = 0;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to

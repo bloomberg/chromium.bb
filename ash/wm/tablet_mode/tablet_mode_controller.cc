@@ -164,8 +164,17 @@ TabletModeController::TabletModeController()
 }
 
 TabletModeController::~TabletModeController() {
-  Shell::Get()->RemoveShellObserver(this);
+  UMA_HISTOGRAM_COUNTS_1000("Tablet.AppWindowDrag.CountOfPerUserSession",
+                            app_window_drag_count_);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Tablet.AppWindowDrag.InSplitView.CountOfPerUserSession",
+      app_window_drag_in_splitview_count_);
+  UMA_HISTOGRAM_COUNTS_1000("Tablet.TabDrag.CountOfPerUserSession",
+                            tab_drag_count_);
+  UMA_HISTOGRAM_COUNTS_1000("Tablet.TabDrag.InSplitView.CountOfPerUserSession",
+                            tab_drag_in_splitview_count_);
 
+  Shell::Get()->RemoveShellObserver(this);
   if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     AccelerometerReader::GetInstance()->RemoveObserver(this);
