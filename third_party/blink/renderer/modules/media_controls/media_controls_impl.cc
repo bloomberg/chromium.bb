@@ -820,7 +820,9 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
 
   // If we are in the "no-source" state we should show the overflow menu on a
   // video element.
-  if (IsModern()) {
+  // TODO(https://crbug.org/930001): Reconsider skipping this block when not
+  // connected.
+  if (IsModern() && MediaElement().isConnected()) {
     bool updated = false;
 
     if (state == kNoSource) {
@@ -844,6 +846,18 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
 
       if (overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
         overflow_menu_->removeAttribute(html_names::kDisabledAttr);
+        updated = true;
+      }
+    }
+
+    if (state == kNoSource || state == kNotLoaded) {
+      if (!timeline_->hasAttribute(html_names::kDisabledAttr)) {
+        timeline_->setAttribute(html_names::kDisabledAttr, "");
+        updated = true;
+      }
+    } else {
+      if (timeline_->hasAttribute(html_names::kDisabledAttr)) {
+        timeline_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
     }
