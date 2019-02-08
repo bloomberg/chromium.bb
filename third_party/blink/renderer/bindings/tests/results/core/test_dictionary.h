@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_or_null_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_interface_2_or_uint8_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_treat_non_object_as_null_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_callback_function.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_2.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -381,6 +382,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setTestObjectSequenceMember(const HeapVector<Member<TestObject>>&);
 
+  bool hasTreatNonNullObjMember() const { return treat_non_null_obj_member_; }
+  V8TreatNonObjectAsNullVoidFunction* treatNonNullObjMember() const {
+    return treat_non_null_obj_member_;
+  }
+  void setTreatNonNullObjMember(V8TreatNonObjectAsNullVoidFunction*);
+
   bool hasTreatNullAsStringSequenceMember() const { return has_treat_null_as_string_sequence_member_; }
   const Vector<String>& treatNullAsStringSequenceMember() const {
     DCHECK(has_treat_null_as_string_sequence_member_);
@@ -536,6 +543,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Member<TestInterfaceImplementation> test_interface_or_null_member_;
   HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_;
   HeapVector<Member<TestObject>> test_object_sequence_member_;
+  TraceWrapperMember<V8TreatNonObjectAsNullVoidFunction> treat_non_null_obj_member_;
   Vector<String> treat_null_as_string_sequence_member_;
   Member<DOMUint8Array> uint8_array_member_;
   HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_;

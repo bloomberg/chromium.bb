@@ -164,6 +164,7 @@ def member_context(dictionary, member):
         'has_explicit_presence': has_explicit_presence,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
+        'is_callback_function_type': idl_type.is_callback_function,
         'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,
         'is_nullable': idl_type.is_nullable,
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
