@@ -114,6 +114,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.AsyncViewProvider;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.widget.Toast;
 import org.chromium.ui.widget.ViewRectProvider;
 
 import java.lang.annotation.Retention;
@@ -779,6 +780,8 @@ public class ToolbarManager
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
                 shareButtonListener);
         if (mAppMenuButtonHelper != null) mAppMenuButtonHelper.setMenuShowsFromBottom(true);
+        Toast.setGlobalExtraYOffset(
+                mActivity.getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_height));
     }
 
     /** Record that homepage button was used for IPH reasons */
