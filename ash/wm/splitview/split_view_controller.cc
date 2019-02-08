@@ -728,6 +728,12 @@ void SplitViewController::OnOverviewModeEnding(
     for (const auto& overview_item : windows) {
       aura::Window* window = overview_item->GetWindow();
       if (CanSnapInSplitview(window) && window != GetDefaultSnappedWindow()) {
+        // Remove the overview item before snapping because the overview session
+        // is unavailable to retrieve outside this function after
+        // OnOverviewEnding is notified.
+        overview_item->RestoreWindow(/*reset_transform=*/false);
+        overview_session->RemoveOverviewItem(overview_item.get(),
+                                             /*reposition=*/false);
         SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
         // If ending overview causes a window to snap, also do not do exiting
         // overview animation.
