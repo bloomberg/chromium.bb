@@ -14,6 +14,7 @@
 #include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -979,15 +980,25 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
   }
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
   auto authenticator = ConnectToAuthenticator();
 
   // caBLE should be enabled by default if BLE is supported.
+  bool should_be_enabled =
+      device::BluetoothAdapterFactory::Get().IsLowEnergySupported();
+
+#if defined(OS_CHROMEOS)
+  // Test only valid if truly running on instance of ChromeOS.
+  should_be_enabled = should_be_enabled && base::SysInfo::IsRunningOnChromeOS();
+#endif  // defined(OS_CHROMEOS)
+
   EXPECT_EQ(
-      device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
+      should_be_enabled,
       SupportsTransportProtocol(
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithFlag) {
   DisableFeature(features::kWebAuthCable);
