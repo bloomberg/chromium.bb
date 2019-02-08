@@ -19,28 +19,30 @@ import "mojo/public/mojom/base/time.mojom";
 enum OobeDialogState {
   // Showing other screen, which does not impact the visibility of login shelf
   // buttons.
-  NONE,
+  NONE = 0,
 
   // Showing gaia signin screen.
-  GAIA_SIGNIN,
+  GAIA_SIGNIN = 1,
+
+  // AccountPicker = 2, not currently used
 
   // Showing wrong hardware identification screen.
-  WRONG_HWID_WARNING,
+  WRONG_HWID_WARNING = 3,
 
   // Showing supervised user creation screen.
-  SUPERVISED_USER_CREATION_FLOW,
+  SUPERVISED_USER_CREATION_FLOW = 4,
 
   // Showing SAML password confirmation screen.
-  SAML_PASSWORD_CONFIRM,
+  SAML_PASSWORD_CONFIRM = 5,
 
   // Showing password changed screen.
-  PASSWORD_CHANGED,
+  PASSWORD_CHANGED = 6,
 
   // Showing device enrollment screen.
-  ENROLLMENT,
+  ENROLLMENT = 7,
 
   // Showing error screen.
-  ERROR,
+  ERROR = 8,
 
   // Showing sync consent screen.
   SYNC_CONSENT = 9,
