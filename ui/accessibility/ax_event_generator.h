@@ -24,6 +24,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   enum class Event : int32_t {
     ACTIVE_DESCENDANT_CHANGED,
     ALERT,
+    AUTO_COMPLETE_CHANGED,
     CHECKED_STATE_CHANGED,
     CHILDREN_CHANGED,
     COLLAPSED,

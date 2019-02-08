@@ -197,6 +197,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       }
       break;
     case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
+    case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::COLLAPSED:
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:

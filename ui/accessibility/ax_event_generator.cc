@@ -208,6 +208,10 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
           node->data().role != ax::mojom::Role::kAlert)
         AddEvent(node, Event::LIVE_REGION_CREATED);
       break;
+    case ax::mojom::StringAttribute::kAutoComplete:
+      LOG(ERROR) << "auto!";
+      AddEvent(node, Event::AUTO_COMPLETE_CHANGED);
+      break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;

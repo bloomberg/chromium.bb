@@ -230,7 +230,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onAriaAttributeChanged: function(evt) {
-    if (evt.target.state.editable)
+    // Don't report changes on non-focused, richly editables.
+    if (evt.target.state[StateType.RICHLY_EDITABLE] &&
+        !evt.target.state[StateType.FOCUSED])
       return;
 
     // Only report attribute changes on some *Option roles if it is selected.
