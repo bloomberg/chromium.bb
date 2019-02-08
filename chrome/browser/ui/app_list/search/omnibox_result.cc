@@ -249,15 +249,15 @@ void OmniboxResult::SetZeroSuggestionActions() {
       case ash::OmniBoxZeroStateAction::kRemoveSuggestion:
         button_image = gfx::CreateVectorIcon(
             kSearchResultRemoveIcon, kImageButtonIconSize, kImageButtonColor);
-        button_tooltip = l10n_util::GetStringUTF16(
-            IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME);
+        button_tooltip = l10n_util::GetStringFUTF16(
+            IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME, title());
         visible_on_hover = true;  // visible upon hovering
         break;
       case ash::OmniBoxZeroStateAction::kAppendSuggestion:
         button_image = gfx::CreateVectorIcon(
             kSearchResultAppendIcon, kImageButtonIconSize, kImageButtonColor);
-        button_tooltip = l10n_util::GetStringUTF16(
-            IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME);
+        button_tooltip = l10n_util::GetStringFUTF16(
+            IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME, title());
         visible_on_hover = false;  // always visible
         break;
       default:
