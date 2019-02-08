@@ -212,6 +212,9 @@ class PasswordProtectionRequest
   // If a request is sent, this is the token returned by the WebUI.
   int web_ui_token_;
 
+  // When we start extracting visual features.
+  base::TimeTicks visual_feature_start_time_;
+
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);
 };

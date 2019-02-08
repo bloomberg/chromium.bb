@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -249,6 +250,8 @@ void PasswordProtectionRequest::CollectVisualFeatures() {
   if (!view)
     SendRequest();
 
+  visual_feature_start_time_ = base::TimeTicks::Now();
+
   view->CopyFromSurface(
       gfx::Rect(), gfx::Size(),
       base::BindOnce(&PasswordProtectionRequest::OnScreenshotTaken,
@@ -271,6 +274,10 @@ void PasswordProtectionRequest::OnVisualFeatureCollectionDone(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   request_proto_->mutable_visual_features()->Swap(visual_features.get());
+
+  UMA_HISTOGRAM_TIMES("PasswordProtection.VisualFeatureExtractionDuration",
+                      base::TimeTicks::Now() - visual_feature_start_time_);
+
   SendRequest();
 }
 
