@@ -382,8 +382,8 @@ class IdentityManager : public SigninManagerBase::Observer,
 
  private:
   // These test helpers need to use some of the private methods below.
-  friend AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
-                                       const std::string& email);
+  friend CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
+                                           const std::string& email);
   friend void SetRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager,
       const std::string& token_value);

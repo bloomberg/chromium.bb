@@ -286,7 +286,7 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
                                : owned_identity_manager_.get();
 }
 
-AccountInfo IdentityTestEnvironment::SetPrimaryAccount(
+CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
     const std::string& email) {
   return identity::SetPrimaryAccount(identity_manager(), email);
 }

@@ -168,7 +168,7 @@ class EasyUnlockServiceTest : public testing::Test {
     // environments associated with |profile_| and |secondary_profile_|.
     IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(
         profile.get());
-    AccountInfo account_info =
+    CoreAccountInfo account_info =
         identity_test_env_adaptor.identity_test_env()->SetPrimaryAccount(email);
 
     *gaia_id = account_info.gaia;
