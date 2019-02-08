@@ -808,7 +808,8 @@ void WebMediaPlayerImpl::Pause() {
 void WebMediaPlayerImpl::Seek(double seconds) {
   DVLOG(1) << __func__ << "(" << seconds << "s)";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  media_log_->AddEvent(media_log_->CreateSeekEvent(seconds));
+  media_log_->AddEvent(
+      media_log_->CreateTimeEvent(MediaLogEvent::SEEK, "seek_target", seconds));
   DoSeek(base::TimeDelta::FromSecondsD(seconds), true);
 }
 
