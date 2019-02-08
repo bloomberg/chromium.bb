@@ -28,8 +28,8 @@
 #include "ash/public/cpp/manifest.h"
 #include "chrome/browser/chromeos/prefs/ash_pref_connector_manifest.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"
-#include "chromeos/services/ime/public/cpp/manifest.h"
-#include "chromeos/services/secure_channel/public/cpp/manifest.h"
+#include "chromeos/services/ime/manifest.h"
+#include "chromeos/services/secure_channel/manifest.h"
 #include "mash/public/mojom/launchable.mojom.h"  // nogncheck
 #include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 #include "ui/accessibility/manifest.h"  // nogncheck
@@ -175,8 +175,8 @@ GetChromePackagedServiceManifests() {
       ash::GetManifest(),
       GetAshPrefConnectorManifest(),
       GetCupsIppParserManifest(),
-      chromeos::ime::GetManifest(),
-      chromeos::secure_channel::GetManifest(),
+      ime::GetManifest(),
+      secure_channel::GetManifest(),
       ax_host_service::GetManifest(),
 #endif
   }};
