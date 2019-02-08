@@ -31819,6 +31819,7 @@ from previous Chrome versions.
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
+  <int value="-29877377" label="TabHoverCardImages:disabled"/>
   <int value="-29847483" label="MemoryAblation:enabled"/>
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
   <int value="-23804418"
@@ -32665,6 +32666,7 @@ from previous Chrome versions.
   <int value="1442830837" label="MemoryAblation:disabled"/>
   <int value="1444320426" label="VizHitTestDrawQuad:enabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
+  <int value="1448684258" label="TabHoverCardImages:enabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
   <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>

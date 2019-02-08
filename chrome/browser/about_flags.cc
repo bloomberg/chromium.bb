@@ -3402,6 +3402,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabHoverCards)},
 
+    {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
+     flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabHoverCardImages)},
+
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
      flag_descriptions::kBlockTabUndersDescription, kOsAll,
      FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},

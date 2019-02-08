@@ -24,7 +24,13 @@ const base::Feature kWebUIDarkMode{"WebUIDarkMode",
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables popup cards containing tab information when hovering over a tab.
+// https://crbug.com/910739
 const base::Feature kTabHoverCards{"TabHoverCards",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables preview images in hover cards. See kTabHoverCards.
+// https://crbug.com/928954
+const base::Feature kTabHoverCardImages{"TabHoverCardImages",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
