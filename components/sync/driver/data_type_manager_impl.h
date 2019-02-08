@@ -27,7 +27,6 @@ class DataTypeController;
 class DataTypeDebugInfoListener;
 class DataTypeEncryptionHandler;
 class DataTypeManagerObserver;
-class SyncClient;
 struct DataTypeConfigurationStats;
 
 // List of data types grouped by priority and ordered from high priority to
@@ -38,7 +37,6 @@ class DataTypeManagerImpl : public DataTypeManager,
                             public ModelAssociationManagerDelegate {
  public:
   DataTypeManagerImpl(
-      SyncClient* sync_client,
       ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const DataTypeController::TypeMap* controllers,
@@ -185,7 +183,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Adds or removes |type| from |downloaded_types_| based on |downloaded|.
   void SetTypeDownloaded(ModelType type, bool downloaded);
 
-  SyncClient* sync_client_;
   ModelTypeConfigurer* configurer_;
 
   // Map of all data type controllers that are available for sync.
