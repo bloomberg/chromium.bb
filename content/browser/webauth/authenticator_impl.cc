@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/webauth/authenticator_type_converters.h"
-#include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
@@ -886,9 +885,9 @@ void AuthenticatorImpl::OnRegisterResponse(
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
-
-      HandleBlockingError(
-          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kKeyAlreadyRegistered);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1038,8 +1037,9 @@ void AuthenticatorImpl::OnSignResponse(
 
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
-      HandleBlockingError(
-          blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED);
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kKeyNotRegistered);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1078,34 +1078,36 @@ void AuthenticatorImpl::OnSignResponse(
   NOTREACHED();
 }
 
-// If WebAuthnUi is enabled, this error blocks until after receiving user
-// acknowledgement. Otherwise, the error is returned right away.
-void AuthenticatorImpl::HandleBlockingError(
-    blink::mojom::AuthenticatorStatus status) {
-  AuthenticatorRequestClientDelegate::InterestingFailureReason reason =
-      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout;
-  switch (status) {
-    case blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
-      reason = AuthenticatorRequestClientDelegate::InterestingFailureReason::
-          kKeyAlreadyRegistered;
+void AuthenticatorImpl::SignalFailureToRequestDelegate(
+    AuthenticatorRequestClientDelegate::InterestingFailureReason reason) {
+  blink::mojom::AuthenticatorStatus status =
+      blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+
+  switch (reason) {
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kKeyAlreadyRegistered:
+      status = blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED;
       break;
-    case blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR:
-      reason = AuthenticatorRequestClientDelegate::InterestingFailureReason::
-          kTimeout;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kKeyNotRegistered:
+      status = blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED;
       break;
-    case blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
-      reason = AuthenticatorRequestClientDelegate::InterestingFailureReason::
-          kKeyNotRegistered;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
       break;
-    default:
-      NOTREACHED();
   }
 
   error_awaiting_user_acknowledgement_ = status;
-  DCHECK(request_delegate_);
-  if (!request_delegate_->DoesBlockRequestOnFailure(reason)) {
-    FailWithErrorAndCleanup();
+
+  // If WebAuthnUi is enabled, this error blocks until after receiving user
+  // acknowledgement. Otherwise, the error is returned right away.
+  if (request_delegate_->DoesBlockRequestOnFailure(reason)) {
+    // Cancel pending authenticator requests before the error dialog is shown.
+    request_->CancelActiveAuthenticators();
+    return;
   }
+
+  FailWithErrorAndCleanup();
 }  // namespace content
 
 void AuthenticatorImpl::FailWithErrorAndCleanup() {
@@ -1131,7 +1133,8 @@ void AuthenticatorImpl::OnTimeout() {
     awaiting_attestation_response_ = false;
   }
 
-  HandleBlockingError(blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  SignalFailureToRequestDelegate(
+      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
 }
 
 void AuthenticatorImpl::Cancel() {
