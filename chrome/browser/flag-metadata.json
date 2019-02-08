@@ -2459,87 +2459,87 @@
   },
   {
     "name": "offline-bookmarks",
-    // "owners": [ "your-team" ],
+    "owners": [ "jianli", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-indicator-always-http-probe",
-    // "owners": [ "your-team" ],
+    "owners": [ "jianli", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-indicator-choice",
-    // "owners": [ "your-team" ],
+    "owners": [ "jianli", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-alternate-dino-page",
-    // "owners": [ "your-team" ],
+    "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-ct",
-    // "owners": [ "your-team" ],
+    "owners": [ "dewittj", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-ct-suppress-completed-notification",
-    // "owners": [ "your-team" ],
+    "owners": [ "dewittj", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-ct-v2",
-    // "owners": [ "your-team" ],
+    "owners": [ "dewittj", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-failed-download",
-    // "owners": [ "your-team" ],
+    "owners": [ "chili", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-in-downloads-home-open-in-cct",
-    // "owners": [ "your-team" ],
+    "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-live-page-sharing",
-    // "owners": [ "your-team" ],
+    "owners": [ "petewil", "jianli", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-load-signal-collecting",
-    // "owners": [ "your-team" ],
+    "owners": [ "petewil", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-pending-download",
-    // "owners": [ "your-team" ],
+    "owners": [ "chili", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-prefetching",
-    // "owners": [ "your-team" ],
+    "owners": [ "carlosk", "dewittj", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-renovations",
-    // "owners": [ "your-team" ],
+    "owners": [ "petewil", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-resource-based-snapshot",
-    // "owners": [ "your-team" ],
+    "owners": [ "petewil", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-sharing",
-    // "owners": [ "your-team" ],
+    "owners": [ "petewil", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offlining-recent-pages",
-    // "owners": [ "your-team" ],
+    "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
