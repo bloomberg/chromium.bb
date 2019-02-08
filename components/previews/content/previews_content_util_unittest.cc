@@ -432,8 +432,7 @@ TEST_F(PreviewsContentUtilTest,
   EXPECT_EQ(content::CLIENT_LOFI_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
-                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
-                    content::RESOURCE_LOADING_HINTS_ON,
+                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
                 enabled_previews_decider()));
 }
 
