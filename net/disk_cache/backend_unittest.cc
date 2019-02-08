@@ -4653,20 +4653,21 @@ TEST_F(DiskCacheBackendTest, SimpleFdLimit) {
 
   for (int i = 0; i < kLargeNumEntries; ++i) {
     entries[i]->Close();
+    RunUntilIdle();
   }
   alt_entry->Close();
   RunUntilIdle();
 
   // Closes have to pull things in to write out the footer, but they also
-  // free up FDs, so we will only need to kick one more thing out.
+  // free up FDs.
   histogram_tester.ExpectBucketCount(
       "SimpleCache.FileDescriptorLimiterAction",
       disk_cache::FD_LIMIT_CLOSE_FILE,
-      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2 + 1);
+      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2);
   histogram_tester.ExpectBucketCount(
       "SimpleCache.FileDescriptorLimiterAction",
       disk_cache::FD_LIMIT_REOPEN_FILE,
-      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2 + 1);
+      kLargeNumEntries - 64 + 1 + kLargeNumEntries - 1 + 2);
   histogram_tester.ExpectBucketCount("SimpleCache.FileDescriptorLimiterAction",
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 }
