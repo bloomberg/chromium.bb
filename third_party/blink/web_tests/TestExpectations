@@ -1792,6 +1792,7 @@ crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-single-space-inline-element.html [ Timeout Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-single-space-one-element.html [ Timeout Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-by-word-visually-wrong-left-right.html [ Crash Failure ]
+crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_crossing_inline_block_boundary.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move-forward-after-line-break.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_forward_line_br.html [ Failure ]
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_forward_line_range.html [ Failure ]
