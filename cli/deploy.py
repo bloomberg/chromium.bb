@@ -777,8 +777,19 @@ def _Emerge(device, pkg_path, root, extra_args=None):
     cmd.append(extra_args)
 
   try:
-    device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
-                      capture_output=False, debug_level=logging.INFO)
+    result = device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
+                               capture_output=True, debug_level=logging.INFO)
+
+    pattern = ('A requested package will not be merged because '
+               'it is listed in package.provided')
+    output = result.error.replace('\n', ' ').replace('\r', '')
+    if pattern in output:
+      error = ('Package failed to emerge: %s\n'
+               'Remove %s from /etc/portage/make.profile/'
+               'package.provided/chromeos-base.packages\n'
+               '(also see crbug.com/920140 for more context)\n'
+               % (pattern, pkg_name))
+      cros_build_lib.Die(error)
   except Exception:
     logging.error('Failed to emerge package %s', pkg_name)
     raise
