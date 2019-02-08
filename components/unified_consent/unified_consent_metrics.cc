@@ -50,12 +50,7 @@ void RecordSyncDataTypeSample(SyncDataType data_type) {
 }  // namespace
 
 void RecordSettingsHistogram(PrefService* pref_service) {
-  bool metric_recorded = false;
-
-  metric_recorded |= RecordSettingsHistogramFromPref(
-      prefs::kAllUnifiedConsentServicesWereEnabled, pref_service,
-      metrics::SettingsHistogramValue::kAllServicesWereEnabled);
-  metric_recorded |= RecordSettingsHistogramFromPref(
+  bool metric_recorded = RecordSettingsHistogramFromPref(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service,
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
   if (!metric_recorded)

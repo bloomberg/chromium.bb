@@ -47,8 +47,6 @@ void UnifiedConsentService::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(MigrationState::kNotInitialized));
-  registry->RegisterBooleanPref(prefs::kAllUnifiedConsentServicesWereEnabled,
-                                false);
 }
 
 // static
@@ -66,22 +64,14 @@ void UnifiedConsentService::RollbackIfNeeded(
   // Clear all unified consent prefs.
   user_pref_service->ClearPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
-  user_pref_service->ClearPref(prefs::kAllUnifiedConsentServicesWereEnabled);
 }
 
 void UnifiedConsentService::EnableGoogleServices() {
   DCHECK(identity_manager_->HasPrimaryAccount());
-  DCHECK_LT(MigrationState::kNotInitialized, GetMigrationState());
+  DCHECK_EQ(MigrationState::kCompleted, GetMigrationState());
 
-  if (GetMigrationState() != MigrationState::kCompleted) {
-    // If the user opted into unified consent, the migration is completed.
-    SetMigrationState(MigrationState::kCompleted);
-  }
-
-  // Enable all Google services except sync.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             true);
-  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
 }
 
 void UnifiedConsentService::Shutdown() {
@@ -91,13 +81,10 @@ void UnifiedConsentService::Shutdown() {
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
     const AccountInfo& account_info) {
-  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled,
-                            false);
-
-  // By design, signing out of Chrome automatically disables off-by-default
-  // services.
+  // By design, clearing the primary account disables URL-keyed data collection.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             false);
+
   if (GetMigrationState() != MigrationState::kCompleted) {
     // When the user signs out, the migration is complete.
     SetMigrationState(MigrationState::kCompleted);

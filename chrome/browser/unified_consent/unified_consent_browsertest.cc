@@ -96,18 +96,9 @@ IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
       metrics::SettingsHistogramValue::kNone, 0);
   histogram_tester_.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kAllServicesWereEnabled, 1);
-  histogram_tester_.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
-  histogram_tester_.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting, 0);
-  histogram_tester_.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kSpellCheck, 0);
   histogram_tester_.ExpectTotalCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings", 2);
+      "UnifiedConsent.SyncAndGoogleServicesSettings", 1);
 }
 
 }  // namespace
