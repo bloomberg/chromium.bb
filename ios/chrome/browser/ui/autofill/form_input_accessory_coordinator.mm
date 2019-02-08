@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
@@ -77,8 +78,12 @@
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
+
+    // There is no personal data manager in OTR (incognito). Get the original
+    // one for manual fallback.
     autofill::PersonalDataManager* personalDataManager =
-        autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+        autofill::PersonalDataManagerFactory::GetForBrowserState(
+            browserState->GetOriginalChromeBrowserState());
 
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
            initWithConsumer:self.formInputAccessoryViewController
@@ -125,6 +130,7 @@
   CardCoordinator* cardCoordinator = [[CardCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                     browserState:self.browserState
+                                     ->GetOriginalChromeBrowserState()
                     webStateList:self.webStateList
                 injectionHandler:self.manualFillInjectionHandler];
   cardCoordinator.delegate = self;
@@ -142,6 +148,7 @@
   AddressCoordinator* addressCoordinator = [[AddressCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                     browserState:self.browserState
+                                     ->GetOriginalChromeBrowserState()
                 injectionHandler:self.manualFillInjectionHandler];
   addressCoordinator.delegate = self;
   if (IsIPadIdiom()) {

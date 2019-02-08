@@ -24,6 +24,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/features.h"
@@ -490,6 +491,12 @@ void DockKeyboard() {
 
   UndockKeyboard();
 
+  // Verify the profiles icon is visible. EarlGrey synchronization isn't working
+  // properly with the keyboard, instead this waits with a condition for the
+  // icon to appear.
+  [self waitForMatcherToBeVisible:ProfilesIconMatcher()
+                          timeout:base::test::ios::kWaitForUIElementTimeout];
+
   // Tap on the profiles icon.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       performAction:grey_tap()];
@@ -545,9 +552,11 @@ void DockKeyboard() {
 
   UndockKeyboard();
 
-  // Verify the profiles icon.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  // Verify the profiles icon is visible. EarlGrey synchronization isn't working
+  // properly with the keyboard, instead this waits with a condition for the
+  // icon to appear.
+  [self waitForMatcherToBeVisible:ProfilesIconMatcher()
+                          timeout:base::test::ios::kWaitForUIElementTimeout];
 
   DockKeyboard();
 
@@ -555,6 +564,93 @@ void DockKeyboard() {
   // bar.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the manual fallback view is present in incognito.
+- (void)testIncognitoManualFallbackMenu {
+  // Add the profile to use for verification.
+  AddAutofillProfile(_personalDataManager);
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Open a tab in incognito.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI focusOmnibox];  // To simulate a user navigating.
+  const GURL URL = self.testServer->GetURL(kFormHTMLFile);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:"Profile form"];
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the manual fallback view is not duplicated after incognito.
+- (void)testReturningFromIncognitoDoesNotDuplicatesManualFallbackMenu {
+  // Add the profile to use for verification.
+  AddAutofillProfile(_personalDataManager);
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Open a tab in incognito.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI focusOmnibox];  // To simulate a user navigating.
+  const GURL URL = self.testServer->GetURL(kFormHTMLFile);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:"Profile form"];
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Open a  regular tab.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:"Profile form"];
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // This will fail if there is more than one profiles icon in the hierarchy.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+#pragma mark - Utilities
+
+// Waits for the passed matcher to be visible with a given timeout.
+- (void)waitForMatcherToBeVisible:(id<GREYMatcher>)matcher
+                          timeout:(CFTimeInterval)timeout {
+  [[GREYCondition conditionWithName:@"Wait for visible matcher condition"
+                              block:^BOOL {
+                                NSError* error;
+                                [[EarlGrey selectElementWithMatcher:matcher]
+                                    assertWithMatcher:grey_sufficientlyVisible()
+                                                error:&error];
+                                return error == nil;
+                              }] waitWithTimeout:timeout];
 }
 
 @end
