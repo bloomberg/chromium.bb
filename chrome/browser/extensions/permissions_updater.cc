@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/permissions.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/browser_context.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
@@ -345,7 +347,9 @@ void PermissionsUpdater::RevokeRuntimePermissions(
   std::set<URLPattern> removable_explicit_hosts;
   bool needs_adjustment = false;
   for (const auto& pattern : active_permissions_to_remove->explicit_hosts()) {
-    if (pattern.host() == "favicon" && pattern.scheme() == "chrome")
+    bool is_chrome_favicon = pattern.scheme() == content::kChromeUIScheme &&
+                             pattern.host() == chrome::kChromeUIFaviconHost;
+    if (is_chrome_favicon)
       needs_adjustment = true;
     else
       removable_explicit_hosts.insert(pattern);

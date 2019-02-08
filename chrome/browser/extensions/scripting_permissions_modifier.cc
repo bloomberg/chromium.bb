@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/common/webui_url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -70,7 +71,8 @@ void PartitionHostPermissions(
           // chrome://favicon/), we auto-grant it and treat it like an API
           // permission.
           bool is_chrome_favicon =
-              pattern.host() == "favicon" && pattern.scheme() == "chrome";
+              pattern.scheme() == content::kChromeUIScheme &&
+              pattern.host() == chrome::kChromeUIFaviconHost;
           if (is_chrome_favicon)
             granted->AddPattern(pattern);
         }
