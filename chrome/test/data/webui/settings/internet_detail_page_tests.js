@@ -96,6 +96,7 @@ suite('InternetDetailPage', function() {
     assertTrue(!!internetDetailPage);
     api_.resetForTest();
     internetDetailPage.networkingPrivate = api_;
+    internetDetailPage.prefs = Object.assign({}, prefs_);
     document.body.appendChild(internetDetailPage);
     return flushAsync();
   });
@@ -107,6 +108,8 @@ suite('InternetDetailPage', function() {
   });
 
   suite('DetailsPage', function() {
+    test('LoadPage', function() {});
+
     test('WiFi', function() {
       api_.enableNetworkType('WiFi');
       setNetworksForTest([{GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'}]);
@@ -213,7 +216,7 @@ suite('InternetDetailPage', function() {
       }]);
       internetDetailPage.init('vpn_guid', 'VPN', 'vpn_user');
       prefs_.vpn_config_allowed.value = true;
-      internetDetailPage.prefs = prefs_;
+      internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
         const disconnectButton = getButton('disconnect');
         assertFalse(disconnectButton.hasAttribute('enforced_'));
@@ -230,7 +233,7 @@ suite('InternetDetailPage', function() {
       }]);
       internetDetailPage.init('vpn_guid', 'VPN', 'vpn_user');
       prefs_.vpn_config_allowed.value = false;
-      internetDetailPage.prefs = prefs_;
+      internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
         const disconnectButton = getButton('disconnect');
         assertTrue(disconnectButton.hasAttribute('enforced_'));
