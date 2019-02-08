@@ -19,7 +19,7 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
     /**
      * Convert the given tab ID to an index to match during partial updates.
      * @param tabId The tab ID to search for.
-     * @return The index within the model {@link org.chromium.chrome.browser.modelutil.SimpleList}.
+     * @return The index within the model {@link org.chromium.ui.modelutil.SimpleList}.
      */
     public int indexFromId(int tabId) {
         for (int i = 0; i < size(); i++) {

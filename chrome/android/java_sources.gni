@@ -1596,6 +1596,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tabmodel/document/StorageDelegate.java",
   "java/src/org/chromium/chrome/browser/tabmodel/document/TabDelegate.java",
   "java/src/org/chromium/chrome/browser/tasks/TasksUma.java",
+  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/GridTabSwitcherCoordinator.java",
+  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/GridTabSwitcherMediator.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridCoordinator.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridContainerViewBinder.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridViewBinder.java",

@@ -25,6 +25,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -469,6 +470,18 @@ public class FeatureUtilities {
                 && (smallestScreenWidth >= CONTEXTUAL_SUGGESTIONS_TOOLBAR_MIN_DP
                            && ChromeFeatureList.isEnabled(
                                       ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
+    }
+
+    /**
+     * @param activityContext The context for the containing {@link android.app.Activity}.
+     * @return Whether the Grid Tab Switcher UI is enabled and available for use.
+     */
+    public static boolean isGridTabSwitcherEnabled(Context activityContext) {
+        // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
+        // changing that setting while Chrome is alive.
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
+                && !SysUtils.isLowEndDevice() && !DeviceClassManager.enableAccessibilityLayout()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID);
     }
 
     /**

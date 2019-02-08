@@ -1049,6 +1049,9 @@ public class ToolbarManager
         assert mInitializedWithNative;
 
         mToolbar.setTabSwitcherClickListener(newClickListener);
+        mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         if (mBottomToolbarCoordinator != null) {
             mBottomToolbarCoordinator.overrideTabSwitcherBehavior(
                     newClickListener, overviewModeBehavior);

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -29,6 +30,8 @@ class TabGridContainerViewBinder {
         } else if (IS_INCOGNITO == propertyKey) {
             view.setBackgroundColor(
                     ColorUtils.getDefaultThemeColor(view.getResources(), model.get(IS_INCOGNITO)));
+        } else if (VISIBILITY_LISTENER == propertyKey) {
+            view.setVisibilityListener(model.get(VISIBILITY_LISTENER));
         }
     }
 }
