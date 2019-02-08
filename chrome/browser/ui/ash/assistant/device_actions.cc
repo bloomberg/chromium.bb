@@ -41,6 +41,22 @@ AppStatus GetAndroidAppStatus(const std::string& package_name) {
   return app_id.empty() ? AppStatus::UNAVAILABLE : AppStatus::AVAILABLE;
 }
 
+base::Optional<std::string> GetActivity(const std::string& package_name) {
+  auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
+  if (!prefs) {
+    LOG(ERROR) << "ArcAppListPrefs is not available.";
+    return base::nullopt;
+  }
+  std::string app_id = prefs->GetAppIdByPackageName(package_name);
+
+  if (!app_id.empty()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    return base::Optional<std::string>(app_info->activity);
+  }
+
+  return base::nullopt;
+}
+
 }  // namespace
 
 DeviceActions::DeviceActions() {}
@@ -123,12 +139,24 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
     std::move(callback).Run(false);
     return;
   }
+  auto& package_name = app_info->package_name;
 
   arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
-  activity->package_name = app_info->package_name;
+  activity->package_name = package_name;
   auto intent = arc::mojom::IntentInfo::New();
   if (!app_info->intent.empty()) {
     intent->data = app_info->intent;
+  } else {
+    // Intent is not specified to resolve the activity, set default activity
+    // name.
+    auto activity_name = GetActivity(package_name);
+    if (!activity_name.has_value()) {
+      LOG(ERROR) << "No activity resolved from package name.";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    activity->activity_name = activity_name.value();
   }
   helper->HandleIntent(std::move(intent), std::move(activity));
 
