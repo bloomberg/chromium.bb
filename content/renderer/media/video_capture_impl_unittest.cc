@@ -70,6 +70,8 @@ class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
                void(int32_t, int32_t, GetDeviceSupportedFormatsCallback&));
   MOCK_METHOD3(GetDeviceFormatsInUseMock,
                void(int32_t, int32_t, GetDeviceFormatsInUseCallback&));
+  MOCK_METHOD2(OnFrameDropped,
+               void(int32_t, media::VideoCaptureFrameDropReason));
   MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
 
   void GetDeviceSupportedFormats(

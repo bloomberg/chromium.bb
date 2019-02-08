@@ -131,6 +131,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack
 
   MediaStreamVideoSource* source() const { return source_.get(); }
 
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
+
  private:
   // MediaStreamVideoSink is a friend to allow it to call AddSink() and
   // RemoveSink().
@@ -161,7 +163,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.
   class FrameDeliverer;
-  const scoped_refptr<FrameDeliverer> frame_deliverer_;
+  scoped_refptr<FrameDeliverer> frame_deliverer_;
 
   // TODO(guidou): Make this field a regular field instead of a unique_ptr.
   std::unique_ptr<VideoTrackAdapterSettings> adapter_settings_;

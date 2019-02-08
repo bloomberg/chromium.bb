@@ -1260,6 +1260,43 @@ EnumTraits<media::mojom::VideoCaptureFrameDropReason,
     case media::VideoCaptureFrameDropReason::kBufferPoolBufferAllocationFailed:
       return media::mojom::VideoCaptureFrameDropReason::
           kBufferPoolBufferAllocationFailed;
+    case media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kVideoCaptureImplNotInStartedState;
+    case media::VideoCaptureFrameDropReason::
+        kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame;
+    case media::VideoCaptureFrameDropReason::
+        kVideoTrackAdapterHasNoResolutionAdapters:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kVideoTrackAdapterHasNoResolutionAdapters;
+    case media::VideoCaptureFrameDropReason::kResolutionAdapterFrameIsNotValid:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kResolutionAdapterFrameIsNotValid;
+    case media::VideoCaptureFrameDropReason::
+        kResolutionAdapterWrappingFrameForCroppingFailed:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kResolutionAdapterWrappingFrameForCroppingFailed;
+    case media::VideoCaptureFrameDropReason::
+        kResolutionAdapterTimestampTooCloseToPrevious:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kResolutionAdapterTimestampTooCloseToPrevious;
+    case media::VideoCaptureFrameDropReason::
+        kResolutionAdapterFrameRateIsHigherThanRequested:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kResolutionAdapterFrameRateIsHigherThanRequested;
+    case media::VideoCaptureFrameDropReason::kResolutionAdapterHasNoCallbacks:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kResolutionAdapterHasNoCallbacks;
+    case media::VideoCaptureFrameDropReason::
+        kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame;
+    case media::VideoCaptureFrameDropReason::
+        kRendererSinkFrameDelivererIsNotStarted:
+      return media::mojom::VideoCaptureFrameDropReason::
+          kRendererSinkFrameDelivererIsNotStarted;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureFrameDropReason::kNone;
@@ -1344,6 +1381,56 @@ bool EnumTraits<media::mojom::VideoCaptureFrameDropReason,
         kBufferPoolBufferAllocationFailed:
       *output =
           media::VideoCaptureFrameDropReason::kBufferPoolBufferAllocationFailed;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kVideoCaptureImplNotInStartedState:
+      *output = media::VideoCaptureFrameDropReason::
+          kVideoCaptureImplNotInStartedState;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame:
+      *output = media::VideoCaptureFrameDropReason::
+          kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kVideoTrackAdapterHasNoResolutionAdapters:
+      *output = media::VideoCaptureFrameDropReason::
+          kVideoTrackAdapterHasNoResolutionAdapters;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kResolutionAdapterFrameIsNotValid:
+      *output =
+          media::VideoCaptureFrameDropReason::kResolutionAdapterFrameIsNotValid;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kResolutionAdapterWrappingFrameForCroppingFailed:
+      *output = media::VideoCaptureFrameDropReason::
+          kResolutionAdapterWrappingFrameForCroppingFailed;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kResolutionAdapterTimestampTooCloseToPrevious:
+      *output = media::VideoCaptureFrameDropReason::
+          kResolutionAdapterTimestampTooCloseToPrevious;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kResolutionAdapterFrameRateIsHigherThanRequested:
+      *output = media::VideoCaptureFrameDropReason::
+          kResolutionAdapterFrameRateIsHigherThanRequested;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kResolutionAdapterHasNoCallbacks:
+      *output =
+          media::VideoCaptureFrameDropReason::kResolutionAdapterHasNoCallbacks;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame:
+      *output = media::VideoCaptureFrameDropReason::
+          kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame;
+      return true;
+    case media::mojom::VideoCaptureFrameDropReason::
+        kRendererSinkFrameDelivererIsNotStarted:
+      *output = media::VideoCaptureFrameDropReason::
+          kRendererSinkFrameDelivererIsNotStarted;
       return true;
   }
   NOTREACHED();

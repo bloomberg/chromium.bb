@@ -64,6 +64,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   void GetDeviceFormatsInUse(
       const blink::VideoCaptureDeviceFormatsCB& callback);
 
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
   void OnLog(const std::string& message);
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }

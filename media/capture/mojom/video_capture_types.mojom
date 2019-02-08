@@ -228,7 +228,17 @@ enum VideoCaptureFrameDropReason {
   kWinMediaFoundationLockingBufferDelieveredNullptr,
   kWinMediaFoundationGetBufferByIndexReturnedNull,
   kBufferPoolMaxBufferCountExceeded,
-  kBufferPoolBufferAllocationFailed
+  kBufferPoolBufferAllocationFailed,
+  kVideoCaptureImplNotInStartedState,
+  kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame,
+  kVideoTrackAdapterHasNoResolutionAdapters,
+  kResolutionAdapterFrameIsNotValid,
+  kResolutionAdapterWrappingFrameForCroppingFailed,
+  kResolutionAdapterTimestampTooCloseToPrevious,
+  kResolutionAdapterFrameRateIsHigherThanRequested,
+  kResolutionAdapterHasNoCallbacks,
+  kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame,
+  kRendererSinkFrameDelivererIsNotStarted
 };
 
 struct VideoCaptureFormat {

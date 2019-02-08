@@ -36,7 +36,8 @@ class MediaStreamRendererFactory {
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) = 0;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,

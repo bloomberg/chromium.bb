@@ -24,7 +24,8 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
       override;
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(

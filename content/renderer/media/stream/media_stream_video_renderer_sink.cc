@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
@@ -29,10 +31,17 @@ namespace content {
 // should be destructed on the IO thread.
 class MediaStreamVideoRendererSink::FrameDeliverer {
  public:
-  FrameDeliverer(const RepaintCB& repaint_cb)
-      : repaint_cb_(repaint_cb),
+  FrameDeliverer(
+      const RepaintCB& repaint_cb,
+      base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+          frame_dropped_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
+      : main_render_task_runner_(std::move(main_render_task_runner)),
+        repaint_cb_(repaint_cb),
+        frame_dropped_cb_(std::move(frame_dropped_cb)),
         state_(STOPPED),
-        frame_size_(kMinFrameSize, kMinFrameSize) {
+        frame_size_(kMinFrameSize, kMinFrameSize),
+        emit_frame_drop_events_(true) {
     DETACH_FROM_THREAD(io_thread_checker_);
   }
 
@@ -51,8 +60,17 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
                          TRACE_EVENT_SCOPE_THREAD, "timestamp",
                          frame->timestamp().InMilliseconds());
 
-    if (state_ != STARTED)
+    if (state_ != STARTED) {
+      if (emit_frame_drop_events_) {
+        emit_frame_drop_events_ = false;
+        main_render_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(frame_dropped_cb_,
+                           media::VideoCaptureFrameDropReason::
+                               kRendererSinkFrameDelivererIsNotStarted));
+      }
       return;
+    }
 
     frame_size_ = frame->natural_size();
     repaint_cb_.Run(frame);
@@ -79,27 +97,36 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   void Start() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK_EQ(state_, STOPPED);
-    state_ = STARTED;
+    SetState(STARTED);
   }
 
   void Resume() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     if (state_ == PAUSED)
-      state_ = STARTED;
+      SetState(STARTED);
   }
 
   void Pause() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     if (state_ == STARTED)
-      state_ = PAUSED;
+      SetState(PAUSED);
   }
 
  private:
+  void SetState(State target_state) {
+    state_ = target_state;
+    emit_frame_drop_events_ = true;
+  }
+
   friend class MediaStreamVideoRendererSink;
 
+  const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
   const RepaintCB repaint_cb_;
+  const base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+      frame_dropped_cb_;
   State state_;
   gfx::Size frame_size_;
+  bool emit_frame_drop_events_;
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   THREAD_CHECKER(io_thread_checker_);
@@ -111,19 +138,27 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const blink::WebMediaStreamTrack& video_track,
     const base::Closure& error_cb,
     const RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
     : error_cb_(error_cb),
       repaint_cb_(repaint_cb),
       video_track_(video_track),
-      io_task_runner_(io_task_runner) {}
+      io_task_runner_(std::move(io_task_runner)),
+      main_render_task_runner_(std::move(main_render_task_runner)),
+      weak_factory_(this) {}
 
-MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {}
+MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+}
 
 void MediaStreamVideoRendererSink::Start() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  frame_deliverer_.reset(
-      new MediaStreamVideoRendererSink::FrameDeliverer(repaint_cb_));
+  frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
+      repaint_cb_,
+      base::BindRepeating(&MediaStreamVideoSink::OnFrameDropped,
+                          weak_factory_.GetWeakPtr()),
+      main_render_task_runner_));
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FrameDeliverer::Start,
                                 base::Unretained(frame_deliverer_.get())));

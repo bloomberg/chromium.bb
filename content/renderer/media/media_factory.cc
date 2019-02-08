@@ -579,8 +579,9 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       std::make_unique<RenderMediaLog>(
           url::Origin(security_origin).GetURL(),
           render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)),
-      CreateMediaStreamRendererFactory(), render_thread->GetIOTaskRunner(),
-      video_frame_compositor_task_runner,
+      CreateMediaStreamRendererFactory(),
+      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
+      render_thread->GetIOTaskRunner(), video_frame_compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
       sink_id,

@@ -17,6 +17,7 @@
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 
@@ -43,8 +44,11 @@ class MediaStreamVideoTrack::FrameDeliverer
  public:
   using VideoSinkId = MediaStreamVideoSink*;
 
-  FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                 bool enabled);
+  FrameDeliverer(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+          frame_dropped_cb,
+      bool enabled);
 
   void SetEnabled(bool enabled);
 
@@ -74,6 +78,7 @@ class MediaStreamVideoTrack::FrameDeliverer
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   void SetEnabledOnIO(bool enabled);
+
   // Returns a black frame where the size and time stamp is set to the same as
   // as in |reference_frame|.
   scoped_refptr<media::VideoFrame> GetBlackFrame(
@@ -83,9 +88,15 @@ class MediaStreamVideoTrack::FrameDeliverer
   // Render Thread.
   THREAD_CHECKER(main_render_thread_checker_);
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Can be null in testing.
+  scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
+
+  base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+      frame_dropped_cb_;
 
   bool enabled_;
   scoped_refptr<media::VideoFrame> black_frame_;
+  bool emit_frame_drop_events_;
 
   using VideoIdCallbackPair =
       std::pair<VideoSinkId, blink::VideoCaptureDeliverFrameCB>;
@@ -96,9 +107,21 @@ class MediaStreamVideoTrack::FrameDeliverer
 
 MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+        frame_dropped_cb,
     bool enabled)
-    : io_task_runner_(io_task_runner), enabled_(enabled) {
+    : io_task_runner_(std::move(io_task_runner)),
+      frame_dropped_cb_(std::move(frame_dropped_cb)),
+      enabled_(enabled),
+      emit_frame_drop_events_(true) {
   DCHECK(io_task_runner_.get());
+
+  blink::WebLocalFrame* web_frame =
+      blink::WebLocalFrame::FrameForCurrentContext();
+  if (web_frame) {
+    main_render_task_runner_ =
+        web_frame->GetTaskRunner(blink::TaskType::kInternalMedia);
+  }
 }
 
 MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
@@ -155,7 +178,10 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled) {
 
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  enabled_ = enabled;
+  if (enabled != enabled_) {
+    enabled_ = enabled;
+    emit_frame_drop_events_ = true;
+  }
   if (enabled_)
     black_frame_ = nullptr;
 }
@@ -164,6 +190,15 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (!enabled_ && main_render_task_runner_ && emit_frame_drop_events_) {
+    emit_frame_drop_events_ = false;
+    main_render_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            frame_dropped_cb_,
+            media::VideoCaptureFrameDropReason::
+                kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame));
+  }
   const scoped_refptr<media::VideoFrame>& video_frame =
       enabled_ ? frame : GetBlackFrame(frame);
   for (const auto& entry : callbacks_)
@@ -259,14 +294,17 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
     : blink::WebPlatformMediaStreamTrack(true),
-      frame_deliverer_(
-          new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
-                                                    enabled)),
       adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
       source_(source->GetWeakPtr()),
       weak_factory_(this) {
+  frame_deliverer_ =
+      base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
+          source->io_task_runner(),
+          base::BindRepeating(&MediaStreamVideoTrack::OnFrameDropped,
+                              weak_factory_.GetWeakPtr()),
+          enabled);
   source->AddTrack(
       this, VideoTrackAdapterSettings(),
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
@@ -289,9 +327,6 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
     : blink::WebPlatformMediaStreamTrack(true),
-      frame_deliverer_(
-          new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
-                                                    enabled)),
       adapter_settings_(
           std::make_unique<VideoTrackAdapterSettings>(adapter_settings)),
       noise_reduction_(noise_reduction),
@@ -299,6 +334,12 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       min_frame_rate_(min_frame_rate),
       source_(source->GetWeakPtr()),
       weak_factory_(this) {
+  frame_deliverer_ =
+      base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
+          source->io_task_runner(),
+          base::BindRepeating(&MediaStreamVideoTrack::OnFrameDropped,
+                              weak_factory_.GetWeakPtr()),
+          enabled);
   source->AddTrack(
       this, adapter_settings,
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
@@ -444,6 +485,14 @@ void MediaStreamVideoTrack::SetTrackAdapterSettings(
 media::VideoCaptureFormat MediaStreamVideoTrack::GetComputedSourceFormat() {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   return computed_source_format_;
+}
+
+void MediaStreamVideoTrack::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  if (!source_)
+    return;
+  source_->OnFrameDropped(reason);
 }
 
 }  // namespace content

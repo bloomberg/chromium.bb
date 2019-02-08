@@ -47,6 +47,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   void MaybeSuspend() override;
   void Resume() override;
   void StopCapture() override;
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnLog(const std::string& message) override;
 
  private:
@@ -129,6 +130,12 @@ void LocalVideoCapturerSource::StopCapture() {
   // Immediately make sure we don't provide more frames.
   if (!stop_capture_cb_.is_null())
     base::ResetAndReturn(&stop_capture_cb_).Run();
+}
+
+void LocalVideoCapturerSource::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  manager_->OnFrameDropped(session_id_, reason);
 }
 
 void LocalVideoCapturerSource::OnLog(const std::string& message) {
@@ -215,6 +222,12 @@ void MediaStreamVideoCapturerSource::
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_->RequestRefreshFrame();
+}
+
+void MediaStreamVideoCapturerSource::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  source_->OnFrameDropped(reason);
 }
 
 void MediaStreamVideoCapturerSource::OnLog(const std::string& message) {

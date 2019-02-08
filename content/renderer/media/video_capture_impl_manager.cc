@@ -270,6 +270,19 @@ void VideoCaptureImplManager::SuspendDevices(
   }
 }
 
+void VideoCaptureImplManager::OnFrameDropped(
+    media::VideoCaptureSessionId id,
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK(render_main_task_runner_->BelongsToCurrentThread());
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
+  DCHECK(it != devices_.end());
+  ChildProcess::current()->io_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::OnFrameDropped,
+                                base::Unretained(it->impl.get()), reason));
+}
+
 void VideoCaptureImplManager::OnLog(media::VideoCaptureSessionId id,
                                     const std::string& message) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());

@@ -104,6 +104,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
                       bool suspend);
 
   void OnLog(media::VideoCaptureSessionId id, const std::string& message);
+  void OnFrameDropped(media::VideoCaptureSessionId id,
+                      media::VideoCaptureFrameDropReason reason);
 
   virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId session_id) const;

@@ -442,7 +442,8 @@ class MockRenderFactory : public MediaStreamRendererFactory {
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
       override;
 
   MockMediaStreamVideoRenderer* provider() {
@@ -479,7 +480,8 @@ scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   if (!support_video_renderer_)
     return nullptr;
 
@@ -675,6 +677,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::NullMediaLog>(),
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),

@@ -81,8 +81,10 @@ class VideoTrackAdapter
  public:
   using OnMutedCallback = base::Callback<void(bool mute_state)>;
 
-  explicit VideoTrackAdapter(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  VideoTrackAdapter(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+          frame_dropped_cb);
 
   // Register |track| to receive video frames in |frame_callback| with
   // a resolution within the boundaries of the arguments, and settings
@@ -160,6 +162,9 @@ class VideoTrackAdapter
   // |renderer_task_runner_| is used to ensure that
   // VideoCaptureDeliverFrameCB is released on the main render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
+
+  const base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+      frame_dropped_cb_;
 
   // VideoFrameResolutionAdapter is an inner class that lives on the IO-thread.
   // It does the resolution adaptation and delivers frames to all registered
