@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -425,11 +426,35 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           base::strict_cast<size_t>(trun.sample_count) <= max_sample_count,
           media_log_, "Metadata overhead exceeds storage limit.");
       tri.samples.resize(trun.sample_count);
+
+      int empty_sample_count = 0;
+      int empty_samples_in_sequence_count = 0;
+
+      UMA_HISTOGRAM_COUNTS_1M("Media.MSE.Mp4TrunSampleCount",
+                              trun.sample_count);
+
       for (size_t k = 0; k < trun.sample_count; k++) {
         if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset, k,
                                 &tri.samples[k], traf.sdtp.sample_depends_on(k),
                                 tri.is_audio, media_log_)) {
           return false;
+        }
+
+        UMA_HISTOGRAM_COUNTS_1M("Media.MSE.Mp4SampleSize", tri.samples[k].size);
+
+        if (tri.samples[k].size == 0) {
+          empty_sample_count++;
+          empty_samples_in_sequence_count++;
+        }
+
+        // Report the number of consecutive zero-sized samples seen in a
+        // sequence. Can report counts for 1 or more such sequences within the
+        // same trun, and a sequence can be as short as just 1 empty sample.
+        if (empty_samples_in_sequence_count &&
+            (tri.samples[k].size != 0 || k == trun.sample_count - 1)) {
+          UMA_HISTOGRAM_COUNTS_1M("Media.MSE.Mp4ConsecutiveEmptySamples",
+                                  empty_samples_in_sequence_count);
+          empty_samples_in_sequence_count = 0;
         }
 
         RCHECK(std::numeric_limits<int64_t>::max() - tri.samples[k].duration >
@@ -450,6 +475,10 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           RCHECK(GetSampleEncryptionInfoEntry(tri, index));
         is_sample_to_group_valid = sample_to_group_itr.Advance();
       }
+
+      UMA_HISTOGRAM_COUNTS_1M("Media.MSE.Mp4EmptySamplesInTRun",
+                              empty_sample_count);
+
       if (sample_encryption_entries_count > 0) {
         RCHECK(sample_encryption_entries_count >=
                sample_count_sum + trun.sample_count);
