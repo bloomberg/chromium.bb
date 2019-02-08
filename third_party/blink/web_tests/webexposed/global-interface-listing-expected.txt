@@ -10281,9 +10281,11 @@ interface WorkletAnimation
     getter currentTime
     getter playState
     getter playbackRate
+    getter startTime
     getter timeline
     method cancel
     method constructor
+    method pause
     method play
     setter playbackRate
 interface WritableStream
