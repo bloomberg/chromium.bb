@@ -58,8 +58,7 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
             ->Get(v8::String::NewFromUtf8(isolate, "fileIsDirectory",
                                           v8::NewStringType::kInternalized)
                       .ToLocalChecked())
-            ->BooleanValue(context->v8_context())
-            .FromMaybe(false);
+            ->BooleanValue(isolate);
     blink::WebDOMFileSystem::EntryType entry_type =
         is_directory ? blink::WebDOMFileSystem::kEntryTypeDirectory
                      : blink::WebDOMFileSystem::kEntryTypeFile;
