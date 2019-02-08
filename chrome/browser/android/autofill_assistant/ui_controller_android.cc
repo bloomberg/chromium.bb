@@ -81,6 +81,21 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
   // Register payment_request_delegate_ as delegate for the payment request UI.
   Java_AssistantPaymentRequestModel_setDelegate(
       env, GetPaymentRequestModel(), payment_request_delegate_.GetJavaObject());
+
+  if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
+    // The UI was created for an existing Controller.
+    OnStatusMessageChanged(ui_delegate->GetStatusMessage());
+    OnProgressChanged(ui_delegate->GetProgress());
+    OnDetailsChanged(ui_delegate->GetDetails());
+    OnChipsChanged(ui_delegate->GetChips());
+    OnPaymentRequestChanged(ui_delegate->GetPaymentRequestOptions());
+
+    std::vector<RectF> area;
+    ui_delegate->GetTouchableArea(&area);
+    OnTouchableAreaChanged(area);
+
+    OnStateChanged(ui_delegate->GetState());
+  }
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
@@ -308,6 +323,12 @@ void UiControllerAndroid::ShowOnboarding(
       env, java_autofill_assistant_ui_controller_, on_accept);
 }
 
+void UiControllerAndroid::Destroy() {
+  Java_AutofillAssistantUiController_destroy(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_,
+      /* delayed= */ false);
+}
+
 void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_destroy(
@@ -392,6 +413,12 @@ void UiControllerAndroid::Stop(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,
                                int jreason) {
   client_->Shutdown(static_cast<Metrics::DropOutReason>(jreason));
+}
+
+void UiControllerAndroid::DestroyUI(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  client_->DestroyUI();
 }
 
 void UiControllerAndroid::OnFatalError(

@@ -449,8 +449,9 @@ void Controller::Start(const GURL& initialUrl,
     NOTREACHED();
     return;
   }
-  EnterState(AutofillAssistantState::STARTING);
   parameters_ = parameters;
+  EnterState(AutofillAssistantState::STARTING);
+  client_->ShowUI();
   if (IsCookieExperimentEnabled()) {
     GetWebController()->HasCookie(
         base::BindOnce(&Controller::OnGetCookie,
@@ -669,6 +670,14 @@ void Controller::RenderProcessGone(base::TerminationStatus status) {
   client_->Shutdown(Metrics::RENDER_PROCESS_GONE);
 }
 
+void Controller::OnWebContentsFocused(
+    content::RenderWidgetHost* render_widget_host) {
+  if (state_ != AutofillAssistantState::INACTIVE &&
+      state_ != AutofillAssistantState::STOPPED) {
+    client_->ShowUI();
+  }
+}
+
 void Controller::LoadProgressChanged(content::WebContents* source,
                                      double progress) {
   int percent = 100 * progress;
@@ -691,6 +700,10 @@ bool Controller::IsCookieExperimentEnabled() const {
   return iter != parameters_.end() && iter->second == "1";
 }
 
+void Controller::OnTouchableAreaChanged(const std::vector<RectF>& areas) {
+  GetUiController()->OnTouchableAreaChanged(areas);
+}
+
 void Controller::SetPaymentRequestOptions(
     std::unique_ptr<PaymentRequestOptions> options) {
   DCHECK(!options || options->callback);
@@ -706,10 +719,7 @@ ElementArea* Controller::touchable_element_area() {
   if (!touchable_element_area_) {
     touchable_element_area_ = std::make_unique<ElementArea>(this);
     touchable_element_area_->SetOnUpdate(base::BindRepeating(
-        &UiController::OnTouchableAreaChanged,
-        // Unretained is safe, since touchable_element_area_ is guaranteed to be
-        // deleted before the UI controller.
-        base::Unretained(GetUiController())));
+        &Controller::OnTouchableAreaChanged, weak_ptr_factory_.GetWeakPtr()));
   }
   return touchable_element_area_.get();
 }

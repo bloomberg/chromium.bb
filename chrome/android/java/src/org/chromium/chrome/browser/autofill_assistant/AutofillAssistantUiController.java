@@ -8,10 +8,10 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -34,6 +34,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
     private final ChromeActivity mActivity;
     private final AssistantCoordinator mCoordinator;
+    private final ActivityTabProvider.ActivityTabTabObserver mActivityTabObserver;
 
     @CalledByNative
     private static AutofillAssistantUiController createAndStartUi(
@@ -47,25 +48,34 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mNativeUiController = nativeUiController;
         mActivity = activity;
         mCoordinator = new AssistantCoordinator(activity, webContents, this);
+        mActivityTabObserver =
+                new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
+                    @Override
+                    protected void onObservingDifferentTab(Tab tab) {
+                        // A null tab indicates that there's no selected tab; We're in the process
+                        // of selecting a new tab. TODO(crbug/925947): Hide AssistantCoordinator
+                        // instead of destroying it, in case the tab that's eventually selected also
+                        // has AutofillAssistant enabled or is the same tab.
+                        if (tab == null || tab.getWebContents() != webContents) {
+                            safeNativeDestroyUI();
+                        }
+                    }
 
-        initForCustomTab(activity);
+                    @Override
+                    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+                        if (!isAttached && tab.getWebContents() == webContents) {
+                            safeNativeDestroyUI();
+                        }
+                    }
+                };
+
+        initForCustomTab(activity, webContents);
     }
 
-    private void initForCustomTab(ChromeActivity activity) {
+    private void initForCustomTab(ChromeActivity activity, WebContents webContents) {
         if (!(activity instanceof CustomTabActivity)) {
             return;
         }
-
-        Tab activityTab = activity.getActivityTab();
-        activityTab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (!isAttached) {
-                    activityTab.removeObserver(this);
-                    stop(DropOutReason.TAB_DETACHED);
-                }
-            }
-        });
 
         // Shut down Autofill Assistant when the selected tab (foreground tab) is changed.
         TabModel currentTabModel = activity.getTabModelSelector().getCurrentModel();
@@ -73,7 +83,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 // Shutdown the Autofill Assistant if the user switches to another tab.
-                if (!activityTab.equals(tab)) {
+                if (tab.getWebContents() != webContents) {
                     currentTabModel.removeObserver(this);
                     safeNativeOnFatalError(activity.getString(R.string.autofill_assistant_give_up),
                             DropOutReason.TAB_CHANGED);
@@ -90,9 +100,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         safeNativeStop(reason);
     }
 
-    /**
-     * Native => Java methods.
-     */
+    // Native => Java methods.
 
     // TODO(crbug.com/806868): Some of these functions still have a little bit of logic (e.g. make
     // the progress bar pulse when hiding overlay). Maybe it would be better to forward all calls to
@@ -110,9 +118,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mNativeUiController = 0;
     }
 
-    /** Destroys {@link AssistantCoordinator}. */
+    /** Destroys this instance and {@link AssistantCoordinator}. */
     @CalledByNative
     private void destroy(boolean delayed) {
+        mActivityTabObserver.destroy();
+
         if (delayed) {
             // Give some time to the user to read any error message.
             PostTask.postDelayedTask(
@@ -158,6 +168,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mNativeUiController != 0) nativeStop(mNativeUiController, reason);
     }
     private native void nativeStop(long nativeUiControllerAndroid, @DropOutReason int reason);
+
+    private void safeNativeDestroyUI() {
+        if (mNativeUiController != 0) nativeDestroyUI(mNativeUiController);
+    }
+    private native void nativeDestroyUI(long nativeUiControllerAndroid);
 
     private void safeNativeOnFatalError(String message, @DropOutReason int reason) {
         if (mNativeUiController != 0) nativeOnFatalError(mNativeUiController, message, reason);

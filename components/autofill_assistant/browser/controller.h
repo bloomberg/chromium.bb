@@ -159,10 +159,13 @@ class Controller : public ScriptExecutorDelegate,
       content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void RenderProcessGone(base::TerminationStatus status) override;
+  void OnWebContentsFocused(
+      content::RenderWidgetHost* render_widget_host) override;
 
   // Overrides content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
+  void OnTouchableAreaChanged(const std::vector<RectF>& areas);
 
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();

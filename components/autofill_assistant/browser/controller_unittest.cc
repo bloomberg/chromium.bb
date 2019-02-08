@@ -59,6 +59,8 @@ class FakeClient : public Client {
   std::string GetLocale() override { return ""; }
   std::string GetCountryCode() override { return ""; }
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
+  MOCK_METHOD0(ShowUI, void());
+  MOCK_METHOD0(DestroyUI, void());
 
  private:
   UiController* ui_controller_;
@@ -154,6 +156,10 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   void SimulateNavigateToUrl(const GURL& url) {
     SetLastCommittedUrl(url);
     controller_->DidFinishLoad(nullptr, url);
+  }
+
+  void SimulateWebContentsFocused() {
+    controller_->OnWebContentsFocused(nullptr);
   }
 
   void SimulateProgressChanged(double progress) {
@@ -577,6 +583,24 @@ TEST_F(ControllerTest, StateChanges) {
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
                                    AutofillAssistantState::PROMPT,
                                    AutofillAssistantState::STOPPED));
+}
+
+TEST_F(ControllerTest, ShowUIWhenStarting) {
+  EXPECT_CALL(fake_client_, ShowUI());
+  Start();
+}
+
+TEST_F(ControllerTest, ShowUIWhenContentsFocused) {
+  SimulateWebContentsFocused();  // must not call ShowUI
+
+  testing::InSequence seq;
+  EXPECT_CALL(fake_client_, ShowUI());
+  Start();  // must call ShowUI
+  EXPECT_CALL(fake_client_, ShowUI());
+  SimulateWebContentsFocused();  // must call ShowUI
+
+  controller_->OnFatalError("test", Metrics::TAB_CHANGED);
+  SimulateWebContentsFocused();  // must not call ShowUI
 }
 
 }  // namespace autofill_assistant

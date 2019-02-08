@@ -109,6 +109,7 @@ jumbo_static_library("browser") {
     "service.cc",
     "service.h",
     "state.h",
+    "ui_controller.cc",
     "ui_controller.h",
     "ui_delegate.h",
     "web_controller.cc",
