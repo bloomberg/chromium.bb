@@ -1167,9 +1167,21 @@ CreateAndInitializeVideoFrameValidator(
 #else
   bool linear = true;
 #endif
+
+  // Read md5 frame checksums.
+  std::vector<std::string> frame_checksums;
+  if (g_frame_validator_flags & test::VideoFrameValidator::CHECK) {
+    base::FilePath md5_file_path =
+        filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5"));
+    frame_checksums = test::ReadGoldenThumbnailMD5s(md5_file_path);
+    if (frame_checksums.empty()) {
+      LOG(ERROR) << "Failed to read md5 values in " << md5_file_path;
+      return nullptr;
+    }
+  }
+
   return media::test::VideoFrameValidator::Create(
-      g_frame_validator_flags, prefix_output_yuv,
-      filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5")), linear);
+      g_frame_validator_flags, prefix_output_yuv, frame_checksums, linear);
 }
 
 // Fails on Win only. crbug.com/849368
@@ -1663,7 +1675,7 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
 // --gtest_filter=VideoDecodeAcceleratorTest.DISABLED_GenMD5 and
 // --gtest_also_run_disabled_tests
 TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
-  g_frame_validator_flags = test::VideoFrameValidator::GENMD5;
+  g_frame_validator_flags = 0;
   g_test_import = true;
 
   ASSERT_EQ(test_video_files_.size(), 1u);
@@ -1677,6 +1689,8 @@ TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
   config.num_frames = video_file->num_frames;
   auto video_frame_validator =
       CreateAndInitializeVideoFrameValidator(video_file->file_name);
+  media::test::VideoFrameValidator* frame_validator =
+      video_frame_validator.get();
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       std::move(config), video_file->data_str, &rendering_helper_,
       std::move(video_frame_validator), notes_[0].get()));
@@ -1687,8 +1701,23 @@ TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
   ClientState last_state = WaitUntilDecodeFinish(notes_[0].get());
   EXPECT_NE(CS_ERROR, last_state);
 
+  // Write out computed md5 values.
+  frame_validator->WaitUntilDone();
+  const std::vector<std::string>& frame_checksums =
+      frame_validator->GetFrameChecksums();
+  base::FilePath md5_file_path(video_file->file_name);
+  base::File md5_file(md5_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                         base::File::FLAG_WRITE |
+                                         base::File::FLAG_APPEND);
+  if (!md5_file.IsValid())
+    LOG(ERROR) << "Failed to create md5 file to write " << md5_file_path;
+
+  for (const std::string& frame_checksum : frame_checksums) {
+    md5_file.Write(0, frame_checksum.data(), frame_checksum.size());
+    md5_file.Write(0, "\n", 1);
+  }
+
   g_test_import = false;
-  g_frame_validator_flags = 0;
 }
 #endif
 

@@ -45,8 +45,6 @@ class VideoFrameValidator : public VideoFrameProcessor {
     CHECK = 1 << 0,
     // Writes out video frames to files.
     OUTPUTYUV = 1 << 1,
-    // Writes out md5 values to a file.
-    GENMD5 = 1 << 2,
   };
 
   struct MismatchedFrameInfo {
@@ -59,25 +57,28 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // |frame_checksums| should contain the ordered list of md5 frame checksums to
   // be used by the validator
   static std::unique_ptr<VideoFrameValidator> Create(
-      const std::vector<std::string>& frame_checksums);
+      const std::vector<std::string>& expected_frame_checksums);
 
   // |flags| decides the behavior of created video frame validator. See the
   // detail in Flags.
   // |prefix_output_yuv| is the prefix name of saved yuv files.
   // VideoFrameValidator saves all I420 video frames.
   // If |prefix_output_yuv_| is not specified, no yuv file will be saved.
-  // |md5_file_path| is the path to the file that contains golden md5 values.
-  // The file contains one md5 value per line, listed in display order.
+  // |frame_checksums| should contain the ordered list of md5 frame checksums to
+  // be used by the validator.
   // |linear| represents whether VideoFrame passed on EvaludateVideoFrame() is
   // linear (i.e non-tiled) or not.
   // Returns nullptr on failure.
   static std::unique_ptr<VideoFrameValidator> Create(
       uint32_t flags,
       const base::FilePath& prefix_output_yuv,
-      const base::FilePath& md5_file_path,
+      const std::vector<std::string>& expected_frame_checksums,
       bool linear);
 
   ~VideoFrameValidator() override;
+
+  // Get the ordered list of calculated frame checksums.
+  const std::vector<std::string>& GetFrameChecksums() const;
 
   // Returns information of frames that don't match golden md5 values.
   // If there is no mismatched frame, returns an empty vector. This function is
@@ -100,7 +101,6 @@ class VideoFrameValidator : public VideoFrameProcessor {
   VideoFrameValidator(uint32_t flags,
                       const base::FilePath& prefix_output_yuv,
                       std::vector<std::string> md5_of_frames,
-                      base::File md5_file,
                       std::unique_ptr<VideoFrameMapper> video_frame_mapper);
 
   // Start the frame validation thread.
@@ -136,11 +136,11 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // Prefix of saved yuv files.
   const base::FilePath prefix_output_yuv_;
 
-  // Golden MD5 values.
-  std::vector<std::string> md5_of_frames_;
+  // The list of calculated MD5 frame checksums.
+  std::vector<std::string> frame_checksums_ GUARDED_BY(frame_validator_lock_);
 
-  // File to write md5 values if flags includes GENMD5.
-  base::File md5_file_;
+  // The list of golden MD5 frame checksums.
+  const std::vector<std::string> expected_frame_checksums_;
 
   const std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 
