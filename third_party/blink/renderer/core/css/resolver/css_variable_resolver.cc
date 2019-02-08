@@ -38,7 +38,7 @@ namespace {
 
 CSSParserToken ResolveUrl(const CSSParserToken& token,
                           Vector<String>& backing_strings,
-                          const KURL& base_url,
+                          const String& base_url,
                           WTF::TextEncoding charset) {
   DCHECK(token.GetType() == kUrlToken || token.GetType() == kStringToken);
 
@@ -48,12 +48,33 @@ CSSParserToken ResolveUrl(const CSSParserToken& token,
     return token;
 
   String relative_url = string_view.ToString();
-  KURL absolute_url = charset.IsValid() ? KURL(base_url, relative_url, charset)
-                                        : KURL(base_url, relative_url);
+  KURL base = !base_url.IsNull() ? KURL(base_url) : KURL();
+  KURL absolute_url = charset.IsValid() ? KURL(base, relative_url, charset)
+                                        : KURL(base, relative_url);
 
   backing_strings.push_back(absolute_url.GetString());
 
   return token.CopyWithUpdatedString(StringView(backing_strings.back()));
+}
+
+// Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
+// absolute URLs.
+void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
+                         Vector<String>& backing_strings,
+                         const String& base_url,
+                         const WTF::TextEncoding& charset) {
+  CSSParserToken* token = tokens.begin();
+  CSSParserToken* end = tokens.end();
+
+  while (token < end) {
+    if (token->GetType() == kUrlToken) {
+      *token = ResolveUrl(*token, backing_strings, base_url, charset);
+    } else if (token->FunctionId() == CSSValueUrl) {
+      if (token + 1 < end && token[1].GetType() == kStringToken)
+        token[1] = ResolveUrl(token[1], backing_strings, base_url, charset);
+    }
+    ++token;
+  }
 }
 
 // Registered properties need to substitute as absolute values. This means
@@ -264,25 +285,6 @@ CSSVariableResolver::ResolveCustomPropertyIfNeeded(
     return variable_data;
   return ResolveCustomProperty(name, *variable_data, options, resolve_urls,
                                cycle_detected);
-}
-
-void CSSVariableResolver::ResolveRelativeUrls(
-    Vector<CSSParserToken>& tokens,
-    Vector<String>& backing_strings,
-    const KURL& base_url,
-    const WTF::TextEncoding& charset) {
-  CSSParserToken* token = tokens.begin();
-  CSSParserToken* end = tokens.end();
-
-  while (token < end) {
-    if (token->GetType() == kUrlToken) {
-      *token = ResolveUrl(*token, backing_strings, base_url, charset);
-    } else if (token->FunctionId() == CSSValueUrl) {
-      if (token + 1 < end && token[1].GetType() == kStringToken)
-        token[1] = ResolveUrl(token[1], backing_strings, base_url, charset);
-    }
-    ++token;
-  }
 }
 
 bool CSSVariableResolver::ShouldResolveRelativeUrls(
