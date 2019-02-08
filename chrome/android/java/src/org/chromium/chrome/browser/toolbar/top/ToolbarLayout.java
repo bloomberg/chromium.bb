@@ -757,7 +757,12 @@ public abstract class ToolbarLayout extends FrameLayout {
 
     void showAppMenuUpdateBadge(boolean animate) {
         if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.showAppMenuUpdateBadge(animate);
+        mMenuButtonWrapper.showAppMenuUpdateBadgeIfAvailable(animate);
+    }
+
+    void setAppMenuUpdateBadgeSuppressed(boolean suppress) {
+        if (mMenuButtonWrapper == null) return;
+        mMenuButtonWrapper.setAppMenuUpdateBadgeSuppressed(suppress);
     }
 
     boolean isShowingAppMenuUpdateBadge() {

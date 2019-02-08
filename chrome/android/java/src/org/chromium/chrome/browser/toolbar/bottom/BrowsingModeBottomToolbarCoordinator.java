@@ -157,7 +157,7 @@ public class BrowsingModeBottomToolbarCoordinator {
      * Show the update badge over the bottom toolbar's app menu.
      */
     public void showAppMenuUpdateBadge() {
-        mMenuButton.showAppMenuUpdateBadge(true);
+        mMenuButton.showAppMenuUpdateBadgeIfAvailable(true);
     }
 
     /**
