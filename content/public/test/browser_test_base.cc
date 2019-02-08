@@ -5,6 +5,7 @@
 #include "content/public/test/browser_test_base.h"
 
 #include <stddef.h>
+#include <iostream>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -91,7 +92,12 @@ void DumpStackTraceSignalHandler(int signal) {
     message += strsignal(signal);
     message += ". Backtrace:\n";
     logging::RawLog(logging::LOG_ERROR, message.c_str());
-    base::debug::StackTrace().Print();
+    auto stack_trace = base::debug::StackTrace();
+    stack_trace.OutputToStream(&std::cerr);
+#if defined(OS_ANDROID)
+    // Also output the trace to logcat on Android.
+    stack_trace.Print();
+#endif
   }
   _exit(128 + signal);
 }
