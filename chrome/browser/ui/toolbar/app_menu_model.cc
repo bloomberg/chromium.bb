@@ -118,8 +118,6 @@ base::string16 GetUpgradeDialogMenuItemName() {
 // Returns the appropriate menu label for the IDC_INSTALL_PWA command if
 // available.
 base::Optional<base::string16> GetInstallPWAAppMenuItemName(Browser* browser) {
-  if (!browser->tab_strip_model())
-    return base::nullopt;
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
@@ -891,14 +889,11 @@ void AppMenuModel::CreateZoomMenu() {
 }
 
 void AppMenuModel::UpdateZoomControls() {
-  int zoom_percent = 100;
-  if (browser_->tab_strip_model() &&
-      browser_->tab_strip_model()->GetActiveWebContents()) {
-    zoom_percent = zoom::ZoomController::FromWebContents(
-                       browser_->tab_strip_model()->GetActiveWebContents())
-                       ->GetZoomPercent();
-  }
-  zoom_label_ = base::FormatPercent(zoom_percent);
+  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+  zoom_label_ = base::FormatPercent(
+      contents
+          ? zoom::ZoomController::FromWebContents(contents)->GetZoomPercent()
+          : 100);
 }
 
 bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
