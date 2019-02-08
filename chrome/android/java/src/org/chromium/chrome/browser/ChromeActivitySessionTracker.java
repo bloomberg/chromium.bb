@@ -35,6 +35,8 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
+import java.util.Locale;
+
 /**
  * Tracks the foreground session state for the Chrome activities.
  */
@@ -133,6 +135,7 @@ public class ChromeActivitySessionTracker {
         UmaUtils.recordForegroundStartTime();
         updatePasswordEchoState();
         FontSizePrefs.getInstance(mApplication).onSystemFontScaleChanged();
+        recordWhetherSystemAndAppLanguagesDiffer();
         updateAcceptLanguages();
         mVariationsSession.start(mApplication);
         mPowerBroadcastReceiver.onForegroundSessionStart();
@@ -245,6 +248,22 @@ public class ChromeActivitySessionTracker {
         if (mIsFinishedCachingNativeFlags) return;
         FeatureUtilities.cacheNativeFlags();
         mIsFinishedCachingNativeFlags = true;
+    }
+
+    /**
+     * Records whether Chrome was started in a language other than the system language but we
+     * support the system language. That can happen if the user changes the system language and the
+     * required language split cannot be installed in time.
+     */
+    private void recordWhetherSystemAndAppLanguagesDiffer() {
+        String uiLanguage =
+                LocaleUtils.toLanguage(ChromeLocalizationUtils.getUiLocaleStringForCompressedPak());
+        String systemLanguage =
+                LocaleUtils.toLanguage(LocaleUtils.toLanguageTag(Locale.getDefault()));
+        boolean isWrongLanguage = !systemLanguage.equals(uiLanguage)
+                && LocaleUtils.isLanguageSupported(systemLanguage);
+        RecordHistogram.recordBooleanHistogram(
+                "Android.Language.WrongLanguageAfterResume", isWrongLanguage);
     }
 
     /**

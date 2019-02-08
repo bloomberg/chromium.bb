@@ -44,10 +44,11 @@ public class ResourceExtractor {
 
     private class ExtractTask extends AsyncTask<Void> {
         private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
+        private final String mUiLanguage;
 
         private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
-            String[] assetPaths = detectFilesToExtract();
+            String[] assetPaths = detectFilesToExtract(mUiLanguage);
 
             // Use a suffix for extracted files in order to guarantee that the version of the file
             // on disk matches up with the version of the APK.
@@ -124,6 +125,10 @@ public class ResourceExtractor {
                 TraceEvent.end("ResourceExtractor.ExtractTask.onPostExecute");
             }
         }
+
+        public ExtractTask(String uiLanguage) {
+            mUiLanguage = uiLanguage;
+        }
     }
 
     private ExtractTask mExtractTask;
@@ -137,7 +142,7 @@ public class ResourceExtractor {
         return sInstance;
     }
 
-    private static String[] detectFilesToExtract() {
+    private static String[] detectFilesToExtract(String uiLanguage) {
         Locale defaultLocale = Locale.getDefault();
         String androidLanguage = defaultLocale.getLanguage();
         String chromiumLanguage = LocaleUtils.getUpdatedLanguageForChromium(androidLanguage);
@@ -145,7 +150,6 @@ public class ResourceExtractor {
         // NOTE: The UI language will differ from the application's language
         // when the system locale is not directly supported by Chrome's
         // resources.
-        String uiLanguage = LocalizationUtils.getUiLanguageStringForCompressedPak();
         Log.i(TAG, "Using UI locale %s, system locale: %s (Android name: %s)", uiLanguage,
                 chromiumLanguage, androidLanguage);
 
@@ -300,7 +304,7 @@ public class ResourceExtractor {
      * AsyncTask. Call waitForCompletion() at the point resources
      * are needed to block until the task completes.
      */
-    public void startExtractingResources() {
+    public void startExtractingResources(String uiLanguage) {
         if (mExtractTask != null) {
             return;
         }
@@ -313,7 +317,7 @@ public class ResourceExtractor {
             return;
         }
 
-        mExtractTask = new ExtractTask();
+        mExtractTask = new ExtractTask(uiLanguage);
         mExtractTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
