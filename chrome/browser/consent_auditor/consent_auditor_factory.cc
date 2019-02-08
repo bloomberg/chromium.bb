@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/consent_auditor/consent_sync_bridge_impl.h"
