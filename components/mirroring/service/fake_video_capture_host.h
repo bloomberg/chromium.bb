@@ -27,6 +27,8 @@ class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
                void(int32_t, int32_t, const media::VideoCaptureParams&));
   MOCK_METHOD0(OnStopped, void());
   MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
+  MOCK_METHOD2(OnFrameDropped,
+               void(int32_t, media::VideoCaptureFrameDropReason));
 
   void Start(int32_t device_id,
              int32_t session_id,

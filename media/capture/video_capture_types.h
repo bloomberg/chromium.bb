@@ -201,7 +201,17 @@ enum class VideoCaptureFrameDropReason {
   kWinMediaFoundationGetBufferByIndexReturnedNull = 14,
   kBufferPoolMaxBufferCountExceeded = 15,
   kBufferPoolBufferAllocationFailed = 16,
-  kMaxValue = 16
+  kVideoCaptureImplNotInStartedState = 17,
+  kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame = 18,
+  kVideoTrackAdapterHasNoResolutionAdapters = 19,
+  kResolutionAdapterFrameIsNotValid = 20,
+  kResolutionAdapterWrappingFrameForCroppingFailed = 21,
+  kResolutionAdapterTimestampTooCloseToPrevious = 22,
+  kResolutionAdapterFrameRateIsHigherThanRequested = 23,
+  kResolutionAdapterHasNoCallbacks = 24,
+  kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame = 25,
+  kRendererSinkFrameDelivererIsNotStarted = 26,
+  kMaxValue = 26
 };
 
 // Assert that the int:frequency mapping is correct.

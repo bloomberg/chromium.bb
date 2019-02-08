@@ -86,7 +86,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
       media::WebMediaPlayerDelegate* delegate,
       std::unique_ptr<media::MediaLog> media_log,
       std::unique_ptr<MediaStreamRendererFactory> factory,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       scoped_refptr<base::TaskRunner> worker_task_runner,
@@ -316,6 +317,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   std::unique_ptr<MediaStreamRendererFactory> renderer_factory_;
 
+  const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;

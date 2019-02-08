@@ -262,6 +262,11 @@ void VideoCaptureImpl::GetDeviceFormatsInUse(
                      weak_factory_.GetWeakPtr(), callback));
 }
 
+void VideoCaptureImpl::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  GetVideoCaptureHost()->OnFrameDropped(device_id_, reason);
+}
+
 void VideoCaptureImpl::OnLog(const std::string& message) {
   GetVideoCaptureHost()->OnLog(device_id_, message);
 }
@@ -338,6 +343,8 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
 
   bool consume_buffer = state_ == blink::VIDEO_CAPTURE_STATE_STARTED;
   if (!consume_buffer) {
+    OnFrameDropped(
+        media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState);
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);
     return;
   }
@@ -433,6 +440,8 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
       break;
   }
   if (!frame) {
+    OnFrameDropped(media::VideoCaptureFrameDropReason::
+                       kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);
     return;
   }

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/media_stream_renderer_factory_impl.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
@@ -53,7 +55,8 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   DCHECK(!web_stream.IsNull());
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoRenderer stream:"
@@ -67,7 +70,8 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
   }
 
   return new MediaStreamVideoRendererSink(video_tracks[0], error_cb, repaint_cb,
-                                          io_task_runner);
+                                          std::move(io_task_runner),
+                                          std::move(main_render_task_runner));
 }
 
 scoped_refptr<MediaStreamAudioRenderer>

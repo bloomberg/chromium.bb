@@ -4,6 +4,9 @@
 
 #include "content/shell/renderer/web_test/test_media_stream_renderer_factory.h"
 
+#include <utility>
+
+#include "base/single_thread_task_runner.h"
 #include "content/shell/renderer/web_test/test_media_stream_video_renderer.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -36,12 +39,14 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   if (!IsMockMediaStreamWithVideo(web_stream))
     return nullptr;
 
   return new TestMediaStreamVideoRenderer(
-      io_task_runner, gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
+      std::move(io_task_runner),
+      gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs), error_cb,
       repaint_cb);
 }

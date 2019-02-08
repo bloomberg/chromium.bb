@@ -126,6 +126,10 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
 
+  // Optionally overridden by subclasses to implement handling frame drop
+  // events.
+  virtual void OnFrameDropped(media::VideoCaptureFrameDropReason reason) {}
+
   // Optionally overridden by subclasses to implement handling log messages.
   virtual void OnLog(const std::string& message) {}
 
@@ -302,7 +306,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   RestartCallback restart_callback_;
 
   // |track_adapter_| delivers video frames to the tracks on the IO-thread.
-  const scoped_refptr<VideoTrackAdapter> track_adapter_;
+  scoped_refptr<VideoTrackAdapter> track_adapter_;
 
   // Tracks that currently are connected to this source.
   std::vector<MediaStreamVideoTrack*> tracks_;

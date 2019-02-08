@@ -231,6 +231,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     media::WebMediaPlayerDelegate* delegate,
     std::unique_ptr<media::MediaLog> media_log,
     std::unique_ptr<MediaStreamRendererFactory> factory,
+    scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
@@ -251,10 +252,11 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       video_rotation_(media::VIDEO_ROTATION_0),
       media_log_(std::move(media_log)),
       renderer_factory_(std::move(factory)),
-      io_task_runner_(io_task_runner),
-      compositor_task_runner_(compositor_task_runner),
-      media_task_runner_(media_task_runner),
-      worker_task_runner_(worker_task_runner),
+      main_render_task_runner_(std::move(main_render_task_runner)),
+      io_task_runner_(std::move(io_task_runner)),
+      compositor_task_runner_(std::move(compositor_task_runner)),
+      media_task_runner_(std::move(media_task_runner)),
+      worker_task_runner_(std::move(worker_task_runner)),
       gpu_factories_(gpu_factories),
       initial_audio_output_device_id_(sink_id.Utf8()),
       volume_(1.0),
@@ -339,7 +341,8 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       web_stream_,
       media::BindToCurrentLoop(
           base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
-      frame_deliverer_->GetRepaintCallback(), io_task_runner_);
+      frame_deliverer_->GetRepaintCallback(), io_task_runner_,
+      main_render_task_runner_);
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
 
@@ -500,7 +503,8 @@ void WebMediaPlayerMS::ReloadVideo() {
           web_stream_,
           media::BindToCurrentLoop(
               base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
-          frame_deliverer_->GetRepaintCallback(), io_task_runner_);
+          frame_deliverer_->GetRepaintCallback(), io_task_runner_,
+          main_render_task_runner_);
       DCHECK(video_frame_provider_);
       video_frame_provider_->Start();
       break;

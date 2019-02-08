@@ -35,4 +35,13 @@ void MediaStreamVideoSink::DisconnectFromTrack() {
   connected_track_.Reset();
 }
 
+void MediaStreamVideoSink::OnFrameDropped(
+    media::VideoCaptureFrameDropReason reason) {
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(connected_track_);
+  if (!video_track)
+    return;
+  video_track->OnFrameDropped(reason);
+}
+
 }  // namespace content

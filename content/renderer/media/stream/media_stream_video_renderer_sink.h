@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_renderer.h"
@@ -41,7 +42,8 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
       const blink::WebMediaStreamTrack& video_track,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner);
 
   // MediaStreamVideoRenderer implementation. Called on the main thread.
   void Start() override;
@@ -77,8 +79,11 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   std::unique_ptr<FrameDeliverer> frame_deliverer_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
 
   THREAD_CHECKER(main_thread_checker_);
+
+  base::WeakPtrFactory<MediaStreamVideoRendererSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSink);
 };

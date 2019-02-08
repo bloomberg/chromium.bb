@@ -36,10 +36,12 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
 }
 
 MediaStreamVideoSource::MediaStreamVideoSource()
-    : state_(NEW),
-      track_adapter_(
-          new VideoTrackAdapter(ChildProcess::current()->io_task_runner())),
-      weak_factory_(this) {}
+    : state_(NEW), weak_factory_(this) {
+  track_adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
+      ChildProcess::current()->io_task_runner(),
+      base::BindRepeating(&MediaStreamVideoSource::OnFrameDropped,
+                          weak_factory_.GetWeakPtr()));
+}
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

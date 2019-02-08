@@ -25,6 +25,9 @@ namespace content {
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // All methods calls will be done from the main render thread.
 class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
+ public:
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
+
  protected:
   MediaStreamVideoSink();
   ~MediaStreamVideoSink() override;

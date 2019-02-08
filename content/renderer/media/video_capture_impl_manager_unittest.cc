@@ -96,6 +96,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
     NOTREACHED();
   }
 
+  MOCK_METHOD2(OnFrameDropped,
+               void(int32_t, media::VideoCaptureFrameDropReason));
   MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
 
   PauseResumeCallback* const pause_callback_;

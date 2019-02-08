@@ -58,6 +58,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
 
   // MediaStreamVideoSource overrides.
   void RequestRefreshFrame() override;
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnLog(const std::string& message) override;
   void OnHasConsumers(bool has_consumers) override;
   void OnCapturingLinkSecured(bool is_secure) override;
