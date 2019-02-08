@@ -123,8 +123,12 @@ class AuthenticationServiceTest : public PlatformTest,
                               base::BindRepeating(&BuildMockSyncSetupService));
     builder.SetPrefService(CreatePrefService());
 
+    // This test requires usage of the production iOS TokenService delegate,
+    // as the production AuthenticationService class assumes the presence of
+    // this delegate.
     browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
-        CreateChromeBrowserStateForIdentityTestEnvironment(builder);
+        CreateChromeBrowserStateForIdentityTestEnvironment(
+            builder, /*use_ios_token_service_delegate=*/true);
 
     identity_test_environment_adaptor_ =
         std::make_unique<IdentityTestEnvironmentChromeBrowserStateAdaptor>(
