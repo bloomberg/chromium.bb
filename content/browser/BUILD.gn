@@ -232,8 +232,6 @@ jumbo_source_set("browser") {
   ]
 
   sources = [
-    "$target_gen_dir/devtools/protocol/base_string_adapter.cc",
-    "$target_gen_dir/devtools/protocol/base_string_adapter.h",
     "$target_gen_dir/devtools/protocol/browser.cc",
     "$target_gen_dir/devtools/protocol/browser.h",
     "$target_gen_dir/devtools/protocol/dom.cc",
@@ -722,6 +720,8 @@ jumbo_source_set("browser") {
     "devtools/protocol/tethering_handler.h",
     "devtools/protocol/tracing_handler.cc",
     "devtools/protocol/tracing_handler.h",
+    "devtools/protocol_string.cc",
+    "devtools/protocol_string.h",
     "devtools/render_frame_devtools_agent_host.cc",
     "devtools/render_frame_devtools_agent_host.h",
     "devtools/service_worker_devtools_agent_host.cc",

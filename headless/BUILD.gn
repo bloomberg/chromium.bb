@@ -248,8 +248,6 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
-    "lib/browser/protocol/base_string_adapter.cc",
-    "lib/browser/protocol/base_string_adapter.h",
     "lib/browser/protocol/dp_browser.cc",
     "lib/browser/protocol/dp_browser.h",
     "lib/browser/protocol/dp_headless_experimental.cc",
@@ -307,6 +305,8 @@ jumbo_component("headless") {
     "lib/browser/protocol/headless_handler.h",
     "lib/browser/protocol/page_handler.cc",
     "lib/browser/protocol/page_handler.h",
+    "lib/browser/protocol/protocol_string.cc",
+    "lib/browser/protocol/protocol_string.h",
     "lib/browser/protocol/target_handler.cc",
     "lib/browser/protocol/target_handler.h",
     "lib/headless_content_client.cc",
@@ -552,6 +552,7 @@ group("headless_tests") {
 
 test("headless_unittests") {
   sources = [
+    "lib/browser/protocol/protocol_unittest.cc",
     "public/domains/types_unittest.cc",
     "public/util/error_reporter_unittest.cc",
   ]
