@@ -235,6 +235,7 @@ android_library("chrome_java") {
     ":document_tab_model_info_proto_java",
     ":partner_location_descriptor_proto_java",
     ":thumbnail_cache_entry_proto_java",
+    ":usage_stats_proto_java",
     "$google_play_services_package:google_play_services_auth_base_java",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
@@ -486,6 +487,13 @@ proto_java_library("thumbnail_cache_entry_proto_java") {
   proto_path = "java/src/org/chromium/chrome/browser/widget"
   sources = [
     "$proto_path/thumbnail_cache_entry.proto",
+  ]
+}
+
+proto_java_library("usage_stats_proto_java") {
+  proto_path = "../browser/android/usage_stats"
+  sources = [
+    "$proto_path/website_event.proto",
   ]
 }
 

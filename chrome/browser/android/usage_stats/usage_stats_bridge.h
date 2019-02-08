@@ -47,7 +47,7 @@ class UsageStatsBridge {
 
   void AddEvents(JNIEnv* j_env,
                  const JavaRef<jobject>& j_this,
-                 const JavaRef<jobject>& j_events,
+                 const JavaRef<jobjectArray>& j_events,
                  const JavaRef<jobject>& j_callback);
 
   void DeleteAllEvents(JNIEnv* j_env,
@@ -87,6 +87,10 @@ class UsageStatsBridge {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
+  void OnGetEventsDone(ScopedJavaGlobalRef<jobject> callback,
+                       UsageStatsDatabase::Error error,
+                       std::vector<WebsiteEvent> events);
+
   void OnGetAllSuspensionsDone(ScopedJavaGlobalRef<jobject> callback,
                                UsageStatsDatabase::Error error,
                                std::vector<std::string> suspensions);

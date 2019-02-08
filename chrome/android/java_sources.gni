@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import("//chrome/android/feed/feed_java_sources.gni")
-import(
-    "//chrome/android/java/src/org/chromium/chrome/browser/usage_stats/features.gni")
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")

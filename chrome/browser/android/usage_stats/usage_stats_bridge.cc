@@ -20,6 +20,7 @@ using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfByteArray;
 using base::android::ToJavaArrayOfStrings;
 
 namespace usage_stats {
@@ -59,35 +60,89 @@ void UsageStatsBridge::Destroy(JNIEnv* env, const JavaRef<jobject>& j_this) {
 
 void UsageStatsBridge::GetAllEvents(JNIEnv* j_env,
                                     const JavaRef<jobject>& j_this,
-                                    const JavaRef<jobject>& j_callback) {}
+                                    const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->GetAllEvents(
+      base::BindOnce(&UsageStatsBridge::OnGetEventsDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void UsageStatsBridge::QueryEventsInRange(JNIEnv* j_env,
                                           const JavaRef<jobject>& j_this,
                                           const jlong j_start,
                                           const jlong j_end,
-                                          const JavaRef<jobject>& j_callback) {}
+                                          const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->QueryEventsInRange(
+      j_start, j_end,
+      base::BindOnce(&UsageStatsBridge::OnGetEventsDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void UsageStatsBridge::AddEvents(JNIEnv* j_env,
                                  const JavaRef<jobject>& j_this,
-                                 const JavaRef<jobject>& j_events,
-                                 const JavaRef<jobject>& j_callback) {}
+                                 const JavaRef<jobjectArray>& j_events,
+                                 const JavaRef<jobject>& j_callback) {
+  // Deserialize events from byte arrays to proto messages.
+  std::vector<std::string> serialized_events;
+  JavaArrayOfByteArrayToStringVector(j_env, j_events, &serialized_events);
+
+  std::vector<WebsiteEvent> events;
+  events.reserve(serialized_events.size());
+
+  for (const std::string& serialized : serialized_events) {
+    WebsiteEvent event;
+    event.ParseFromString(serialized);
+    events.emplace_back(event);
+  }
+
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->AddEvents(
+      events, base::BindOnce(&UsageStatsBridge::OnUpdateDone,
+                             weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void UsageStatsBridge::DeleteAllEvents(JNIEnv* j_env,
                                        const JavaRef<jobject>& j_this,
-                                       const JavaRef<jobject>& j_callback) {}
+                                       const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->DeleteAllEvents(
+      base::BindOnce(&UsageStatsBridge::OnUpdateDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void UsageStatsBridge::DeleteEventsInRange(JNIEnv* j_env,
                                            const JavaRef<jobject>& j_this,
                                            const jlong j_start,
                                            const jlong j_end,
                                            const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->DeleteEventsInRange(
+      j_start, j_end,
+      base::BindOnce(&UsageStatsBridge::OnUpdateDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void UsageStatsBridge::DeleteEventsWithMatchingDomains(
     JNIEnv* j_env,
     const JavaRef<jobject>& j_this,
     const JavaRef<jobjectArray>& j_domains,
-    const JavaRef<jobject>& j_callback) {}
+    const JavaRef<jobject>& j_callback) {
+  std::vector<std::string> domains;
+  AppendJavaStringArrayToStringVector(j_env, j_domains, &domains);
+
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  usage_stats_database_->DeleteEventsWithMatchingDomains(
+      base::flat_set<std::string>(domains),
+      base::BindOnce(&UsageStatsBridge::OnUpdateDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
 
 void UsageStatsBridge::GetAllSuspensions(JNIEnv* j_env,
                                          const JavaRef<jobject>& j_this,
@@ -145,6 +200,37 @@ void UsageStatsBridge::SetTokenMappings(JNIEnv* j_env,
   usage_stats_database_->SetTokenMappings(
       mappings, base::BindOnce(&UsageStatsBridge::OnUpdateDone,
                                weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void UsageStatsBridge::OnGetEventsDone(ScopedJavaGlobalRef<jobject> callback,
+                                       UsageStatsDatabase::Error error,
+                                       std::vector<WebsiteEvent> events) {
+  JNIEnv* env = AttachCurrentThread();
+
+  if (!isSuccess(error)) {
+    RunObjectCallbackAndroid(
+        callback, ToJavaArrayOfByteArray(env, std::vector<std::string>()));
+    return;
+  }
+
+  // Serialize WebsiteEvent proto messages for passing over JNI bridge as byte
+  // arrays.
+  std::vector<std::string> serialized_events;
+  serialized_events.reserve(events.size());
+
+  for (WebsiteEvent event : events) {
+    std::string serialized;
+    event.SerializeToString(&serialized);
+    serialized_events.emplace_back(serialized);
+  }
+
+  ScopedJavaLocalRef<jobjectArray> j_serialized_events =
+      ToJavaArrayOfByteArray(env, serialized_events);
+
+  // Over JNI, deserialize to list of WebsiteEvent messages, and run on given
+  // callback.
+  Java_UsageStatsBridge_createEventListAndRunCallback(env, j_serialized_events,
+                                                      callback);
 }
 
 void UsageStatsBridge::OnGetAllSuspensionsDone(

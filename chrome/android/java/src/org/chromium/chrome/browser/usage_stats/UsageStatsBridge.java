@@ -8,7 +8,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.usage_stats.WebsiteEventProtos.WebsiteEvent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +52,15 @@ public class UsageStatsBridge {
 
     public void addEvents(List<WebsiteEvent> events, Callback<Boolean> callback) {
         assert mNativeUsageStatsBridge != 0;
-        nativeAddEvents(mNativeUsageStatsBridge, events, callback);
+
+        byte[][] serializedEvents = new byte[events.size()][];
+
+        for (int i = 0; i < events.size(); i++) {
+            WebsiteEvent event = events.get(i);
+            serializedEvents[i] = event.toByteArray();
+        }
+
+        nativeAddEvents(mNativeUsageStatsBridge, serializedEvents, callback);
     }
 
     public void deleteAllEvents(Callback<Boolean> callback) {
@@ -114,6 +124,23 @@ public class UsageStatsBridge {
         callback.onResult(map);
     }
 
+    @CalledByNative
+    private static void createEventListAndRunCallback(
+            byte[][] serializedEvents, Callback<List<WebsiteEvent>> callback) {
+        List<WebsiteEvent> events = new ArrayList<>(serializedEvents.length);
+
+        for (byte[] serialized : serializedEvents) {
+            try {
+                WebsiteEvent event = WebsiteEvent.parseFrom(serialized);
+                events.add(event);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+                // Consume exception for now, ignoring unparseable events.
+            }
+        }
+
+        callback.onResult(events);
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeUsageStatsBridge);
     private native void nativeGetAllEvents(
@@ -121,7 +148,7 @@ public class UsageStatsBridge {
     private native void nativeQueryEventsInRange(long nativeUsageStatsBridge, long start, long end,
             Callback<List<WebsiteEvent>> callback);
     private native void nativeAddEvents(
-            long nativeUsageStatsBridge, List<WebsiteEvent> events, Callback<Boolean> callback);
+            long nativeUsageStatsBridge, byte[][] events, Callback<Boolean> callback);
     private native void nativeDeleteAllEvents(
             long nativeUsageStatsBridge, Callback<Boolean> callback);
     private native void nativeDeleteEventsInRange(
