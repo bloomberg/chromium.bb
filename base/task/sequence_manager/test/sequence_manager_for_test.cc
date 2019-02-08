@@ -53,7 +53,6 @@ std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(
                                                 std::move(task_runner), clock),
       std::move(settings)));
   manager->BindToCurrentThread();
-  manager->CompleteInitializationOnBoundThread();
   return manager;
 }
 
@@ -64,7 +63,6 @@ std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(
   std::unique_ptr<SequenceManagerForTest> manager(new SequenceManagerForTest(
       std::move(thread_controller), std::move(settings)));
   manager->BindToCurrentThread();
-  manager->CompleteInitializationOnBoundThread();
   return manager;
 }
 

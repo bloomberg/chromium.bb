@@ -3851,43 +3851,9 @@ TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
 }
 
 TEST_P(SequenceManagerTestWithCustomInitialization,
-       SequenceManagerCreatedBeforeMessageLoop) {
-  std::unique_ptr<SequenceManager> manager =
-      CreateUnboundSequenceManager(nullptr);
-  EXPECT_FALSE(static_cast<SequenceManagerImpl*>(manager.get())
-                   ->IsBoundToCurrentThread());
-  manager->BindToCurrentThread();
-  EXPECT_TRUE(static_cast<SequenceManagerImpl*>(manager.get())
-                  ->IsBoundToCurrentThread());
-  scoped_refptr<TaskQueue> default_task_queue =
-      manager->CreateTaskQueueWithType<TestTaskQueue>(
-          TaskQueue::Spec("default"));
-  EXPECT_THAT(default_task_queue.get(), testing::NotNull());
-
-  std::unique_ptr<MessageLoop> message_loop(new MessageLoop());
-  manager->BindToMessageLoop(message_loop->GetMessageLoopBase());
-
-  // Check that task posting works.
-  std::vector<EnqueueOrder> run_order;
-  default_task_queue->task_runner()->PostTask(
-      FROM_HERE, BindOnce(&TestTask, 1, &run_order));
-  default_task_queue->task_runner()->PostTask(
-      FROM_HERE, BindOnce(&TestTask, 2, &run_order));
-  default_task_queue->task_runner()->PostTask(
-      FROM_HERE, BindOnce(&TestTask, 3, &run_order));
-  RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
-
-  // We must release the SequenceManager before the MessageLoop because
-  // SequenceManager assumes the MessageLoop outlives it.
-  manager.reset();
-}
-
-TEST_P(SequenceManagerTestWithCustomInitialization,
        CreateUnboundSequenceManagerWhichIsNeverBound) {
   // This should not crash.
-  CreateUnboundSequenceManager(nullptr);
+  CreateUnboundSequenceManager();
 }
 
 TEST_P(SequenceManagerTest, HasPendingHighResolutionTasks) {

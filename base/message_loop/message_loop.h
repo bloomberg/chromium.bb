@@ -200,7 +200,7 @@ class BASE_EXPORT MessageLoopBase {
   // Whether task execution is allowed at the moment.
   virtual bool IsTaskExecutionAllowed() const = 0;
 
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
   virtual void AttachToMessagePump() = 0;
 #endif
 

@@ -40,7 +40,8 @@ struct Cancelable {
 class WorkQueueTest : public testing::Test {
  public:
   void SetUp() override {
-    dummy_sequence_manager_ = SequenceManagerImpl::CreateUnbound(nullptr);
+    dummy_sequence_manager_ =
+        SequenceManagerImpl::CreateUnbound(SequenceManager::Settings{});
     scoped_refptr<AssociatedThreadId> thread_checker =
         dummy_sequence_manager_->associated_thread();
     thread_checker->BindToCurrentThread();

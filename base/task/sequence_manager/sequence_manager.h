@@ -90,23 +90,6 @@ class SequenceManager {
   // circumstances. The ownership of the pump is transferred to SequenceManager.
   virtual void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) = 0;
 
-  // Initializes the SequenceManager on the bound thread. Should only be called
-  // once and only after the ThreadController's dependencies were initialized.
-  // Note that CreateSequenceManagerOnCurrentThread() performs this
-  // initialization automatically.
-  //
-  // TODO(eseckler): This currently needs to be separate from
-  // BindToCurrentThread() as it requires that the MessageLoop is bound
-  // (otherwise we can't add a NestingObserver), while BindToCurrentThread()
-  // requires that the MessageLoop has not yet been bound (binding the
-  // MessageLoop would fail if its TaskRunner, i.e. the default task queue, had
-  // not yet been bound). Reconsider this API once we get rid of MessageLoop.
-  virtual void CompleteInitializationOnBoundThread() = 0;
-
-  // TODO(kraynov): Bring back CreateOnCurrentThread static method here
-  // when the move is done. It's not here yet to reduce PLATFORM_EXPORT
-  // macros hacking during the move.
-
   // Must be called on the main thread.
   // Can be called only once, before creating TaskQueues.
   // Observer must outlive the SequenceManager.
@@ -208,17 +191,11 @@ CreateSequenceManagerOnCurrentThreadWithPump(
     std::unique_ptr<MessagePump> message_pump,
     SequenceManager::Settings settings = SequenceManager::Settings());
 
-// Create a SequenceManager for a future thread using the provided MessageLoop.
-// The SequenceManager can be initialized on the current thread and then needs
-// to be bound and initialized on the target thread by calling
-// BindToCurrentThread() and CompleteInitializationOnBoundThread() during the
-// thread's startup.
-//
-// Implementation is located in sequence_manager_impl.cc. TODO(scheduler-dev):
-// Remove when we get rid of MessageLoop.
-// TODO(scheduler-dev): Change this to CreateUnboundSequenceManagerWithPump.
+// Create an unbound SequenceManager (typically for a future thread or because
+// additional setup is required before binding). The SequenceManager can be
+// initialized on the current thread and then needs to be bound and initialized
+// on the target thread by calling one of the Bind*() methods.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoopBase* message_loop_base,
     SequenceManager::Settings settings = SequenceManager::Settings());
 
 }  // namespace sequence_manager
