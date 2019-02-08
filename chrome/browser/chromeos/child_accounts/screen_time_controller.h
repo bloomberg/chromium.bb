@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_SCREEN_TIME_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_notifier.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
+#include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -38,6 +40,7 @@ namespace chromeos {
 // Schedule notifications and lock/unlock screen based on the processor output.
 class ScreenTimeController : public KeyedService,
                              public session_manager::SessionManagerObserver,
+                             public UsageTimeStateNotifier::Observer,
                              public system::TimezoneSettings::Observer,
                              public chromeos::SystemClockClient::Observer {
  public:
@@ -91,6 +94,10 @@ class ScreenTimeController : public KeyedService,
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // UsageTimeStateNotifier::Observer:
+  void OnUsageTimeStateChange(
+      const UsageTimeStateNotifier::UsageTimeState state) override;
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
