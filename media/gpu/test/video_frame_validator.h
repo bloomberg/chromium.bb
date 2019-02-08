@@ -66,14 +66,11 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // If |prefix_output_yuv_| is not specified, no yuv file will be saved.
   // |frame_checksums| should contain the ordered list of md5 frame checksums to
   // be used by the validator.
-  // |linear| represents whether VideoFrame passed on EvaludateVideoFrame() is
-  // linear (i.e non-tiled) or not.
   // Returns nullptr on failure.
   static std::unique_ptr<VideoFrameValidator> Create(
       uint32_t flags,
       const base::FilePath& prefix_output_yuv,
-      const std::vector<std::string>& expected_frame_checksums,
-      bool linear);
+      const std::vector<std::string>& frame_checksums);
 
   ~VideoFrameValidator() override;
 

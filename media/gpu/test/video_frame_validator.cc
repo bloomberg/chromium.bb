@@ -42,14 +42,13 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     uint32_t flags,
     const base::FilePath& prefix_output_yuv,
-    const std::vector<std::string>& expected_frame_checksums,
-    bool linear) {
+    const std::vector<std::string>& expected_frame_checksums) {
   if ((flags & VideoFrameValidator::OUTPUTYUV) && prefix_output_yuv.empty()) {
     LOG(ERROR) << "Prefix of yuv files isn't specified with dump flags.";
     return nullptr;
   }
 
-  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(linear);
+  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
 
   if (!video_frame_mapper) {
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
