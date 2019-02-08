@@ -272,11 +272,17 @@ Polymer({
       if (this.unifiedConsentEnabled && this.syncStatus &&
           !!this.syncStatus.setupInProgress && this.didAbort_ &&
           !this.setupCancelDialogConfirmed_) {
-        settings.navigateTo(settings.routes.SYNC);
-        this.showSetupCancelDialog_ = true;
-        // Flush to make sure that the setup cancel dialog is attached.
-        Polymer.dom.flush();
-        this.$$('#setupCancelDialog').showModal();
+        // Yield so that other |currentRouteChanged| observers are called,
+        // before triggering another navigation (and another round of observers
+        // firing). Triggering navigation from within an observer leads to some
+        // undefined behavior and runtime errors.
+        requestAnimationFrame(() => {
+          settings.navigateTo(settings.routes.SYNC);
+          this.showSetupCancelDialog_ = true;
+          // Flush to make sure that the setup cancel dialog is attached.
+          Polymer.dom.flush();
+          this.$$('#setupCancelDialog').showModal();
+        });
       } else {
         this.setupCancelDialogConfirmed_ = false;
         this.onNavigateAwayFromPage_();
