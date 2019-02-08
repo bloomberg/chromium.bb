@@ -434,6 +434,14 @@ def AddInstrumentationTestOptions(parser):
            'the first element being the package and the second the path to the '
            'replacement APK. Only supports replacing one package. Example: '
            '--replace-system-package com.example.app,path/to/some.apk')
+
+  parser.add_argument(
+      '--use-webview-provider',
+      type=_RealPath, default=None,
+      help='Use this apk as the webview provider during test. '
+           'The original provider will be restored if possible, '
+           "on Nougat the provider can't be determined and so "
+           'the system will choose the default provider.')
   parser.add_argument(
       '--runtime-deps-path',
       dest='runtime_deps_path', type=os.path.realpath,
@@ -1022,6 +1030,14 @@ def main():
       hasattr(args, 'enable_concurrent_adb') and args.replace_system_package and
       args.enable_concurrent_adb):
     parser.error('--replace-system-package and --enable-concurrent-adb cannot '
+                 'be used together')
+
+  # --use-webview-provider has the potential to cause issues if
+  # --enable-concurrent-adb is set, so disallow that combination
+  if (hasattr(args, 'use_webview_provider') and
+      hasattr(args, 'enable_concurrent_adb') and args.use_webview_provider and
+      args.enable_concurrent_adb):
+    parser.error('--use-webview-provider and --enable-concurrent-adb cannot '
                  'be used together')
 
   if (getattr(args, 'jacoco', False) and

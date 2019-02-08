@@ -62,6 +62,7 @@
 ../../third_party/catapult/devil/devil/android/tools/device_status.py
 ../../third_party/catapult/devil/devil/android/tools/script_common.py
 ../../third_party/catapult/devil/devil/android/tools/system_app.py
+../../third_party/catapult/devil/devil/android/tools/webview_app.py
 ../../third_party/catapult/devil/devil/android/valgrind_tools/__init__.py
 ../../third_party/catapult/devil/devil/android/valgrind_tools/base_tool.py
 ../../third_party/catapult/devil/devil/base_error.py
