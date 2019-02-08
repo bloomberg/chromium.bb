@@ -39,11 +39,14 @@ WebFrameImpl::WebFrameImpl(blink::WebFrame *impl)
     : d_impl(impl)
     , d_contentSettingsDelegate(nullptr)
 {
+    if (d_impl->IsWebLocalFrame()) {
+        d_impl->ToWebLocalFrame()->SetContentSettingsClient(this);
+    }
 }
 
 WebFrameImpl::~WebFrameImpl()
 {
-    if (d_impl->IsWebLocalFrame() && d_contentSettingsDelegate) {
+    if (d_impl->IsWebLocalFrame()) {
         d_impl->ToWebLocalFrame()->SetContentSettingsClient(nullptr);
     }
 }
@@ -73,19 +76,7 @@ v8::Isolate* WebFrameImpl::scriptIsolate() const
 
 void WebFrameImpl::setContentSettingsDelegate(WebContentSettingsDelegate *contentSettingsDelegate)
 {
-    if (!d_impl->IsWebLocalFrame() ||
-        d_contentSettingsDelegate == contentSettingsDelegate) {
-        return;
-    }
-
     d_contentSettingsDelegate = contentSettingsDelegate;
-
-    if (d_contentSettingsDelegate) {
-        d_impl->ToWebLocalFrame()->SetContentSettingsClient(this);
-    }
-    else {
-        d_impl->ToWebLocalFrame()->SetContentSettingsClient(nullptr);
-    }
 }
 
 // blink::WebContentSettingsClient overrides
@@ -94,7 +85,11 @@ bool WebFrameImpl::AllowRunningInsecureContent(
         const blink::WebSecurityOrigin& securityOrigin,
         const blink::WebURL&            url)
 {
-    DCHECK(d_contentSettingsDelegate) << "WebContentSettingsDelegate not set";
+    if (!d_contentSettingsDelegate) {
+        return blink::WebContentSettingsClient::AllowRunningInsecureContent(
+            enabledPerSettings, securityOrigin,url);
+    }
+
     return d_contentSettingsDelegate->allowRunningInsecureContent(enabledPerSettings);
 }
 

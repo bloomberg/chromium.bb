@@ -551,11 +551,18 @@ void WebViewProxy::didFinishLoadForFrame(int              routingId,
         return;
     }
 
+    // Ensure that d_mainFrame is populated:
+    mainFrame();
+
+    // Propagate V8 security token:
     v8::Isolate *isolate = webFrame->ScriptIsolate();
     v8::HandleScope hs(isolate);
 
     webFrame->MainWorldScriptContext()->
         SetSecurityToken(d_securityToken.Get(isolate));
+
+    // Propagate content settings overrides:
+    webFrame->SetContentSettingsClient(d_mainFrame.get());
 }
 
 void WebViewProxy::didFailLoadForFrame(int              routingId,
