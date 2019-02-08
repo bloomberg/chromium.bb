@@ -98,7 +98,7 @@ class BASE_EXPORT TaskTracker {
   // |histogram_label| is used as a suffix for histograms, it must not be empty.
   // The first constructor sets the maximum number of TaskPriority::BEST_EFFORT
   // sequences that can be scheduled concurrently to 0 if the
-  // --disable-background-tasks flag is specified, max() otherwise. The second
+  // --disable-best-effort-tasks flag is specified, max() otherwise. The second
   // constructor sets it to |max_num_scheduled_best_effort_sequences|.
   TaskTracker(StringPiece histogram_label);
   TaskTracker(StringPiece histogram_label,

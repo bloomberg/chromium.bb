@@ -113,7 +113,7 @@ static const char* kBadFlags[] = {
     // normally with this flag, it is expected that some non-visible operations
     // such as writing user data to disk, cleaning caches, reporting metrics or
     // updating components won't be performed until shutdown.
-    switches::kDisableBackgroundTasks,
+    switches::kDisableBestEffortTasks,
 
     // The UI for Web Bluetooth scanning is not yet implemented. Without the
     // UI websites can scan for bluetooth without user intervention. Show a

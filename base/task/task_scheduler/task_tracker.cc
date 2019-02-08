@@ -142,7 +142,7 @@ int GetMaxNumScheduledBestEffortSequences() {
   // in a dynamic library which doesn't have access to argc/argv.
   if (CommandLine::InitializedForCurrentProcess() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBackgroundTasks)) {
+          switches::kDisableBestEffortTasks)) {
     return 0;
   }
   return std::numeric_limits<int>::max();

@@ -8,7 +8,7 @@
 namespace switches {
 
 // Delays execution of base::TaskPriority::BEST_EFFORT tasks until shutdown.
-const char kDisableBackgroundTasks[] = "disable-background-tasks";
+const char kDisableBestEffortTasks[] = "disable-best-effort-tasks";
 
 // Disables the crash reporting.
 const char kDisableBreakpad[]               = "disable-breakpad";

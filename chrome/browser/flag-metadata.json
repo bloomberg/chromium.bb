@@ -527,6 +527,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "disable-best-effort-tasks",
+    "owners": [ "catan-team@chromium.org" ],
+    "expiry_milestone": 75
+  },
+  {
     "name": "disable-captive-portal-bypass-proxy",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

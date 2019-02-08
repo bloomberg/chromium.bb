@@ -313,7 +313,7 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
       service_manager::switches::kDisableInProcessStackTraces,
-      switches::kDisableBackgroundTasks,
+      switches::kDisableBestEffortTasks,
       switches::kDisableLogging,
       switches::kEnableLogging,
       switches::kEnablePerfetto,

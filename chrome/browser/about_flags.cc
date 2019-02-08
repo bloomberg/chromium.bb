@@ -4298,6 +4298,10 @@ const FeatureEntry kFeatureEntries[] = {
          autofill_assistant::features::kAutofillAssistantChromeEntry)},
 #endif  // defined(OS_ANDROID)
 
+    {"disable-best-effort-tasks",
+     flag_descriptions::kDisableBestEffortTasksName,
+     flag_descriptions::kDisableBestEffortTasksDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kDisableBestEffortTasks)},
     {"enable-sync-uss-passwords",
      flag_descriptions::kEnableSyncUSSPasswordsName,
      flag_descriptions::kEnableSyncUSSPasswordsDescription,
