@@ -46,10 +46,7 @@ class UiControllerAndroid : public UiController {
   void Shutdown(Metrics::DropOutReason reason) override;
   void Close() override;
   void OnChipsChanged(const std::vector<Chip>& chips) override;
-  void GetPaymentInformation(
-      payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::vector<std::string>& supported_basic_card_networks) override;
+  void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
   void OnDetailsChanged(const Details* details) override;
   void OnProgressChanged(int progress) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
@@ -96,14 +93,12 @@ class UiControllerAndroid : public UiController {
   void ExpandBottomSheet();
   void ShutdownGracefully();
   void SetProgressPulsingEnabled(bool enabled);
+  void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject>
       java_autofill_assistant_ui_controller_;
-
-  base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
-      get_payment_information_callback_;
 
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
 

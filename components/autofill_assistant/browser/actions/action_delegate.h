@@ -30,7 +30,6 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
-struct PaymentInformation;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -91,9 +90,7 @@ class ActionDelegate {
   // Asks the user to provide the data used by UseAddressAction and
   // UseCreditCardAction.
   virtual void GetPaymentInformation(
-      payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::vector<std::string>& supported_basic_card_networks) = 0;
+      std::unique_ptr<PaymentRequestOptions> options) = 0;
 
   using GetFullCardCallback =
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,

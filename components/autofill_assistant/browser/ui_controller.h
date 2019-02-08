@@ -13,7 +13,7 @@
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/metrics.h"
-#include "components/autofill_assistant/browser/payment_information.h"
+#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
@@ -43,12 +43,9 @@ class UiController {
   // Report that the set of chips has changed.
   virtual void OnChipsChanged(const std::vector<Chip>& chips) = 0;
 
-  // Get payment information (through similar to payment request UX) to fill
-  // forms.
-  virtual void GetPaymentInformation(
-      payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::vector<std::string>& supported_basic_card_networks) = 0;
+  // Gets or clears request for payment information.
+  virtual void OnPaymentRequestChanged(
+      const PaymentRequestOptions* options) = 0;
 
   // Called when details have changed. Details will be null if they have been
   // cleared.

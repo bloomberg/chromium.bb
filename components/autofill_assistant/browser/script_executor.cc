@@ -123,15 +123,12 @@ void ScriptExecutor::ClickOrTapElement(
 }
 
 void ScriptExecutor::GetPaymentInformation(
-    payments::mojom::PaymentOptionsPtr payment_options,
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    const std::vector<std::string>& supported_basic_card_networks) {
+    std::unique_ptr<PaymentRequestOptions> options) {
+  options->callback = base::BindOnce(&ScriptExecutor::OnGetPaymentInformation,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(options->callback));
+  delegate_->SetPaymentRequestOptions(std::move(options));
   delegate_->EnterState(AutofillAssistantState::PROMPT);
-  delegate_->GetUiController()->GetPaymentInformation(
-      std::move(payment_options),
-      base::BindOnce(&ScriptExecutor::OnGetPaymentInformation,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      supported_basic_card_networks);
 }
 
 void ScriptExecutor::OnGetPaymentInformation(

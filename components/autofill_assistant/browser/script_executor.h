@@ -111,9 +111,7 @@ class ScriptExecutor : public ActionDelegate {
   void ClickOrTapElement(const Selector& selector,
                          base::OnceCallback<void(bool)> callback) override;
   void GetPaymentInformation(
-      payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::vector<std::string>& supported_basic_card_networks) override;
+      std::unique_ptr<PaymentRequestOptions> options) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<Chip>> chips) override;
   void CancelPrompt() override;

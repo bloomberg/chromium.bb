@@ -520,6 +520,20 @@ Metrics::DropOutReason Controller::GetDropOutReason() const {
   return stop_reason_;
 }
 
+const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
+  return payment_request_options_.get();
+}
+
+void Controller::SetPaymentInformation(
+    std::unique_ptr<PaymentInformation> payment_information) {
+  if (!payment_request_options_)
+    return;
+
+  auto callback = std::move(payment_request_options_->callback);
+  SetPaymentRequestOptions(nullptr);
+  std::move(callback).Run(std::move(payment_information));
+}
+
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
   if (touchable_element_area_)
     touchable_element_area_->GetArea(area);
@@ -665,6 +679,17 @@ void Controller::LoadProgressChanged(content::WebContents* source,
 bool Controller::IsCookieExperimentEnabled() const {
   auto iter = parameters_.find(kCookieExperimentName);
   return iter != parameters_.end() && iter->second == "1";
+}
+
+void Controller::SetPaymentRequestOptions(
+    std::unique_ptr<PaymentRequestOptions> options) {
+  DCHECK(!options || options->callback);
+
+  if (payment_request_options_ == nullptr && options == nullptr)
+    return;
+
+  payment_request_options_ = std::move(options);
+  GetUiController()->OnPaymentRequestChanged(payment_request_options_.get());
 }
 
 ElementArea* Controller::touchable_element_area() {

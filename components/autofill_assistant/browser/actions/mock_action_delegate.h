@@ -93,12 +93,8 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(bool)> callback));
 
-  MOCK_METHOD3(
-      GetPaymentInformation,
-      void(payments::mojom::PaymentOptionsPtr payment_options,
-           base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
-               callback,
-           const std::vector<std::string>& supported_basic_card_networks));
+  MOCK_METHOD1(GetPaymentInformation,
+               void(std::unique_ptr<PaymentRequestOptions> options));
 
   MOCK_METHOD1(GetFullCard, void(GetFullCardCallback callback));
 

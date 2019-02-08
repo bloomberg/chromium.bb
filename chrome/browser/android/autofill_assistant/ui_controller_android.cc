@@ -106,12 +106,14 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
       SetProgressPulsingEnabled(false);
+      SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::RUNNING:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
       SetProgressPulsingEnabled(false);
+      SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
@@ -128,6 +130,7 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
       AllowShowingSoftKeyboard(true);
       SetProgressPulsingEnabled(true);
 
+      SetAllowSwipingSheet(ui_delegate_->GetPaymentRequestOptions() == nullptr);
       // user interaction is needed.
       ExpandBottomSheet();
       return;
@@ -136,12 +139,14 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(true);
       SetProgressPulsingEnabled(false);
+      SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::STOPPED:
       SetOverlayState(OverlayState::HIDDEN);
       AllowShowingSoftKeyboard(true);
       SetProgressPulsingEnabled(false);
+      SetAllowSwipingSheet(true);
 
       // make sure user sees the error message.
       ExpandBottomSheet();
@@ -192,6 +197,11 @@ void UiControllerAndroid::ShutdownGracefully() {
 void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
   Java_AssistantHeaderModel_setProgressPulsingEnabled(
       AttachCurrentThread(), GetHeaderModel(), enabled);
+}
+
+void UiControllerAndroid::SetAllowSwipingSheet(bool allow) {
+  Java_AssistantModel_setAllowSwipingSheet(AttachCurrentThread(), GetModel(),
+                                           allow);
 }
 
 void UiControllerAndroid::OnFeedbackButtonClicked() {
@@ -320,30 +330,26 @@ UiControllerAndroid::GetPaymentRequestModel() {
 
 void UiControllerAndroid::OnGetPaymentInformation(
     std::unique_ptr<PaymentInformation> payment_info) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AssistantModel_setAllowSwipingSheet(env, GetModel(), true);
-  Java_AssistantPaymentRequestModel_clearOptions(env, GetPaymentRequestModel());
-  if (get_payment_information_callback_) {
-    std::move(get_payment_information_callback_).Run(std::move(payment_info));
-  }
+  ui_delegate_->SetPaymentInformation(std::move(payment_info));
 }
 
-void UiControllerAndroid::GetPaymentInformation(
-    payments::mojom::PaymentOptionsPtr payment_options,
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    const std::vector<std::string>& supported_basic_card_networks) {
-  DCHECK(!get_payment_information_callback_);
-  get_payment_information_callback_ = std::move(callback);
+void UiControllerAndroid::OnPaymentRequestChanged(
+    const PaymentRequestOptions* payment_options) {
   JNIEnv* env = AttachCurrentThread();
-  Java_AssistantModel_setAllowSwipingSheet(env, GetModel(), false);
+  auto jmodel = GetPaymentRequestModel();
+  if (!payment_options) {
+    Java_AssistantPaymentRequestModel_clearOptions(env, jmodel);
+    return;
+  }
   Java_AssistantPaymentRequestModel_setOptions(
-      env, GetPaymentRequestModel(),
+      env, jmodel,
       base::android::ConvertUTF8ToJavaString(env,
                                              client_->GetAccountEmailAddress()),
       payment_options->request_shipping, payment_options->request_payer_name,
       payment_options->request_payer_phone,
       payment_options->request_payer_email,
-      base::android::ToJavaArrayOfStrings(env, supported_basic_card_networks));
+      base::android::ToJavaArrayOfStrings(
+          env, payment_options->supported_basic_card_networks));
 }
 
 // Details related method.
