@@ -301,7 +301,7 @@ bool ParamTraits<signed char>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<signed char>::Log(const param_type& p, std::string* l) {
-  l->append(base::IntToString(p));
+  l->append(base::NumberToString(p));
 }
 
 void ParamTraits<unsigned char>::Write(base::Pickle* m, const param_type& p) {
@@ -319,7 +319,7 @@ bool ParamTraits<unsigned char>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<unsigned char>::Log(const param_type& p, std::string* l) {
-  l->append(base::UintToString(p));
+  l->append(base::NumberToString(p));
 }
 
 void ParamTraits<unsigned short>::Write(base::Pickle* m, const param_type& p) {

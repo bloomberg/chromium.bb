@@ -178,7 +178,7 @@ void Logging::GetMessageText(uint32_t type, std::string* name,
   if (it == log_function_map_->end()) {
     if (name) {
       *name = "[UNKNOWN MSG ";
-      *name += base::IntToString(type);
+      *name += base::NumberToString(type);
       *name += " ]";
     }
     return;
