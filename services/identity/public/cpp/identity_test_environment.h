@@ -98,9 +98,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Sets the primary account for the given email address, generating a GAIA ID
   // that corresponds uniquely to that email address. On non-ChromeOS, results
   // in the firing of the IdentityManager and SigninManager callbacks for signin
-  // success. Blocks until the primary account is set. Returns the AccountInfo
-  // of the newly-set account.
-  AccountInfo SetPrimaryAccount(const std::string& email);
+  // success. Blocks until the primary account is set. Returns the
+  // CoreAccountInfo of the newly-set account.
+  CoreAccountInfo SetPrimaryAccount(const std::string& email);
 
   // Sets a refresh token for the primary account (which must already be set).
   // Before updating the refresh token, blocks until refresh tokens are loaded.

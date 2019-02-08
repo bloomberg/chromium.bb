@@ -48,10 +48,10 @@ class IdentityManager;
 // address, generating a GAIA ID that corresponds uniquely to that email
 // address. On non-ChromeOS, results in the firing of the IdentityManager and
 // SigninManager callbacks for signin success. Blocks until the primary account
-// is set. Returns the AccountInfo of the newly-set account.
+// is set. Returns the CoreAccountInfo of the newly-set account.
 // NOTE: See disclaimer at top of file re: direct usage.
-AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
-                              const std::string& email);
+CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
+                                  const std::string& email);
 
 // Sets a refresh token for the primary account (which must already be set).
 // Blocks until the refresh token is set. If |token_value| is empty a default

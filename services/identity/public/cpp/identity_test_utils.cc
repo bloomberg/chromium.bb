@@ -172,8 +172,8 @@ void UpdateRefreshTokenForAccount(
 
 }  // namespace
 
-AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
-                              const std::string& email) {
+CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
+                                  const std::string& email) {
   DCHECK(!identity_manager->HasPrimaryAccount());
 
   SigninManagerBase* signin_manager = identity_manager->GetSigninManager();
@@ -241,9 +241,15 @@ void RemoveRefreshTokenForPrimaryAccount(IdentityManager* identity_manager) {
 
 AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
                                         const std::string& email) {
-  AccountInfo account_info = SetPrimaryAccount(identity_manager, email);
+  CoreAccountInfo account_info = SetPrimaryAccount(identity_manager, email);
   SetRefreshTokenForPrimaryAccount(identity_manager);
-  return account_info;
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          account_info.account_id);
+  // Ensure that extended information for the account is available after setting
+  // the refresh token.
+  DCHECK(primary_account_info.has_value());
+  return primary_account_info.value();
 }
 
 void ClearPrimaryAccount(IdentityManager* identity_manager,

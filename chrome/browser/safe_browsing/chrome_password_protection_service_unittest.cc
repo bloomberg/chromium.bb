@@ -241,7 +241,7 @@ class ChromePasswordProtectionServiceTest
     service_->RequestFinished(request_.get(), false, std::move(verdict));
   }
 
-  AccountInfo SetPrimaryAccount(const std::string& email) {
+  CoreAccountInfo SetPrimaryAccount(const std::string& email) {
     IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
         profile());
     return identity_test_env_profile_adaptor.identity_test_env()
@@ -249,7 +249,7 @@ class ChromePasswordProtectionServiceTest
   }
 
   void SetUpSyncAccount(const std::string& hosted_domain,
-                        const AccountInfo account_info) {
+                        const CoreAccountInfo& account_info) {
     FakeAccountFetcherService* account_fetcher_service =
         static_cast<FakeAccountFetcherService*>(
             AccountFetcherServiceFactory::GetForProfile(profile()));
@@ -369,7 +369,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
   EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
 
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
 
   // Sync password entry pinging is enabled by default.
@@ -466,7 +466,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
   EXPECT_TRUE(
       service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD)
           .empty());
-  AccountInfo account_info = SetPrimaryAccount(kTestGmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestGmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   EXPECT_EQ(
@@ -485,7 +485,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGSuite) {
   EXPECT_TRUE(
       service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD)
           .empty());
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
   EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
   EXPECT_EQ("example.com", service_->GetOrganizationName(
@@ -571,7 +571,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseUserEventNotRecordedDueToIncognito) {
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   service_->ConfigService(true /*is_incognito*/,
@@ -607,7 +607,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseDetectedUserEventRecorded) {
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
@@ -640,7 +640,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventScheduledOnStartup) {
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
@@ -667,7 +667,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
                  prefs::kSafeBrowsingNextPasswordCaptureEventLogTime, delay);
 
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
@@ -693,7 +693,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventRecorded) {
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
@@ -724,7 +724,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventReschedules) {
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
@@ -750,7 +750,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseLookupUserEventRecorded) {
   // Configure sync account type to GMAIL.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 
@@ -812,7 +812,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetDefaultChangePasswordURL) {
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
   EXPECT_EQ(GURL("https://accounts.google.com/"
                  "AccountChooser?Email=foo%40example.com&continue=https%3A%2F%"
@@ -974,7 +974,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   TestExtensionEventObserver event_observer(test_event_router_);
 
   // Preparing sync account.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
 
   // Simulates change password.
@@ -999,7 +999,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPasswordReuse) {
   TestExtensionEventObserver event_observer(test_event_router_);
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
@@ -1032,7 +1032,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse) {
   TestExtensionEventObserver event_observer(test_event_router_);
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount("example.com", account_info);
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
@@ -1074,7 +1074,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       service_->GetWarningDetailText(PasswordReuseEvent::ENTERPRISE_PASSWORD));
 
   // Signs in as a GSuite user.
-  AccountInfo account_info = SetPrimaryAccount(kTestEmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(std::string("example.com"), account_info);
   EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
   EXPECT_EQ(
@@ -1098,7 +1098,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
       service_->GetWarningDetailText(PasswordReuseEvent::ENTERPRISE_PASSWORD));
 
   // Signs in as a Gmail user.
-  AccountInfo account_info = SetPrimaryAccount(kTestGmail);
+  CoreAccountInfo account_info = SetPrimaryAccount(kTestGmail);
   SetUpSyncAccount(kNoHostedDomainFound, account_info);
   EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
   EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
