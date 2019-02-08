@@ -4,10 +4,7 @@
 
 #include "ash/assistant/ui/assistant_notification_overlay.h"
 
-#include <memory>
-
-#include "ash/assistant/ui/assistant_notification_view.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/gfx/canvas.h"
 
 namespace ash {
 
@@ -15,7 +12,8 @@ namespace {
 
 // Appearance.
 constexpr int kMarginBottomDip = 64;
-constexpr int kMarginHorizontalDip = 32;
+constexpr int kPreferredHeightDip = 60;
+constexpr int kPreferredWidthDip = 576;
 
 }  // namespace
 
@@ -29,24 +27,31 @@ const char* AssistantNotificationOverlay::GetClassName() const {
   return "AssistantNotificationOverlay";
 }
 
+gfx::Size AssistantNotificationOverlay::CalculatePreferredSize() const {
+  return gfx::Size(kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip));
+}
+
+int AssistantNotificationOverlay::GetHeightForWidth(int width) const {
+  return kPreferredHeightDip;
+}
+
 AssistantOverlay::LayoutParams AssistantNotificationOverlay::GetLayoutParams()
     const {
   using Gravity = AssistantOverlay::LayoutParams::Gravity;
   AssistantOverlay::LayoutParams layout_params;
   layout_params.gravity = Gravity::kBottom | Gravity::kCenterHorizontal;
-  layout_params.margins = gfx::Insets(0, kMarginHorizontalDip, kMarginBottomDip,
-                                      kMarginHorizontalDip);
+  layout_params.margins = gfx::Insets(0, 0, kMarginBottomDip, 0);
   return layout_params;
 }
 
-void AssistantNotificationOverlay::InitLayout() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+// TODO(dmblack): Remove when notification views have been implemented.
+void AssistantNotificationOverlay::OnPaintBackground(gfx::Canvas* canvas) {
+  canvas->DrawColor(0x20000000);
+}
 
+void AssistantNotificationOverlay::InitLayout() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-
-  // TODO(dmblack): Wire up to actual notifications.
-  AddChildView(new AssistantNotificationView());
 }
 
 };  // namespace ash

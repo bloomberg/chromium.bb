@@ -21,7 +21,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationOverlay
 
   // AssistantOverlay:
   const char* GetClassName() const override;
+  gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
   LayoutParams GetLayoutParams() const override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
  private:
   void InitLayout();
