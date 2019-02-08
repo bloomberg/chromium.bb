@@ -489,6 +489,8 @@
   {
     "name": "dcheck-is-fatal",
     "owners": [ "wez" ],
+    // Used to debug failed assertions in environments where debug builds cannot
+    // be used.
     "expiry_milestone": -1
   },
   {
@@ -636,6 +638,8 @@
   {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
+    // This flag is a useful debugging control when investigating scrolling
+    // issues.
     "expiry_milestone": -1
   },
   {
@@ -836,6 +840,9 @@
   {
     "name": "enable-autofill-credit-card-upload",
     "owners": [ "jsaul@google.com" ],
+    // This flag is heavily used by the testing team that can't easily use the
+    // commandline, and can't be enabled by default.
+    // http://g/chrome-flags/s2RTQCvcRRs
     "expiry_milestone": -1
   },
   {
@@ -1081,6 +1088,7 @@
   {
     "name": "enable-devtools-experiments",
     "owners": [ "//third_party/blink/renderer/devtools/OWNERS" ],
+    // This is a catch-all for ongoing devtools experiments.
     "expiry_milestone": -1
   },
   {
@@ -1238,11 +1246,15 @@
   {
     "name": "enable-gpu-rasterization",
     "owners": [ "enne", "vmiura", "ericrk" ],
+    // A debugging flag intended for end-users where there may not be any other
+    // way to turn off graphics features.
     "expiry_milestone": -1
   },
   {
     "name": "enable-gpu-service-logging",
     "owners": [ "vikassoni", "kbr" ],
+    // A debugging flag intended for end-users where there may not be any other
+    // way to turn off graphics features.
     "expiry_milestone": -1
   },
   {
@@ -1733,12 +1745,11 @@
     "expiry_milestone": 76
   },
   {
-    "_comment1": "No expiry - even after shipping some form of Site Isolation",
-    "_comment2": "on Android, we want to give users ability to opt into a",
-    "_comment3": "stricter, more secure Site Isolation via",
-    "_comment4": "chrome://flags#enable-site-per-process.",
     "name": "enable-site-per-process",
     "owners": [ "site-isolation-dev", "creis", "lukasza" ],
+    // Even after shipping some form of Site Isolation on Android, we want to
+    // give users the ability to opt into a stricter, more secure Site
+    // Isolation.
     "expiry_milestone": -1
   },
   {
@@ -1942,6 +1953,7 @@
   {
     "name": "enable-web-authentication-testing-api",
     "owners": [ "webauthn-team@google.com" ],
+    // This is required for testing.
     "expiry_milestone": -1
   },
   {
@@ -2172,6 +2184,8 @@
   {
     "name": "force-show-update-menu-badge",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+    // This is required by test teams to verify functionality on devices which
+    // have no access to commandline flags.
     "expiry_milestone": -1
   },
   {
@@ -2192,7 +2206,9 @@
   {
     "name": "force-update-menu-type",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
-    "expiry_milestone": -1
+     // This is required by test teams to verify functionality on devices which
+    // have no access to commandline flags.
+   "expiry_milestone": -1
   },
   {
     "name": "foreground-notification-manager",
@@ -2247,6 +2263,8 @@
   {
     "name": "ignore-gpu-blacklist",
     "owners": [ "kbr", "zmo" ],
+    // A debugging flag intended for end-users where there may not be any other
+    // way to turn off graphics features.
     "expiry_milestone": -1
   },
   {
@@ -2817,6 +2835,8 @@
   {
     "name": "set-market-url-for-testing",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+     // This is required by test teams to verify functionality on devices which
+    // have no access to commandline flags.
     "expiry_milestone": -1
   },
   {
@@ -2857,6 +2877,8 @@
   {
     "name": "show-touch-hud",
     "owners": [ "//ash/OWNERS" ],
+    // This is a debug tool to help in the field with hardware issues that
+    // generate spurious touch events.
     "expiry_milestone": -1
   },
   {
@@ -3089,6 +3111,8 @@
   {
     "name": "update-menu-item-custom-summary",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+     // This is required by test teams to verify functionality on devices which
+    // have no access to commandline flags.
     "expiry_milestone": -1
   },
   {
