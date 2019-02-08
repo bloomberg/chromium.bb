@@ -21533,6 +21533,8 @@ Called by update_net_error_codes.py.-->
   <int value="2782" label="LayoutJankExplicitlyRequested"/>
   <int value="2783" label="MediaSessionSkipAd"/>
   <int value="2784" label="AdFrameSizeIntervention"/>
+  <int value="2785" label="V8UserActivation_HasBeenActive_AttributeGetter"/>
+  <int value="2786" label="V8UserActivation_IsActive_AttributeGetter"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

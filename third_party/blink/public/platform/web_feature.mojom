@@ -2222,6 +2222,8 @@ enum WebFeature {
   kLayoutJankExplicitlyRequested = 2782,
   kMediaSessionSkipAd = 2783,
   kAdFrameSizeIntervention = 2784,
+  kV8UserActivation_HasBeenActive_AttributeGetter = 2785,
+  kV8UserActivation_IsActive_AttributeGetter = 2786,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
