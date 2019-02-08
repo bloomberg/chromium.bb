@@ -26,5 +26,17 @@ void ServiceProviderImpl::ConnectToService(std::string service_name,
                                     std::move(client_handle));
 }
 
+void ServiceProviderImpl::SetOnLastClientDisconnectedClosure(
+    base::OnceClosure on_last_client_disconnected) {
+  on_last_client_disconnected_ = std::move(on_last_client_disconnected);
+  bindings_.set_empty_set_handler(
+      fit::bind_member(this, &ServiceProviderImpl::OnBindingSetEmpty));
+}
+
+void ServiceProviderImpl::OnBindingSetEmpty() {
+  bindings_.set_empty_set_handler(nullptr);
+  std::move(on_last_client_disconnected_).Run();
+}
+
 }  // namespace fuchsia
 }  // namespace base

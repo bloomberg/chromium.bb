@@ -1,0 +1,36 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_fuchsia)
+
+import("//build/config/fuchsia/fidl_library.gni")
+import("//build/config/fuchsia/rules.gni")
+import("//testing/test.gni")
+
+source_set("modular") {
+  sources = [
+    "agent_impl.cc",
+    "agent_impl.h",
+  ]
+  deps = [
+    "//base",
+  ]
+  public_deps = [
+    "//third_party/fuchsia-sdk/sdk:modular",
+  ]
+}
+
+test("modular_unittests") {
+  sources = [
+    "agent_impl_unittests.cc",
+  ]
+  deps = [
+    ":modular",
+    "//base",
+    "//base:testfidl",
+    "//base/test:run_all_unittests",
+    "//fuchsia/engine:test_support",
+    "//testing/gtest",
+  ]
+}

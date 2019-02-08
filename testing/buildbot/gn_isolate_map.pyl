@@ -1572,6 +1572,10 @@
     "label": "//third_party/minizip:minizip_uncompress_fuzzer",
     "type": "fuzzer",
   },
+  "modular_unittests": {
+    "label": "//fuchsia/modular:modular_unittests",
+    "type": "console_test_launcher",
+  },
   "mojo_core_channel_fuzzer": {
     "label": "//mojo/core:mojo_core_channel_fuzzer",
     "type": "fuzzer",

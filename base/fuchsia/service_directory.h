@@ -40,6 +40,12 @@ class BASE_EXPORT ServiceDirectory {
   explicit ServiceDirectory(
       fidl::InterfaceRequest<::fuchsia::io::Directory> request);
 
+  // Creates an uninitialized ServiceDirectory instance. Initialize must be
+  // called on the instance before any services can be registered. Unless you
+  // need separate construction & initialization for a ServiceDirectory member,
+  // use the all-in-one constructor above.
+  ServiceDirectory();
+
   // TODO(https://crbug.com/920920): Clean up callers and remove this synonym.
   explicit ServiceDirectory(zx::channel request);
 
@@ -48,6 +54,10 @@ class BASE_EXPORT ServiceDirectory {
   // Returns default ServiceDirectory instance for the current process. It
   // publishes services to the directory provided by the process creator.
   static ServiceDirectory* GetDefault();
+
+  // Configures an uninitialized ServiceDirectory instance to service the
+  // supplied |directory_request| channel.
+  void Initialize(fidl::InterfaceRequest<::fuchsia::io::Directory> request);
 
   template <typename Interface>
   void AddService(RepeatingCallback<void(fidl::InterfaceRequest<Interface>)>

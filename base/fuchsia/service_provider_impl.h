@@ -12,6 +12,7 @@
 #include <lib/zx/channel.h>
 #include <string>
 
+#include "base/callback.h"
 #include "base/fuchsia/service_directory_client.h"
 
 namespace base {
@@ -30,13 +31,20 @@ class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
   void AddBinding(
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> request);
 
+  // Sets a Closure to be invoked when the last client disconnects.
+  void SetOnLastClientDisconnectedClosure(
+      base::OnceClosure on_last_client_disconnected);
+
  private:
   // fuchsia::sys::ServiceProvider implementation.
   void ConnectToService(std::string service_name,
                         zx::channel client_handle) override;
 
+  void OnBindingSetEmpty();
+
   const ServiceDirectoryClient directory_;
   fidl::BindingSet<::fuchsia::sys::ServiceProvider> bindings_;
+  base::OnceClosure on_last_client_disconnected_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
 };

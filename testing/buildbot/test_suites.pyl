@@ -2754,6 +2754,7 @@
       'http_service_tests': {},
       'ipc_tests': {},
       'media_unittests': {},
+      'modular_unittests': {},
       'mojo_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',

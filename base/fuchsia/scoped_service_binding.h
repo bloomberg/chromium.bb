@@ -31,6 +31,8 @@ class ScopedServiceBinding {
         fit::bind_member(this, &ScopedServiceBinding::OnBindingSetEmpty));
   }
 
+  bool has_clients() const { return bindings_.size() != 0; }
+
  private:
   void BindClient(fidl::InterfaceRequest<Interface> request) {
     bindings_.AddBinding(impl_, std::move(request));
