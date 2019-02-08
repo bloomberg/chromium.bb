@@ -102,18 +102,17 @@ void ChromeDevToolsManagerDelegate::Inspect(
 void ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
-    std::unique_ptr<base::DictionaryValue> command_dict,
+    const std::string& method,
     const std::string& message,
     NotHandledCallback callback) {
   if (sessions_.find(client) == sessions_.end()) {
-    std::move(callback).Run(std::move(command_dict), message);
+    std::move(callback).Run(message);
     // This should not happen, but happens. NOTREACHED tries to get
     // a repro in some test.
     NOTREACHED();
     return;
   }
-  sessions_[client]->HandleCommand(std::move(command_dict), message,
-                                   std::move(callback));
+  sessions_[client]->HandleCommand(method, message, std::move(callback));
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(

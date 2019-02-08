@@ -25,12 +25,11 @@ HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() = default;
 void HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client,
-    std::unique_ptr<base::DictionaryValue> command,
+    const std::string& method,
     const std::string& message,
     NotHandledCallback callback) {
   DCHECK(sessions_.find(client) != sessions_.end());
-  sessions_[client]->HandleCommand(std::move(command), message,
-                                   std::move(callback));
+  sessions_[client]->HandleCommand(method, message, std::move(callback));
 }
 
 scoped_refptr<content::DevToolsAgentHost>
