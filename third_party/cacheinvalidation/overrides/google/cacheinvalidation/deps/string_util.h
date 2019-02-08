@@ -16,11 +16,11 @@ using base::StringAppendV;
 using base::StringPrintf;
 
 inline std::string SimpleItoa(int v) {
-  return base::IntToString(v);
+  return base::NumberToString(v);
 }
 
 inline std::string SimpleItoa(int64_t v) {
-  return base::Int64ToString(v);
+  return base::NumberToString(v);
 }
 
 }  // namespace invalidation
