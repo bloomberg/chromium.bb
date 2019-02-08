@@ -13,6 +13,8 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -265,10 +267,14 @@ IdentityTestEnvironment::IdentityTestEnvironment(
         token_service_, account_tracker_service_, signin_manager_);
 #endif
 
+    std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator =
+        std::make_unique<AccountsCookieMutatorImpl>(
+            gaia_cookie_manager_service_);
+
     owned_identity_manager_ = std::make_unique<IdentityManager>(
         signin_manager_, token_service_, account_tracker_service_,
         gaia_cookie_manager_service_, std::move(primary_account_mutator),
-        std::move(accounts_mutator));
+        std::move(accounts_mutator), std::move(accounts_cookie_mutator));
   }
 
   this->identity_manager()->AddDiagnosticsObserver(this);

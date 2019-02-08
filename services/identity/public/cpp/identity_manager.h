@@ -5,6 +5,7 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_MANAGER_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/observer_list.h"
@@ -46,6 +47,7 @@ class IdentityManagerFactory;
 namespace identity {
 
 class AccountsMutator;
+class AccountsCookieMutator;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
 struct CookieParams;
@@ -198,7 +200,8 @@ class IdentityManager : public SigninManagerBase::Observer,
       AccountTrackerService* account_tracker_service,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
-      std::unique_ptr<AccountsMutator> accounts_mutator);
+      std::unique_ptr<AccountsMutator> accounts_mutator,
+      std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator);
   ~IdentityManager() override;
 
   // Provides access to the extended information of the user's primary account.
@@ -349,6 +352,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   // accounts' refresh tokens, if supported on the current platform. Otherwise,
   // returns null.
   AccountsMutator* GetAccountsMutator();
+
+  // Returns pointer to the object used to manipulate the cookies stored and the
+  // accounts associated with them. Guaranteed to be non-null.
+  AccountsCookieMutator* GetAccountsCookieMutator();
 
   // Turns on observation of network::CookieManager changes.
   void StartObservingCookieChanges();
@@ -516,6 +523,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   // AccountsMutator instance. May be null if mutation of accounts is not
   // supported on the current platform.
   std::unique_ptr<AccountsMutator> accounts_mutator_;
+
+  // AccountsCookieMutator instance. Guaranteed to be non-null, as this
+  // functionality is supported on all platforms.
+  std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.

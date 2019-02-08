@@ -13,6 +13,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -74,7 +76,9 @@ class IdentityManagerWrapper : public KeyedService,
             AccountTrackerServiceFactory::GetForProfile(profile),
             GaiaCookieManagerServiceFactory::GetForProfile(profile),
             BuildPrimaryAccountMutator(profile),
-            BuildAccountsMutator(profile)) {}
+            BuildAccountsMutator(profile),
+            std::make_unique<identity::AccountsCookieMutatorImpl>(
+                GaiaCookieManagerServiceFactory::GetForProfile(profile))) {}
 };
 
 IdentityManagerFactory::IdentityManagerFactory()
