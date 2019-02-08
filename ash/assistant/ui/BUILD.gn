@@ -40,8 +40,6 @@ component("ui") {
     "assistant_mini_view.h",
     "assistant_notification_overlay.cc",
     "assistant_notification_overlay.h",
-    "assistant_notification_view.cc",
-    "assistant_notification_view.h",
     "assistant_overlay.h",
     "assistant_view_delegate.h",
     "assistant_web_view.cc",

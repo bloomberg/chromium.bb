@@ -70,7 +70,7 @@ class AssistantContainerClientView : public views::ClientView,
 
       int left = layout_params.margins.left();
       int top = layout_params.margins.top();
-      int width = std::min(preferred_size.width(), this->width());
+      int width = preferred_size.width();
       int height = preferred_size.height();
 
       // Gravity::kBottom.
@@ -79,10 +79,8 @@ class AssistantContainerClientView : public views::ClientView,
         top = this->height() - height - layout_params.margins.bottom();
 
       // Gravity::kCenterHorizontal.
-      if ((layout_params.gravity & Gravity::kCenterHorizontal) != 0) {
-        width = std::min(width, this->width() - layout_params.margins.width());
-        left = (this->width() - width) / 2;
-      }
+      if ((layout_params.gravity & Gravity::kCenterHorizontal) != 0)
+        left = (this->width() - width) / 2 - layout_params.margins.left();
 
       overlay->SetBounds(left, top, width, height);
     }

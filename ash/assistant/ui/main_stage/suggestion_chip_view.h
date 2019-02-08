@@ -18,7 +18,6 @@ class Label;
 
 namespace ash {
 
-// TODO(dmblack): Move to /ash/assistant/ui/base/.
 // View representing a suggestion chip.
 class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
  public:
