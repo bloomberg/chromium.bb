@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_RENDER_PROCESS_USER_DATA_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_RENDER_PROCESS_USER_DATA_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_RENDER_PROCESS_USER_DATA_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_RENDER_PROCESS_USER_DATA_H_
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
@@ -15,7 +15,7 @@ class RenderProcessHost;
 
 }  // namespace content
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // Attached to RenderProcessHost as user data, associates the RenderProcessHost
 // with the Resource Coordinator process node.
@@ -39,6 +39,6 @@ class RenderProcessUserData : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(RenderProcessUserData);
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_RENDER_PROCESS_USER_DATA_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_RENDER_PROCESS_USER_DATA_H_
