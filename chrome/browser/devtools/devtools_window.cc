@@ -1127,7 +1127,8 @@ WebContents* DevToolsWindow::OpenURLFromTab(
     modified.referrer = content::Referrer();
     return inspected_web_contents->OpenURL(modified);
   }
-  bindings_->Reload();
+  main_web_contents_->GetController().Reload(content::ReloadType::NORMAL,
+                                             false);
   return main_web_contents_;
 }
 
