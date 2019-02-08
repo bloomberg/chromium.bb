@@ -682,6 +682,11 @@ class BrowserView : public BrowserWindow,
   // the actual child order.
   void EnsureFocusOrder();
 
+  // Returns true when the window icon of this browser window can change based
+  // on the context. GetWindowIcon() method should return the same image if
+  // this returns false.
+  bool CanChangeWindowIcon() const;
+
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
 

@@ -795,7 +795,7 @@ StatusBubble* BrowserView::GetStatusBubble() {
 
 void BrowserView::UpdateTitleBar() {
   frame_->UpdateWindowTitle();
-  if (!loading_animation_timer_.IsRunning())
+  if (!loading_animation_timer_.IsRunning() && CanChangeWindowIcon())
     frame_->UpdateWindowIcon();
 }
 
@@ -1975,6 +1975,21 @@ void BrowserView::EnsureFocusOrder() {
   // focus traversal) from the toolbar/omnibox.
   if (download_shelf_ && contents_container_)
     InsertIntoFocusOrderAfter(contents_container_, download_shelf_.get());
+}
+
+bool BrowserView::CanChangeWindowIcon() const {
+  // The logic of this function needs to be same as GetWindowIcon().
+  if (browser_->is_devtools())
+    return false;
+  if (browser_->hosted_app_controller())
+    return true;
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, the tabbed browser always use a static image for the window
+  // icon. See GetWindowIcon().
+  if (browser_->is_type_tabbed())
+    return false;
+#endif
+  return true;
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
