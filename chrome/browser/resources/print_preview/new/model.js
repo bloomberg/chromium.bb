@@ -317,7 +317,7 @@ Polymer({
     'updateSettingsFromDestination_(destination.capabilities)',
     'updateSettingsAvailabilityFromDocumentSettings_(' +
         'documentSettings.isModifiable, documentSettings.hasCssMediaStyles,' +
-        'documentSettings.hasSelection, documentSettings.isScalingDisabled)',
+        'documentSettings.hasSelection)',
     'updateHeaderFooterAvailable_(' +
         'margins, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value)',
@@ -412,11 +412,8 @@ Polymer({
     this.set('settings.fitToPage.unavailableValue', !isSaveAsPDF);
     this.set(
         'settings.fitToPage.available',
-        !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable &&
-            !this.documentSettings.isScalingDisabled);
-    this.set(
-        'settings.scaling.available',
-        !knownSizeToSaveAsPdf && !this.documentSettings.isScalingDisabled);
+        !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable);
+    this.set('settings.scaling.available', !knownSizeToSaveAsPdf);
     const caps = (!!this.destination && !!this.destination.capabilities) ?
         this.destination.capabilities.printer :
         null;
