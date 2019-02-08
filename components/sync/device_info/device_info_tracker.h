@@ -37,7 +37,9 @@ class DeviceInfoTracker {
   virtual void AddObserver(Observer* observer) = 0;
   // Unregisters an observer.
   virtual void RemoveObserver(Observer* observer) = 0;
-  // Returns the count of active devices.
+  // Returns the count of active devices. Deduping logic may be used internally
+  // to prevent double counting for devices that disable sync and reenable it,
+  // but callers should nevertheless consider this an upper bound.
   virtual int CountActiveDevices() const = 0;
 };
 
