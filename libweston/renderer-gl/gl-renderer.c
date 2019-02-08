@@ -180,7 +180,7 @@ struct gl_surface_state {
 	enum buffer_type buffer_type;
 	int pitch; /* in pixels */
 	int height; /* in pixels */
-	int y_inverted;
+	bool y_inverted;
 
 	/* Extension needed for SHM YUV texture */
 	int offset[3]; /* offset per plane */
@@ -199,8 +199,8 @@ struct gl_surface_state {
 
 struct gl_renderer {
 	struct weston_renderer base;
-	int fragment_shader_debug;
-	int fan_debug;
+	bool fragment_shader_debug;
+	bool fan_debug;
 	struct weston_binding *fragment_binding;
 	struct weston_binding *fan_binding;
 
@@ -1419,9 +1419,9 @@ gl_renderer_repaint_output(struct weston_output *output,
 		pixman_region32_init(&undamaged);
 		pixman_region32_subtract(&undamaged, &output->region,
 					 output_damage);
-		gr->fan_debug = 0;
+		gr->fan_debug = false;
 		repaint_views(output, &undamaged);
-		gr->fan_debug = 1;
+		gr->fan_debug = true;
 		pixman_region32_fini(&undamaged);
 	}
 
@@ -1809,7 +1809,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		gs->gl_pixel_type = gl_pixel_type;
 		gs->buffer_type = BUFFER_TYPE_SHM;
 		gs->needs_full_upload = true;
-		gs->y_inverted = 1;
+		gs->y_inverted = true;
 
 		gs->surface = es;
 
@@ -2497,7 +2497,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		glDeleteTextures(gs->num_textures, gs->textures);
 		gs->num_textures = 0;
 		gs->buffer_type = BUFFER_TYPE_NULL;
-		gs->y_inverted = 1;
+		gs->y_inverted = true;
 		es->is_opaque = false;
 		return;
 	}
@@ -2521,7 +2521,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		weston_buffer_reference(&gs->buffer_ref, NULL);
 		weston_buffer_release_reference(&gs->buffer_release_ref, NULL);
 		gs->buffer_type = BUFFER_TYPE_NULL;
-		gs->y_inverted = 1;
+		gs->y_inverted = true;
 		es->is_opaque = false;
                 weston_buffer_send_server_error(buffer,
 			"disconnecting due to unhandled buffer type");
@@ -2755,7 +2755,7 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	 * by zero there.
 	 */
 	gs->pitch = 1;
-	gs->y_inverted = 1;
+	gs->y_inverted = true;
 
 	gs->surface = surface;
 
@@ -3799,7 +3799,7 @@ fragment_debug_binding(struct weston_keyboard *keyboard,
 	struct gl_renderer *gr = get_renderer(ec);
 	struct weston_output *output;
 
-	gr->fragment_shader_debug ^= 1;
+	gr->fragment_shader_debug = !gr->fragment_shader_debug;
 
 	shader_release(&gr->texture_shader_rgba);
 	shader_release(&gr->texture_shader_rgbx);
