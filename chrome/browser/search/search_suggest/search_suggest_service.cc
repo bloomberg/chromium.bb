@@ -67,10 +67,14 @@ class SearchSuggestService::SigninObserver
   SigninObserver(identity::IdentityManager* identity_manager,
                  const SigninStatusChangedCallback& callback)
       : identity_manager_(identity_manager), callback_(callback) {
-    identity_manager_->AddObserver(this);
+    if (identity_manager_)
+      identity_manager_->AddObserver(this);
   }
 
-  ~SigninObserver() override { identity_manager_->RemoveObserver(this); }
+  ~SigninObserver() override {
+    if (identity_manager_)
+      identity_manager_->RemoveObserver(this);
+  }
 
   bool SignedIn() {
     return !identity_manager_->GetAccountsInCookieJar()
@@ -85,6 +89,7 @@ class SearchSuggestService::SigninObserver
     callback_.Run();
   }
 
+  // May be nullptr in tests.
   identity::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
@@ -109,6 +114,11 @@ void SearchSuggestService::Shutdown() {
 
   signin_observer_.reset();
   DCHECK(!observers_.might_have_observers());
+}
+
+const base::Optional<SearchSuggestData>&
+SearchSuggestService::search_suggest_data() const {
+  return search_suggest_data_;
 }
 
 void SearchSuggestService::Refresh() {
