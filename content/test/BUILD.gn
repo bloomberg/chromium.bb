@@ -1676,6 +1676,7 @@ test("content_unittests") {
     "../browser/web_package/signed_exchange_loader_unittest.cc",
     "../browser/web_package/signed_exchange_prefetch_metric_recorder_unittest.cc",
     "../browser/web_package/signed_exchange_prologue_unittest.cc",
+    "../browser/web_package/signed_exchange_request_matcher_unittest.cc",
     "../browser/web_package/signed_exchange_signature_header_field_unittest.cc",
     "../browser/web_package/signed_exchange_signature_verifier_unittest.cc",
     "../browser/web_package/signed_exchange_utils_unittest.cc",
