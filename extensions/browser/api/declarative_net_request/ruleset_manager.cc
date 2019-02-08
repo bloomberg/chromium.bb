@@ -459,11 +459,10 @@ operator=(ExtensionRulesetData&& other) = default;
 
 bool RulesetManager::ExtensionRulesetData::operator<(
     const ExtensionRulesetData& other) const {
-  // Sort based on descending installation time, using extension id to break
+  // Sort based on *descending* installation time, using extension id to break
   // ties.
-  return (extension_install_time != other.extension_install_time)
-             ? (extension_install_time > other.extension_install_time)
-             : (extension_id < other.extension_id);
+  return std::tie(extension_install_time, extension_id) >
+         std::tie(other.extension_install_time, other.extension_id);
 }
 
 bool RulesetManager::ShouldEvaluateRequest(

@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/metrics/field_trial.h"
@@ -27,11 +28,8 @@ class ComparablePermission {
   explicit ComparablePermission(const PermissionMessage& msg) : msg_(&msg) {}
 
   bool operator<(const ComparablePermission& rhs) const {
-    if (msg_->message() < rhs.msg_->message())
-      return true;
-    if (msg_->message() > rhs.msg_->message())
-      return false;
-    return msg_->submessages() < rhs.msg_->submessages();
+    return std::tie(msg_->message(), msg_->submessages()) <
+           std::tie(rhs.msg_->message(), rhs.msg_->submessages());
   }
 
   bool operator==(const ComparablePermission& rhs) const {

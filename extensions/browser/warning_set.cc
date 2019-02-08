@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <tuple>
+
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -126,6 +128,11 @@ Warning Warning::CreateRulesetFailedToLoadWarning(
                  {} /*message_parameters*/);
 }
 
+bool Warning::operator<(const Warning& other) const {
+  return std::tie(extension_id_, type_) <
+         std::tie(other.extension_id_, other.type_);
+}
+
 std::string Warning::GetLocalizedMessage(const ExtensionSet* extensions) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -164,12 +171,6 @@ std::string Warning::GetLocalizedMessage(const ExtensionSet* extensions) const {
       NOTREACHED();
       return std::string();
   }
-}
-
-bool operator<(const Warning& a, const Warning& b) {
-  if (a.extension_id() != b.extension_id())
-    return a.extension_id() < b.extension_id();
-  return a.warning_type() < b.warning_type();
 }
 
 }  // namespace extensions
