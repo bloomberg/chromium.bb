@@ -1,0 +1,15 @@
+diff --git a/third_party/pffft/src/pffft.c b/third_party/pffft/src/pffft.c
+index 2e0c2f651438..b89e6d7b6fbc 100644
+--- a/third_party/pffft/src/pffft.c
++++ b/third_party/pffft/src/pffft.c
+@@ -86,6 +86,10 @@
+ #define M_PI 3.14159265358979323846
+ #endif
+ 
++#ifndef M_SQRT2
++#define M_SQRT2 1.41421356237309504880
++#endif
++
+ /* 
+    vector support macros: the rest of the code is independant of
+    SSE/Altivec/NEON -- adding support for other platforms with 4-element

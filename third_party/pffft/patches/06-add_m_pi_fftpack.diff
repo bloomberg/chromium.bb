@@ -1,0 +1,15 @@
+diff --git a/third_party/pffft/src/fftpack.c b/third_party/pffft/src/fftpack.c
+index b6375a80dab4..d801d16602b2 100644
+--- a/third_party/pffft/src/fftpack.c
++++ b/third_party/pffft/src/fftpack.c
+@@ -54,6 +54,10 @@
+ #include "fftpack.h"
+ #include <math.h>
+ 
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
++
+ typedef fftpack_real real;
+ typedef fftpack_int  integer;
+ 

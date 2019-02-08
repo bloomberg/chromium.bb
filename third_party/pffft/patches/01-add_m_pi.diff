@@ -1,0 +1,14 @@
+diff --git a/third_party/pffft/src/pffft.c b/third_party/pffft/src/pffft.c
+index 0603f2b1f698..7934db448a09 100644
+--- a/third_party/pffft/src/pffft.c
++++ b/third_party/pffft/src/pffft.c
+@@ -82,6 +82,9 @@
+ #  define VLA_ARRAY_ON_STACK(type__, varname__, size__) type__ *varname__ = (type__*)_alloca(size__ * sizeof(type__))
+ #endif
+ 
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
+ 
+ /* 
+    vector support macros: the rest of the code is independant of
