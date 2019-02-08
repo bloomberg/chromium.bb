@@ -34,6 +34,10 @@ public final class FeedConfiguration {
     /** Default value for feed server response length prefixed. */
     public static final boolean FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT = true;
 
+    private static final String FEED_UI_ENABLED = "feed_ui_enabled";
+    /** Default value for the type of UI to request from the server. */
+    public static final boolean FEED_UI_ENABLED_DEFAULT = false;
+
     private static final String INITIAL_NON_CACHED_PAGE_SIZE = "initial_non_cached_page_size";
     /** Default value for initial non cached page size. */
     public static final int INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT = 10;
@@ -58,6 +62,10 @@ public final class FeedConfiguration {
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */
     public static final boolean TRIGGER_IMMEDIATE_PAGINATION_DEFAULT = false;
+
+    private static final String USE_SECONDARY_PAGE_REQUEST = "use_secondary_page_request";
+    /** Default value for pagination behavior. */
+    public static final boolean USE_SECONDARY_PAGE_REQUEST_DEFAULT = false;
 
     private static final String USE_TIMEOUT_SCHEDULER = "use_timeout_scheduler";
     /** Default value for the type of scheduler handling. */
@@ -89,6 +97,14 @@ public final class FeedConfiguration {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 FEED_SERVER_RESPONSE_LENGTH_PREFIXED, FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT);
+    }
+
+    /** @return Whether to ask the server for "Feed" UI or just basic UI. */
+    @VisibleForTesting
+    static boolean getFeedUiEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_UI_ENABLED,
+                FEED_UI_ENABLED_DEFAULT);
     }
 
     /** @return Used to decide where to place the more button initially. */
@@ -154,6 +170,17 @@ public final class FeedConfiguration {
                 USE_TIMEOUT_SCHEDULER_DEFAULT);
     }
 
+    /**
+     * @return If secondary (a more intuitive) pagination approach should be used, or the original
+     * Zine matching behavior should be used.
+     */
+    @VisibleForTesting
+    static boolean getUseSecondaryPageRequest() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, USE_SECONDARY_PAGE_REQUEST,
+                USE_SECONDARY_PAGE_REQUEST_DEFAULT);
+    }
+
     /** @return How much of a card must be on screen to generate a UMA log view. */
     @VisibleForTesting
     static double getViewLogThreshold() {
@@ -171,6 +198,7 @@ public final class FeedConfiguration {
                 .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerMethod())
                 .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,
                         FeedConfiguration.getFeedServerResponseLengthPrefixed())
+                .put(ConfigKey.FEED_UI_ENABLED, FeedConfiguration.getFeedUiEnabled())
                 .put(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE,
                         FeedConfiguration.getInitialNonCachedPageSize())
                 .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
@@ -182,6 +210,8 @@ public final class FeedConfiguration {
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
                 .put(ConfigKey.USE_TIMEOUT_SCHEDULER, FeedConfiguration.getUseTimeoutScheduler())
+                .put(ConfigKey.USE_SECONDARY_PAGE_REQUEST,
+                        FeedConfiguration.getUseSecondaryPageRequest())
                 .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
                 .build();
     }
