@@ -839,6 +839,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingStarted(
       break;
     case BlockingType::WILL_BLOCK:
       WillBlockEntered();
+      break;
   }
 }
 
