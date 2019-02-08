@@ -66,7 +66,15 @@ ChromeVoxLanguageSwitchingTest.prototype = {
     <p lang="en-gb">Spoken in GB English.</p>
     <p lang="en-us">This text should also be in GB English.</p>
     <p lang="en-us">So should this text.</p>
-*/},
+    */},
+
+  buttonAndLinkDoc: function() {/*!
+    <body lang="es">
+      <p>This is a paragraph, spoken in Spanish.</p>
+      <button type="submit">This is a button, spoken in Spanish.</button>
+      <a href="https://www.google.com">This is a link, spoken in Spanish.</a>
+    </body>
+  */},
 };
 
 TEST_F('ChromeVoxLanguageSwitchingTest', 'MultipleLanguagesTest', function() {
@@ -116,6 +124,23 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'DialectTest', function() {
       .call(doCmd('nextLine'))
       .expectSpeechWithLanguage('en-gb', 'Spoken in GB English.',
       'This text should also be in GB English.', 'So should this text.');
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('ChromeVoxLanguageSwitchingTest', 'ButtonAndLinkTest', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.buttonAndLinkDoc, function(root) {
+    localStorage['languageSwitching'] = 'true';
+
+    mockFeedback.call(doCmd('jumpToTop'))
+      .expectSpeechWithLanguage('es', 'This is a paragraph, spoken in Spanish.')
+      .call(doCmd('nextObject'))
+      .expectSpeechWithLanguage('es', 'This is a button, spoken in Spanish.')
+      .expectSpeechWithLanguage(undefined, 'Button', 'Press Search+Space to activate.')
+      .call(doCmd('nextObject'))
+      .expectSpeechWithLanguage('es', 'This is a link, spoken in Spanish.')
+      .expectSpeechWithLanguage(undefined, 'Link');
     mockFeedback.replay();
   });
 });
