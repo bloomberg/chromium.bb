@@ -90,9 +90,9 @@ class MDnsHostLocator : public HostLocator,
   std::vector<std::string> services_;
   HostMap results_;
 
-  std::vector<std::unique_ptr<net::MDnsTransaction>> transactions_;
-  std::unique_ptr<net::MDnsClient> mdns_client_;
   std::unique_ptr<net::MDnsSocketFactory> socket_factory_;
+  std::unique_ptr<net::MDnsClient> mdns_client_;
+  std::vector<std::unique_ptr<net::MDnsTransaction>> transactions_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsHostLocator);
 };
