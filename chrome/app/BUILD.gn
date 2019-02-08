@@ -458,16 +458,16 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//ash/components/tap_visualizer/public/cpp:manifest",
       "//ash/components/tap_visualizer/public/mojom",
       "//chromeos/assistant:buildflags",
-      "//chromeos/services/device_sync:manifest",
+      "//chromeos/services/device_sync/public/cpp:manifest",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
-      "//chromeos/services/multidevice_setup:manifest",
+      "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//ui/accessibility/mojom",
     ]
 
     if (enable_cros_assistant) {
-      deps += [ "//chromeos/services/assistant:manifest" ]
+      deps += [ "//chromeos/services/assistant/public/cpp:manifest" ]
     }
   }
 
@@ -613,8 +613,8 @@ source_set("chrome_packaged_service_manifests") {
       "//ash/public/cpp:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
-      "//chromeos/services/ime:manifest",
-      "//chromeos/services/secure_channel:manifest",
+      "//chromeos/services/ime/public/cpp:manifest",
+      "//chromeos/services/secure_channel/public/cpp:manifest",
       "//mash/public/mojom",
       "//services/ws/public/mojom/input_devices",
       "//ui/accessibility:manifest",

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("multidevice_setup") {
@@ -81,11 +79,6 @@ static_library("multidevice_setup") {
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:unit_tests",
   ]
-}
-
-service_manifest("manifest") {
-  name = "multidevice_setup"
-  source = "manifest.json"
 }
 
 static_library("test_support") {
