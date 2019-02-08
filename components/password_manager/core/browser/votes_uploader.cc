@@ -155,8 +155,8 @@ void VotesUploader::SendVotesOnSave(
   if (pending_credentials->times_used == 0) {
     UploadPasswordVote(*pending_credentials, submitted_form, autofill::PASSWORD,
                        std::string());
-    if (has_username_correction_vote_) {
-      UploadPasswordVote(username_correction_vote_, submitted_form,
+    if (username_correction_vote_) {
+      UploadPasswordVote(*username_correction_vote_, submitted_form,
                          autofill::USERNAME,
                          FormStructure(observed).FormSignatureAsStr());
     }
@@ -448,13 +448,12 @@ void VotesUploader::SetKnownValueFlag(
 bool VotesUploader::FindUsernameInOtherPossibleUsernames(
     const PasswordForm& match,
     const base::string16& username) {
-  DCHECK(!has_username_correction_vote_);
+  DCHECK(!username_correction_vote_);
 
   for (const ValueElementPair& pair : match.other_possible_usernames) {
     if (pair.first == username) {
       username_correction_vote_ = match;
-      username_correction_vote_.username_element = pair.second;
-      has_username_correction_vote_ = true;
+      username_correction_vote_->username_element = pair.second;
       return true;
     }
   }

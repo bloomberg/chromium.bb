@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/optional.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
@@ -173,13 +174,11 @@ class VotesUploader {
 
   // If the user typed username that doesn't match any saved credentials, but
   // matches an entry from |other_possible_usernames| of a saved credential,
-  // then |has_username_correction_vote_| is set to true and
-  // |username_correction_vote_| stores the credential with matched  username.
+  // |username_correction_vote_| stores the credential with matched username.
   // The matched credential is copied to |username_correction_vote_|, but
   // |username_correction_vote_.username_element| is set to the name of the
-  // field where matched username was found.
-  bool has_username_correction_vote_ = false;
-  autofill::PasswordForm username_correction_vote_;
+  // field where the matched username was found.
+  base::Optional<autofill::PasswordForm> username_correction_vote_;
 
   // Whether the password values have been shown to the user on the save prompt.
   bool has_passwords_revealed_vote_ = false;
