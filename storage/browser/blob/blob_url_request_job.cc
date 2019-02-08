@@ -142,7 +142,7 @@ scoped_refptr<net::HttpResponseHeaders> BlobURLRequestJob::GenerateHeaders(
     uint64_t total_size,
     uint64_t content_size) {
   std::string status("HTTP/1.1 ");
-  status.append(base::IntToString(status_code));
+  status.append(base::NumberToString(status_code));
   status.append(" ");
   status.append(net::GetHttpReasonPhrase(status_code));
   status.append("\0\0", 2);
