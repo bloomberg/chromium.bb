@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "net/third_party/quic/core/quic_connection_stats.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
 namespace quic {
@@ -157,6 +158,44 @@ TEST_P(QuicReceivedPacketManagerTest, IgnoreOutOfOrderTimestamps) {
   EXPECT_EQ(2u, received_manager_.ack_frame().received_packet_times.size());
   RecordPacketReceipt(3, QuicTime::Zero());
   EXPECT_EQ(2u, received_manager_.ack_frame().received_packet_times.size());
+}
+
+TEST_P(QuicReceivedPacketManagerTest, HasMissingPackets) {
+  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
+    EXPECT_QUIC_BUG(received_manager_.PeerFirstSendingPacketNumber(),
+                    "No packets have been received yet");
+  } else {
+    EXPECT_EQ(QuicPacketNumber(1),
+              received_manager_.PeerFirstSendingPacketNumber());
+  }
+  RecordPacketReceipt(4, QuicTime::Zero());
+  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
+    EXPECT_EQ(QuicPacketNumber(4),
+              received_manager_.PeerFirstSendingPacketNumber());
+    EXPECT_FALSE(received_manager_.HasMissingPackets());
+  } else {
+    EXPECT_TRUE(received_manager_.HasMissingPackets());
+    EXPECT_EQ(QuicPacketNumber(1),
+              received_manager_.PeerFirstSendingPacketNumber());
+  }
+  RecordPacketReceipt(3, QuicTime::Zero());
+  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
+    EXPECT_FALSE(received_manager_.HasMissingPackets());
+    EXPECT_EQ(QuicPacketNumber(3),
+              received_manager_.PeerFirstSendingPacketNumber());
+  } else {
+    EXPECT_TRUE(received_manager_.HasMissingPackets());
+    EXPECT_EQ(QuicPacketNumber(1),
+              received_manager_.PeerFirstSendingPacketNumber());
+  }
+  RecordPacketReceipt(1, QuicTime::Zero());
+  EXPECT_EQ(QuicPacketNumber(1),
+            received_manager_.PeerFirstSendingPacketNumber());
+  EXPECT_TRUE(received_manager_.HasMissingPackets());
+  RecordPacketReceipt(2, QuicTime::Zero());
+  EXPECT_EQ(QuicPacketNumber(1),
+            received_manager_.PeerFirstSendingPacketNumber());
+  EXPECT_FALSE(received_manager_.HasMissingPackets());
 }
 
 }  // namespace

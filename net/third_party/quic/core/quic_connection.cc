@@ -1464,10 +1464,9 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
   if (should_last_packet_instigate_acks_ && !ack_queued_) {
     ++num_retransmittable_packets_received_since_last_ack_sent_;
     if (ack_mode_ != TCP_ACKING &&
-        // TODO(fayang): Fix this as this check assumes the first received
-        // packet is 1.
-        last_header_.packet_number >
-            QuicPacketNumber(min_received_before_ack_decimation_)) {
+        last_header_.packet_number >=
+            received_packet_manager_.PeerFirstSendingPacketNumber() +
+                min_received_before_ack_decimation_) {
       // Ack up to 10 packets at once unless ack decimation is unlimited.
       if (!unlimited_ack_decimation_ &&
           num_retransmittable_packets_received_since_last_ack_sent_ >=
@@ -1949,16 +1948,17 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     // Count those that would have been accepted if FLAGS..random_ipn
     // were true -- to detect/diagnose potential issues prior to
     // enabling the flag.
-    if ((header.packet_number > QuicPacketNumber(1)) &&
-        (header.packet_number <= MaxRandomInitialPacketNumber())) {
+    if (header.packet_number >
+            received_packet_manager_.PeerFirstSendingPacketNumber() &&
+        header.packet_number <= MaxRandomInitialPacketNumber()) {
       QUIC_CODE_COUNT_N(had_possibly_random_ipn, 2, 2);
     }
     bool out_of_bound =
         last_header_.packet_number.IsInitialized()
             ? !Near(header.packet_number, last_header_.packet_number)
-            // TODO(fayang): Fix this as this check assume the first received
-            // packet is 1.
-            : header.packet_number > QuicPacketNumber(kMaxPacketGap);
+            : header.packet_number >=
+                  (received_packet_manager_.PeerFirstSendingPacketNumber() +
+                   kMaxPacketGap);
     if (out_of_bound) {
       QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
                       << " out of bounds.  Discarding";
