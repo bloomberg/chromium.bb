@@ -93,7 +93,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::MENU_OPEN_NEW:
       // Use a copy of the id to avoid crashes, as this menu's owner will be
       // destroyed if LaunchApp replaces the ShelfItemDelegate instance.
-      controller_->LaunchApp(ash::ShelfID(item_.id), ash::LAUNCH_FROM_UNKNOWN,
+      controller_->LaunchApp(ash::ShelfID(item_.id), ash::LAUNCH_FROM_SHELF,
                              ui::EF_NONE, display_id_);
       break;
     case ash::MENU_CLOSE:

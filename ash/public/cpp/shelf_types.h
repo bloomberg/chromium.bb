@@ -78,7 +78,7 @@ enum ShelfBackgroundType {
 
 // Source of the launch or activation request, for tracking.
 enum ShelfLaunchSource {
-  // The item was launched from an unknown source (ie. not the app list).
+  // The item was launched from an unknown source.
   LAUNCH_FROM_UNKNOWN,
 
   // The item was launched from a generic app list view.
@@ -86,6 +86,9 @@ enum ShelfLaunchSource {
 
   // The item was launched from an app list search view.
   LAUNCH_FROM_APP_LIST_SEARCH,
+
+  // The item was launched from the shelf itself.
+  LAUNCH_FROM_SHELF,
 };
 
 // The actions that may be performed when a shelf item is selected.

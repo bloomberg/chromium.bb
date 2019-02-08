@@ -249,7 +249,8 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
       profile_, extension, event_flags, extensions::SOURCE_APP_LAUNCHER,
       display_id);
-  if (source != ash::LAUNCH_FROM_UNKNOWN &&
+  if ((source == ash::LAUNCH_FROM_APP_LIST ||
+       source == ash::LAUNCH_FROM_APP_LIST_SEARCH) &&
       app_id == extensions::kWebStoreAppId) {
     // Get the corresponding source string.
     std::string source_value = GetSourceFromAppListSource(source);
