@@ -2,6 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+
+declare_args() {
+  # For now, we only enable print media localization on Chrome OS.
+  enable_print_media_l10n = is_chromeos
+}
+
+buildflag_header("printing_buildflags") {
+  header = "printing_buildflags.h"
+
+  flags = [ "PRINT_MEDIA_L10N_ENABLED=$enable_print_media_l10n" ]
+}
+
 static_library("browser") {
   sources = [
     "features.cc",
@@ -17,6 +30,7 @@ static_library("browser") {
   ]
 
   public_deps = [
+    ":printing_buildflags",
     "//content/public/browser",
   ]
 
@@ -39,6 +53,13 @@ static_library("browser") {
       "printer_capabilities_mac.mm",
     ]
   }
+
+  if (enable_print_media_l10n) {
+    sources += [
+      "print_media_l10n.cc",
+      "print_media_l10n.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {
@@ -57,5 +78,9 @@ source_set("unit_tests") {
 
   if (is_mac) {
     sources += [ "printer_capabilities_mac_unittest.mm" ]
+  }
+
+  if (enable_print_media_l10n) {
+    sources += [ "print_media_l10n_unittest.cc" ]
   }
 }
