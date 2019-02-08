@@ -92,6 +92,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   // Additional utilites usable only inside content/.
 
+  // This will do the very beginning of a navigation but stop before the
+  // beforeunload event response. Will leave the Simulator in a
+  // WAITING_BEFORE_UNLOAD state. We do not wait for beforeunload event when
+  // starting renderer-side, use solely for browser initiated navigations.
+  void BrowserInitiatedStartAndWaitBeforeUnload();
+
   // Set LoadURLParams and make browser initiated navigations use
   // LoadURLWithParams instead of LoadURL.
   void SetLoadURLParams(NavigationController::LoadURLParams* load_url_params);
@@ -180,6 +186,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   enum State {
     INITIALIZATION,
+    WAITING_BEFORE_UNLOAD,
     STARTED,
     READY_TO_COMMIT,
     FAILED,

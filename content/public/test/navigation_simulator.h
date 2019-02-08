@@ -202,6 +202,8 @@ class NavigationSimulator {
       scoped_refptr<net::HttpResponseHeaders> response_headers) = 0;
 
   // Simulates the navigation failing with the error code |error_code|.
+  // IMPORTANT NOTE: This is simulating a network connection error and implies
+  // we do not get a response. Error codes like 204 are not properly managed.
   virtual void Fail(int error_code) = 0;
 
   // Simulates the commit of an error page following a navigation failure.
