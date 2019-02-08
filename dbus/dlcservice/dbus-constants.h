@@ -15,6 +15,13 @@ const char kGetInstalledMethod[] = "GetInstalled";
 const char kInstallMethod[] = "Install";
 const char kUninstallMethod[] = "Uninstall";
 
+enum class OnInstalledSignalErrorCode {
+  kNone = 0,
+  kUnknown = 1,
+  kImageLoaderReturnsFalse = 2,
+  kMountFailure = 3,
+};
+
 }  // namespace dlcservice
 
 #endif  // SYSTEM_API_DBUS_DLCSERVICE_DBUS_CONSTANTS_H_
