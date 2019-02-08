@@ -244,11 +244,12 @@ AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider,
       uma_action_recorded_(false),
       provider_(provider),
       browser_(browser),
-      app_menu_icon_controller_(app_menu_icon_controller) {}
+      app_menu_icon_controller_(app_menu_icon_controller) {
+  DCHECK(browser_);
+}
 
 AppMenuModel::~AppMenuModel() {
-  if (browser_)  // Null in Cocoa tests.
-    browser_->tab_strip_model()->RemoveObserver(this);
+  browser_->tab_strip_model()->RemoveObserver(this);
 }
 
 void AppMenuModel::Init() {
