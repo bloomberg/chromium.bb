@@ -141,8 +141,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   base::TimeDelta longest_renderer_main_thread_time_;
 
   // User-configurable parameters. Includes the file location, binary encoding
-  // choices, and whether to skip storing resources marked
-  // Cache-Control: no-store.
+  // choices.
   MHTMLGenerationParams params_;
 
   // The IDs of frames that still need to be processed.

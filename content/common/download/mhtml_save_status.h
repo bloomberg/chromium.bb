@@ -8,6 +8,8 @@
 namespace content {
 
 // Status result enum for MHTML generation.
+// Changes to this enum must be reflected in the respective metrics enum named
+// MhtmlGenerationFinalSaveStatus in enums.xml.
 enum class MhtmlSaveStatus {
   SUCCESS = 0,
 
@@ -26,9 +28,8 @@ enum class MhtmlSaveStatus {
   // the browser.
   FRAME_NO_LONGER_EXISTS,
 
-  // The main frame was not allowed to be serialized by either policy or cache
-  // control. Determined by the renderer.
-  FRAME_SERIALIZATION_FORBIDDEN,
+  // No longer used.
+  DEPRECATED_FRAME_SERIALIZATION_FORBIDDEN,
 
   // A render process needed for the serialization of one of the page's frame is
   // no more. Determined by the browser.

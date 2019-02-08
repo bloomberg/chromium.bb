@@ -35,7 +35,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_thread_safe_data.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 
 namespace blink {
 
