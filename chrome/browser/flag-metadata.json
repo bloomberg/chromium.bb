@@ -2872,6 +2872,8 @@
   {
     "name": "show-taps",
     "owners": [ "//ash/OWNERS" ],
+    // This is a debug flag, so that video bug reports can show input taps to
+    // aid in getting clear bug reports.
     "expiry_milestone": -1
   },
   {
