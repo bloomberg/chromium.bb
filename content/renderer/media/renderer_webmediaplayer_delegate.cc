@@ -120,53 +120,11 @@ void RendererWebMediaPlayerDelegate::DidPlayerMutedStatusChange(int delegate_id,
                                                            delegate_id, muted));
 }
 
-void RendererWebMediaPlayerDelegate::DidPictureInPictureModeStart(
-    int delegate_id,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size,
-    blink::WebMediaPlayer::PipWindowOpenedCallback callback,
-    bool show_play_pause_button) {
-  int request_id = next_picture_in_picture_callback_id_++;
-  enter_picture_in_picture_callback_map_.insert(
-      std::make_pair(request_id, std::move(callback)));
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
-      routing_id(), delegate_id, surface_id, natural_size, request_id,
-      show_play_pause_button));
-}
-
-void RendererWebMediaPlayerDelegate::DidPictureInPictureModeEnd(
-    int delegate_id,
-    base::OnceClosure callback) {
-  int request_id = next_picture_in_picture_callback_id_++;
-  exit_picture_in_picture_callback_map_.insert(
-      std::make_pair(request_id, std::move(callback)));
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(
-      routing_id(), delegate_id, request_id));
-}
-
 void RendererWebMediaPlayerDelegate::DidSetPictureInPictureCustomControls(
     int delegate_id,
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
   Send(new MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls(
       routing_id(), delegate_id, controls));
-}
-
-void RendererWebMediaPlayerDelegate::DidPictureInPictureSurfaceChange(
-    int delegate_id,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size,
-    bool show_play_pause_button) {
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged(
-      routing_id(), delegate_id, surface_id, natural_size,
-      show_play_pause_button));
-}
-
-void RendererWebMediaPlayerDelegate::
-    RegisterPictureInPictureWindowResizeCallback(
-        int player_id,
-        blink::WebMediaPlayer::PipWindowResizedCallback callback) {
-  picture_in_picture_window_resize_observer_ =
-      std::make_pair(player_id, std::move(callback));
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
@@ -291,13 +249,6 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnPictureInPictureModeEnded)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
                         OnPictureInPictureControlClicked)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
-                        OnPictureInPictureModeEndedAck)
-    IPC_MESSAGE_HANDLER(
-        MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK,
-        OnPictureInPictureModeStartedAck)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureWindowResize,
-                        OnPictureInPictureWindowResize)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -415,39 +366,6 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureControlClicked(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnPictureInPictureControlClicked(control_id);
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEndedAck(
-    int player_id,
-    int request_id) {
-  auto iter = exit_picture_in_picture_callback_map_.find(request_id);
-  DCHECK(iter != exit_picture_in_picture_callback_map_.end());
-
-  std::move(iter->second).Run();
-  exit_picture_in_picture_callback_map_.erase(iter);
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureModeStartedAck(
-    int player_id,
-    int request_id,
-    const gfx::Size& window_size) {
-  auto iter = enter_picture_in_picture_callback_map_.find(request_id);
-  DCHECK(iter != enter_picture_in_picture_callback_map_.end());
-
-  std::move(iter->second).Run(blink::WebSize(window_size));
-  enter_picture_in_picture_callback_map_.erase(iter);
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureWindowResize(
-    int player_id,
-    const gfx::Size& window_size) {
-  if (!picture_in_picture_window_resize_observer_ ||
-      picture_in_picture_window_resize_observer_->first != player_id) {
-    return;
-  }
-
-  picture_in_picture_window_resize_observer_->second.Run(
-      blink::WebSize(window_size));
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {

@@ -115,14 +115,10 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
-  void EnterPictureInPicture(
-      blink::WebMediaPlayer::PipWindowOpenedCallback callback) override;
-  void ExitPictureInPicture(
-      blink::WebMediaPlayer::PipWindowClosedCallback callback) override;
+  void EnterPictureInPicture() override;
+  void ExitPictureInPicture() override;
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>&) override;
-  void RegisterPictureInPictureWindowResizeCallback(
-      blink::WebMediaPlayer::PipWindowResizedCallback) override;
   void SetSinkId(
       const blink::WebString& sink_id,
       std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
@@ -239,6 +235,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void TrackAdded(const blink::WebMediaStreamTrack& track) override;
   void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
   void ActiveStateChanged(bool is_active) override;
+  int GetDelegateId() override;
+  base::Optional<viz::SurfaceId> GetSurfaceId() override;
 
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 
