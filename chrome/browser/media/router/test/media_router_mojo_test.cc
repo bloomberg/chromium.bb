@@ -43,21 +43,6 @@ MediaRoute CreateMediaRoute() {
   return route;
 }
 
-class RouteResponseCallbackHandler {
- public:
-  void Invoke(mojom::RoutePresentationConnectionPtr connection,
-              const RouteRequestResult& result) {
-    DoInvoke(result.route(), result.presentation_id(), result.error(),
-             result.result_code(), connection);
-  }
-  MOCK_METHOD5(DoInvoke,
-               void(const MediaRoute* route,
-                    const std::string& presentation_id,
-                    const std::string& error_text,
-                    RouteRequestResult::ResultCode result_code,
-                    mojom::RoutePresentationConnectionPtr& connection));
-};
-
 class SendMessageCallbackHandler {
  public:
   MOCK_METHOD1(Invoke, void(bool));
@@ -511,6 +496,16 @@ void MediaRouterMojoTest::RegisterMediaRouteProvider(
       provider_id, std::move(mojo_provider),
       base::BindOnce([](const std::string& instance_id,
                         mojom::MediaRouteProviderConfigPtr config) {}));
+}
+
+RouteResponseCallbackHandler::RouteResponseCallbackHandler() = default;
+RouteResponseCallbackHandler::~RouteResponseCallbackHandler() = default;
+
+void RouteResponseCallbackHandler::Invoke(
+    mojom::RoutePresentationConnectionPtr connection,
+    const RouteRequestResult& result) {
+  DoInvoke(result.route(), result.presentation_id(), result.error(),
+           result.result_code(), connection);
 }
 
 }  // namespace media_router

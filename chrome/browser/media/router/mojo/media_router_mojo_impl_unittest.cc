@@ -136,22 +136,6 @@ std::string RouteMessageToString(const RouteMessagePtr& message) {
 
 }  // namespace
 
-class RouteResponseCallbackHandler {
- public:
-  void Invoke(mojom::RoutePresentationConnectionPtr connection,
-              const RouteRequestResult& result) {
-    DoInvoke(result.route(), result.presentation_id(), result.error(),
-             result.result_code(), connection);
-  }
-  // TODO(btolsch): Convert this to pass move-only types directly to the mock.
-  MOCK_METHOD5(DoInvoke,
-               void(const MediaRoute* route,
-                    const std::string& presentation_id,
-                    const std::string& error_text,
-                    RouteRequestResult::ResultCode result_code,
-                    mojom::RoutePresentationConnectionPtr& connection));
-};
-
 class MediaRouterMojoImplTest : public MediaRouterMojoTest {
  public:
   MediaRouterMojoImplTest() {}
