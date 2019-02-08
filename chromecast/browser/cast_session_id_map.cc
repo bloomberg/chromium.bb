@@ -64,8 +64,7 @@ std::string CastSessionIdMap::GetSessionId(std::string group_id) {
 CastSessionIdMap::CastSessionIdMap(base::SequencedTaskRunner* task_runner)
     : supports_group_id_(
           base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   DCHECK(task_runner_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -80,10 +79,12 @@ void CastSessionIdMap::SetSessionIdInternal(
     return;
 
   if (!task_runner_->RunsTasksInCurrentSequence()) {
+    // Unretained is safe here, because the singleton CastSessionIdMap never
+    // gets destroyed.
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&CastSessionIdMap::SetSessionIdInternal,
-                       weak_factory_.GetWeakPtr(), std::move(session_id),
+                       base::Unretained(this), std::move(session_id),
                        group_id, web_contents));
     return;
   }
@@ -95,8 +96,8 @@ void CastSessionIdMap::SetSessionIdInternal(
 
   VLOG(1) << "Mapping session_id=" << session_id
           << " to group_id=" << group_id.ToString();
-  // Unretained is safe because the GroupObserver is always owned by the
-  // CastSessionIdMap.
+  // Unretained is safe here, because the singleton CastSessionIdMap never gets
+  // destroyed.
   auto destroyed_callback = base::BindOnce(&CastSessionIdMap::OnGroupDestroyed,
                                            base::Unretained(this));
   auto group_observer = std::make_unique<GroupObserver>(
@@ -117,9 +118,11 @@ std::string CastSessionIdMap::GetSessionIdInternal(std::string group_id) {
 }
 
 void CastSessionIdMap::OnGroupDestroyed(base::UnguessableToken group_id) {
+  // Unretained is safe here, because the singleton CastSessionIdMap never gets
+  // destroyed.
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&CastSessionIdMap::RemoveGroupId,
-                                        weak_factory_.GetWeakPtr(), group_id));
+                                        base::Unretained(this), group_id));
 }
 
 void CastSessionIdMap::RemoveGroupId(base::UnguessableToken group_id) {
