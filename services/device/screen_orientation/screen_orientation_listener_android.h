@@ -21,12 +21,8 @@ class ScreenOrientationListenerAndroid
   ScreenOrientationListenerAndroid();
 
   // mojom::ScreenOrientationListener:
-  void Start() override;
-  void Stop() override;
   void IsAutoRotateEnabledByUser(
       IsAutoRotateEnabledByUserCallback callback) override;
-
-  int listeners_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationListenerAndroid);
 };

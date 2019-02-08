@@ -73,7 +73,6 @@ public class ScreenOrientationListenerTest {
                 mDisplayAndroid =
                         mActivityTestRule.getWebContents().getTopLevelNativeWindow().getDisplay();
                 mDisplayAndroid.addObserver(mCallbackHelper);
-                DisplayAndroid.startAccurateListening();
             }
         });
 
@@ -94,7 +93,6 @@ public class ScreenOrientationListenerTest {
                 mDisplayAndroid = null;
                 mActivityTestRule.getActivity().setRequestedOrientation(
                         ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                DisplayAndroid.stopAccurateListening();
             }
         });
 

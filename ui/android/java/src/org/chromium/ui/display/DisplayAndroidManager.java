@@ -5,12 +5,9 @@
 package org.chromium.ui.display;
 
 import android.annotation.SuppressLint;
-import android.content.ComponentCallbacks;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
-import android.os.Build;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.WindowManager;
@@ -28,123 +25,12 @@ import org.chromium.base.annotations.MainDex;
 @MainDex
 public class DisplayAndroidManager {
     /**
-     * DisplayListenerBackend is an interface that abstract the mechanism used for the actual
-     * display update listening. The reason being that from Android API Level 17 DisplayListener
-     * will be used. Before that, an unreliable solution based on onConfigurationChanged has to be
-     * used.
+     * DisplayListenerBackend is used to handle the actual listening of display changes. It handles
+     * it via the Android DisplayListener API.
      */
-    private interface DisplayListenerBackend {
-
-        /**
-         * Starts to listen for display changes. This will be called
-         * when the first observer is added.
-         */
-        void startListening();
-
-        /**
-         * Toggle the accurate mode if it wasn't already doing so. The backend
-         * will keep track of the number of times this has been called.
-         */
-        void startAccurateListening();
-
-        /**
-         * Request to stop the accurate mode. It will effectively be stopped
-         * only if this method is called as many times as
-         * startAccurateListening().
-         */
-        void stopAccurateListening();
-    }
-
-    /**
-     * DisplayListenerAPI16 implements DisplayListenerBackend
-     * to use ComponentCallbacks in order to listen for display
-     * changes.
-     *
-     * This method is known to not correctly detect 180 degrees changes but it
-     * is the only method that will work before API Level 17 (excluding polling).
-     * When toggleAccurateMode() is called, it will start polling in order to
-     * find out if the display has changed.
-     */
-    private class DisplayListenerAPI16
-            implements DisplayListenerBackend, ComponentCallbacks {
-
-        private static final long POLLING_DELAY = 500;
-
-        private int mAccurateCount;
-
-        // DisplayListenerBackend implementation:
-
-        @Override
-        public void startListening() {
-            getContext().registerComponentCallbacks(this);
-        }
-
-        @Override
-        public void startAccurateListening() {
-            ++mAccurateCount;
-
-            if (mAccurateCount > 1) return;
-
-            // Start polling if we went from 0 to 1. The polling will
-            // automatically stop when mAccurateCount reaches 0.
-            final DisplayListenerAPI16 self = this;
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    self.onConfigurationChanged(null);
-
-                    if (self.mAccurateCount < 1) return;
-
-                    ThreadUtils.postOnUiThreadDelayed(this,
-                            DisplayListenerAPI16.POLLING_DELAY);
-                }
-            }, POLLING_DELAY);
-        }
-
-        @Override
-        public void stopAccurateListening() {
-            --mAccurateCount;
-            assert mAccurateCount >= 0;
-        }
-
-        // ComponentCallbacks implementation:
-
-        @Override
-        public void onConfigurationChanged(Configuration newConfig) {
-            ((PhysicalDisplayAndroid) mIdMap.get(mMainSdkDisplayId)).updateFromDisplay(
-                    getDefaultDisplayForContext(getContext()));
-        }
-
-        @Override
-        public void onLowMemory() {
-        }
-    }
-
-    /**
-     * DisplayListenerBackendImpl implements DisplayListenerBackend
-     * to use DisplayListener in order to listen for display changes.
-     *
-     * This method is reliable but DisplayListener is only available for API Level 17+.
-     */
-    @SuppressLint("NewApi")
-    private class DisplayListenerBackendImpl
-            implements DisplayListenerBackend, DisplayListener {
-
-        // DisplayListenerBackend implementation:
-
-        @Override
+    private class DisplayListenerBackend implements DisplayListener {
         public void startListening() {
             getDisplayManager().registerDisplayListener(this, null);
-        }
-
-        @Override
-        public void startAccurateListening() {
-            // Always accurate. Do nothing.
-        }
-
-        @Override
-        public void stopAccurateListening() {
-            // Always accurate. Do nothing.
         }
 
         // DisplayListener implementation:
@@ -191,7 +77,7 @@ public class DisplayAndroidManager {
     private long mNativePointer;
     private int mMainSdkDisplayId;
     private final SparseArray<DisplayAndroid> mIdMap = new SparseArray<>();
-    private DisplayListenerBackend mBackend;
+    private DisplayListenerBackend mBackend = new DisplayListenerBackend();
     private int mNextVirtualDisplayId = VIRTUAL_DISPLAY_ID_BEGIN;
 
     /* package */ static DisplayAndroidManager getInstance() {
@@ -234,20 +120,15 @@ public class DisplayAndroidManager {
 
     private void initialize() {
         Display display;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mBackend = new DisplayListenerBackendImpl();
-            // Make sure the display map contains the built-in primary display.
-            // The primary display is never removed.
-            display = getDisplayManager().getDisplay(Display.DEFAULT_DISPLAY);
 
-            // Android documentation on Display.DEFAULT_DISPLAY suggests that the above
-            // method might return null. In that case we retrieve the default display
-            // from the application context and take it as the primary display.
-            if (display == null) display = getDefaultDisplayForContext(getContext());
-        } else {
-            mBackend = new DisplayListenerAPI16();
-            display = getDefaultDisplayForContext(getContext());
-        }
+        // Make sure the display map contains the built-in primary display.
+        // The primary display is never removed.
+        display = getDisplayManager().getDisplay(Display.DEFAULT_DISPLAY);
+
+        // Android documentation on Display.DEFAULT_DISPLAY suggests that the above
+        // method might return null. In that case we retrieve the default display
+        // from the application context and take it as the primary display.
+        if (display == null) display = getDefaultDisplayForContext(getContext());
 
         mMainSdkDisplayId = display.getDisplayId();
         addDisplay(display); // Note this display is never removed.
@@ -271,14 +152,6 @@ public class DisplayAndroidManager {
             displayAndroid = addDisplay(display);
         }
         return displayAndroid;
-    }
-
-    /* package */ void startAccurateListening() {
-        mBackend.startAccurateListening();
-    }
-
-    /* package */ void stopAccurateListening() {
-        mBackend.stopAccurateListening();
     }
 
     private DisplayAndroid addDisplay(Display display) {
