@@ -42,7 +42,7 @@ void CopyTraceEventParameter(char** buffer,
 }
 
 // Append |val| as a JSON output value to |*out|.
-void AppendDoubleAsJSON(double val, std::string* out) {
+void AppendDouble(double val, bool as_json, std::string* out) {
   // FIXME: base/json/json_writer.cc is using the same code,
   //        should be made into a common method.
   std::string real;
@@ -67,11 +67,11 @@ void AppendDoubleAsJSON(double val, std::string* out) {
   } else if (std::isnan(val)) {
     // The JSON spec doesn't allow NaN and Infinity (since these are
     // objects in EcmaScript).  Use strings instead.
-    real = "\"NaN\"";
+    real = as_json ? "\"NaN\"" : "NaN";
   } else if (val < 0) {
-    real = "\"-Infinity\"";
+    real = as_json ? "\"-Infinity\"" : "-Infinity";
   } else {
-    real = "\"Infinity\"";
+    real = as_json ? "\"Infinity\"" : "Infinity";
   }
   StringAppendF(out, "%s", real.c_str());
 }
@@ -139,6 +139,16 @@ static_assert(
     "TraceValue must be plain-old-data type for performance reasons!");
 
 void TraceValue::AppendAsJSON(unsigned char type, std::string* out) const {
+  Append(type, true, out);
+}
+
+void TraceValue::AppendAsString(unsigned char type, std::string* out) const {
+  Append(type, false, out);
+}
+
+void TraceValue::Append(unsigned char type,
+                        bool as_json,
+                        std::string* out) const {
   switch (type) {
     case TRACE_VALUE_TYPE_BOOL:
       *out += this->as_bool ? "true" : "false";
@@ -150,18 +160,24 @@ void TraceValue::AppendAsJSON(unsigned char type, std::string* out) const {
       StringAppendF(out, "%" PRId64, static_cast<int64_t>(this->as_int));
       break;
     case TRACE_VALUE_TYPE_DOUBLE:
-      AppendDoubleAsJSON(this->as_double, out);
+      AppendDouble(this->as_double, as_json, out);
       break;
-    case TRACE_VALUE_TYPE_POINTER:
+    case TRACE_VALUE_TYPE_POINTER: {
       // JSON only supports double and int numbers.
       // So as not to lose bits from a 64-bit pointer, output as a hex string.
+      // For consistency, do the same for non-JSON strings, but without the
+      // surrounding quotes.
+      const char* format_string = as_json ? "\"0x%" PRIx64 "\"" : "0x%" PRIx64;
       StringAppendF(
-          out, "\"0x%" PRIx64 "\"",
+          out, format_string,
           static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this->as_pointer)));
-      break;
+    } break;
     case TRACE_VALUE_TYPE_STRING:
     case TRACE_VALUE_TYPE_COPY_STRING:
-      EscapeJSONString(this->as_string ? this->as_string : "NULL", true, out);
+      if (as_json)
+        EscapeJSONString(this->as_string ? this->as_string : "NULL", true, out);
+      else
+        *out += this->as_string ? this->as_string : "NULL";
       break;
     case TRACE_VALUE_TYPE_CONVERTABLE:
       this->as_convertable->AppendAsTraceFormat(out);
