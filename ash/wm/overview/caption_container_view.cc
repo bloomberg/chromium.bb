@@ -10,13 +10,13 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/rounded_rect_view.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -59,11 +59,6 @@ constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
 
 // The font delta of the overview window title.
 constexpr int kLabelFontDelta = 2;
-
-// Duration of the header and close button fade in/out when a drag is
-// started/finished on a window selector item;
-constexpr base::TimeDelta kDragAnimationDuration =
-    base::TimeDelta::FromMilliseconds(167);
 
 void AddChildWithLayer(views::View* parent, views::View* child) {
   child->SetPaintToLayer();
@@ -316,8 +311,8 @@ void CaptionContainerView::SetCannotSnapLabelVisibility(bool visible) {
 
   DoSplitviewOpacityAnimation(GetCannotSnapContainer()->layer(),
                               visible
-                                  ? SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN
-                                  : SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT);
+                                  ? SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN
+                                  : SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
 }
 
 void CaptionContainerView::ResetListener() {
@@ -382,20 +377,11 @@ void CaptionContainerView::AnimateLayerOpacity(ui::Layer* layer, bool visible) {
     return;
 
   layer->SetOpacity(1.f - target_opacity);
-  {
-    ui::LayerAnimator* animator = layer->GetAnimator();
-    ui::ScopedLayerAnimationSettings settings(animator);
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    if (visible) {
-      animator->SchedulePauseForProperties(kDragAnimationDuration,
-                                           ui::LayerAnimationElement::OPACITY);
-    }
-    settings.SetTransitionDuration(kDragAnimationDuration);
-    settings.SetTweenType(visible ? gfx::Tween::LINEAR_OUT_SLOW_IN
-                                  : gfx::Tween::FAST_OUT_LINEAR_IN);
-    layer->SetOpacity(target_opacity);
-  }
+  ScopedOverviewAnimationSettings settings(
+      visible ? OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN
+              : OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT,
+      layer->GetAnimator());
+  layer->SetOpacity(target_opacity);
 }
 
 }  // namespace ash

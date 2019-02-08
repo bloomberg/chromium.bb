@@ -504,7 +504,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
       item_to_snap = current_grid->GetOverviewItemContaining(active_window);
   } else {
     // Currently in overview mode, with no snapped windows. Retrieve the first
-    // window selector item and attempt to snap that window.
+    // overview item and attempt to snap that window.
     DCHECK(overview_session_);
     OverviewGrid* current_grid = overview_session_->GetGridWithRootWindow(
         wm::GetRootWindowAt(event_location));

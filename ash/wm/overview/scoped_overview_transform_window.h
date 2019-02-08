@@ -75,7 +75,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
                                             const gfx::Rect& dst_rect);
 
-  ScopedOverviewTransformWindow(OverviewItem* selector_item,
+  ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
   ~ScopedOverviewTransformWindow() override;
 
@@ -97,7 +97,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   void BeginScopedAnimation(OverviewAnimationType animation_type,
                             ScopedAnimationSettings* animation_settings);
 
-  // Returns true if this window selector window contains the |target|.
+  // Returns true if this overview window contains the |target|.
   bool Contains(const aura::Window* target) const;
 
   // Returns transformed bounds of the overview window. See
@@ -198,8 +198,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
 
-  // A weak pointer to the window selector item that owns the transform window.
-  OverviewItem* selector_item_;
+  // A weak pointer to the overview item that owns the transform window.
+  OverviewItem* overview_item_;
 
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
@@ -216,8 +216,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Specifies how the window is laid out in the grid.
   GridWindowFillMode type_ = GridWindowFillMode::kNormal;
 
-  // Empty if window is of type normal. Contains the bounds the window selector
-  // item should be if the window is too wide or too tall.
+  // Empty if window is of type normal. Contains the bounds the overview item
+  // should be if the window is too wide or too tall.
   base::Optional<gfx::Rect> overview_bounds_;
 
   // A widget that holds the content for the minimized window.

@@ -86,7 +86,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Returns the transformed bound of |transform_window_|.
   gfx::Rect GetTransformedBounds() const;
 
-  // Sets the bounds of this window selector item to |target_bounds| in the
+  // Sets the bounds of this overview item to |target_bounds| in the
   // |root_window_| root window. The bounds change will be animated as specified
   // by |animation_type|.
   void SetBounds(const gfx::Rect& target_bounds,
@@ -252,9 +252,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
-  // Sets the bounds of this selector's items to |target_bounds| in
-  // |root_window_|. The bounds change will be animated as specified
-  // by |animation_type|.
+  // Sets the bounds of this overview item to |target_bounds| in |root_window_|.
+  // The bounds change will be animated as specified by |animation_type|.
   void SetItemBounds(const gfx::Rect& target_bounds,
                      OverviewAnimationType animation_type);
 
@@ -285,7 +284,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // The contained Window's wrapper.
   ScopedOverviewTransformWindow transform_window_;
 
-  // The target bounds this selector item is fit within.
+  // The target bounds this overview item is fit within.
   gfx::Rect target_bounds_;
 
   // True if running SetItemBounds. This prevents recursive calls resulting from

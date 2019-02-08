@@ -176,7 +176,7 @@ void OverviewWindowDragController::StartSplitViewDragMode(
   DCHECK(ShouldAllowSplitView());
 
   item_->ScaleUpSelectedItem(
-      OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW);
+      OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kDragToSnap;

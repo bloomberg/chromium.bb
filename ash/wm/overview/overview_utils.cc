@@ -35,8 +35,8 @@ namespace ash {
 
 namespace {
 
-// The transform applied to a window selector item when animating to or from the
-// home launcher.
+// The transform applied to an overview item when animating to or from the home
+// launcher.
 const gfx::Transform& GetShiftTransform() {
   static const base::NoDestructor<gfx::Transform> matrix(1, 0, 0, 1, 0, -100);
   return *matrix;
@@ -150,7 +150,7 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
                                       OverviewAnimationType animation_type,
                                       bool slide) {
-  // The window selector controller may be nullptr on shutdown.
+  // The overview controller may be nullptr on shutdown.
   OverviewController* controller = Shell::Get()->overview_controller();
   if (!controller) {
     widget->SetOpacity(0.f);
@@ -164,7 +164,7 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
                                                      widget->GetNativeWindow());
   // CleanupAnimationObserver will delete itself (and the widget) when the
   // opacity animation is complete. Ownership over the observer is passed to the
-  // window selector controller which has longer lifetime so that animations can
+  // overview controller which has longer lifetime so that animations can
   // continue even after the overview mode is shut down.
   views::Widget* widget_ptr = widget.get();
   auto observer = std::make_unique<CleanupAnimationObserver>(std::move(widget));
@@ -231,8 +231,8 @@ gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
                                int top_inset) {
   gfx::Rect bounds;
   for (auto* window : wm::GetTransientTreeIterator(transformed_window)) {
-    // Ignore other window types when computing bounding box of window
-    // selector target item.
+    // Ignore other window types when computing bounding box of overview target
+    // item.
     if (window != transformed_window &&
         window->type() != aura::client::WINDOW_TYPE_NORMAL) {
       continue;
@@ -262,8 +262,8 @@ gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
 gfx::Rect GetTargetBoundsInScreen(aura::Window* window) {
   gfx::Rect bounds;
   for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
-    // Ignore other window types when computing bounding box of window
-    // selector target item.
+    // Ignore other window types when computing bounding box of overview target
+    // item.
     if (window_iter != window &&
         window_iter->type() != aura::client::WINDOW_TYPE_NORMAL) {
       continue;

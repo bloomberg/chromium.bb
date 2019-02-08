@@ -1962,8 +1962,8 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
         overview_session->GetGridWithRootWindow(window->GetRootWindow());
     DCHECK(current_grid);
 
-    OverviewItem* selector_item = current_grid->GetDropTarget();
-    return selector_item->GetTransformedBounds();
+    OverviewItem* overview_item = current_grid->GetDropTarget();
+    return overview_item->GetTransformedBounds();
   }
 
  private:
@@ -2628,9 +2628,9 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   // Test that the dragged window has been added to the overview mode, and it is
   // added at the front of the grid.
   EXPECT_EQ(current_grid->window_list().size(), 2u);
-  OverviewItem* first_selector_item =
+  OverviewItem* first_overview_item =
       current_grid->GetOverviewItemContaining(window1.get());
-  EXPECT_EQ(first_selector_item, current_grid->window_list().front().get());
+  EXPECT_EQ(first_overview_item, current_grid->window_list().front().get());
   EXPECT_TRUE(overview_session->IsWindowInOverview(window1.get()));
   EXPECT_TRUE(overview_session->IsWindowInOverview(window3.get()));
   // Test that the new window item widget has been destroyed.
@@ -2893,9 +2893,9 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   ASSERT_TRUE(current_grid);
   EXPECT_EQ(1u, current_grid->window_list().size());
 
-  OverviewItem* selector_item = current_grid->GetDropTarget();
-  ASSERT_TRUE(selector_item);
-  gfx::Rect drop_target_bounds = selector_item->target_bounds();
+  OverviewItem* overview_item = current_grid->GetDropTarget();
+  ASSERT_TRUE(overview_item);
+  gfx::Rect drop_target_bounds = overview_item->target_bounds();
   DragWindowTo(resizer.get(), drop_target_bounds.CenterPoint());
 
   CompleteDrag(std::move(resizer));
@@ -2904,10 +2904,10 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   EXPECT_TRUE(overview_session->IsWindowInOverview(window1.get()));
   // |window1|'s bounds should have been updated to its tablet mode bounds.
   EXPECT_EQ(tablet_mode_bounds, window1->bounds());
-  selector_item = current_grid->window_list().front().get();
-  // The new window selector item's bounds should be the same during drag and
-  // after drag.
-  EXPECT_EQ(drop_target_bounds, selector_item->target_bounds());
+  overview_item = current_grid->window_list().front().get();
+  // The new overview item's bounds should be the same during drag and after
+  // drag.
+  EXPECT_EQ(drop_target_bounds, overview_item->target_bounds());
   ToggleOverview();
   EXPECT_FALSE(overview_controller->IsSelecting());
 

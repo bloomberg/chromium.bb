@@ -212,7 +212,7 @@ void OverviewItem::UpdateYPositionAndOpacity(
     int new_grid_y,
     float opacity,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
-  // Animate the window selector widget and the window itself.
+  // Animate |item_widget_| and the window itself.
   // TODO(sammiequon): Investigate if we can combine with
   // FadeInWidgetAndMaybeSlideOnEnter. Also when animating we should remove
   // shadow and rounded corners.
@@ -334,7 +334,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
   auto animate_window = [this](aura::Window* window,
                                const gfx::Transform& transform, bool observe) {
     ScopedOverviewAnimationSettings settings(
-        OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM, window);
+        OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM, window);
     gfx::Transform original_transform = window->transform();
     original_transform.ConcatTransform(transform);
     window->SetTransform(original_transform);
@@ -342,7 +342,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
       settings.AddObserver(this);
   };
 
-  AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
+  AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
   animate_window(item_widget_->GetNativeWindow(), transform, false);
   animate_window(GetWindowForStacking(), transform, true);
 }
@@ -352,13 +352,13 @@ void OverviewItem::CloseWindow() {
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
                      target_bounds_.height() * kPreCloseScale);
   // Scale down both the window and label.
-  SetBounds(inset_bounds, OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM);
+  SetBounds(inset_bounds, OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM);
   // First animate opacity to an intermediate value concurrently with the
   // scaling animation.
-  AnimateOpacity(kClosingItemOpacity, OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM);
+  AnimateOpacity(kClosingItemOpacity, OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM);
 
   // Fade out the window and the label, effectively hiding them.
-  AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
+  AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
   transform_window_.Close();
 }
 
@@ -568,20 +568,20 @@ void OverviewItem::OnDragAnimationCompleted() {
     }
   }
 
-  // Then find the window which was stacked right above this selector item's
-  // window before dragging and stack this selector item's window below it.
-  const std::vector<std::unique_ptr<OverviewItem>>& selector_items =
+  // Then find the window which was stacked right above this overview item's
+  // window before dragging and stack this overview item's window below it.
+  const std::vector<std::unique_ptr<OverviewItem>>& overview_items =
       overview_grid_->window_list();
   aura::Window* stacking_target = nullptr;
-  for (size_t index = 0; index < selector_items.size(); index++) {
+  for (size_t index = 0; index < overview_items.size(); index++) {
     if (index > 0) {
-      aura::Window* window = selector_items[index - 1].get()->GetWindow();
+      aura::Window* window = overview_items[index - 1].get()->GetWindow();
       if (window->parent() == parent_window &&
           dragged_window->parent() == parent_window) {
         stacking_target = window;
       }
     }
-    if (selector_items[index].get() == this && stacking_target) {
+    if (overview_items[index].get() == this && stacking_target) {
       parent_window->StackChildBelow(dragged_widget_window, stacking_target);
       parent_window->StackChildBelow(dragged_window, dragged_widget_window);
       break;
@@ -667,7 +667,7 @@ float OverviewItem::GetOpacity() {
 
 OverviewAnimationType OverviewItem::GetExitOverviewAnimationType() {
   return should_animate_when_exiting_
-             ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT
+             ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT
              : OVERVIEW_ANIMATION_NONE;
 }
 
@@ -751,18 +751,18 @@ void OverviewItem::SetItemBounds(const gfx::Rect& target_bounds,
   screen_rect.set_size(screen_size);
 
   const int top_view_inset = transform_window_.GetTopInset();
-  gfx::Rect selector_item_bounds =
+  gfx::Rect overview_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, kHeaderHeightDp);
   // Do not set transform for drop target, set bounds instead.
   if (overview_grid_->IsDropTargetWindow(window)) {
-    window->layer()->SetBounds(selector_item_bounds);
+    window->layer()->SetBounds(overview_item_bounds);
     transform_window_.GetOverviewWindow()->SetTransform(gfx::Transform());
     return;
   }
 
   gfx::Transform transform = ScopedOverviewTransformWindow::GetTransformForRect(
-      screen_rect, selector_item_bounds);
+      screen_rect, overview_item_bounds);
   ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   SetTransform(transform_window_.GetOverviewWindow(), transform);
@@ -819,7 +819,7 @@ void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
 
   // Create a start animation observer if this is an enter overview layout
   // animation.
-  if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER) {
+  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER) {
     auto start_observer = std::make_unique<StartAnimationObserver>();
     animation_settings.AddObserver(start_observer.get());
     Shell::Get()->overview_controller()->AddStartAnimationObserver(

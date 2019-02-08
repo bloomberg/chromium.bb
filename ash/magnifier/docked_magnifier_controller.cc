@@ -573,10 +573,9 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
     auto* split_view_controller = shell->split_view_controller();
     if (split_view_controller->IsSplitViewModeActive()) {
       // In this case, we're in a single-split-view mode, i.e. a window is
-      // snapped to one side of the split view, while the other side has the
-      // window selector active.
-      // We need to exit split view as well as exiting overview mode, otherwise
-      // we'll be in an invalid state.
+      // snapped to one side of the split view, while the other side has
+      // overview active. We need to exit split view as well as exiting overview
+      // mode, otherwise we'll be in an invalid state.
       split_view_controller->EndSplitView(
           SplitViewController::EndReason::kNormal);
     }
