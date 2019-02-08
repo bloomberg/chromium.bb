@@ -386,8 +386,9 @@ Browser::Browser(const CreateParams& params)
     : extension_registry_observer_(this),
       type_(params.type),
       profile_(params.profile),
-      window_(NULL),
-      tab_strip_model_delegate_(new chrome::BrowserTabStripModelDelegate(this)),
+      window_(nullptr),
+      tab_strip_model_delegate_(
+          std::make_unique<chrome::BrowserTabStripModelDelegate>(this)),
       tab_strip_model_(
           std::make_unique<TabStripModel>(tab_strip_model_delegate_.get(),
                                           params.profile)),

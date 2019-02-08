@@ -759,7 +759,7 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
 
 // static
 bool ExtensionTabUtil::BrowserSupportsTabs(Browser* browser) {
-  return browser && browser->tab_strip_model() && !browser->is_devtools();
+  return browser && !browser->is_devtools();
 }
 
 }  // namespace extensions

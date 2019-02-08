@@ -284,7 +284,10 @@ class Browser : public TabStripModelObserver,
     location_bar_model->swap(location_bar_model_);
   }
 #endif
+
+  // Never nullptr.
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
+
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();
   }
@@ -966,8 +969,8 @@ class Browser : public TabStripModelObserver,
   // This Browser's window.
   BrowserWindow* window_;
 
-  std::unique_ptr<TabStripModelDelegate> tab_strip_model_delegate_;
-  std::unique_ptr<TabStripModel> tab_strip_model_;
+  std::unique_ptr<TabStripModelDelegate> const tab_strip_model_delegate_;
+  std::unique_ptr<TabStripModel> const tab_strip_model_;
 
   // The application name that is also the name of the window to the shell.
   // This name should be set when:
