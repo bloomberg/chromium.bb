@@ -99,6 +99,9 @@ class RecentTabHelperTest
   // Advances main thread time to trigger the snapshot controller's timeouts.
   void FastForwardSnapshotController();
 
+  void NavigateAndCommit(const GURL& url);
+  void Reload();
+
   // Navigates to the URL and commit as if it has been typed in the address bar.
   // Note: we need this to simulate navigations to the same URL that more like a
   // reload and not same page. NavigateAndCommit simulates a click on a link
@@ -151,6 +154,9 @@ class RecentTabHelperTest
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override {}
 
  private:
+  void StartAndCommitNavigation(
+      std::unique_ptr<content::NavigationSimulator> simulator);
+
   void OnGetAllPagesDone(const std::vector<OfflinePageItem>& result);
 
   RecentTabHelper* recent_tab_helper_;   // Owned by WebContents.
@@ -269,11 +275,40 @@ void RecentTabHelperTest::FastForwardSnapshotController() {
   (*mocked_main_runner_)->FastForwardBy(kLongDelay);
 }
 
+void RecentTabHelperTest::StartAndCommitNavigation(
+    std::unique_ptr<content::NavigationSimulator> simulator) {
+  simulator->SetAutoAdvance(false);
+  simulator->Start();
+
+  // Need to flush the task queue manually since there may be async tasks
+  // spawned by navigation start that must finish before commit. Since this test
+  // harness swaps out the main thread, NavigationSimulator cannot pump the task
+  // queue itself to finish navigations.
+  //
+  // TODO(csharrison): This can probably be removed and replaced with either the
+  // NavigationSimulator controlling the mock task runner, or by the snapshot
+  // controller using a (mock) timer instead of PostDelayedTask.
+  RunUntilIdle();
+  simulator->Commit();
+}
+
+void RecentTabHelperTest::NavigateAndCommit(const GURL& url) {
+  StartAndCommitNavigation(content::NavigationSimulator::CreateBrowserInitiated(
+      url, web_contents()));
+}
+
+void RecentTabHelperTest::Reload() {
+  auto simulator = content::NavigationSimulator::CreateBrowserInitiated(
+      web_contents()->GetLastCommittedURL(), web_contents());
+  simulator->SetReloadType(content::ReloadType::NORMAL);
+  StartAndCommitNavigation(std::move(simulator));
+}
+
 void RecentTabHelperTest::NavigateAndCommitTyped(const GURL& url) {
   auto simulator =
       content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
   simulator->SetTransition(ui::PAGE_TRANSITION_TYPED);
-  simulator->Commit();
+  StartAndCommitNavigation(std::move(simulator));
 }
 
 void RecentTabHelperTest::NavigateAndCommitPost(const GURL& url) {
@@ -281,8 +316,7 @@ void RecentTabHelperTest::NavigateAndCommitPost(const GURL& url) {
       content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
   simulator->SetMethod("POST");
   simulator->SetTransition(ui::PAGE_TRANSITION_FORM_SUBMIT);
-  simulator->Start();
-  simulator->Commit();
+  StartAndCommitNavigation(std::move(simulator));
 }
 
 ClientId RecentTabHelperTest::NewDownloadClientId() {
@@ -1052,7 +1086,8 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
 
   // Starts a reload and hides the tab before it minimally load. The previous
   // snapshot should be removed.
-  content::NavigationSimulator::Reload(web_contents());
+  Reload();
+
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
