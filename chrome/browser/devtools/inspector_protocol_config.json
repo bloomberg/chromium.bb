@@ -33,6 +33,6 @@
     "lib": {
         "package": "chrome/browser/devtools/protocol",
         "output": "protocol",
-        "string_header": "chrome/browser/devtools/protocol_string.h"
+        "string_header": "chrome/browser/devtools/protocol/base_string_adapter.h"
     }
 }

@@ -15,6 +15,8 @@ if (!is_android) {
   import("$_inspector_protocol/inspector_protocol.gni")
 
   _protocol_generated = [
+    "protocol/base_string_adapter.cc",
+    "protocol/base_string_adapter.h",
     "protocol/browser.cc",
     "protocol/browser.h",
     "protocol/cast.cc",
@@ -206,8 +208,6 @@ static_library("devtools") {
       "protocol/page_handler.h",
       "protocol/target_handler.cc",
       "protocol/target_handler.h",
-      "protocol_string.cc",
-      "protocol_string.h",
     ]
     if (is_chromeos) {
       sources += [
