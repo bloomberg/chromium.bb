@@ -431,7 +431,7 @@ SkColor SetDarkestColorForTesting(SkColor color) {
   // GetContrastRatio(kWhiteLuminance, g_luminance_midpoint).  The formula below
   // can be verified by plugging it into how GetContrastRatio() operates.
   g_luminance_midpoint =
-      std::sqrtf((dark_luminance + 0.05f) * (kWhiteLuminance + 0.05f)) - 0.05f;
+      std::sqrt((dark_luminance + 0.05f) * (kWhiteLuminance + 0.05f)) - 0.05f;
 
   return previous_darkest_color;
 }
