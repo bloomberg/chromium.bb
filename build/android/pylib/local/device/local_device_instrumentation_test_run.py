@@ -20,6 +20,7 @@ from devil.android import flag_changer
 from devil.android.sdk import shared_prefs
 from devil.android import logcat_monitor
 from devil.android.tools import system_app
+from devil.android.tools import webview_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
 from pylib import constants
@@ -128,6 +129,7 @@ class LocalDeviceInstrumentationTestRun(
     self._flag_changers = {}
     self._replace_package_contextmanager = None
     self._shared_prefs_to_restore = []
+    self._use_webview_contextmanager = None
 
   #override
   def TestPackage(self):
@@ -162,6 +164,27 @@ class LocalDeviceInstrumentationTestRun(
           # pylint: enable=no-member
 
         steps.append(replace_package)
+
+      if self._test_instance.use_webview_provider:
+        @trace_event.traced
+        def use_webview_provider(dev):
+          # We need the context manager to be applied before modifying any
+          # shared preference files in case the replacement APK needs to be
+          # set up, and it needs to be applied while the test is running.
+          # Thus, it needs to be applied early during setup, but must still be
+          # applied during _RunTest, which isn't possible using 'with' without
+          # applying the context manager up in test_runner. Instead, we
+          # manually invoke its __enter__ and __exit__ methods in setup and
+          # teardown.
+          self._use_webview_contextmanager = webview_app.UseWebViewProvider(
+              dev, self._test_instance.use_webview_provider)
+          # Pylint is not smart enough to realize that this field has
+          # an __enter__ method, and will complain loudly.
+          # pylint: disable=no-member
+          self._use_webview_contextmanager.__enter__()
+          # pylint: enable=no-member
+
+        steps.append(use_webview_provider)
 
       def install_helper(apk, permissions):
         @instrumentation_tracing.no_tracing
@@ -348,8 +371,16 @@ class LocalDeviceInstrumentationTestRun(
       for pref_to_restore in self._shared_prefs_to_restore:
         pref_to_restore.Commit(force_commit=True)
 
+      # Context manager exit handlers are applied in reverse order
+      # of the enter handlers
+      if self._use_webview_contextmanager:
+        # See pylint-related comment above with __enter__()
+        # pylint: disable=no-member
+        self._use_webview_contextmanager.__exit__(*sys.exc_info())
+        # pylint: enable=no-member
+
       if self._replace_package_contextmanager:
-        # See pylint-related commend above with __enter__()
+        # See pylint-related comment above with __enter__()
         # pylint: disable=no-member
         self._replace_package_contextmanager.__exit__(*sys.exc_info())
         # pylint: enable=no-member

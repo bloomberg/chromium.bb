@@ -513,6 +513,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._replace_system_package = None
     self._initializeReplaceSystemPackageAttributes(args)
 
+    self._use_webview_provider = None
+    self._initializeUseWebviewProviderAttributes(args)
+
     self._external_shard_index = args.test_launcher_shard_index
     self._total_external_shards = args.test_launcher_total_shards
 
@@ -711,6 +714,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       return
     self._replace_system_package = args.replace_system_package
 
+  def _initializeUseWebviewProviderAttributes(self, args):
+    if (not hasattr(args, 'use_webview_provider')
+        or not args.use_webview_provider):
+      return
+    self._use_webview_provider = args.use_webview_provider
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -770,6 +779,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def replace_system_package(self):
     return self._replace_system_package
+
+  @property
+  def use_webview_provider(self):
+    return self._use_webview_provider
 
   @property
   def screenshot_dir(self):
