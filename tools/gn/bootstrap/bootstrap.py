@@ -52,6 +52,11 @@ def main(argv):
       action='store_true',
       help='Do not run GN after building it. Causes --gn-gen-args '
       'to have no effect.')
+  parser.add_option(
+      '--use-custom-libcxx',
+      action='store_true',
+      help='Build with in-tree libc++. This may be necessary if the system '
+      'libstdc++ does not support C++14 features.')
   options, args = parser.parse_args(argv)
   if args:
     parser.error('Unrecognized command line arguments: %s.' % ', '.join(args))
@@ -65,6 +70,40 @@ def main(argv):
   out_dir = os.path.join(SRC_ROOT, build_rel)
   gn_path = options.output or os.path.join(out_dir, 'gn')
   gn_build_dir = os.path.join(out_dir, 'gn_build')
+
+  # TODO(thomasanderson): Remove this once Ubuntu Trusty reaches EOL, or when
+  # Chromium's infrastructure is upgraded from Trusty to Xenial, whichever comes
+  # second ideally.  This can be done by reverting this CL:
+  # https://chromium-review.googlesource.com/c/chromium/src/+/1460187/
+  if options.use_custom_libcxx:
+    libcxx_dir = os.path.join(gn_build_dir, 'libc++')
+    if not os.path.exists(libcxx_dir):
+      os.makedirs(libcxx_dir)
+    shutil.copy2(
+        os.path.join(BOOTSTRAP_DIR, 'libc++.ninja'),
+        os.path.join(libcxx_dir, 'build.ninja'))
+    with open(os.path.join(libcxx_dir, 'toolchain.ninja'), 'w') as f:
+      f.write('\n'.join([
+          'cxx = ' + os.environ.get('CXX', 'clang++'),
+          'ar = ' + os.environ.get('AR', 'ar'),
+          'cxxflags = ' + ' '.join(
+              os.environ.get('CFLAGS', '').split() +
+              os.environ.get('CXXFLAGS', '').split()),
+      ]) + '\n')
+    subprocess.check_call(['ninja', '-C', libcxx_dir])
+
+    def append_to_env(var, vals):
+      os.putenv(var, os.environ.get(var, '') + ' ' + ' '.join(vals))
+
+    append_to_env('LDFLAGS', [
+        '-nodefaultlibs', 'libc++.so', '-lc', '-lm', '-Wl,-rpath="\$$ORIGIN/."',
+        '-Wl,-rpath-link=.'
+    ])
+    append_to_env('CXXFLAGS', [
+        '-nostdinc++',
+        ' -isystem../../../buildtools/third_party/libc++/trunk/include',
+        '-isystem../../../buildtools/third_party/libc++abi/trunk/include'
+    ])
 
   cmd = [
       sys.executable,
