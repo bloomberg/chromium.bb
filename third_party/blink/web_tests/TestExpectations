@@ -3074,15 +3074,15 @@ crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout ]
+crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007v.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Timeout ]
+crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/baseline-with-orthogonal-flow-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Timeout ]
+crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Failure Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=windows-1252 [ Timeout ]
