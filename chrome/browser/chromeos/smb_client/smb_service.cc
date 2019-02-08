@@ -184,6 +184,26 @@ void SmbService::OnUpdateCredentialsResponse(int32_t mount_id,
   update_credential_replies_.erase(creds_reply_iter);
 }
 
+void SmbService::UpdateSharePath(int32_t mount_id,
+                                 const std::string& share_path,
+                                 StartReadDirIfSuccessfulCallback reply) {
+  GetSmbProviderClient()->UpdateSharePath(
+      mount_id, share_path,
+      base::BindOnce(&SmbService::OnUpdateSharePathResponse, AsWeakPtr(),
+                     mount_id, std::move(reply)));
+}
+
+void SmbService::OnUpdateSharePathResponse(
+    int32_t mount_id,
+    StartReadDirIfSuccessfulCallback reply,
+    smbprovider::ErrorType error) {
+  if (error != smbprovider::ERROR_OK) {
+    LOG(ERROR) << "Failed to update the share path for mount id " << mount_id;
+    std::move(reply).Run(false /* should_retry_start_read_dir */);
+  }
+  std::move(reply).Run(true /* should_retry_start_read_dir */);
+}
+
 void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const base::FilePath& share_path,
                            const std::string& username_input,

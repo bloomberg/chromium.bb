@@ -96,6 +96,11 @@ class SmbService : public KeyedService,
                          const std::string& username,
                          const std::string& password);
 
+  // Updates the share path for |mount_id|.
+  void UpdateSharePath(int32_t mount_id,
+                       const std::string& share_path,
+                       StartReadDirIfSuccessfulCallback reply);
+
  private:
   // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
   // before this is called.
@@ -217,6 +222,12 @@ class SmbService : public KeyedService,
   void RequestUpdatedSharePath(const std::string& share_path,
                                int32_t mount_id,
                                StartReadDirIfSuccessfulCallback reply);
+
+  // Handles the response for attempting to update the share path of a mount.
+  // |reply| will run if |error| is ERROR_OK. Logs the error otherwise.
+  void OnUpdateSharePathResponse(int32_t mount_id,
+                                 StartReadDirIfSuccessfulCallback reply,
+                                 smbprovider::ErrorType error);
 
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
