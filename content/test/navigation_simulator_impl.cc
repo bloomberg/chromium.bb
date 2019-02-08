@@ -392,9 +392,8 @@ void NavigationSimulatorImpl::RegisterTestThrottle(NavigationHandle* handle) {
 }
 
 void NavigationSimulatorImpl::Start() {
-  CHECK(state_ == INITIALIZATION)
+  CHECK(state_ == INITIALIZATION || state_ == WAITING_BEFORE_UNLOAD)
       << "NavigationSimulatorImpl::Start should only be called once.";
-  state_ = STARTED;
 
   if (browser_initiated_) {
     if (!SimulateBrowserInitiatedStart())
@@ -403,6 +402,7 @@ void NavigationSimulatorImpl::Start() {
     if (!SimulateRendererInitiatedStart())
       return;
   }
+  state_ = STARTED;
 
   CHECK(handle_);
   if (IsRendererDebugURL(navigation_url_))
@@ -865,6 +865,34 @@ content::GlobalRequestID NavigationSimulatorImpl::GetGlobalRequestID() const {
   return request_id_;
 }
 
+void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
+  if (reload_type_ != ReloadType::NONE) {
+    web_contents_->GetController().Reload(reload_type_,
+                                          false /*check_for_repost */);
+  } else if (session_history_offset_) {
+    web_contents_->GetController().GoToOffset(session_history_offset_);
+  } else {
+    if (load_url_params_) {
+      web_contents_->GetController().LoadURLWithParams(*load_url_params_);
+      load_url_params_ = nullptr;
+    } else {
+      web_contents_->GetController().LoadURL(navigation_url_, referrer_,
+                                             transition_, std::string());
+    }
+  }
+
+  frame_tree_node_ = GetFrameTreeNodeForPendingEntry(web_contents_);
+  CHECK(frame_tree_node_);
+  render_frame_host_ =
+      static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host());
+
+  // The navigation url might have been rewritten by the NavigationController.
+  // Update it.
+  navigation_url_ = web_contents_->GetController().GetPendingEntry()->GetURL();
+
+  state_ = WAITING_BEFORE_UNLOAD;
+}
+
 void NavigationSimulatorImpl::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   // Check if this navigation is the one we're simulating.
@@ -923,29 +951,8 @@ void NavigationSimulatorImpl::OnWillProcessResponse() {
 }
 
 bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
-  if (reload_type_ != ReloadType::NONE) {
-    web_contents_->GetController().Reload(reload_type_,
-                                          false /*check_for_repost */);
-  } else if (session_history_offset_) {
-    web_contents_->GetController().GoToOffset(session_history_offset_);
-  } else {
-    if (load_url_params_) {
-      web_contents_->GetController().LoadURLWithParams(*load_url_params_);
-      load_url_params_ = nullptr;
-    } else {
-      web_contents_->GetController().LoadURL(navigation_url_, referrer_,
-                                             transition_, std::string());
-    }
-  }
-
-  frame_tree_node_ = GetFrameTreeNodeForPendingEntry(web_contents_);
-  CHECK(frame_tree_node_);
-  render_frame_host_ =
-      static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host());
-
-  // The navigation url might have been rewritten by the NavigationController.
-  // Update it.
-  navigation_url_ = web_contents_->GetController().GetPendingEntry()->GetURL();
+  if (state_ == INITIALIZATION)
+    BrowserInitiatedStartAndWaitBeforeUnload();
 
   // Simulate the BeforeUnload ACK if needed.
   NavigationRequest* request = frame_tree_node_->navigation_request();

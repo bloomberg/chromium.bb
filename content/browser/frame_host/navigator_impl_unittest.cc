@@ -59,19 +59,6 @@ class NavigatorTestWithBrowserSideNavigation
     return static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
   }
 
-  // Requests a navigation of the specified FrameTreeNode to the specified URL.
-  // Returns the unique ID of the pending NavigationEntry.
-  // TODO(ahemery): Convert this usage to NavigationSimulator.
-  int RequestNavigation(FrameTreeNode* node, const GURL& url) {
-    NavigationController::LoadURLParams load_url_params(url);
-    load_url_params.frame_tree_node_id = node->frame_tree_node_id();
-    load_url_params.referrer = Referrer();
-    load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
-
-    controller().LoadURLWithParams(load_url_params);
-    return controller().GetPendingEntry()->GetUniqueID();
-  }
-
   TestRenderFrameHost* GetSpeculativeRenderFrameHost(FrameTreeNode* node) {
     return static_cast<TestRenderFrameHost*>(
         node->render_manager()->speculative_render_frame_host_.get());
@@ -245,7 +232,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Start a new navigation.
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-  RequestNavigation(node, kUrl2);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
+  navigation->BrowserInitiatedStartAndWaitBeforeUnload();
   NavigationRequest* request = node->navigation_request();
   ASSERT_TRUE(request);
   EXPECT_TRUE(request->browser_initiated());
@@ -261,8 +250,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_TRUE(rfh_deleted_observer.deleted());
 }
 
-// PlzNavigate: Test that a proper NavigationRequest is created by
-// RequestNavigation.
+// Test that a proper NavigationRequest is created at navigation start.
 TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
@@ -277,7 +265,12 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
 
   // Start a navigation at the subframe.
   FrameTreeNode* subframe_node = subframe_rfh->frame_tree_node();
-  RequestNavigation(subframe_node, kUrl2);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
+  NavigationController::LoadURLParams load_url_params(kUrl2);
+  load_url_params.frame_tree_node_id = subframe_node->frame_tree_node_id();
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->BrowserInitiatedStartAndWaitBeforeUnload();
   NavigationRequest* subframe_request = subframe_node->navigation_request();
 
   // We should be waiting for the BeforeUnload event to execute in the subframe.
@@ -286,8 +279,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
             subframe_request->state());
   EXPECT_TRUE(subframe_rfh->is_waiting_for_beforeunload_ack());
 
-  // Simulate the BeforeUnload ACK. The navigation should start.
-  subframe_rfh->SendBeforeUnloadACK(true);
+  // Start the navigation, which will internally simulate that the beforeUnload
+  // ACK has been received.
+  navigation->Start();
   TestNavigationURLLoader* subframe_loader =
       GetLoaderForNavigationRequest(subframe_request);
   ASSERT_TRUE(subframe_loader);
@@ -313,7 +307,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   }
 
   // Now start a navigation at the root node.
-  RequestNavigation(root_node, kUrl3);
+  auto navigation2 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl3, contents());
+  navigation2->BrowserInitiatedStartAndWaitBeforeUnload();
   NavigationRequest* main_request = root_node->navigation_request();
   ASSERT_TRUE(main_request);
   EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
@@ -323,8 +319,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   // RenderFrameHost.
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(root_node));
 
-  // Simulate a BeforeUnloadACK IPC on the main frame.
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  // Start the navigation, which will internally simulate that the beforeUnload
+  // ACK has been received.
+  navigation2->Start();
   TestNavigationURLLoader* main_loader =
       GetLoaderForNavigationRequest(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
@@ -359,8 +356,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
 
   // Navigate to a different site.
   EXPECT_FALSE(main_test_rfh()->navigation_request());
-  RequestNavigation(node, kUrl2);
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  navigation->Start();
 
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request);
@@ -387,8 +385,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
 
   // Navigate to a different site again.
   EXPECT_FALSE(main_test_rfh()->navigation_request());
-  RequestNavigation(node, kUrl2);
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  navigation2->Start();
 
   main_request = node->navigation_request();
   ASSERT_TRUE(main_request);
@@ -570,8 +569,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Start a browser-initiated navigation to the 1st URL and receive its
   // beforeUnload ACK.
   EXPECT_FALSE(main_test_rfh()->navigation_request());
-  RequestNavigation(node, kUrl1);
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(kUrl1, contents());
+  navigation2->Start();
   NavigationRequest* request1 = node->navigation_request();
   ASSERT_TRUE(request1);
   EXPECT_EQ(kUrl1, request1->common_params().url);
@@ -923,16 +923,18 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
 
   // Navigate to a data url. The request should have been sent to the IO
   // thread and not committed immediately.
-  int entry_id = RequestNavigation(node, kUrl2);
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  navigation->Start();
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
   EXPECT_FALSE(speculative_rfh->is_loading());
   EXPECT_TRUE(node->navigation_request());
-  speculative_rfh->PrepareForCommit();
+  navigation->ReadyToCommit();
   EXPECT_TRUE(speculative_rfh->is_loading());
   EXPECT_FALSE(node->navigation_request());
   EXPECT_NE(main_test_rfh(), speculative_rfh);
-  speculative_rfh->SendNavigate(entry_id, true, kUrl2);
+  navigation->Commit();
   EXPECT_EQ(main_test_rfh(), speculative_rfh);
 
   // Go back to the initial site.
@@ -1110,22 +1112,25 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
 
   // Navigate same-site.
-  int entry_id = RequestNavigation(node, kUrl2);
-  main_test_rfh()->PrepareForCommit();
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  navigation->ReadyToCommit();
   EXPECT_TRUE(main_test_rfh()->is_loading());
   EXPECT_FALSE(node->navigation_request());
 
   // Start a new cross-site navigation. The current RFH should still be trying
   // to commit the previous navigation, but we create a NavigationRequest in the
   // FrameTreeNode.
-  RequestNavigation(node, kUrl3);
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(kUrl3, contents());
+  navigation2->Start();
   EXPECT_TRUE(main_test_rfh()->is_loading());
   EXPECT_TRUE(node->navigation_request());
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // The first navigation commits. This should clear up the speculative RFH and
   // the ongoing NavigationRequest.
-  main_test_rfh()->SendNavigate(entry_id, true, kUrl2);
+  navigation->Commit();
   EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
@@ -1142,8 +1147,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
 
   // Navigate cross-site.
-  int entry_id = RequestNavigation(node, kUrl2);
-  main_test_rfh()->PrepareForCommit();
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  navigation->ReadyToCommit();
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
   EXPECT_TRUE(speculative_rfh->is_loading());
@@ -1153,7 +1159,9 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // navigation. The speculative RFH should still be live and trying
   // to commit the previous navigation, and we create a NavigationRequest in the
   // FrameTreeNode.
-  RequestNavigation(node, kUrl3);
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(kUrl3, contents());
+  navigation2->Start();
   TestRenderFrameHost* speculative_rfh_2 = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh_2);
   EXPECT_EQ(speculative_rfh_2, speculative_rfh);
@@ -1162,7 +1170,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // The first navigation commits. This should clear up the speculative RFH and
   // the ongoing NavigationRequest.
-  speculative_rfh->SendNavigate(entry_id, true, kUrl2);
+  navigation->Commit();
   EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
   EXPECT_EQ(speculative_rfh, main_test_rfh());
