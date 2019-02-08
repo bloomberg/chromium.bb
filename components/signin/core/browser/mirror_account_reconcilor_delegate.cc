@@ -63,13 +63,6 @@ MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
 
 void MirrorAccountReconcilorDelegate::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
-  if (!IsReconcileEnabled()) {
-    // AccountReconcilor::EnableReconcile DCHECKs for
-    // |AccountReconcilorDelegate::IsReconcileEnabled|. Subclasses may have
-    // overridden |AccountReconcilorDelegate::IsReconcileEnabled|. Check that
-    // to be sure.
-    return;
-  }
   reconcilor()->EnableReconcile();
 }
 

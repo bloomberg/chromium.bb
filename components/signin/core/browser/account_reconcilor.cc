@@ -247,7 +247,6 @@ void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
 #endif  // defined(OS_IOS)
 
 void AccountReconcilor::EnableReconcile() {
-  DCHECK(delegate_->IsReconcileEnabled());
   RegisterWithAllDependencies();
 #if !defined(OS_IOS)
   // TODO(droger): Investigate why this breaks tests on iOS.
