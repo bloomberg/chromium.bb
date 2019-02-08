@@ -20,10 +20,10 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
-#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -330,7 +330,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
                         WrapPersistent(this)));
 
     } else {
-      background_scheduler::PostOnBackgroundThread(
+      worker_pool::PostTask(
           FROM_HERE,
           CrossThreadBind(&CanvasAsyncBlobCreator::EncodeImageOnEncoderThread,
                           WrapCrossThreadPersistent(this), quality));

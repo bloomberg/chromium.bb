@@ -16,9 +16,9 @@
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
@@ -345,7 +345,7 @@ void ParkableStringImpl::ParkInternal(ParkingMode mode) {
     auto params = std::make_unique<CompressionTaskParams>(
         this, string_.Bytes(), string_.CharactersSizeInBytes(),
         Thread::Current()->GetTaskRunner());
-    background_scheduler::PostOnBackgroundThread(
+    worker_pool::PostTask(
         FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
                                    WTF::Passed(std::move(params))));
     state_ = State::kParkingInProgress;

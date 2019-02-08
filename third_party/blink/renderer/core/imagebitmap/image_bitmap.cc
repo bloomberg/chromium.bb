@@ -17,8 +17,8 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
-#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -1004,7 +1004,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
                                      draw_dst_rect, parsed_options.flip_y);
   std::unique_ptr<ParsedOptions> passed_parsed_options =
       std::make_unique<ParsedOptions>(parsed_options);
-  background_scheduler::PostOnBackgroundThread(
+  worker_pool::PostTask(
       FROM_HERE,
       CrossThreadBind(&RasterizeImageOnBackgroundThread,
                       WrapCrossThreadPersistent(resolver),

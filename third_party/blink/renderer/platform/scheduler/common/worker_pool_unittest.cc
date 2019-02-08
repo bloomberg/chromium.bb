@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 
 #include <memory>
 #include "base/location.h"
@@ -24,7 +24,7 @@ void PingPongTask(WaitableEvent* done_event) {
 TEST(BackgroundSchedulerTest, RunOnBackgroundThread) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   std::unique_ptr<WaitableEvent> done_event = std::make_unique<WaitableEvent>();
-  background_scheduler::PostOnBackgroundThread(
+  worker_pool::PostTask(
       FROM_HERE,
       CrossThreadBind(&PingPongTask, CrossThreadUnretained(done_event.get())));
   // Test passes by not hanging on the following wait().
