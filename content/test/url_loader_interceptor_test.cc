@@ -143,12 +143,9 @@ class TestBrowserClientWithHeaderClient
   }
 
   // network::mojom::TrustedURLLoaderHeaderClient:
-  void OnBeforeSendHeaders(int32_t request_id,
-                           const net::HttpRequestHeaders& headers,
-                           OnBeforeSendHeadersCallback callback) override {}
-  void OnHeadersReceived(int32_t request_id,
-                         const std::string& headers,
-                         OnHeadersReceivedCallback callback) override {}
+  void OnLoaderCreated(
+      int32_t request_id,
+      network::mojom::TrustedHeaderClientRequest request) override {}
 
   mojo::BindingSet<network::mojom::TrustedURLLoaderHeaderClient> bindings_;
 };

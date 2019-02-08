@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
-      mojom::TrustedURLLoaderHeaderClient* header_client);
+      mojom::TrustedURLLoaderHeaderClient* url_loader_header_client);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -319,7 +319,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // network::ResourceRequest::fetch_window_id for details.
   base::Optional<base::UnguessableToken> fetch_window_id_;
 
-  mojom::TrustedURLLoaderHeaderClient* header_client_ = nullptr;
+  mojom::TrustedHeaderClientPtr header_client_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

@@ -48,7 +48,8 @@ class WebRequestProxyingURLLoaderFactory
       public network::mojom::TrustedURLLoaderHeaderClient {
  public:
   class InProgressRequest : public network::mojom::URLLoader,
-                            public network::mojom::URLLoaderClient {
+                            public network::mojom::URLLoaderClient,
+                            public network::mojom::TrustedHeaderClient {
    public:
     InProgressRequest(
         WebRequestProxyingURLLoaderFactory* factory,
@@ -92,10 +93,13 @@ class WebRequestProxyingURLLoaderFactory
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         WebRequestAPI::AuthRequestCallback callback);
 
+    void OnLoaderCreated(network::mojom::TrustedHeaderClientRequest request);
+
+    // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
-                             OnBeforeSendHeadersCallback callback);
+                             OnBeforeSendHeadersCallback callback) override;
     void OnHeadersReceived(const std::string& headers,
-                           OnHeadersReceivedCallback callback);
+                           OnHeadersReceivedCallback callback) override;
 
    private:
     void ContinueToBeforeSendHeaders(int error_code);
@@ -153,14 +157,17 @@ class WebRequestProxyingURLLoaderFactory
 
     bool request_completed_ = false;
 
-    // If |uses_header_client_| is set to true, the request will be sent with
-    // the network::mojom::kURLLoadOptionUseHeaderClient option, and we expect
-    // events to come through the network::mojom::TrustedURLLoaderHeaderClient
-    // binding on the factory. This is only set to true if there is a listener
-    // that needs to view or modify headers set in the network process.
-    bool uses_header_client_ = false;
+    // If |has_any_extra_headers_listeners_| is set to true, the request will be
+    // sent with the network::mojom::kURLLoadOptionUseHeaderClient option, and
+    // we expect events to come through the
+    // network::mojom::TrustedURLLoaderHeaderClient binding on the factory. This
+    // is only set to true if there is a listener that needs to view or modify
+    // headers set in the network process.
+    bool has_any_extra_headers_listeners_ = false;
+    bool current_request_uses_header_client_ = false;
     OnBeforeSendHeadersCallback on_before_send_headers_callback_;
     OnHeadersReceivedCallback on_headers_received_callback_;
+    mojo::Binding<network::mojom::TrustedHeaderClient> header_client_binding_;
 
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
@@ -205,12 +212,9 @@ class WebRequestProxyingURLLoaderFactory
   void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
 
   // network::mojom::TrustedURLLoaderHeaderClient:
-  void OnBeforeSendHeaders(int32_t request_id,
-                           const net::HttpRequestHeaders& headers,
-                           OnBeforeSendHeadersCallback callback) override;
-  void OnHeadersReceived(int32_t request_id,
-                         const std::string& headers,
-                         OnHeadersReceivedCallback callback) override;
+  void OnLoaderCreated(
+      int32_t request_id,
+      network::mojom::TrustedHeaderClientRequest request) override;
 
   // WebRequestAPI::Proxy:
   void HandleAuthRequest(
@@ -234,7 +238,7 @@ class WebRequestProxyingURLLoaderFactory
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
   mojo::Binding<network::mojom::TrustedURLLoaderHeaderClient>
-      header_client_binding_;
+      url_loader_header_client_binding_;
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
 
