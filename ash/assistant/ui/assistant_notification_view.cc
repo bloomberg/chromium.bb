@@ -4,11 +4,11 @@
 
 #include "ash/assistant/ui/assistant_notification_view.h"
 
-#include <string>
-
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -28,19 +28,29 @@ constexpr int kShadowElevationDip = 6;
 
 // Helpers ---------------------------------------------------------------------
 
-views::View* CreateButton(const std::string& label) {
+// TODO(dmblack): Handle button clicks.
+views::View* CreateButton(
+    const chromeos::assistant::mojom::AssistantNotificationButtonPtr& button) {
   SuggestionChipView::Params params;
-  params.text = base::UTF8ToUTF16(label);
+  params.text = base::UTF8ToUTF16(button->label);
   return new SuggestionChipView(params, /*listener=*/nullptr);
 }
 
 }  // namespace
 
-AssistantNotificationView::AssistantNotificationView() {
-  InitLayout();
+AssistantNotificationView::AssistantNotificationView(
+    AssistantViewDelegate* delegate,
+    const AssistantNotification* notification)
+    : delegate_(delegate), notification_id_(notification->client_id) {
+  InitLayout(notification);
+
+  // The AssistantViewDelegate outlives the Assistant view hierarchy.
+  delegate_->AddNotificationModelObserver(this);
 }
 
-AssistantNotificationView::~AssistantNotificationView() = default;
+AssistantNotificationView::~AssistantNotificationView() {
+  delegate_->RemoveNotificationModelObserver(this);
+}
 
 const char* AssistantNotificationView::GetClassName() const {
   return "AssistantNotificationView";
@@ -59,7 +69,40 @@ void AssistantNotificationView::OnBoundsChanged(
   UpdateBackground();
 }
 
-void AssistantNotificationView::InitLayout() {
+void AssistantNotificationView::OnNotificationUpdated(
+    const AssistantNotification* notification) {
+  if (notification->client_id != notification_id_)
+    return;
+
+  // Title/Message.
+  title_->SetText(base::UTF8ToUTF16(notification->title));
+  message_->SetText(base::UTF8ToUTF16(notification->message));
+
+  // Old buttons.
+  // Note that we don't remove the first two children of |container_| as those
+  // children are |title_| and |message_| respectively.
+  for (int i = container_->child_count() - 1; i > 1; --i)
+    delete container_->child_at(i);
+
+  // New buttons.
+  for (const auto& button : notification->buttons)
+    container_->AddChildView(CreateButton(button));
+
+  // Because |container_| has a fixed size, we need to explicitly trigger a
+  // layout/paint pass ourselves when manipulating child views.
+  container_->Layout();
+  container_->SchedulePaint();
+}
+
+void AssistantNotificationView::OnNotificationRemoved(
+    const AssistantNotification* notification,
+    bool from_server) {
+  if (notification->client_id == notification_id_)
+    delete this;
+}
+
+void AssistantNotificationView::InitLayout(
+    const AssistantNotification* notification) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   SetPaintToLayer();
@@ -70,14 +113,14 @@ void AssistantNotificationView::InitLayout() {
   layer()->Add(&background_layer_);
 
   // Container.
-  views::View* container = new views::View();
-  container->SetPreferredSize(gfx::Size(INT_MAX, INT_MAX));
-  container->SetPaintToLayer();
-  container->layer()->SetFillsBoundsOpaquely(false);
-  AddChildView(container);
+  container_ = new views::View();
+  container_->SetPreferredSize(gfx::Size(INT_MAX, INT_MAX));
+  container_->SetPaintToLayer();
+  container_->layer()->SetFillsBoundsOpaquely(false);
+  AddChildView(container_);
 
   auto* layout_manager =
-      container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, kPaddingLeftDip, 0, kPaddingRightDip), kSpacingDip));
 
@@ -88,28 +131,28 @@ void AssistantNotificationView::InitLayout() {
       assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1);
 
   // Title.
-  auto* title = new views::Label(base::UTF8ToUTF16("Placeholder Title"));
-  title->SetAutoColorReadabilityEnabled(false);
-  title->SetEnabledColor(kTextColorPrimary);
-  title->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  title->SetLineHeight(kLineHeightDip);
-  container->AddChildView(title);
+  title_ = new views::Label(base::UTF8ToUTF16(notification->title));
+  title_->SetAutoColorReadabilityEnabled(false);
+  title_->SetEnabledColor(kTextColorPrimary);
+  title_->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  title_->SetLineHeight(kLineHeightDip);
+  container_->AddChildView(title_);
 
   // Message.
-  auto* message = new views::Label(base::UTF8ToUTF16("Placeholder Message"));
-  message->SetAutoColorReadabilityEnabled(false);
-  message->SetEnabledColor(kTextColorSecondary);
-  message->SetFontList(font_list);
-  message->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  message->SetLineHeight(kLineHeightDip);
-  container->AddChildView(message);
+  message_ = new views::Label(base::UTF8ToUTF16(notification->message));
+  message_->SetAutoColorReadabilityEnabled(false);
+  message_->SetEnabledColor(kTextColorSecondary);
+  message_->SetFontList(font_list);
+  message_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  message_->SetLineHeight(kLineHeightDip);
+  container_->AddChildView(message_);
 
-  layout_manager->SetFlexForView(message, 1);
+  layout_manager->SetFlexForView(message_, 1);
 
   // Buttons.
-  container->AddChildView(CreateButton("Placeholder Button 1"));
-  container->AddChildView(CreateButton("Placeholder Button 2"));
+  for (const auto& button : notification->buttons)
+    container_->AddChildView(CreateButton(button));
 }
 
 void AssistantNotificationView::UpdateBackground() {

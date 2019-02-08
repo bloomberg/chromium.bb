@@ -64,28 +64,8 @@ class AssistantContainerClientView : public views::ClientView,
 
   void Layout() override {
     views::ClientView::Layout();
-    for (AssistantOverlay* overlay : overlays_) {
-      AssistantOverlay::LayoutParams layout_params = overlay->GetLayoutParams();
-      gfx::Size preferred_size = overlay->GetPreferredSize();
-
-      int left = layout_params.margins.left();
-      int top = layout_params.margins.top();
-      int width = std::min(preferred_size.width(), this->width());
-      int height = preferred_size.height();
-
-      // Gravity::kBottom.
-      using Gravity = AssistantOverlay::LayoutParams::Gravity;
-      if ((layout_params.gravity & Gravity::kBottom) != 0)
-        top = this->height() - height - layout_params.margins.bottom();
-
-      // Gravity::kCenterHorizontal.
-      if ((layout_params.gravity & Gravity::kCenterHorizontal) != 0) {
-        width = std::min(width, this->width() - layout_params.margins.width());
-        left = (this->width() - width) / 2;
-      }
-
-      overlay->SetBounds(left, top, width, height);
-    }
+    for (AssistantOverlay* overlay : overlays_)
+      Layout(overlay);
   }
 
   // views::ViewObserver:
@@ -98,6 +78,11 @@ class AssistantContainerClientView : public views::ClientView,
     overlays_.erase(it);
   }
 
+  void OnViewPreferredSizeChanged(views::View* view) override {
+    Layout(static_cast<AssistantOverlay*>(view));
+    SchedulePaint();
+  }
+
   void AddOverlays(std::vector<AssistantOverlay*> overlays) {
     for (AssistantOverlay* overlay : overlays) {
       overlays_.insert(overlay);
@@ -107,6 +92,29 @@ class AssistantContainerClientView : public views::ClientView,
   }
 
  private:
+  void Layout(AssistantOverlay* overlay) {
+    AssistantOverlay::LayoutParams layout_params = overlay->GetLayoutParams();
+    gfx::Size preferred_size = overlay->GetPreferredSize();
+
+    int left = layout_params.margins.left();
+    int top = layout_params.margins.top();
+    int width = std::min(preferred_size.width(), this->width());
+    int height = preferred_size.height();
+
+    // Gravity::kBottom.
+    using Gravity = AssistantOverlay::LayoutParams::Gravity;
+    if ((layout_params.gravity & Gravity::kBottom) != 0)
+      top = this->height() - height - layout_params.margins.bottom();
+
+    // Gravity::kCenterHorizontal.
+    if ((layout_params.gravity & Gravity::kCenterHorizontal) != 0) {
+      width = std::min(width, this->width() - layout_params.margins.width());
+      left = (this->width() - width) / 2;
+    }
+
+    overlay->SetBounds(left, top, width, height);
+  }
+
   std::set<AssistantOverlay*> overlays_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerClientView);

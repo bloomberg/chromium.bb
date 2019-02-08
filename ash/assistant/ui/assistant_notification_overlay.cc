@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/assistant/ui/assistant_notification_view.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
@@ -19,11 +21,18 @@ constexpr int kMarginHorizontalDip = 32;
 
 }  // namespace
 
-AssistantNotificationOverlay::AssistantNotificationOverlay() {
+AssistantNotificationOverlay::AssistantNotificationOverlay(
+    AssistantViewDelegate* delegate)
+    : delegate_(delegate) {
   InitLayout();
+
+  // The AssistantViewDelegate outlives the Assistant view hierarchy.
+  delegate_->AddNotificationModelObserver(this);
 }
 
-AssistantNotificationOverlay::~AssistantNotificationOverlay() = default;
+AssistantNotificationOverlay::~AssistantNotificationOverlay() {
+  delegate_->RemoveNotificationModelObserver(this);
+}
 
 const char* AssistantNotificationOverlay::GetClassName() const {
   return "AssistantNotificationOverlay";
@@ -39,14 +48,23 @@ AssistantOverlay::LayoutParams AssistantNotificationOverlay::GetLayoutParams()
   return layout_params;
 }
 
+void AssistantNotificationOverlay::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.parent == this)
+    PreferredSizeChanged();
+}
+
+void AssistantNotificationOverlay::OnNotificationAdded(
+    const AssistantNotification* notification) {
+  // TODO(dmblack): Only add views for notifications of the appropriate type.
+  AddChildView(new AssistantNotificationView(delegate_, notification));
+}
+
 void AssistantNotificationOverlay::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-
-  // TODO(dmblack): Wire up to actual notifications.
-  AddChildView(new AssistantNotificationView());
 }
 
 };  // namespace ash
