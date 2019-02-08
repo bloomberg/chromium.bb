@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("lib") {
+source_set("manifest") {
   sources = [
-    "noop_service.cc",
-    "noop_service.h",
+    "manifest.cc",
+    "manifest.h",
   ]
 
   deps = [
-    "//chrome/services/noop/public/mojom",
-    "//mojo/public/cpp/bindings",
+    "//base",
+    "//chrome/services/printing/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

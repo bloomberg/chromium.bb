@@ -9,7 +9,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
-#include "chrome/services/noop/manifest.h"
+#include "chrome/services/noop/public/cpp/manifest.h"
 #include "components/services/patch/manifest.h"
 #include "components/services/unzip/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
@@ -40,17 +40,17 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/services/util_win/manifest.h"
-#include "chrome/services/wifi_util_win/manifest.h"
+#include "chrome/services/util_win/public/cpp/manifest.h"
+#include "chrome/services/wifi_util_win/public/cpp/manifest.h"
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/utility/profile_import_manifest.h"
+#include "chrome/utility/importer/profile_import_manifest.h"
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/services/removable_storage_writer/manifest.h"
+#include "chrome/services/removable_storage_writer/public/cpp/manifest.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
@@ -62,7 +62,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/services/printing/manifest.h"
+#include "chrome/services/printing/public/cpp/manifest.h"
 #endif
 
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
@@ -134,13 +134,13 @@ GetChromePackagedServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
       GetFileUtilManifest(),
+      GetNoopManifest(),
       patch_service::GetManifest(),
       unzip_service::GetManifest(),
       proxy_resolver::GetManifest(),
       prefs::GetLocalStateManifest(),
-      noop::GetManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-      removable_storage_writer::GetManifest(),
+      GetRemovableStorageWriterManifest(),
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
       GetMediaGalleryUtilManifest(),
@@ -149,7 +149,7 @@ GetChromePackagedServiceManifests() {
       pdf_compositor::GetManifest(),
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-      chrome_printing::GetManifest(),
+      GetChromePrintingManifest(),
 #endif
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
       GetXrDeviceServiceManifest(),
@@ -159,14 +159,14 @@ GetChromePackagedServiceManifests() {
       simple_browser::GetManifest(),
 #endif
 #if defined(OS_WIN)
-      util_win::GetManifest(),
-      wifi_util_win::GetManifest(),
+      GetUtilWinManifest(),
+      GetWifiUtilWinManifest(),
 #endif
 #if defined(OS_ANDROID)
       GetAndroidDownloadManagerManifest(),
 #else
       mirroring::GetManifest(),
-      profile_import::GetManifest(),
+      GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
       quick_launch::GetManifest(),
