@@ -233,9 +233,8 @@ class ContextSupportStub : public ContextSupport {
 class ImageProviderStub : public cc::ImageProvider {
  public:
   ~ImageProviderStub() override {}
-  ScopedDecodedDrawImage GetDecodedDrawImage(
-      const cc::DrawImage& draw_image) override {
-    return ScopedDecodedDrawImage();
+  ScopedResult GetRasterContent(const cc::DrawImage& draw_image) override {
+    return ScopedResult();
   }
 };
 

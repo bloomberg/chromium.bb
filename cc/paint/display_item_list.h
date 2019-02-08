@@ -41,7 +41,6 @@ class TracedValue;
 }
 
 namespace cc {
-class PaintWorkletImageProvider;
 
 // DisplayItemList is a container of paint operations. One can populate the list
 // using StartPaint, followed by push{,_with_data,_with_array} functions
@@ -60,9 +59,7 @@ class CC_PAINT_EXPORT DisplayItemList
 
   explicit DisplayItemList(UsageHint = kTopLevelDisplayItemList);
 
-  void Raster(SkCanvas* canvas,
-              ImageProvider* image_provider = nullptr,
-              PaintWorkletImageProvider* = nullptr) const;
+  void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
   // Captures the DrawTextBlobOp within |rect| and returns the associated
   // NodeHolder in |content|.

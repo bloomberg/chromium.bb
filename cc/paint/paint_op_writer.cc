@@ -247,7 +247,7 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   }
 
   // Default mode uses the transfer cache.
-  auto decoded_image = options_.image_provider->GetDecodedDrawImage(draw_image);
+  auto decoded_image = options_.image_provider->GetRasterContent(draw_image);
   DCHECK(!decoded_image.decoded_image().image())
       << "Use transfer cache for image serialization";
   const DecodedDrawImage& decoded_draw_image = decoded_image.decoded_image();

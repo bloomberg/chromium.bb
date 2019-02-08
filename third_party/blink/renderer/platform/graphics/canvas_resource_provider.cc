@@ -743,17 +743,18 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
   ~CanvasImageProvider() override = default;
 
   // cc::ImageProvider implementation.
-  ScopedDecodedDrawImage GetDecodedDrawImage(const cc::DrawImage&) override;
+  cc::ImageProvider::ScopedResult GetRasterContent(
+      const cc::DrawImage&) override;
 
   void ReleaseLockedImages() { locked_images_.clear(); }
 
  private:
-  void CanUnlockImage(ScopedDecodedDrawImage);
+  void CanUnlockImage(ScopedResult);
   void CleanupLockedImages();
 
   bool is_hardware_decode_cache_;
   bool cleanup_task_pending_ = false;
-  std::vector<ScopedDecodedDrawImage> locked_images_;
+  std::vector<ScopedResult> locked_images_;
   cc::PlaybackImageProvider playback_image_provider_n32_;
   base::Optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
 
@@ -780,20 +781,22 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
   }
 }
 
-cc::ImageProvider::ScopedDecodedDrawImage
-CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
+cc::ImageProvider::ScopedResult
+CanvasResourceProvider::CanvasImageProvider::GetRasterContent(
     const cc::DrawImage& draw_image) {
+  // TODO(xidachen): Ensure this function works for paint worklet generated
+  // images.
   // If we like to decode high bit depth image source to half float backed
   // image, we need to sniff the image bit depth here to avoid double decoding.
-  ImageProvider::ScopedDecodedDrawImage scoped_decoded_image;
+  ImageProvider::ScopedResult scoped_decoded_image;
   if (playback_image_provider_f16_ &&
       draw_image.paint_image().is_high_bit_depth()) {
     DCHECK(playback_image_provider_f16_);
     scoped_decoded_image =
-        playback_image_provider_f16_->GetDecodedDrawImage(draw_image);
+        playback_image_provider_f16_->GetRasterContent(draw_image);
   } else {
     scoped_decoded_image =
-        playback_image_provider_n32_.GetDecodedDrawImage(draw_image);
+        playback_image_provider_n32_.GetRasterContent(draw_image);
   }
 
   // Holding onto locked images here is a performance optimization for the
@@ -805,8 +808,9 @@ CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
   // decode cache has its own limit.  In the software case, just unlock
   // immediately and let the discardable system manage the cache logic
   // behind the scenes.
-  if (!scoped_decoded_image.needs_unlock() || !is_hardware_decode_cache_)
+  if (!scoped_decoded_image.needs_unlock() || !is_hardware_decode_cache_) {
     return scoped_decoded_image;
+  }
 
   constexpr int kMaxLockedImagesCount = 500;
   if (!scoped_decoded_image.decoded_image().is_budgeted() ||
@@ -816,14 +820,14 @@ CanvasResourceProvider::CanvasImageProvider::GetDecodedDrawImage(
   }
 
   auto decoded_draw_image = scoped_decoded_image.decoded_image();
-  return ScopedDecodedDrawImage(
-      decoded_draw_image, base::BindOnce(&CanvasImageProvider::CanUnlockImage,
-                                         weak_factory_.GetWeakPtr(),
-                                         std::move(scoped_decoded_image)));
+  return ScopedResult(decoded_draw_image,
+                      base::BindOnce(&CanvasImageProvider::CanUnlockImage,
+                                     weak_factory_.GetWeakPtr(),
+                                     std::move(scoped_decoded_image)));
 }
 
 void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
-    ScopedDecodedDrawImage image) {
+    ScopedResult image) {
   // We should early out and avoid calling this function for software decodes.
   DCHECK(is_hardware_decode_cache_);
 

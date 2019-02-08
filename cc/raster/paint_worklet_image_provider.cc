@@ -4,6 +4,7 @@
 
 #include "cc/raster/paint_worklet_image_provider.h"
 
+#include <utility>
 #include "cc/tiles/paint_worklet_image_cache.h"
 
 namespace cc {
@@ -21,5 +22,13 @@ PaintWorkletImageProvider::PaintWorkletImageProvider(
 
 PaintWorkletImageProvider& PaintWorkletImageProvider::operator=(
     PaintWorkletImageProvider&& other) = default;
+
+ImageProvider::ScopedResult PaintWorkletImageProvider::GetPaintRecordResult(
+    PaintWorkletInput* input) {
+  std::pair<PaintRecord*, base::OnceCallback<void()>> record_and_callback =
+      cache_->GetPaintRecordAndRef(input);
+  return ImageProvider::ScopedResult(record_and_callback.first,
+                                     std::move(record_and_callback.second));
+}
 
 }  // namespace cc

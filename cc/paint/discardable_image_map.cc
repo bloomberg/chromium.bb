@@ -132,12 +132,11 @@ class DiscardableImageGenerator {
         : generator_(generator), op_rect_(op_rect) {}
     ~ImageGatheringProvider() override = default;
 
-    ScopedDecodedDrawImage GetDecodedDrawImage(
-        const DrawImage& draw_image) override {
+    ScopedResult GetRasterContent(const DrawImage& draw_image) override {
       generator_->AddImage(draw_image.paint_image(),
                            SkRect::Make(draw_image.src_rect()), op_rect_,
                            SkMatrix::I(), draw_image.filter_quality());
-      return ScopedDecodedDrawImage();
+      return ScopedResult();
     }
 
    private:

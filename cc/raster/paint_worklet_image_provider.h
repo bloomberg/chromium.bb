@@ -10,6 +10,7 @@
 
 namespace cc {
 class PaintWorkletImageCache;
+class PaintWorkletInput;
 
 // PaintWorkletImageProvider is a bridge between PaintWorkletImageCache and its
 // rasterization.
@@ -20,6 +21,8 @@ class CC_EXPORT PaintWorkletImageProvider {
 
   PaintWorkletImageProvider(PaintWorkletImageProvider&& other);
   PaintWorkletImageProvider& operator=(PaintWorkletImageProvider&& other);
+
+  ImageProvider::ScopedResult GetPaintRecordResult(PaintWorkletInput* input);
 
  private:
   PaintWorkletImageCache* cache_;

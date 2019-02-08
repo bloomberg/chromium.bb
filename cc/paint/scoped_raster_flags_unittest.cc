@@ -17,15 +17,15 @@ class MockImageProvider : public ImageProvider {
   MockImageProvider() = default;
   ~MockImageProvider() override { EXPECT_EQ(ref_count_, 0); }
 
-  ScopedDecodedDrawImage GetDecodedDrawImage(
-      const DrawImage& draw_image) override {
+  ScopedResult GetRasterContent(const DrawImage& draw_image) override {
+    DCHECK(!draw_image.paint_image().IsPaintWorklet());
     ref_count_++;
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(10, 10);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 
-    return ScopedDecodedDrawImage(
+    return ScopedResult(
         DecodedDrawImage(image, SkSize::MakeEmpty(), SkSize::Make(1.0f, 1.0f),
                          draw_image.filter_quality(), true),
         base::BindOnce(&MockImageProvider::UnrefImage, base::Unretained(this)));

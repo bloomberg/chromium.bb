@@ -155,14 +155,11 @@ FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
 
 FakeRasterSource::~FakeRasterSource() = default;
 
-void FakeRasterSource::PlaybackToCanvas(
-    SkCanvas* canvas,
-    ImageProvider* image_provider,
-    PaintWorkletImageProvider* paint_worklet_image_provider) const {
+void FakeRasterSource::PlaybackToCanvas(SkCanvas* canvas,
+                                        ImageProvider* image_provider) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();
-  RasterSource::PlaybackToCanvas(canvas, image_provider,
-                                 paint_worklet_image_provider);
+  RasterSource::PlaybackToCanvas(canvas, image_provider);
 }
 
 }  // namespace cc

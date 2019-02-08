@@ -69,10 +69,8 @@ DisplayItemList::DisplayItemList(UsageHint usage_hint)
 
 DisplayItemList::~DisplayItemList() = default;
 
-void DisplayItemList::Raster(
-    SkCanvas* canvas,
-    ImageProvider* image_provider,
-    PaintWorkletImageProvider* paint_worklet_image_provider) const {
+void DisplayItemList::Raster(SkCanvas* canvas,
+                             ImageProvider* image_provider) const {
   DCHECK(usage_hint_ == kTopLevelDisplayItemList);
   gfx::Rect canvas_playback_rect;
   if (!GetCanvasClipBounds(canvas, &canvas_playback_rect))
@@ -80,9 +78,7 @@ void DisplayItemList::Raster(
 
   std::vector<size_t> offsets;
   rtree_.Search(canvas_playback_rect, &offsets);
-  paint_op_buffer_.Playback(
-      canvas, PlaybackParams(image_provider, paint_worklet_image_provider),
-      &offsets);
+  paint_op_buffer_.Playback(canvas, PlaybackParams(image_provider), &offsets);
 }
 
 void DisplayItemList::CaptureContent(const gfx::Rect& rect,

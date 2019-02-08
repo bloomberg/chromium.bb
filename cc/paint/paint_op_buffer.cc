@@ -302,11 +302,8 @@ size_t SimpleSerialize(const PaintOp* op, void* memory, size_t size) {
   return sizeof(T);
 }
 
-PlaybackParams::PlaybackParams(
-    ImageProvider* image_provider,
-    PaintWorkletImageProvider* paint_worklet_image_provider)
+PlaybackParams::PlaybackParams(ImageProvider* image_provider)
     : image_provider(image_provider),
-      paint_worklet_image_provider(paint_worklet_image_provider),
       original_ctm(SkMatrix::I()),
       custom_callback(CustomDataRasterCallback()),
       did_draw_op_callback(DidDrawOpCallback()) {}
@@ -1225,12 +1222,11 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
       op->image, SkIRect::MakeWH(op->image.width(), op->image.height()),
       flags ? flags->getFilterQuality() : kNone_SkFilterQuality,
       canvas->getTotalMatrix());
-  auto scoped_decoded_draw_image =
-      params.image_provider->GetDecodedDrawImage(draw_image);
-  if (!scoped_decoded_draw_image)
+  auto scoped_result = params.image_provider->GetRasterContent(draw_image);
+  if (!scoped_result)
     return;
 
-  const auto& decoded_image = scoped_decoded_draw_image.decoded_image();
+  const auto& decoded_image = scoped_result.decoded_image();
   DCHECK(decoded_image.image());
 
   DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
@@ -1275,12 +1271,11 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
   DrawImage draw_image(
       op->image, int_src_rect,
       flags ? flags->getFilterQuality() : kNone_SkFilterQuality, matrix);
-  auto scoped_decoded_draw_image =
-      params.image_provider->GetDecodedDrawImage(draw_image);
-  if (!scoped_decoded_draw_image)
+  auto scoped_result = params.image_provider->GetRasterContent(draw_image);
+  if (!scoped_result)
     return;
 
-  const auto& decoded_image = scoped_decoded_draw_image.decoded_image();
+  const auto& decoded_image = scoped_result.decoded_image();
   DCHECK(decoded_image.image());
 
   SkSize scale_adjustment = SkSize::Make(

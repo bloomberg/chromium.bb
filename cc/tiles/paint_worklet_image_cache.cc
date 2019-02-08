@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/tiles/paint_worklet_image_cache.h"
+
+#include "base/bind.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 
 namespace cc {
@@ -52,9 +54,25 @@ void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
       std::make_pair(std::move(record), 0);
 }
 
-PaintRecord* PaintWorkletImageCache::GetPaintRecordForTest(
-    PaintWorkletInput* input) {
-  return records_[input].first.get();
+std::pair<PaintRecord*, base::OnceCallback<void()>>
+PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
+  records_[input].second++;
+  // The PaintWorkletImageCache object lives as long as the LayerTreeHostImpl,
+  // and that ensures that this pointer and the input will be alive when this
+  // callback is executed.
+  auto callback =
+      base::BindOnce(&PaintWorkletImageCache::DecrementCacheRefCount,
+                     base::Unretained(this), base::Unretained(input));
+  return std::make_pair(records_[input].first.get(), std::move(callback));
+}
+
+void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
+  auto it = records_.find(input);
+  DCHECK(it != records_.end());
+
+  auto& pair = it->second;
+  DCHECK_GT(pair.second, 0u);
+  pair.second--;
 }
 
 }  // namespace cc

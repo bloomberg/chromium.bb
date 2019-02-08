@@ -77,10 +77,10 @@ class DummyImageProvider : public ImageProvider {
  public:
   DummyImageProvider() = default;
   ~DummyImageProvider() override = default;
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override {
     NOTREACHED();
-    return ScopedDecodedDrawImage();
+    return ScopedResult();
   }
 };
 
