@@ -67,14 +67,18 @@ class MenuManager {
           MessageHandler.Destination.MENU_PANEL, 'setActions', actions);
     }
 
-    this.node_ = this.menuNode();
+    const firstNode =
+        this.menuNode().find({role: chrome.automation.RoleType.BUTTON});
+    if (firstNode) {
+      this.node_ = firstNode;
+      this.updateFocusRing_();
+    }
 
     if (navNode.location)
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location, actions.length);
     else
       console.log('Unable to show Switch Access menu.');
-    this.moveForward();
   }
 
   /**
