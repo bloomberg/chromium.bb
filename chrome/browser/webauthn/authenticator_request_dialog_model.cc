@@ -110,6 +110,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
   previously_paired_with_bluetooth_authenticator_ =
       previously_paired_bluetooth_device_list &&
       !previously_paired_bluetooth_device_list->GetList().empty();
+
   StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 }
 
@@ -117,6 +118,16 @@ void AuthenticatorRequestDialogModel::
     StartGuidedFlowForMostLikelyTransportOrShowTransportSelection() {
   DCHECK(current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kNotStarted);
+
+  // If no authenticator other than the one for the native Windows API is
+  // available, don't show Chrome UI but proceed straight to the native
+  // Windows UI.
+  if (transport_availability_.has_win_native_api_authenticator &&
+      transport_availability_.available_transports.empty()) {
+    AbandonFlowAndDispatchToNativeWindowsApi();
+    return;
+  }
+
   auto most_likely_transport =
       SelectMostLikelyTransport(transport_availability_, last_used_transport_);
   if (most_likely_transport) {
@@ -164,6 +175,24 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     default:
       break;
   }
+}
+
+void AuthenticatorRequestDialogModel::
+    AbandonFlowAndDispatchToNativeWindowsApi() {
+  if (!transport_availability()->has_win_native_api_authenticator ||
+      transport_availability()->win_native_api_authenticator_id.empty()) {
+    DCHECK(false);
+    SetCurrentStep(Step::kClosed);
+    return;
+  }
+
+  // There is no AuthenticatorReference for the Windows authenticator,
+  // hence directly call DispatchRequestAsyncInternal here.
+  DispatchRequestAsyncInternal(
+      transport_availability()->win_native_api_authenticator_id,
+      base::TimeDelta());
+
+  SetCurrentStep(Step::kClosed);
 }
 
 void AuthenticatorRequestDialogModel::
@@ -334,8 +363,9 @@ void AuthenticatorRequestDialogModel::OnRequestComplete() {
 }
 
 void AuthenticatorRequestDialogModel::OnRequestTimeout() {
-  DCHECK(!is_request_complete());
-  SetCurrentStep(Step::kTimedOut);
+  // The request may time out while the UI shows a different error.
+  if (!is_request_complete())
+    SetCurrentStep(Step::kTimedOut);
 }
 
 void AuthenticatorRequestDialogModel::OnActivatedKeyNotRegistered() {
@@ -397,9 +427,9 @@ void AuthenticatorRequestDialogModel::SetBleDevicePairedCallback(
 void AuthenticatorRequestDialogModel::AddAuthenticator(
     const device::FidoAuthenticator& authenticator) {
   if (!authenticator.AuthenticatorTransport()) {
-    // AuthenticatorTransport is nullopt if we cannot determine the transport
-    // upfront, i.e. for the Windows API authenticator. The UI will be
-    // suppressed for this authenticator, so we can simply ignore it here.
+#if defined(OS_WIN)
+    DCHECK(authenticator.IsWinNativeApiAuthenticator());
+#endif  // defined(OS_WIN)
     return;
   }
 
@@ -424,19 +454,23 @@ void AuthenticatorRequestDialogModel::RemoveAuthenticator(
 void AuthenticatorRequestDialogModel::DispatchRequestAsync(
     AuthenticatorReference* authenticator,
     base::TimeDelta delay) {
-  if (!request_callback_)
-    return;
-
   // Dispatching to the same authenticator twice may result in unexpected
   // behavior.
   if (authenticator->dispatched())
     return;
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(request_callback_, authenticator->authenticator_id()),
-      delay);
+  DispatchRequestAsyncInternal(authenticator->authenticator_id(), delay);
   authenticator->SetDispatched(true);
+}
+
+void AuthenticatorRequestDialogModel::DispatchRequestAsyncInternal(
+    const std::string& authenticator_id,
+    base::TimeDelta delay) {
+  if (!request_callback_)
+    return;
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(request_callback_, authenticator_id), delay);
 }
 
 void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(

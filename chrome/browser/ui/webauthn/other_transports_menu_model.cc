@@ -28,6 +28,19 @@ OtherTransportsMenuModel::OtherTransportsMenuModel(
   DCHECK(dialog_model);
   dialog_model_->AddObserver(this);
 
+#if defined(OS_WIN)
+  // During the caBLE dialog, if the native Windows authenticator is available,
+  // show a single pseudo transport value for switching to the native Windows
+  // option.
+  if (dialog_model_->transport_availability()
+          ->has_win_native_api_authenticator) {
+    DCHECK(current_transport ==
+           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
+    AppendItemForNativeWinApi();
+    return;
+  }
+#endif  // defined(OS_WIN)
+
   if (current_transport == AuthenticatorTransport::kBluetoothLowEnergy)
     AppendItemForAnotherBluetoothKey();
   PopulateWithTransportsExceptFor(current_transport);
@@ -61,6 +74,20 @@ void OtherTransportsMenuModel::AppendItemForAnotherBluetoothKey() {
       GetTransportIcon(AuthenticatorTransport::kBluetoothLowEnergy));
 }
 
+#if defined(OS_WIN)
+// Magic command ID for calling AbandonFlowAndDispatchToNativeWindowsApi().
+// This must not be a defined AuthenticatorTransport value.
+constexpr int kWinNativeApiMenuCommand = 999;
+
+void OtherTransportsMenuModel::AppendItemForNativeWinApi() {
+  AddItemWithIcon(
+      kWinNativeApiMenuCommand,
+      l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_TRANSPORT_POPUP_DIFFERENT_AUTHENTICATOR_WIN),
+      GetTransportIcon(AuthenticatorTransport::kUsbHumanInterfaceDevice));
+}
+#endif  // defined(OS_WIN)
+
 bool OtherTransportsMenuModel::IsCommandIdChecked(int command_id) const {
   return false;
 }
@@ -70,10 +97,20 @@ bool OtherTransportsMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 void OtherTransportsMenuModel::ExecuteCommand(int command_id, int event_flags) {
+  DCHECK(dialog_model_);
+
+#if defined(OS_WIN)
+  if (command_id == kWinNativeApiMenuCommand) {
+    DCHECK(dialog_model_->transport_availability()
+               ->has_win_native_api_authenticator);
+    dialog_model_->AbandonFlowAndDispatchToNativeWindowsApi();
+    return;
+  }
+#endif  // defined(OS_WIN)
+
   AuthenticatorTransport selected_transport =
       static_cast<AuthenticatorTransport>(command_id);
 
-  DCHECK(dialog_model_);
   bool pair_with_new_bluetooth_device = false;
   if (selected_transport == AuthenticatorTransport::kBluetoothLowEnergy &&
       dialog_model_->current_step() ==

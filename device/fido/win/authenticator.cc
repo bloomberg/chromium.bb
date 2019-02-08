@@ -279,6 +279,10 @@ WinWebAuthnApiAuthenticator::AuthenticatorTransport() const {
   return base::nullopt;
 }
 
+bool WinWebAuthnApiAuthenticator::IsWinNativeApiAuthenticator() const {
+  return true;
+}
+
 const base::Optional<AuthenticatorSupportedOptions>&
 WinWebAuthnApiAuthenticator::Options() const {
   // The request can potentially be fulfilled by any device that Windows
