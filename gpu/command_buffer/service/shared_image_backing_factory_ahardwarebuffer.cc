@@ -82,12 +82,10 @@ class SharedImageBackingAHB : public SharedImageBacking {
       MemoryTypeTracker* tracker) override;
 
  private:
-  bool GenGLTexture();
+  gles2::Texture* GenGLTexture();
   base::android::ScopedHardwareBufferHandle hardware_buffer_handle_;
 
-  // This texture will be lazily initialised/created when ProduceGLTexture is
-  // called.
-  gles2::Texture* texture_ = nullptr;
+  gles2::Texture* legacy_texture_ = nullptr;
 
   // TODO(vikassoni): In future when we add begin/end write support, we will
   // need to properly use this flag to pass the is_cleared_ information to
@@ -100,7 +98,6 @@ class SharedImageBackingAHB : public SharedImageBacking {
   base::ScopedFD gl_write_sync_fd_;
   base::ScopedFD vk_read_sync_fd_;
 
-  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
 };
 
@@ -114,6 +111,11 @@ class SharedImageRepresentationGLTextureAHB
                                         gles2::Texture* texture)
       : SharedImageRepresentationGLTexture(manager, backing, tracker),
         texture_(texture) {}
+
+  ~SharedImageRepresentationGLTextureAHB() override {
+    if (texture_)
+      texture_->RemoveLightweightRef(has_context());
+  }
 
   gles2::Texture* GetTexture() override { return texture_; }
 
@@ -148,6 +150,11 @@ class SharedImageRepresentationGLTextureAHB
 
       // Pass this fd to its backing.
       ahb_backing()->SetGLWriteSyncFd(std::move(sync_fd));
+
+      if (texture_) {
+        if (texture_->IsLevelCleared(texture_->target(), 0))
+          backing()->SetCleared();
+      }
     }
   }
 
@@ -171,16 +178,20 @@ class SharedImageRepresentationSkiaGLAHB
       SharedImageBacking* backing,
       sk_sp<SkPromiseImageTexture> cached_promise_image_texture,
       MemoryTypeTracker* tracker,
-      GLenum target,
-      GLuint service_id)
+      gles2::Texture* texture)
       : SharedImageRepresentationSkia(manager, backing, tracker),
-        promise_texture_(cached_promise_image_texture) {
+        promise_texture_(cached_promise_image_texture),
+        texture_(std::move(texture)) {
 #if DCHECK_IS_ON()
     context_ = gl::GLContext::GetCurrent();
 #endif
   }
 
-  ~SharedImageRepresentationSkiaGLAHB() override { DCHECK(!write_surface_); }
+  ~SharedImageRepresentationSkiaGLAHB() override {
+    DCHECK(!write_surface_);
+    if (texture_)
+      texture_->RemoveLightweightRef(has_context());
+  }
 
   sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,
@@ -229,6 +240,11 @@ class SharedImageRepresentationSkiaGLAHB
 
     // Pass this fd to its backing.
     ahb_backing()->SetGLWriteSyncFd(std::move(sync_fd));
+
+    if (texture_) {
+      if (texture_->IsLevelCleared(texture_->target(), 0))
+        backing()->SetCleared();
+    }
   }
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
@@ -259,6 +275,7 @@ class SharedImageRepresentationSkiaGLAHB
   }
 
   sk_sp<SkPromiseImageTexture> promise_texture_;
+  gles2::Texture* texture_;
   SkSurface* write_surface_ = nullptr;
 #if DCHECK_IS_ON()
   gl::GLContext* context_;
@@ -482,18 +499,15 @@ SharedImageBackingAHB::~SharedImageBackingAHB() {
   // Check to make sure buffer is explicitly destroyed using Destroy() api
   // before this destructor is called.
   DCHECK(!hardware_buffer_handle_.is_valid());
-  DCHECK(!texture_);
 }
 
 bool SharedImageBackingAHB::IsCleared() const {
-  if (texture_)
-    return texture_->IsLevelCleared(texture_->target(), 0);
   return is_cleared_;
 }
 
 void SharedImageBackingAHB::SetCleared() {
-  if (texture_)
-    texture_->SetLevelCleared(texture_->target(), 0, true);
+  if (legacy_texture_)
+    legacy_texture_->SetLevelCleared(legacy_texture_->target(), 0, true);
   is_cleared_ = true;
 }
 
@@ -502,18 +516,18 @@ void SharedImageBackingAHB::Update() {}
 bool SharedImageBackingAHB::ProduceLegacyMailbox(
     MailboxManager* mailbox_manager) {
   DCHECK(hardware_buffer_handle_.is_valid());
-  if (!GenGLTexture())
+  legacy_texture_ = GenGLTexture();
+  if (!legacy_texture_)
     return false;
-  DCHECK(texture_);
-  mailbox_manager->ProduceTexture(mailbox(), texture_);
+  mailbox_manager->ProduceTexture(mailbox(), legacy_texture_);
   return true;
 }
 
 void SharedImageBackingAHB::Destroy() {
   DCHECK(hardware_buffer_handle_.is_valid());
-  if (texture_) {
-    texture_->RemoveLightweightRef(have_context());
-    texture_ = nullptr;
+  if (legacy_texture_) {
+    legacy_texture_->RemoveLightweightRef(have_context());
+    legacy_texture_ = nullptr;
   }
   hardware_buffer_handle_.reset();
 }
@@ -548,12 +562,12 @@ SharedImageBackingAHB::ProduceGLTexture(SharedImageManager* manager,
                                         MemoryTypeTracker* tracker) {
   // Use same texture for all the texture representations generated from same
   // backing.
-  if (!GenGLTexture())
+  auto* texture = GenGLTexture();
+  if (!texture)
     return nullptr;
 
-  DCHECK(texture_);
   return std::make_unique<SharedImageRepresentationGLTextureAHB>(
-      manager, this, tracker, texture_);
+      manager, this, tracker, std::move(texture));
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -567,26 +581,21 @@ SharedImageBackingAHB::ProduceSkia(SharedImageManager* manager,
     return std::make_unique<SharedImageRepresentationSkiaVkAHB>(manager, this);
   }
 
-  if (!GenGLTexture())
+  auto* texture = GenGLTexture();
+  if (!texture)
     return nullptr;
 
-  if (!cached_promise_texture_) {
-    GrBackendTexture backend_texture;
-    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                        texture_->target(), size(), texture_->service_id(),
-                        format(), &backend_texture);
-    cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
-  }
-  DCHECK(texture_);
+  GrBackendTexture backend_texture;
+  GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
+                      texture->target(), size(), texture->service_id(),
+                      format(), &backend_texture);
+  sk_sp<SkPromiseImageTexture> promise_texture =
+      SkPromiseImageTexture::Make(backend_texture);
   return std::make_unique<SharedImageRepresentationSkiaGLAHB>(
-      manager, this, cached_promise_texture_, tracker, texture_->target(),
-      texture_->service_id());
+      manager, this, promise_texture, tracker, std::move(texture));
 }
 
-bool SharedImageBackingAHB::GenGLTexture() {
-  if (texture_)
-    return true;
-
+gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
   DCHECK(hardware_buffer_handle_.is_valid());
 
   // Target for AHB backed egl images.
@@ -615,23 +624,23 @@ bool SharedImageBackingAHB::GenGLTexture() {
     LOG(ERROR) << "Failed to create EGL image ";
     api->glBindTextureFn(target, old_texture_binding);
     api->glDeleteTexturesFn(1, &service_id);
-    return false;
+    return nullptr;
   }
   if (!egl_image->BindTexImage(target)) {
     LOG(ERROR) << "Failed to bind egl image";
     api->glBindTextureFn(target, old_texture_binding);
     api->glDeleteTexturesFn(1, &service_id);
-    return false;
+    return nullptr;
   }
 
   // Create a gles2 Texture.
-  texture_ = new gles2::Texture(service_id);
-  texture_->SetLightweightRef();
-  texture_->SetTarget(target, 1);
-  texture_->sampler_state_.min_filter = GL_LINEAR;
-  texture_->sampler_state_.mag_filter = GL_LINEAR;
-  texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-  texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+  auto* texture = new gles2::Texture(service_id);
+  texture->SetLightweightRef();
+  texture->SetTarget(target, 1);
+  texture->sampler_state_.min_filter = GL_LINEAR;
+  texture->sampler_state_.mag_filter = GL_LINEAR;
+  texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+  texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
 
   // If the backing is already cleared, no need to clear it again.
   gfx::Rect cleared_rect;
@@ -640,14 +649,14 @@ bool SharedImageBackingAHB::GenGLTexture() {
 
   GLenum gl_format = viz::GLDataFormat(format());
   GLenum gl_type = viz::GLDataType(format());
-  texture_->SetLevelInfo(target, 0, egl_image->GetInternalFormat(),
-                         size().width(), size().height(), 1, 0, gl_format,
-                         gl_type, cleared_rect);
-  texture_->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
-  texture_->SetImmutable(true);
+  texture->SetLevelInfo(target, 0, egl_image->GetInternalFormat(),
+                        size().width(), size().height(), 1, 0, gl_format,
+                        gl_type, cleared_rect);
+  texture->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
+  texture->SetImmutable(true);
   api->glBindTextureFn(target, old_texture_binding);
   DCHECK_EQ(egl_image->GetInternalFormat(), gl_format);
-  return true;
+  return texture;
 }
 
 SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
