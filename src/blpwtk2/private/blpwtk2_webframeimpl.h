@@ -41,7 +41,7 @@ namespace blpwtk2 {
 
 // This is the implementation of the blpwtk2::WebFrame interface.
 class WebFrameImpl : public WebFrame,
-                     private blink::WebContentSettingsClient
+                     public blink::WebContentSettingsClient
 {
     // DATA
     blink::WebFrame* d_impl;
