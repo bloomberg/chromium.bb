@@ -208,8 +208,6 @@ class MenuManager {
       scrollableAncestor = scrollableAncestor.parent;
 
     if (scrollableAncestor.scrollable) {
-      // TODO(crbug/920659) This does not work for ARC++. Implement scroll
-      // directions via standardActions.
       if (scrollableAncestor.scrollX > scrollableAncestor.scrollXMin)
         actions.push(MenuManager.Action.SCROLL_LEFT);
       if (scrollableAncestor.scrollX < scrollableAncestor.scrollXMax)
@@ -219,8 +217,10 @@ class MenuManager {
       if (scrollableAncestor.scrollY < scrollableAncestor.scrollYMax)
         actions.push(MenuManager.Action.SCROLL_DOWN);
     }
+    const standardActions = /** @type {!Array<MenuManager.Action>} */ (
+        node.standardActions.filter(action => action in MenuManager.Action));
 
-    return actions;
+    return actions.concat(standardActions);
   }
 
   /**
@@ -251,6 +251,8 @@ class MenuManager {
         event.data === MenuManager.Action.SCROLL_LEFT ||
         event.data === MenuManager.Action.SCROLL_RIGHT)
       this.navigationManager_.scroll(event.data);
+    else
+      this.navigationManager_.performActionOnCurrentNode(event.data);
   }
 
   /**
@@ -276,18 +278,21 @@ class MenuManager {
  * @const
  */
 MenuManager.Action = {
+  DECREMENT: chrome.automation.ActionType.DECREMENT,
   DICTATION: 'dictation',
+  INCREMENT: chrome.automation.ActionType.INCREMENT,
   // This opens the Switch Access settings in a new Chrome tab.
   OPTIONS: 'options',
-  SCROLL_BACKWARD: 'scroll-backward',
-  SCROLL_DOWN: 'scroll-down',
-  SCROLL_FORWARD: 'scroll-forward',
-  SCROLL_LEFT: 'scroll-left',
-  SCROLL_RIGHT: 'scroll-right',
-  SCROLL_UP: 'scroll-up',
+  SCROLL_BACKWARD: chrome.automation.ActionType.SCROLL_BACKWARD,
+  SCROLL_DOWN: chrome.automation.ActionType.SCROLL_DOWN,
+  SCROLL_FORWARD: chrome.automation.ActionType.SCROLL_FORWARD,
+  SCROLL_LEFT: chrome.automation.ActionType.SCROLL_LEFT,
+  SCROLL_RIGHT: chrome.automation.ActionType.SCROLL_RIGHT,
+  SCROLL_UP: chrome.automation.ActionType.SCROLL_UP,
   // This either performs the default action or enters a new scope, as
   // applicable.
-  SELECT: 'select'
+  SELECT: 'select',
+  SHOW_CONTEXT_MENU: chrome.automation.ActionType.SHOW_CONTEXT_MENU
 };
 
 /**

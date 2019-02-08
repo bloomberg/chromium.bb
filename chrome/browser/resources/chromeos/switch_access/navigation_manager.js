@@ -146,7 +146,7 @@ class NavigationManager {
   scroll(scrollAction) {
     // Find the closest ancestor to the current node that is scrollable.
     let scrollNode = this.node_;
-    while (scrollNode && scrollNode.scrollX === undefined)
+    while (scrollNode && !scrollNode.scrollable)
       scrollNode = scrollNode.parent;
     if (!scrollNode)
       return;
@@ -213,6 +213,16 @@ class NavigationManager {
     }
 
     this.node_.doDefault();
+  }
+
+  /**
+   * Performs |action| on the current node, if an appropriate action exists.
+   * @param {!MenuManager.Action} action
+   */
+  performActionOnCurrentNode(action) {
+    if (action in chrome.automation.ActionType)
+      this.node_.performStandardAction(
+          /** @type {chrome.automation.ActionType} */ (action));
   }
 
   // ----------------------Private Methods---------------------
