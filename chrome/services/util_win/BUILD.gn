@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "util_win_impl.cc",
@@ -22,9 +20,4 @@ source_set("lib") {
     "//chrome/services/util_win/public/mojom",
     "//services/service_manager/public/cpp",
   ]
-}
-
-service_manifest("manifest") {
-  name = "util_win"
-  source = "manifest.json"
 }

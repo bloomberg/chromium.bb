@@ -560,7 +560,7 @@ source_set("chrome_packaged_service_manifests") {
     "//chrome/common:buildflags",
     "//chrome/common:mojo_bindings",
     "//chrome/services/file_util/public/cpp:manifest",
-    "//chrome/services/noop:manifest",
+    "//chrome/services/noop/public/cpp:manifest",
     "//components/services/patch:manifest",
     "//components/services/unzip:manifest",
     "//components/spellcheck/common:interfaces",
@@ -574,7 +574,7 @@ source_set("chrome_packaged_service_manifests") {
   ]
 
   if (enable_extensions) {
-    deps += [ "//chrome/services/removable_storage_writer:manifest" ]
+    deps += [ "//chrome/services/removable_storage_writer/public/cpp:manifest" ]
   }
 
   if (enable_extensions || is_android) {
@@ -586,7 +586,7 @@ source_set("chrome_packaged_service_manifests") {
   }
 
   if (enable_print_preview) {
-    deps += [ "//chrome/services/printing:manifest" ]
+    deps += [ "//chrome/services/printing/public/cpp:manifest" ]
   }
 
   if (enable_isolated_xr_service) {
@@ -600,8 +600,8 @@ source_set("chrome_packaged_service_manifests") {
 
   if (is_win) {
     deps += [
-      "//chrome/services/util_win:manifest",
-      "//chrome/services/wifi_util_win:manifest",
+      "//chrome/services/util_win/public/cpp:manifest",
+      "//chrome/services/wifi_util_win/public/cpp:manifest",
     ]
   }
 

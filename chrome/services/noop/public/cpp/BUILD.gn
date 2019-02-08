@@ -14,3 +14,14 @@ source_set("cpp") {
     "//services/service_manager/public/cpp",
   ]
 }
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+  ]
+}
