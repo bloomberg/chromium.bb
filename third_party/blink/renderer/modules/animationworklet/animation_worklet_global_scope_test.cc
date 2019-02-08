@@ -13,18 +13,15 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
-#include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
+#include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -76,42 +73,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
-  std::unique_ptr<AnimationAndPaintWorkletThread>
-  CreateAnimationAndPaintWorkletThread(
-      AnimationWorkletProxyClient* proxy_client) {
-    std::unique_ptr<AnimationAndPaintWorkletThread> thread =
-        AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
-            *reporting_proxy_);
-
-    WorkerClients* clients = WorkerClients::Create();
-    if (proxy_client)
-      ProvideAnimationWorkletProxyClientTo(clients, proxy_client);
-
-    Document* document = &GetDocument();
-    thread->Start(
-        std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::ScriptType::kModule,
-            OffMainThreadWorkerScriptFetchOption::kEnabled,
-            document->UserAgent(), nullptr /* web_worker_fetch_context */,
-            Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
-            document->GetSecurityOrigin(), document->IsSecureContext(),
-            document->GetHttpsState(), clients, document->AddressSpace(),
-            OriginTrialContext::GetTokens(document).get(),
-            base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault,
-            MakeGarbageCollected<WorkletModuleResponsesMap>()),
-        base::nullopt, std::make_unique<WorkerDevToolsParams>(),
-        ParentExecutionContextTaskRunners::Create());
-    return thread;
-  }
-
   using TestCalback = void (AnimationWorkletGlobalScopeTest::*)(WorkerThread*,
                                                                 WaitableEvent*);
   // Create a new animation worklet and run the callback task on it. Terminate
   // the worklet once the task completion is signaled.
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet =
-        CreateAnimationAndPaintWorkletThread(nullptr);
+        CreateAnimationAndPaintWorkletThread(&GetDocument(),
+                                             reporting_proxy_.get());
     WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
@@ -410,13 +379,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     waitable_event->Signal();
   }
 
-  void AddGlobalScopeForTesting(WorkerThread* thread,
-                                AnimationWorkletProxyClient* proxy_client,
-                                WaitableEvent* waitable_event) {
-    proxy_client->AddGlobalScopeForTesting(
-        To<WorkletGlobalScope>(thread->GlobalScope()));
-    waitable_event->Signal();
-  }
+  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 
  private:
   // Returns false when a script evaluation error happens.
@@ -436,8 +399,6 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     ScriptValue value = module.Evaluate(script_state);
     return value.IsEmpty();
   }
-
-  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
 TEST_F(AnimationWorkletGlobalScopeTest, BasicParsing) {
@@ -469,8 +430,8 @@ TEST_F(AnimationWorkletGlobalScopeTest,
        ShouldRegisterItselfAfterFirstAnimatorRegistration) {
   MockAnimationWorkletProxyClient* proxy_client =
       MakeGarbageCollected<MockAnimationWorkletProxyClient>();
-  std::unique_ptr<WorkerThread> worklet =
-      CreateAnimationAndPaintWorkletThread(proxy_client);
+  std::unique_ptr<WorkerThread> worklet = CreateAnimationAndPaintWorkletThread(
+      &GetDocument(), reporting_proxy_.get(), proxy_client);
   // Animation worklet global scope (AWGS) should not register itself upon
   // creation.
   EXPECT_FALSE(proxy_client->did_add_global_scope());
@@ -497,80 +458,6 @@ TEST_F(AnimationWorkletGlobalScopeTest,
 
   worklet->Terminate();
   worklet->WaitForShutdownForTesting();
-}
-
-TEST_F(AnimationWorkletGlobalScopeTest, SelectGlobalScope) {
-  AnimationWorkletProxyClient* proxy_client =
-      MakeGarbageCollected<MockAnimationWorkletProxyClient>();
-
-  // Global scopes must be created on worker threads.
-  std::unique_ptr<WorkerThread> first_worklet =
-      CreateAnimationAndPaintWorkletThread(proxy_client);
-  std::unique_ptr<WorkerThread> second_worklet =
-      CreateAnimationAndPaintWorkletThread(proxy_client);
-
-  ASSERT_NE(first_worklet, second_worklet);
-
-  // Register global scopes with proxy client. This step must be performed on
-  // the worker threads.
-  WaitableEvent waitable_event;
-  PostCrossThreadTask(
-      *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBind(
-          &AnimationWorkletGlobalScopeTest::AddGlobalScopeForTesting,
-          CrossThreadUnretained(this),
-          CrossThreadUnretained(first_worklet.get()),
-          CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client),
-          CrossThreadUnretained(&waitable_event)));
-  waitable_event.Wait();
-
-  waitable_event.Reset();
-  PostCrossThreadTask(
-      *second_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBind(
-          &AnimationWorkletGlobalScopeTest::AddGlobalScopeForTesting,
-          CrossThreadUnretained(this),
-          CrossThreadUnretained(second_worklet.get()),
-          CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client),
-          CrossThreadUnretained(&waitable_event)));
-  waitable_event.Wait();
-
-  AnimationWorkletGlobalScope* stateful_global_scope =
-      proxy_client->global_scopes_[0];
-  AnimationWorkletGlobalScope* first_stateless_global_scope =
-      proxy_client->global_scopes_[0];
-  AnimationWorkletGlobalScope* second_stateless_global_scope =
-      proxy_client->global_scopes_[1];
-
-  // Initialize switch countdown to 1, to force a switch in the stateless
-  // global scope on the second call.
-  proxy_client->next_global_scope_switch_countdown_ = 1;
-  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
-            first_stateless_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
-            second_stateless_global_scope);
-
-  // Increase countdown and verify that the switchover adjusts as expected.
-  proxy_client->next_global_scope_switch_countdown_ = 3;
-  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
-            second_stateless_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
-            second_stateless_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
-            second_stateless_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
-  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
-            first_stateless_global_scope);
-
-  first_worklet->Terminate();
-  first_worklet->WaitForShutdownForTesting();
-  second_worklet->Terminate();
-  second_worklet->WaitForShutdownForTesting();
 }
 
 }  // namespace blink

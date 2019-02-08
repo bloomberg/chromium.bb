@@ -62,11 +62,11 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   static AnimationWorkletProxyClient* From(WorkerClients*);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletGlobalScopeTest, SelectGlobalScope);
   FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
                            AnimationWorkletProxyClientConstruction);
   FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
                            RegisteredAnimatorNameShouldSyncOnce);
+  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest, SelectGlobalScope);
 
   // Separate global scope selectors are used instead of overriding
   // Worklet::SelectGlobalScope since two different selection mechanisms are
