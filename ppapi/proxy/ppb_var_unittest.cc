@@ -36,7 +36,7 @@ class PPB_VarTest : public PluginProxyTest {
         ppb_var_(ppapi::PPB_Var_Shared::GetVarInterface1_2()) {
     // Set the value of test_strings_[i] to "i".
     for (size_t i = 0; i < kNumStrings; ++i)
-      test_strings_[i] = base::IntToString(static_cast<int>(i));
+      test_strings_[i] = base::NumberToString(i);
   }
  protected:
   std::vector<std::string> test_strings_;
