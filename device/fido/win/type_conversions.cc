@@ -216,7 +216,7 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
           {L"ConstraintError",
            CtapDeviceResponseCode::kCtap2ErrUnsupportedOption},
           {L"NotSupportedError",
-           CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithms},
+           CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm},
           {L"NotAllowedError",
            CtapDeviceResponseCode::kCtap2ErrOperationDenied},
           {L"UnknownError", CtapDeviceResponseCode::kCtap2ErrOther},
