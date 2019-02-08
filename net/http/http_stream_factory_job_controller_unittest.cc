@@ -110,23 +110,6 @@ class FailingHostResolver : public MockHostResolverBase {
   }
 };
 
-// TODO(xunjieli): This should just use HangingHostResolver from
-// mock_host_resolver.h
-class HangingResolver : public MockHostResolverBase {
- public:
-  HangingResolver() : MockHostResolverBase(false /*use_caching*/) {}
-  ~HangingResolver() override = default;
-
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const NetLogWithSource& net_log) override {
-    return ERR_IO_PENDING;
-  }
-};
-
 // A mock HttpServerProperties that always returns false for IsInitialized().
 class MockHttpServerProperties : public HttpServerPropertiesImpl {
  public:
@@ -1832,7 +1815,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, ResumeMainJobLaterCanceled) {
   session_deps_.proxy_resolution_service = std::move(proxy_resolution_service);
 
   // Using hanging resolver will cause the alternative job to hang indefinitely.
-  session_deps_.host_resolver = std::make_unique<HangingResolver>();
+  session_deps_.alternate_host_resolver =
+      std::make_unique<HangingHostResolver>();
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -2032,7 +2016,8 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 // scheme is HTTPS.
 TEST_F(HttpStreamFactoryJobControllerTest, HttpsURL) {
   // Using hanging resolver will cause the alternative job to hang indefinitely.
-  session_deps_.host_resolver = std::make_unique<HangingResolver>();
+  session_deps_.alternate_host_resolver =
+      std::make_unique<HangingHostResolver>();
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -2055,7 +2040,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, HttpsURL) {
 // does not fetch the resource through a proxy.
 TEST_F(HttpStreamFactoryJobControllerTest, HttpURLWithNoProxy) {
   // Using hanging resolver will cause the alternative job to hang indefinitely.
-  session_deps_.host_resolver = std::make_unique<HangingResolver>();
+  session_deps_.alternate_host_resolver =
+      std::make_unique<HangingHostResolver>();
 
   HttpRequestInfo request_info;
   request_info.method = "GET";

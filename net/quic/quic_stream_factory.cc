@@ -204,7 +204,8 @@ bssl::UniquePtr<SSL_CTX> QuicStreamFactoryCreateSslCtx() {
 class ServerIdOriginFilter
     : public quic::QuicCryptoClientConfig::ServerIdFilter {
  public:
-  ServerIdOriginFilter(const base::Callback<bool(const GURL&)> origin_filter)
+  explicit ServerIdOriginFilter(
+      const base::RepeatingCallback<bool(const GURL&)> origin_filter)
       : origin_filter_(origin_filter) {}
 
   bool Matches(const quic::QuicServerId& server_id) const override {
@@ -343,7 +344,6 @@ class QuicStreamFactory::Job {
   int DoConnect();
   int DoConnectComplete(int rv);
   int DoConfirmConnection(int rv);
-  int DoWaitForHostResolution();
   int DoValidateHost();
 
   void OnResolveHostComplete(int rv);
@@ -378,10 +378,12 @@ class QuicStreamFactory::Job {
       return;
 
     priority_ = priority;
-    if (io_state_ == STATE_RESOLVE_HOST_COMPLETE &&
-        !host_resolution_finished_) {
-      DCHECK(request_);
-      request_->ChangeRequestPriority(priority);
+    if (resolve_host_request_ && !host_resolution_finished_) {
+      if (fresh_resolve_host_request_) {
+        fresh_resolve_host_request_->ChangeRequestPriority(priority);
+      } else {
+        resolve_host_request_->ChangeRequestPriority(priority);
+      }
     }
   }
 
@@ -391,8 +393,6 @@ class QuicStreamFactory::Job {
 
   RequestPriority priority() const { return priority_; }
 
-  bool IsHostResolutionComplete() const { return host_resolution_finished_; }
-
  private:
   enum IoState {
     STATE_NONE,
@@ -400,7 +400,6 @@ class QuicStreamFactory::Job {
     STATE_RESOLVE_HOST_COMPLETE,
     STATE_CONNECT,
     STATE_CONNECT_COMPLETE,
-    STATE_WAIT_FOR_HOST_RESOLUTION,
     STATE_HOST_VALIDATION,
     STATE_CONFIRM_CONNECTION,
   };
@@ -417,7 +416,8 @@ class QuicStreamFactory::Job {
   }
 
   bool DoesPeerAddressMatchWithFreshAddressList() {
-    std::vector<net::IPEndPoint> endpoints = address_list_.endpoints();
+    std::vector<net::IPEndPoint> endpoints =
+        fresh_resolve_host_request_->GetAddressResults().value().endpoints();
     IPEndPoint stale_address = session_->peer_address().impl().socket_address();
 
     if (std::find(endpoints.begin(), endpoints.end(), stale_address) !=
@@ -431,7 +431,6 @@ class QuicStreamFactory::Job {
   QuicStreamFactory* factory_;
   quic::QuicTransportVersion quic_version_;
   HostResolver* host_resolver_;
-  std::unique_ptr<HostResolver::Request> request_;
   const QuicSessionAliasKey key_;
   RequestPriority priority_;
   const int cert_verify_flags_;
@@ -440,7 +439,6 @@ class QuicStreamFactory::Job {
   const bool race_stale_dns_on_connection_;
   const NetLogWithSource net_log_;
   int num_sent_client_hellos_;
-  bool dns_race_ongoing_;
   bool host_resolution_finished_;
   bool connection_retried_;
   QuicChromiumClientSession* session_;
@@ -449,8 +447,10 @@ class QuicStreamFactory::Job {
   NetworkChangeNotifier::NetworkHandle network_;
   CompletionOnceCallback host_resolution_callback_;
   CompletionOnceCallback callback_;
-  AddressList address_list_;
-  AddressList stale_address_list_;
+  std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
+  // Only set during DNS race. After completion, cleared or replaces
+  // |resolve_host_request_|.
+  std::unique_ptr<HostResolver::ResolveHostRequest> fresh_resolve_host_request_;
   base::TimeTicks dns_resolution_start_time_;
   base::TimeTicks dns_resolution_end_time_;
   std::set<QuicStreamRequest*> stream_requests_;
@@ -485,7 +485,6 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
           NetLogWithSource::Make(net_log.net_log(),
                                  NetLogSourceType::QUIC_STREAM_FACTORY_JOB)),
       num_sent_client_hellos_(0),
-      dns_race_ongoing_(false),
       host_resolution_finished_(false),
       connection_retried_(false),
       session_(nullptr),
@@ -538,9 +537,6 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
       case STATE_CONNECT_COMPLETE:
         rv = DoConnectComplete(rv);
         break;
-      case STATE_WAIT_FOR_HOST_RESOLUTION:
-        rv = DoWaitForHostResolution();
-        break;
       case STATE_HOST_VALIDATION:
         rv = DoValidateHost();
         break;
@@ -556,16 +552,17 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
 }
 
 void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
-  host_resolution_finished_ = true;
-  if (!race_stale_dns_on_connection_)
-    DCHECK_EQ(STATE_RESOLVE_HOST_COMPLETE, io_state_);
+  DCHECK(!host_resolution_finished_);
 
-  if (dns_race_ongoing_) {
+  if (fresh_resolve_host_request_) {
+    DCHECK(race_stale_dns_on_connection_);
     if (rv != OK) {
       CloseStaleHostConnection();
-      dns_race_ongoing_ = false;
+      resolve_host_request_ = std::move(fresh_resolve_host_request_);
       io_state_ = STATE_RESOLVE_HOST_COMPLETE;
-    } else if (factory_->HasMatchingIpSession(key_, address_list_)) {
+    } else if (factory_->HasMatchingIpSession(
+                   key_,
+                   fresh_resolve_host_request_->GetAddressResults().value())) {
       // Session with resolved IP has already existed, so close racing
       // connection, run callback, and return.
       LogConnectionIpPooling(true);
@@ -578,7 +575,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
       // hasn't finished yet.
       if (DoesPeerAddressMatchWithFreshAddressList()) {
         LogStaleAndFreshHostMatched(true);
-        dns_race_ongoing_ = false;
+        fresh_resolve_host_request_ = nullptr;
         return;
       }
       LogStaleAndFreshHostMatched(false);
@@ -586,12 +583,22 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
           NetLogEventType::
               QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
       CloseStaleHostConnection();
-      dns_race_ongoing_ = false;
+      resolve_host_request_ = std::move(fresh_resolve_host_request_);
       io_state_ = STATE_RESOLVE_HOST_COMPLETE;
-    }
+    }  // Else stale connection has already finished successfully.
+  } else {
+    // If not in DNS race, we should have been waiting for this callback in
+    // STATE_RESOLVE_HOST_COMPLETE.
+    DCHECK_EQ(STATE_RESOLVE_HOST_COMPLETE, io_state_);
   }
 
   rv = DoLoop(rv);
+
+  // Expect to be marked by either DoResolveHostComplete() or DoValidateHost().
+  DCHECK(host_resolution_finished_);
+
+  // DNS race should be completed either above or by DoValidateHost().
+  DCHECK(!fresh_resolve_host_request_);
 
   for (auto* request : stream_requests_) {
     request->OnHostResolutionComplete(rv);
@@ -630,30 +637,48 @@ int QuicStreamFactory::Job::DoResolveHost() {
 
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
 
-  int rv = host_resolver_->Resolve(
-      HostResolver::RequestInfo(key_.destination()), priority_, &address_list_,
-      base::Bind(&QuicStreamFactory::Job::OnResolveHostComplete, GetWeakPtr()),
-      &request_, net_log_);
+  HostResolver::ResolveHostParameters parameters;
+  parameters.initial_priority = priority_;
+  if (race_stale_dns_on_connection_) {
+    parameters.cache_usage =
+        HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+  }
+  resolve_host_request_ =
+      host_resolver_->CreateRequest(key_.destination(), net_log_, parameters);
+  // Unretained is safe because |this| owns the request, ensuring cancellation
+  // on destruction.
+  int rv = resolve_host_request_->Start(base::BindOnce(
+      &QuicStreamFactory::Job::OnResolveHostComplete, base::Unretained(this)));
 
-  if (rv != ERR_IO_PENDING || !race_stale_dns_on_connection_) {
+  if (rv == ERR_IO_PENDING || !resolve_host_request_->GetStaleInfo() ||
+      !resolve_host_request_->GetStaleInfo().value().is_stale()) {
+    // Not a stale result.
     if (race_stale_dns_on_connection_)
       LogStaleHostRacing(false);
     return rv;
   }
 
-  HostCache::EntryStaleness stale_info;
-  if (host_resolver_->ResolveStaleFromCache(
-          HostResolver::RequestInfo(key_.destination()), &stale_address_list_,
-          &stale_info, net_log_) == OK) {
-    io_state_ = STATE_CONNECT;
-    LogStaleHostRacing(true);
-    dns_race_ongoing_ = true;
-    return OK;
+  // If request resulted in a stale cache entry, start request for fresh results
+  DCHECK(race_stale_dns_on_connection_);
+
+  parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
+  fresh_resolve_host_request_ =
+      host_resolver_->CreateRequest(key_.destination(), net_log_, parameters);
+  // Unretained is safe because |this| owns the request, ensuring cancellation
+  // on destruction.
+  int fresh_rv = fresh_resolve_host_request_->Start(base::BindOnce(
+      &QuicStreamFactory::Job::OnResolveHostComplete, base::Unretained(this)));
+  if (fresh_rv != ERR_IO_PENDING) {
+    // Fresh request returned immediate results.
+    LogStaleHostRacing(false);
+    resolve_host_request_ = std::move(fresh_resolve_host_request_);
+    return rv;
   }
-  LogStaleHostRacing(false);
-  net_log_.AddEvent(
-      NetLogEventType::QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_FAILED);
-  return ERR_IO_PENDING;
+
+  io_state_ = STATE_CONNECT;
+  LogStaleHostRacing(true);
+  return OK;
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
@@ -662,12 +687,13 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
   if (rv != OK)
     return rv;
 
-  DCHECK(!dns_race_ongoing_);
+  DCHECK(!fresh_resolve_host_request_);
   DCHECK(!factory_->HasActiveSession(key_.session_key()));
 
   // Inform the factory of this resolution, which will set up
   // a session alias, if possible.
-  if (factory_->HasMatchingIpSession(key_, address_list_)) {
+  if (factory_->HasMatchingIpSession(
+          key_, resolve_host_request_->GetAddressResults().value())) {
     LogConnectionIpPooling(true);
     return OK;
   }
@@ -686,7 +712,7 @@ int QuicStreamFactory::Job::DoConnect() {
   DCHECK_NE(quic_version_, quic::QUIC_VERSION_UNSUPPORTED);
   int rv = factory_->CreateSession(
       key_, quic_version_, cert_verify_flags_, require_confirmation,
-      dns_race_ongoing_ ? stale_address_list_ : address_list_,
+      resolve_host_request_->GetAddressResults().value(),
       dns_resolution_start_time_, dns_resolution_end_time_, net_log_, &session_,
       &network_);
   DVLOG(1) << "Created session on network: " << network_;
@@ -716,36 +742,23 @@ int QuicStreamFactory::Job::DoConnect() {
 }
 
 int QuicStreamFactory::Job::DoConnectComplete(int rv) {
-  if (!dns_race_ongoing_) {
+  if (!fresh_resolve_host_request_) {
     io_state_ = STATE_CONFIRM_CONNECTION;
     return rv;
   }
 
   if (rv == OK) {
-    io_state_ = STATE_WAIT_FOR_HOST_RESOLUTION;
-    return OK;
+    io_state_ = STATE_HOST_VALIDATION;
+    return ERR_IO_PENDING;
   }
 
   // Connection from stale host resolution failed, has been closed and will
-  // be deleted soon. Update Job status accordingly.
-  dns_race_ongoing_ = false;
+  // be deleted soon. Update Job status accordingly to wait for fresh host
+  // resolution.
+  resolve_host_request_ = std::move(fresh_resolve_host_request_);
   session_ = nullptr;
-
-  if (address_list_.empty()) {
-    io_state_ = STATE_RESOLVE_HOST_COMPLETE;
-    return ERR_IO_PENDING;
-  }
-  // TODO(renjietang): Check if IP matches. If so, we don't need to try
-  // connecting with the bad IP again.
-  io_state_ = STATE_CONNECT;
-  return OK;
-}
-
-int QuicStreamFactory::Job::DoWaitForHostResolution() {
-  io_state_ = STATE_HOST_VALIDATION;
-  if (address_list_.empty())
-    return ERR_IO_PENDING;
-  return OK;
+  io_state_ = STATE_RESOLVE_HOST_COMPLETE;
+  return ERR_IO_PENDING;
 }
 
 // This state is reached iff both host resolution and connection from stale dns
@@ -753,6 +766,8 @@ int QuicStreamFactory::Job::DoWaitForHostResolution() {
 int QuicStreamFactory::Job::DoValidateHost() {
   if (DoesPeerAddressMatchWithFreshAddressList()) {
     LogStaleAndFreshHostMatched(true);
+    fresh_resolve_host_request_ = nullptr;
+    host_resolution_finished_ = true;
     io_state_ = STATE_CONFIRM_CONNECTION;
     return OK;
   }
@@ -760,9 +775,9 @@ int QuicStreamFactory::Job::DoValidateHost() {
   LogStaleAndFreshHostMatched(false);
   net_log_.AddEvent(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
-  dns_race_ongoing_ = false;
+  resolve_host_request_ = std::move(fresh_resolve_host_request_);
   CloseStaleHostConnection();
-  io_state_ = STATE_CONNECT;
+  io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   return OK;
 }
 
