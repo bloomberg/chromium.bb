@@ -111,9 +111,8 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
     return eob;
   }
 
-  (void)fast_mode;
   return av1_optimize_txb_new(cpi, mb, plane, block, tx_size, tx_type, txb_ctx,
-                              rate_cost, cpi->oxcf.sharpness);
+                              rate_cost, cpi->oxcf.sharpness, fast_mode);
 }
 
 enum {
@@ -232,8 +231,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                       tx_size, tx_type, AV1_XFORM_QUANT_FP);
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-      av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx, 1,
-                     &dummy_rate_cost);
+      av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
+                     args->cpi->sf.trellis_eob_fast, &dummy_rate_cost);
     } else {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
@@ -584,8 +583,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                       tx_size, tx_type, AV1_XFORM_QUANT_FP);
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-      av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx, 1,
-                     &dummy_rate_cost);
+      av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
+                     args->cpi->sf.trellis_eob_fast, &dummy_rate_cost);
     } else {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,

@@ -670,6 +670,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->mv.auto_mv_step_size = 0;
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
   sf->adaptive_rd_thresh = 0;
+  // TODO(sarahparker) Pair this with a speed setting once experiments are done
+  sf->trellis_eob_fast = 0;
   sf->tx_size_search_method = USE_FULL_RD;
   sf->inter_tx_size_search_init_depth_sqr = 0;
   sf->inter_tx_size_search_init_depth_rect = 0;

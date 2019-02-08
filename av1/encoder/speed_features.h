@@ -668,6 +668,9 @@ typedef struct SPEED_FEATURES {
   // Flag used to control the extent of coeff R-D optimization
   int perform_coeff_opt;
 
+  // Flag used to control the speed of the eob selection in trellis.
+  int trellis_eob_fast;
+
   // This flag controls the use of non-RD mode decision.
   int use_nonrd_pick_mode;
 

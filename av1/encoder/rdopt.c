@@ -3259,8 +3259,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
             RDCOST(x->rdmult, 0, AOMMIN(this_rd_stats.dist, this_rd_stats.sse));
         if (dist_cost_estimate - (dist_cost_estimate >> 3) > best_rd_) continue;
       }
-      av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx, 1,
-                     &rate_cost);
+      av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
+                     cpi->sf.trellis_eob_fast, &rate_cost);
     }
     if (eobs_ptr[block] == 0) {
       // When eob is 0, pixel domain distortion is more efficient and accurate.
@@ -3393,8 +3393,8 @@ RECON_INTRA:
       } else {
         av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                         tx_size, best_tx_type, AV1_XFORM_QUANT_FP);
-        av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx, 1,
-                       &rate_cost);
+        av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx,
+                       cpi->sf.trellis_eob_fast, &rate_cost);
       }
     }
 

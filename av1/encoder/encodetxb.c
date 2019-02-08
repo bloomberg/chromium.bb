@@ -1489,6 +1489,36 @@ static AOM_FORCE_INLINE void update_coeff_simple(
   }
 }
 
+static INLINE void update_coeff_eob_fast(int *eob, int shift,
+                                         const int16_t *dequant_ptr,
+                                         const int16_t *scan,
+                                         const tran_low_t *coeff_ptr,
+                                         tran_low_t *qcoeff_ptr,
+                                         tran_low_t *dqcoeff_ptr) {
+  // TODO(sarahparker) make this work for aomqm
+  int eob_out = *eob;
+  int zbin[2] = { dequant_ptr[0] + ROUND_POWER_OF_TWO(dequant_ptr[0] * 70, 7),
+                  dequant_ptr[1] + ROUND_POWER_OF_TWO(dequant_ptr[1] * 70, 7) };
+
+  for (int i = *eob - 1; i >= 0; i--) {
+    const int rc = scan[i];
+    const int qcoeff = qcoeff_ptr[rc];
+    const int coeff = coeff_ptr[rc];
+    const int coeff_sign = (coeff >> 31);
+    int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+
+    if (((abs_coeff << (1 + shift)) < zbin[rc != 0]) || (qcoeff == 0)) {
+      eob_out--;
+      qcoeff_ptr[rc] = 0;
+      dqcoeff_ptr[rc] = 0;
+    } else {
+      break;
+    }
+  }
+
+  *eob = eob_out;
+}
+
 static AOM_FORCE_INLINE void update_coeff_eob(
     int *accu_rate, int64_t *accu_dist, int *eob, int *nz_num, int *nz_ci,
     int si, TX_SIZE tx_size, TX_CLASS tx_class, int bwl, int height,
@@ -1624,32 +1654,43 @@ static INLINE void update_skip(int *accu_rate, int64_t accu_dist, int *eob,
 int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                          int block, TX_SIZE tx_size, TX_TYPE tx_type,
                          const TXB_CTX *const txb_ctx, int *rate_cost,
-                         int sharpness) {
-  const AV1_COMMON *cm = &cpi->common;
+                         int sharpness, int fast_mode) {
   MACROBLOCKD *xd = &x->e_mbd;
+  struct macroblockd_plane *pd = &xd->plane[plane];
+  const struct macroblock_plane *p = &x->plane[plane];
+  const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
+  const int16_t *scan = scan_order->scan;
+  const int shift = av1_get_tx_scale(tx_size);
+  int eob = p->eobs[block];
+  const int16_t *dequant = p->dequant_QTX;
+  tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
+  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
+
+  if (fast_mode) {
+    update_coeff_eob_fast(&eob, shift, dequant, scan, tcoeff, qcoeff, dqcoeff);
+    p->eobs[block] = eob;
+    if (eob == 0) {
+      *rate_cost = av1_cost_skip_txb(x, txb_ctx, plane, tx_size);
+      return eob;
+    }
+  }
+
+  const AV1_COMMON *cm = &cpi->common;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const MB_MODE_INFO *mbmi = xd->mi[0];
-  const struct macroblock_plane *p = &x->plane[plane];
-  struct macroblockd_plane *pd = &xd->plane[plane];
-  tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
-  const int16_t *dequant = p->dequant_QTX;
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
   assert(width == (1 << bwl));
   const int is_inter = is_inter_block(mbmi);
-  const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
-  const int16_t *scan = scan_order->scan;
   const LV_MAP_COEFF_COST *txb_costs = &x->coeff_costs[txs_ctx][plane_type];
   const int eob_multi_size = txsize_log2_minus4[tx_size];
   const LV_MAP_EOB_COST *txb_eob_costs =
       &x->eob_costs[eob_multi_size][plane_type];
 
-  const int shift = av1_get_tx_scale(tx_size);
   const int rshift =
       (sharpness +
        (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
@@ -1667,7 +1708,6 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  int eob = p->eobs[block];
 
   if (eob > 1) av1_txb_init_levels(qcoeff, width, height, levels);
 
@@ -1708,7 +1748,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
 #define UPDATE_COEFF_EOB_CASE(tx_class_literal)                            \
   case tx_class_literal:                                                   \
-    for (; si >= 0 && nz_num <= max_nz_num; --si) {                        \
+    for (; si >= 0 && nz_num <= max_nz_num && !fast_mode; --si) {          \
       update_coeff_eob(&accu_rate, &accu_dist, &eob, &nz_num, nz_ci, si,   \
                        tx_size, tx_class_literal, bwl, height,             \
                        txb_ctx->dc_sign_ctx, rdmult, shift, dequant, scan, \
