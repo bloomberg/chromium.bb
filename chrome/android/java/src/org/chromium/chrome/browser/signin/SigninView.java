@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
@@ -18,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.drawable.AnimationLooper;
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -136,13 +135,8 @@ public class SigninView extends LinearLayout {
     }
 
     static Drawable getExpandArrowDrawable(Context context) {
-        Drawable drawable =
-                AppCompatResources.getDrawable(context, R.drawable.ic_expand_more_black_24dp);
-        assert drawable != null;
-        Drawable tintableDrawable = DrawableCompat.wrap(drawable).mutate();
-        ColorStateList tint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
-        DrawableCompat.setTintList(tintableDrawable, tint);
-        return tintableDrawable;
+        return UiUtils.getTintedDrawable(
+                context, R.drawable.ic_expand_more_black_24dp, R.color.dark_mode_tint);
     }
 
     static Drawable getCheckmarkDrawable(Context context) {
