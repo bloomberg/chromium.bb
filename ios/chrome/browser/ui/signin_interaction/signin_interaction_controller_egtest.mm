@@ -246,7 +246,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-- (void)testSignInDisconnectFromChromeManaged {
+// TODO(crbug.com): Re-enable the test.
+- (void)DISABLED_testSignInDisconnectFromChromeManaged {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
