@@ -29,7 +29,7 @@ using extensions::SavedFileEntry;
 namespace {
 
 std::string GenerateId(int i) {
-  return base::IntToString(i) + ":filename.ext";
+  return base::NumberToString(i) + ":filename.ext";
 }
 
 }  // namespace
