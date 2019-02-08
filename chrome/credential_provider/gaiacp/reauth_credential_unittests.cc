@@ -16,12 +16,14 @@
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/com_fakes.h"
-#include "chrome/credential_provider/test/fake_gls_run_helper.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
+#include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
+
+namespace testing {
 
 namespace {
 
@@ -29,14 +31,17 @@ HRESULT CreateReauthCredentialWithProvider(
     IGaiaCredentialProvider* provider,
     IGaiaCredential** gaia_credential,
     ICredentialProviderCredential** credential) {
-  return testing::CreateInheritedCredentialWithProvider<CReauthCredential,
-                                                        IReauthCredential>(
+  return CreateInheritedCredentialWithProvider<CReauthCredential,
+                                               IReauthCredential>(
       provider, gaia_credential, credential);
 }
 
 }  // namespace
 
 class GcpReauthCredentialTest : public ::testing::Test {
+ protected:
+  FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
+
  private:
   void SetUp() override;
 
@@ -104,20 +109,18 @@ TEST_F(GcpReauthCredentialTest, UserGaiaIdMismatch) {
 
   // Create two fake users to reauth. One associated with the valid Gaia id
   // and the other associated to the invalid gaia id.
-  OSUserManager* manager = OSUserManager::Get();
   CComBSTR first_sid;
-  DWORD error;
-  ASSERT_EQ(S_OK, manager->AddUser(username, password, full_name, L"comment",
-                                   true, &first_sid, &error));
-  ASSERT_EQ(S_OK, SetUserProperty(
-                      OLE2CW(first_sid), A2CW(kKeyId),
-                      base::UTF8ToUTF16(test_data_storage.GetSuccessId())));
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                base::string16(), &first_sid));
 
   CComBSTR second_sid;
-  ASSERT_EQ(S_OK, manager->AddUser(L"foo_bar2", L"pwd2", L"name2", L"comment2",
-                                   true, &second_sid, &error));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(second_sid), A2CW(kKeyId),
-                                  base::UTF8ToUTF16(unexpected_gaia_id)));
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"foo_bar2", L"pwd2", L"name2", L"comment2",
+                      base::UTF8ToUTF16(unexpected_gaia_id), base::string16(),
+                      &second_sid));
 
   // Initialize a reauth credential for the valid gaia id.
   CComPtr<IReauthCredential> reauth;
@@ -147,25 +150,9 @@ TEST_F(GcpReauthCredentialTest, UserGaiaIdMismatch) {
   EXPECT_EQ(FALSE, provider.credentials_changed_fired());
 }
 
-class GcpReauthCredentialRunnableTest : public ::testing::Test {
- protected:
-  ~GcpReauthCredentialRunnableTest() override;
+class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 
-  void SetUp() override;
-
-  FakeGlsRunHelper* run_helper() { return &run_helper_; }
-
- private:
-  FakeGlsRunHelper run_helper_;
-};
-
-GcpReauthCredentialRunnableTest::~GcpReauthCredentialRunnableTest() = default;
-
-void GcpReauthCredentialRunnableTest::SetUp() {
-  run_helper_.SetUp();
-}
-
-TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
+TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
   CComBSTR username = L"foo_bar";
@@ -198,7 +185,7 @@ TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
   ASSERT_EQ(S_OK, reauth->SetOSUserInfo(sid, username));
   ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
 
@@ -215,7 +202,7 @@ TEST_F(GcpReauthCredentialRunnableTest, NormalReauth) {
   ASSERT_STREQ(test->GetErrorText(), NULL);
 }
 
-TEST_F(GcpReauthCredentialRunnableTest, DISABLED_GaiaIdMismatch) {
+TEST_F(GcpReauthCredentialGlsRunnerTest, GaiaIdMismatch) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
   CComBSTR username = L"foo_bar";
@@ -224,14 +211,12 @@ TEST_F(GcpReauthCredentialRunnableTest, DISABLED_GaiaIdMismatch) {
   CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
 
   // Create a fake user to reauth.
-  OSUserManager* manager = OSUserManager::Get();
   CComBSTR sid;
-  DWORD error;
-  ASSERT_EQ(S_OK, manager->AddUser(username, password, full_name, L"comment",
-                                   true, &sid, &error));
-  ASSERT_EQ(S_OK, SetUserProperty(
-                      OLE2CW(sid), L"id",
-                      base::UTF8ToUTF16(test_data_storage.GetSuccessId())));
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                base::string16(), &sid));
 
   std::string unexpected_gaia_id = "unexpected-gaia-id";
   FakeGaiaCredentialProvider provider;
@@ -248,7 +233,7 @@ TEST_F(GcpReauthCredentialRunnableTest, DISABLED_GaiaIdMismatch) {
   ASSERT_EQ(S_OK, reauth->SetOSUserInfo(sid, username));
   ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
   ASSERT_EQ(S_OK, test->SetGaiaIdOverride(unexpected_gaia_id));
@@ -266,5 +251,7 @@ TEST_F(GcpReauthCredentialRunnableTest, DISABLED_GaiaIdMismatch) {
   ASSERT_STREQ(test->GetErrorText(),
                GetStringResource(IDS_EMAIL_MISMATCH_BASE).c_str());
 }
+
+}  // namespace testing
 
 }  // namespace credential_provider

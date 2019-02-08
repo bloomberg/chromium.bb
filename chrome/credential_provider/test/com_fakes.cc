@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/stdafx.h"
+#include "chrome/credential_provider/test/test_credential.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {

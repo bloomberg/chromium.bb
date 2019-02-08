@@ -4,19 +4,25 @@
 
 #include "chrome/credential_provider/test/gcp_fakes.h"
 
-#include <windows.h>
+#include <utility>
+
 #include <lm.h>
 #include <sddl.h>
+#include <windows.h>
 
+#include <atlcomcli.h>
 #include <atlconv.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
@@ -25,9 +31,9 @@ namespace {
 
 HRESULT CreateArbitrarySid(DWORD subauth0, PSID* sid) {
   SID_IDENTIFIER_AUTHORITY Authority = {SECURITY_NON_UNIQUE_AUTHORITY};
-  if (!::AllocateAndInitializeSid(&Authority, 1, subauth0, 0, 0, 0, 0, 0,
-                                  0, 0, sid)) {
-    return(HRESULT_FROM_WIN32(::GetLastError()));
+  if (!::AllocateAndInitializeSid(&Authority, 1, subauth0, 0, 0, 0, 0, 0, 0, 0,
+                                  sid)) {
+    return (HRESULT_FROM_WIN32(::GetLastError()));
   }
   return S_OK;
 }
@@ -75,8 +81,8 @@ HRESULT FakeOSProcessManager::CreateProcessWithToken(
   PROCESS_INFORMATION new_procinfo = {};
   // Pass a copy of the command line string to CreateProcessW() because this
   // function could change the string.
-  std::unique_ptr<wchar_t, void (*)(void*)>
-      cmdline(_wcsdup(command_line.GetCommandLineString().c_str()), std::free);
+  std::unique_ptr<wchar_t, void (*)(void*)> cmdline(
+      _wcsdup(command_line.GetCommandLineString().c_str()), std::free);
   if (!::CreateProcessW(command_line.GetProgram().value().c_str(),
                         cmdline.get(), nullptr, nullptr, TRUE, CREATE_SUSPENDED,
                         nullptr, nullptr, &local_startupinfo, &new_procinfo)) {
@@ -251,6 +257,35 @@ const FakeOSUserManager::UserInfo FakeOSUserManager::GetUserInfo(
 
 HRESULT FakeOSUserManager::CreateNewSID(PSID* sid) {
   return CreateArbitrarySid(++next_rid_, sid);
+}
+
+// Static.
+HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
+                                            const base::string16& password,
+                                            const base::string16& fullname,
+                                            const base::string16& comment,
+                                            const base::string16& gaia_id,
+                                            const base::string16& email,
+                                            BSTR* sid) {
+  DWORD error;
+  HRESULT hr = AddUser(username.c_str(), password.c_str(), fullname.c_str(),
+                       comment.c_str(), true, sid, &error);
+  if (FAILED(hr))
+    return hr;
+
+  if (!gaia_id.empty()) {
+    hr = SetUserProperty(OLE2CW(*sid), base::UTF8ToUTF16(kKeyId), gaia_id);
+    if (FAILED(hr))
+      return hr;
+  }
+
+  if (!email.empty()) {
+    hr = SetUserProperty(OLE2CW(*sid), base::UTF8ToUTF16(kKeyEmail), email);
+    if (FAILED(hr))
+      return hr;
+  }
+
+  return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
-#include "chrome/credential_provider/test/fake_gls_run_helper.h"
+#include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,9 +15,6 @@ namespace testing {
 
 // This class is used to implement a test credential based off only
 // CGaiaCredentialBase which requires certain functions be implemented.
-
-// This class is used to implement a test credential based off only
-// CGaiaCredentialBase which requires certain
 class ATL_NO_VTABLE CTestCredentialForBase
     : public CTestCredentialBase<CGaiaCredentialBase>,
       public CComObjectRootEx<CComMultiThreadModel> {
@@ -47,9 +44,9 @@ CTestCredentialForBase::~CTestCredentialForBase() = default;
 namespace {
 
 HRESULT CreateCredential(ICredentialProviderCredential** credential) {
-  return CComCreator<CComObject<testing::CTestCredentialForBase>>::
-      CreateInstance(nullptr, IID_ICredentialProviderCredential,
-                     reinterpret_cast<void**>(credential));
+  return CComCreator<CComObject<CTestCredentialForBase>>::CreateInstance(
+      nullptr, IID_ICredentialProviderCredential,
+      reinterpret_cast<void**>(credential));
 }
 
 HRESULT CreateCredentialWithProvider(
@@ -69,23 +66,7 @@ HRESULT CreateCredentialWithProvider(
 
 }  // namespace
 
-class GcpGaiaCredentialBaseTest : public ::testing::Test {
- protected:
-  ~GcpGaiaCredentialBaseTest() override;
-
-  void SetUp() override;
-
-  FakeGlsRunHelper* run_helper() { return &run_helper_; }
-
- private:
-  FakeGlsRunHelper run_helper_;
-};
-
-GcpGaiaCredentialBaseTest::~GcpGaiaCredentialBaseTest() = default;
-
-void GcpGaiaCredentialBaseTest::SetUp() {
-  run_helper_.SetUp();
-}
+class GcpGaiaCredentialBaseTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpGaiaCredentialBaseTest, Advise) {
   CComPtr<ICredentialProviderCredential> cred;
@@ -114,7 +95,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_NoInternet) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcess(cred, /*succeeds=*/false));
@@ -129,7 +110,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Start) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
@@ -145,7 +126,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
@@ -168,8 +149,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
 
   // Make sure a "foo" user was created.
   PSID sid;
-  ASSERT_EQ(S_OK, run_helper()->fake_os_user_manager()->GetUserSID(
-                      testing::kDefaultUsername, &sid));
+  ASSERT_EQ(S_OK, fake_os_user_manager()->GetUserSID(kDefaultUsername, &sid));
   ::LocalFree(sid);
 
   ASSERT_EQ(S_OK, gaia_cred->Terminate());
@@ -182,7 +162,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MultipleCalls) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   constexpr wchar_t kStartGlsEventName[] =
@@ -232,7 +212,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_PasswordChanged) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
@@ -290,7 +270,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   // This event is merely used to keep the gls running while it is cancelled
@@ -320,7 +300,7 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("foo@imfl.info"));
 
@@ -339,7 +319,7 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Gmail) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("bar@gmail.com"));
 
@@ -358,7 +338,7 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Googlemail) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("toto@googlemail.com"));
 
@@ -377,7 +357,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUsernameCharacters) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("a\\[]:|<>+=;?*z@gmail.com"));
 
@@ -396,7 +376,7 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailTooLong) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK,
             test->SetGlsEmailAddress("areallylongemailadressdude@gmail.com"));
@@ -416,7 +396,7 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailTooLong2) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("foo@areallylongdomaindude.com"));
 
@@ -435,7 +415,7 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsNoAt) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("foo"));
 
@@ -454,7 +434,7 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtCom) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("@com"));
 
@@ -473,7 +453,7 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtDotCom) {
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress("@.com"));
 

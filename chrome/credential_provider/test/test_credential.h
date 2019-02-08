@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
-#include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/test/fake_gls_run_helper.h"
 
 namespace base {
@@ -50,10 +50,11 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
 // A CGaiaCredentialBase is required to call base class functions in the
 // following ITestCredential implementations:
 // GetFinalUsername, AreCredentialsValid, AreWindowsCredentialsAvailable,
-// AreWindowsCredentialsValid, DisplayErrorInUI, GetBaseGlsCommandline
-// Also the following IGaiaCredential function needs to be overridden to
-// notify the completion of the fake GLS that this credential runs:
-// OnUserAuthenticated.
+// AreWindowsCredentialsValid.
+// Also the following IGaiaCredential/CGaiaCredentialBase functions need to
+// be overridden:
+// OnUserAuthenticated, ReportError, GetBaseGlsCommandline, DisplayErrorInUI,
+// ForkGaiaLogonStub, ResetInternalState.
 template <class T>
 class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
  public:
@@ -74,16 +75,30 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   void STDMETHODCALLTYPE
   SetWindowsPassword(const CComBSTR& windows_password) override;
 
+  void SignalGlsCompletion();
+
   // IGaiaCredential.
   IFACEMETHODIMP OnUserAuthenticated(BSTR authentication_info,
                                      BSTR* status_text) override;
-
-  // Overrides to build a dummy command line for testing.
-  HRESULT GetBaseGlsCommandline(base::CommandLine* command_line) override;
+  IFACEMETHODIMP ReportError(LONG status,
+                             LONG substatus,
+                             BSTR status_text) override;
+  // CGaiaCredentialBase.
 
   // Override to catch completion of the GLS process on failure and also log
   // the error message.
   void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text) override;
+
+  // Overrides to build a dummy command line for testing.
+  HRESULT GetBaseGlsCommandline(base::CommandLine* command_line) override;
+
+  // Overrides to check correct startup of GLS process.
+  HRESULT ForkGaiaLogonStub(
+      OSProcessManager* process_manager,
+      const base::CommandLine& command_line,
+      CGaiaCredentialBase::UIProcessInfo* uiprocinfo) override;
+
+  void ResetInternalState() override;
 
   std::string gls_email_;
   std::string gaia_id_override_;
@@ -91,6 +106,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   base::win::ScopedHandle process_continue_event_;
   base::string16 start_gls_event_name_;
   CComBSTR error_text_;
+  bool gls_process_started_ = false;
 };
 
 template <class T>
@@ -116,7 +132,8 @@ HRESULT CTestCredentialBase<T>::SetGaiaIdOverride(const std::string& gaia_id) {
 
 template <class T>
 HRESULT CTestCredentialBase<T>::WaitForGls() {
-  return gls_done_.TimedWait(base::TimeDelta::FromSeconds(30))
+  return !gls_process_started_ ||
+                 gls_done_.TimedWait(base::TimeDelta::FromSeconds(30))
              ? S_OK
              : HRESULT_FROM_WIN32(WAIT_TIMEOUT);
 }
@@ -163,23 +180,55 @@ void CTestCredentialBase<T>::SetWindowsPassword(
 }
 
 template <class T>
-HRESULT CTestCredentialBase<T>::OnUserAuthenticated(BSTR authentication_info,
-                                                    BSTR* status_text) {
-  HRESULT hr = CGaiaCredentialBase::OnUserAuthenticated(authentication_info,
-                                                        status_text);
+void CTestCredentialBase<T>::SignalGlsCompletion() {
   gls_done_.Signal();
-  return hr;
 }
 
 template <class T>
 HRESULT CTestCredentialBase<T>::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
-  HRESULT hr = FakeGlsRunHelper::GetFakeGlsCommandline(
+  return FakeGlsRunHelper::GetFakeGlsCommandline(
       gls_email_, gaia_id_override_, start_gls_event_name_, command_line);
+}
 
-  // Reset the manual event since GLS will be started upon return.
-  gls_done_.Reset();
+template <class T>
+HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
+    OSProcessManager* process_manager,
+    const base::CommandLine& command_line,
+    CGaiaCredentialBase::UIProcessInfo* uiprocinfo) {
+  HRESULT hr = T::ForkGaiaLogonStub(process_manager, command_line, uiprocinfo);
 
+  if (SUCCEEDED(hr)) {
+    gls_process_started_ = true;
+    // Reset the manual event since GLS has started.
+    gls_done_.Reset();
+  }
+
+  return hr;
+}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::OnUserAuthenticated(BSTR authentication_info,
+                                                    BSTR* status_text) {
+  HRESULT hr = T::OnUserAuthenticated(authentication_info, status_text);
+  // Only signal completion if OnUserAuthenticated succeeded otherwise
+  // there will be a call to ReportError right after which should signal
+  // the completion. This is needed to prevent a race condition in tests
+  // where it checks for a failure message, but the failure message is
+  // set after gls_done_ is signalled causing the test to be flaky.
+  if (SUCCEEDED(hr))
+    SignalGlsCompletion();
+  return hr;
+}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::ReportError(LONG status,
+                                            LONG substatus,
+                                            BSTR status_text) {
+  // This function is called instead of (or after) OnUserAuthenticated() when
+  // errors occur, so signal that GLS is done.
+  HRESULT hr = T::ReportError(status, substatus, status_text);
+  SignalGlsCompletion();
   return hr;
 }
 
@@ -187,10 +236,14 @@ template <class T>
 void CTestCredentialBase<T>::DisplayErrorInUI(LONG status,
                                               LONG substatus,
                                               BSTR status_text) {
-  // This function is called instead of OnUserAuthenticated() when errors occur,
-  // so signal that GLS is done.
   error_text_ = status_text;
-  gls_done_.Signal();
+  T::DisplayErrorInUI(status, substatus, status_text);
+}
+
+template <class T>
+void CTestCredentialBase<T>::ResetInternalState() {
+  gls_process_started_ = false;
+  T::ResetInternalState();
 }
 
 // This class is used to implement a test credential based off a fully

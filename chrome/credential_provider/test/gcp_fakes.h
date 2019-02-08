@@ -6,6 +6,9 @@
 #define CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
@@ -13,6 +16,7 @@
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
 namespace credential_provider {
 
@@ -90,6 +94,19 @@ class FakeOSUserManager : public OSUserManager {
 
   // Creates a new unique sid.  Free returned sid with FreeSid().
   HRESULT CreateNewSID(PSID* sid);
+
+  // Creates a fake user with the given |username|, |password|, |fullname|,
+  // |comment|. If |gaia_id| is non-empty, also associates the user with
+  // the given gaia id. If |email| is non-empty, sets the email to use for
+  // reauth to be this one.
+  // |sid| is allocated and filled with the SID of the new user.
+  HRESULT CreateTestOSUser(const base::string16& username,
+                           const base::string16& password,
+                           const base::string16& fullname,
+                           const base::string16& comment,
+                           const base::string16& gaia_id,
+                           const base::string16& email,
+                           BSTR* sid);
 
  private:
   OSUserManager* original_manager_;

@@ -123,6 +123,14 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // class method.
   virtual void ResetInternalState();
 
+  // Display error message to the user.  Virtual so that tests can override.
+  virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
+
+  // Forks the logon stub process and waits for it to start.
+  virtual HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,
+                                    const base::CommandLine& command_line,
+                                    UIProcessInfo* uiprocinfo);
+
  private:
   // Gets the base portion of the command line to run the Gaia Logon stub.
   // This portion of the command line would only include the executable and
@@ -132,9 +140,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // function calls GetBaseGlsCommandline.
   HRESULT GetGlsCommandline(const wchar_t* email,
                             base::CommandLine* command_line);
-
-  // Display error message to the user.  Virtual so that tests can override.
-  virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
 
   // Called from GetSerialization() to handle auto-logon.  If the credential
   // has enough information in internal state to auto-logon, the two arguments
@@ -156,11 +161,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Gaia account.
   static HRESULT CreateGaiaLogonToken(base::win::ScopedHandle* token,
                                       PSID* sid);
-
-  // Forks the logon stub process and waits for it to start.
-  static HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,
-                                   const base::CommandLine& command_line,
-                                   UIProcessInfo* uiprocinfo);
 
   // Forks a stub process to save account information for a user.
   static HRESULT ForkSaveAccountInfoStub(
