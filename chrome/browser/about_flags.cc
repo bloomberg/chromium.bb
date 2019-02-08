@@ -3650,13 +3650,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLazyFrameLoading)},
 
-#if defined(OS_CHROMEOS)
-    {"enable-settings-shortcut-search",
-     flag_descriptions::kEnableSettingsShortcutSearchName,
-     flag_descriptions::kEnableSettingsShortcutSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableSettingsShortcutSearch)},
-#endif  // OS_CHROMEOS
-
     {"autofill-cache-query-responses",
      flag_descriptions::kAutofillCacheQueryResponsesName,
      flag_descriptions::kAutofillCacheQueryResponsesDescription, kOsAll,

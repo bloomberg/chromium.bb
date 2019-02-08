@@ -3332,11 +3332,6 @@ const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =
     "Enable Play Store search in launcher.";
 
-const char kEnableSettingsShortcutSearchName[] =
-    "Enable Settings shortcut search";
-const char kEnableSettingsShortcutSearchDescription[] =
-    "Enable Settings shortcut search in launcher.";
-
 const char kEnableStylusVirtualKeyboardName[] =
     "Enable stylus virtual keyboard";
 const char kEnableStylusVirtualKeyboardDescription[] =
