@@ -522,7 +522,7 @@ void TestPageSize(const base::FilePath& db_prefix,
   static const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
-      base::IntToString(initial_page_size));
+      base::NumberToString(initial_page_size));
   sql::Database::Delete(db_path);
   sql::Database db;
   db.set_page_size(initial_page_size);
@@ -1590,7 +1590,7 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
   ASSERT_FALSE(db().DoesTableExist("meta"));
   ASSERT_TRUE(db().DoesViewExist("MmapStatus"));
-  EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
+  EXPECT_EQ(base::NumberToString(MetaTable::kMmapSuccess),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 
   // Also maps everything when kMmapSuccess is already in the view.
@@ -1600,14 +1600,14 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
   ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus (value) AS SELECT 1"));
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
-  EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
+  EXPECT_EQ(base::NumberToString(MetaTable::kMmapSuccess),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 
   // Failure status leads to nothing being mapped.
   ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
   ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus (value) AS SELECT -2"));
   ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
-  EXPECT_EQ(base::IntToString(MetaTable::kMmapFailure),
+  EXPECT_EQ(base::NumberToString(MetaTable::kMmapFailure),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 }
 
