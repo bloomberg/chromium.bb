@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/string_resources.h"
@@ -19,11 +20,13 @@ namespace remoting {
 
 namespace {
 
+class FileChooserLinux;
+
 class GtkFileChooserOnUiThread {
  public:
   GtkFileChooserOnUiThread(
-      scoped_refptr<base::SequencedTaskRunner> source_task_runner,
-      FileChooser::ResultCallback callback);
+      scoped_refptr<base::SequencedTaskRunner> caller_task_runner,
+      base::WeakPtr<FileChooserLinux> file_chooser_linux);
 
   ~GtkFileChooserOnUiThread();
 
@@ -37,12 +40,12 @@ class GtkFileChooserOnUiThread {
                      GtkWidget*,
                      int);
 
-  void RunCallback(FileChooser::Result file);
+  void RunCallback(FileChooser::Result result);
   void CleanUp();
 
   GObject* file_dialog_ = nullptr;
-  scoped_refptr<base::SequencedTaskRunner> source_task_runner_;
-  FileChooser::ResultCallback callback_;
+  scoped_refptr<base::SequencedTaskRunner> caller_task_runner_;
+  base::WeakPtr<FileChooserLinux> file_chooser_linux_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkFileChooserOnUiThread);
 };
@@ -57,17 +60,21 @@ class FileChooserLinux : public FileChooser {
   // FileChooser implementation.
   void Show() override;
 
+  void RunCallback(FileChooser::Result result);
+
  private:
-  base::SequenceBound<GtkFileChooserOnUiThread> gtk_file_chooser_;
+  FileChooser::ResultCallback callback_;
+  base::SequenceBound<GtkFileChooserOnUiThread> gtk_file_chooser_on_ui_thread_;
+  base::WeakPtrFactory<FileChooserLinux> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileChooserLinux);
 };
 
 GtkFileChooserOnUiThread::GtkFileChooserOnUiThread(
-    scoped_refptr<base::SequencedTaskRunner> source_task_runner,
-    FileChooser::ResultCallback callback)
-    : source_task_runner_(std::move(source_task_runner)),
-      callback_(std::move(callback)) {}
+    scoped_refptr<base::SequencedTaskRunner> caller_task_runner,
+    base::WeakPtr<FileChooserLinux> file_chooser_linux)
+    : caller_task_runner_(std::move(caller_task_runner)),
+      file_chooser_linux_(std::move(file_chooser_linux)) {}
 
 GtkFileChooserOnUiThread::~GtkFileChooserOnUiThread() {
   // Delete the dialog if it hasn't been already.
@@ -108,9 +115,10 @@ void GtkFileChooserOnUiThread::Show() {
 #endif
 }
 
-void GtkFileChooserOnUiThread::RunCallback(FileChooser::Result file) {
-  source_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_), std::move(file)));
+void GtkFileChooserOnUiThread::RunCallback(FileChooser::Result result) {
+  caller_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&FileChooserLinux::RunCallback,
+                                file_chooser_linux_, std::move(result)));
 }
 
 void GtkFileChooserOnUiThread::CleanUp() {
@@ -140,12 +148,20 @@ void GtkFileChooserOnUiThread::OnResponse(GtkWidget* dialog, int response_id) {
 FileChooserLinux::FileChooserLinux(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     ResultCallback callback)
-    : gtk_file_chooser_(ui_task_runner,
-                        base::SequencedTaskRunnerHandle::Get(),
-                        std::move(callback)) {}
+    : callback_(std::move(callback)), weak_ptr_factory_(this) {
+  gtk_file_chooser_on_ui_thread_ =
+      base::SequenceBound<GtkFileChooserOnUiThread>(
+          ui_task_runner, base::SequencedTaskRunnerHandle::Get(),
+          weak_ptr_factory_.GetWeakPtr());
+}
 
 void FileChooserLinux::Show() {
-  gtk_file_chooser_.Post(FROM_HERE, &GtkFileChooserOnUiThread::Show);
+  gtk_file_chooser_on_ui_thread_.Post(FROM_HERE,
+                                      &GtkFileChooserOnUiThread::Show);
+}
+
+void FileChooserLinux::RunCallback(FileChooser::Result result) {
+  std::move(callback_).Run(std::move(result));
 }
 
 FileChooserLinux::~FileChooserLinux() = default;
