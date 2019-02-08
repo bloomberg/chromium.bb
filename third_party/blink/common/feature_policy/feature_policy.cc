@@ -301,6 +301,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeaturePolicy::FeatureDefault::EnableForAll},
        {mojom::FeaturePolicyFeature::kScript,
         FeaturePolicy::FeatureDefault::EnableForAll},
+       {mojom::FeaturePolicyFeature::kSerial,
+        FeaturePolicy::FeatureDefault::EnableForSelf},
        {mojom::FeaturePolicyFeature::kSpeaker,
         FeaturePolicy::FeatureDefault::EnableForSelf},
        {mojom::FeaturePolicyFeature::kSyncScript,

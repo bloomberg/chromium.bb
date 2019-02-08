@@ -358,6 +358,10 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set("magnetometer",
                                    mojom::FeaturePolicyFeature::kMagnetometer);
     }
+    if (RuntimeEnabledFeatures::SerialEnabled()) {
+      default_feature_name_map.Set("serial",
+                                   mojom::FeaturePolicyFeature::kSerial);
+    }
     if (RuntimeEnabledFeatures::WakeLockEnabled()) {
       default_feature_name_map.Set("wake-lock",
                                    mojom::FeaturePolicyFeature::kWakeLock);

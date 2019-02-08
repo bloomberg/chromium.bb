@@ -103,8 +103,6 @@ enum FeaturePolicyFeature {
   kWakeLock = 31,
   // Controls access to font-display attribute in @font-face CSS rule
   kFontDisplay = 32,
-  // Sample Origin Trial enabled feature. This is used only for testing.
-  kFrobulate = 41,
 
   // These are the defined sandbox features implemented as policy-controlled
   // features.
@@ -117,6 +115,11 @@ enum FeaturePolicyFeature {
   kOrientationLock = 39,
   kPresentation = 40,
   // End of sandbox features.
+
+  // Sample Origin Trial enabled feature. This is used only for testing.
+  kFrobulate = 41,
+  // Controls access to Serial
+  kSerial = 42,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Also, run update_feature_policy_enum.py in

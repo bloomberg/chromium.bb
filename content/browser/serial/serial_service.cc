@@ -6,9 +6,12 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/serial_delegate.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
 
@@ -30,7 +33,10 @@ blink::mojom::SerialPortInfoPtr ToBlinkType(
 }  // namespace
 
 SerialService::SerialService(RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {}
+    : render_frame_host_(render_frame_host) {
+  DCHECK(render_frame_host_->IsFeatureEnabled(
+      blink::mojom::FeaturePolicyFeature::kSerial));
+}
 
 SerialService::~SerialService() = default;
 

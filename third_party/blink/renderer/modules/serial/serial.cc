@@ -10,7 +10,9 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
@@ -19,6 +21,8 @@ namespace blink {
 
 namespace {
 
+const char kFeaturePolicyBlocked[] =
+    "Access to the feature \"serial\" is disallowed by feature policy.";
 const char kNoPortSelected[] = "No port selected by the user.";
 
 String TokenToString(const base::UnguessableToken& token) {
@@ -47,10 +51,19 @@ const AtomicString& Serial::InterfaceName() const {
 }
 
 ScriptPromise Serial::getPorts(ScriptState* script_state) {
-  if (!GetExecutionContext()) {
+  auto* context = GetExecutionContext();
+  if (!context) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
+  }
+
+  if (!context->GetSecurityContext().IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kSerial,
+          ReportOptions::kReportOnFailure)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyBlocked));
   }
 
   auto* resolver = ScriptPromiseResolver::Create(script_state);
@@ -66,10 +79,18 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
 ScriptPromise Serial::requestPort(ScriptState* script_state,
                                   const SerialPortRequestOptions* options) {
   auto* frame = GetFrame();
-  if (!frame) {
+  if (!frame || !frame->GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
+  }
+
+  if (!frame->GetDocument()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kSerial,
+          ReportOptions::kReportOnFailure)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyBlocked));
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
