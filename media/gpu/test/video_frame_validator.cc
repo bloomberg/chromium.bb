@@ -220,7 +220,7 @@ std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, video_frame);
+  VideoFrame::HashFrameForTesting(&context, *video_frame.get());
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);

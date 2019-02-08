@@ -143,7 +143,7 @@ void ExpectFrameExtents(VideoPixelFormat format, const char* expected_hash) {
 
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, frame);
+  VideoFrame::HashFrameForTesting(&context, *frame.get());
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   EXPECT_EQ(MD5DigestToBase16(digest), expected_hash);
@@ -170,7 +170,7 @@ TEST(VideoFrame, CreateFrame) {
   base::MD5Digest digest;
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, frame);
+  VideoFrame::HashFrameForTesting(&context, *frame.get());
   base::MD5Final(&digest, &context);
   EXPECT_EQ(MD5DigestToBase16(digest), "9065c841d9fca49186ef8b4ef547e79b");
   {
@@ -179,7 +179,7 @@ TEST(VideoFrame, CreateFrame) {
     ExpectFrameColor(frame.get(), 0xFFFFFFFF);
   }
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, frame);
+  VideoFrame::HashFrameForTesting(&context, *frame.get());
   base::MD5Final(&digest, &context);
   EXPECT_EQ(MD5DigestToBase16(digest), "911991d51438ad2e1a40ed5f6fc7c796");
 

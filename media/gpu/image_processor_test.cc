@@ -87,7 +87,7 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
   ASSERT_TRUE(processed_frame->IsMappable());
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, processed_frame);
+  VideoFrame::HashFrameForTesting(&context, *processed_frame.get());
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   std::string expected_md5 = output_image.Checksum();

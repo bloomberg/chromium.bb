@@ -346,7 +346,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Used to keep a running hash of seen frames.  Expects an initialized MD5
   // context.  Calls MD5Update with the context and the contents of the frame.
   static void HashFrameForTesting(base::MD5Context* context,
-                                  const scoped_refptr<VideoFrame>& frame);
+                                  const VideoFrame& frame);
 
   // Returns true if |frame| is accesible mapped in the VideoFrame memory space.
   // static
