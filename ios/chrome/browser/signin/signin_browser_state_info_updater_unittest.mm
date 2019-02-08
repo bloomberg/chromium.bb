@@ -9,46 +9,30 @@
 #endif
 
 #include <memory>
+#include <string>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
-#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 namespace {
-// Returns a TestSigninClient.
-std::unique_ptr<KeyedService> BuildTestSigninClient(web::BrowserState* state) {
-  return std::make_unique<TestSigninClient>(
-      ios::ChromeBrowserState::FromBrowserState(state)->GetPrefs());
-}
 
-// Builds a fake token service.
-std::unique_ptr<KeyedService> BuildTestTokenService(web::BrowserState* state) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(state);
-  return std::make_unique<FakeProfileOAuth2TokenService>(
-      browser_state->GetPrefs());
-}
+const char kEmail[] = "example@email.com";
+
 }  // namespace
 
 class SigninBrowserStateInfoUpdaterTest : public PlatformTest {
@@ -69,16 +53,20 @@ class SigninBrowserStateInfoUpdaterTest : public PlatformTest {
     // Create the browser state.
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPath(temp_directory_.GetPath());
-    test_cbs_builder.AddTestingFactory(
-        SigninClientFactory::GetInstance(),
-        base::BindRepeating(&BuildTestSigninClient));
-    test_cbs_builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildTestTokenService));
-    chrome_browser_state_ = test_cbs_builder.Build();
+    chrome_browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
+        CreateChromeBrowserStateForIdentityTestEnvironment(test_cbs_builder);
+
+    identity_test_environment_chrome_browser_state_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentChromeBrowserStateAdaptor>(
+            chrome_browser_state_.get());
 
     cache_index_ = browser_state_info_->GetIndexOfBrowserStateWithPath(
         chrome_browser_state_->GetStatePath());
+  }
+
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_environment_chrome_browser_state_adaptor_
+        ->identity_test_env();
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -87,6 +75,8 @@ class SigninBrowserStateInfoUpdaterTest : public PlatformTest {
       scoped_browser_state_manager_;
   size_t cache_index_ = 0u;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
+      identity_test_environment_chrome_browser_state_adaptor_;
 
   // Weak, owned by scoped_browser_state_manager_.
   BrowserStateInfoCache* browser_state_info_ = nullptr;
@@ -98,26 +88,20 @@ TEST_F(SigninBrowserStateInfoUpdaterTest, SigninSignout) {
       browser_state_info_->BrowserStateIsAuthenticatedAtIndex(cache_index_));
 
   // Signin.
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state_.get());
-  SigninManager* signin_manager = ios::SigninManagerFactory::GetForBrowserState(
-      chrome_browser_state_.get());
-  std::string account_id =
-      account_tracker->SeedAccountInfo("gaia", "example@email.com");
-  signin_manager->OnExternalSigninCompleted("example@email.com");
+  AccountInfo account_info =
+      identity_test_env()->MakePrimaryAccountAvailable(kEmail);
+
   EXPECT_TRUE(
       browser_state_info_->BrowserStateIsAuthenticatedAtIndex(cache_index_));
-  EXPECT_EQ("gaia",
+  EXPECT_EQ(account_info.gaia,
             browser_state_info_->GetGAIAIdOfBrowserStateAtIndex(cache_index_));
   EXPECT_EQ(
-      "example@email.com",
+      kEmail,
       base::UTF16ToUTF8(
           browser_state_info_->GetUserNameOfBrowserStateAtIndex(cache_index_)));
 
   // Signout.
-  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                          signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_test_env()->ClearPrimaryAccount();
   EXPECT_FALSE(
       browser_state_info_->BrowserStateIsAuthenticatedAtIndex(cache_index_));
 }
@@ -128,19 +112,8 @@ TEST_F(SigninBrowserStateInfoUpdaterTest, AuthError) {
       browser_state_info_->BrowserStateIsAuthenticatedAtIndex(cache_index_));
 
   // Signin.
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state_.get());
-  SigninManager* signin_manager = ios::SigninManagerFactory::GetForBrowserState(
-      chrome_browser_state_.get());
-  FakeProfileOAuth2TokenService* token_service =
-      static_cast<FakeProfileOAuth2TokenService*>(
-          ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-              chrome_browser_state_.get()));
-  std::string account_id =
-      account_tracker->SeedAccountInfo("gaia", "example@email.com");
-  token_service->UpdateCredentials(account_id, "token");
-  signin_manager->OnExternalSigninCompleted("example@email.com");
+  AccountInfo account_info =
+      identity_test_env()->MakePrimaryAccountAvailable(kEmail);
 
   EXPECT_TRUE(
       browser_state_info_->BrowserStateIsAuthenticatedAtIndex(cache_index_));
@@ -148,15 +121,15 @@ TEST_F(SigninBrowserStateInfoUpdaterTest, AuthError) {
       browser_state_info_->BrowserStateIsAuthErrorAtIndex(cache_index_));
 
   // Set auth error.
-  token_service->UpdateAuthErrorForTesting(
-      account_id,
+  identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   EXPECT_TRUE(
       browser_state_info_->BrowserStateIsAuthErrorAtIndex(cache_index_));
 
   // Remove auth error.
-  token_service->UpdateAuthErrorForTesting(
-      account_id, GoogleServiceAuthError::AuthErrorNone());
+  identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      account_info.account_id, GoogleServiceAuthError::AuthErrorNone());
   EXPECT_FALSE(
       browser_state_info_->BrowserStateIsAuthErrorAtIndex(cache_index_));
 }
