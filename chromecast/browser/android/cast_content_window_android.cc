@@ -114,6 +114,11 @@ void CastContentWindowAndroid::RequestVisibility(
       env, java_window_, static_cast<int>(visibility_priority));
 }
 
+void CastContentWindowAndroid::SetActivityContext(
+    base::Value activity_context) {}
+
+void CastContentWindowAndroid::SetHostContext(base::Value host_context) {}
+
 void CastContentWindowAndroid::NotifyVisibilityChange(
     VisibilityType visibility_type) {
   delegate_->OnVisibilityChange(visibility_type);

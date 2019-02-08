@@ -51,7 +51,6 @@ class CastWebViewExtension : public CastWebView,
   void InitializeWindow(CastWindowManager* window_manager,
                         CastWindowManager::WindowId z_order,
                         VisibilityPriority initial_priority) override;
-  void SetContext(base::Value context) override;
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
 

@@ -120,10 +120,6 @@ class CastWebView {
                                 CastWindowManager::WindowId z_order,
                                 VisibilityPriority initial_priority) = 0;
 
-  // Sets the activity context exposed to web view and content window. The exact
-  // format of context is defined by each activity.
-  virtual void SetContext(base::Value context) = 0;
-
   // Allows the page to be shown on the screen. The page cannot be shown on the
   // screen until this is called.
   virtual void GrantScreenAccess() = 0;
