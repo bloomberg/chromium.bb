@@ -292,12 +292,21 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   if (OperationForLoad(drag_data, local_root) != kDragOperationNone) {
     if (page_->GetSettings().GetNavigateOnDragDrop()) {
       ResourceRequest resource_request(drag_data->AsURL());
-      // TODO(mkwst): Perhaps this should use a unique origin as the requestor
-      // origin rather than the origin of the dragged data URL?
-      resource_request.SetRequestorOrigin(
-          SecurityOrigin::Create(KURL(drag_data->AsURL())));
       resource_request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(
           document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr));
+
+      // Use a unique origin to match other navigations that are initiated
+      // outside of a renderer process (e.g. omnibox navigations).  Here, the
+      // initiator of the navigation is a user dragging files from *outside* of
+      // the current page.  See also https://crbug.com/930049.
+      //
+      // TODO(lukasza): Once drag-and-drop remembers the source of the drag
+      // (unique origin for drags started from top-level Chrome like bookmarks
+      // or for drags started from other apps like Windows Explorer;  specific
+      // origin for drags started from another tab) we should use the source of
+      // the drag as the initiator of the navigation below.
+      resource_request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
+
       page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request),
                                    WebFrameLoadType::kStandard);
     }
