@@ -97,18 +97,13 @@ static double resize_rate_factor(const AV1_COMP *cpi, int width, int height) {
 // fit to the original data (after plotting real maxq vs minq (not q index))
 static int get_minq_index(double maxq, double x3, double x2, double x1,
                           aom_bit_depth_t bit_depth) {
-  int i;
   const double minqtarget = AOMMIN(((x3 * maxq + x2) * maxq + x1) * maxq, maxq);
 
   // Special case handling to deal with the step from q2.0
   // down to lossless mode represented by q 1.0.
   if (minqtarget <= 2.0) return 0;
 
-  for (i = 0; i < QINDEX_RANGE; i++) {
-    if (minqtarget <= av1_convert_qindex_to_q(i, bit_depth)) return i;
-  }
-
-  return QINDEX_RANGE - 1;
+  return av1_find_qindex(minqtarget, bit_depth, 0, QINDEX_RANGE - 1);
 }
 
 static void init_minq_luts(int *kf_low_m, int *kf_high_m, int *arfgf_low,
@@ -475,45 +470,82 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi, int width,
   set_rate_correction_factor(cpi, rate_correction_factor, width, height);
 }
 
+// Calculate rate for the given 'q'.
+static int get_bits_per_mb(const AV1_COMP *cpi, int use_cyclic_refresh,
+                           double correction_factor, int q) {
+  const AV1_COMMON *const cm = &cpi->common;
+  return use_cyclic_refresh
+             ? av1_cyclic_refresh_rc_bits_per_mb(cpi, q, correction_factor)
+             : av1_rc_bits_per_mb(cm->current_frame.frame_type, q,
+                                  correction_factor, cm->seq_params.bit_depth);
+}
+
+// Similar to find_qindex_by_rate() function in ratectrl.c, but returns the q
+// index with rate just above or below the desired rate, depending on which of
+// the two rates is closer to the desired rate.
+// Also, respects the selected aq_mode when computing the rate.
+static int find_closest_qindex_by_rate(int desired_bits_per_mb,
+                                       const AV1_COMP *cpi,
+                                       double correction_factor,
+                                       int best_qindex, int worst_qindex) {
+  const int use_cyclic_refresh =
+      cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cpi->common.seg.enabled;
+
+  // Find 'qindex' based on 'desired_bits_per_mb'.
+  assert(best_qindex <= worst_qindex);
+  int low = best_qindex;
+  int high = worst_qindex;
+  while (low < high) {
+    const int mid = (low + high) >> 1;
+    const int mid_bits_per_mb =
+        get_bits_per_mb(cpi, use_cyclic_refresh, correction_factor, mid);
+    if (mid_bits_per_mb > desired_bits_per_mb) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  assert(low == high);
+
+  // Calculate rate difference of this q index from the desired rate.
+  const int curr_q = low;
+  const int curr_bits_per_mb =
+      get_bits_per_mb(cpi, use_cyclic_refresh, correction_factor, curr_q);
+  const int curr_bit_diff = (curr_bits_per_mb <= desired_bits_per_mb)
+                                ? desired_bits_per_mb - curr_bits_per_mb
+                                : INT_MAX;
+  assert((curr_bit_diff != INT_MAX && curr_bit_diff >= 0) ||
+         curr_q == worst_qindex);
+
+  // Calculate rate difference for previous q index too.
+  const int prev_q = curr_q - 1;
+  int prev_bit_diff;
+  if (curr_bit_diff == INT_MAX || curr_q == best_qindex) {
+    prev_bit_diff = INT_MAX;
+  } else {
+    const int prev_bits_per_mb =
+        get_bits_per_mb(cpi, use_cyclic_refresh, correction_factor, prev_q);
+    assert(prev_bits_per_mb > desired_bits_per_mb);
+    prev_bit_diff = prev_bits_per_mb - desired_bits_per_mb;
+  }
+
+  // Pick one of the two q indices, depending on which one has rate closer to
+  // the desired rate.
+  return (curr_bit_diff <= prev_bit_diff) ? curr_q : prev_q;
+}
+
 int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
                       int active_best_quality, int active_worst_quality,
                       int width, int height) {
-  const AV1_COMMON *const cm = &cpi->common;
-  int q = active_worst_quality;
-  int last_error = INT_MAX;
-  int i, target_bits_per_mb, bits_per_mb_at_this_q;
   const int MBs = av1_get_MBs(width, height);
   const double correction_factor =
       get_rate_correction_factor(cpi, width, height);
-
-  // Calculate required scaling factor based on target frame size and size of
-  // frame produced using previous Q.
-  target_bits_per_mb =
+  const int target_bits_per_mb =
       (int)((uint64_t)(target_bits_per_frame) << BPER_MB_NORMBITS) / MBs;
 
-  i = active_best_quality;
-
-  do {
-    if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled) {
-      bits_per_mb_at_this_q =
-          (int)av1_cyclic_refresh_rc_bits_per_mb(cpi, i, correction_factor);
-    } else {
-      bits_per_mb_at_this_q =
-          (int)av1_rc_bits_per_mb(cm->current_frame.frame_type, i,
-                                  correction_factor, cm->seq_params.bit_depth);
-    }
-
-    if (bits_per_mb_at_this_q <= target_bits_per_mb) {
-      if ((target_bits_per_mb - bits_per_mb_at_this_q) <= last_error)
-        q = i;
-      else
-        q = i - 1;
-
-      break;
-    } else {
-      last_error = bits_per_mb_at_this_q - target_bits_per_mb;
-    }
-  } while (++i <= active_worst_quality);
+  int q =
+      find_closest_qindex_by_rate(target_bits_per_mb, cpi, correction_factor,
+                                  active_best_quality, active_worst_quality);
 
   // In CBR mode, this makes sure q is between oscillating Qs to prevent
   // resonance.
@@ -1671,33 +1703,66 @@ void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi,
   // TODO(afergs): Decide whether to scale up, down, or not at all
 }
 
+int av1_find_qindex(double desired_q, aom_bit_depth_t bit_depth,
+                    int best_qindex, int worst_qindex) {
+  assert(best_qindex <= worst_qindex);
+  int low = best_qindex;
+  int high = worst_qindex;
+  while (low < high) {
+    const int mid = (low + high) >> 1;
+    const double mid_q = av1_convert_qindex_to_q(mid, bit_depth);
+    if (mid_q < desired_q) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  assert(low == high);
+  assert(av1_convert_qindex_to_q(low, bit_depth) >= desired_q ||
+         low == worst_qindex);
+  return low;
+}
+
 int av1_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
                        aom_bit_depth_t bit_depth) {
-  int start_index = rc->worst_quality;
-  int target_index = rc->worst_quality;
-  int i;
-
-  // Convert the average q value to an index.
-  for (i = rc->best_quality; i < rc->worst_quality; ++i) {
-    start_index = i;
-    if (av1_convert_qindex_to_q(i, bit_depth) >= qstart) break;
-  }
-
-  // Convert the q target to an index
-  for (i = rc->best_quality; i < rc->worst_quality; ++i) {
-    target_index = i;
-    if (av1_convert_qindex_to_q(i, bit_depth) >= qtarget) break;
-  }
-
+  const int start_index =
+      av1_find_qindex(qstart, bit_depth, rc->best_quality, rc->worst_quality);
+  const int target_index =
+      av1_find_qindex(qtarget, bit_depth, rc->best_quality, rc->worst_quality);
   return target_index - start_index;
+}
+
+// Find q_index for the desired_bits_per_mb, within [best_qindex, worst_qindex],
+// assuming 'correction_factor' is 1.0.
+// To be precise, 'q_index' is the smallest integer, for which the corresponding
+// bits per mb <= desired_bits_per_mb.
+// If no such q index is found, returns 'worst_qindex'.
+static int find_qindex_by_rate(int desired_bits_per_mb,
+                               aom_bit_depth_t bit_depth, FRAME_TYPE frame_type,
+                               int best_qindex, int worst_qindex) {
+  assert(best_qindex <= worst_qindex);
+  int low = best_qindex;
+  int high = worst_qindex;
+  while (low < high) {
+    const int mid = (low + high) >> 1;
+    const int mid_bits_per_mb =
+        av1_rc_bits_per_mb(frame_type, mid, 1.0, bit_depth);
+    if (mid_bits_per_mb > desired_bits_per_mb) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  assert(low == high);
+  assert(av1_rc_bits_per_mb(frame_type, low, 1.0, bit_depth) <=
+             desired_bits_per_mb ||
+         low == worst_qindex);
+  return low;
 }
 
 int av1_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
                                int qindex, double rate_target_ratio,
                                aom_bit_depth_t bit_depth) {
-  int target_index = rc->worst_quality;
-  int i;
-
   // Look up the current projected bits per block for the base index
   const int base_bits_per_mb =
       av1_rc_bits_per_mb(frame_type, qindex, 1.0, bit_depth);
@@ -1705,14 +1770,9 @@ int av1_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
   // Find the target bits per mb based on the base value and given ratio.
   const int target_bits_per_mb = (int)(rate_target_ratio * base_bits_per_mb);
 
-  // Convert the q target to an index
-  for (i = rc->best_quality; i < rc->worst_quality; ++i) {
-    if (av1_rc_bits_per_mb(frame_type, i, 1.0, bit_depth) <=
-        target_bits_per_mb) {
-      target_index = i;
-      break;
-    }
-  }
+  const int target_index =
+      find_qindex_by_rate(target_bits_per_mb, bit_depth, frame_type,
+                          rc->best_quality, rc->worst_quality);
   return target_index - qindex;
 }
 

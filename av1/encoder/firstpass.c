@@ -440,14 +440,7 @@ static BLOCK_SIZE get_bsize(const AV1_COMMON *cm, int mb_row, int mb_col) {
 }
 
 static int find_fp_qindex(aom_bit_depth_t bit_depth) {
-  int i;
-
-  for (i = 0; i < QINDEX_RANGE; ++i)
-    if (av1_convert_qindex_to_q(i, bit_depth) >= FIRST_PASS_Q) break;
-
-  if (i == QINDEX_RANGE) i--;
-
-  return i;
+  return av1_find_qindex(FIRST_PASS_Q, bit_depth, 0, QINDEX_RANGE - 1);
 }
 
 static double raw_motion_error_stdev(int *raw_motion_err_list,
@@ -1116,6 +1109,41 @@ static double calc_correction_factor(double err_per_mb, double err_divisor,
 }
 
 #define ERR_DIVISOR 100.0
+
+// Similar to find_qindex_by_rate() function in ratectrl.c, but includes
+// calculation of a correction_factor.
+static int find_qindex_by_rate_with_correction(
+    int desired_bits_per_mb, aom_bit_depth_t bit_depth, FRAME_TYPE frame_type,
+    double error_per_mb, double ediv_size_correction,
+    double group_weight_factor, int best_qindex, int worst_qindex) {
+  assert(best_qindex <= worst_qindex);
+  int low = best_qindex;
+  int high = worst_qindex;
+  while (low < high) {
+    const int mid = (low + high) >> 1;
+    const double mid_factor =
+        calc_correction_factor(error_per_mb, ERR_DIVISOR - ediv_size_correction,
+                               FACTOR_PT_LOW, FACTOR_PT_HIGH, mid, bit_depth);
+    const int mid_bits_per_mb = av1_rc_bits_per_mb(
+        frame_type, mid, mid_factor * group_weight_factor, bit_depth);
+    if (mid_bits_per_mb > desired_bits_per_mb) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+#if CONFIG_DEBUG
+  assert(low == high);
+  const double low_factor =
+      calc_correction_factor(error_per_mb, ERR_DIVISOR - ediv_size_correction,
+                             FACTOR_PT_LOW, FACTOR_PT_HIGH, low, bit_depth);
+  const int low_bits_per_mb = av1_rc_bits_per_mb(
+      frame_type, low, low_factor * group_weight_factor, bit_depth);
+  assert(low_bits_per_mb <= desired_bits_per_mb || low == worst_qindex);
+#endif  // CONFIG_DEBUG
+  return low;
+}
+
 static int get_twopass_worst_quality(const AV1_COMP *cpi,
                                      const double section_err,
                                      double inactive_zone,
@@ -1134,19 +1162,16 @@ static int get_twopass_worst_quality(const AV1_COMP *cpi,
                             : cpi->common.MBs;
     const int active_mbs = AOMMAX(1, num_mbs - (int)(num_mbs * inactive_zone));
     const double av_err_per_mb = section_err / active_mbs;
-    const double speed_term = 1.0;
-    double ediv_size_correction;
     const int target_norm_bits_per_mb =
         (int)((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) /
         active_mbs;
-    int q;
 
     // Larger image formats are expected to be a little harder to code
     // relatively given the same prediction error score. This in part at
     // least relates to the increased size and hence coding overheads of
     // motion vectors. Some account of this is made through adjustment of
     // the error divisor.
-    ediv_size_correction =
+    double ediv_size_correction =
         AOMMAX(0.2, AOMMIN(5.0, get_linear_size_factor(cpi)));
     if (ediv_size_correction < 1.0)
       ediv_size_correction = -(1.0 / ediv_size_correction);
@@ -1154,15 +1179,10 @@ static int get_twopass_worst_quality(const AV1_COMP *cpi,
 
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
-    for (q = rc->best_quality; q < rc->worst_quality; ++q) {
-      const double factor = calc_correction_factor(
-          av_err_per_mb, ERR_DIVISOR - ediv_size_correction, FACTOR_PT_LOW,
-          FACTOR_PT_HIGH, q, cpi->common.seq_params.bit_depth);
-      const int bits_per_mb = av1_rc_bits_per_mb(
-          INTER_FRAME, q, factor * speed_term * group_weight_factor,
-          cpi->common.seq_params.bit_depth);
-      if (bits_per_mb <= target_norm_bits_per_mb) break;
-    }
+    int q = find_qindex_by_rate_with_correction(
+        target_norm_bits_per_mb, cpi->common.seq_params.bit_depth, INTER_FRAME,
+        av_err_per_mb, ediv_size_correction, group_weight_factor,
+        rc->best_quality, rc->worst_quality);
 
     // Restriction on active max q for constrained quality mode.
     if (cpi->oxcf.rc_mode == AOM_CQ) q = AOMMAX(q, oxcf->cq_level);

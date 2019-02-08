@@ -249,6 +249,13 @@ int av1_rc_clamp_iframe_target_size(const struct AV1_COMP *const cpi,
 int av1_rc_clamp_pframe_target_size(const struct AV1_COMP *const cpi,
                                     int target, uint8_t frame_update_type);
 
+// Find q_index corresponding to desired_q, within [best_qindex, worst_qindex].
+// To be precise, 'q_index' is the smallest integer, for which the corresponding
+// q >= desired_q.
+// If no such q index is found, returns 'worst_qindex'.
+int av1_find_qindex(double desired_q, aom_bit_depth_t bit_depth,
+                    int best_qindex, int worst_qindex);
+
 // Computes a q delta (in "q index" terms) to get from a starting q value
 // to a target q value
 int av1_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
