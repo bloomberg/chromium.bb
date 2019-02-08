@@ -554,9 +554,16 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("printPagesToSkPictures",
                  &GpuBenchmarking::PrintPagesToSkPictures)
       .SetMethod("printPagesToXPS", &GpuBenchmarking::PrintPagesToXPS)
-      .SetValue("DEFAULT_INPUT", 0)
-      .SetValue("TOUCH_INPUT", 1)
-      .SetValue("MOUSE_INPUT", 2)
+      .SetValue("DEFAULT_INPUT",
+                static_cast<int>(SyntheticGestureParams::DEFAULT_INPUT))
+      .SetValue("TOUCH_INPUT",
+                static_cast<int>(SyntheticGestureParams::TOUCH_INPUT))
+      .SetValue("MOUSE_INPUT",
+                static_cast<int>(SyntheticGestureParams::MOUSE_INPUT))
+      .SetValue("TOUCHPAD_INPUT",
+                static_cast<int>(SyntheticGestureParams::TOUCHPAD_INPUT))
+      .SetValue("PEN_INPUT",
+                static_cast<int>(SyntheticGestureParams::PEN_INPUT))
       .SetMethod("gestureSourceTypeSupported",
                  &GpuBenchmarking::GestureSourceTypeSupported)
       .SetMethod("smoothScrollBy", &GpuBenchmarking::SmoothScrollBy)
