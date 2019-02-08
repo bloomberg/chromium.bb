@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/protocol_string.h"
+#include "headless/lib/browser/protocol/protocol_string.h"
 
 #include <vector>
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace headless {
 namespace protocol {
 namespace {
 TEST(ProtocolBinaryTest, base64EmptyArgs) {
@@ -56,4 +56,4 @@ TEST(ProtocolBinaryTest, InvalidBase64Decode) {
 }
 }  // namespace
 }  // namespace protocol
-}  // namespace content
+}  // namespace headless

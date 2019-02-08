@@ -56,14 +56,6 @@ void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out);
 // with additional info = 27, followed by 8 bytes in big endian.
 void EncodeDouble(double value, std::vector<uint8_t>* out);
 
-// Some constants for CBOR tokens that only take a single byte on the wire.
-uint8_t EncodeTrue();
-uint8_t EncodeFalse();
-uint8_t EncodeNull();
-uint8_t EncodeIndefiniteLengthArrayStart();
-uint8_t EncodeIndefiniteLengthMapStart();
-uint8_t EncodeStop();
-
 // An envelope indicates the byte length of a wrapped item.
 // We use this for maps and array, which allows the decoder
 // to skip such (nested) values whole sale.
@@ -105,7 +97,7 @@ void ParseCBOR(span<uint8_t> bytes, JSONParserHandler* json_out);
 enum class CBORTokenTag {
   // Encountered an error in the structure of the message. Consult
   // status() for details.
-  ERROR_VALUE,
+  ERROR,
   // Booleans and NULL.
   TRUE_VALUE,
   FALSE_VALUE,
@@ -148,7 +140,7 @@ class CBORTokenizer {
   ~CBORTokenizer();
 
   // Identifies the current token that we're looking at,
-  // or ERROR_VALUE (in which ase ::Status() has details)
+  // or ERROR (in which ase ::Status() has details)
   // or DONE (if we're past the last token).
   CBORTokenTag TokenTag() const;
 
@@ -160,10 +152,10 @@ class CBORTokenizer {
   // letting the client explore the nested structure.
   void EnterEnvelope();
 
-  // If TokenTag() is CBORTokenTag::ERROR_VALUE, then Status().error describes
+  // If TokenTag() is CBORTokenTag::ERROR, then Status().error describes
   // the error more precisely; otherwise it'll be set to Error::OK.
   // In either case, Status().pos is the current position.
-  struct Status Status() const;
+  inspector_protocol::Status Status() const;
 
   // The following methods retrieve the token values. They can only
   // be called if TokenTag() matches.
@@ -191,7 +183,7 @@ class CBORTokenizer {
 
   span<uint8_t> bytes_;
   CBORTokenTag token_tag_;
-  struct Status status_;
+  inspector_protocol::Status status_;
   int64_t token_byte_length_;
   cbor_internals::MajorType token_start_type_;
   uint64_t token_start_internal_value_;
