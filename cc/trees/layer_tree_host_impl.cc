@@ -218,19 +218,16 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   TRACE_EVENT_ASYNC_END0("cc", "LayerTreeHostImpl::SetVisible", id);
 }
 
-bool IsWheelBasedScroll(InputHandler::ScrollInputType type) {
-  return type == InputHandler::WHEEL;
-}
-
 enum ScrollThread { MAIN_THREAD, CC_THREAD };
 
 void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
                                       ScrollThread scroll_thread) {
+  DCHECK_NE(type, InputHandler::SCROLL_INPUT_UNKNOWN);
   bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
-  if (IsWheelBasedScroll(type)) {
+  if (type == InputHandler::WHEEL) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
                           scroll_on_main_thread);
-  } else {
+  } else if (type == InputHandler::TOUCHSCREEN) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorTouchScrollUpdateThread",
                           scroll_on_main_thread);
   }
@@ -3615,10 +3612,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
                        TRACE_EVENT_SCOPE_THREAD, "isNull",
                        scrolling_node ? false : true);
   active_tree_->SetCurrentlyScrollingNode(scrolling_node);
-  // TODO(majidvp): get rid of wheel_scrolling_ and set is_direct_manipulation
+  // TODO(majidvp): get rid of touch_scrolling_ and set is_direct_manipulation
   // in input_handler_proxy instead.
-  wheel_scrolling_ = IsWheelBasedScroll(type);
-  scroll_state->set_is_direct_manipulation(!wheel_scrolling_);
+  touch_scrolling_ = type == InputHandler::TOUCHSCREEN;
+  wheel_scrolling_ = type == InputHandler::WHEEL;
+  scroll_state->set_is_direct_manipulation(touch_scrolling_);
   // Invoke |DistributeScrollDelta| even with zero delta and velocity to ensure
   // scroll customization callbacks are invoked.
   DistributeScrollDelta(scroll_state);
@@ -3645,7 +3643,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
-  UpdateScrollSourceInfo(wheel_scrolling_);
+  UpdateScrollSourceInfo(type);
 
   return scroll_status;
 }
@@ -4402,7 +4400,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   scroll_state->set_delta_consumed_for_scroll_sequence(
       did_lock_scrolling_layer_);
-  scroll_state->set_is_direct_manipulation(!wheel_scrolling_);
+  scroll_state->set_is_direct_manipulation(touch_scrolling_);
   scroll_state->set_current_native_scrolling_node(scroll_node);
 
   DistributeScrollDelta(scroll_state);
@@ -5667,10 +5665,11 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
   }
 }
 
-void LayerTreeHostImpl::UpdateScrollSourceInfo(bool is_wheel_scroll) {
-  if (is_wheel_scroll)
+void LayerTreeHostImpl::UpdateScrollSourceInfo(
+    InputHandler::ScrollInputType type) {
+  if (type == InputHandler::WHEEL)
     has_scrolled_by_wheel_ = true;
-  else
+  else if (type == InputHandler::TOUCHSCREEN)
     has_scrolled_by_touch_ = true;
 }
 
