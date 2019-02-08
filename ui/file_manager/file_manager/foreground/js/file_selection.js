@@ -139,7 +139,6 @@ class FileSelectionHandler extends cr.EventTarget {
    * @param {!MetadataModel} metadataModel
    * @param {!VolumeManager} volumeManager
    * @param {!AllowedPaths} allowedPaths
-   * @struct
    */
   constructor(
       directoryModel, fileOperationManager, listContainer, metadataModel,
