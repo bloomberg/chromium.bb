@@ -150,7 +150,6 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
 
       // make sure user sees the error message.
       ExpandBottomSheet();
-      ShutdownGracefully();
       return;
 
     case AutofillAssistantState::INACTIVE:
@@ -187,13 +186,6 @@ void UiControllerAndroid::ExpandBottomSheet() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
-void UiControllerAndroid::ShutdownGracefully() {
-  DCHECK(ui_delegate_->GetDropOutReason() != Metrics::AA_START);
-  Java_AutofillAssistantUiController_onShutdownGracefully(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_,
-      ui_delegate_->GetDropOutReason());
-}
-
 void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
   Java_AssistantHeaderModel_setProgressPulsingEnabled(
       AttachCurrentThread(), GetHeaderModel(), enabled);
@@ -223,7 +215,10 @@ void UiControllerAndroid::OnCloseButtonClicked() {
 }
 
 std::string UiControllerAndroid::GetDebugContext() {
-  return ui_delegate_->GetDebugContext();
+  if (captured_debug_context_.empty() && ui_delegate_) {
+    return ui_delegate_->GetDebugContext();
+  }
+  return captured_debug_context_;
 }
 
 // Carousel related methods.
@@ -255,7 +250,8 @@ void UiControllerAndroid::OnChipsChanged(const std::vector<Chip>& chips) {
 }
 
 void UiControllerAndroid::OnChipSelected(int index) {
-  ui_delegate_->SelectChip(index);
+  if (ui_delegate_)
+    ui_delegate_->SelectChip(index);
 }
 
 // Overlay related methods.
@@ -294,11 +290,13 @@ void UiControllerAndroid::OnUnexpectedTaps() {
 }
 
 void UiControllerAndroid::UpdateTouchableArea() {
-  ui_delegate_->UpdateTouchableArea();
+  if (ui_delegate_)
+    ui_delegate_->UpdateTouchableArea();
 }
 
 void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
-  ui_delegate_->OnUserInteractionInsideTouchableArea();
+  if (ui_delegate_)
+    ui_delegate_->OnUserInteractionInsideTouchableArea();
 }
 
 // Other methods.
@@ -310,14 +308,21 @@ void UiControllerAndroid::ShowOnboarding(
       env, java_autofill_assistant_ui_controller_, on_accept);
 }
 
-void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
-  Java_AutofillAssistantUiController_onShutdown(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_, reason);
-}
+void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_destroy(
+      env, java_autofill_assistant_ui_controller_,
+      /* delayed= */ ui_delegate_->GetState() ==
+          AutofillAssistantState::STOPPED);
+  if (reason == Metrics::CUSTOM_TAB_CLOSED) {
+    Java_AutofillAssistantUiController_scheduleCloseCustomTab(
+        env, java_autofill_assistant_ui_controller_);
+  }
 
-void UiControllerAndroid::Close() {
-  Java_AutofillAssistantUiController_onClose(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+  // Capture the debug context, for including into a feedback possibly sent
+  // later, after the delegate has been destroyed.
+  captured_debug_context_ = ui_delegate_->GetDebugContext();
+  ui_delegate_ = nullptr;
 }
 
 // Payment request related methods.
@@ -383,9 +388,21 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
   Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);
 }
 
-void UiControllerAndroid::Stop(
+void UiControllerAndroid::Stop(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj,
+                               int jreason) {
+  client_->Shutdown(static_cast<Metrics::DropOutReason>(jreason));
+}
+
+void UiControllerAndroid::OnFatalError(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  client_->Stop();
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jmessage,
+    int jreason) {
+  if (!ui_delegate_)
+    return;
+  ui_delegate_->OnFatalError(
+      base::android::ConvertJavaStringToUTF8(env, jmessage),
+      static_cast<Metrics::DropOutReason>(jreason));
 }
 }  // namespace autofill_assistant.

@@ -53,9 +53,6 @@ class UiDelegate {
   // Selects a chip, from the set of chips returned by GetChips().
   virtual void SelectChip(int chip) = 0;
 
-  // Returns the drop out reason for the last state transition to STOPPED.
-  virtual Metrics::DropOutReason GetDropOutReason() const = 0;
-
   // If the controller is waiting for payment request information, this
   // field contains a non-null options describing the request.
   virtual const PaymentRequestOptions* GetPaymentRequestOptions() const = 0;
@@ -73,6 +70,10 @@ class UiDelegate {
   //
   // Note that the vector is not cleared before rectangles are added.
   virtual void GetTouchableArea(std::vector<RectF>* area) const = 0;
+
+  // Reports a fatal error to Autofill Assistant, which should then stop.
+  virtual void OnFatalError(const std::string& error_message,
+                            Metrics::DropOutReason reason) = 0;
 
  protected:
   UiDelegate() = default;

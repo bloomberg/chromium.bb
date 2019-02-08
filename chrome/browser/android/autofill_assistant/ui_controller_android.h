@@ -29,8 +29,11 @@ namespace autofill_assistant {
 // changes to the UI model.
 class UiControllerAndroid : public UiController {
  public:
-  // pointers to |web_contents|, |client| and |ui_delegate| must remain valid
-  // for the lifetime of this instance.
+  // pointers to |web_contents|, |client| must remain valid for the lifetime of
+  // this instance.
+  //
+  // Pointer to |ui_delegate| must remain valid for the lifetime of this
+  // instance or until WillShutdown is called.
   UiControllerAndroid(content::WebContents* web_contents,
                       Client* client,
                       UiDelegate* ui_delegate);
@@ -43,8 +46,7 @@ class UiControllerAndroid : public UiController {
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
-  void Shutdown(Metrics::DropOutReason reason) override;
-  void Close() override;
+  void WillShutdown(Metrics::DropOutReason reason) override;
   void OnChipsChanged(const std::vector<Chip>& chips) override;
   void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
   void OnDetailsChanged(const Details* details) override;
@@ -68,14 +70,23 @@ class UiControllerAndroid : public UiController {
   void OnChipSelected(int index);
 
   // Called by Java.
-  void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Stop(JNIEnv* env,
+            const base::android::JavaParamRef<jobject>& obj,
+            int reason);
+  void OnFatalError(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    const base::android::JavaParamRef<jstring>& message,
+                    int reason);
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
   Client* const client_;
-  UiDelegate* const ui_delegate_;
+
+  // A pointer to the Autofill Assistant Controller. It can become nullptr after
+  // WillShutdown() has been called.
+  UiDelegate* ui_delegate_;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
@@ -91,10 +102,13 @@ class UiControllerAndroid : public UiController {
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
-  void ShutdownGracefully();
   void SetProgressPulsingEnabled(bool enabled);
   void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
+
+  // Debug context captured previously. If non-empty, GetDebugContext() returns
+  // this context.
+  std::string captured_debug_context_;
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject>

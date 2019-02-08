@@ -55,7 +55,6 @@ static const char* const kWebsiteVisitedBeforeParameterName =
     "WEBSITE_VISITED_BEFORE";
 
 static const char* const kTrueValue = "true";
-
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents, Client* client)
@@ -184,9 +183,18 @@ void Controller::SelectChip(int chip_index) {
   std::move(callback).Run();
 }
 
+void Controller::StopAndShutdown(Metrics::DropOutReason reason) {
+  ClearDetails();
+  SetChips(nullptr);
+  SetPaymentRequestOptions(nullptr);
+  EnterState(AutofillAssistantState::STOPPED);
+  client_->Shutdown(reason);
+}
+
 void Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return;
+
   DCHECK_NE(state_, AutofillAssistantState::STOPPED)
       << "Unexpected transition from STOPPED to " << static_cast<int>(state);
 
@@ -319,26 +327,27 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
-      GetUiController()->Shutdown(Metrics::SCRIPT_SHUTDOWN);
+      client_->Shutdown(Metrics::SCRIPT_SHUTDOWN);
       return;
+
     case ScriptExecutor::TERMINATE:
       // TODO(crbug.com/806868): Distinguish shutdown from terminate: Users
       // should be allowed to undo shutdown, but not terminate.
       //
-      // This is coming from a client Stop() to clean up and we already counted
-      // it as a stop event. The code here is only executed if no script was
-      // running, so there may be some double counting.
-      GetUiController()->Shutdown(Metrics::SAFETY_NET_TERMINATE);
+      // There should have been a previous call to Terminate() that set the
+      // reason, thus SAFETY_NET_TERMINATE should never be logged, unless
+      // there's a bug.
+      DCHECK_NE(terminate_reason_, Metrics::SAFETY_NET_TERMINATE);
+      client_->Shutdown(terminate_reason_);
       return;
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
       GetWebController()->ClearCookie();
-      stop_reason_ = Metrics::SCRIPT_SHUTDOWN;
-      EnterState(AutofillAssistantState::STOPPED);
+      StopAndShutdown(Metrics::SCRIPT_SHUTDOWN);
       return;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
-      GetUiController()->Close();
+      client_->Shutdown(Metrics::CUSTOM_TAB_CLOSED);
       return;
 
     case ScriptExecutor::RESTART:
@@ -356,20 +365,6 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   }
   EnterState(AutofillAssistantState::PROMPT);
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
-}
-
-void Controller::OnFatalError(const std::string& error_message,
-                              Metrics::DropOutReason reason) {
-  LOG(ERROR) << "Autofill Assistant has encountered an error and is shutting "
-                "down. Reason: "
-             << static_cast<int>(reason);
-  if (state_ == AutofillAssistantState::STOPPED)
-    return;
-
-  StopPeriodicScriptChecks();
-  SetStatusMessage(error_message);
-  stop_reason_ = reason;
-  EnterState(AutofillAssistantState::STOPPED);
 }
 
 bool Controller::MaybeAutostartScript(
@@ -470,10 +465,16 @@ AutofillAssistantState Controller::GetState() {
   return state_;
 }
 
-bool Controller::Terminate() {
+bool Controller::Terminate(Metrics::DropOutReason reason) {
   StopPeriodicScriptChecks();
-  if (script_tracker_)
-    return script_tracker_->Terminate();
+  if (!will_shutdown_) {
+    will_shutdown_ = true;
+    GetUiController()->WillShutdown(reason);
+  }
+  if (script_tracker_ && !script_tracker_->Terminate()) {
+    terminate_reason_ = reason;
+    return false;
+  }
   return true;
 }
 
@@ -516,10 +517,6 @@ std::string Controller::GetDebugContext() {
   return output_js;
 }
 
-Metrics::DropOutReason Controller::GetDropOutReason() const {
-  return stop_reason_;
-}
-
 const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
   return payment_request_options_.get();
 }
@@ -537,6 +534,19 @@ void Controller::SetPaymentInformation(
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
   if (touchable_element_area_)
     touchable_element_area_->GetArea(area);
+}
+
+void Controller::OnFatalError(const std::string& error_message,
+                              Metrics::DropOutReason reason) {
+  LOG(ERROR) << "Autofill Assistant has encountered an error and is shutting "
+                "down. Reason: "
+             << static_cast<int>(reason);
+  if (state_ == AutofillAssistantState::STOPPED)
+    return;
+
+  StopPeriodicScriptChecks();
+  SetStatusMessage(error_message);
+  StopAndShutdown(reason);
 }
 
 void Controller::OnNoRunnableScriptsAnymore() {
@@ -611,7 +621,7 @@ void Controller::OnRunnableScriptsChanged(
 }
 
 void Controller::DidAttachInterstitialPage() {
-  GetUiController()->Shutdown(Metrics::INTERSTITIAL_PAGE);
+  client_->Shutdown(Metrics::INTERSTITIAL_PAGE);
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -656,7 +666,7 @@ void Controller::DocumentAvailableInMainFrame() {
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {
-  GetUiController()->Shutdown(Metrics::RENDER_PROCESS_GONE);
+  client_->Shutdown(Metrics::RENDER_PROCESS_GONE);
 }
 
 void Controller::LoadProgressChanged(content::WebContents* source,

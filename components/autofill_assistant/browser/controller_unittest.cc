@@ -58,7 +58,7 @@ class FakeClient : public Client {
   std::string GetAccountEmailAddress() override { return ""; }
   std::string GetLocale() override { return ""; }
   std::string GetCountryCode() override { return ""; }
-  void Stop() override {}
+  MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
 
  private:
   UiController* ui_controller_;
@@ -188,7 +188,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   std::vector<AutofillAssistantState> states_;
   MockService* mock_service_;
   MockWebController* mock_web_controller_;
-  FakeClient fake_client_;
+  NiceMock<FakeClient> fake_client_;
   NiceMock<MockUiController> mock_ui_controller_;
   content::WebContentsTester* tester_;
 
@@ -308,9 +308,14 @@ TEST_F(ControllerTest, Stop) {
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, actions_response_str));
 
-  EXPECT_CALL(mock_ui_controller_, Shutdown(_));
+  testing::InSequence seq;
+  EXPECT_CALL(fake_client_, Shutdown(Metrics::SCRIPT_SHUTDOWN));
 
   ExecuteScript("stop");
+
+  // Simulates Client::Shutdown(SCRIPT_SHUTDOWN)
+  EXPECT_CALL(mock_ui_controller_, WillShutdown(Metrics::SCRIPT_SHUTDOWN));
+  EXPECT_TRUE(controller_->Terminate(Metrics::SCRIPT_SHUTDOWN));
 }
 
 TEST_F(ControllerTest, Reset) {

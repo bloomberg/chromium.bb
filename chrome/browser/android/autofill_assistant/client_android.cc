@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/autofill_assistant/client_android.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -47,10 +50,6 @@ const base::FeatureParam<std::string> kAutofillAssistantServerUrl{
     &autofill_assistant::features::kAutofillAssistant, "url",
     "https://automate-pa.googleapis.com"};
 
-// Time between two attempts to destroy the controller.
-static constexpr base::TimeDelta kDestroyRetryInterval =
-    base::TimeDelta::FromSeconds(2);
-
 // Fills a map from two Java arrays of strings of the same length.
 void FillParametersFromJava(JNIEnv* env,
                             const JavaRef<jobjectArray>& names,
@@ -80,7 +79,6 @@ JNI_AutofillAssistantClient_FromWebContents(
 
 ClientAndroid::ClientAndroid(content::WebContents* web_contents)
     : web_contents_(web_contents),
-      // TODO: consider creating the java objects when needed.
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this))),
@@ -196,20 +194,18 @@ std::string ClientAndroid::GetCountryCode() {
                                                   java_object_));
 }
 
-void ClientAndroid::Stop() {
+void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
 
-  if (!controller_->Terminate()) {
-    // This is a safety net and should be removed once all uses of
-    // base::Unretained in the execution and script tracking has been removed.
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ClientAndroid::Stop, weak_ptr_factory_.GetWeakPtr()),
-        kDestroyRetryInterval);
+  if (!controller_->Terminate(reason)) {
+    // Controller is responsible for calling Shutdown(reason) again once it's
+    // done.
     return;
   }
   ui_controller_android_.reset();
+
+  Metrics::RecordDropOut(reason);
   controller_.reset();
 }
 

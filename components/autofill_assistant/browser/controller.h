@@ -55,9 +55,8 @@ class Controller : public ScriptExecutorDelegate,
   // Initiates a clean shutdown.
   //
   // This function returns false when it needs more time to properly shut down
-  // the script tracker. It usually means that it either has to wait for a
-  // script to find an appropriate moment to suspend execution or wait for a
-  // script checking round to complete.
+  // the script tracker. In that case, the controller is responsible for calling
+  // Client::Shutdown at the right time for the given reason.
   //
   // A caller is expected to try again later when this function returns false. A
   // return value of true means that the scrip tracker can safely be destroyed.
@@ -65,7 +64,7 @@ class Controller : public ScriptExecutorDelegate,
   // TODO(crbug.com/806868): Instead of this safety net, the proper fix is to
   // switch to weak pointers everywhere so that dangling callbacks are not an
   // issue.
-  bool Terminate();
+  bool Terminate(Metrics::DropOutReason reason);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -82,6 +81,10 @@ class Controller : public ScriptExecutorDelegate,
   void ClearDetails() override;
   void SetProgress(int progress) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+
+  // Stops the controller with |reason| and destroys this. The current status
+  // message must contain the error message.
+  void StopAndShutdown(Metrics::DropOutReason reason);
   void EnterState(AutofillAssistantState state) override;
   bool IsCookieExperimentEnabled() const;
   void SetPaymentRequestOptions(
@@ -96,11 +99,12 @@ class Controller : public ScriptExecutorDelegate,
   const std::vector<Chip>& GetChips() const override;
   void SelectChip(int chip_index) override;
   std::string GetDebugContext() override;
-  Metrics::DropOutReason GetDropOutReason() const override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
   void SetPaymentInformation(
       std::unique_ptr<PaymentInformation> payment_information) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
+  void OnFatalError(const std::string& error_message,
+                    Metrics::DropOutReason reason) override;
 
  private:
   friend ControllerTest;
@@ -123,10 +127,6 @@ class Controller : public ScriptExecutorDelegate,
   void StartPeriodicScriptChecks();
   void StopPeriodicScriptChecks();
   void OnPeriodicScriptCheck();
-
-  // Shows the given message and stops the controller with |reason|.
-  void OnFatalError(const std::string& error_message,
-                    Metrics::DropOutReason reason);
 
   // Runs autostart scripts from |runnable_scripts|, if the conditions are
   // right. Returns true if a script was auto-started.
@@ -220,8 +220,12 @@ class Controller : public ScriptExecutorDelegate,
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;
 
-  // Drop out reason set when the controller enters a STOPPED state.
-  Metrics::DropOutReason stop_reason_ = Metrics::AA_START;
+  // A reason passed previously to Terminate(). SAFETY_NET_TERMINATE is a
+  // placeholder.
+  Metrics::DropOutReason terminate_reason_ = Metrics::SAFETY_NET_TERMINATE;
+
+  // True once UiController::WillShutdown has been called.
+  bool will_shutdown_ = false;
 
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
 

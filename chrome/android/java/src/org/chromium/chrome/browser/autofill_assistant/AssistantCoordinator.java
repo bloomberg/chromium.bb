@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
@@ -15,12 +14,10 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -29,16 +26,16 @@ import org.chromium.content_public.browser.WebContents;
  */
 class AssistantCoordinator {
     interface Delegate {
-        /**
-         * Completely stop the Autofill Assistant.
-         */
-        void stop();
+        /** Completely stop the Autofill Assistant. */
+        void stop(@DropOutReason int reason);
+
+        // TODO(crbug.com/806868): Move onboarding and snackbar out of this class and remove the
+        // delegate.
     }
 
     private static final String FEEDBACK_CATEGORY_TAG =
             "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
     private static final int SNACKBAR_DELAY_MS = 5_000;
-    private static final int GRACEFUL_SHUTDOWN_DELAY_MS = 5_000;
 
     private final ChromeActivity mActivity;
     private final Delegate mDelegate;
@@ -50,8 +47,7 @@ class AssistantCoordinator {
     private final AssistantKeyboardCoordinator mKeyboardCoordinator;
     private final AssistantOverlayCoordinator mOverlayCoordinator;
 
-    private boolean mIsShuttingDownGracefully;
-    private boolean mIsDropOutRecorded;
+    private boolean mShowingSnackbar;
 
     AssistantCoordinator(ChromeActivity activity, WebContents webContents, Delegate delegate) {
         mActivity = activity;
@@ -85,51 +81,10 @@ class AssistantCoordinator {
         showAssistantView();
     }
 
-    /**
-     * Shut down the Autofill Assistant immediately, without showing a message.
-     */
-    public void shutdownImmediately(@DropOutReason int reason) {
-        if (!mIsDropOutRecorded) {
-            AutofillAssistantMetrics.recordDropOut(reason);
-            mIsDropOutRecorded = true;
-        }
+    /** Detaches and destroys the view. */
+    public void destroy() {
         detachAssistantView();
         mOverlayCoordinator.destroy();
-        mDelegate.stop();
-    }
-
-    /**
-     * Schedule the shut down of the Autofill Assistant such that any status message currently
-     * visible will still be shown for a few seconds before shutting down. Optionally replace
-     * the status message with a generic error message iff {@code showGiveUpMessage} is true.
-     */
-    // TODO(crbug.com/806868): Move this method to native.
-    public void gracefulShutdown(boolean showGiveUpMessage, @DropOutReason int reason) {
-        mIsShuttingDownGracefully = true;
-
-        // Make sure bottom bar is expanded.
-        mBottomBarCoordinator.expand();
-
-        // Hide everything except header.
-        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.HIDDEN);
-        mModel.getDetailsModel().clearDetails();
-        mModel.getPaymentRequestModel().set(AssistantPaymentRequestModel.OPTIONS, null);
-        mModel.getCarouselModel().clearChips();
-
-        if (showGiveUpMessage) {
-            mModel.getHeaderModel().set(AssistantHeaderModel.STATUS_MESSAGE,
-                    mActivity.getString(R.string.autofill_assistant_give_up));
-        }
-        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
-                () -> shutdownImmediately(reason), GRACEFUL_SHUTDOWN_DELAY_MS);
-    }
-
-    /**
-     * Shut down the Autofill Assistant and close the current Chrome tab.
-     */
-    public void close() {
-        shutdownImmediately(DropOutReason.CUSTOM_TAB_CLOSED);
-        mActivity.finish();
     }
 
     /**
@@ -151,7 +106,7 @@ class AssistantCoordinator {
                 .then(accepted -> {
                     mBottomBarCoordinator.allowSwipingBottomSheet(true);
                     if (!accepted) {
-                        shutdownImmediately(DropOutReason.DECLINED);
+                        mDelegate.stop(DropOutReason.DECLINED);
                         return;
                     }
 
@@ -186,8 +141,8 @@ class AssistantCoordinator {
      * Autofill assistant is shutting down.
      */
     public void dismissAndShowSnackbar(String message, @DropOutReason int reason) {
-        if (mIsShuttingDownGracefully) {
-            shutdownImmediately(reason);
+        if (mShowingSnackbar) {
+            mDelegate.stop(reason);
             return;
         }
 
@@ -199,18 +154,20 @@ class AssistantCoordinator {
                                     @Override
                                     public void onAction(Object actionData) {
                                         // Shutdown was cancelled.
+                                        mShowingSnackbar = false;
                                         showAssistantView();
                                     }
 
                                     @Override
                                     public void onDismissNoAction(Object actionData) {
-                                        shutdownImmediately(reason);
+                                        mDelegate.stop(reason);
                                     }
                                 },
                                 Snackbar.TYPE_ACTION, Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
                         .setAction(mActivity.getString(R.string.undo), /* actionData= */ null);
         snackBar.setSingleLine(false);
         snackBar.setDuration(SNACKBAR_DELAY_MS);
+        mShowingSnackbar = true;
         mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
