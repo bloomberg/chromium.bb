@@ -739,7 +739,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
       branch: Expected name for the branch.
     """
     self.rc_mock.assertCommandContains(
-        ['git', 'checkout', '-B', branch, self.RevisionFor(project)],
+        ['git', 'checkout', '-B', branch],
         cwd=self.PathListRegexFor(project))
 
   def AssertBranchRenamed(self, project, branch):

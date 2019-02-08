@@ -421,12 +421,13 @@ class Branch(object):
   def _CreateLocalBranches(self, branches):
     """Create git branches for all branchable projects in the local checkout.
 
+    The branch uses the HEAD commit as the branch point.
+
     Args:
       branches: List of ProjectBranches to create.
     """
     for project, branch in branches:
-      self.checkout.RunGit(project,
-                           ['checkout', '-B', branch, project.Revision()])
+      self.checkout.RunGit(project, ['checkout', '-B', branch])
 
   def _DeleteLocalBranches(self, branches):
     """Delete the given project branches in the local checkout.
