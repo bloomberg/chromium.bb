@@ -373,7 +373,8 @@ bool VideoFrameSubmitter::SubmitFrame(
   resource_provider_->PrepareSendToParent(resources,
                                           &compositor_frame.resource_list);
 
-  // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
+  // We can pass nullptr for the HitTestData as the CompositorFram will not
+  // contain any SurfaceDrawQuads.
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
