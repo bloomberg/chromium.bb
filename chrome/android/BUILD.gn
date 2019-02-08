@@ -1867,6 +1867,7 @@ android_app_bundle("chrome_public_bundle") {
   sign_bundle = is_official_build
 
   enable_language_splits = enable_chrome_language_splits
+  compress_shared_libraries = true
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
@@ -1877,6 +1878,7 @@ android_app_bundle("chrome_modern_public_bundle") {
     proguard_enabled = true
   }
   enable_language_splits = enable_chrome_language_splits
+  compress_shared_libraries = true
   if (modularize_vr) {
     extra_modules = [
       {

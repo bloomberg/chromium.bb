@@ -3862,6 +3862,10 @@ if (enable_java_templates) {
   #    proguard_android_sdk_dep: Optional. android_system_java_prebuilt() target
   #      used as a library jar for synchronized proguarding.
   #
+  #    compress_shared_libraries: Optional. Whether to compress shared libraries
+  #      such that they are extracted upon install. Libraries prefixed with
+  #      "crazy." are never compressed.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4094,6 +4098,10 @@ if (enable_java_templates) {
       if (_split_dimensions != []) {
         args += [ "--split-dimensions=$_split_dimensions" ]
       }
+      if (defined(invoker.compress_shared_libraries) &&
+          invoker.compress_shared_libraries) {
+        args += [ "--compress-shared-libraries" ]
+      }
 
       if (_enable_language_splits) {
         args += [
@@ -4107,8 +4115,6 @@ if (enable_java_templates) {
         args += [
           "--uncompressed-assets=@FileArg(" +
               "$_rebased_build_config:uncompressed_assets)",
-          "--uncompress-shared-libraries=@FileArg(" +
-              "$_rebased_build_config:native:uncompress_shared_libraries)",
           "--rtxt-in-paths=@FileArg(" +
               "$_rebased_build_config:deps_info:module_rtxt_path)",
         ]

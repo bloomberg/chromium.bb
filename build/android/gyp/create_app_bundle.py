@@ -71,9 +71,10 @@ def _ParseArgs(args):
       '--rtxt-out-path', help='Path to combined R.txt file for bundle.')
   parser.add_argument('--uncompressed-assets', action='append',
                       help='GN-list of uncompressed assets.')
-  parser.add_argument('--uncompress-shared-libraries', action='append',
-                      help='Whether to store native libraries uncompressed. '
-                      'This is a string to allow @FileArg usage.')
+  parser.add_argument(
+      '--compress-shared-libraries',
+      action='store_true',
+      help='Whether to store native libraries compressed.')
   parser.add_argument('--split-dimensions',
                       help="GN-list of split dimensions to support.")
   parser.add_argument(
@@ -119,13 +120,6 @@ def _ParseArgs(args):
 
   options.uncompressed_assets = set(uncompressed_list)
 
-  # Merge uncompressed native libs flags, they all must have the same value.
-  if options.uncompress_shared_libraries:
-    uncompressed_libs = set(options.uncompress_shared_libraries)
-    if len(uncompressed_libs) > 1:
-      parser.error('Inconsistent uses of --uncompress-native-libs!')
-    options.uncompress_shared_libraries = 'True' in uncompressed_libs
-
   # Check that all split dimensions are valid
   if options.split_dimensions:
     options.split_dimensions = build_utils.ParseGnList(options.split_dimensions)
@@ -157,14 +151,14 @@ def _MakeSplitDimension(value, enabled):
   return {'value': value, 'negate': not enabled}
 
 
-def _GenerateBundleConfigJson(uncompressed_assets, uncompress_shared_libraries,
+def _GenerateBundleConfigJson(uncompressed_assets, compress_shared_libraries,
                               split_dimensions, base_master_resource_ids):
   """Generate a dictionary that can be written to a JSON BuildConfig.
 
   Args:
     uncompressed_assets: A list or set of file paths under assets/ that always
       be stored uncompressed.
-    uncompress_shared_libraries: Boolean, whether to uncompress all native libs.
+    compress_shared_libraries: Boolean, whether to compress native libs.
     split_dimensions: list of split dimensions.
     base_master_resource_ids: Optional list of 32-bit resource IDs to keep
       inside the base module, even when split dimensions are enabled.
@@ -180,29 +174,25 @@ def _GenerateBundleConfigJson(uncompressed_assets, uncompress_shared_libraries,
   split_dimensions = [ _MakeSplitDimension(dim, dim in split_dimensions)
                        for dim in _ALL_SPLIT_DIMENSIONS ]
 
-  # Compute uncompressedGlob list.
-  if uncompress_shared_libraries:
-    uncompressed_globs = [
-      'lib/*/*.so',        # All native libraries.
-    ]
-  else:
-    uncompressed_globs = [
-      'lib/*/crazy.*',     # Native libraries loaded by the crazy linker.
-    ]
-
+  # Native libraries loaded by the crazy linker.
+  # Whether other .so files are compressed is controlled by
+  # "uncompressNativeLibraries".
+  uncompressed_globs = ['lib/*/crazy.*']
   uncompressed_globs.extend('assets/' + x for x in uncompressed_assets)
-
-  uncompressed_globs.extend(['*.' + ext for ext in _UNCOMPRESSED_FILE_EXTS])
+  uncompressed_globs.extend('*.' + ext for ext in _UNCOMPRESSED_FILE_EXTS)
 
   data = {
-    'optimizations': {
-      'splitsConfig': {
-        'splitDimension': split_dimensions,
+      'optimizations': {
+          'splitsConfig': {
+              'splitDimension': split_dimensions,
+          },
+          'uncompressNativeLibraries': {
+              'enabled': not compress_shared_libraries,
+          },
       },
-    },
-    'compression': {
-       'uncompressedGlob': sorted(uncompressed_globs),
-    },
+      'compression': {
+          'uncompressedGlob': sorted(uncompressed_globs),
+      },
   }
 
   if base_master_resource_ids:
@@ -330,7 +320,7 @@ def main(args):
           options.base_module_rtxt_path, options.base_whitelist_rtxt_path)
 
     bundle_config = _GenerateBundleConfigJson(
-        options.uncompressed_assets, options.uncompress_shared_libraries,
+        options.uncompressed_assets, options.compress_shared_libraries,
         split_dimensions, base_master_resource_ids)
 
     tmp_bundle = os.path.join(tmp_dir, 'tmp_bundle')
