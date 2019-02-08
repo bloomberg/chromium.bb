@@ -91,6 +91,10 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
             themeColor = getDefaultColor();
         }
 
+        if (mTab.getActivity() != null && mTab.getActivity().isTablet()) {
+            themeColor = getDefaultColor();
+        }
+
         if (mTab.isNativePage()) themeColor = getDefaultColor();
         if (mTab.isShowingInterstitialPage()) themeColor = getDefaultColor();
 
