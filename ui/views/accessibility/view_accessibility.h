@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -64,6 +65,13 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideIsLeaf(bool value);
   void OverrideIsIgnored(bool value);
   void OverrideBounds(const gfx::RectF& bounds);
+
+  // Override indexes used by some screen readers when describing elements in a
+  // menu, list, etc. If not specified, a view's index in its parent and its
+  // parent's number of children provide the values for these.
+  //
+  // Note: |pos_in_set| is 1-indexed.
+  void OverridePosInSet(int pos_in_set, int set_size);
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}

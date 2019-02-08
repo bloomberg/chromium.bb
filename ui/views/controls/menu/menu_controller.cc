@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
@@ -1992,6 +1993,9 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
     item->GetSubmenu()->GetWidget()->SetNativeWindowProperty(
         TooltipManager::kGroupingPropertyKey,
         reinterpret_cast<void*>(kGroupingId));
+
+    // Set the selection indices for this menu level based on traversal order.
+    SetSelectionIndices(item);
   } else {
     item->GetSubmenu()->Reposition(bounds);
   }
@@ -2477,6 +2481,37 @@ void MenuController::IncrementSelection(
         }
       }
     }
+  }
+}
+
+void MenuController::SetSelectionIndices(MenuItemView* parent) {
+  std::vector<View*> ordering;
+  SubmenuView* const submenu = parent->GetSubmenu();
+
+  for (int i = 0; i < submenu->GetMenuItemCount(); ++i) {
+    MenuItemView* const item = submenu->GetMenuItemAt(i);
+    if (!item->visible() || !item->enabled())
+      continue;
+
+    bool found_focusable = false;
+    if (item->has_children()) {
+      for (View* child = GetInitialFocusableView(item, true); child;
+           child = GetNextFocusableView(item, child, true)) {
+        ordering.push_back(child);
+        found_focusable = true;
+      }
+    }
+    if (!found_focusable)
+      ordering.push_back(item);
+  }
+
+  if (ordering.empty())
+    return;
+
+  const int set_size = ordering.size();
+  for (int i = 0; i < set_size; ++i) {
+    const int set_pos = i + 1;  // 1-indexed
+    ordering[i]->GetViewAccessibility().OverridePosInSet(set_pos, set_size);
   }
 }
 

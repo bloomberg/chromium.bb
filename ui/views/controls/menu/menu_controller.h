@@ -494,6 +494,14 @@ class VIEWS_EXPORT MenuController
   // Selects the next or previous (depending on |direction|) menu item.
   void IncrementSelection(SelectionIncrementDirectionType direction);
 
+  // Sets up accessible indices for menu items based on up/down arrow selection
+  // logic, to be used by screen readers to give accurate "item X of Y"
+  // information (and to be consistent with accessible keyboard use).
+  //
+  // This only sets one level of menu, so it must be called when submenus are
+  // opened as well.
+  void SetSelectionIndices(MenuItemView* parent);
+
   // Selects the first or last (depending on |direction|) menu item.
   void MoveSelectionToFirstOrLastItem(
       SelectionIncrementDirectionType direction);

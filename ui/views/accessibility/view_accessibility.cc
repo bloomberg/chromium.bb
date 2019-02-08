@@ -153,6 +153,16 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
         ax::mojom::StringAttribute::kDescription));
   }
 
+  static const ax::mojom::IntAttribute kOverridableIntAttributes[]{
+      ax::mojom::IntAttribute::kPosInSet,
+      ax::mojom::IntAttribute::kSetSize,
+  };
+
+  for (auto attribute : kOverridableIntAttributes) {
+    if (custom_data_.HasIntAttribute(attribute))
+      data->AddIntAttribute(attribute, custom_data_.GetIntAttribute(attribute));
+  }
+
   if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
     base::string16 tooltip;
     view_->GetTooltipText(gfx::Point(), &tooltip);
@@ -224,6 +234,11 @@ void ViewAccessibility::OverrideIsIgnored(bool value) {
 
 void ViewAccessibility::OverrideBounds(const gfx::RectF& bounds) {
   custom_data_.relative_bounds.bounds = bounds;
+}
+
+void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {
+  custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set);
+  custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
