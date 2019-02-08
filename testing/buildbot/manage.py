@@ -80,6 +80,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   # These targets are listed only in build-side recipes.
   'All_syzygy',
   'blink_tests',
+  'captured_sites_interactive_tests',
   'cast_shell',
   'cast_shell_apk',
   'chrome_official_builder',

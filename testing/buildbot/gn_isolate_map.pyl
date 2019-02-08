@@ -414,6 +414,10 @@
     "label": "//third_party/cacheinvalidation:cacheinvalidation_unittests",
     "type": "console_test_launcher",
   },
+  "captured_sites_interactive_tests": {
+    "label": "//chrome/test:captured_sites_interactive_tests",
+    "type": "windowed_test_launcher",
+  },
   "capture_unittests": {
     "label": "//media/capture:capture_unittests",
     "type": "windowed_test_launcher",
