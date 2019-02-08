@@ -2034,7 +2034,7 @@
   },
   {
     "name": "enable-webvr",
-    // "owners": [ "your-team" ],
+    "owners": [ "//third_party/blink/renderer/modules/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
@@ -2429,7 +2429,7 @@
   },
   {
     "name": "oculus-vr",
-    // "owners": [ "your-team" ],
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
@@ -2609,7 +2609,7 @@
   },
   {
     "name": "openvr",
-    // "owners": [ "your-team" ],
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
@@ -3196,32 +3196,32 @@
   },
   {
     "name": "webvr-vsync-align",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/browser/android/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
     "name": "webxr",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 79
   },
   {
     "name": "webxr-gamepad-support",
-    // "owners": [ "your-team" ],
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
     "name": "webxr-hit-test",
-    // "owners": [ "your-team" ],
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
     "name": "webxr-orientation-sensor-device",
-    // "owners": [ "your-team" ],
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   },
   {
     "name": "webxr-render-path",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/browser/android/vr/OWNERS", "xr-dev@chromium.org", "klausw@chromium.org" ],
     "expiry_milestone": 76
   },
   {
@@ -3230,8 +3230,13 @@
     "expiry_milestone": 76
   },
   {
+    "name": "windows-mixed-reality",
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "xr-sandbox",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/services/isolated_xr_device/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76
   }
 
