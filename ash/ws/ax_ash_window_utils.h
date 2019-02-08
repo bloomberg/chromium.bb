@@ -13,7 +13,7 @@ namespace ash {
 
 // Provides functions for walking a tree of aura::Windows for accessibility. For
 // SingleProcessMash we want the accessibility tree to jump from a proxy aura
-// Window on the ash side direclty to its corresponding client window. This is
+// Window on the ash side directly to its corresponding client window. This is
 // just a temporary solution to that issue and should be removed once Mash is
 // fully launched. https://crbug.com/911945
 class ASH_EXPORT AXAshWindowUtils : public views::AXAuraWindowUtils {

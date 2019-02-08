@@ -52,7 +52,10 @@ bool ShouldAssignLocalSurfaceIdImpl(aura::Window* window, bool is_top_level) {
 ClientRoot::ClientRoot(WindowTree* window_tree,
                        aura::Window* window,
                        bool is_top_level)
-    : window_tree_(window_tree), window_(window), is_top_level_(is_top_level) {
+    : window_tree_(window_tree),
+      window_(window),
+      is_top_level_(is_top_level),
+      last_visible_(!is_top_level && window->IsVisible()) {
   window_->AddObserver(this);
   if (window_->GetHost())
     window->GetHost()->AddObserver(this);
@@ -282,6 +285,18 @@ void ClientRoot::NotifyClientOfNewBounds(const gfx::Rect& old_bounds) {
       ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation());
 }
 
+void ClientRoot::NotifyClientOfVisibilityChange(bool new_value) {
+  if (is_top_level_ || last_visible_ == new_value)
+    return;
+
+  last_visible_ = new_value;
+  if (!window_tree_->property_change_tracker_->IsProcessingChangeForWindow(
+          window_, ClientChangeType::kVisibility)) {
+    window_tree_->window_tree_client_->OnWindowVisibilityChanged(
+        window_tree_->TransportIdForWindow(window_), last_visible_);
+  }
+}
+
 void ClientRoot::OnPositionInRootChanged() {
   DCHECK(!is_top_level_);
   gfx::Rect bounds_in_screen = window_->GetBoundsInScreen();
@@ -350,6 +365,8 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
     HandleBoundsOrScaleFactorChange(window->GetBoundsInScreen());
   else
     CheckForScaleFactorChange();
+
+  NotifyClientOfVisibilityChange(window_->IsVisible());
 }
 
 void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
@@ -357,6 +374,8 @@ void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->RemoveObserver(this);
+  if (!new_root)
+    NotifyClientOfVisibilityChange(false);
 }
 
 void ClientRoot::OnWillMoveWindowToDisplay(aura::Window* window,
@@ -371,6 +390,14 @@ void ClientRoot::OnDidMoveWindowToDisplay(aura::Window* window) {
   if (scheduled_change_old_bounds_) {
     HandleBoundsOrScaleFactorChange(scheduled_change_old_bounds_.value());
     scheduled_change_old_bounds_.reset();
+  }
+}
+
+void ClientRoot::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
+  if (!is_top_level_ &&
+      !window_tree_->property_change_tracker_->IsProcessingChangeForWindow(
+          window, ClientChangeType::kVisibility)) {
+    NotifyClientOfVisibilityChange(window_->IsVisible());
   }
 }
 

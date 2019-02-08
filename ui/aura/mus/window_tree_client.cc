@@ -496,10 +496,8 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   window_tree_host->InitHost();
   SetLocalPropertiesFromServerProperties(
       WindowMus::Get(window_tree_host->window()), window_data);
-  if (window_data.visible) {
-    SetWindowVisibleFromServer(WindowMus::Get(window_tree_host->window()),
-                               true);
-  }
+  SetWindowVisibleFromServer(WindowMus::Get(window_tree_host->window()),
+                             window_data.visible);
   WindowMus* window = WindowMus::Get(window_tree_host->window());
 
   SetWindowBoundsFromServer(window, window_data.bounds, /* from_server */ true,

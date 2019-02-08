@@ -121,6 +121,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   void NotifyClientOfNewBounds(const gfx::Rect& old_bounds);
 
+  // If necessary, notifies the client that the visibility of the Window is
+  // |new_value|. This does nothing for top-levels.
+  void NotifyClientOfVisibilityChange(bool new_value);
+
   // Callback when the position of |window_|, relative to the root, changes.
   // This is *only* called for non-top-levels.
   void OnPositionInRootChanged();
@@ -139,6 +143,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   void OnWillMoveWindowToDisplay(aura::Window* window,
                                  int64_t new_display_id) override;
   void OnDidMoveWindowToDisplay(aura::Window* window) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // aura::WindowTreeHostObserver:
   void OnHostResized(aura::WindowTreeHost* host) override;
@@ -173,6 +178,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   // Last bounds sent to the client.
   gfx::Rect last_bounds_;
+
+  // Last visibility value sent to the client. This is not used for top-levels.
+  bool last_visible_;
 
   // If true, SetBoundsInScreenFromClient() is setting the window bounds.
   bool setting_bounds_from_client_ = false;

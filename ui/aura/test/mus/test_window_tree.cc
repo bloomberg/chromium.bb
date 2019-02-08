@@ -60,6 +60,7 @@ void TestWindowTree::AddEmbedRootForToken(const base::UnguessableToken& token) {
   embedder_window_data->window_id =
       (kFakeEmbedderClientId << 32) | kFakeEmbedderWindowId;
   embedder_window_data->bounds = gfx::Rect(320, 240);
+  embedder_window_data->visible = true;
 
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
   parent_local_surface_id_allocator.GenerateId();
