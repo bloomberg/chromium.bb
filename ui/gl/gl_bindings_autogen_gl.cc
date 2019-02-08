@@ -298,14 +298,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_APPLE_fence = gfx::HasExtension(extensions, "GL_APPLE_fence");
   ext.b_GL_APPLE_vertex_array_object =
       gfx::HasExtension(extensions, "GL_APPLE_vertex_array_object");
+  ext.b_GL_ARB_ES2_compatibility =
+      gfx::HasExtension(extensions, "GL_ARB_ES2_compatibility");
   ext.b_GL_ARB_blend_func_extended =
       gfx::HasExtension(extensions, "GL_ARB_blend_func_extended");
   ext.b_GL_ARB_draw_buffers =
       gfx::HasExtension(extensions, "GL_ARB_draw_buffers");
   ext.b_GL_ARB_draw_instanced =
       gfx::HasExtension(extensions, "GL_ARB_draw_instanced");
-  ext.b_GL_ARB_ES2_compatibility =
-      gfx::HasExtension(extensions, "GL_ARB_ES2_compatibility");
   ext.b_GL_ARB_framebuffer_object =
       gfx::HasExtension(extensions, "GL_ARB_framebuffer_object");
   ext.b_GL_ARB_get_program_binary =

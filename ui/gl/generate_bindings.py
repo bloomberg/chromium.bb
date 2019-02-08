@@ -936,7 +936,8 @@ GL_FUNCTIONS = [
   'GLsizei propCount, const GLenum* props, GLsizei bufSize, '
   'GLsizei* length, GLint* params'},
 { 'return_type': 'GLint',
-  'names': ['glGetProgramResourceLocation'],
+  'versions': [{'name': 'glGetProgramResourceLocation',
+                'extensions': ['GL_ARB_program_interface_query']}],
   'arguments': 'GLuint program, GLenum programInterface, const char* name', },
 { 'return_type': 'void',
   'versions': [{'name': 'glGetProgramResourceName',
@@ -1055,7 +1056,8 @@ GL_FUNCTIONS = [
       'GLuint shader, GLenum pname, GLsizei bufSize, GLsizei* length, '
       'GLint* params', },
 { 'return_type': 'void',
-  'names': ['glGetShaderPrecisionFormat'],
+  'versions': [{'name': 'glGetShaderPrecisionFormat',
+                'extensions': ['GL_ARB_ES2_compatibility']}],
   'arguments': 'GLenum shadertype, GLenum precisiontype, '
                'GLint* range, GLint* precision', },
 { 'return_type': 'void',
@@ -2875,9 +2877,9 @@ def GenerateAPIHeader(file, functions, set_name):
   file.write(LICENSE_AND_HEADER +
 """
 
-// The following line silences a presubmit warning that would otherwise be
-// triggered by this:
+// Silence presubmit and Tricium warnings about include guards
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 """)
 
@@ -2896,9 +2898,9 @@ def GenerateMockHeader(file, functions, set_name):
   file.write(LICENSE_AND_HEADER +
 """
 
-// The following line silences a presubmit warning that would otherwise be
-// triggered by this:
+// Silence presubmit and Tricium warnings about include guards
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 """)
 
@@ -3370,9 +3372,9 @@ def GenerateMockBindingsHeader(file, functions):
   file.write(LICENSE_AND_HEADER +
 """
 
-// The following line silences a presubmit warning that would otherwise be
-// triggered by this:
+// Silence presubmit and Tricium warnings about include guards
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 """)
   uniquely_named_functions = GetUniquelyNamedFunctions(functions)
