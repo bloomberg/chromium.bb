@@ -15,6 +15,10 @@ namespace chromeos {
 class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     : public CiceroneClient {
  public:
+  using UninstallPackageOwningFileCallback = base::RepeatingCallback<void(
+      const vm_tools::cicerone::UninstallPackageOwningFileRequest&,
+      DBusMethodCallback<
+          vm_tools::cicerone::UninstallPackageOwningFileResponse>)>;
   FakeCiceroneClient();
   ~FakeCiceroneClient() override;
 
@@ -86,9 +90,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
           callback) override;
 
+  // Sets a callback to be called during any call to UninstallPackageOwningFile.
+  void SetOnUninstallPackageOwningFileCallback(
+      UninstallPackageOwningFileCallback callback);
+
   // Fake version of the method that uninstalls an application inside a running
-  // Container. |callback| is called after the method call finishes. This does
-  // not cause progress events to be fired.
+  // Container. If SetOnUninstallPackageOwningFileCallback has been called, it
+  // just triggers that callback. Otherwise, it generates a task to call
+  // |callback| with the response from
+  // set_uninstall_package_owning_file_response.
   void UninstallPackageOwningFile(
       const vm_tools::cicerone::UninstallPackageOwningFileRequest& request,
       DBusMethodCallback<vm_tools::cicerone::UninstallPackageOwningFileResponse>
@@ -216,10 +226,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     container_app_icon_response_ = container_app_icon_response;
   }
 
+  const vm_tools::cicerone::LinuxPackageInfoRequest&
+  get_most_recent_linux_package_info_request() const {
+    return most_recent_linux_package_info_request_;
+  }
+
   void set_linux_package_info_response(
       const vm_tools::cicerone::LinuxPackageInfoResponse&
           get_linux_package_info_response) {
     get_linux_package_info_response_ = get_linux_package_info_response;
+  }
+
+  const vm_tools::cicerone::InstallLinuxPackageRequest&
+  get_most_recent_install_linux_package_request() const {
+    return most_recent_install_linux_package_request_;
   }
 
   void set_install_linux_package_response(
@@ -284,6 +304,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::ExportLxdContainerProgressSignal& signal);
   void NotifyImportLxdContainerProgress(
       const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal);
+  void InstallLinuxPackageProgress(
+      const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal);
+  void UninstallPackageProgress(
+      const vm_tools::cicerone::UninstallPackageProgressSignal& signal);
 
  protected:
   void Init(dbus::Bus* bus) override {}
@@ -310,7 +334,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   vm_tools::cicerone::LaunchContainerApplicationResponse
       launch_container_application_response_;
   vm_tools::cicerone::ContainerAppIconResponse container_app_icon_response_;
+  vm_tools::cicerone::LinuxPackageInfoRequest
+      most_recent_linux_package_info_request_;
   vm_tools::cicerone::LinuxPackageInfoResponse get_linux_package_info_response_;
+  vm_tools::cicerone::InstallLinuxPackageRequest
+      most_recent_install_linux_package_request_;
   vm_tools::cicerone::InstallLinuxPackageResponse
       install_linux_package_response_;
   vm_tools::cicerone::UninstallPackageOwningFileResponse
@@ -324,6 +352,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   vm_tools::cicerone::AppSearchResponse search_app_response_;
   vm_tools::cicerone::ExportLxdContainerResponse export_lxd_container_response_;
   vm_tools::cicerone::ImportLxdContainerResponse import_lxd_container_response_;
+
+  UninstallPackageOwningFileCallback uninstall_package_owning_file_callback_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

@@ -8,10 +8,12 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_notification.h"
@@ -24,10 +26,18 @@ namespace crostini {
 class CrostiniPackageService : public KeyedService,
                                public LinuxPackageOperationProgressObserver {
  public:
+  using StateChangeCallback =
+      base::RepeatingCallback<void(PackageOperationStatus)>;
+
   static CrostiniPackageService* GetForProfile(Profile* profile);
 
   explicit CrostiniPackageService(Profile* profile);
   ~CrostiniPackageService() override;
+
+  // For testing: Set a callback that will be called each time a notification
+  // is set to a new state.
+  void SetNotificationStateChangeCallbackForTesting(
+      StateChangeCallback state_change_callback);
 
   // KeyedService:
   void Shutdown() override;
@@ -147,6 +157,11 @@ class CrostiniPackageService : public KeyedService,
   std::map<ContainerIdentifier, std::unique_ptr<CrostiniPackageNotification>>
       running_notifications_;
 
+  // Containers that have an install waiting for its initial response. We don't
+  // display notifications for these, but they still need to cause uninstalls
+  // to queue.
+  std::set<ContainerIdentifier> containers_with_pending_installs_;
+
   // Uninstalls we want to run when the current one is done.
   std::map<ContainerIdentifier, std::queue<QueuedUninstall>> queued_uninstalls_;
 
@@ -155,6 +170,9 @@ class CrostiniPackageService : public KeyedService,
   // update them any more.
   std::vector<std::unique_ptr<CrostiniPackageNotification>>
       finished_notifications_;
+
+  // Called each time a notification is set to a new state.
+  StateChangeCallback testing_state_change_callback_;
 
   int next_notification_id_ = 0;
 

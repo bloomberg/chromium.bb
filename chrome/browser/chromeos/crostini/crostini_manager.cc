@@ -352,6 +352,13 @@ class CrostiniManager::CrostiniRestarter
 
   void SetUpLxdContainerUserFinished(CrostiniResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // The restarter shouldn't outlive the CrostiniManager but it can when
+    // skip_restart_for_testing is set.
+    if (!crostini_manager_) {
+      LOG(ERROR) << "CrostiniManager deleted";
+      return;
+    }
+
     // Tell observers.
     for (auto& observer : observer_list_) {
       observer.OnContainerSetup(result);
