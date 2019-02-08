@@ -48,10 +48,15 @@ void FidoHidDevice::Cancel() {
   if (state_ != State::kBusy && state_ != State::kReady)
     return;
 
-  // Delete any remaining pending requests on this Channel ID.
+  state_ = State::kReady;
   pending_transactions_ = {};
+  timeout_callback_.Cancel();
+
   WriteMessage(
-      FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kCancel,
+      FidoHidMessage::Create(channel_id_,
+                             supported_protocol() == ProtocolVersion::kCtap
+                                 ? FidoHidDeviceCommand::kCancel
+                                 : FidoHidDeviceCommand::kInit,
                              output_report_size_, std::vector<uint8_t>()),
       false /* response_expected */, base::DoNothing());
 }
