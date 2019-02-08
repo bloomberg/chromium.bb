@@ -82,11 +82,6 @@ class UnifiedConsentServiceTest : public testing::Test {
         new unified_consent::ScopedUnifiedConsent(feature_state));
   }
 
-  bool AreAllGoogleServicesEnabled() {
-    return pref_service_.GetBoolean(
-        prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
-  }
-
   unified_consent::MigrationState GetMigrationState() {
     int migration_state_int =
         pref_service_.GetInteger(prefs::kUnifiedConsentMigrationState);
@@ -115,11 +110,11 @@ TEST_F(UnifiedConsentServiceTest, EnableServices) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_FALSE(AreAllGoogleServicesEnabled());
 
   // Enable services and check expectations.
   consent_service_->EnableGoogleServices();
-  EXPECT_TRUE(AreAllGoogleServicesEnabled());
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
 TEST_F(UnifiedConsentServiceTest, EnableServices_WithUnsupportedService) {
@@ -127,11 +122,11 @@ TEST_F(UnifiedConsentServiceTest, EnableServices_WithUnsupportedService) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_FALSE(AreAllGoogleServicesEnabled());
 
   // Enable services and check expectations.
   consent_service_->EnableGoogleServices();
-  EXPECT_TRUE(AreAllGoogleServicesEnabled());
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
 TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
@@ -160,12 +155,12 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
 
   // Precondition: Enable unified consent.
   consent_service_->EnableGoogleServices();
-  EXPECT_TRUE(AreAllGoogleServicesEnabled());
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
   // Clearing primary account revokes unfied consent and a couple of other
   // non-personalized services.
   identity_test_environment_.ClearPrimaryAccount();
-  EXPECT_FALSE(AreAllGoogleServicesEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
@@ -187,10 +182,11 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
   CreateConsentService();
   consent_service_->EnableGoogleServices();
   // Check expectations after opt-in.
-  EXPECT_TRUE(AreAllGoogleServicesEnabled());
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
-  EXPECT_TRUE(
-      pref_service_.GetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled));
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
   consent_service_->Shutdown();
   consent_service_.reset();
