@@ -125,7 +125,6 @@ struct Icon {
 
 struct LinuxPackageInfo {
   LinuxPackageInfo();
-  LinuxPackageInfo(const LinuxPackageInfo&);
   ~LinuxPackageInfo();
 
   bool success;
@@ -134,8 +133,6 @@ struct LinuxPackageInfo {
   std::string failure_reason;
 
   // The remaining fields are only set when success is true.
-  // package_id is given as "name;version;arch;data".
-  std::string package_id;
   std::string name;
   std::string version;
   std::string summary;
@@ -425,13 +422,6 @@ class CrostiniManager : public KeyedService,
                            std::string package_path,
                            GetLinuxPackageInfoCallback callback);
 
-  // Asynchronously retrieve information about a Linux Package in the APT
-  // repository. This uses a package_name to identify a package.
-  void GetLinuxPackageInfoFromApt(const std::string& vm_name,
-                                  const std::string& container_name,
-                                  const std::string& package_name,
-                                  GetLinuxPackageInfoCallback callback);
-
   // Begin installation of a Linux Package inside the container. If the
   // installation is successfully started, further updates will be sent to
   // added LinuxPackageOperationProgressObservers.
@@ -439,16 +429,6 @@ class CrostiniManager : public KeyedService,
                            std::string container_name,
                            std::string package_path,
                            InstallLinuxPackageCallback callback);
-
-  // Begin installation of a Linux Package inside the container. If the
-  // installation is successfully started, further updates will be sent to
-  // added LinuxPackageOperationProgressObservers. Uses a package_id, given
-  // by "package_name;version;arch;data", to identify the package to install
-  // from the APT repository.
-  void InstallLinuxPackageFromApt(const std::string& vm_name,
-                                  const std::string& container_name,
-                                  const std::string& package_id,
-                                  InstallLinuxPackageCallback callback);
 
   // Begin uninstallation of a Linux Package inside the container. The package
   // is identified by its associated .desktop file's ID; we don't use package_id
@@ -717,8 +697,7 @@ class CrostiniManager : public KeyedService,
       GetContainerAppIconsCallback callback,
       base::Optional<vm_tools::cicerone::ContainerAppIconResponse> reply);
 
-  // Callback for CrostiniManager::GetLinuxPackageInfo and
-  // CrostiniManager::GetLinuxPackageInfoFromApt.
+  // Callback for CrostiniManager::GetLinuxPackageInfo.
   void OnGetLinuxPackageInfo(
       GetLinuxPackageInfoCallback callback,
       base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> reply);
