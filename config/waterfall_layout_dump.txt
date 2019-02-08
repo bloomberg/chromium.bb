@@ -275,7 +275,7 @@
     caroline-arcnext-pi-android-pfq
     eve-pi-android-pfq
     grunt-pi-android-pfq
-    kevin-arcnext-pi-android-pfq
+    kevin-pi-android-pfq
 
 == postsubmit ==
   master-postsubmit
@@ -2188,7 +2188,6 @@
   kevin-arcnext-no-vmtest-pre-cq
   kevin-arcnext-paladin-tryjob
   kevin-arcnext-payloads-tryjob
-  kevin-arcnext-pi-android-pfq-tryjob
   kevin-arcnext-postsubmit-tryjob
   kevin-arcnext-pre-cq
   kevin-arcnext-release-afdo-generate-tryjob
@@ -2209,6 +2208,7 @@
   kevin-no-vmtest-pre-cq
   kevin-paladin-tryjob
   kevin-payloads-tryjob
+  kevin-pi-android-pfq-tryjob
   kevin-postsubmit-tryjob
   kevin-pre-cq
   kevin-release-afdo-generate-tryjob
@@ -2616,7 +2616,7 @@
     caroline-arcnext-pi-android-pfq
     eve-pi-android-pfq
     grunt-pi-android-pfq
-    kevin-arcnext-pi-android-pfq
+    kevin-pi-android-pfq
   master-postsubmit-tryjob
     amd64-generic-postsubmit
     arkham-postsubmit
