@@ -120,10 +120,14 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
-  void EnterPictureInPicture() override;
-  void ExitPictureInPicture() override;
+  void EnterPictureInPicture(
+      blink::WebMediaPlayer::PipWindowOpenedCallback callback) override;
+  void ExitPictureInPicture(
+      blink::WebMediaPlayer::PipWindowClosedCallback callback) override;
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>&) override;
+  void RegisterPictureInPictureWindowResizeCallback(
+      blink::WebMediaPlayer::PipWindowResizedCallback callback) override;
   void SetSinkId(
       const blink::WebString& sink_id,
       std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
@@ -260,11 +264,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // paused; see UpdatePlayState_ComputePlayState() for the exact details.
   void ForceStaleStateForTesting(ReadyState target_state) override;
   bool IsSuspendedForTesting() override;
+
   bool DidLazyLoad() const override;
   void OnBecameVisible() override;
   bool IsOpaque() const override;
-  int GetDelegateId() override;
-  base::Optional<viz::SurfaceId> GetSurfaceId() override;
 
   bool IsBackgroundMediaSuspendEnabled() const {
     return is_background_suspend_enabled_;
@@ -574,6 +577,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ActivateSurfaceLayerForVideo();
 
   void SendBytesReceivedUpdate();
+
+  // Returns whether the Picture-in-Picture window should contain a play/pause
+  // button. It will return false if video is "live", in other words if duration
+  // is equals to Infinity.
+  bool ShouldShowPlayPauseButtonInPictureInPictureWindow() const;
 
   blink::WebLocalFrame* const frame_;
 

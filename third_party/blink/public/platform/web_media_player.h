@@ -31,9 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 
-#include "base/optional.h"
 #include "base/time/time.h"
-#include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_media_source.h"
@@ -139,6 +137,14 @@ class WebMediaPlayer {
     kAlways,
   };
 
+  // Callback to get notified when the Picture-in-Picture window is opened.
+  using PipWindowOpenedCallback = base::OnceCallback<void(const WebSize&)>;
+  // Callback to get notified when Picture-in-Picture window is closed.
+  using PipWindowClosedCallback = base::OnceClosure;
+  // Callback to get notified when the Picture-in-Picture window is resized.
+  using PipWindowResizedCallback =
+      base::RepeatingCallback<void(const WebSize&)>;
+
   virtual ~WebMediaPlayer() = default;
 
   virtual LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) = 0;
@@ -152,13 +158,16 @@ class WebMediaPlayer {
 
   // Enter Picture-in-Picture and notifies Blink with window size
   // when video successfully enters Picture-in-Picture.
-  // TODO(mlamouri): rename to "OnRequestPictureInPicture".
-  virtual void EnterPictureInPicture() = 0;
+  virtual void EnterPictureInPicture(PipWindowOpenedCallback) = 0;
   // Exit Picture-in-Picture and notifies Blink when it's done.
-  virtual void ExitPictureInPicture() = 0;
+  virtual void ExitPictureInPicture(PipWindowClosedCallback) = 0;
   // Assign custom controls to the Picture-in-Picture window.
   virtual void SetPictureInPictureCustomControls(
       const std::vector<PictureInPictureControlInfo>&) = 0;
+  // Register a callback that will be run when the Picture-in-Picture window
+  // is resized.
+  virtual void RegisterPictureInPictureWindowResizeCallback(
+      PipWindowResizedCallback) = 0;
 
   virtual void RequestRemotePlayback() {}
   virtual void RequestRemotePlaybackControl() {}
@@ -402,18 +411,6 @@ class WebMediaPlayer {
   virtual void OnBecameVisible() {}
 
   virtual bool IsOpaque() const { return false; }
-
-  // Returns the id given by the WebMediaPlayerDelegate. This is used by the
-  // Blink code to pass a player id to mojo services.
-  // TODO(mlamouri): remove this and move the id handling to Blink.
-  virtual int GetDelegateId() { return -1; };
-
-  // Returns the SurfaceId the video element is currently using.
-  // Returns base::nullopt if the element isn't a video or doesn't have a
-  // SurfaceId associated to it.
-  virtual base::Optional<viz::SurfaceId> GetSurfaceId() {
-    return base::nullopt;
-  }
 };
 
 }  // namespace blink

@@ -26,6 +26,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/media/media_player_delegate_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -3238,6 +3240,113 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
 
   EXPECT_EQ(SK_ColorGREEN, contents()->GetThemeColor());
   EXPECT_EQ(SK_ColorGREEN, observer.last_theme_color());
+}
+
+class PictureInPictureDelegate : public WebContentsDelegate {
+ public:
+  PictureInPictureDelegate() = default;
+
+  MOCK_METHOD3(EnterPictureInPicture,
+               gfx::Size(content::WebContents* web_contents,
+                         const viz::SurfaceId&,
+                         const gfx::Size&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PictureInPictureDelegate);
+};
+
+class TestOverlayWindow : public OverlayWindow {
+ public:
+  TestOverlayWindow() = default;
+  ~TestOverlayWindow() override{};
+
+  static std::unique_ptr<OverlayWindow> Create(
+      PictureInPictureWindowController* controller) {
+    return std::unique_ptr<OverlayWindow>(new TestOverlayWindow());
+  }
+
+  bool IsActive() const override { return false; }
+  void Close() override {}
+  void Show() override {}
+  void Hide() override {}
+  void SetPictureInPictureCustomControls(
+      const std::vector<blink::PictureInPictureControlInfo>& controls)
+      override {}
+  bool IsVisible() const override { return false; }
+  bool IsAlwaysOnTop() const override { return false; }
+  ui::Layer* GetLayer() override { return nullptr; }
+  gfx::Rect GetBounds() const override { return gfx::Rect(); }
+  void UpdateVideoSize(const gfx::Size& natural_size) override {}
+  void SetPlaybackState(PlaybackState playback_state) override {}
+  void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
+  void SetSkipAdButtonVisibility(bool is_visible) override {}
+  ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
+  ui::Layer* GetVideoLayer() override { return nullptr; }
+  gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
+};
+
+class PictureInPictureTestBrowserClient : public TestContentBrowserClient {
+ public:
+  PictureInPictureTestBrowserClient()
+      : original_browser_client_(SetBrowserClientForTesting(this)) {}
+
+  ~PictureInPictureTestBrowserClient() override {
+    SetBrowserClientForTesting(original_browser_client_);
+  }
+
+  std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
+      PictureInPictureWindowController* controller) override {
+    return TestOverlayWindow::Create(controller);
+  }
+
+ private:
+  ContentBrowserClient* original_browser_client_;
+};
+
+TEST_F(WebContentsImplTest, EnterPictureInPicture) {
+  PictureInPictureTestBrowserClient browser_client;
+  SetBrowserClientForTesting(&browser_client);
+
+  const int kPlayerVideoOnlyId = 30; /* arbitrary and used for tests */
+
+  PictureInPictureDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  MediaWebContentsObserver* observer =
+      contents()->media_web_contents_observer();
+  TestRenderFrameHost* rfh = main_test_rfh();
+  rfh->InitializeRenderFrameIfNeeded();
+
+  // If Picture-in-Picture was never triggered, the media player id would not be
+  // set.
+  EXPECT_FALSE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
+
+  viz::SurfaceId surface_id =
+      viz::SurfaceId(viz::FrameSinkId(1, 1),
+                     viz::LocalSurfaceId(
+                         11, base::UnguessableToken::Deserialize(0x111111, 0)));
+
+  EXPECT_CALL(delegate,
+              EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)));
+
+  rfh->OnMessageReceived(
+      MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
+          rfh->GetRoutingID(), kPlayerVideoOnlyId, surface_id /* surface_id */,
+          gfx::Size(42, 42) /* natural_size */, 1 /* request_id */,
+          true /* show_play_pause_button */));
+  EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
+  EXPECT_EQ(kPlayerVideoOnlyId,
+            observer->GetPictureInPictureVideoMediaPlayerId()->delegate_id);
+
+  // Picture-in-Picture media player id should not be reset when the media is
+  // destroyed (e.g. video stops playing). This allows the Picture-in-Picture
+  // window to continue to control the media.
+  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaDestroyed(
+      rfh->GetRoutingID(), kPlayerVideoOnlyId));
+  EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
 }
 
 TEST_F(WebContentsImplTest, ParseDownloadHeaders) {

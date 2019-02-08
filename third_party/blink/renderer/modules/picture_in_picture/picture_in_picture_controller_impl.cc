@@ -4,11 +4,7 @@
 
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 
-#include <limits>
-#include <utility>
-
 #include "base/bind_helpers.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -24,14 +20,7 @@
 
 namespace blink {
 
-namespace {
-
-bool ShouldShowPlayPauseButton(const HTMLVideoElement& element) {
-  return element.GetLoadType() != WebMediaPlayer::kLoadTypeMediaStream &&
-         element.duration() != std::numeric_limits<double>::infinity();
-}
-
-}  // namespace
+PictureInPictureControllerImpl::~PictureInPictureControllerImpl() = default;
 
 // static
 PictureInPictureControllerImpl* PictureInPictureControllerImpl::Create(
@@ -99,32 +88,19 @@ PictureInPictureControllerImpl::IsElementAllowed(
 void PictureInPictureControllerImpl::EnterPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver) {
-  if (picture_in_picture_element_ == element) {
-    if (resolver)
-      resolver->Resolve(picture_in_picture_window_);
-
+  if (picture_in_picture_element_ != element) {
+    element->enterPictureInPicture(
+        WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
+                  WrapPersistent(this), WrapPersistent(element),
+                  WrapPersistent(resolver)));
+    // If the media element has already been given custom controls, this will
+    // ensure that they get set. Otherwise, this will do nothing.
+    element->SendCustomControlsToPipWindow();
     return;
   }
 
-  element->enterPictureInPicture();
-
-  DCHECK(element->GetWebMediaPlayer());
-
-  if (!EnsureService())
-    return;
-
-  picture_in_picture_service_->StartSession(
-      element->GetWebMediaPlayer()->GetDelegateId(),
-      element->GetWebMediaPlayer()->GetSurfaceId(),
-      element->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*element),
-      WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
-                WrapPersistent(this), WrapPersistent(element),
-                WrapPersistent(resolver)));
-
-  // If the media element has already been given custom controls, this will
-  // ensure that they get set. Otherwise, this will do nothing.
-  element->SendCustomControlsToPipWindow();
+  if (resolver)
+    resolver->Resolve(picture_in_picture_window_);
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
@@ -136,7 +112,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
       resolver->Reject(
           DOMException::Create(DOMExceptionCode::kInvalidStateError, ""));
     }
-    ExitPictureInPicture(element, nullptr);
+    element->exitPictureInPicture(base::DoNothing());
     return;
   }
 
@@ -156,15 +132,11 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
           event_type_names::kEnterpictureinpicture,
           WrapPersistent(picture_in_picture_window_.Get())));
 
-  if (!EnsureService())
-    return;
-
-  if (delegate_binding_.is_bound())
-    delegate_binding_.Close();
-
-  mojom::blink::PictureInPictureDelegatePtr delegate;
-  delegate_binding_.Bind(mojo::MakeRequest(&delegate));
-  picture_in_picture_service_->SetDelegate(std::move(delegate));
+  if (element->GetWebMediaPlayer()) {
+    element->GetWebMediaPlayer()->RegisterPictureInPictureWindowResizeCallback(
+        WTF::BindRepeating(&PictureInPictureWindow::OnResize,
+                           WrapPersistent(picture_in_picture_window_.Get())));
+  }
 
   if (resolver)
     resolver->Resolve(picture_in_picture_window_);
@@ -173,16 +145,9 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 void PictureInPictureControllerImpl::ExitPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver) {
-  if (element->GetWebMediaPlayer())
-    element->GetWebMediaPlayer()->ExitPictureInPicture();
-
-  if (!EnsureService())
-    return;
-
-  picture_in_picture_service_->EndSession(
+  element->exitPictureInPicture(
       WTF::Bind(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
                 WrapPersistent(this), WrapPersistent(resolver)));
-  delegate_binding_.Close();
 }
 
 void PictureInPictureControllerImpl::SetPictureInPictureCustomControls(
@@ -278,6 +243,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
 
   // Auto Picture-in-Picture is allowed only in a PWA window.
   if (!GetSupplementable()->GetFrame() ||
+      !GetSupplementable()->GetFrame()->View() ||
       GetSupplementable()->GetFrame()->View()->DisplayMode() ==
           WebDisplayMode::kWebDisplayModeBrowser) {
     return;
@@ -308,53 +274,17 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   }
 }
 
-void PictureInPictureControllerImpl::ContextDestroyed(Document*) {
-  picture_in_picture_service_.reset();
-  delegate_binding_.Close();
-}
-
-void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
-  DCHECK(picture_in_picture_element_);
-  DCHECK(picture_in_picture_element_->GetWebMediaPlayer());
-
-  picture_in_picture_service_->UpdateSession(
-      picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
-      picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
-      picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*picture_in_picture_element_));
-}
-
-void PictureInPictureControllerImpl::PictureInPictureWindowSizeChanged(
-    const blink::WebSize& size) {
-  if (picture_in_picture_window_)
-    picture_in_picture_window_->OnResize(size);
-}
-
 void PictureInPictureControllerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(picture_in_picture_element_);
   visitor->Trace(auto_picture_in_picture_elements_);
   visitor->Trace(picture_in_picture_window_);
   PictureInPictureController::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  DocumentShutdownObserver::Trace(visitor);
 }
 
 PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
-      PageVisibilityObserver(document.GetPage()),
-      delegate_binding_(this) {}
-
-bool PictureInPictureControllerImpl::EnsureService() {
-  if (picture_in_picture_service_)
-    return true;
-
-  if (!GetSupplementable()->GetFrame())
-    return false;
-
-  GetSupplementable()->GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&picture_in_picture_service_));
-  return true;
-}
+      PageVisibilityObserver(document.GetPage()) {}
 
 }  // namespace blink

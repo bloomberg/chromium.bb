@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
@@ -16,107 +15,23 @@
 
 namespace blink {
 
-// The VideoWakeLockPictureInPictureService implements the PictureInPicture
-// service in the same process as the test and guarantees that the callbacks are
-// called in order for the events to be fired. set_run_loop() MUST be called
-// before each attempt to enter/leave Picture-in-Picture.
-class VideoWakeLockPictureInPictureService
-    : public mojom::blink::PictureInPictureService {
+class VideoWakeLockMediaPlayer : public EmptyWebMediaPlayer {
  public:
-  VideoWakeLockPictureInPictureService() : binding_(this) {}
-  ~VideoWakeLockPictureInPictureService() override = default;
-
-  void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(
-        mojom::blink::PictureInPictureServiceRequest(std::move(handle)));
-  }
-
-  void StartSession(uint32_t,
-                    const base::Optional<viz::SurfaceId>&,
-                    const blink::WebSize&,
-                    bool,
-                    StartSessionCallback callback) final {
+  void EnterPictureInPicture(PipWindowOpenedCallback callback) final {
     std::move(callback).Run(WebSize());
   }
 
-  void EndSession(EndSessionCallback callback) final {
+  void ExitPictureInPicture(PipWindowClosedCallback callback) final {
     std::move(callback).Run();
   }
-
-  void UpdateSession(uint32_t,
-                     const base::Optional<viz::SurfaceId>&,
-                     const blink::WebSize&,
-                     bool) final {}
-  void SetDelegate(mojom::blink::PictureInPictureDelegatePtr) final {}
-
- private:
-  mojo::Binding<mojom::blink::PictureInPictureService> binding_;
-};
-
-class VideoWakeLockFrameClient : public test::MediaStubLocalFrameClient {
- public:
-  static VideoWakeLockFrameClient* Create(
-      std::unique_ptr<WebMediaPlayer> player) {
-    return MakeGarbageCollected<VideoWakeLockFrameClient>(std::move(player));
-  }
-
-  explicit VideoWakeLockFrameClient(std::unique_ptr<WebMediaPlayer> player)
-      : test::MediaStubLocalFrameClient(std::move(player)),
-        interface_provider_(new service_manager::InterfaceProvider()) {}
-
-  service_manager::InterfaceProvider* GetInterfaceProvider() override {
-    return interface_provider_.get();
-  }
-
- private:
-  std::unique_ptr<service_manager::InterfaceProvider> interface_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoWakeLockFrameClient);
 };
 
 class VideoWakeLockTest : public PageTestBase {
  public:
-  // Helper class that will block running the test until the given event is
-  // fired on the given element.
-  class WaitForEvent : public NativeEventListener {
-   public:
-    static WaitForEvent* Create(Element* element, const AtomicString& name) {
-      return MakeGarbageCollected<WaitForEvent>(element, name);
-    }
-
-    WaitForEvent(Element* element, const AtomicString& name)
-        : element_(element), name_(name) {
-      element_->addEventListener(name_, this);
-      run_loop_.Run();
-    }
-
-    void Invoke(ExecutionContext*, Event*) final {
-      run_loop_.Quit();
-      element_->removeEventListener(name_, this);
-    }
-
-    void Trace(Visitor* visitor) final {
-      NativeEventListener::Trace(visitor);
-      visitor->Trace(element_);
-    }
-
-   private:
-    base::RunLoop run_loop_;
-    Member<Element> element_;
-    AtomicString name_;
-  };
-
   void SetUp() override {
     PageTestBase::SetupPageWithClients(
-        nullptr, VideoWakeLockFrameClient::Create(
-                     std::make_unique<EmptyWebMediaPlayer>()));
-
-    service_manager::InterfaceProvider::TestApi test_api(
-        GetFrame().Client()->GetInterfaceProvider());
-    test_api.SetBinderForName(
-        mojom::blink::PictureInPictureService::Name_,
-        WTF::BindRepeating(&VideoWakeLockPictureInPictureService::Bind,
-                           WTF::Unretained(&pip_service_)));
+        nullptr, test::MediaStubLocalFrameClient::Create(
+                     std::make_unique<VideoWakeLockMediaPlayer>()));
 
     video_ = HTMLVideoElement::Create(GetDocument());
     video_wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*video_.Get());
@@ -142,24 +57,16 @@ class VideoWakeLockTest : public PageTestBase {
   void SimulateEnterPictureInPicture() {
     PictureInPictureController::From(GetDocument())
         .EnterPictureInPicture(Video(), nullptr);
-
-    WaitForEvent::Create(video_.Get(),
-                         event_type_names::kEnterpictureinpicture);
   }
 
   void SimulateLeavePictureInPicture() {
     PictureInPictureController::From(GetDocument())
         .ExitPictureInPicture(Video(), nullptr);
-
-    WaitForEvent::Create(video_.Get(),
-                         event_type_names::kLeavepictureinpicture);
   }
 
  private:
   Persistent<HTMLVideoElement> video_;
   Persistent<VideoWakeLock> video_wake_lock_;
-
-  VideoWakeLockPictureInPictureService pip_service_;
 };
 
 TEST_F(VideoWakeLockTest, NoLockByDefault) {

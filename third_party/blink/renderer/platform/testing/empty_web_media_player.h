@@ -28,10 +28,12 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void Seek(double seconds) override {}
   void SetRate(double) override {}
   void SetVolume(double) override {}
-  void EnterPictureInPicture() override {}
-  void ExitPictureInPicture() override {}
+  void EnterPictureInPicture(PipWindowOpenedCallback) override {}
+  void ExitPictureInPicture(PipWindowClosedCallback) override {}
   void SetPictureInPictureCustomControls(
       const std::vector<PictureInPictureControlInfo>&) override {}
+  void RegisterPictureInPictureWindowResizeCallback(
+      PipWindowResizedCallback) override {}
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
     return SurfaceLayerMode::kNever;
   }

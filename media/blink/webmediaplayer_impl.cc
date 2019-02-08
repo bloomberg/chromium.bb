@@ -517,8 +517,11 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
   // the size of the video changes.
-  if (client_)
-    client_->OnPictureInPictureStateChange();
+  if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
+    delegate_->DidPictureInPictureSurfaceChange(
+        delegate_id_, surface_id, pipeline_metadata_.natural_size,
+        ShouldShowPlayPauseButtonInPictureInPictureWindow());
+  }
 }
 
 bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
@@ -902,23 +905,44 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::EnterPictureInPicture() {
+void WebMediaPlayerImpl::EnterPictureInPicture(
+    blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
   if (!surface_layer_for_video_enabled_)
     ActivateSurfaceLayerForVideo();
 
   DCHECK(bridge_);
-  DCHECK(bridge_->GetSurfaceId().is_valid());
+
+  const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
+  DCHECK(surface_id.is_valid());
+
+  // Notifies the browser process that the player should now be in
+  // Picture-in-Picture mode.
+  delegate_->DidPictureInPictureModeStart(
+      delegate_id_, surface_id, pipeline_metadata_.natural_size,
+      std::move(callback), ShouldShowPlayPauseButtonInPictureInPictureWindow());
 }
 
-void WebMediaPlayerImpl::ExitPictureInPicture() {
+void WebMediaPlayerImpl::ExitPictureInPicture(
+    blink::WebMediaPlayer::PipWindowClosedCallback callback) {
+  // Notifies the browser process that Picture-in-Picture has ended. It will
+  // clear out the states and close the window.
+  delegate_->DidPictureInPictureModeEnd(delegate_id_, std::move(callback));
+
   // Internal cleanups.
-  // TODO(mlamouri): remove the need for this.
   OnPictureInPictureModeEnded();
 }
 
 void WebMediaPlayerImpl::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
   delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
+}
+
+void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(
+    blink::WebMediaPlayer::PipWindowResizedCallback callback) {
+  DCHECK(IsInPictureInPicture() && !client_->IsInAutoPIP());
+
+  delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
+                                                          std::move(callback));
 }
 
 void WebMediaPlayerImpl::SetSinkId(
@@ -3121,16 +3145,6 @@ bool WebMediaPlayerImpl::IsOpaque() const {
   return opaque_;
 }
 
-int WebMediaPlayerImpl::GetDelegateId() {
-  return delegate_id_;
-}
-
-base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
-  if (!surface_layer_for_video_enabled_)
-    return base::nullopt;
-  return bridge_->GetSurfaceId();
-}
-
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   if (!is_background_video_playback_enabled_)
     return true;
@@ -3433,6 +3447,11 @@ bool WebMediaPlayerImpl::IsInPictureInPicture() const {
   DCHECK(client_);
   return client_->DisplayType() ==
          WebMediaPlayer::DisplayType::kPictureInPicture;
+}
+
+bool WebMediaPlayerImpl::ShouldShowPlayPauseButtonInPictureInPictureWindow()
+    const {
+  return Duration() != std::numeric_limits<double>::infinity();
 }
 
 void WebMediaPlayerImpl::MaybeSetContainerName() {
