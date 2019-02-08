@@ -290,10 +290,6 @@ void PublishPageDone(
 
 }  // namespace
 
-static jboolean JNI_OfflinePageBridge_IsOfflineBookmarksEnabled(JNIEnv* env) {
-  return offline_pages::IsOfflineBookmarksEnabled();
-}
-
 static jboolean JNI_OfflinePageBridge_IsPageSharingEnabled(JNIEnv* env) {
   return offline_pages::IsOfflinePagesSharingEnabled();
 }

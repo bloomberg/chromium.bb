@@ -20,9 +20,6 @@ const char kOfflinePagesUseTestingSnapshotDelay[] =
 
 namespace offline_pages {
 
-const base::Feature kOfflineBookmarksFeature{"OfflineBookmarks",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kOffliningRecentPagesFeature{
     "OfflineRecentPages", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -81,10 +78,6 @@ const base::Feature kOnTheFlyMhtmlHashComputationFeature{
     "OnTheFlyMhtmlHashComputation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
-
-bool IsOfflineBookmarksEnabled() {
-  return base::FeatureList::IsEnabled(kOfflineBookmarksFeature);
-}
 
 bool IsOffliningRecentPagesEnabled() {
   return base::FeatureList::IsEnabled(kOffliningRecentPagesFeature);

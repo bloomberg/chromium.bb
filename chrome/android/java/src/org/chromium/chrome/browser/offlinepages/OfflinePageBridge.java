@@ -62,9 +62,6 @@ public class OfflinePageBridge {
     private final ObserverList<OfflinePageModelObserver> mObservers =
             new ObserverList<OfflinePageModelObserver>();
 
-    /** Whether an offline sub-feature is enabled or not. */
-    private static Boolean sOfflineBookmarksEnabled;
-
     /**
      * Callback used when saving an offline page.
      */
@@ -119,17 +116,6 @@ public class OfflinePageBridge {
     @CalledByNative
     private static OfflinePageBridge create(long nativeOfflinePageBridge) {
         return new OfflinePageBridge(nativeOfflinePageBridge);
-    }
-
-    /**
-     * @return True if saving bookmarked pages for offline viewing is enabled.
-     */
-    public static boolean isOfflineBookmarksEnabled() {
-        ThreadUtils.assertOnUiThread();
-        if (sOfflineBookmarksEnabled == null) {
-            sOfflineBookmarksEnabled = nativeIsOfflineBookmarksEnabled();
-        }
-        return sOfflineBookmarksEnabled;
     }
 
     /**
@@ -747,16 +733,6 @@ public class OfflinePageBridge {
         nativeAcquireFileAccessPermission(mNativeOfflinePageBridge, webContents, callback);
     }
 
-    /**
-     * Allows setting the offline bookmarks feature as enabled or disabled for testing. This is
-     * required for tests that don't load the native binary otherwise UnsatisfiedLinkError sadness
-     * will occur.
-     */
-    @VisibleForTesting
-    static void setOfflineBookmarksEnabledForTesting(boolean enabled) {
-        sOfflineBookmarksEnabled = enabled;
-    }
-
     @CalledByNative
     protected void offlinePageModelLoaded() {
         mIsNativeOfflinePageModelLoaded = true;
@@ -836,7 +812,6 @@ public class OfflinePageBridge {
         return loadUrlParams;
     }
 
-    private static native boolean nativeIsOfflineBookmarksEnabled();
     private static native boolean nativeIsPageSharingEnabled();
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);

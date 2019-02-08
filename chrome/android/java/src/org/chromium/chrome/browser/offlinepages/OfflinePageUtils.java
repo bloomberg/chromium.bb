@@ -257,9 +257,6 @@ public class OfflinePageUtils {
         // If bookmark ID is missing there is nothing to save here.
         if (bookmarkId == null) return;
 
-        // Making sure the feature is enabled.
-        if (!OfflinePageBridge.isOfflineBookmarksEnabled()) return;
-
         // Making sure tab is worth keeping.
         if (shouldSkipSavingTabOffline(tab)) return;
 
