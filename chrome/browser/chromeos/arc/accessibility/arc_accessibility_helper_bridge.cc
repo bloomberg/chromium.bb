@@ -357,9 +357,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
               ax::mojom::Event::kTextSelectionChanged, true);
         }
       }
-    } else if (!is_notification_event &&
-               event_data->event_type ==
-                   arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED) {
+    } else if (!is_notification_event) {
       UpdateWindowProperties(GetActiveWindow());
     }
 
