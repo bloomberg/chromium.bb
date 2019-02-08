@@ -37,7 +37,6 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/web_frame_serializer_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"

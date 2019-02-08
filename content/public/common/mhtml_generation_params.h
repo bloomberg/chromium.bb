@@ -7,7 +7,6 @@
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 
 namespace content {
 

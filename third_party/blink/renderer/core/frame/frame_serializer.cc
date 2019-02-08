@@ -470,12 +470,8 @@ bool FrameSerializer::ShouldAddURL(const KURL& url) {
 
 void FrameSerializer::AddToResources(
     const String& mime_type,
-    ResourceHasCacheControlNoStoreHeader has_cache_control_no_store_header,
     scoped_refptr<const SharedBuffer> data,
     const KURL& url) {
-  if (delegate_.ShouldSkipResource(has_cache_control_no_store_header))
-    return;
-
   if (!data) {
     DLOG(ERROR) << "No data for resource " << url.GetString();
     return;
@@ -502,9 +498,6 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
 
   scoped_refptr<const SharedBuffer> data = image->GetImage()->Data();
   AddToResources(image->GetResponse().MimeType(),
-                 image->HasCacheControlNoStoreHeader()
-                     ? kHasCacheControlNoStoreHeader
-                     : kNoCacheControlNoStoreHeader,
                  data, url);
 
   // If we're already reporting time for CSS serialization don't report it for
@@ -526,11 +519,7 @@ void FrameSerializer::AddFontToResources(FontResource& font) {
 
   scoped_refptr<const SharedBuffer> data(font.ResourceBuffer());
 
-  AddToResources(font.GetResponse().MimeType(),
-                 font.HasCacheControlNoStoreHeader()
-                     ? kHasCacheControlNoStoreHeader
-                     : kNoCacheControlNoStoreHeader,
-                 data, font.Url());
+  AddToResources(font.GetResponse().MimeType(), data, font.Url());
 }
 
 void FrameSerializer::RetrieveResourcesForProperties(

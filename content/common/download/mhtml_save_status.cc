@@ -20,8 +20,9 @@ const char* GetMhtmlSaveStatusLabel(MhtmlSaveStatus save_status) {
       return "File writing error";
     case MhtmlSaveStatus::FRAME_NO_LONGER_EXISTS:
       return "Frame no longer exists";
-    case MhtmlSaveStatus::FRAME_SERIALIZATION_FORBIDDEN:
-      return "Main frame serialization forbidden";
+    case MhtmlSaveStatus::DEPRECATED_FRAME_SERIALIZATION_FORBIDDEN:
+      NOTREACHED();
+      return "";
     case MhtmlSaveStatus::RENDER_PROCESS_EXITED:
       return "Render process no longer exists";
   }

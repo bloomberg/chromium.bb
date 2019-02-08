@@ -70,7 +70,6 @@
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"

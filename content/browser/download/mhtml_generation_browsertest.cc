@@ -37,7 +37,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 
 using testing::ContainsRegex;
 using testing::HasSubstr;
@@ -476,26 +475,21 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLIgnoreNoStore) {
 
 // TODO(crbug.com/615291): These fail on Android under some circumstances.
 #if defined(OS_ANDROID)
-#define MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy \
-    DISABLED_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy
-#define MAYBE_ViewedMHTMLDoesNotContainNoStoreContent \
-    DISABLED_ViewedMHTMLDoesNotContainNoStoreContent
+#define MAYBE_ViewedMHTMLContainsNoStoreContent \
+  DISABLED_ViewedMHTMLContainsNoStoreContent
 #else
-#define MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy \
-    ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy
-#define MAYBE_ViewedMHTMLDoesNotContainNoStoreContent \
-    ViewedMHTMLDoesNotContainNoStoreContent
+#define MAYBE_ViewedMHTMLContainsNoStoreContent \
+  ViewedMHTMLContainsNoStoreContent
 #endif
 
-IN_PROC_BROWSER_TEST_F(
-    MHTMLGenerationTest,
-    MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy) {
-  // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
+                       MAYBE_ViewedMHTMLContainsNoStoreContent) {
+  // Generate MHTML.
   base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
   MHTMLGenerationParams params(path);
 
-  // No special cache control options so we should see both frames.
+  // We should see both frames.
   std::vector<std::string> expectations = {
       "Main Frame, normal headers.", "Cache-Control: no-store test body",
   };
@@ -503,12 +497,6 @@ IN_PROC_BROWSER_TEST_F(
   TestOriginalVsSavedPage(
       embedded_test_server()->GetURL("/page_with_nostore_iframe.html"), params,
       2 /* expected number of frames */, expectations, forbidden);
-
-  std::string mhtml;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(params.file_path, &mhtml));
-  }
 }
 
 // Test suite that allows testing --site-per-process against cross-site frames.

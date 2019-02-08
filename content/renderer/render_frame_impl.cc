@@ -199,7 +199,6 @@
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -6416,10 +6415,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
     // the main frame is skipped, then the whole archive is bad.
     mhtml_contents.emplace_back(WebFrameSerializer::GenerateMHTMLHeader(
         mhtml_boundary, GetWebFrame(), &delegate));
-    if (mhtml_contents.back().IsEmpty())
-      save_status = MhtmlSaveStatus::FRAME_SERIALIZATION_FORBIDDEN;
-    else
-      has_some_data = true;
+    has_some_data = true;
   }
 
   // Generate MHTML parts.  Note that if this is not the main frame, then even

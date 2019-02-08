@@ -434,7 +434,6 @@ source_set("blink_headers") {
     "web/web_frame_load_type.h",
     "web/web_frame_owner_properties.h",
     "web/web_frame_serializer.h",
-    "web/web_frame_serializer_cache_control_policy.h",
     "web/web_frame_serializer_client.h",
     "web/web_frame_widget.h",
     "web/web_global_object_reuse_policy.h",

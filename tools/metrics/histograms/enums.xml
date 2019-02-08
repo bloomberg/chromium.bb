@@ -35334,7 +35334,7 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="File creation error"/>
   <int value="3" label="File writing error"/>
   <int value="4" label="Frame no longer exists"/>
-  <int value="5" label="Main frame serialization forbidden"/>
+  <int value="5" label="DEPRECATED"/>
   <int value="6" label="Render process no longer exists"/>
 </enum>
 
