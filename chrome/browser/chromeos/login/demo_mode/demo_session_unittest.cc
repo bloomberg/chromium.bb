@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
@@ -22,12 +23,15 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/session_manager/core/session_manager.h"
@@ -55,27 +59,39 @@ void SetBoolean(bool* value) {
 class DemoSessionTest : public testing::Test {
  public:
   DemoSessionTest()
-      : browser_process_platform_part_test_api_(
+      : profile_manager_(std::make_unique<TestingProfileManager>(
+            TestingBrowserProcess::GetGlobal())),
+        browser_process_platform_part_test_api_(
             g_browser_process->platform_part()),
         scoped_user_manager_(std::make_unique<FakeChromeUserManager>()) {}
 
   ~DemoSessionTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::switches::kShowSplashScreenInDemoMode);
+
+    ASSERT_TRUE(profile_manager_->SetUp());
     chromeos::DBusThreadManager::Initialize();
     DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
     InitializeCrosComponentManager();
     session_manager_ = std::make_unique<session_manager::SessionManager>();
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
   }
 
   void TearDown() override {
     DemoSession::ShutDownIfInitialized();
     DemoSession::ResetDemoConfigForTesting();
 
+    wallpaper_controller_client_.reset();
     chromeos::DBusThreadManager::Shutdown();
 
     cros_component_manager_ = nullptr;
     browser_process_platform_part_test_api_.ShutdownCrosComponentManager();
+    profile_manager_->DeleteAllTestingProfiles();
   }
 
  protected:
@@ -104,13 +120,42 @@ class DemoSessionTest : public testing::Test {
         std::move(fake_cros_component_manager));
   }
 
+  // Creates a dummy demo user with a testing profile and logs in.
+  TestingProfile* LoginDemoUser() {
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId("demo@test.com", "demo_user"));
+    FakeChromeUserManager* user_manager =
+        static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
+    const user_manager::User* user =
+        user_manager->AddPublicAccountUser(account_id);
+
+    auto prefs =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+    RegisterUserProfilePrefs(prefs->registry());
+    TestingProfile* profile = profile_manager_->CreateTestingProfile(
+        "test-profile", std::move(prefs), base::ASCIIToUTF16("Test profile"),
+        1 /* avatar_id */, std::string() /* supervised_user_id */,
+        TestingProfile::TestingFactories());
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                      profile);
+
+    user_manager->LoginUser(account_id);
+    profile_manager_->SetLoggedIn(true);
+    return profile;
+  }
+
   FakeCrOSComponentManager* cros_component_manager_ = nullptr;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  TestWallpaperController test_wallpaper_controller_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:
   BrowserProcessPlatformPartTestApi browser_process_platform_part_test_api_;
   user_manager::ScopedUserManager scoped_user_manager_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSessionTest);
 };
@@ -372,54 +417,28 @@ TEST_F(DemoSessionTest, MultipleEnsureOfflineResourcesLoaded) {
       demo_session->resources()->GetAbsolutePath(base::FilePath("foo.txt")));
 }
 
-class DemoSessionLocaleTest : public DemoSessionTest {
- public:
-  DemoSessionLocaleTest() = default;
+TEST_F(DemoSessionTest, ShowSplashScreen) {
+  DemoSession* demo_session = DemoSession::StartIfInDemoMode();
+  ASSERT_TRUE(demo_session);
 
-  ~DemoSessionLocaleTest() override = default;
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  session_manager_->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
 
-  void SetUp() override {
-    profile_manager_ = std::make_unique<TestingProfileManager>(
-        TestingBrowserProcess::GetGlobal());
-    ASSERT_TRUE(profile_manager_->SetUp());
-    DemoSessionTest::SetUp();
-  }
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+}
 
-  void TearDown() override {
-    profile_manager_->DeleteAllTestingProfiles();
-    DemoSessionTest::TearDown();
-  }
-
- protected:
-  // Creates a dummy demo user with a testing profile and logs in.
-  TestingProfile* LoginDemoUser() {
-    const AccountId account_id(
-        AccountId::FromUserEmailGaiaId("demo@test.com", "demo_user"));
-    FakeChromeUserManager* user_manager =
-        static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
-    const user_manager::User* user =
-        user_manager->AddPublicAccountUser(account_id);
-
-    auto prefs =
-        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
-    RegisterUserProfilePrefs(prefs->registry());
-    TestingProfile* profile = profile_manager_->CreateTestingProfile(
-        "test-profile", std::move(prefs), base::ASCIIToUTF16("Test profile"),
-        1 /* avatar_id */, std::string() /* supervised_user_id */,
-        TestingProfile::TestingFactories());
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                                      profile);
-
-    user_manager->LoginUser(account_id);
-    profile_manager_->SetLoggedIn(true);
-    return profile;
-  }
-
- private:
-  std::unique_ptr<TestingProfileManager> profile_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemoSessionLocaleTest);
-};
+using DemoSessionLocaleTest = DemoSessionTest;
 
 TEST_F(DemoSessionLocaleTest, InitializeDefaultLocale) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();

@@ -205,6 +205,17 @@ interface WallpaperController {
   // when using this method.
   ShowOneShotWallpaper(gfx.mojom.ImageSkia image);
 
+  // Shows a wallpaper that stays on top of everything except for the power off
+  // animation. All other wallpaper requests are ignored when the always-on-top
+  // wallpaper is being shown.
+  // |image_path|: The file path to read the image data from.
+  ShowAlwaysOnTopWallpaper(mojo_base.mojom.FilePath image_path);
+
+  // Removes the always-on-top wallpaper. The wallpaper will revert to the
+  // previous one, or a default one if there was none. No-op if the current
+  // wallpaper is not always-on-top.
+  RemoveAlwaysOnTopWallpaper();
+
   // Removes all of the user's saved wallpapers and related info.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   RemoveUserWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);

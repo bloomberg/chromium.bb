@@ -30,6 +30,12 @@ class TestWallpaperController : ash::mojom::WallpaperController {
     return set_default_wallpaper_count_;
   }
   int set_custom_wallpaper_count() const { return set_custom_wallpaper_count_; }
+  int show_always_on_top_wallpaper_count() const {
+    return show_always_on_top_wallpaper_count_;
+  }
+  int remove_always_on_top_wallpaper_count() const {
+    return remove_always_on_top_wallpaper_count_;
+  }
 
   // Returns a mojo interface pointer bound to this object.
   ash::mojom::WallpaperControllerPtr CreateInterfacePtr();
@@ -86,6 +92,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
+  void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
+  void RemoveAlwaysOnTopWallpaper() override;
   void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
@@ -125,6 +133,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   int remove_user_wallpaper_count_ = 0;
   int set_default_wallpaper_count_ = 0;
   int set_custom_wallpaper_count_ = 0;
+  int show_always_on_top_wallpaper_count_ = 0;
+  int remove_always_on_top_wallpaper_count_ = 0;
 
   mojo::AssociatedInterfacePtrSet<ash::mojom::WallpaperObserver>
       test_observers_;

@@ -153,12 +153,15 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // always return true thereafter.
   bool HasShownAnyWallpaper() const;
 
-  // Shows the wallpaper and alerts observers of changes. Does not show the
-  // image if |preview_mode| is false and the current wallpaper is still being
-  // previewed. See comments for |confirm_preview_wallpaper_callback_|.
+  // Shows the wallpaper and alerts observers of changes.
+  // Does not show the image if:
+  // 1)  |preview_mode| is false and the current wallpaper is still being
+  //     previewed. See comments for |confirm_preview_wallpaper_callback_|.
+  // 2)  |always_on_top| is false but the current wallpaper is always-on-top.
   void ShowWallpaperImage(const gfx::ImageSkia& image,
                           WallpaperInfo info,
-                          bool preview_mode);
+                          bool preview_mode,
+                          bool always_on_top);
 
   // Returns whether a wallpaper policy is enforced for |account_id| (not
   // including device policy).
@@ -262,6 +265,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void ShowUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
+  void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
+  void RemoveAlwaysOnTopWallpaper() override;
   void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
@@ -500,6 +505,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   base::Optional<std::vector<SkColor>> GetCachedColors(
       const std::string& current_location) const;
 
+  // The callback when decoding of the always-on-top wallpaper completes.
+  void OnAlwaysOnTopWallpaperDecoded(const WallpaperInfo& info,
+                                     const gfx::ImageSkia& image);
+
   // Move all wallpaper widgets to the locked container.
   // Returns true if the wallpaper moved.
   bool MoveToLockedContainer();
@@ -602,6 +611,9 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Whether the current wallpaper (if any) is the first wallpaper since the
   // controller initialization. Empty wallpapers for testing don't count.
   bool is_first_wallpaper_ = false;
+
+  // If true, the current wallpaper should always stay on top.
+  bool is_always_on_top_wallpaper_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

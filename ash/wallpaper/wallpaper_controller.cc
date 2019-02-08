@@ -641,7 +641,12 @@ bool WallpaperController::HasShownAnyWallpaper() const {
 
 void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
                                              WallpaperInfo info,
-                                             bool preview_mode) {
+                                             bool preview_mode,
+                                             bool always_on_top) {
+  // Prevent showing other wallpapers if there is an always-on-top wallpaper.
+  if (is_always_on_top_wallpaper_ && !always_on_top)
+    return;
+
   // Ignore show wallpaper requests during preview mode. This could happen if a
   // custom wallpaper previously set on another device is being synced.
   if (confirm_preview_wallpaper_callback_ && !preview_mode)
@@ -896,7 +901,7 @@ void WallpaperController::SetCustomWallpaper(
                             weak_factory_.GetWeakPtr(), image,
                             WallpaperInfo{std::string(), layout, CUSTOMIZED,
                                           base::Time::Now().LocalMidnight()},
-                            /*preview_mode=*/true);
+                            /*preview_mode=*/true, /*always_on_top=*/false);
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
   } else {
@@ -1145,7 +1150,8 @@ void WallpaperController::ShowUserWallpaper(
   // hit (e.g. when the first time the wallpaper is shown on login screen).
   gfx::ImageSkia user_wallpaper;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
-    ShowWallpaperImage(user_wallpaper, info, /*preview_mode=*/false);
+    ShowWallpaperImage(user_wallpaper, info, /*preview_mode=*/false,
+                       /*always_on_top=*/false);
     return;
   }
 
@@ -1209,7 +1215,27 @@ void WallpaperController::ShowOneShotWallpaper(const gfx::ImageSkia& image) {
   const WallpaperInfo info = {
       std::string(), WallpaperLayout::WALLPAPER_LAYOUT_STRETCH,
       WallpaperType::ONE_SHOT, base::Time::Now().LocalMidnight()};
-  ShowWallpaperImage(image, info, /*preview_mode=*/false);
+  ShowWallpaperImage(image, info, /*preview_mode=*/false,
+                     /*always_on_top=*/false);
+}
+
+void WallpaperController::ShowAlwaysOnTopWallpaper(
+    const base::FilePath& image_path) {
+  is_always_on_top_wallpaper_ = true;
+  const WallpaperInfo info = {
+      std::string(), WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      WallpaperType::ONE_SHOT, base::Time::Now().LocalMidnight()};
+  ReadAndDecodeWallpaper(
+      base::BindOnce(&WallpaperController::OnAlwaysOnTopWallpaperDecoded,
+                     weak_factory_.GetWeakPtr(), info),
+      sequenced_task_runner_, image_path);
+}
+
+void WallpaperController::RemoveAlwaysOnTopWallpaper() {
+  if (!is_always_on_top_wallpaper_)
+    return;
+  is_always_on_top_wallpaper_ = false;
+  ReloadWallpaper(/*clear_cache=*/false);
 }
 
 void WallpaperController::RemoveUserWallpaper(
@@ -1484,6 +1510,9 @@ bool WallpaperController::ReparentWallpaper(int container) {
 }
 
 int WallpaperController::GetWallpaperContainerId(bool locked) {
+  if (is_always_on_top_wallpaper_)
+    return kShellWindowId_AlwaysOnTopWallpaperContainer;
+
   return locked ? kShellWindowId_LockScreenWallpaperContainer
                 : kShellWindowId_WallpaperContainer;
 }
@@ -1694,7 +1723,7 @@ void WallpaperController::OnOnlineWallpaperDecoded(
                             weak_factory_.GetWeakPtr(), image,
                             WallpaperInfo{params.url, params.layout, ONLINE,
                                           base::Time::Now().LocalMidnight()},
-                            /*preview_mode=*/true);
+                            /*preview_mode=*/true, /*always_on_top=*/false);
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
   } else {
@@ -1713,8 +1742,10 @@ void WallpaperController::SetOnlineWallpaperImpl(
     LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
                   "except in tests.";
   }
-  if (show_wallpaper)
-    ShowWallpaperImage(image, wallpaper_info, /*preview_mode=*/false);
+  if (show_wallpaper) {
+    ShowWallpaperImage(image, wallpaper_info, /*preview_mode=*/false,
+                       /*always_on_top=*/false);
+  }
 
   wallpaper_cache_map_[params.account_id] =
       CustomWallpaperElement(base::FilePath(), image);
@@ -1797,7 +1828,7 @@ void WallpaperController::OnDefaultWallpaperDecoded(
     WallpaperInfo info(cached_default_wallpaper_.file_path.value(), layout,
                        DEFAULT, base::Time::Now().LocalMidnight());
     ShowWallpaperImage(cached_default_wallpaper_.image, info,
-                       /*preview_mode=*/false);
+                       /*preview_mode=*/false, /*always_on_top=*/false);
   }
 }
 
@@ -1853,8 +1884,10 @@ void WallpaperController::SaveAndSetWallpaper(
                        layout, base::Passed(std::move(deep_copy))));
   }
 
-  if (show_wallpaper)
-    ShowWallpaperImage(image, info, /*preview_mode=*/false);
+  if (show_wallpaper) {
+    ShowWallpaperImage(image, info, /*preview_mode=*/false,
+                       /*always_on_top=*/false);
+  }
 
   wallpaper_cache_map_[user_info->account_id] =
       CustomWallpaperElement(wallpaper_path, image);
@@ -1876,8 +1909,10 @@ void WallpaperController::OnWallpaperDecoded(
   }
 
   wallpaper_cache_map_[account_id] = CustomWallpaperElement(path, image);
-  if (show_wallpaper)
-    ShowWallpaperImage(image, info, /*preview_mode=*/false);
+  if (show_wallpaper) {
+    ShowWallpaperImage(image, info, /*preview_mode=*/false,
+                       /*always_on_top=*/false);
+  }
 }
 
 void WallpaperController::ReloadWallpaper(bool clear_cache) {
@@ -1988,6 +2023,21 @@ base::Optional<std::vector<SkColor>> WallpaperController::GetCachedColors(
   return cached_colors_out;
 }
 
+void WallpaperController::OnAlwaysOnTopWallpaperDecoded(
+    const WallpaperInfo& info,
+    const gfx::ImageSkia& image) {
+  // Do nothing if |RemoveAlwaysOnTopWallpaper| was called before decoding
+  // completes.
+  if (!is_always_on_top_wallpaper_)
+    return;
+  if (image.isNull()) {
+    is_always_on_top_wallpaper_ = false;
+    return;
+  }
+  ShowWallpaperImage(image, info, /*preview_mode=*/false,
+                     /*always_on_top=*/true);
+}
+
 bool WallpaperController::MoveToLockedContainer() {
   if (locked_)
     return false;
@@ -2049,7 +2099,8 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
     WallpaperInfo info(device_policy_wallpaper_path_.value(),
                        WALLPAPER_LAYOUT_CENTER_CROPPED, DEVICE,
                        base::Time::Now().LocalMidnight());
-    ShowWallpaperImage(image, info, /*preview_mode=*/false);
+    ShowWallpaperImage(image, info, /*preview_mode=*/false,
+                       /*always_on_top=*/false);
   }
 }
 

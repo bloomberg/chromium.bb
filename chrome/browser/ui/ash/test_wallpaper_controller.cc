@@ -131,6 +131,15 @@ void TestWallpaperController::ShowOneShotWallpaper(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::ShowAlwaysOnTopWallpaper(
+    const base::FilePath& image_path) {
+  ++show_always_on_top_wallpaper_count_;
+}
+
+void TestWallpaperController::RemoveAlwaysOnTopWallpaper() {
+  ++remove_always_on_top_wallpaper_count_;
+}
+
 void TestWallpaperController::RemoveUserWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {

@@ -49,6 +49,9 @@ const base::Feature kShowLanguageToggleInDemoMode{
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kShowSplashScreenInDemoMode{
+    "ShowSplashScreenInDemoMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).
 
