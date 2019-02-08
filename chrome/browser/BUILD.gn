@@ -1685,8 +1685,6 @@ jumbo_split_static_library("browser") {
     "translate/translate_service.h",
     "undo/bookmark_undo_service_factory.cc",
     "undo/bookmark_undo_service_factory.h",
-    "unified_consent/chrome_unified_consent_service_client.cc",
-    "unified_consent/chrome_unified_consent_service_client.h",
     "unified_consent/unified_consent_service_factory.cc",
     "unified_consent/unified_consent_service_factory.h",
     "update_client/chrome_update_query_params_delegate.cc",
@@ -5411,8 +5409,6 @@ static_library("test_support") {
     "subresource_filter/test_ruleset_publisher.h",
     "sync/profile_sync_test_util.cc",
     "sync/profile_sync_test_util.h",
-    "unified_consent/unified_consent_test_util.cc",
-    "unified_consent/unified_consent_test_util.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

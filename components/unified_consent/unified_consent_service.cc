@@ -9,7 +9,6 @@
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
@@ -21,15 +20,12 @@
 namespace unified_consent {
 
 UnifiedConsentService::UnifiedConsentService(
-    std::unique_ptr<UnifiedConsentServiceClient> service_client,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
-    : service_client_(std::move(service_client)),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service) {
-  DCHECK(service_client_);
   DCHECK(pref_service_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
@@ -58,25 +54,13 @@ void UnifiedConsentService::RegisterPrefs(
 // static
 void UnifiedConsentService::RollbackIfNeeded(
     PrefService* user_pref_service,
-    syncer::SyncService* sync_service,
-    UnifiedConsentServiceClient* service_client) {
+    syncer::SyncService* sync_service) {
   DCHECK(user_pref_service);
-  DCHECK(service_client);
 
   if (user_pref_service->GetInteger(prefs::kUnifiedConsentMigrationState) ==
       static_cast<int>(MigrationState::kNotInitialized)) {
     // If there was no migration yet, nothing has to be rolled back.
     return;
-  }
-
-  // Turn off all off-by-default services if services were enabled due to
-  // unified consent.
-  if (user_pref_service->GetBoolean(
-          prefs::kAllUnifiedConsentServicesWereEnabled)) {
-    service_client->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
-                                      false);
-    service_client->SetServiceEnabled(Service::kSpellCheck, false);
-    service_client->SetServiceEnabled(Service::kContextualSearch, false);
   }
 
   // Clear all unified consent prefs.
@@ -97,14 +81,6 @@ void UnifiedConsentService::EnableGoogleServices() {
   // Enable all Google services except sync.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             true);
-  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
-    Service service = static_cast<Service>(i);
-    if (service_client_->GetServiceState(service) !=
-        ServiceState::kNotSupported) {
-      service_client_->SetServiceEnabled(service, true);
-    }
-  }
-
   pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
 }
 
@@ -122,11 +98,6 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   // services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             false);
-  service_client_->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
-                                     false);
-  service_client_->SetServiceEnabled(Service::kSpellCheck, false);
-  service_client_->SetServiceEnabled(Service::kContextualSearch, false);
-
   if (GetMigrationState() != MigrationState::kCompleted) {
     // When the user signs out, the migration is complete.
     SetMigrationState(MigrationState::kCompleted);

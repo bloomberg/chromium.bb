@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -50,10 +49,8 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   PrefService* pref_service = profile->GetPrefs();
-  auto service_client =
-      std::make_unique<ChromeUnifiedConsentServiceClient>(pref_service);
   // Record settings for pre- and post-UnifiedConsent users.
-  RecordSettingsHistogram(service_client.get(), pref_service);
+  RecordSettingsHistogram(pref_service);
 
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
@@ -61,14 +58,13 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 
   if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    UnifiedConsentService::RollbackIfNeeded(pref_service, sync_service,
-                                            service_client.get());
+    UnifiedConsentService::RollbackIfNeeded(pref_service, sync_service);
     return nullptr;
   }
 
   return new UnifiedConsentService(
-      std::move(service_client), pref_service,
-      IdentityManagerFactory::GetForProfile(profile), sync_service);
+      pref_service, IdentityManagerFactory::GetForProfile(profile),
+      sync_service);
 }
 
 bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {

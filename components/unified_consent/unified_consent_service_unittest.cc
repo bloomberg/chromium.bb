@@ -11,7 +11,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -19,7 +18,6 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_metrics.h"
-#include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,83 +43,13 @@ class TestSyncService : public syncer::TestSyncService {
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };
 
-const char kSpellCheckDummyEnabled[] = "spell_check_dummy.enabled";
-
-class FakeUnifiedConsentServiceClient : public UnifiedConsentServiceClient {
- public:
-  FakeUnifiedConsentServiceClient(PrefService* pref_service)
-      : pref_service_(pref_service) {
-    // When the |kSpellCheckDummyEnabled| pref is changed, all observers should
-    // be fired.
-    ObserveServicePrefChange(Service::kSpellCheck, kSpellCheckDummyEnabled,
-                             pref_service);
-  }
-  ~FakeUnifiedConsentServiceClient() override = default;
-
-  // UnifiedConsentServiceClient:
-  ServiceState GetServiceState(Service service) override {
-    if (is_not_supported_[service])
-      return ServiceState::kNotSupported;
-    bool enabled;
-    // Special treatment for spell check.
-    if (service == Service::kSpellCheck) {
-      enabled = pref_service_->GetBoolean(kSpellCheckDummyEnabled);
-    } else {
-      enabled = service_enabled_[service];
-    }
-    return enabled ? ServiceState::kEnabled : ServiceState::kDisabled;
-  }
-  void SetServiceEnabled(Service service, bool enabled) override {
-    if (is_not_supported_[service])
-      return;
-    // Special treatment for spell check.
-    if (service == Service::kSpellCheck) {
-      pref_service_->SetBoolean(kSpellCheckDummyEnabled, enabled);
-      return;
-    }
-    bool should_notify_observers = service_enabled_[service] != enabled;
-    service_enabled_[service] = enabled;
-    if (should_notify_observers)
-      FireOnServiceStateChanged(service);
-  }
-
-  void SetServiceNotSupported(Service service) {
-    is_not_supported_[service] = true;
-  }
-
-  static void ClearServiceStates() {
-    service_enabled_.clear();
-    is_not_supported_.clear();
-  }
-
- private:
-  // Service states are shared between multiple instances of this class.
-  static std::map<Service, bool> service_enabled_;
-  static std::map<Service, bool> is_not_supported_;
-
-  PrefService* pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeUnifiedConsentServiceClient);
-};
-
-std::map<Service, bool> FakeUnifiedConsentServiceClient::service_enabled_;
-std::map<Service, bool> FakeUnifiedConsentServiceClient::is_not_supported_;
-
 }  // namespace
 
 class UnifiedConsentServiceTest : public testing::Test {
  public:
   UnifiedConsentServiceTest() {
-    pref_service_.registry()->RegisterBooleanPref(
-        autofill::prefs::kAutofillWalletImportEnabled, false);
     UnifiedConsentService::RegisterPrefs(pref_service_.registry());
     syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    pref_service_.registry()->RegisterBooleanPref(kSpellCheckDummyEnabled,
-                                                  false);
-
-    FakeUnifiedConsentServiceClient::ClearServiceStates();
-    service_client_ =
-        std::make_unique<FakeUnifiedConsentServiceClient>(&pref_service_);
   }
 
   ~UnifiedConsentServiceTest() override {
@@ -129,25 +57,15 @@ class UnifiedConsentServiceTest : public testing::Test {
       consent_service_->Shutdown();
   }
 
-  void CreateConsentService(bool client_services_on_by_default = false) {
+  void CreateConsentService() {
     if (!scoped_unified_consent_) {
       SetUnifiedConsentFeatureState(
           unified_consent::UnifiedConsentFeatureState::kEnabled);
     }
 
-    auto client =
-        std::make_unique<FakeUnifiedConsentServiceClient>(&pref_service_);
-    if (client_services_on_by_default) {
-      for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
-        Service service = static_cast<Service>(i);
-        client->SetServiceEnabled(service, true);
-      }
-      pref_service_.SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                               true);
-    }
     consent_service_ = std::make_unique<UnifiedConsentService>(
-        std::move(client), &pref_service_,
-        identity_test_environment_.identity_manager(), &sync_service_);
+        &pref_service_, identity_test_environment_.identity_manager(),
+        &sync_service_);
 
     sync_service_.FireStateChanged();
     // Run until idle so the migration can finish.
@@ -165,16 +83,8 @@ class UnifiedConsentServiceTest : public testing::Test {
   }
 
   bool AreAllGoogleServicesEnabled() {
-    for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
-      Service service = static_cast<Service>(i);
-      if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
-        return false;
-    }
-    if (!pref_service_.GetBoolean(
-            prefs::kUrlKeyedAnonymizedDataCollectionEnabled))
-      return false;
-
-    return true;
+    return pref_service_.GetBoolean(
+        prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
   }
 
   unified_consent::MigrationState GetMigrationState() {
@@ -189,8 +99,6 @@ class UnifiedConsentServiceTest : public testing::Test {
   identity::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;
   std::unique_ptr<UnifiedConsentService> consent_service_;
-  std::unique_ptr<FakeUnifiedConsentServiceClient> service_client_;
-
   std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentServiceTest);
@@ -219,9 +127,6 @@ TEST_F(UnifiedConsentServiceTest, EnableServices_WithUnsupportedService) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  service_client_->SetServiceNotSupported(Service::kSpellCheck);
-  EXPECT_EQ(service_client_->GetServiceState(Service::kSpellCheck),
-            ServiceState::kNotSupported);
   EXPECT_FALSE(AreAllGoogleServicesEnabled());
 
   // Enable services and check expectations.
@@ -263,13 +168,6 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   EXPECT_FALSE(AreAllGoogleServicesEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_EQ(service_client_->GetServiceState(Service::kSpellCheck),
-            ServiceState::kDisabled);
-  EXPECT_EQ(
-      service_client_->GetServiceState(Service::kSafeBrowsingExtendedReporting),
-      ServiceState::kDisabled);
-  EXPECT_EQ(service_client_->GetServiceState(Service::kContextualSearch),
-            ServiceState::kDisabled);
 }
 
 TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {
@@ -299,20 +197,11 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
   SetUnifiedConsentFeatureState(UnifiedConsentFeatureState::kDisabled);
 
   // Rollback
-  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_,
-                                          service_client_.get());
+  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
 
   // Unified consent prefs should be cleared.
   EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
             GetMigrationState());
-  // Off-by-default services should be turned off.
-  EXPECT_NE(ServiceState::kEnabled,
-            service_client_->GetServiceState(
-                Service::kSafeBrowsingExtendedReporting));
-  EXPECT_NE(ServiceState::kEnabled,
-            service_client_->GetServiceState(Service::kSpellCheck));
-  EXPECT_NE(ServiceState::kEnabled,
-            service_client_->GetServiceState(Service::kContextualSearch));
 }
 
 }  // namespace unified_consent

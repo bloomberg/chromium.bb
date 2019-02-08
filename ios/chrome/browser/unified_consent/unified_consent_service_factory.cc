@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/unified_consent/unified_consent_service_client_impl.h"
 
 UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
     : BrowserStateKeyedServiceFactory(
@@ -53,8 +52,6 @@ UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   PrefService* user_pref_service = browser_state->GetPrefs();
-  std::unique_ptr<unified_consent::UnifiedConsentServiceClient> service_client =
-      std::make_unique<UnifiedConsentServiceClientImpl>();
 
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
@@ -62,16 +59,14 @@ UnifiedConsentServiceFactory::BuildServiceInstanceFor(
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
 
   // Record settings for pre- and post-UnifiedConsent users.
-  unified_consent::metrics::RecordSettingsHistogram(service_client.get(),
-                                                    user_pref_service);
+  unified_consent::metrics::RecordSettingsHistogram(user_pref_service);
 
   if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    unified_consent::UnifiedConsentService::RollbackIfNeeded(
-        user_pref_service, sync_service, service_client.get());
+    unified_consent::UnifiedConsentService::RollbackIfNeeded(user_pref_service,
+                                                             sync_service);
     return nullptr;
   }
 
   return std::make_unique<unified_consent::UnifiedConsentService>(
-      std::move(service_client), user_pref_service, identity_manager,
-      sync_service);
+      user_pref_service, identity_manager, sync_service);
 }

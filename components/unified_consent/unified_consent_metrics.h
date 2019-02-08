@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_METRICS_H_
 #define COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_METRICS_H_
 
-#include "components/unified_consent/unified_consent_service_client.h"
+class PrefService;
 
 namespace syncer {
 class SyncUserSettings;
@@ -51,8 +51,7 @@ enum class SyncDataType {
 
 // Records settings entries in the SyncAndGoogleServicesSettings.
 // kNone is recorded when none of the settings is enabled.
-void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
-                             PrefService* pref_service);
+void RecordSettingsHistogram(PrefService* pref_service);
 
 // Records the sync data types that were turned off during the advanced sync
 // opt-in flow. When none of the data types were turned off, kNone is recorded.
