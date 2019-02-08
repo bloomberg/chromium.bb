@@ -1125,7 +1125,7 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
       1);
 }
 
-TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
+TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kOptimizationHints}, {});
@@ -1133,9 +1133,16 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
 
   base::HistogramTester histogram_tester;
   PreviewsUserData user_data(kDefaultPageId);
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, GURL("https://www.google.com"), false,
-      PreviewsType::RESOURCE_LOADING_HINTS));
+
+#if defined(OS_ANDROID)
+  bool expected = true;
+#else   // !defined(OS_ANDROID)
+  bool expected = false;
+#endif  // defined(OS_ANDROID)
+  EXPECT_EQ(expected,
+            previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+                &user_data, GURL("https://www.google.com"), false,
+                PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsDeciderImplTest,
