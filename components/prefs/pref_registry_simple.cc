@@ -75,15 +75,6 @@ void PrefRegistrySimple::RegisterDictionaryPref(const std::string& path,
   RegisterPreference(path, std::move(default_value), flags);
 }
 
-void PrefRegistrySimple::RegisterDictionaryPref(
-    const std::string& path,
-    std::unique_ptr<base::Value> default_value,
-    uint32_t flags) {
-  DCHECK(default_value);
-  RegisterDictionaryPref(
-      path, base::Value::FromUniquePtrValue(std::move(default_value)), flags);
-}
-
 void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
                                            int64_t default_value,
                                            uint32_t flags) {
