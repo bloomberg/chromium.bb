@@ -6046,3 +6046,6 @@ crbug.com/929678 [ Mac ] virtual/feature-policy-for-sandbox/http/tests/security/
 crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeout Failure ]
 crbug.com/929355 [ Linux ] external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Pass Failure ]
 crbug.com/929435 [ Mac ] external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/sub-sample-buffer-stitching.html [ Pass Failure ]
+
+# Sheriff 2019-02-07
+crbug.com/929929 external/wpt/background-fetch/fetch.https.window.html [ Pass Timeout ]
