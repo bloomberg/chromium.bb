@@ -449,7 +449,8 @@ void AutocompleteResult::SortAndDedupMatches(
     std::pair<GURL, bool> p = GetMatchComparisonFields(*i);
     url_to_matches[p].push_back(i);
   }
-  // Find best default, and non-default, match in each group.
+
+  // For each group of duplicate matches, choose the one that's considered best.
   for (auto& group : url_to_matches) {
     const auto& key = group.first;
     const GURL& gurl = key.first;
@@ -458,36 +459,21 @@ void AutocompleteResult::SortAndDedupMatches(
     if (gurl.is_empty() || duplicate_matches.size() == 1)
       continue;
 
-    auto best_match = duplicate_matches.end();
-    auto best_default = duplicate_matches.end();
-    for (auto match = duplicate_matches.begin();
-         match != duplicate_matches.end(); ++match) {
-      if ((*match)->allowed_to_be_default_match) {
-        if (best_default == duplicate_matches.end() ||
-            IsBetterMatch(**match, **best_default, page_classification)) {
-          best_default = match;
-        }
-      }
-      if (best_match == duplicate_matches.end() ||
-          IsBetterMatch(**match, **best_match, page_classification)) {
-        best_match = match;
-      }
+    // Find the best match.
+    auto best_match = duplicate_matches.begin();
+    for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
+      best_match = BetterMatch(i, best_match, page_classification);
     }
-    if (best_match != best_default && best_default != duplicate_matches.end()) {
-      (*best_default)
-          ->RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
-                                 (*best_default)->relevance);
-      (*best_default)->relevance = (*best_match)->relevance;
-      best_match = best_default;
-    }
-    // Rotate best first if necessary, so we know to keep it.
+
+    // Rotate the chosen match to be first, if necessary, so we know to keep it.
     if (best_match != duplicate_matches.begin()) {
       duplicate_matches.splice(duplicate_matches.begin(), duplicate_matches,
                                best_match);
     }
+
+    // For each duplicate match, append its duplicates to that of the best
+    // match, then append it, before we erase it.
     for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      // For each duplicate match, append its duplicates to that of the best
-      // match, then append it, before we erase it.
       (*best_match)->duplicate_matches.insert(
           (*best_match)->duplicate_matches.end(),
           (*i)->duplicate_matches.begin(),
@@ -495,6 +481,7 @@ void AutocompleteResult::SortAndDedupMatches(
       (*best_match)->duplicate_matches.push_back(**i);
     }
   }
+
   // Erase duplicate matches.
   matches->erase(
       std::remove_if(
@@ -538,41 +525,78 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
 }
 
 // static
-bool AutocompleteResult::IsBetterMatch(
-    AutocompleteMatch& first,
-    AutocompleteMatch& second,
+std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterMatch(
+    std::list<ACMatches::iterator>::iterator first,
+    std::list<ACMatches::iterator>::iterator second,
     metrics::OmniboxEventProto::PageClassification page_classification) {
+  std::list<ACMatches::iterator>::iterator preferred_match;
+  std::list<ACMatches::iterator>::iterator non_preferred_match;
   // This object implements greater than.
   CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
       page_classification);
 
-  if (first.type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
-      second.type != ACMatchType::SEARCH_SUGGEST_ENTITY) {
-    // If |first| is an entity suggestion and |second| isn't, |first| is
-    // considered better. If its type-adjusted relevance is lower, boost it to
-    // the value of |second|.
-    if (compare_demote_by_type(second, first)) {
-      first.RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
-                                 first.relevance);
-      first.relevance = second.relevance;
+  // The following logic enforces two constraints we care about regarding the
+  // the characteristics of the candidate matches.
+  //
+  // Entity suggestions:
+  //   Entity suggestions are always preferred over non-entity suggestions,
+  //   assuming both candidates have the same fill_into_edit value. In these
+  //   cases, because the fill_into_edit value is the same in both and the
+  //   selection of the entity suggestion appears to the user as simply a
+  //   "promotion" of an equivalent suggestion by adding additional decoration,
+  //   the entity suggestion is allowed to inherit the
+  //   allowed_to_be_default_match and inline_autocompletion values from the
+  //   other suggestion.
+  //
+  // allowed_to_be_default_match:
+  //   A suggestion that is allowed to be the default match is always preferred
+  //   over one that is not.
+  //
+  // Note that together these two constraints enforce an overall constraint,
+  // that if either candidate has allowed_to_be_default_match = true, the match
+  // which is preferred will always have allowed_to_be_default_match = true.
+  if ((*first)->type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
+      (*second)->type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
+      (*first)->fill_into_edit == (*second)->fill_into_edit) {
+    preferred_match = first;
+    non_preferred_match = second;
+    if ((*non_preferred_match)->allowed_to_be_default_match) {
+      (*preferred_match)->allowed_to_be_default_match = true;
+      (*preferred_match)->inline_autocompletion =
+          (*non_preferred_match)->inline_autocompletion;
     }
-    return true;
-  } else if (first.type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
-             second.type == ACMatchType::SEARCH_SUGGEST_ENTITY) {
-    // Likewise, if |second| is an entity suggestion and |first| isn't, first
-    // is not considered better, even if it has a higher type-adjusted
-    // relevance. If it does have a higher relevance, boost |second|.
-    if (compare_demote_by_type(first, second)) {
-      second.RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
-                                  second.relevance);
-      second.relevance = first.relevance;
+  } else if ((*first)->type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
+             (*second)->type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
+             (*first)->fill_into_edit == (*second)->fill_into_edit) {
+    preferred_match = second;
+    non_preferred_match = first;
+    if ((*non_preferred_match)->allowed_to_be_default_match) {
+      (*preferred_match)->allowed_to_be_default_match = true;
+      (*preferred_match)->inline_autocompletion =
+          (*non_preferred_match)->inline_autocompletion;
     }
-    return false;
+  } else if ((*first)->allowed_to_be_default_match &&
+             !(*second)->allowed_to_be_default_match) {
+    preferred_match = first;
+    non_preferred_match = second;
+  } else if ((*second)->allowed_to_be_default_match &&
+             !(*first)->allowed_to_be_default_match) {
+    preferred_match = second;
+    non_preferred_match = first;
+  } else {
+    // By default, simply prefer the match with the higher type-adjusted score.
+    return compare_demote_by_type(**first, **second) ? first : second;
   }
 
-  // In the case that both values are entity suggestions or both aren't, |first|
-  // is simply considered better if it's type-adjusted relevance is higher.
-  return compare_demote_by_type(first, second);
+  // If a match is preferred despite having a lower score, boost its score
+  // to that of the other match.
+  if (compare_demote_by_type(**non_preferred_match, **preferred_match)) {
+    (*preferred_match)
+        ->RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
+                               (*preferred_match)->relevance);
+    (*preferred_match)->relevance = (*non_preferred_match)->relevance;
+  }
+  return preferred_match;
 }
 
 // static
