@@ -60,6 +60,9 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       next_state_timer_(std::make_unique<base::OneShotTimer>()),
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
+    UsageTimeStateNotifier::GetInstance()->AddObserver(this);
+
   system::TimezoneSettings::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
   pref_change_registrar_.Init(pref_service_);
@@ -71,6 +74,9 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
 
 ScreenTimeController::~ScreenTimeController() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
+    UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
+
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
       this);
@@ -157,8 +163,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
                usage_time_limit::GetExpectedResetTime(
                    time_limit->CreateDeepCopy(), now, &time_zone));
   if (!next_get_state_time.is_null()) {
-    VLOG(1) << "Scheduling state change timer in "
-            << state.next_state_change_time - now;
+    VLOG(1) << "Scheduling state change timer in " << next_get_state_time - now;
     next_state_timer_->Start(
         FROM_HERE, next_get_state_time - now,
         base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
@@ -334,6 +339,15 @@ ScreenTimeController::GetLastStateFromPref() {
 void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
+  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
+    if (session_state == session_manager::SessionState::LOCKED &&
+        next_unlock_time_) {
+      UpdateTimeLimitsMessage(true /*visible*/, next_unlock_time_.value());
+      next_unlock_time_.reset();
+    }
+    return;
+  }
+
   if (session_state == session_manager::SessionState::LOCKED) {
     if (next_unlock_time_) {
       UpdateTimeLimitsMessage(true /*visible*/, next_unlock_time_.value());
@@ -342,6 +356,15 @@ void ScreenTimeController::OnSessionStateChanged() {
     ResetInSessionTimers();
   } else if (session_state == session_manager::SessionState::ACTIVE) {
     CheckTimeLimit("OnSessionStateChanged");
+  }
+}
+
+void ScreenTimeController::OnUsageTimeStateChange(
+    const UsageTimeStateNotifier::UsageTimeState state) {
+  if (state == UsageTimeStateNotifier::UsageTimeState::INACTIVE) {
+    ResetInSessionTimers();
+  } else {
+    CheckTimeLimit("OnUsageTimeStateChange");
   }
 }
 
