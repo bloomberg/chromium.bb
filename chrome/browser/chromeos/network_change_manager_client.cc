@@ -94,10 +94,9 @@ void NetworkChangeManagerClient::ConnectToNetworkChangeManager() {
 void NetworkChangeManagerClient::ReconnectToNetworkChangeManager() {
   ConnectToNetworkChangeManager();
 
-  // When reconnecting to the network service, tell it everything changed to
-  // make sure it refreshes itself into the correct state.
+  // Tell the restarted network service what the current connection type is.
   network_change_manager_->OnNetworkChanged(
-      /*dns_changed=*/true, /*ip_address_changed=*/true,
+      /*dns_changed=*/false, /*ip_address_changed=*/false,
       /*connection_type_changed=*/true,
       network::mojom::ConnectionType(connection_type_),
       /*connection_subtype_changed=*/true,
