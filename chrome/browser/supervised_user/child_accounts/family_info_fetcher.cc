@@ -91,11 +91,7 @@ FamilyInfoFetcher::FamilyInfoFetcher(
       url_loader_factory_(std::move(url_loader_factory)),
       access_token_expired_(false) {}
 
-FamilyInfoFetcher::~FamilyInfoFetcher() {
-  // Ensures IdentityManager observation is cleared when FamilyInfoFetcher is
-  // destructed before refresh token is available.
-  identity_manager_->RemoveObserver(this);
-}
+FamilyInfoFetcher::~FamilyInfoFetcher() {}
 
 // static
 std::string FamilyInfoFetcher::RoleToString(FamilyMemberRole role) {
@@ -117,42 +113,22 @@ bool FamilyInfoFetcher::StringToRole(
 
 void FamilyInfoFetcher::StartGetFamilyProfile() {
   request_path_ = kGetFamilyProfileApiPath;
-  StartFetching();
+  StartFetchingAccessToken();
 }
 
 void FamilyInfoFetcher::StartGetFamilyMembers() {
   request_path_ = kGetFamilyMembersApiPath;
-  StartFetching();
-}
-
-void FamilyInfoFetcher::StartFetching() {
-  if (identity_manager_->HasAccountWithRefreshToken(primary_account_id_)) {
-    StartFetchingAccessToken();
-  } else {
-    // Wait until we get a refresh token.
-    identity_manager_->AddObserver(this);
-  }
+  StartFetchingAccessToken();
 }
 
 void FamilyInfoFetcher::StartFetchingAccessToken() {
   OAuth2TokenService::ScopeSet scopes{kScope};
-  access_token_fetcher_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-          "family_info_fetcher", identity_manager_, scopes,
-          base::BindOnce(&FamilyInfoFetcher::OnAccessTokenFetchComplete,
-                         base::Unretained(this)),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
-}
-
-void FamilyInfoFetcher::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
-  // Wait until we get a refresh token for the requested account.
-  if (account_info.account_id != primary_account_id_)
-    return;
-
-  identity_manager_->RemoveObserver(this);
-
-  StartFetchingAccessToken();
+  access_token_fetcher_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      "family_info_fetcher", identity_manager_, scopes,
+      base::BindOnce(&FamilyInfoFetcher::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void FamilyInfoFetcher::OnAccessTokenFetchComplete(
@@ -243,7 +219,7 @@ void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
     scopes.insert(kScope);
     identity_manager_->RemoveAccessTokenFromCache(primary_account_id_, scopes,
                                                   access_token_);
-    StartFetching();
+    StartFetchingAccessToken();
     return;
   }
 

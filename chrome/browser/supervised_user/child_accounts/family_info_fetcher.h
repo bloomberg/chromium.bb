@@ -31,7 +31,7 @@ class SharedURLLoaderFactory;
 // Fetches information about the family of the signed-in user. It can get
 // information about the family itself (e.g. a name), as well as a list of
 // family members and their properties.
-class FamilyInfoFetcher : public identity::IdentityManager::Observer {
+class FamilyInfoFetcher {
  public:
   enum ErrorCode {
     TOKEN_ERROR,    // Failed to get OAuth2 token.
@@ -86,7 +86,7 @@ class FamilyInfoFetcher : public identity::IdentityManager::Observer {
       Consumer* consumer,
       identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~FamilyInfoFetcher() override;
+  ~FamilyInfoFetcher();
 
   // Public so tests can use them.
   static std::string RoleToString(FamilyMemberRole role);
@@ -103,10 +103,6 @@ class FamilyInfoFetcher : public identity::IdentityManager::Observer {
                                       const std::string& response_body);
 
  private:
-  // IdentityManager::Observer implementation:
-  void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
-
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   identity::AccessTokenInfo access_token_info);
 
