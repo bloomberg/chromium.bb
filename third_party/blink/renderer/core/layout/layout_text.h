@@ -86,7 +86,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   const char* GetName() const override { return "LayoutText"; }
 
-  virtual bool IsTextFragment() const;
+  bool IsTextFragment() const { return is_text_fragment_; }
   virtual bool IsWordBreak() const;
 
   virtual scoped_refptr<StringImpl> OriginalText() const;
@@ -427,6 +427,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   unsigned contains_reversed_text_ : 1;
   mutable unsigned known_to_have_no_overflow_and_no_fallback_fonts_ : 1;
   unsigned contains_only_whitespace_or_nbsp_ : 2;
+
+  unsigned is_text_fragment_ : 1;
 
  private:
   // Used for LayoutNG with accessibility. True if inline fragments are
