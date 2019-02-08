@@ -275,8 +275,8 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
       it.second.target = nullptr;
   }
 
-  if (view == mouse_capture_target_.target)
-    mouse_capture_target_.target = nullptr;
+  if (view == mouse_capture_target_)
+    mouse_capture_target_ = nullptr;
 
   if (view == touchscreen_gesture_target_.target)
     touchscreen_gesture_target_.target = nullptr;
@@ -378,10 +378,10 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
 
   // Ignore mouse_capture_target_ if there are no mouse buttons currently down
   // because this is only for the purpose of dragging.
-  if (!target && mouse_capture_target_.target &&
+  if (!target && mouse_capture_target_ &&
       (event.GetType() == blink::WebInputEvent::kMouseUp ||
        IsMouseButtonDown(event))) {
-    target = mouse_capture_target_.target;
+    target = mouse_capture_target_;
   }
 
   gfx::PointF transformed_point;
@@ -544,14 +544,14 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
   // Also, this is strictly necessary for touch emulation.
   if (mouse_event.GetType() == blink::WebInputEvent::kMouseUp ||
       !IsMouseButtonDown(mouse_event))
-    mouse_capture_target_.target = nullptr;
+    mouse_capture_target_ = nullptr;
 
   // When touch emulation is active, mouse events have to act like touch
   // events, which requires that there be implicit capture between MouseDown
   // and MouseUp.
   if (mouse_event.GetType() == blink::WebInputEvent::kMouseDown &&
       touch_emulator_ && touch_emulator_->enabled()) {
-    mouse_capture_target_.target = target;
+    mouse_capture_target_ = target;
   }
 
   DCHECK(target_location.has_value());
@@ -1787,18 +1787,18 @@ void RenderWidgetHostInputEventRouter::SetMouseCaptureTarget(
     return;
 
   if (capture) {
-    mouse_capture_target_.target = target;
+    mouse_capture_target_ = target;
     return;
   }
 
-  if (mouse_capture_target_.target == target)
-    mouse_capture_target_.target = nullptr;
+  if (mouse_capture_target_ == target)
+    mouse_capture_target_ = nullptr;
 }
 
 RenderWidgetHostImpl*
 RenderWidgetHostInputEventRouter::GetMouseCaptureWidgetForTests() const {
-  if (mouse_capture_target_.target)
-    return mouse_capture_target_.target->host();
+  if (mouse_capture_target_)
+    return mouse_capture_target_->host();
   return nullptr;
 }
 
