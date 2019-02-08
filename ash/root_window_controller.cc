@@ -1016,6 +1016,9 @@ void RootWindowController::CreateContainers() {
                       "MouseCursorContainer", screen_rotation_container);
   mouse_cursor_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
+  CreateContainer(kShellWindowId_AlwaysOnTopWallpaperContainer,
+                  "AlwaysOnTopWallpaperContainer", screen_rotation_container);
+
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", screen_rotation_container);
 }

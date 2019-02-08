@@ -163,6 +163,10 @@ CHROMEOS_EXPORT extern const base::Feature kShowLanguageToggleInDemoMode;
 // Controls whether to show the Play Store icon in Demo Mode.
 CHROMEOS_EXPORT extern const base::Feature kShowPlayInDemoMode;
 
+// Controls whether to show a static splash screen instead of the user pods
+// before demo sessions log in.
+CHROMEOS_EXPORT extern const base::Feature kShowSplashScreenInDemoMode;
+
 // Returns true if the system should wake in response to wifi traffic.
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 

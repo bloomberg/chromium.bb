@@ -342,6 +342,15 @@ void WallpaperControllerClient::ShowSigninWallpaper() {
   wallpaper_controller_->ShowSigninWallpaper();
 }
 
+void WallpaperControllerClient::ShowAlwaysOnTopWallpaper(
+    const base::FilePath& image_path) {
+  wallpaper_controller_->ShowAlwaysOnTopWallpaper(image_path);
+}
+
+void WallpaperControllerClient::RemoveAlwaysOnTopWallpaper() {
+  wallpaper_controller_->RemoveAlwaysOnTopWallpaper();
+}
+
 void WallpaperControllerClient::RemoveUserWallpaper(
     const AccountId& account_id) {
   ash::mojom::WallpaperUserInfoPtr user_info =

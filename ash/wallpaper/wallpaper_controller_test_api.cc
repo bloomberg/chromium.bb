@@ -34,7 +34,7 @@ WallpaperControllerTestApi::~WallpaperControllerTestApi() = default;
 SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
   controller_->ShowWallpaperImage(
       CreateImageWithColor(SkColorSetRGB(60, 40, 40)), kTestWallpaperInfo,
-      false /*preview_mode=*/);
+      /*preview_mode=*/false, /*always_on_top=*/false);
   return SkColorSetRGB(18, 12, 12);
 }
 
@@ -46,12 +46,12 @@ void WallpaperControllerTestApi::StartWallpaperPreview() {
                      controller_->weak_factory_.GetWeakPtr(),
                      AccountId::FromUserEmail("user@test.com"),
                      user_manager::USER_TYPE_REGULAR, kTestWallpaperInfo,
-                     true /*show_wallpaper=*/);
-  controller_->reload_preview_wallpaper_callback_ =
-      base::BindRepeating(&WallpaperController::ShowWallpaperImage,
-                          controller_->weak_factory_.GetWeakPtr(),
-                          CreateImageWithColor(SK_ColorBLUE),
-                          kTestWallpaperInfo, true /*preview_mode=*/);
+                     /*show_wallpaper=*/true);
+  controller_->reload_preview_wallpaper_callback_ = base::BindRepeating(
+      &WallpaperController::ShowWallpaperImage,
+      controller_->weak_factory_.GetWeakPtr(),
+      CreateImageWithColor(SK_ColorBLUE), kTestWallpaperInfo,
+      /*preview_mode=*/true, /*always_on_top=*/false);
   // Show the preview wallpaper.
   controller_->reload_preview_wallpaper_callback_.Run();
 }

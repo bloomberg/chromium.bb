@@ -73,6 +73,8 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient {
                                    ash::WallpaperLayout layout);
   void ShowUserWallpaper(const AccountId& account_id);
   void ShowSigninWallpaper();
+  void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path);
+  void RemoveAlwaysOnTopWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);
   void RemovePolicyWallpaper(const AccountId& account_id);
   void GetOfflineWallpaperList(
