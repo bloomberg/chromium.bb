@@ -31,6 +31,8 @@ class CryptAuthKeyBundle {
  public:
   // Names which uniquely define a CryptAuthKeyBundle.
   // TODO(nohle): Add name for DeviceSync keys.
+  // TODO(nohle): Add additional unit tests for CryptAuthKeyCreatorImpl when
+  // more Names are added.
   enum class Name { kUserKeyPair };
   static const base::flat_set<CryptAuthKeyBundle::Name>& AllNames();
   static std::string KeyBundleNameEnumToString(CryptAuthKeyBundle::Name name);
