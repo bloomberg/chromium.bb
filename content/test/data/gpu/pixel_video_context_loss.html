@@ -39,8 +39,14 @@ function CrashGpuProcess() {
   var canvas = document.createElement('canvas');
   var gl = canvas.getContext('webgl');
 
+  // webglcontextlost may not be invoked unless we actually try to execute a GL
+  // command, so use a repeating function to tickle the context.
+  var tickle = setInterval(function() { gl.getParameter(gl.VERSION); }, 250);
+
   // Now wait for the context loss before starting video playback.
   canvas.addEventListener('webglcontextlost', function(e) {
+    clearInterval(tickle);
+
     // Now wait for the video to play until the end, by which point a frame
     // should be visible on screen.
     video.addEventListener('ended', function(e) {
