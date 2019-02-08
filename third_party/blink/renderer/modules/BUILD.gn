@@ -25,13 +25,6 @@ if (!is_component_build && is_win) {
 
 config("modules_implementation") {
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
-
-  if (is_chromecast) {
-    defines += [
-      "BLINK_MSLOG=LOG(INFO)",
-      "BLINK_SBLOG=LOG(INFO)",
-    ]
-  }
 }
 
 make_names("module_names") {
