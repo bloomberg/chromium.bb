@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include <atomic>
 #include <list>
 #include <memory>
 
@@ -25,6 +26,7 @@ namespace base {
 class BASE_EXPORT MessagePumpWin : public MessagePump {
  public:
   MessagePumpWin();
+  ~MessagePumpWin() override;
 
   // MessagePump methods:
   void Run(Delegate* delegate) override;
@@ -41,23 +43,34 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
     int run_depth;
   };
 
-  // State used with |work_state_| variable.
-  enum WorkState {
-    READY = 0,      // Ready to accept new work.
-    HAVE_WORK = 1,  // New work has been signalled.
-    WORKING = 2     // Handling the work.
-  };
-
   virtual void DoRunLoop() = 0;
   int GetCurrentDelay() const;
 
   // The time at which delayed work should run.
   TimeTicks delayed_work_time_;
 
-  // A value used to indicate if there is a kMsgDoWork message pending
-  // in the Windows Message queue.  There is at most one such message, and it
-  // can drive execution of tasks when a native message pump is running.
-  LONG work_state_ = READY;
+  // True iff:
+  //   * MessagePumpForUI: there's a kMsgDoWork message pending in the Windows
+  //     Message queue. i.e. when:
+  //      a. The pump is about to wakeup from idle.
+  //      b. The pump is about to enter a nested native loop and a
+  //         ScopedNestableTaskAllower was instantiated to allow application
+  //         tasks to execute in that nested loop (ScopedNestableTaskAllower
+  //         invokes ScheduleWork()).
+  //      c. While in a native (nested) loop : HandleWorkMessage() =>
+  //         ProcessPumpReplacementMessage() invokes ScheduleWork() before
+  //         processing a native message to guarantee this pump will get another
+  //         time slice if it goes into native Windows code and enters a native
+  //         nested loop. This is different from (b.) because we're not yet
+  //         processing an application task at the current run level and
+  //         therefore are expected to keep pumping application tasks without
+  //         necessitating a ScopedNestableTaskAllower.
+  //
+  //   * MessagePumpforIO: there's a dummy IO completion item with |this| as an
+  //     lpCompletionKey in the queue which is about to wakeup
+  //     WaitForIOCompletion(). MessagePumpForIO doesn't support nesting so
+  //     this is simpler than MessagePumpForUI.
+  std::atomic_bool work_scheduled_{false};
 
   // State for the current invocation of Run.
   RunState* state_ = nullptr;
