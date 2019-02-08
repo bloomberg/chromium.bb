@@ -91,6 +91,9 @@ class ASH_EXPORT DemoSessionMetricsRecorder
   // Emits histograms for recorded samples.
   void ReportSamples();
 
+  // Records |app| as being seen while sampling all active apps.
+  void RecordActiveAppSample(DemoModeApp app);
+
   // Indicates whether the specified app_id should be recorded for
   // the unique-apps-launched stat.
   bool ShouldRecordAppLaunch(const std::string& app_id);
@@ -123,10 +126,14 @@ class ASH_EXPORT DemoSessionMetricsRecorder
   ScopedObserver<ui::UserActivityDetector, DemoSessionMetricsRecorder>
       observer_;
 
+  class ActiveAppArcPackageNameObserver;
   class UniqueAppsLaunchedArcPackageNameObserver;
 
   std::unique_ptr<UniqueAppsLaunchedArcPackageNameObserver>
       unique_apps_arc_package_name_observer_;
+
+  std::unique_ptr<ActiveAppArcPackageNameObserver>
+      active_app_arc_package_name_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSessionMetricsRecorder);
 };
