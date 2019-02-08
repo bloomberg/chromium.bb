@@ -37,6 +37,8 @@ class CastContentWindowAura : public CastContentWindow,
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
   void RequestVisibility(VisibilityPriority visibility_priority) override;
+  void SetActivityContext(base::Value activity_context) override;
+  void SetHostContext(base::Value host_context) override;
   void NotifyVisibilityChange(VisibilityType visibility_type) override;
   void RequestMoveOut() override;
   void EnableTouchInput(bool enabled) override;

@@ -194,6 +194,15 @@ class CastContentWindow {
   // change.
   virtual void RequestVisibility(VisibilityPriority visibility_priority) = 0;
 
+  // Provide activity-related metadata. This data should include information
+  // that is common for all activities, such as type.
+  // TODO(seantopping): Define a schema for this data.
+  virtual void SetActivityContext(base::Value activity_context) = 0;
+
+  // Use this to stash custom data for this class. This data will be visible to
+  // the window manager.
+  virtual void SetHostContext(base::Value host_context) = 0;
+
   // Notify the window that its visibility type has changed. This should only
   // ever be called by the window manager.
   // TODO(seantopping): Make this private to the window manager.
