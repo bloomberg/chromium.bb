@@ -4312,6 +4312,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
+    {"enable-webrtc-hw-vp9-encoding",
+     flag_descriptions::kWebrtcHwVP9EncodingName,
+     flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kWebRtcHWVP9Encoding)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

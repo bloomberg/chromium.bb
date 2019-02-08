@@ -185,6 +185,14 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
     return true;
   }
 
+  // TODO(crbug.com/811912): Remove once VP9 encoding is to be enabled by
+  // default.
+  if (mode == VaapiWrapper::CodecMode::kEncode &&
+      va_profile == VAProfileVP9Profile0 &&
+      !base::FeatureList::IsEnabled(kVaapiVP9Encoder)) {
+    return true;
+  }
+
   return false;
 }
 

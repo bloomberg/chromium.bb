@@ -2017,6 +2017,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-webrtc-hw-vp9-encoding",
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-webrtc-hybrid-agc",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
