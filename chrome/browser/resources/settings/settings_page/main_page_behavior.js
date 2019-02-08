@@ -202,17 +202,21 @@ cr.define('settings', function() {
 
     /**
      * @param {!settings.Route} oldRoute
+     * @return {!Promise<void>}
      * @private
      */
     enterMainPage_: function(oldRoute) {
       const oldSection = this.getSection(oldRoute.section);
       oldSection.classList.remove('expanded');
       this.classList.remove('showing-subpage');
-      requestAnimationFrame(() => {
-        if (settings.lastRouteChangeWasPopstate()) {
-          this.scroller.scrollTop = this.lastScrollTop_;
-        }
-        this.fire('showing-main-page');
+      return new Promise((res, rej) => {
+        requestAnimationFrame(() => {
+          if (settings.lastRouteChangeWasPopstate()) {
+            this.scroller.scrollTop = this.lastScrollTop_;
+          }
+          this.fire('showing-main-page');
+          res();
+        });
       });
     },
 
@@ -318,8 +322,9 @@ cr.define('settings', function() {
           // different sections, but are linked to each other. For example
           // /storage and /accounts (in ChromeOS).
           if (!oldRoute.contains(newRoute) && !newRoute.contains(oldRoute)) {
-            this.enterMainPage_(oldRoute);
-            this.enterSubpage_(newRoute);
+            this.enterMainPage_(oldRoute).then(() => {
+              this.enterSubpage_(newRoute);
+            });
             return;
           }
 
