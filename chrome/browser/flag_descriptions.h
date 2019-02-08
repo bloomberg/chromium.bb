@@ -1519,9 +1519,6 @@ extern const char kNoCreditCardAbortDescription[];
 extern const char kNtpButtonName[];
 extern const char kNtpButtonDescription[];
 
-extern const char kOfflineBookmarksName[];
-extern const char kOfflineBookmarksDescription[];
-
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 

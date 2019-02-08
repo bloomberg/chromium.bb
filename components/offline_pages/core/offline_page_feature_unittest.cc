@@ -10,16 +10,6 @@
 
 namespace offline_pages {
 
-TEST(OfflinePageFeatureTest, OfflineBookmarks) {
-  // Enabled by default.
-  EXPECT_TRUE(offline_pages::IsOfflineBookmarksEnabled());
-
-  // Check if helper method works correctly when the features is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kOfflineBookmarksFeature);
-  EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());
-}
-
 TEST(OfflinePageFeatureTest, OffliningRecentPages) {
   // Enabled by default.
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());

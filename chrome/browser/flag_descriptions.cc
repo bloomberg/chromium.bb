@@ -2557,10 +2557,6 @@ const char kNtpButtonName[] = "Enable NTP Button";
 const char kNtpButtonDescription[] =
     "Displays a New Tab Page button in the toolbar if enabled.";
 
-const char kOfflineBookmarksName[] = "Enable offline bookmarks";
-const char kOfflineBookmarksDescription[] =
-    "Enable saving bookmarked pages for offline viewing.";
-
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
     "Always do http probe to detect network connectivity for offline indicator "

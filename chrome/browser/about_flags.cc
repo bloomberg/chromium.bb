@@ -2215,9 +2215,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kProgressBarThrottleFeature)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
-    {"offline-bookmarks", flag_descriptions::kOfflineBookmarksName,
-     flag_descriptions::kOfflineBookmarksDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOfflineBookmarksFeature)},
     {"offline-pages-load-signal-collecting",
      flag_descriptions::kOfflinePagesLoadSignalCollectingName,
      flag_descriptions::kOfflinePagesLoadSignalCollectingDescription,

@@ -10,7 +10,6 @@
 
 namespace offline_pages {
 
-extern const base::Feature kOfflineBookmarksFeature;
 extern const base::Feature kOffliningRecentPagesFeature;
 extern const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
@@ -34,9 +33,6 @@ extern const base::Feature kOnTheFlyMhtmlHashComputationFeature;
 // The parameter name used to find the experiment tag for prefetching offline
 // pages.
 extern const char kPrefetchingOfflinePagesExperimentsOption[];
-
-// Returns true if saving bookmarked pages for offline viewing is enabled.
-bool IsOfflineBookmarksEnabled();
 
 // Returns true if offlining of recent pages (aka 'Last N pages') is enabled.
 bool IsOffliningRecentPagesEnabled();
