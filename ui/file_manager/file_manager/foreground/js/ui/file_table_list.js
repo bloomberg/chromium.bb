@@ -21,7 +21,7 @@ function FileTableList() {
  * Decorates TableList as FileTableList.
  * @param {!cr.ui.table.TableList} self A tabel list element.
  */
-FileTableList.decorate = function(self) {
+FileTableList.decorate = self => {
   self.__proto__ = FileTableList.prototype;
 };
 
@@ -85,9 +85,9 @@ function FileListSelectionController(selectionModel) {
    * @type {boolean}
    */
   this.enableTouchMode_ = false;
-  util.isTouchModeEnabled().then(function(enabled) {
+  util.isTouchModeEnabled().then(enabled => {
     this.enableTouchMode_ = enabled;
-  }.bind(this));
+  });
 
   /**
    * @type {!FileTapHandler}
@@ -131,7 +131,7 @@ FileListSelectionController.prototype.handleKeyDown = function(e) {
  * @param {!MetadataModel} metadataModel Cache to
  *     retrieve metadada.
  */
-filelist.decorateListItem = function(li, entry, metadataModel) {
+filelist.decorateListItem = (li, entry, metadataModel) => {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
@@ -178,7 +178,7 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
  * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {!HTMLDivElement} Created element.
  */
-filelist.renderFileTypeIcon = function(doc, entry, locationInfo, opt_mimeType) {
+filelist.renderFileTypeIcon = (doc, entry, locationInfo, opt_mimeType) => {
   const icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   icon.className = 'detail-icon';
   icon.setAttribute(
@@ -194,7 +194,7 @@ filelist.renderFileTypeIcon = function(doc, entry, locationInfo, opt_mimeType) {
  * @param {EntryLocation} locationInfo
  * @return {!HTMLDivElement} The label.
  */
-filelist.renderFileNameLabel = function(doc, entry, locationInfo) {
+filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
   // Filename need to be in a '.filename-label' container for correct
   // work of inplace renaming.
   const box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
@@ -212,8 +212,7 @@ filelist.renderFileNameLabel = function(doc, entry, locationInfo) {
  * @param {cr.ui.ListItem} li List item.
  * @param {Object} externalProps Metadata.
  */
-filelist.updateListItemExternalProps = function(
-    li, externalProps, isTeamDriveRoot) {
+filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
   if (li.classList.contains('file')) {
     if (externalProps.availableOffline === false) {
       li.classList.add('dim-offline');
@@ -574,7 +573,7 @@ filelist.handleKeyDown = function(e) {
  * Focus on the file list that contains the event target.
  * @param {!Event} event the touch event.
  */
-filelist.focusParentList = function(event) {
+filelist.focusParentList = event => {
   let element = event.target;
   while (element && !(element instanceof cr.ui.List)) {
     element = element.parentElement;
