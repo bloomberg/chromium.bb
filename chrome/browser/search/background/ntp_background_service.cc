@@ -150,8 +150,7 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: "
-                  << loader_deleter->NetError();
+    DVLOG(1) << "Request failed with error: " << loader_deleter->NetError();
     collection_error_info_.error_type = ErrorType::NET_ERROR;
     collection_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::COLLECTION_INFO);
@@ -160,9 +159,8 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
 
   ntp::background::GetCollectionsResponse collections_response;
   if (!collections_response.ParseFromString(*response_body)) {
-    DLOG(WARNING)
-        << "Deserializing Backdrop wallpaper proto for collection info "
-           "failed.";
+    DVLOG(1) << "Deserializing Backdrop wallpaper proto for collection info "
+                "failed.";
     collection_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::COLLECTION_INFO);
     return;
@@ -246,8 +244,7 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: "
-                  << loader_deleter->NetError();
+    DVLOG(1) << "Request failed with error: " << loader_deleter->NetError();
     collection_images_error_info_.error_type = ErrorType::NET_ERROR;
     collection_images_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
@@ -256,8 +253,7 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
 
   ntp::background::GetImagesInCollectionResponse images_response;
   if (!images_response.ParseFromString(*response_body)) {
-    DLOG(WARNING)
-        << "Deserializing Backdrop wallpaper proto for image info failed.";
+    DVLOG(1) << "Deserializing Backdrop wallpaper proto for image info failed.";
     collection_images_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
     return;
@@ -295,8 +291,7 @@ void NtpBackgroundService::GetAccessTokenForAlbumCallback(
   token_fetcher_.reset();
 
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
-    DLOG(WARNING) << "Failed to retrieve token with error: "
-                  << error.ToString();
+    DVLOG(1) << "Failed to retrieve token with error: " << error.ToString();
     if (error.state() ==
         GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS) {
       album_error_info_.error_type = ErrorType::AUTH_ERROR;
@@ -363,8 +358,7 @@ void NtpBackgroundService::OnAlbumInfoFetchComplete(
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: "
-                  << loader_deleter->NetError();
+    DVLOG(1) << "Request failed with error: " << loader_deleter->NetError();
     album_error_info_.error_type = ErrorType::NET_ERROR;
     album_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::ALBUM_INFO);
@@ -374,7 +368,7 @@ void NtpBackgroundService::OnAlbumInfoFetchComplete(
   ntp::background::PersonalAlbumsResponse albums_response;
   if (!albums_response.ParseFromString(*response_body) ||
       albums_response.error_on_server()) {
-    DLOG(WARNING) << "Deserializing personal albums response proto failed.";
+    DVLOG(1) << "Deserializing personal albums response proto failed.";
     album_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::ALBUM_INFO);
     return;
@@ -416,8 +410,7 @@ void NtpBackgroundService::GetAccessTokenForPhotosCallback(
   token_fetcher_.reset();
 
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
-    DLOG(WARNING) << "Failed to retrieve token with error: "
-                  << error.ToString();
+    DVLOG(1) << "Failed to retrieve token with error: " << error.ToString();
     album_photos_error_info_.error_type = ErrorType::AUTH_ERROR;
     NotifyObservers(FetchComplete::ALBUM_PHOTOS);
     return;
@@ -479,8 +472,7 @@ void NtpBackgroundService::OnAlbumPhotosFetchComplete(
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: "
-                  << loader_deleter->NetError();
+    DVLOG(1) << "Request failed with error: " << loader_deleter->NetError();
     album_photos_error_info_.error_type = ErrorType::NET_ERROR;
     album_photos_error_info_.net_error = loader_deleter->NetError();
     NotifyObservers(FetchComplete::ALBUM_PHOTOS);
@@ -490,7 +482,7 @@ void NtpBackgroundService::OnAlbumPhotosFetchComplete(
   ntp::background::SettingPreviewResponse photos_response;
   if (!photos_response.ParseFromString(*response_body) ||
       photos_response.status() == ntp::background::ErrorCode::SERVER_ERROR) {
-    DLOG(WARNING) << "Deserializing personal photos response proto failed.";
+    DVLOG(1) << "Deserializing personal photos response proto failed.";
     album_photos_error_info_.error_type = ErrorType::SERVICE_ERROR;
     NotifyObservers(FetchComplete::ALBUM_PHOTOS);
     return;

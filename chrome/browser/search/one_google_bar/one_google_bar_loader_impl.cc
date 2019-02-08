@@ -89,32 +89,32 @@ bool GetStyleSheet(const base::DictionaryValue& dict,
 base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
   const base::DictionaryValue* dict = nullptr;
   if (!value.GetAsDictionary(&dict)) {
-    DLOG(WARNING) << "Parse error: top-level dictionary not found";
+    DVLOG(1) << "Parse error: top-level dictionary not found";
     return base::nullopt;
   }
 
   const base::DictionaryValue* update = nullptr;
   if (!dict->GetDictionary("update", &update)) {
-    DLOG(WARNING) << "Parse error: no update";
+    DVLOG(1) << "Parse error: no update";
     return base::nullopt;
   }
 
   const base::DictionaryValue* one_google_bar = nullptr;
   if (!update->GetDictionary("ogb", &one_google_bar)) {
-    DLOG(WARNING) << "Parse error: no ogb";
+    DVLOG(1) << "Parse error: no ogb";
     return base::nullopt;
   }
 
   OneGoogleBarData result;
 
   if (!safe_html::GetHtml(*one_google_bar, "html", &result.bar_html)) {
-    DLOG(WARNING) << "Parse error: no html";
+    DVLOG(1) << "Parse error: no html";
     return base::nullopt;
   }
 
   const base::DictionaryValue* page_hooks = nullptr;
   if (!one_google_bar->GetDictionary("page_hooks", &page_hooks)) {
-    DLOG(WARNING) << "Parse error: no page_hooks";
+    DVLOG(1) << "Parse error: no page_hooks";
     return base::nullopt;
   }
 
@@ -312,7 +312,7 @@ void OneGoogleBarLoaderImpl::LoadDone(
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: " << simple_loader->NetError();
+    DVLOG(1) << "Request failed with error: " << simple_loader->NetError();
     Respond(Status::TRANSIENT_ERROR, base::nullopt);
     return;
   }
@@ -341,7 +341,7 @@ void OneGoogleBarLoaderImpl::JsonParsed(std::unique_ptr<base::Value> value) {
 }
 
 void OneGoogleBarLoaderImpl::JsonParseFailed(const std::string& message) {
-  DLOG(WARNING) << "Parsing JSON failed: " << message;
+  DVLOG(1) << "Parsing JSON failed: " << message;
   Respond(Status::FATAL_ERROR, base::nullopt);
 }
 

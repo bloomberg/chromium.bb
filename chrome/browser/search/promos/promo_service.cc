@@ -32,25 +32,25 @@ base::Optional<PromoData> JsonToPromoData(const base::Value& value,
                                           const GURL& base_url) {
   const base::DictionaryValue* dict = nullptr;
   if (!value.GetAsDictionary(&dict)) {
-    DLOG(WARNING) << "Parse error: top-level dictionary not found";
+    DVLOG(1) << "Parse error: top-level dictionary not found";
     return base::nullopt;
   }
 
   const base::DictionaryValue* update = nullptr;
   if (!dict->GetDictionary("update", &update)) {
-    DLOG(WARNING) << "Parse error: no update";
+    DVLOG(1) << "Parse error: no update";
     return base::nullopt;
   }
 
   const base::DictionaryValue* promos = nullptr;
   if (!update->GetDictionary("promos", &promos)) {
-    DLOG(WARNING) << "Parse error: no promos";
+    DVLOG(1) << "Parse error: no promos";
     return base::nullopt;
   }
 
   std::string middle = std::string();
   if (!promos->GetString("middle", &middle)) {
-    DLOG(WARNING) << "No middle promo";
+    DVLOG(1) << "No middle promo";
     return base::nullopt;
   }
 
@@ -59,7 +59,7 @@ base::Optional<PromoData> JsonToPromoData(const base::Value& value,
 
   std::string log_url = std::string();
   if (!promos->GetString("log_url", &log_url)) {
-    DLOG(WARNING) << "No promo log_url";
+    DVLOG(1) << "No promo log_url";
     return base::nullopt;
   }
 
@@ -136,8 +136,7 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: "
-                  << simple_loader_->NetError();
+    DVLOG(1) << "Request failed with error: " << simple_loader_->NetError();
     PromoDataLoaded(Status::TRANSIENT_ERROR, base::nullopt);
     return;
   }
@@ -168,7 +167,7 @@ void PromoService::OnJsonParsed(std::unique_ptr<base::Value> value) {
 }
 
 void PromoService::OnJsonParseFailed(const std::string& message) {
-  DLOG(WARNING) << "Parsing JSON failed: " << message;
+  DVLOG(1) << "Parsing JSON failed: " << message;
   PromoDataLoaded(Status::FATAL_ERROR, base::nullopt);
 }
 
