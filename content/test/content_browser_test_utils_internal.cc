@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/containers/stack.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
@@ -432,13 +433,49 @@ void ShowWidgetMessageFilter::OnShowWidgetOnUI(int route_id,
   message_loop_runner_->Quit();
 }
 
-SwapoutACKMessageFilter::SwapoutACKMessageFilter()
-    : BrowserMessageFilter(FrameMsgStart) {}
+DropMessageFilter::DropMessageFilter(uint32_t message_class,
+                                     uint32_t drop_message_id)
+    : BrowserMessageFilter(message_class), drop_message_id_(drop_message_id) {}
 
-SwapoutACKMessageFilter::~SwapoutACKMessageFilter() {}
+DropMessageFilter::~DropMessageFilter() = default;
 
-bool SwapoutACKMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  return message.type() == FrameHostMsg_SwapOut_ACK::ID;
+bool DropMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  return message.type() == drop_message_id_;
+}
+
+ObserveMessageFilter::ObserveMessageFilter(uint32_t message_class,
+                                           uint32_t watch_message_id)
+    : BrowserMessageFilter(message_class),
+      watch_message_id_(watch_message_id) {}
+
+ObserveMessageFilter::~ObserveMessageFilter() = default;
+
+bool ObserveMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  if (message.type() == watch_message_id_)
+    received_ = true;
+  return false;
+}
+
+UnresponsiveRendererObserver::UnresponsiveRendererObserver(
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+
+UnresponsiveRendererObserver::~UnresponsiveRendererObserver() = default;
+
+RenderProcessHost* UnresponsiveRendererObserver::Wait(base::TimeDelta timeout) {
+  if (!captured_render_process_host_) {
+    base::OneShotTimer timer;
+    timer.Start(FROM_HERE, timeout, run_loop_.QuitClosure());
+    run_loop_.Run();
+    timer.Stop();
+  }
+  return captured_render_process_host_;
+}
+
+void UnresponsiveRendererObserver::OnRendererUnresponsive(
+    RenderProcessHost* render_process_host) {
+  captured_render_process_host_ = render_process_host;
+  run_loop_.Quit();
 }
 
 }  // namespace content
