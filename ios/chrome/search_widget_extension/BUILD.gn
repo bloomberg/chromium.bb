@@ -8,8 +8,8 @@ import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
-import("//tools/grit/repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
+import("//tools/grit/repack.gni")
 
 tweak_info_plist("tweak_info_plist") {
   info_plist = "Info.plist"
@@ -46,8 +46,8 @@ ios_appex_bundle("search_widget_extension") {
 
 source_set("search_widget") {
   sources = [
-    "copied_url_view.h",
-    "copied_url_view.mm",
+    "copied_content_view.h",
+    "copied_content_view.mm",
     "search_action_view.h",
     "search_action_view.mm",
     "search_widget_view.h",

@@ -174,8 +174,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandAppPreference);
   NSString* commandPrefKey = base::SysUTF8ToNSString(
       app_group::kChromeAppGroupCommandCommandPreference);
-  NSString* URLPrefKey =
-      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandURLPreference);
+  NSString* textPrefKey =
+      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandTextPreference);
   NSString* indexKey =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandIndexPreference);
 
@@ -184,7 +184,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
     appPrefKey : app_group::kOpenCommandSourceContentExtension,
     commandPrefKey :
         base::SysUTF8ToNSString(app_group::kChromeAppGroupOpenURLCommand),
-    URLPrefKey : URL.absoluteString,
+    textPrefKey : URL.absoluteString,
     indexKey : [NSNumber numberWithInt:[self.sites objectForKey:URL].position]
   };
 

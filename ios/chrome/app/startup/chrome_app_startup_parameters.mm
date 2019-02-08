@@ -204,10 +204,10 @@ enum SearchExtensionAction {
   id commandTime = base::mac::ObjCCast<NSDate>(
       [commandDictionary objectForKey:commandTimePreference]);
 
-  NSString* commandURLPreference =
-      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandURLPreference);
-  NSString* externalURL = base::mac::ObjCCast<NSString>(
-      [commandDictionary objectForKey:commandURLPreference]);
+  NSString* commandTextPreference =
+      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandTextPreference);
+  NSString* externalText = base::mac::ObjCCast<NSString>(
+      [commandDictionary objectForKey:commandTextPreference]);
 
   NSString* commandIndexPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandIndexPreference);
@@ -226,16 +226,15 @@ enum SearchExtensionAction {
     return nil;
   return [ChromeAppStartupParameters
       newAppStartupParametersForCommand:command
-                        withExternalURL:externalURL
+                       withExternalText:externalText
                               withIndex:index
                                 withURL:url
-
                   fromSourceApplication:appId
             fromSecureSourceApplication:commandCaller];
 }
 
 + (instancetype)newAppStartupParametersForCommand:(NSString*)command
-                                  withExternalURL:(NSString*)externalURL
+                                 withExternalText:(NSString*)externalText
                                         withIndex:(NSNumber*)index
                                           withURL:(NSURL*)url
                             fromSourceApplication:(NSString*)appId
@@ -279,9 +278,9 @@ enum SearchExtensionAction {
 
   if ([command isEqualToString:base::SysUTF8ToNSString(
                                    app_group::kChromeAppGroupOpenURLCommand)]) {
-    if (!externalURL || ![externalURL isKindOfClass:[NSString class]])
+    if (!externalText || ![externalText isKindOfClass:[NSString class]])
       return nil;
-    GURL externalGURL(base::SysNSStringToUTF8(externalURL));
+    GURL externalGURL(base::SysNSStringToUTF8(externalText));
     if (!externalGURL.is_valid() || !externalGURL.SchemeIsHTTPOrHTTPS())
       return nil;
     params =
@@ -290,6 +289,25 @@ enum SearchExtensionAction {
                                                 secureSourceApp:secureSourceApp
                                                     completeURL:url];
     action = ACTION_OPEN_URL;
+  }
+
+  if ([command
+          isEqualToString:base::SysUTF8ToNSString(
+                              app_group::kChromeAppGroupSearchTextCommand)]) {
+    if (!externalText) {
+      return nil;
+    }
+
+    params = [[ChromeAppStartupParameters alloc]
+        initWithExternalURL:GURL(kChromeUINewTabURL)
+          declaredSourceApp:appId
+            secureSourceApp:secureSourceApp
+                completeURL:url];
+
+    params.textQuery = externalText;
+    params.postOpeningAction = SEARCH_TEXT;
+
+    action = ACTION_NEW_SEARCH;
   }
 
   if ([command

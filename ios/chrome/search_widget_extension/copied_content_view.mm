@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/search_widget_extension/copied_url_view.h"
+#import "ios/chrome/search_widget_extension/copied_content_view.h"
 
 #import <NotificationCenter/NotificationCenter.h>
 
@@ -19,40 +19,31 @@ const CGFloat kURLButtonMargin = 10;
 
 }  // namespace
 
-@interface CopiedURLView ()
+@interface CopiedContentView ()
 
+// The type of the copied content
+@property(nonatomic) CopiedContentType type;
+// The copied text to be displayed if the type supports showing the string.
+@property(nonatomic, copy) NSString* copiedText;
 // The copied URL label containing the URL or a placeholder text.
-@property(nonatomic, strong) UILabel* copiedURLLabel;
+@property(nonatomic, strong) UILabel* copiedContentLabel;
 // The copied URL title label containing the title of the copied URL button.
-@property(nonatomic, strong) UILabel* openCopiedURLTitleLabel;
+@property(nonatomic, strong) UILabel* openCopiedContentTitleLabel;
 // The hairline view potentially shown at the top of the copied URL view.
 @property(nonatomic, strong) UIView* hairlineView;
 // The button-shaped background view shown when there is a copied URL to open.
 @property(nonatomic, strong) UIView* copiedButtonView;
 
-// Updates the view to show the copied URL in a button.
-- (void)updateUICopiedURL;
-
-// Updates the view to show that there is no copied URL, with no button and a
-// hairline at the top of the view.
-- (void)updateUINoCopiedURL;
+// Updates the view to show the currently set |type| and |copiedText|.
+- (void)updateUI;
 
 @end
 
-@implementation CopiedURLView
+@implementation CopiedContentView
 
-- (void)setCopiedURLString:(NSString*)copiedURL {
-  _copiedURLString = copiedURL;
-  if (copiedURL) {
-    [self updateUICopiedURL];
-  } else {
-    [self updateUINoCopiedURL];
-  }
-}
-
-@synthesize copiedURLLabel = _copiedURLLabel;
-@synthesize copiedURLString = _copiedURLString;
-@synthesize openCopiedURLTitleLabel = _openCopiedURLTitleLabel;
+@synthesize copiedContentLabel = _copiedContentLabel;
+@synthesize copiedText = _copiedText;
+@synthesize openCopiedContentTitleLabel = _openCopiedContentTitleLabel;
 @synthesize hairlineView = _hairlineView;
 @synthesize copiedButtonView = _copiedButtonView;
 
@@ -96,19 +87,19 @@ const CGFloat kURLButtonMargin = 10;
     _copiedButtonView.translatesAutoresizingMaskIntoConstraints = NO;
     [secondaryEffectView.contentView addSubview:_copiedButtonView];
 
-    _openCopiedURLTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _openCopiedURLTitleLabel.textAlignment = NSTextAlignmentCenter;
-    _openCopiedURLTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _openCopiedURLTitleLabel.font =
+    _openCopiedContentTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _openCopiedContentTitleLabel.textAlignment = NSTextAlignmentCenter;
+    _openCopiedContentTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _openCopiedContentTitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    [primaryEffectView.contentView addSubview:_openCopiedURLTitleLabel];
+    [primaryEffectView.contentView addSubview:_openCopiedContentTitleLabel];
 
-    _copiedURLLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _copiedURLLabel.textAlignment = NSTextAlignmentCenter;
-    _copiedURLLabel.font =
+    _copiedContentLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _copiedContentLabel.textAlignment = NSTextAlignmentCenter;
+    _copiedContentLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    _copiedURLLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [secondaryEffectView.contentView addSubview:_copiedURLLabel];
+    _copiedContentLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [secondaryEffectView.contentView addSubview:_copiedContentLabel];
 
     [NSLayoutConstraint activateConstraints:@[
       [_hairlineView.topAnchor constraintEqualToAnchor:self.topAnchor],
@@ -129,62 +120,78 @@ const CGFloat kURLButtonMargin = 10;
           constraintEqualToAnchor:self.bottomAnchor
                          constant:-ui_util::kContentMargin],
 
-      [_openCopiedURLTitleLabel.topAnchor
+      [_openCopiedContentTitleLabel.topAnchor
           constraintEqualToAnchor:_copiedButtonView.topAnchor
                          constant:kURLButtonMargin],
-      [_openCopiedURLTitleLabel.leadingAnchor
+      [_openCopiedContentTitleLabel.leadingAnchor
           constraintEqualToAnchor:_copiedButtonView.leadingAnchor
                          constant:ui_util::kContentMargin],
-      [_openCopiedURLTitleLabel.trailingAnchor
+      [_openCopiedContentTitleLabel.trailingAnchor
           constraintEqualToAnchor:_copiedButtonView.trailingAnchor
                          constant:-ui_util::kContentMargin],
 
-      [_copiedURLLabel.topAnchor
-          constraintEqualToAnchor:_openCopiedURLTitleLabel.bottomAnchor],
-      [_copiedURLLabel.bottomAnchor
+      [_copiedContentLabel.topAnchor
+          constraintEqualToAnchor:_openCopiedContentTitleLabel.bottomAnchor],
+      [_copiedContentLabel.bottomAnchor
           constraintEqualToAnchor:_copiedButtonView.bottomAnchor
                          constant:-kURLButtonMargin],
-      [_copiedURLLabel.leadingAnchor
-          constraintEqualToAnchor:_openCopiedURLTitleLabel.leadingAnchor],
-      [_copiedURLLabel.trailingAnchor
-          constraintEqualToAnchor:_openCopiedURLTitleLabel.trailingAnchor],
+      [_copiedContentLabel.leadingAnchor
+          constraintEqualToAnchor:_openCopiedContentTitleLabel.leadingAnchor],
+      [_copiedContentLabel.trailingAnchor
+          constraintEqualToAnchor:_openCopiedContentTitleLabel.trailingAnchor],
     ]];
-    [self updateUINoCopiedURL];
+    [self setCopiedContentType:CopiedContentTypeNone copiedText:nil];
   }
   return self;
 }
 
-- (void)updateUICopiedURL {
-  self.copiedButtonView.hidden = NO;
-  self.hairlineView.hidden = YES;
-  self.copiedURLLabel.text = self.copiedURLString;
-  self.openCopiedURLTitleLabel.alpha = 1;
-  self.openCopiedURLTitleLabel.text =
-      NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
-  self.copiedURLLabel.alpha = 1;
-  self.userInteractionEnabled = YES;
-  self.accessibilityLabel = [NSString
-      stringWithFormat:@"%@ - %@",
-                       NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil),
-                       self.copiedURLString];
-  self.accessibilityTraits = UIAccessibilityTraitLink;
+- (void)setCopiedContentType:(CopiedContentType)type
+                  copiedText:(NSString*)copiedText {
+  self.type = type;
+  self.copiedText = copiedText;
+  [self updateUI];
 }
 
-- (void)updateUINoCopiedURL {
-  self.userInteractionEnabled = NO;
-  self.copiedButtonView.hidden = YES;
-  self.hairlineView.hidden = NO;
-  self.copiedURLLabel.text =
-      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
+- (void)updateUI {
+  BOOL hasContent = self.type != CopiedContentTypeNone;
+  self.userInteractionEnabled = hasContent;
+  self.copiedButtonView.hidden = !hasContent;
+  self.hairlineView.hidden = hasContent;
+  self.accessibilityTraits =
+      (hasContent) ? UIAccessibilityTraitLink : UIAccessibilityTraitNone;
+  self.copiedContentLabel.alpha = (hasContent) ? 1 : 0.5;
+  self.openCopiedContentTitleLabel.alpha = (hasContent) ? 1 : 0.5;
+
+  NSString* titleText;
+  NSString* contentText;
+  switch (self.type) {
+    case CopiedContentTypeNone: {
+      titleText = NSLocalizedString(@"IDS_IOS_NO_COPIED_CONTENT_TITLE", nil);
+      contentText =
+          NSLocalizedString(@"IDS_IOS_NO_COPIED_CONTENT_MESSAGE", nil);
+      break;
+    }
+    case CopiedContentTypeURL: {
+      titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
+      contentText = self.copiedText;
+      break;
+    }
+    case CopiedContentTypeString: {
+      titleText = NSLocalizedString(@"IDS_IOS_OPEN_COPIED_TEXT", nil);
+      contentText = self.copiedText;
+      break;
+    }
+  }
+  self.openCopiedContentTitleLabel.text = titleText;
+  self.copiedContentLabel.text = contentText;
+  NSMutableArray<NSString*>* accessibilityPieces =
+      [[NSMutableArray alloc] init];
+  [accessibilityPieces addObject:titleText];
+  if (contentText) {
+    [accessibilityPieces addObject:contentText];
+  }
   self.accessibilityLabel =
-      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
-  self.openCopiedURLTitleLabel.text =
-      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
-  self.accessibilityLabel =
-      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
-  self.accessibilityTraits = UIAccessibilityTraitNone;
-  self.copiedURLLabel.alpha = 0.5;
-  self.openCopiedURLTitleLabel.alpha = 0.5;
+      [accessibilityPieces componentsJoinedByString:@" - "];
 }
 
 @end

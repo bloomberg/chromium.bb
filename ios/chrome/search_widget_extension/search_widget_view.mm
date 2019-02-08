@@ -4,7 +4,7 @@
 
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
 #include "base/logging.h"
-#import "ios/chrome/search_widget_extension/copied_url_view.h"
+#import "ios/chrome/search_widget_extension/copied_content_view.h"
 #import "ios/chrome/search_widget_extension/search_action_view.h"
 #import "ios/chrome/search_widget_extension/ui_util.h"
 
@@ -24,7 +24,7 @@ const CGFloat kMaxContentSize = 421;
 // The actions section. Can be bigger than the content within.
 @property(nonatomic, strong) UIView* actionsSection;
 // The copied URL section. Fits its contents.
-@property(nonatomic, strong) CopiedURLView* copiedURLSection;
+@property(nonatomic, strong) CopiedContentView* copiedURLSection;
 // The height used in the compact display mode.
 @property(nonatomic) CGFloat compactHeight;
 // The target for actions in the view.
@@ -79,9 +79,9 @@ const CGFloat kMaxContentSize = 421;
   _actionsSection.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:_actionsSection];
 
-  _copiedURLSection =
-      [[CopiedURLView alloc] initWithActionTarget:self.target
-                                   actionSelector:@selector(openCopiedURL:)];
+  _copiedURLSection = [[CopiedContentView alloc]
+      initWithActionTarget:self.target
+            actionSelector:@selector(openCopiedContent:)];
   [self addSubview:_copiedURLSection];
 
   _actionsSectionHeightConstraint = [self.actionsSection.heightAnchor
@@ -217,8 +217,9 @@ const CGFloat kMaxContentSize = 421;
   return [self actionContentHeight] + [self copiedURLSectionHeight];
 }
 
-- (void)setCopiedURLString:(NSString*)URL {
-  [self.copiedURLSection setCopiedURLString:URL];
+- (void)setCopiedContentType:(CopiedContentType)type
+                  copiedText:(NSString*)copiedText {
+  [self.copiedURLSection setCopiedContentType:type copiedText:copiedText];
 }
 
 @end

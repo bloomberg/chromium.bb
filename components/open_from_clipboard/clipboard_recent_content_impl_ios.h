@@ -40,7 +40,7 @@
 // not been suppresed. Otherwise, returns nil.
 - (NSString*)recentTextFromClipboard;
 
-// Returns the copied string if the clipboard contains a recent string that has
+// Returns the copied image if the clipboard contains a recent image that has
 // not been suppressed. Otherwise, returns nil.
 - (UIImage*)recentImageFromClipboard;
 

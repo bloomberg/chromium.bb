@@ -35,6 +35,7 @@
 #include "components/payments/core/features.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -427,6 +428,8 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearchInCurrentBVC;
+// Loads the query from startup parameters in the current BVC.
+- (void)loadStartupQueryInCurrentBVC;
 // Dismisses |signinInteractionCoordinator|.
 - (void)dismissSigninInteractionCoordinator;
 // Called when the last incognito tab was closed.
@@ -1765,6 +1768,26 @@ enum class EnterTabSwitcherSnapshotResult {
     [self.currentBVC startVoiceSearch];
 }
 
+- (void)loadStartupQueryInCurrentBVC {
+  NSString* query = self.startupParameters.textQuery;
+
+  TemplateURLService* templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(_mainBrowserState);
+  const TemplateURL* defaultURL =
+      templateURLService->GetDefaultSearchProvider();
+  DCHECK(!defaultURL->url().empty());
+  DCHECK(
+      defaultURL->url_ref().IsValid(templateURLService->search_terms_data()));
+  base::string16 queryString = base::SysNSStringToUTF16(query);
+  TemplateURLRef::SearchTermsArgs search_args(queryString);
+
+  GURL result(defaultURL->url_ref().ReplaceSearchTerms(
+      search_args, templateURLService->search_terms_data()));
+  web::NavigationManager::WebLoadParams params(result);
+  params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  [self.currentBVC.dispatcher loadURLWithParams:ChromeLoadParams(params)];
+}
+
 #pragma mark - Preferences Management
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -2248,6 +2271,10 @@ enum class EnterTabSwitcherSnapshotResult {
       return ^{
         [self.currentBVC.dispatcher focusOmnibox];
       };
+    case SEARCH_TEXT:
+      return ^{
+        [self loadStartupQueryInCurrentBVC];
+      };
     default:
       return nil;
   }
@@ -2266,6 +2293,7 @@ enum class EnterTabSwitcherSnapshotResult {
   ProceduralBlock startupCompletion =
       [self completionBlockForTriggeringAction:[_startupParameters
                                                    postOpeningAction]];
+
   // Commands are only allowed on NTP.
   DCHECK(IsURLNtp(url) || !startupCompletion);
 
