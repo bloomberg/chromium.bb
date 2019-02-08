@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_registry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -52,7 +53,8 @@ class SmbServiceTest : public testing::Test {
         std::make_unique<file_system_provider::FakeRegistry>());
 
     // Create smb service.
-    smb_service_ = std::make_unique<SmbService>(profile_);
+    smb_service_ = std::make_unique<SmbService>(
+        profile_, std::make_unique<base::SimpleTestTickClock>());
   }
 
   ~SmbServiceTest() override {}

@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -108,8 +109,11 @@ std::unique_ptr<TempFileManager> CreateTempFileManager() {
 
 bool SmbService::service_should_run_ = false;
 
-SmbService::SmbService(Profile* profile)
-    : provider_id_(ProviderId::CreateFromNativeId("smb")), profile_(profile) {
+SmbService::SmbService(Profile* profile,
+                       std::unique_ptr<base::TickClock> tick_clock)
+    : provider_id_(ProviderId::CreateFromNativeId("smb")),
+      profile_(profile),
+      tick_clock_(std::move(tick_clock)) {
   service_should_run_ = IsEnabledByFlag() && IsAllowedByPolicy();
   if (service_should_run_) {
     StartSetup();

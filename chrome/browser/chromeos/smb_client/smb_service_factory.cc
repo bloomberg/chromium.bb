@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 
+#include <memory>
+
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
@@ -43,7 +46,8 @@ bool SmbServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 
 KeyedService* SmbServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new SmbService(Profile::FromBrowserContext(profile));
+  return new SmbService(Profile::FromBrowserContext(profile),
+                        std::make_unique<base::DefaultTickClock>());
 }
 
 content::BrowserContext* SmbServiceFactory::GetBrowserContextToUse(
