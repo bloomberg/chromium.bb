@@ -62,6 +62,10 @@ bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
   return true;
 }
 
+bool AppListFolderItem::ShouldAutoRemove() const {
+  return ChildItemCount() <= (is_persistent() ? 0u : 1u);
+}
+
 std::string AppListFolderItem::GenerateId() {
   return base::GenerateGUID();
 }
