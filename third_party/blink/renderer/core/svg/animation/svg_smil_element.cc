@@ -494,19 +494,20 @@ void SVGSMILElement::ParseBeginOrEnd(const String& parse_string,
   if (begin_or_end == kEnd)
     has_end_event_conditions_ = false;
   HashSet<SMILTime> existing;
-  for (unsigned n = 0; n < time_list.size(); ++n) {
-    if (!time_list[n].Time().IsUnresolved())
-      existing.insert(time_list[n].Time().Value());
+  for (const auto& instance_time : time_list) {
+    if (!instance_time.Time().IsUnresolved())
+      existing.insert(instance_time.Time());
   }
   Vector<String> split_string;
   parse_string.Split(';', split_string);
-  for (unsigned n = 0; n < split_string.size(); ++n) {
-    SMILTime value = ParseClockValue(split_string[n]);
-    if (value.IsUnresolved())
-      ParseCondition(split_string[n], begin_or_end);
-    else if (!existing.Contains(value.Value()))
+  for (const auto& item : split_string) {
+    SMILTime value = ParseClockValue(item);
+    if (value.IsUnresolved()) {
+      ParseCondition(item, begin_or_end);
+    } else if (!existing.Contains(value)) {
       time_list.push_back(
           SMILTimeWithOrigin(value, SMILTimeWithOrigin::kParserOrigin));
+    }
   }
   SortTimeList(time_list);
 }
