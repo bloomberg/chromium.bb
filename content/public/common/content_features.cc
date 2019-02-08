@@ -423,6 +423,12 @@ const base::Feature kSharedArrayBuffer {
 #endif
 };
 
+// Signed Exchange Reporting for distributors
+// https://www.chromestatus.com/features/5687904902840320
+const base::Feature kSignedExchangeReportingForDistributors{
+    "SignedExchangeReportingForDistributors",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Origin-Signed HTTP Exchanges (for WebPackage Loading)
 // https://www.chromestatus.com/features/5745285984681984
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
