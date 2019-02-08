@@ -37,7 +37,7 @@ namespace {
 // setuid sandbox. Old versions of the sandbox will ignore this.
 void SetSandboxAPIEnvironmentVariable(base::Environment* env) {
   env->SetVar(kSandboxEnvironmentApiRequest,
-              base::IntToString(kSUIDSandboxApiNumber));
+              base::NumberToString(kSUIDSandboxApiNumber));
 }
 
 // Unset environment variables that are expected to be set by the setuid
