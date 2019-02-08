@@ -709,7 +709,8 @@ void SyncEngine::OnPrimaryAccountSigninFailed(
                      "Failed to sign in.");
 }
 
-void SyncEngine::OnPrimaryAccountSet(const AccountInfo& primary_account_info) {
+void SyncEngine::OnPrimaryAccountSet(
+    const CoreAccountInfo& primary_account_info) {
   Initialize();
 }
 

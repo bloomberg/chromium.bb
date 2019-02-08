@@ -153,7 +153,8 @@ class IdentityObserverBridge : public identity::IdentityManager::Observer {
   ~IdentityObserverBridge() override {}
 
   // IdentityManager::Observer implementation:
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
 
@@ -175,7 +176,7 @@ IdentityObserverBridge::IdentityObserverBridge(
 }
 
 void IdentityObserverBridge::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   [owner_ onSignInStateChanged];
 }
 

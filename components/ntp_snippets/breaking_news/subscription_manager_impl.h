@@ -68,7 +68,7 @@ class SubscriptionManagerImpl : public SubscriptionManager,
 
  private:
   // identity:IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(const AccountInfo& account_info) override;
+  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnPrimaryAccountCleared(const AccountInfo& account_info) override;
 
   void SigninStatusChanged();

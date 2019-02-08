@@ -37,7 +37,8 @@ class OneShotIdentityManagerObserver : public IdentityManager::Observer {
 
  private:
   // IdentityManager::Observer:
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
   void OnRefreshTokensLoaded() override;
@@ -70,7 +71,7 @@ OneShotIdentityManagerObserver::~OneShotIdentityManagerObserver() {
 }
 
 void OneShotIdentityManagerObserver::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   if (event_to_wait_on_ != IdentityManagerEvent::PRIMARY_ACCOUNT_SET)
     return;
 

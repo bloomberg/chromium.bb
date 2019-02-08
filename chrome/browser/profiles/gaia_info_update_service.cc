@@ -215,7 +215,7 @@ void GAIAInfoUpdateService::ScheduleNextUpdate() {
 }
 
 void GAIAInfoUpdateService::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   OnUsernameChanged(primary_account_info.gaia);
 }
 

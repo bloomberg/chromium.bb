@@ -127,7 +127,9 @@ void AdvancedProtectionStatusManager::OnAccountRemovedWithInfo(
 }
 
 void AdvancedProtectionStatusManager::OnPrimaryAccountSet(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
+  // TODO(crbug.com/926204): remove IdentityManager ensures that primary account
+  // always has valid refresh token when it is set.
   if (account_info.is_under_advanced_protection)
     OnAdvancedProtectionEnabled();
 }

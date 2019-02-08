@@ -620,7 +620,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 #pragma mark - IdentityManagerObserverBridgeDelegate
 
-- (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo {
+- (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo {
   [self updateSyncSection:YES];
   [self updateIdentitySectionAndNotifyConsumer];
 }

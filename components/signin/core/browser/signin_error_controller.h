@@ -69,7 +69,8 @@ class SigninErrorController : public KeyedService,
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
 

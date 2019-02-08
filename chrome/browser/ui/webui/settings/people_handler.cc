@@ -862,7 +862,7 @@ void PeopleHandler::CloseUI() {
 }
 
 void PeopleHandler::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   UpdateSyncStatus();
 }
 

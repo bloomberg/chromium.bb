@@ -37,7 +37,8 @@ class SigninBrowserStateInfoUpdater
   void OnErrorChanged() override;
 
   // IdentityManager::Observer:
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
 

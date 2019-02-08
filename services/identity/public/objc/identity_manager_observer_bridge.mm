@@ -22,7 +22,7 @@ IdentityManagerObserverBridge::~IdentityManagerObserverBridge() {
 }
 
 void IdentityManagerObserverBridge::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSet:)]) {
     [delegate_ onPrimaryAccountSet:primary_account_info];
   }

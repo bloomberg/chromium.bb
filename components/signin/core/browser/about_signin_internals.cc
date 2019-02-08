@@ -435,7 +435,7 @@ void AboutSigninInternals::OnPrimaryAccountSigninFailed(
 }
 
 void AboutSigninInternals::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   NotifyObservers();
 }
 

@@ -521,7 +521,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   void OnStartReconcile() override { ++reconcilor_started_count_; }
 
   // identity::IdentityManager::Observer
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override {
     RunClosureIfValid(std::move(on_primary_account_set_quit_closure_));
   }
 

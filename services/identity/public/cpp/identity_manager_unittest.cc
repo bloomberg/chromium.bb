@@ -224,7 +224,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     on_cookie_deleted_by_user_callback_ = std::move(callback);
   }
 
-  const AccountInfo& primary_account_from_set_callback() {
+  const CoreAccountInfo& primary_account_from_set_callback() {
     return primary_account_from_set_callback_;
   }
   const AccountInfo& primary_account_from_cleared_callback() {
@@ -311,7 +311,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
 
  private:
   // IdentityManager::Observer:
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override {
     primary_account_from_set_callback_ = primary_account_info;
     if (on_primary_account_set_callback_)
       std::move(on_primary_account_set_callback_).Run();
@@ -412,7 +413,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_error_state_of_refresh_token_updated_callback_;
   base::OnceClosure on_refresh_tokens_loaded_callback_;
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
-  AccountInfo primary_account_from_set_callback_;
+  CoreAccountInfo primary_account_from_set_callback_;
   AccountInfo primary_account_from_cleared_callback_;
   AccountInfo account_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
@@ -676,7 +677,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   signin_manager()->SignIn(kTestGaiaId, kTestEmail);
   run_loop.Run();
 
-  AccountInfo primary_account_from_set_callback =
+  CoreAccountInfo primary_account_from_set_callback =
       identity_manager_observer()->primary_account_from_set_callback();
   EXPECT_EQ(kTestGaiaId, primary_account_from_set_callback.gaia);
   EXPECT_EQ(kTestEmail, primary_account_from_set_callback.email);

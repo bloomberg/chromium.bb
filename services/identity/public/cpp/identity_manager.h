@@ -68,7 +68,8 @@ class IdentityManager : public SigninManagerBase::Observer,
 
     // Called when an account becomes the user's primary account.
     // This method is not called during a reauth.
-    virtual void OnPrimaryAccountSet(const AccountInfo& primary_account_info) {}
+    virtual void OnPrimaryAccountSet(
+        const CoreAccountInfo& primary_account_info) {}
 
     // Called when when the user moves from having a primary account to no
     // longer having a primary account.

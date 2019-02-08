@@ -522,7 +522,7 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
 }
 // identity::IdentityManager::Observer implementation
 void ContentSuggestionsService::OnPrimaryAccountSet(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/true);
 }
 

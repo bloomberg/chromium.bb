@@ -246,7 +246,7 @@ void SyncAuthManager::Clear() {
 }
 
 void SyncAuthManager::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   UpdateSyncAccountIfNecessary();
 }
 

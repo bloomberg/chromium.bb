@@ -156,7 +156,7 @@ class AccountConsistencyService : public KeyedService,
       const GoogleServiceAuthError& error) override;
 
   // IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(const AccountInfo& account_info) override;
+  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_account_info) override;
 

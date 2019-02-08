@@ -71,7 +71,7 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
 }
 
 void PrimaryAccountAccessTokenFetcher::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   ProcessSigninStateChange();
 }
 

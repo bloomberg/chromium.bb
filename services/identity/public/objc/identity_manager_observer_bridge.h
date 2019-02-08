@@ -22,7 +22,7 @@
 // IdentityManager::Observer in identity_manager.h for the specification of
 // these semantics.
 
-- (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo;
+- (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo;
 - (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo;
 - (void)onPrimaryAccountSigninFailed:(const GoogleServiceAuthError&)error;
 - (void)onRefreshTokenUpdatedForAccount:(const AccountInfo&)accountInfo;
@@ -47,7 +47,8 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
   ~IdentityManagerObserverBridge() override;
 
   // IdentityManager::Observer.
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
   void OnPrimaryAccountSigninFailed(

@@ -70,7 +70,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
       bool is_test);
 
   // IdentityManager::Observer:
-  void OnPrimaryAccountSet(const AccountInfo& account_info) override;
+  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnPrimaryAccountCleared(const AccountInfo& account_info) override;
 
   // Obtain sign-in status and add observers.
