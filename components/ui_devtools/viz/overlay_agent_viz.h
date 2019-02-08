@@ -18,7 +18,7 @@ class OverlayAgentViz : public OverlayAgent {
 
   // Overlay::Backend:
   protocol::Response setInspectMode(
-      const String& in_mode,
+      const protocol::String& in_mode,
       protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig)
       override;
   protocol::Response highlightNode(
