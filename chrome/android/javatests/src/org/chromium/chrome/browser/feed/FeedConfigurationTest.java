@@ -40,6 +40,7 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getFeedServerMethod());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
                 FeedConfiguration.getFeedServerResponseLengthPrefixed());
+        Assert.assertFalse(FeedConfiguration.getFeedUiEnabled());
         Assert.assertEquals(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 FeedConfiguration.getInitialNonCachedPageSize());
         Assert.assertEquals(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
@@ -52,6 +53,7 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getSessionLifetimeMs());
         Assert.assertFalse(FeedConfiguration.getTriggerImmediatePagination());
         Assert.assertTrue(FeedConfiguration.getUseTimeoutScheduler());
+        Assert.assertFalse(FeedConfiguration.getUseSecondaryPageRequest());
         Assert.assertEquals(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT,
                 FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
     }
@@ -83,6 +85,16 @@ public class FeedConfigurationTest {
             "force-fieldtrial-params=Trial.Group:feed_server_response_length_prefixed/false"})
     public void testFeedServerResponseLengthPrefixedParameter() {
         Assert.assertEquals(false, FeedConfiguration.getFeedServerResponseLengthPrefixed());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:feed_ui_enabled/true"})
+    public void
+    testFeedUiEnabled() {
+        Assert.assertTrue(FeedConfiguration.getFeedUiEnabled());
     }
 
     @Test
@@ -157,6 +169,16 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:use_secondary_page_request/true"})
+    public void
+    testUseSecondaryPageRequest() {
+        Assert.assertTrue(FeedConfiguration.getUseSecondaryPageRequest());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:view_log_threshold/0.33"})
     public void testViewLogThreshold() {
         Assert.assertEquals(
@@ -174,6 +196,7 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, 0));
+        Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, true));
         Assert.assertEquals(Integer.valueOf(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT),
                 configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals(
@@ -189,6 +212,8 @@ public class FeedConfigurationTest {
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
         Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.USE_TIMEOUT_SCHEDULER, false));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.USE_SECONDARY_PAGE_REQUEST, true));
         Assert.assertEquals(Double.valueOf(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT),
                 configuration.getValueOrDefault(ConfigKey.VIEW_LOG_THRESHOLD, 0d),
                 ASSERT_EQUALS_DOUBLE_DELTA);
