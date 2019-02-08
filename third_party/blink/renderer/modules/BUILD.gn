@@ -351,6 +351,8 @@ jumbo_source_set("unit_tests") {
     "websockets/dom_websocket_test.cc",
     "websockets/websocket_channel_impl_test.cc",
     "worklet/animation_and_paint_worklet_thread_test.cc",
+    "worklet/worklet_thread_test_common.cc",
+    "worklet/worklet_thread_test_common.h",
   ]
 
   configs += [
