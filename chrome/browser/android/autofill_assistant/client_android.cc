@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -99,7 +100,8 @@ void ClientAndroid::ShowOnboarding(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jobject>& on_accept) {
-  GetUiController()->ShowOnboarding(env, on_accept);
+  ShowUI();
+  ui_controller_android_->ShowOnboarding(env, on_accept);
 }
 
 base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
@@ -138,6 +140,26 @@ void ClientAndroid::OnAccessToken(JNIEnv* env,
   }
 }
 
+void ClientAndroid::ShowUI() {
+  if (!controller_) {
+    CreateController();
+    // TODO(crbug.com/806868): allow delaying controller creation, for
+    // onboarding.
+  }
+  if (!ui_controller_android_) {
+    ui_controller_android_ = std::make_unique<UiControllerAndroid>(
+        web_contents_, /* client= */ this, controller_.get());
+  }
+}
+
+void ClientAndroid::DestroyUI() {
+  if (!ui_controller_android_)
+    return;
+
+  ui_controller_android_->Destroy();
+  ui_controller_android_.reset();
+}
+
 std::string ClientAndroid::GetApiKey() {
   std::string api_key;
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {
@@ -172,16 +194,12 @@ std::string ClientAndroid::GetServerUrl() {
   return kAutofillAssistantServerUrl.Get();
 }
 
-UiControllerAndroid* ClientAndroid::GetUiController() {
-  if (!controller_) {
-    CreateController();
-  }
+UiController* ClientAndroid::GetUiController() {
+  if (ui_controller_android_)
+    return ui_controller_android_.get();
 
-  if (!ui_controller_android_ && controller_) {
-    ui_controller_android_ = std::make_unique<UiControllerAndroid>(
-        web_contents_, /* client= */ this, controller_.get());
-  }
-  return ui_controller_android_.get();
+  static base::NoDestructor<UiController> noop_controller_;
+  return noop_controller_.get();
 }
 
 std::string ClientAndroid::GetLocale() {

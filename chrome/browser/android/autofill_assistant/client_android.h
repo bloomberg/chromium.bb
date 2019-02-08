@@ -57,12 +57,14 @@ class ClientAndroid : public Client,
                      const base::android::JavaParamRef<jstring>& access_token);
 
   // Overrides Client
+  void ShowUI() override;
+  void DestroyUI() override;
   std::string GetApiKey() override;
   std::string GetAccountEmailAddress() override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   std::string GetServerUrl() override;
-  UiControllerAndroid* GetUiController() override;
+  UiController* GetUiController() override;
   std::string GetLocale() override;
   std::string GetCountryCode() override;
   void Shutdown(Metrics::DropOutReason reason) override;

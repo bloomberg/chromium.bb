@@ -42,6 +42,7 @@ class UiControllerAndroid : public UiController {
   // Called by ClientAndroid.
   void ShowOnboarding(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& on_accept);
+  void Destroy();
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
@@ -73,6 +74,7 @@ class UiControllerAndroid : public UiController {
   void Stop(JNIEnv* env,
             const base::android::JavaParamRef<jobject>& obj,
             int reason);
+  void DestroyUI(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnFatalError(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jstring>& message,
