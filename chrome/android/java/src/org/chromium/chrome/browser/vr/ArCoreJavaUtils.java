@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.module_installer.ModuleInstaller;
 
-
 /**
  * Provides ARCore classes access to java-related app functionality.
  */
@@ -153,7 +152,7 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
             if (mNativeArCoreJavaUtils != 0) {
                 if (success) {
                     ui.showInstallSuccessUi();
-                    nativeOnRequestInstallSupportedArCoreResult(mNativeArCoreJavaUtils, success);
+                    nativeOnRequestInstallArModuleResult(mNativeArCoreJavaUtils, success);
                 } else {
                     ui.showInstallFailureUi();
                     // early exit - user will be offered a choice to retry & install flow will
@@ -167,6 +166,7 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     @CalledByNative
     private void requestInstallSupportedArCore(final Tab tab) {
         assert shouldRequestInstallSupportedArCore();
+
         @ArCoreShim.Availability
         int arCoreAvailability = getArCoreInstallStatus();
         final Activity activity = tab.getActivity();

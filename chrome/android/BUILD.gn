@@ -698,6 +698,7 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:android_support_design_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:android_support_v7_recyclerview_java",
+    "//third_party/android_deps:com_google_ar_core_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
