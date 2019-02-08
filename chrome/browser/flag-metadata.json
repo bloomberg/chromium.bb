@@ -740,7 +740,7 @@
   },
   {
     "name": "enable-android-spellchecker",
-    // "owners": [ "your-team" ],
+    "owners": [ "timvolodine" ],
     "expiry_milestone": 76
   },
   {
