@@ -205,33 +205,6 @@ source_set("automation_client_lib") {
   ]
 }
 
-action("embed_version_in_cpp") {
-  script = "embed_version_in_cpp.py"
-  inputs = [
-    "cpp_source.py",
-    "VERSION",
-    "//chrome/VERSION",
-
-    # We don't actually use LASTCHANGE as an input file. It is updated
-    # whenever a different Git revision is checked out, at which point
-    # version.cc needs to be updated with the new revision info.
-    lastchange_file,
-  ]
-  outputs = [
-    "$target_gen_dir/version.cc",
-    "$target_gen_dir/version.h",
-  ]
-
-  args = [
-    "--chromedriver-version-file",
-    rebase_path("VERSION", root_build_dir),
-    "--chrome-version-file",
-    rebase_path("//chrome/VERSION", root_build_dir),
-    "--directory",
-    rebase_path(target_gen_dir, root_build_dir),
-  ]
-}
-
 source_set("lib") {
   sources = [
     "//third_party/webdriver/atoms.cc",
@@ -278,15 +251,14 @@ source_set("lib") {
     "session_thread_map.h",
     "util.cc",
     "util.h",
+    "version.cc",
+    "version.h",
     "window_commands.cc",
     "window_commands.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  # Also compile the generated version files.
-  sources += get_target_outputs(":embed_version_in_cpp")
 
   if (use_x11) {
     sources += [ "keycode_text_conversion_x.cc" ]
@@ -299,11 +271,11 @@ source_set("lib") {
 
   deps = [
     ":automation_client_lib",
-    ":embed_version_in_cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//chrome/common:constants",
     "//chrome/common:version_header",
+    "//components/version_info:generate_version_info",
     "//crypto",
     "//net",
     "//net/server:http_server",
