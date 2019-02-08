@@ -325,6 +325,12 @@ static void set_good_speed_features_framesize_independent(
     sf->use_transform_domain_distortion = boosted ? 1 : 2;
     sf->use_accurate_subpel_search = USE_2_TAPS;
     sf->adaptive_rd_thresh = 2;
+    if (cpi->oxcf.enable_smooth_interintra) {
+      sf->disable_smooth_interintra =
+          (boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame)
+              ? 0
+              : 1;
+    }
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
     sf->prune_comp_search_by_single_result = 2;
@@ -344,13 +350,6 @@ static void set_good_speed_features_framesize_independent(
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
-    // TODO(any): evaluate this speed feature for 2 and 3
-    if (cpi->oxcf.enable_smooth_interintra) {
-      sf->disable_smooth_interintra =
-          (boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame)
-              ? 0
-              : 1;
-    }
     sf->cb_partition_search = !boosted;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
