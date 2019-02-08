@@ -1352,6 +1352,71 @@ output_rotate_damage(struct weston_output *output,
 	go->border_damage[go->buffer_damage_index] = border_status;
 }
 
+/**
+ * Given a region in Weston's (top-left-origin) global co-ordinate space,
+ * translate it to the co-ordinate space used by GL for our output
+ * rendering. This requires shifting it into output co-ordinate space:
+ * translating for output offset within the global co-ordinate space,
+ * multiplying by output scale to get buffer rather than logical size.
+ *
+ * Finally, if borders are drawn around the output, we translate the area
+ * to account for the border region around the outside, and add any
+ * damage if the borders have been redrawn.
+ *
+ * @param output The output whose co-ordinate space we are after
+ * @param global_region The affected region in global co-ordinate space
+ * @param[out] rects Y-inverted quads in {x,y,w,h} order; caller must free
+ * @param[out] nrects Number of quads (4x number of co-ordinates)
+ */
+static void
+pixman_region_to_egl_y_invert(struct weston_output *output,
+			      struct pixman_region32 *global_region,
+			      EGLint **rects,
+			      EGLint *nrects)
+{
+	struct gl_output_state *go = get_output_state(output);
+	pixman_region32_t transformed;
+	struct pixman_box32 *box;
+	int buffer_height;
+	EGLint *d;
+	int i;
+
+	/* Translate from global to output co-ordinate space. */
+	pixman_region32_init(&transformed);
+	weston_transformed_region(output->width, output->height,
+				  output->transform,
+				  output->current_scale,
+				  global_region, &transformed);
+
+	/* If we have borders drawn around the output, shift our output damage
+	 * to account for borders being drawn around the outside, adding any
+	 * damage resulting from borders being redrawn. */
+	if (output_has_borders(output)) {
+		pixman_region32_translate(&transformed,
+					  go->borders[GL_RENDERER_BORDER_LEFT].width,
+					  go->borders[GL_RENDERER_BORDER_TOP].height);
+		output_get_border_damage(output, go->border_status,
+					 &transformed);
+	}
+
+	/* Convert from a Pixman region into {x,y,w,h} quads, flipping in the
+	 * Y axis to account for GL's lower-left-origin co-ordinate space. */
+	box = pixman_region32_rectangles(&transformed, nrects);
+	*rects = malloc(*nrects * 4 * sizeof(EGLint));
+
+	buffer_height = go->borders[GL_RENDERER_BORDER_TOP].height +
+			output->current_mode->height +
+			go->borders[GL_RENDERER_BORDER_BOTTOM].height;
+
+	d = *rects;
+	for (i = 0; i < *nrects; ++i) {
+		*d++ = box[i].x1;
+		*d++ = buffer_height - box[i].y2;
+		*d++ = box[i].x2 - box[i].x1;
+		*d++ = box[i].y2 - box[i].y1;
+	}
+}
+
 /* NOTE: We now allow falling back to ARGB gl visuals when XRGB is
  * unavailable, so we're assuming the background has no transparency
  * and that everything with a blend, like drop shadows, will have something
@@ -1369,9 +1434,6 @@ gl_renderer_repaint_output(struct weston_output *output,
 	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
-	int i, nrects, buffer_height;
-	EGLint *egl_damage, *d;
-	pixman_box32_t *rects;
 	pixman_region32_t buffer_damage, total_damage;
 	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
 	struct weston_view *view;
@@ -1448,39 +1510,18 @@ gl_renderer_repaint_output(struct weston_output *output,
 	go->end_render_sync = create_render_sync(gr);
 
 	if (gr->swap_buffers_with_damage && !gr->fan_debug) {
-		pixman_region32_init(&buffer_damage);
-		weston_transformed_region(output->width, output->height,
-					  output->transform,
-					  output->current_scale,
-					  output_damage, &buffer_damage);
+		int n_egl_rects;
+		EGLint *egl_rects;
 
-		if (output_has_borders(output)) {
-			pixman_region32_translate(&buffer_damage,
-						  go->borders[GL_RENDERER_BORDER_LEFT].width,
-						  go->borders[GL_RENDERER_BORDER_TOP].height);
-			output_get_border_damage(output, go->border_status,
-						 &buffer_damage);
-		}
-
-		rects = pixman_region32_rectangles(&buffer_damage, &nrects);
-		egl_damage = malloc(nrects * 4 * sizeof(EGLint));
-
-		buffer_height = go->borders[GL_RENDERER_BORDER_TOP].height +
-				output->current_mode->height +
-				go->borders[GL_RENDERER_BORDER_BOTTOM].height;
-
-		d = egl_damage;
-		for (i = 0; i < nrects; ++i) {
-			*d++ = rects[i].x1;
-			*d++ = buffer_height - rects[i].y2;
-			*d++ = rects[i].x2 - rects[i].x1;
-			*d++ = rects[i].y2 - rects[i].y1;
-		}
+		/* For swap_buffers_with_damage, we need to pass the region
+		 * which has changed since the previous SwapBuffers on this
+		 * surface - this is output_damage. */
+		pixman_region_to_egl_y_invert(output, output_damage,
+					      &egl_rects, &n_egl_rects);
 		ret = gr->swap_buffers_with_damage(gr->egl_display,
 						   go->egl_surface,
-						   egl_damage, nrects);
-		free(egl_damage);
-		pixman_region32_fini(&buffer_damage);
+						   egl_rects, n_egl_rects);
+		free(egl_rects);
 	} else {
 		ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
 	}
