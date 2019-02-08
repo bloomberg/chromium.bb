@@ -12,10 +12,11 @@
 namespace ash {
 class AssistantMainStage;
 class AssistantViewDelegate;
-class DialogPlate;
 }  // namespace ash
 
 namespace app_list {
+
+class DialogPlate;
 
 class APP_LIST_EXPORT AssistantMainView : public views::View {
  public:
@@ -37,7 +38,7 @@ class APP_LIST_EXPORT AssistantMainView : public views::View {
 
   ash::AssistantViewDelegate* const delegate_;
 
-  ash::DialogPlate* dialog_plate_;       // Owned by view hierarchy.
+  DialogPlate* dialog_plate_;            // Owned by view hierarchy.
   ash::AssistantMainStage* main_stage_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainView);
