@@ -304,8 +304,6 @@ class GaiaCookieManagerService : public KeyedService,
   // Returns a non-NULL pointer to its instance of net::BackoffEntry
   const net::BackoffEntry* GetBackoffEntry() { return &fetcher_backoff_; }
 
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
-
   // Ubertoken fetch completion callback. Called by unittests directly.
   void OnUbertokenFetchComplete(GoogleServiceAuthError error,
                                 const std::string& uber_token);
@@ -323,6 +321,8 @@ class GaiaCookieManagerService : public KeyedService,
                            MultiloginFailureInvalidGaiaCredentialsMobile);
   FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
                            MultiloginFailureInvalidGaiaCredentialsDesktop);
+
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
   // Overridden from network::mojom::CookieChangeListner. If the cookie relates
   // to a GAIA APISID cookie, then we call ListAccounts and fire
