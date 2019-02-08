@@ -13,6 +13,11 @@ import unittest
 from telemetry import decorators
 from telemetry.testing import options_for_unittests
 
+RUNNER_SCRIPTS_DIR = os.path.join(os.path.dirname(__file__),
+                                  '..', '..', 'testing', 'scripts')
+sys.path.append(RUNNER_SCRIPTS_DIR)
+import run_performance_tests  # pylint: disable=wrong-import-position,import-error
+
 
 class ScriptsSmokeTest(unittest.TestCase):
 
@@ -59,7 +64,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('kraken', stdout)
 
   @decorators.Disabled('chromeos')  # crbug.com/754913
-  def testRunTelemetryBenchmarkAsGoogletest(self):
+  def testRunPerformanceTestsTelemetry_end2end(self):
     options = options_for_unittests.GetCopy()
     browser_type = options.browser_type
     tempdir = tempfile.mkdtemp()
@@ -93,3 +98,68 @@ class ScriptsSmokeTest(unittest.TestCase):
     finally:
       shutil.rmtree(tempdir)
 
+  @decorators.Disabled('win')  # ".exe" is auto-added which breaks Windows.
+  def testRunPerformanceTestsGtest_end2end(self):
+    tempdir = tempfile.mkdtemp()
+    benchmark = 'dummy_gtest'
+    return_code, stdout = self.RunPerfScript(
+        '../../testing/scripts/run_performance_tests.py ' +
+        os.path.join('..', '..', 'tools', 'perf', 'testdata', 'dummy_gtest') +
+        ' --non-telemetry=true '
+        '--this-arg=passthrough '
+        '--gtest-benchmark-name dummy_gtest '
+        '--isolated-script-test-output=/x/y/z/output.json '
+        '--isolated-script-test-output=%s' % (
+            os.path.join(tempdir, 'output.json')
+        ))
+    self.assertEquals(return_code, 0, stdout)
+    try:
+      # By design, run_performance_tests.py does not output test results
+      # to the location passed in by --isolated-script-test-output. Instead
+      # it uses the directory of that file and puts stuff in its own
+      # subdirectories for the purposes of merging later.
+      with open(os.path.join(tempdir, benchmark, 'test_results.json')) as f:
+        test_results = json.load(f)
+        self.assertIsNotNone(
+            test_results, 'json_test_results should be populated: ' + stdout)
+      with open(os.path.join(tempdir, benchmark, 'perf_results.json')) as f:
+        perf_results = json.load(f)
+        self.assertIsNotNone(
+            perf_results, 'json perf results should be populated: ' + stdout)
+    except IOError as e:
+      self.fail('json_test_results should be populated: ' + stdout + str(e))
+    finally:
+      shutil.rmtree(tempdir)
+
+  def testRunPerformanceTestsTelemetryArgsParser(self):
+    options = run_performance_tests.parse_arguments([
+        '../../tools/perf/run_benchmark', '-v', '--browser=release_x64',
+        '--upload-results', '--run-ref-build',
+        '--test-shard-map-filename=win-10-perf_map.json',
+        '--assert-gpu-compositing',
+        r'--isolated-script-test-output=c:\a\b\c\output.json',
+        r'--isolated-script-test-perf-output=c:\a\b\c\perftest-output.json',
+        '--passthrough-arg=--a=b',
+    ])
+    self.assertIn('--assert-gpu-compositing', options.passthrough_args)
+    self.assertIn('--browser=release_x64', options.passthrough_args)
+    self.assertIn('-v', options.passthrough_args)
+    self.assertIn('--a=b', options.passthrough_args)
+    self.assertEqual(options.executable, '../../tools/perf/run_benchmark')
+    self.assertEqual(options.isolated_script_test_output,
+                     r'c:\a\b\c\output.json')
+
+  def testRunPerformanceTestsGtestArgsParser(self):
+     options = run_performance_tests.parse_arguments([
+        'media_perftests', '--non-telemetry=true', '--single-process-tests',
+        '--test-launcher-retry-limit=0',
+        '--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::'
+        '*unoptimized_aligned',
+        '--gtest-benchmark-name', 'media_perftests',
+        '--isolated-script-test-output=/x/y/z/output.json',
+     ])
+     self.assertIn('--single-process-tests', options.passthrough_args)
+     self.assertIn('--test-launcher-retry-limit=0', options.passthrough_args)
+     self.assertEqual(options.executable, 'media_perftests')
+     self.assertEqual(options.isolated_script_test_output,
+                      r'/x/y/z/output.json')
