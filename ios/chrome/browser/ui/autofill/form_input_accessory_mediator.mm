@@ -180,8 +180,6 @@
         [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                               delegate:self];
   }
-  // There is no personal data manager in OTR (incognito).
-  // TODO:(crbug.com/905720) Support Incognito.
   if (personalDataManager) {
     _personalDataManager = personalDataManager;
     _personalDataManagerObserver.reset(
@@ -341,6 +339,7 @@
   // element gets the focus. On iPad the keyboard stays dismissed.
   if (IsIPadIdiom()) {
     [self reset];
+    [self.consumer restoreOriginalKeyboardViewAndClearReferences];
   } else {
     [self pauseCustomKeyboardView];
   }

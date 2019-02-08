@@ -219,6 +219,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   self.keyboardReplacementView = nil;
 }
 
+// TODO:(crbug.com/923857) Merge this method and restoreOriginalKeyboardView.
+- (void)restoreOriginalKeyboardViewAndClearReferences {
+  [self restoreOriginalKeyboardView];
+  self.inputAccessoryView = nil;
+}
+
 - (void)pauseCustomKeyboardView {
   [self removeCustomInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];

@@ -35,9 +35,12 @@
 // Removes the animations on the custom keyboard view.
 - (void)removeAnimationsOnKeyboardView;
 
-// Removes the presented keyboard view and the input accessory view. Also clears
-// the references to them, so nothing shows until a new custom view is passed.
+// Removes the presented keyboard view and the input accessory view.
 - (void)restoreOriginalKeyboardView;
+
+// Same as |restoreOriginalKeyboardView| and also clears the references to them,
+// so nothing shows until a new custom view is passed.
+- (void)restoreOriginalKeyboardViewAndClearReferences;
 
 // Removes the presented keyboard view and the input accessory view until
 // |continueCustomKeyboardView| is called.
