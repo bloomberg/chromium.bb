@@ -14,35 +14,32 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
-class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
+class ProhibitedTechnologiesHandlerTest : public testing::Test {
  public:
   ProhibitedTechnologiesHandlerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
     LoginState::Initialize();
 
-    NetworkStateTest::SetUp();
-
-    test_manager_client()->AddTechnology(shill::kTypeCellular,
-                                         true /* enabled */);
+    helper_.manager_test()->AddTechnology(shill::kTypeCellular,
+                                          true /* enabled */);
 
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
-            network_state_handler(), nullptr /* network_device_handler */));
+            helper_.network_state_handler(),
+            nullptr /* network_device_handler */));
 
     network_profile_handler_.reset(new NetworkProfileHandler());
     network_profile_handler_->Init();
@@ -51,12 +48,12 @@ class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
     prohibited_technologies_handler_.reset(new ProhibitedTechnologiesHandler());
 
     managed_config_handler_->Init(
-        network_state_handler(), network_profile_handler_.get(),
+        helper_.network_state_handler(), network_profile_handler_.get(),
         network_config_handler_.get(), nullptr /* network_device_handler */,
         prohibited_technologies_handler_.get());
 
     prohibited_technologies_handler_->Init(managed_config_handler_.get(),
-                                           network_state_handler());
+                                           helper_.network_state_handler());
 
     base::RunLoop().RunUntilIdle();
 
@@ -75,14 +72,11 @@ class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
   }
 
   void TearDown() override {
-    ShutdownNetworkState();
     prohibited_technologies_handler_.reset();
     managed_config_handler_.reset();
     network_profile_handler_.reset();
     network_config_handler_.reset();
-    NetworkStateTest::TearDown();
     LoginState::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -96,7 +90,7 @@ class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
                    bool user_policy) {
     if (user_policy) {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
-                                         kUserHash, base::ListValue(),
+                                         helper_.UserHash(), base::ListValue(),
                                          global_config);
     } else {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
@@ -106,17 +100,23 @@ class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  NetworkStateHandler* network_state_handler() {
+    return helper_.network_state_handler();
+  }
+
+  base::DictionaryValue global_config_disable_wifi;
+  base::DictionaryValue global_config_disable_wifi_and_cell;
+
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
   std::unique_ptr<ProhibitedTechnologiesHandler>
       prohibited_technologies_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::DictionaryValue global_config_disable_wifi;
-  base::DictionaryValue global_config_disable_wifi_and_cell;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ProhibitedTechnologiesHandlerTest);
 };
 

@@ -15,10 +15,9 @@
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/timer_factory.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
@@ -54,7 +53,7 @@ std::string CreateConfigurationJsonString(const std::string& guid,
 
 }  // namespace
 
-class ConnectionPreserverImplTest : public NetworkStateTest {
+class ConnectionPreserverImplTest : public testing::Test {
  protected:
   ConnectionPreserverImplTest()
       : test_local_device_(multidevice::RemoteDeviceRefBuilder()
@@ -68,9 +67,6 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
   }
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-
     fake_device_sync_client_ =
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_device_sync_client_->set_local_device_metadata(test_local_device_);
@@ -90,7 +86,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
 
     connection_preserver_ = std::make_unique<ConnectionPreserverImpl>(
         fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
-        network_state_handler(), fake_active_host_.get(),
+        helper_.network_state_handler(), fake_active_host_.get(),
         mock_tether_host_response_recorder_.get());
 
     mock_timer_ = new base::MockOneShotTimer();
@@ -99,10 +95,6 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
 
   void TearDown() override {
     connection_preserver_.reset();
-
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
   }
 
   void SimulateSuccessfulHostScan(multidevice::RemoteDeviceRef remote_device,
@@ -165,7 +157,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
   }
 
   void ConnectToWifi() {
-    std::string wifi_service_path = ConfigureService(
+    std::string wifi_service_path = helper_.ConfigureService(
         CreateConfigurationJsonString(kWifiNetworkGuid, shill::kTypeWifi));
   }
 
@@ -178,6 +170,8 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   const multidevice::RemoteDeviceRef test_local_device_;
   const multidevice::RemoteDeviceRefList test_remote_devices_;

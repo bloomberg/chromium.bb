@@ -133,7 +133,8 @@ NetworkStateHandler::~NetworkStateHandler() {
 }
 
 void NetworkStateHandler::Shutdown() {
-  DCHECK(!did_shutdown_);
+  if (did_shutdown_)
+    return;  // May get called twice in tests.
   did_shutdown_ = true;
   for (auto& observer : observers_)
     observer.OnShuttingDown();

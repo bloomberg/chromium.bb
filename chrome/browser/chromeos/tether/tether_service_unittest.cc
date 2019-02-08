@@ -29,16 +29,14 @@
 #include "chromeos/components/tether/tether_host_fetcher_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/cryptauth_enroller.h"
@@ -319,21 +317,20 @@ class FakeMultiDeviceSetupClientImplFactory
 
 }  // namespace
 
-class TetherServiceTest : public chromeos::NetworkStateTest {
+class TetherServiceTest : public testing::Test {
  protected:
-  TetherServiceTest()
-      : NetworkStateTest(), test_devices_(CreateTestDevices()) {}
+  TetherServiceTest() : test_devices_(CreateTestDevices()) {}
   ~TetherServiceTest() override {}
 
   void SetUp() override {
     fake_notification_presenter_ = nullptr;
     mock_timer_ = nullptr;
 
-    chromeos::DBusThreadManager::Initialize();
-    chromeos::NetworkStateTest::SetUp();
+    network_state_test_helper_ =
+        std::make_unique<chromeos::NetworkStateTestHelper>(
+            false /* use_default_devices_and_services */);
 
     chromeos::NetworkConnect::Initialize(nullptr);
-    chromeos::NetworkHandler::Initialize();
 
     TestingProfile::Builder builder;
     profile_ = builder.Build();
@@ -430,11 +427,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
               shutdown_reason_verified_);
 
     chromeos::NetworkConnect::Shutdown();
-    chromeos::NetworkHandler::Shutdown();
-
-    ShutdownNetworkState();
-    chromeos::NetworkStateTest::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
+    network_state_test_helper_.reset();
   }
 
   void SetPrimaryUserLoggedIn() {
@@ -515,18 +508,17 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   bool IsBluetoothPowered() { return is_adapter_powered_; }
 
   void RemoveWifiFromSystem() {
-    chromeos::DBusThreadManager::Get()
-        ->GetShillManagerClient()
-        ->GetTestInterface()
-        ->RemoveTechnology(shill::kTypeWifi);
+    network_state_test_helper_->manager_test()->RemoveTechnology(
+        shill::kTypeWifi);
     base::RunLoop().RunUntilIdle();
   }
 
   void DisconnectDefaultShillNetworks() {
     const chromeos::NetworkState* default_state;
     while ((default_state = network_state_handler()->DefaultNetwork())) {
-      SetServiceProperty(default_state->path(), shill::kStateProperty,
-                         base::Value(shill::kStateIdle));
+      network_state_test_helper_->SetServiceProperty(
+          default_state->path(), shill::kStateProperty,
+          base::Value(shill::kStateIdle));
     }
   }
 
@@ -552,9 +544,18 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     shutdown_reason_verified_ = true;
   }
 
+  chromeos::NetworkStateTestHelper& network_state_test_helper() {
+    return *network_state_test_helper_.get();
+  }
+
+  chromeos::NetworkStateHandler* network_state_handler() {
+    return network_state_test_helper_->network_state_handler();
+  }
+
   const chromeos::multidevice::RemoteDeviceRefList test_devices_;
   const content::TestBrowserThreadBundle thread_bundle_;
 
+  std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
   std::unique_ptr<TestingProfile> profile_;
   chromeos::FakeChromeUserManager* fake_chrome_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
@@ -1153,7 +1154,8 @@ TEST_F(TetherServiceTest, TestIsBluetoothPowered) {
 
 // TODO(https://crbug.com/893878): Fix disabled test.
 TEST_F(TetherServiceTest, DISABLED_TestCellularIsUnavailable) {
-  test_manager_client()->RemoveTechnology(shill::kTypeCellular);
+  network_state_test_helper().manager_test()->RemoveTechnology(
+      shill::kTypeCellular);
   ASSERT_EQ(
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
       network_state_handler()->GetTechnologyState(
@@ -1184,8 +1186,10 @@ TEST_F(TetherServiceTest, DISABLED_TestCellularIsUnavailable) {
 TEST_F(TetherServiceTest, DISABLED_TestCellularIsAvailable) {
   // TODO (lesliewatkins): Investigate why cellular needs to be removed and
   // re-added for NetworkStateHandler to return the correct TechnologyState.
-  test_manager_client()->RemoveTechnology(shill::kTypeCellular);
-  test_manager_client()->AddTechnology(shill::kTypeCellular, false);
+  network_state_test_helper().manager_test()->RemoveTechnology(
+      shill::kTypeCellular);
+  network_state_test_helper().manager_test()->AddTechnology(
+      shill::kTypeCellular, false);
 
   CreateTetherService();
 

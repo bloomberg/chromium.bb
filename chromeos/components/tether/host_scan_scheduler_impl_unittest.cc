@@ -14,13 +14,11 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/fake_host_scanner.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "components/session_manager/core/session_manager.h"
@@ -50,22 +48,22 @@ std::string CreateConfigurationJsonString(const std::string& guid,
 
 }  // namespace
 
-class HostScanSchedulerImplTest : public NetworkStateTest {
+class HostScanSchedulerImplTest : public testing::Test {
  protected:
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
+    helper_ = std::make_unique<NetworkStateTestHelper>(
+        true /* use_default_devices_and_services */);
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
 
-    network_state_handler()->SetTetherTechnologyState(
+    helper_->network_state_handler()->SetTetherTechnologyState(
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     fake_host_scanner_ = std::make_unique<FakeHostScanner>();
     session_manager_ = std::make_unique<session_manager::SessionManager>();
 
     host_scan_scheduler_ = std::make_unique<HostScanSchedulerImpl>(
-        network_state_handler(), fake_host_scanner_.get(),
+        helper_->network_state_handler(), fake_host_scanner_.get(),
         session_manager_.get());
 
     mock_host_scan_batch_timer_ = new base::MockOneShotTimer();
@@ -81,10 +79,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
 
   void TearDown() override {
     host_scan_scheduler_.reset();
-
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
+    helper_.reset();
   }
 
   void RequestScan(const NetworkTypePattern& type) {
@@ -92,9 +87,10 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   }
 
   void InitializeEthernet() {
-    ethernet_service_path_ = ConfigureService(CreateConfigurationJsonString(
-        kEthernetServiceGuid, shill::kTypeEthernet));
-    test_manager_client()->SetManagerProperty(
+    ethernet_service_path_ =
+        helper_->ConfigureService(CreateConfigurationJsonString(
+            kEthernetServiceGuid, shill::kTypeEthernet));
+    helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
   }
 
@@ -103,32 +99,32 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   // default network is set.
   void SetEthernetNetworkDisconnected(
       const std::string& new_default_service_path) {
-    SetServiceProperty(ethernet_service_path_,
-                       std::string(shill::kStateProperty),
-                       base::Value(shill::kStateIdle));
+    helper_->SetServiceProperty(ethernet_service_path_,
+                                std::string(shill::kStateProperty),
+                                base::Value(shill::kStateIdle));
     test_task_runner_->RunUntilIdle();
     if (new_default_service_path.empty())
       return;
 
-    test_manager_client()->SetManagerProperty(
+    helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(new_default_service_path));
   }
 
   void SetEthernetNetworkConnecting() {
-    SetServiceProperty(ethernet_service_path_,
-                       std::string(shill::kStateProperty),
-                       base::Value(shill::kStateAssociation));
+    helper_->SetServiceProperty(ethernet_service_path_,
+                                std::string(shill::kStateProperty),
+                                base::Value(shill::kStateAssociation));
     test_task_runner_->RunUntilIdle();
-    test_manager_client()->SetManagerProperty(
+    helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
   }
 
   void SetEthernetNetworkConnected() {
-    SetServiceProperty(ethernet_service_path_,
-                       std::string(shill::kStateProperty),
-                       base::Value(shill::kStateReady));
+    helper_->SetServiceProperty(ethernet_service_path_,
+                                std::string(shill::kStateProperty),
+                                base::Value(shill::kStateReady));
     test_task_runner_->RunUntilIdle();
-    test_manager_client()->SetManagerProperty(
+    helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
   }
 
@@ -136,13 +132,14 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   // hotspot, and associates the two networks. Returns the service path of the
   // Wifi network.
   std::string AddTetherNetworkState() {
-    network_state_handler()->AddTetherNetworkState(
+    helper_->network_state_handler()->AddTetherNetworkState(
         kTetherGuid, "name", "carrier", 100 /* battery_percentage */,
         100 /* signal strength */, false /* has_connected_to_host */);
-    std::string wifi_service_path = ConfigureService(
+    std::string wifi_service_path = helper_->ConfigureService(
         CreateConfigurationJsonString(kWifiServiceGuid, shill::kTypeWifi));
-    network_state_handler()->AssociateTetherNetworkStateWithWifiNetwork(
-        kTetherGuid, kWifiServiceGuid);
+    helper_->network_state_handler()
+        ->AssociateTetherNetworkStateWithWifiNetwork(kTetherGuid,
+                                                     kWifiServiceGuid);
     return wifi_service_path;
   }
 
@@ -158,9 +155,14 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
         base::TimeDelta::FromSeconds(expected_num_seconds), 1u);
   }
 
+  NetworkStateHandler* network_state_handler() {
+    return helper_->network_state_handler();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string ethernet_service_path_;
 
+  std::unique_ptr<NetworkStateTestHelper> helper_;
   std::unique_ptr<FakeHostScanner> fake_host_scanner_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 

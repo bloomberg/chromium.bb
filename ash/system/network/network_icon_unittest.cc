@@ -12,12 +12,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/tether_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -33,60 +30,54 @@ namespace network_icon {
 
 namespace {
 
-const char kShillManagerClientStubWifiDevice[] = "/device/stub_wifi_device1";
 const char kShillManagerClientStubCellularDevice[] =
     "/device/stub_cellular_device1";
 
 }  // namespace
 
-class NetworkIconTest : public chromeos::NetworkStateTest {
+class NetworkIconTest : public testing::Test {
  public:
   NetworkIconTest() = default;
   ~NetworkIconTest() override = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
     SetUpDefaultNetworkState();
-
-    chromeos::NetworkHandler::Initialize();
-    base::RunLoop().RunUntilIdle();
-
     active_network_icon_ = std::make_unique<ActiveNetworkIcon>();
   }
 
   void TearDown() override {
     active_network_icon_.reset();
     PurgeNetworkIconCache();
+  }
 
-    chromeos::NetworkHandler::Shutdown();
+  std::string ConfigureService(const std::string& shill_json_string) {
+    return helper_.ConfigureService(shill_json_string);
+  }
 
-    ShutdownNetworkState();
-    chromeos::NetworkStateTest::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
+  void SetServiceProperty(const std::string& service_path,
+                          const std::string& key,
+                          const base::Value& value) {
+    helper_.SetServiceProperty(service_path, key, value);
   }
 
   void SetUpDefaultNetworkState() {
-    base::RunLoop().RunUntilIdle();  // Process any pending updates
-    device_test_ = chromeos::DBusThreadManager::Get()
-                       ->GetShillDeviceClient()
-                       ->GetTestInterface();
-    ASSERT_TRUE(device_test_);
-    device_test_->ClearDevices();
-    device_test_->AddDevice(kShillManagerClientStubWifiDevice, shill::kTypeWifi,
-                            "stub_wifi_device1");
-    device_test_->AddDevice(kShillManagerClientStubCellularDevice,
-                            shill::kTypeCellular, "stub_cellular_device1");
+    // NetworkStateTestHelper default has a wifi device only and no services.
 
-    ClearDefaultServices();
+    helper_.device_test()->AddDevice(kShillManagerClientStubCellularDevice,
+                                     shill::kTypeCellular,
+                                     "stub_cellular_device1");
+    base::RunLoop().RunUntilIdle();
 
     wifi1_path_ = ConfigureService(
         R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "idle"})");
+    ASSERT_FALSE(wifi1_path_.empty());
     wifi2_path_ = ConfigureService(
         R"({"GUID": "wifi2_guid", "Type": "wifi", "State": "idle"})");
+    ASSERT_FALSE(wifi2_path_.empty());
     cellular_path_ = ConfigureService(
         R"({"GUID": "cellular_guid", "Type": "cellular", "Technology": "LTE",
             "State": "idle"})");
+    ASSERT_FALSE(cellular_path_.empty());
   }
 
   std::unique_ptr<chromeos::NetworkState> CreateStandaloneNetworkState(
@@ -159,29 +150,31 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
   }
 
   void SetCellularUnavailable() {
-    test_manager_client()->RemoveTechnology(shill::kTypeCellular);
+    helper_.manager_test()->RemoveTechnology(shill::kTypeCellular);
 
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(
         chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-        network_state_handler()->GetTechnologyState(
+        helper_.network_state_handler()->GetTechnologyState(
             chromeos::NetworkTypePattern::Cellular()));
   }
 
   void SetCellularUninitialized() {
-    test_manager_client()->RemoveTechnology(shill::kTypeCellular);
-    test_manager_client()->AddTechnology(shill::kTypeCellular, false);
-    test_manager_client()->SetTechnologyInitializing(shill::kTypeCellular,
-                                                     true);
+    helper_.manager_test()->RemoveTechnology(shill::kTypeCellular);
+    helper_.manager_test()->AddTechnology(shill::kTypeCellular, false);
+    helper_.manager_test()->SetTechnologyInitializing(shill::kTypeCellular,
+                                                      true);
 
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(chromeos::NetworkStateHandler::TechnologyState::
                   TECHNOLOGY_UNINITIALIZED,
-              network_state_handler()->GetTechnologyState(
+              helper_.network_state_handler()->GetTechnologyState(
                   chromeos::NetworkTypePattern::Cellular()));
   }
+
+  chromeos::NetworkStateTestHelper& helper() { return helper_; }
 
   const std::string& wifi1_path() const { return wifi1_path_; }
   const std::string& wifi2_path() const { return wifi2_path_; }
@@ -189,10 +182,11 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
 
   IconType icon_type_ = ICON_TYPE_TRAY_REGULAR;
 
-  chromeos::ShillDeviceClient::TestInterface* device_test_;
-
  private:
   const base::MessageLoop message_loop_;
+
+  chromeos::NetworkStateTestHelper helper_{
+      false /* use_default_devices_and_services */};
 
   // Preconfigured service paths:
   std::string wifi1_path_;
@@ -314,13 +308,13 @@ TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularUninitialized) {
 TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularScanning) {
   SetCellularUninitialized();
 
-  test_manager_client()->AddTechnology(shill::kTypeCellular, true);
-
-  device_test_->SetDeviceProperty(kShillManagerClientStubCellularDevice,
-                                  shill::kScanningProperty, base::Value(true),
-                                  /*notify_changed=*/true);
+  helper().manager_test()->AddTechnology(shill::kTypeCellular, true);
+  helper().device_test()->SetDeviceProperty(
+      kShillManagerClientStubCellularDevice, shill::kScanningProperty,
+      base::Value(true),
+      /*notify_changed=*/true);
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(network_state_handler()->GetScanningByType(
+  ASSERT_TRUE(helper().network_state_handler()->GetScanningByType(
       chromeos::NetworkTypePattern::Cellular()));
 
   EXPECT_EQ(IDS_ASH_STATUS_TRAY_MOBILE_SCANNING, GetCellularUninitializedMsg());
