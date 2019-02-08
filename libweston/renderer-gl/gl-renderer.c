@@ -1411,9 +1411,10 @@ gl_renderer_repaint_output(struct weston_output *output,
 			    2.0 / output->current_mode->width,
 			    -2.0 / output->current_mode->height, 1);
 
-	/* if debugging, redraw everything outside the damage to clean up
-	 * debug lines from the previous draw on this buffer:
-	 */
+	/* In fan debug mode, redraw everything to make sure that we clear any
+	 * fans left over from previous draws on this buffer.
+	 * This precludes the use of EGL_EXT_swap_buffers_with_damage, since
+	 * we damage the whole area. */
 	if (gr->fan_debug) {
 		pixman_region32_t undamaged;
 		pixman_region32_init(&undamaged);
@@ -1446,7 +1447,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 
 	go->end_render_sync = create_render_sync(gr);
 
-	if (gr->swap_buffers_with_damage) {
+	if (gr->swap_buffers_with_damage && !gr->fan_debug) {
 		pixman_region32_init(&buffer_damage);
 		weston_transformed_region(output->width, output->height,
 					  output->transform,
