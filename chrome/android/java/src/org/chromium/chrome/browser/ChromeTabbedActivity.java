@@ -271,6 +271,11 @@ public class ChromeTabbedActivity
     private boolean mUIWithNativeInitialized;
 
     private Boolean mMergeTabsOnResume;
+    /**
+     * Used to observe state changes to a different ChromeTabbedActivity instances to determine
+     * when to merge tabs if applicable.
+     */
+    private ApplicationStatus.ActivityStateListener mOtherCTAStateObserver;
 
     private Boolean mIsAccessibilityTabSwitcherEnabled;
 
@@ -718,6 +723,8 @@ public class ChromeTabbedActivity
         mLocaleManager.stopObservingPhoneChanges();
 
         mScreenshotMonitor.stopMonitoring();
+
+        removeOtherCTAStateObserver();
 
         super.onPauseWithNative();
     }
@@ -2297,10 +2304,46 @@ public class ChromeTabbedActivity
             // If the activity is currently resumed when multi-window mode is exited, try to merge
             // tabs from the other activity instance.
             if (ApplicationStatus.getStateForActivity(this) == ActivityState.RESUMED) {
-                maybeMergeTabs();
+                ChromeTabbedActivity otherResumedCTA = getOtherResumedCTA();
+                if (otherResumedCTA == null) {
+                    maybeMergeTabs();
+                } else {
+                    // Wait for the other ChromeTabbedActivity to pause before trying to merge
+                    // tabs.
+                    mOtherCTAStateObserver = new ApplicationStatus.ActivityStateListener() {
+                        @Override
+                        public void onActivityStateChange(Activity activity, int newState) {
+                            if (newState == ActivityState.PAUSED) {
+                                removeOtherCTAStateObserver();
+                                maybeMergeTabs();
+                            }
+                        }
+                    };
+                    ApplicationStatus.registerStateListenerForActivity(
+                            mOtherCTAStateObserver, otherResumedCTA);
+                }
             } else {
                 mMergeTabsOnResume = true;
             }
+        }
+    }
+
+    private @Nullable ChromeTabbedActivity getOtherResumedCTA() {
+        Class<?> otherWindowActivityClass =
+                MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(this);
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (activity.getClass().equals(otherWindowActivityClass)
+                    && ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED) {
+                return (ChromeTabbedActivity) activity;
+            }
+        }
+        return null;
+    }
+
+    private void removeOtherCTAStateObserver() {
+        if (mOtherCTAStateObserver != null) {
+            ApplicationStatus.unregisterActivityStateListener(mOtherCTAStateObserver);
+            mOtherCTAStateObserver = null;
         }
     }
 
