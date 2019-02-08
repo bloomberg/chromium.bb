@@ -87,6 +87,13 @@ class MachineLevelUserCloudPolicyControllerObserver
     g_browser_process->browser_policy_connector()
         ->machine_level_user_cloud_policy_controller()
         ->RemoveObserver(this);
+    // If enrollment fails, the manager should be marked as initialized
+    // immediately. Otherwise, this will be done after the policy data is
+    // downloaded.
+    EXPECT_EQ(!succeeded, g_browser_process->browser_policy_connector()
+                              ->machine_level_user_cloud_policy_manager()
+                              ->IsInitializationComplete(
+                                  PolicyDomain::POLICY_DOMAIN_CHROME));
   }
 
   void SetShouldSucceed(bool should_succeed) {

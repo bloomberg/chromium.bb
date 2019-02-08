@@ -96,6 +96,10 @@ void MachineLevelUserCloudPolicyStore::SetupRegistration(
   machine_client_id_ = machine_client_id;
 }
 
+void MachineLevelUserCloudPolicyStore::InitWithoutToken() {
+  NotifyStoreError();
+}
+
 void MachineLevelUserCloudPolicyStore::Validate(
     std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
     std::unique_ptr<enterprise_management::PolicySigningKey> key,
