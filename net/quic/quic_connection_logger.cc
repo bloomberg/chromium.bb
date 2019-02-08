@@ -598,15 +598,18 @@ void QuicConnectionLogger::OnProtocolVersionMismatch(
 
 void QuicConnectionLogger::OnPacketHeader(
     const quic::QuicPacketHeader& header) {
+  if (!first_received_packet_number_.IsInitialized()) {
+    first_received_packet_number_ = header.packet_number;
+  } else if (header.packet_number < first_received_packet_number_) {
+    // Ignore packets with packet numbers less than
+    // first_received_packet_number_.
+    return;
+  }
   ++num_packets_received_;
-  if (!largest_received_packet_number_.IsInitialized() ||
-      largest_received_packet_number_ < header.packet_number) {
-    // TODO(fayang): Fix this as this check assume the first received packet
-    // is 1.
-    uint64_t delta = header.packet_number.ToUint64();
-    if (largest_received_packet_number_.IsInitialized()) {
-      delta = header.packet_number - largest_received_packet_number_;
-    }
+  if (!largest_received_packet_number_.IsInitialized()) {
+    largest_received_packet_number_ = header.packet_number;
+  } else if (largest_received_packet_number_ < header.packet_number) {
+    uint64_t delta = header.packet_number - largest_received_packet_number_;
     if (delta > 1) {
       // There is a gap between the largest packet previously received and
       // the current packet.  This indicates either loss, or out-of-order
@@ -617,9 +620,9 @@ void QuicConnectionLogger::OnPacketHeader(
     }
     largest_received_packet_number_ = header.packet_number;
   }
-  // TODO(fayang): Fix this as this check assume the first received packet is 1.
-  if (header.packet_number < quic::QuicPacketNumber(received_packets_.size())) {
-    received_packets_[static_cast<size_t>(header.packet_number.ToUint64())] =
+  if (header.packet_number - first_received_packet_number_ <
+      received_packets_.size()) {
+    received_packets_[header.packet_number - first_received_packet_number_] =
         true;
   }
   if (last_received_packet_number_.IsInitialized() &&
@@ -632,13 +635,7 @@ void QuicConnectionLogger::OnPacketHeader(
         static_cast<base::HistogramBase::Sample>(last_received_packet_number_ -
                                                  header.packet_number));
   } else if (no_packet_received_after_ping_) {
-    if (!last_received_packet_number_.IsInitialized()) {
-      // TODO(fayang): Fix this as this check assume the first received packet
-      // is 1.
-      UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PacketGapReceivedNearPing",
-                              static_cast<base::HistogramBase::Sample>(
-                                  header.packet_number.ToUint64()));
-    } else {
+    if (last_received_packet_number_.IsInitialized()) {
       UMA_HISTOGRAM_COUNTS_1M(
           "Net.QuicSession.PacketGapReceivedNearPing",
           static_cast<base::HistogramBase::Sample>(
@@ -661,12 +658,11 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
 
 void QuicConnectionLogger::OnAckFrame(const quic::QuicAckFrame& frame) {
   const size_t kApproximateLargestSoloAckBytes = 100;
-  // TODO(fayang): Fix this as this check assume the first received packet is 1.
-  if (last_received_packet_number_ <
-          quic::QuicPacketNumber(received_acks_.size()) &&
+  if (last_received_packet_number_ - first_received_packet_number_ <
+          received_acks_.size() &&
       last_received_packet_size_ < kApproximateLargestSoloAckBytes) {
-    received_acks_[static_cast<size_t>(
-        last_received_packet_number_.ToUint64())] = true;
+    received_acks_[last_received_packet_number_ -
+                   first_received_packet_number_] = true;
   }
 
   if (!net_log_is_capturing_)
@@ -845,14 +841,12 @@ base::HistogramBase* QuicConnectionLogger::Get6PacketHistogram(
 }
 
 float QuicConnectionLogger::ReceivedPacketLossRate() const {
-  // TODO(fayang): Fix this as this check assume the first received packet is 1.
-  if (!largest_received_packet_number_.IsInitialized() ||
-      largest_received_packet_number_ <=
-          quic::QuicPacketNumber(num_packets_received_))
+  if (!largest_received_packet_number_.IsInitialized())
     return 0.0f;
-  float num_received =
-      largest_received_packet_number_.ToUint64() - num_packets_received_;
-  return num_received / largest_received_packet_number_.ToUint64();
+  float num_packets =
+      largest_received_packet_number_ - first_received_packet_number_ + 1;
+  float num_missing = num_packets - num_packets_received_;
+  return num_missing / num_packets;
 }
 
 void QuicConnectionLogger::OnRttChanged(quic::QuicTime::Delta rtt) const {
@@ -875,9 +869,8 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   // histogram.  (e.g., if we only got 5 packets, but lost 1, we'd otherwise
   // record a 20% loss in this histogram!). We may still get some strange data
   // (1 loss in 22 is still high :-/).
-  // TODO(fayang): Fix this as this check assume the first received packet is 1.
   if (!largest_received_packet_number_.IsInitialized() ||
-      largest_received_packet_number_ <= quic::QuicPacketNumber(21))
+      largest_received_packet_number_ - first_received_packet_number_ < 22)
     return;
 
   string prefix("Net.QuicSession.PacketLossRate_");
