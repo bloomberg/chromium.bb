@@ -340,8 +340,7 @@ void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
 void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
   layer_ = layer;
   if (!layer_) {
-    if (layer_tree_view())
-      layer_tree_view()->ClearRootLayer();
+    RenderWidget::SetRootLayer(nullptr);
     return;
   }
   UpdateLayerBounds();

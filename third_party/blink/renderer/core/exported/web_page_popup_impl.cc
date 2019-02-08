@@ -360,17 +360,10 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
   WidgetClient()->SetWindowRect(rect_in_screen);
 }
 
-void WebPagePopupImpl::SetRootLayer(cc::Layer* layer) {
-  root_layer_ = layer;
-
+void WebPagePopupImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   is_accelerated_compositing_active_ = !!layer;
-  if (layer_tree_view_) {
-    if (root_layer_) {
-      layer_tree_view_->SetRootLayer(root_layer_);
-    } else {
-      layer_tree_view_->ClearRootLayer();
-    }
-  }
+  root_layer_ = std::move(layer);
+  widget_client_->SetRootLayer(root_layer_);
 }
 
 void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(

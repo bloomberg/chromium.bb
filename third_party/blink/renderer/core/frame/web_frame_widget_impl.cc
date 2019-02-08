@@ -1022,7 +1022,7 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
 
   TRACE_EVENT0("blink",
                "WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(true)");
-  layer_tree_view_->SetRootLayer(root_layer_);
+  Client()->SetRootLayer(root_layer_);
   UpdateLayerTreeViewport();
   is_accelerated_compositing_active_ = true;
 }
@@ -1039,15 +1039,15 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   root_graphics_layer_ = layer;
   root_layer_ = layer ? layer->CcLayer() : nullptr;
 
-  SetIsAcceleratedCompositingActive(layer);
+  SetIsAcceleratedCompositingActive(!!layer);
 
+  // TODO(danakj): Is this called after Close?? (With a null layer?)
   if (!layer_tree_view_)
     return;
 
-  if (root_layer_)
-    layer_tree_view_->SetRootLayer(root_layer_);
-  else
-    layer_tree_view_->ClearRootLayer();
+  // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
+  // if it's not null..
+  Client()->SetRootLayer(root_layer_);
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
@@ -1055,13 +1055,13 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 
   SetIsAcceleratedCompositingActive(!!layer);
 
+  // TODO(danakj): Is this called after Close?? (With a null layer?)
   if (!layer_tree_view_)
     return;
 
-  if (root_layer_)
-    layer_tree_view_->SetRootLayer(root_layer_);
-  else
-    layer_tree_view_->ClearRootLayer();
+  // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
+  // if it's not null..
+  Client()->SetRootLayer(root_layer_);
 }
 
 WebLayerTreeView* WebFrameWidgetImpl::GetLayerTreeView() const {

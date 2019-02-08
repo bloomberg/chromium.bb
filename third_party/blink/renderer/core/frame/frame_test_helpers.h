@@ -195,6 +195,7 @@ class TestWebWidgetClient : public WebWidgetClient {
 
   // WebWidgetClient:
   void ScheduleAnimation() override { animation_scheduled_ = true; }
+  void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
 
