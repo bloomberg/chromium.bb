@@ -7,6 +7,7 @@
 
 import collections
 import glob
+import logging
 import os
 import subprocess
 import unittest
@@ -605,4 +606,6 @@ class DeviceTestRunnerTest(TestCase):
 
 
 if __name__ == '__main__':
+  logging.basicConfig(format='[%(asctime)s:%(levelname)s] %(message)s',
+    level=logging.DEBUG, datefmt='%I:%M:%S')
   unittest.main()

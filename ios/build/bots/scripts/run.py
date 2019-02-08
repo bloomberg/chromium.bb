@@ -19,6 +19,7 @@ Sample usage:
 
 import argparse
 import json
+import logging
 import os
 import sys
 import traceback
@@ -28,6 +29,9 @@ import xcodebuild_runner
 
 
 def main():
+  logging.basicConfig(format='[%(asctime)s:%(levelname)s] %(message)s',
+    level=logging.DEBUG, datefmt='%I:%M:%S')
+
   args, test_args = parse_args()
 
   summary = {}
