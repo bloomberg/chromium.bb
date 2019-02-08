@@ -4,14 +4,15 @@
 
 #include "chrome/credential_provider/test/gcp_fakes.h"
 
-#include <utility>
+#include <windows.h>
 
 #include <lm.h>
 #include <sddl.h>
-#include <windows.h>
 
 #include <atlcomcli.h>
 #include <atlconv.h>
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -259,7 +260,6 @@ HRESULT FakeOSUserManager::CreateNewSID(PSID* sid) {
   return CreateArbitrarySid(++next_rid_, sid);
 }
 
-// Static.
 HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
                                             const base::string16& password,
                                             const base::string16& fullname,
