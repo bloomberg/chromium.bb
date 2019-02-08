@@ -486,3 +486,31 @@ testcase.newFolderInDownloads = async function() {
   await remoteCall.waitForElement(
       appId, '#gear-menu-newfolder:not([disabled]):not([hidden])');
 };
+
+/**
+ * Tests that Send feedback appears in the gear menu.
+ */
+testcase.showSendFeedbackAction = async function() {
+  const entrySet = [ENTRIES.newlyAdded];
+
+  // Open Files.App on Downloads.
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
+  await remoteCall.waitForElement(appId, '#file-list');
+
+  // Wait for the gear menu button to appear.
+  await remoteCall.waitForElement(appId, '#gear-button');
+
+  // Click the gear menu button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-button']));
+
+  // Wait for the gear menu to appear.
+  await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
+
+  // Check #send-feedback is shown and it's enabled.
+  await remoteCall.waitForElement(
+      appId,
+      '#gear-menu:not([hidden]) cr-menu-item' +
+          '[command=\'#send-feedback\']' +
+          ':not([disabled]):not([hidden])');
+};

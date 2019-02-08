@@ -245,6 +245,9 @@
   <message name="IDS_FILE_BROWSER_CLOSE_VOLUME_BUTTON_LABEL" desc="Title of the action for closing either an archive volume or a volume provided by an extension.">
     Close
   </message>
+  <message name="IDS_FILE_BROWSER_SEND_FEEDBACK_BUTTON_LABEL" desc="Title for the action of sending user feedback.">
+    Send feedback
+  </message>
   <message name="IDS_FILE_BROWSER_ADD_NEW_SERVICES_BUTTON_LABEL" desc="Title of the button in the left nav to add new services (file systems) to the Files app.">
     Add new service
   </message>

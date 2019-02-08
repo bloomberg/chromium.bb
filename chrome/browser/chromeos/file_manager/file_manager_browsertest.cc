@@ -876,7 +876,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles"),
         TestCase("enableToggleHiddenAndroidFoldersShowsHiddenFiles"),
         TestCase("hideCurrentDirectoryByTogglingHiddenAndroidFolders"),
-        TestCase("newFolderInDownloads")));
+        TestCase("newFolderInDownloads"),
+        TestCase("showSendFeedbackAction")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Crostini, /* crostini.js */
