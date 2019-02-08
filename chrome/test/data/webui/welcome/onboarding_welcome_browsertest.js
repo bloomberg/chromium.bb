@@ -154,3 +154,23 @@ OnboardingWelcomeSetAsDefaultTest = class extends OnboardingWelcomeBrowserTest {
 TEST_F('OnboardingWelcomeSetAsDefaultTest', 'All', function() {
   mocha.run();
 });
+
+OnboardingWelcomeNtpBackgroundTest =
+    class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/ntp_background/nux_ntp_background.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'nux_ntp_background_test.js',
+      'test_ntp_background_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeNtpBackgroundTest', 'All', function() {
+  mocha.run();
+});
