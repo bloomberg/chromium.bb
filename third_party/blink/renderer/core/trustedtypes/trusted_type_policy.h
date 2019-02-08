@@ -56,7 +56,7 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
 
  private:
   String name_;
-  Member<TrustedTypePolicyOptions> policy_options_;
+  TraceWrapperMember<TrustedTypePolicyOptions> policy_options_;
 };
 
 }  // namespace blink
