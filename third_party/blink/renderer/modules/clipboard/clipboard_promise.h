@@ -17,9 +17,10 @@
 
 namespace blink {
 
-class DataTransfer;
 class ScriptPromiseResolver;
 
+// TODO(huangdarwin): Split this class up. There are unrelated responsibilities
+// being handled in this class.
 class ClipboardPromise final
     : public GarbageCollectedFinalized<ClipboardPromise>,
       public ContextLifecycleObserver {
@@ -32,14 +33,10 @@ class ClipboardPromise final
 
   static ScriptPromise CreateForRead(ScriptState*);
   static ScriptPromise CreateForReadText(ScriptState*);
-  // TODO (crbug.com/916823): Move ReadImage and WriteImage into Read/Write
-  // functions, so that the API surface doesn't change.
-  static ScriptPromise CreateForReadImage(ScriptState*);
-  static ScriptPromise CreateForWrite(ScriptState*, DataTransfer*);
+  static ScriptPromise CreateForWrite(ScriptState*, Blob*);
   static ScriptPromise CreateForWriteText(ScriptState*, const String&);
-  static ScriptPromise CreateForWriteImage(ScriptState*, Blob*);
 
-  void OnLoadComplete(DOMArrayBuffer*);
+  void OnLoadBufferComplete(DOMArrayBuffer*);
   void Reject();
 
   void Trace(blink::Visitor*) override;
@@ -47,11 +44,6 @@ class ClipboardPromise final
  private:
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
   mojom::blink::PermissionService* GetPermissionService();
-
-  void DecodeImageOnBackgroundThread(
-      scoped_refptr<base::SingleThreadTaskRunner>,
-      DOMArrayBuffer*);
-  void ResolveAndWriteImage(sk_sp<SkImage>);
 
   bool IsFocusedDocument(ExecutionContext*);
 
@@ -66,26 +58,40 @@ class ClipboardPromise final
   void HandleReadText();
   void HandleReadTextWithPermission(mojom::blink::PermissionStatus);
 
-  void HandleReadImage();
-  void HandleReadImageWithPermission(mojom::blink::PermissionStatus);
-
-  void HandleWrite(DataTransfer*);
+  void HandleWrite(Blob*);
   void HandleWriteWithPermission(mojom::blink::PermissionStatus);
 
   void HandleWriteText(const String&);
   void HandleWriteTextWithPermission(mojom::blink::PermissionStatus);
 
-  void HandleWriteImage(Blob*);
-  void HandleWriteImageWithPermission(mojom::blink::PermissionStatus);
+  void DecodeImageOnBackgroundThread(
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      DOMArrayBuffer*);
+  void DecodeTextOnBackgroundThread(scoped_refptr<base::SingleThreadTaskRunner>,
+                                    DOMArrayBuffer*);
 
+  void ResolveAndWriteImage(sk_sp<SkImage>);
+  void ResolveAndWriteText(const String&);
+
+  // Detect whether an image or text is on the clipboard.
+  // Prioritizes image/png over text/plain over none.
+  String TypeToRead();
+
+  // Get Blob containing System Clipboard contents.
+  Blob* ReadTextAsBlob();
+  Blob* ReadImageAsBlob();
+
+  // Because v8 is thread-hostile, ensure that all interactions with ScriptState
+  // and ScriptPromiseResolver occur on the main thread.
   Member<ScriptState> script_state_;
   Member<ScriptPromiseResolver> script_promise_resolver_;
+
   std::unique_ptr<ClipboardFileReader> file_reader_;
   mojom::blink::PermissionServicePtr permission_service_;
   mojom::ClipboardBuffer buffer_;
 
   String write_data_;
-  Member<Blob> write_image_data_;
+  Member<Blob> blob_data_;
 
   scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 

@@ -11,29 +11,19 @@
     [MeasureAs=AsyncClipboardAPIRead,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
-    ] Promise<DataTransfer> read();
+    ] Promise<Blob> read();
 
     [MeasureAs=AsyncClipboardAPIReadText,
      CallWith=ScriptState
     ] Promise<DOMString> readText();
 
-    [
-     CallWith=ScriptState,
-     RuntimeEnabled=AsyncClipboardImages
-    ] Promise<Blob> readImageExperimental();
-
 
     [MeasureAs=AsyncClipboardAPIWrite,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
-    ] Promise<void> write(DataTransfer data);
+    ] Promise<void> write(Blob data);
 
     [MeasureAs=AsyncClipboardAPIWriteText,
      CallWith=ScriptState
     ] Promise<void> writeText(DOMString data);
-
-    [
-     CallWith=ScriptState,
-     RuntimeEnabled=AsyncClipboardImages
-    ] Promise<void> writeImageExperimental(Blob data);
 };

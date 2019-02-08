@@ -20,10 +20,6 @@ class ClipboardPromise;
 //
 // Created for the intent of use with clipboard, but may be generic enough for
 // other uses.
-//
-// TODO (crbug.com/916821): This class is very similar to ImageBitmapFactories::
-// ImageBitmapLoader. Ask ImageBitmapLoader creators if there's potential to
-// merge code and reduce duplicate code.
 class ClipboardFileReader final : public FileReaderLoaderClient {
  public:
   ClipboardFileReader(Blob*,

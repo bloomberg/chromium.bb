@@ -13,7 +13,6 @@
 
 namespace blink {
 
-class DataTransfer;
 class ScriptState;
 
 class Clipboard : public EventTargetWithInlineData,
@@ -27,11 +26,9 @@ class Clipboard : public EventTargetWithInlineData,
 
   ScriptPromise read(ScriptState*);
   ScriptPromise readText(ScriptState*);
-  ScriptPromise readImageExperimental(ScriptState*);
 
-  ScriptPromise write(ScriptState*, DataTransfer*);
+  ScriptPromise write(ScriptState*, Blob*);
   ScriptPromise writeText(ScriptState*, const String&);
-  ScriptPromise writeImageExperimental(ScriptState*, Blob*);
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

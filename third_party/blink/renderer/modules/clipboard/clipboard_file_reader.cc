@@ -28,7 +28,7 @@ ClipboardFileReader::~ClipboardFileReader() = default;
 // FileReaderLoaderClient implementation.
 void ClipboardFileReader::DidFinishLoading() {
   DOMArrayBuffer* array_buffer = loader_->ArrayBufferResult();
-  promise_->OnLoadComplete(array_buffer);
+  promise_->OnLoadBufferComplete(array_buffer);
 }
 
 void ClipboardFileReader::DidFail(FileErrorCode error_code) {
