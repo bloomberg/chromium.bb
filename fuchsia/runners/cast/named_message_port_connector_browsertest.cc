@@ -11,10 +11,10 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/common/mem_buffer_util.h"
-#include "fuchsia/common/test/test_common.h"
-#include "fuchsia/common/test/webrunner_browser_test.h"
+#include "fuchsia/engine/test/promise.h"
+#include "fuchsia/engine/test/test_common.h"
+#include "fuchsia/engine/test/webrunner_browser_test.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
-#include "fuchsia/test/promise.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@
 using NavigationDetails = chromium::web::NavigationEvent;
 
 class NamedMessagePortConnectorTest
-    : public webrunner::WebRunnerBrowserTest,
+    : public cr_fuchsia::test::WebRunnerBrowserTest,
       public chromium::web::NavigationEventObserver {
  public:
   NamedMessagePortConnectorTest()
@@ -37,7 +37,7 @@ class NamedMessagePortConnectorTest
 
  protected:
   void SetUpOnMainThread() override {
-    webrunner::WebRunnerBrowserTest::SetUpOnMainThread();
+    cr_fuchsia::test::WebRunnerBrowserTest::SetUpOnMainThread();
     frame_ = WebRunnerBrowserTest::CreateFrame(this);
   }
 
@@ -77,13 +77,13 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
   frame_->GetNavigationController(controller.NewRequest());
 
   base::RunLoop receive_port_run_loop;
-  webrunner::Promise<chromium::web::MessagePortPtr> message_port(
+  cr_fuchsia::test::Promise<chromium::web::MessagePortPtr> message_port(
       receive_port_run_loop.QuitClosure());
   connector_.Register(
       "hello",
-      base::BindRepeating(
-          &webrunner::Promise<chromium::web::MessagePortPtr>::ReceiveValue,
-          base::Unretained(&message_port)),
+      base::BindRepeating(&cr_fuchsia::test::Promise<
+                              chromium::web::MessagePortPtr>::ReceiveValue,
+                          base::Unretained(&message_port)),
       frame_.get());
   CheckLoadUrl(test_url.spec(), controller.get());
 
@@ -91,29 +91,29 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
 
   chromium::web::WebMessage msg;
   msg.data = webrunner::MemBufferFromString("ping");
-  webrunner::Promise<bool> post_result;
+  cr_fuchsia::test::Promise<bool> post_result;
   (*message_port)
-      ->PostMessage(std::move(msg), webrunner::ConvertToFitFunction(
+      ->PostMessage(std::move(msg), cr_fuchsia::test::ConvertToFitFunction(
                                         post_result.GetReceiveCallback()));
 
   std::vector<std::string> test_messages = {"early 1", "early 2", "ack ping"};
   for (std::string expected_msg : test_messages) {
     base::RunLoop run_loop;
-    webrunner::Promise<chromium::web::WebMessage> message_receiver(
+    cr_fuchsia::test::Promise<chromium::web::WebMessage> message_receiver(
         run_loop.QuitClosure());
     (*message_port)
-        ->ReceiveMessage(webrunner::ConvertToFitFunction(
+        ->ReceiveMessage(cr_fuchsia::test::ConvertToFitFunction(
             message_receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ(webrunner::StringFromMemBufferOrDie(message_receiver->data),
-              expected_msg);
+    EXPECT_EQ(
+        cr_fuchsia::test::StringFromMemBufferOrDie(message_receiver->data),
+        expected_msg);
   }
 
   // Ensure that the MessagePort is dropped when navigating away.
   {
     base::RunLoop run_loop;
-    (*message_port).set_error_handler([&run_loop](zx_status_t status) {
-      EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+    (*message_port).set_error_handler([&run_loop](zx_status_t) {
       run_loop.Quit();
     });
     controller->LoadUrl("about:blank", nullptr);

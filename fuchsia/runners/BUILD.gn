@@ -80,7 +80,7 @@ fuchsia_package_runner("cast_runner") {
   package_name_override = "cast_runner"
   install_only = true
   package_deps = [ [
-        "//fuchsia:service_pkg",
+        "//fuchsia/engine:web_engine",
         "chromium",
       ] ]
 }
@@ -114,12 +114,12 @@ test("cast_runner_integration_tests") {
     ":cast_runner_test_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//fuchsia:test_support",
+    "//fuchsia/engine:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]
   package_deps = [ [
-        "//fuchsia:service_pkg",
+        "//fuchsia/engine:web_engine",
         "chromium",
       ] ]
 }
@@ -137,9 +137,9 @@ test("cast_runner_browsertests") {
     ":cast_runner_core",
     "//base/test:test_support",
     "//content/public/browser",
-    "//fuchsia:browsertest_common",
     "//fuchsia:mem_buffer_common",
-    "//fuchsia:test_support",
+    "//fuchsia/engine:browsertest_core",
+    "//fuchsia/engine:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/ozone",
@@ -168,7 +168,7 @@ fuchsia_package_runner("web_runner") {
   package_name_override = "web_runner"
   install_only = true
   package_deps = [ [
-        "//fuchsia:service_pkg",
+        "//fuchsia/engine:web_engine",
         "chromium",
       ] ]
 }
@@ -181,14 +181,14 @@ test("web_runner_integration_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//fuchsia:test_support",
+    "//fuchsia/engine:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:sys",
   ]
   package_deps = [
     [
-      "//fuchsia:service_pkg",
+      "//fuchsia/engine:web_engine",
       "chromium",
     ],
     [

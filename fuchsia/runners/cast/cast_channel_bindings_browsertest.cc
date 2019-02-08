@@ -13,10 +13,10 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/common/mem_buffer_util.h"
-#include "fuchsia/common/test/test_common.h"
-#include "fuchsia/common/test/webrunner_browser_test.h"
+#include "fuchsia/engine/test/promise.h"
+#include "fuchsia/engine/test/test_common.h"
+#include "fuchsia/engine/test/webrunner_browser_test.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
-#include "fuchsia/test/promise.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 
@@ -30,7 +30,7 @@ void OnError() {
   ADD_FAILURE();
 }
 
-class CastChannelBindingsTest : public webrunner::WebRunnerBrowserTest,
+class CastChannelBindingsTest : public cr_fuchsia::test::WebRunnerBrowserTest,
                                 public chromium::web::NavigationEventObserver,
                                 public chromium::cast::CastChannel {
  public:
@@ -43,7 +43,7 @@ class CastChannelBindingsTest : public webrunner::WebRunnerBrowserTest,
 
  protected:
   void SetUpOnMainThread() override {
-    webrunner::WebRunnerBrowserTest::SetUpOnMainThread();
+    cr_fuchsia::test::WebRunnerBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
     frame_ = WebRunnerBrowserTest::CreateFrame(this);
     connector_ = std::make_unique<NamedMessagePortConnector>();
@@ -92,12 +92,12 @@ class CastChannelBindingsTest : public webrunner::WebRunnerBrowserTest,
 
   std::string ReadStringFromChannel() {
     base::RunLoop run_loop;
-    webrunner::Promise<chromium::web::WebMessage> message(
+    cr_fuchsia::test::Promise<chromium::web::WebMessage> message(
         run_loop.QuitClosure());
     connected_channel_->ReceiveMessage(
-        webrunner::ConvertToFitFunction(message.GetReceiveCallback()));
+        cr_fuchsia::test::ConvertToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
-    return webrunner::StringFromMemBufferOrDie(message->data);
+    return cr_fuchsia::test::StringFromMemBufferOrDie(message->data);
   }
 
   void CheckLoadUrl(const std::string& url,
@@ -190,10 +190,10 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
       message.data = webrunner::MemBufferFromString("hello");
 
       base::RunLoop run_loop;
-      webrunner::Promise<bool> post_result(run_loop.QuitClosure());
-      connected_channel_->PostMessage(
-          std::move(message),
-          webrunner::ConvertToFitFunction(post_result.GetReceiveCallback()));
+      cr_fuchsia::test::Promise<bool> post_result(run_loop.QuitClosure());
+      connected_channel_->PostMessage(std::move(message),
+                                      cr_fuchsia::test::ConvertToFitFunction(
+                                          post_result.GetReceiveCallback()));
       run_loop.Run();
       EXPECT_EQ(true, *post_result);
     }
