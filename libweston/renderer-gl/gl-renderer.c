@@ -1480,8 +1480,8 @@ gl_renderer_repaint_output(struct weston_output *output,
 
 	/* In fan debug mode, redraw everything to make sure that we clear any
 	 * fans left over from previous draws on this buffer.
-	 * This precludes the use of EGL_EXT_swap_buffers_with_damage, since
-	 * we damage the whole area. */
+	 * This precludes the use of EGL_EXT_swap_buffers_with_damage and
+	 * EGL_KHR_partial_update, since we damage the whole area. */
 	if (gr->fan_debug) {
 		pixman_region32_t undamaged;
 		pixman_region32_init(&undamaged);
@@ -1508,6 +1508,20 @@ gl_renderer_repaint_output(struct weston_output *output,
 	 * buffer is up to date. */
 	pixman_region32_union(&total_damage, &previous_damage, output_damage);
 	border_status |= go->border_status;
+
+	if (gr->has_egl_partial_update && !gr->fan_debug) {
+		int n_egl_rects;
+		EGLint *egl_rects;
+
+		/* For partial_update, we need to pass the region which has
+		 * changed since we last rendered into this specific buffer;
+		 * this is total_damage. */
+		pixman_region_to_egl_y_invert(output, &total_damage,
+					      &egl_rects, &n_egl_rects);
+		gr->set_damage_region(gr->egl_display, go->egl_surface,
+				      egl_rects, n_egl_rects);
+		free(egl_rects);
+	}
 
 	repaint_views(output, &total_damage);
 
