@@ -129,6 +129,12 @@ bool FidoDeviceAuthenticator::IsPaired() const {
   return device_->IsPaired();
 }
 
+#if defined(OS_WIN)
+bool FidoDeviceAuthenticator::IsWinNativeApiAuthenticator() const {
+  return false;
+}
+#endif  // defined(OS_WIN)
+
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);

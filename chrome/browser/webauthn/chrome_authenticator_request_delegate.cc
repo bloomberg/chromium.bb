@@ -313,27 +313,33 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());
 
+  if (weak_dialog_model_->should_dialog_be_closed()) {
+    // The model decided to not show the Chrome UI because a different native
+    // UI is shown.
+    //
+    // Disable UI to cause timeout and other errors to bubble up to the caller
+    // immediately rather than waiting for our error dialog to be dismissed.
+    disable_ui_ = true;
+    return;
+  }
+
   DCHECK(transient_dialog_model_holder_);
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));
-#endif
+#endif  // !defined(OS_ANDROID)
 }
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
     const device::FidoAuthenticator& authenticator) {
-  if (!IsWebAuthnUIEnabled())
-    return false;
-  // On macOS, a native dialog is shown for the Touch ID authenticator
-  // immediately after dispatch to that authenticator. This dialog must not
-  // be triggered before Chrome's WebAuthn UI has advanced accordingly.
-  // Also, connection to Bluetooth authenticators should not be established
-  // before user explicitly chooses to use a BLE device as it can trigger
-  // OS native pairing UI.
-  const auto& transport = authenticator.AuthenticatorTransport();
-  return transport &&
-         (*transport == device::FidoTransportProtocol::kInternal ||
-          *transport == device::FidoTransportProtocol::kBluetoothLowEnergy);
+  // Decide whether the //device/fido code should dispatch the current
+  // request to an authenticator immediately after it has been
+  // discovered, or whether the embedder/UI takes charge of that by
+  // invoking its RequestCallback.
+  return IsWebAuthnUIEnabled() &&
+         (!authenticator.AuthenticatorTransport() ||
+          *authenticator.AuthenticatorTransport() !=
+              device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/fake_fido_discovery.h"
@@ -23,6 +24,10 @@
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/fake_webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 using ::testing::_;
 
@@ -45,6 +50,21 @@ enum class FakeTaskResponse : uint8_t {
   kOperationDenied = 0x03,
 };
 
+// FidoRequestHandler that automatically starts discovery but does nothing on
+// DispatchRequest().
+class EmptyRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
+ public:
+  EmptyRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols)
+      : FidoRequestHandler(nullptr /* connector */,
+                           protocols,
+                           CompletionCallback()) {
+    Start();
+  }
+  ~EmptyRequestHandler() override = default;
+
+  void DispatchRequest(FidoAuthenticator* authenticator) override {}
+};
+
 class TestTransportAvailabilityObserver
     : public FidoRequestHandlerBase::TransportAvailabilityObserver {
  public:
@@ -56,13 +76,17 @@ class TestTransportAvailabilityObserver
   TestTransportAvailabilityObserver() {}
   ~TestTransportAvailabilityObserver() override {}
 
+  FidoRequestHandlerBase::TransportAvailabilityInfo
+  WaitForTransportAvailabilityInfo() {
+    transport_availability_notification_receiver_.WaitForCallback();
+    return std::get<0>(*transport_availability_notification_receiver_.result());
+  }
+
   void WaitForAndExpectAvailableTransportsAre(
       base::flat_set<FidoTransportProtocol> expected_transports,
       base::Optional<bool> has_recognized_mac_touch_id_credential =
           base::nullopt) {
-    transport_availability_notification_receiver_.WaitForCallback();
-    auto result =
-        std::get<0>(*transport_availability_notification_receiver_.result());
+    auto result = WaitForTransportAvailabilityInfo();
     EXPECT_THAT(result.available_transports,
                 ::testing::UnorderedElementsAreArray(expected_transports));
     if (has_recognized_mac_touch_id_credential) {
@@ -623,5 +647,27 @@ TEST_F(FidoRequestHandlerTest, EmbedderNotifiedWhenAuthenticatorIdChanges) {
   ChangeAuthenticatorId(request_handler.get(), device_ptr, kNewAuthenticatorId);
   observer.WaitForAuthenticatorIdChangeNotification(kNewAuthenticatorId);
 }
+
+#if defined(OS_WIN)
+TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
+  ScopedFakeWinWebAuthnApi scoped_fake_win_webauthn_api;
+  scoped_fake_win_webauthn_api.set_available(true);
+
+  TestTransportAvailabilityObserver observer;
+  ForgeNextHidDiscovery();
+  EmptyRequestHandler request_handler(
+      {FidoTransportProtocol::kUsbHumanInterfaceDevice});
+  request_handler.SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
+  request_handler.set_observer(&observer);
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  auto transport_availability_info =
+      observer.WaitForTransportAvailabilityInfo();
+  EXPECT_TRUE(transport_availability_info.available_transports.empty());
+  EXPECT_TRUE(transport_availability_info.has_win_native_api_authenticator);
+  EXPECT_EQ("WinWebAuthnApiAuthenticator",
+            transport_availability_info.win_native_api_authenticator_id);
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace device

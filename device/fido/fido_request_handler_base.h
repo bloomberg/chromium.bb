@@ -89,6 +89,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     bool is_ble_powered = false;
     bool can_power_on_ble_adapter = false;
 
+    // Indicates whether the native Windows WebAuthn API is available.
+    // Dispatching to it should be controlled by the embedder.
+    //
+    // The embedder:
+    //  - may choose not to dispatch immediately if caBLE is available
+    //  - should dispatch immediately if no other transport is available
+    bool has_win_native_api_authenticator = false;
+
+    // Contains the authenticator ID of the native Windows
+    // authenticator if |has_win_native_api_authenticator| is true.
+    // This allows the observer to distinguish it from other
+    // authenticators.
+    std::string win_native_api_authenticator_id;
+
     // If true, dispatch of the request cannot be controlled by
     // the embedder. The embedder must not display a UI for this
     // request and must ignore all subsequent invocations of the

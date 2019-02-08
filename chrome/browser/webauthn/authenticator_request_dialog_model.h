@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/observable_authenticator_list.h"
@@ -162,6 +163,10 @@ class AuthenticatorRequestDialogModel {
       AuthenticatorTransport transport,
       bool pair_with_new_device_for_bluetooth_low_energy = false);
 
+  // Requests that the step-by-step wizard flow be aborted and the
+  // native Windows WebAuthn UI be shown instead.
+  void AbandonFlowAndDispatchToNativeWindowsApi();
+
   // Ensures that the Bluetooth adapter is powered before proceeding to |step|.
   //  -- If the adapter is powered, advanced directly to |step|.
   //  -- If the adapter is not powered, but Chrome can turn it automatically,
@@ -289,6 +294,8 @@ class AuthenticatorRequestDialogModel {
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator,
                             base::TimeDelta delay);
+  void DispatchRequestAsyncInternal(const std::string& authenticator_id,
+                                    base::TimeDelta delay);
 
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kNotStarted;

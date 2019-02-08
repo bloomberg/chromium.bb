@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_supported_options.h"
@@ -55,6 +56,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
       const = 0;
   virtual bool IsInPairingMode() const = 0;
   virtual bool IsPaired() const = 0;
+#if defined(OS_WIN)
+  virtual bool IsWinNativeApiAuthenticator() const = 0;
+#endif  // defined(OS_WIN)
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;
 
  private:
