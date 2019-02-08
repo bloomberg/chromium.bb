@@ -166,6 +166,7 @@ class WebViewPlugin : public blink::WebPlugin,
     bool CanHandleGestureEvent() override;
     bool CanUpdateLayout() override;
     blink::WebScreenInfo GetScreenInfo() override;
+    void DidInvalidateRect(const blink::WebRect&) override;
 
     // WebWidgetClient methods:
     void SetToolTipText(const blink::WebString&,
@@ -175,7 +176,6 @@ class WebViewPlugin : public blink::WebPlugin,
                        blink::WebDragOperationsMask,
                        const SkBitmap&,
                        const gfx::Point&) override;
-    void DidInvalidateRect(const blink::WebRect&) override;
     void DidChangeCursor(const blink::WebCursorInfo& cursor) override;
     void ScheduleAnimation() override;
     std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()

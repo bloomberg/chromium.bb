@@ -155,7 +155,6 @@ class PepperWidget : public WebWidget {
     size_ = size;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
     widget_->plugin()->ViewChanged(plugin_rect, plugin_rect, plugin_rect);
-    widget_->Invalidate();
   }
 
   void ThemeChanged() override { NOTIMPLEMENTED(); }
@@ -307,14 +306,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
       mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(this)) {}
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
-}
-
-void RenderWidgetFullscreenPepper::Invalidate() {
-  InvalidateRect(gfx::Rect(size()));
-}
-
-void RenderWidgetFullscreenPepper::InvalidateRect(const blink::WebRect& rect) {
-  DidInvalidateRect(rect);
 }
 
 void RenderWidgetFullscreenPepper::ScrollRect(

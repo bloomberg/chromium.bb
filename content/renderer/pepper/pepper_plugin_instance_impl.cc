@@ -730,10 +730,8 @@ void PepperPluginInstanceImpl::Paint(cc::PaintCanvas* canvas,
 
 void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
   if (fullscreen_container_) {
-    if (rect.IsEmpty())
-      fullscreen_container_->Invalidate();
-    else
-      fullscreen_container_->InvalidateRect(rect);
+    // The fullscreen container uses a composited layer, which we invalidate
+    // directly below via SetNeedsDisplay().
   } else {
     if (!container_ || view_data_.rect.size.width == 0 ||
         view_data_.rect.size.height == 0)

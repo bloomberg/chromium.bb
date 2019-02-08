@@ -120,7 +120,8 @@ class WebWidget {
 
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,
-  // and it may result in calls to WebWidgetClient::DidInvalidateRect.
+  // and it may result in calls to WebViewClient::DidInvalidateRect (for
+  // non-composited WebViews).
   // |LifecycleUpdateReason| must be used to indicate the source of the
   // update for the purposes of metrics gathering.
   enum class LifecycleUpdate { kLayout, kPrePaint, kAll };

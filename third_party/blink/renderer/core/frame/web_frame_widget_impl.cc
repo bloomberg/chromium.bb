@@ -238,13 +238,7 @@ void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
     LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
   }
 
-  DCHECK(Client());
-  if (IsAcceleratedCompositingActive()) {
-    UpdateLayerTreeViewport();
-  } else {
-    WebRect damaged_rect(0, 0, size_->width, size_->height);
-    Client()->DidInvalidateRect(damaged_rect);
-  }
+  UpdateLayerTreeViewport();
 }
 
 void WebFrameWidgetImpl::ResizeVisualViewport(const WebSize& new_size) {

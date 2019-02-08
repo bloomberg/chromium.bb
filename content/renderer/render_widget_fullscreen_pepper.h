@@ -40,8 +40,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       mojom::WidgetRequest widget_request);
 
   // pepper::FullscreenContainer API.
-  void Invalidate() override;
-  void InvalidateRect(const blink::WebRect& rect) override;
   void ScrollRect(int dx, int dy, const blink::WebRect& rect) override;
   void Destroy() override;
   void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) override;

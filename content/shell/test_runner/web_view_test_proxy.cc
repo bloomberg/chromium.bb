@@ -29,9 +29,6 @@ ProxyWebWidgetClient::ProxyWebWidgetClient(
       widget_test_client_(widget_test_client),
       render_widget_(render_widget) {}
 
-void ProxyWebWidgetClient::DidInvalidateRect(const blink::WebRect& r) {
-  base_class_widget_client_->DidInvalidateRect(r);
-}
 void ProxyWebWidgetClient::ScheduleAnimation() {
   // When using threaded compositing, have the RenderWidget schedule a request
   // for a frame, as we use the compositor's scheduler. Otherwise the testing

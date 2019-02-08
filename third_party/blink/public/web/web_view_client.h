@@ -87,6 +87,12 @@ class WebViewClient {
 
   // Misc ----------------------------------------------------------------
 
+  // Called when a region of the WebView needs to be re-painted. This is only
+  // for non-composited WebViews that exist to contribute to a "parent" WebView
+  // painting. Otherwise invalidations are transmitted to the compositor through
+  // the layers.
+  virtual void DidInvalidateRect(const WebRect&) {}
+
   // Called when script in the page calls window.print().  If frame is
   // non-null, then it selects a particular frame, including its
   // children, to print.  Otherwise, the main frame and its children
