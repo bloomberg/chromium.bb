@@ -242,6 +242,10 @@ inline wchar_t* as_writable_wcstr(string16& str) {
   return bit_cast<wchar_t*>(data(str));
 }
 
+inline const wchar_t* as_wcstr(const char16* str) {
+  return bit_cast<const wchar_t*>(str);
+}
+
 inline const wchar_t* as_wcstr(StringPiece16 str) {
   return bit_cast<const wchar_t*>(str.data());
 }
@@ -253,6 +257,10 @@ inline char16* as_writable_u16cstr(wchar_t* str) {
 
 inline char16* as_writable_u16cstr(std::wstring& str) {
   return bit_cast<char16*>(data(str));
+}
+
+inline const char16* as_u16cstr(const wchar_t* str) {
+  return bit_cast<const char16*>(str);
 }
 
 inline const char16* as_u16cstr(WStringPiece str) {
