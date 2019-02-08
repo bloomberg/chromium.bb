@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -44,6 +46,7 @@ const char kShareUrlKey[] = "share_url";
 const char kModeKey[] = "mode";
 const char kModeDropDownValue[] = "drop_down";
 const char kModePreMountValue[] = "pre_mount";
+const char kModeUnknownValue[] = "unknown";
 
 bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
@@ -577,8 +580,20 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
     const base::Value* share_url = info.FindKey(kShareUrlKey);
     const base::Value* mode = info.FindKey(kModeKey);
 
-    if (mode->GetString() == policy_mode) {
-      preconfigured_urls.emplace_back(share_url->GetString());
+    if (policy_mode == kModeUnknownValue) {
+      // kModeUnknownValue is used to filter for any shares that do not match
+      // a presently known mode for preconfiguration. As new preconfigure
+      // modes are added, this should be kept in sync.
+      if (mode->GetString() != kModeDropDownValue &&
+          mode->GetString() != kModePreMountValue) {
+        preconfigured_urls.emplace_back(share_url->GetString());
+      }
+
+    } else {
+      // Filter normally
+      if (mode->GetString() == policy_mode) {
+        preconfigured_urls.emplace_back(share_url->GetString());
+      }
     }
   }
   return preconfigured_urls;
@@ -597,7 +612,14 @@ void SmbService::OpenRequestCredentialsDialog(const std::string& share_path,
 }
 
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropdown() const {
-  return GetPreconfiguredSharePaths(kModeDropDownValue);
+  auto drop_down_paths = GetPreconfiguredSharePaths(kModeDropDownValue);
+  auto fallback_paths = GetPreconfiguredSharePaths(kModeUnknownValue);
+
+  for (auto&& fallback_path : fallback_paths) {
+    drop_down_paths.push_back(std::move(fallback_path));
+  }
+
+  return drop_down_paths;
 }
 
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForPremount() const {
