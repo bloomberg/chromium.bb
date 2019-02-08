@@ -34,13 +34,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
     : public mojom::URLLoaderFactory {
  public:
   // |origin_access_list| should always outlive this factory instance.
-  // Used by network::NetworkContext.
+  // Used by network::NetworkContext. |network_loader_factory_for_testing|
+  // should be nullptr unless you need to overwrite the default factory for
+  // testing.
   CorsURLLoaderFactory(
       NetworkContext* context,
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       mojom::URLLoaderFactoryRequest request,
-      const OriginAccessList* origin_access_list);
+      const OriginAccessList* origin_access_list,
+      std::unique_ptr<mojom::URLLoaderFactory>
+          network_loader_factory_for_testing);
   // Used by content::ResourceMessageFilter.
   // TODO(yhirano): Remove this once when the network service is fully enabled.
   CorsURLLoaderFactory(
@@ -99,6 +103,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Accessed by instances in |loaders_| too. Since the factory outlives them,
   // it's safe.
   const OriginAccessList* const origin_access_list_;
+
+  // Owns factory bound OriginAccessList that to have factory specific
+  // additional allowed access list.
+  std::unique_ptr<OriginAccessList> factory_bound_origin_access_list_;
 
   // Usually |preflight_controoler_| is owned by NetworkContext, but we create
   // own one if NetworkContext is not provided, e.g. for legacy code path.

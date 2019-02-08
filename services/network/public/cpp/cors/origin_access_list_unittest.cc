@@ -52,7 +52,9 @@ class OriginAccessListTest : public testing::Test {
     return https_google_origin_;
   }
   bool IsAllowed(const url::Origin& destination_origin) const {
-    return list_.IsAllowed(source_origin_, destination_origin.GetURL());
+    return list_.CheckAccessState(source_origin_,
+                                  destination_origin.GetURL()) ==
+           OriginAccessList::AccessState::kAllowed;
   }
   void SetAllowListEntry(const std::string& protocol,
                          const std::string& host,

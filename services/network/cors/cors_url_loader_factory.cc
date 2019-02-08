@@ -25,18 +25,28 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     mojom::URLLoaderFactoryRequest request,
-    const OriginAccessList* origin_access_list)
+    const OriginAccessList* origin_access_list,
+    std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_for_testing)
     : context_(context),
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
-      network_loader_factory_(std::make_unique<network::URLLoaderFactory>(
-          context,
-          std::move(params),
-          std::move(resource_scheduler_client),
-          this)),
       origin_access_list_(origin_access_list) {
   DCHECK(context_);
   DCHECK(origin_access_list_);
+  factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
+  if (params->factory_bound_allow_patterns.size()) {
+    DCHECK(params->request_initiator_site_lock);
+    factory_bound_origin_access_list_->SetAllowListForOrigin(
+        *params->request_initiator_site_lock,
+        params->factory_bound_allow_patterns);
+  }
+  network_loader_factory_ =
+      network_loader_factory_for_testing
+          ? std::move(network_loader_factory_for_testing)
+          : std::make_unique<network::URLLoaderFactory>(
+                context, std::move(params),
+                std::move(resource_scheduler_client), this);
+
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
       &CorsURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
@@ -55,6 +65,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       preflight_finalizer_(preflight_finalizer),
       origin_access_list_(origin_access_list) {
   DCHECK(origin_access_list_);
+  factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
   // Ideally this should be per-profile, but per-factory would be enough for
   // this code path that is eventually removed.
   owned_preflight_controller_ = std::make_unique<PreflightController>();
@@ -101,7 +112,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
         network_loader_factory_.get(), preflight_finalizer_,
-        origin_access_list_, preflight_controller_);
+        origin_access_list_, factory_bound_origin_access_list_.get(),
+        preflight_controller_);
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();

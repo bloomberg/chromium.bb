@@ -113,8 +113,9 @@ bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
     const GURL url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return !shared_cors_origin_access_list->GetOriginAccessList().IsAllowed(
-      origin, url);
+  return shared_cors_origin_access_list->GetOriginAccessList().CheckAccessState(
+             origin, url) !=
+         network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
 class FileURLDirectoryLoader
@@ -772,8 +773,9 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
       // Only internal call sites, such as ExtensionDownloader, is permitted.
       DCHECK(shared_cors_origin_access_list_);
       cors_flag =
-          !shared_cors_origin_access_list_->GetOriginAccessList().IsAllowed(
-              *request.request_initiator, request.url);
+          shared_cors_origin_access_list_->GetOriginAccessList()
+              .CheckAccessState(*request.request_initiator, request.url) !=
+          network::cors::OriginAccessList::AccessState::kAllowed;
     } else {
       // TODO(toyoshim): Remove this thread-hop code once the NetworkService is
       // fully enabled, and if other IO thread users do not need cors enabled
