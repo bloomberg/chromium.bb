@@ -263,6 +263,8 @@
         <include name="IDR_APP_MANAGEMENT_REDUCERS_JS" file="resources\app_management\reducers.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_ROUTER_HTML" file="resources\app_management\router.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_ROUTER_JS" file="resources\app_management\router.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_SEARCH_VIEW_HTML" file="resources\app_management\search_view.html" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_SEARCH_VIEW_JS" file="resources\app_management\search_view.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_SHARED_STYLE_HTML" file="resources\app_management\shared_style.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_SHARED_VARS_HTML" file="resources\app_management\shared_vars.html" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_STORE_CLIENT_HTML" file="resources\app_management\store_client.html" type="BINDATA" />

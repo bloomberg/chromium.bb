@@ -48,6 +48,10 @@ cr.define('app_management.actions', function() {
           'Tried to load app detail page without providing an app id.');
     }
 
+    if (PageType == PageType.SEARCH) {
+      console.warn('This should not be invoked');
+    }
+
     return {
       name: 'change-page',
       pageType: pageType,
@@ -55,10 +59,34 @@ cr.define('app_management.actions', function() {
     };
   }
 
+  /** @return {!cr.ui.Action} */
+  function clearSearch() {
+    return {
+      name: 'clear-search',
+    };
+  }
+
+  /**
+   * @param {string} term
+   * @return {!cr.ui.Action}
+   */
+  function setSearchTerm(term) {
+    if (!term) {
+      return clearSearch();
+    }
+    return {
+      name: 'start-search',
+      term: term,
+    };
+  }
+
+
   return {
     addApp: addApp,
     changeApp: changeApp,
     removeApp: removeApp,
     changePage: changePage,
+    clearSearch: clearSearch,
+    setSearchTerm: setSearchTerm,
   };
 });

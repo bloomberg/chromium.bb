@@ -95,6 +95,25 @@ cr.define('app_management', function() {
   };
 
   /**
+   * TODO(ceciliani) Delete search page type and navigate router by calculating
+   * if there is search.term.
+   * @param {Object} action
+   * @return {Page}
+   */
+  CurrentPageState.changeForSearch = function(action) {
+    if (action.term) {
+      return {
+        pageType: PageType.SEARCH,
+        selectedAppId: null,
+      };
+    } else {
+      return {
+        pageType: PageType.MAIN,
+        selectedAppId: null,
+      };
+    }
+  };
+  /**
    * @param {Page} currentPage
    * @param {Object} action
    * @return {Page}
@@ -119,12 +138,62 @@ cr.define('app_management', function() {
    */
   CurrentPageState.updateCurrentPage = function(apps, currentPage, action) {
     switch (action.name) {
+      case 'start-search':
+        return CurrentPageState.changeForSearch(action);
+      case 'clear-search':
+        return CurrentPageState.changeForSearch(action);
       case 'change-page':
         return CurrentPageState.changePage(apps, action);
       case 'remove-app':
         return CurrentPageState.removeApp(currentPage, action);
       default:
         return currentPage;
+    }
+  };
+
+  const SearchState = {};
+
+  /**
+   * @param {AppMap} apps
+   * @param {SearchState} search
+   * @param {Object} action
+   * @return {SearchState}
+   */
+  SearchState.startSearch = function(apps, search, action) {
+    const results = [];
+    for (const app of Object.values(apps)) {
+      if (app.title.includes(action.term)) {
+        results.push(app);
+      }
+    }
+    return /** @type {SearchState} */ (Object.assign({}, search, {
+      term: action.term,
+      results: results,
+    }));
+  };
+
+  /** @return {SearchState} */
+  SearchState.clearSearch = function() {
+    return {
+      term: null,
+      results: null,
+    };
+  };
+
+  /**
+   * @param {AppMap} apps
+   * @param {SearchState} search
+   * @param {Object} action
+   * @return {SearchState}
+   */
+  SearchState.updateSearch = function(apps, search, action) {
+    switch (action.name) {
+      case 'start-search':
+        return SearchState.startSearch(apps, search, action);
+      case 'clear-search':
+        return SearchState.clearSearch();
+      default:
+        return search;
     }
   };
 
@@ -138,6 +207,7 @@ cr.define('app_management', function() {
   function reduceAction(state, action) {
     return {
       apps: AppState.updateApps(state.apps, action),
+      search: SearchState.updateSearch(state.apps, state.search, action),
       currentPage: CurrentPageState.updateCurrentPage(
           state.apps, state.currentPage, action),
     };
@@ -147,5 +217,6 @@ cr.define('app_management', function() {
     reduceAction: reduceAction,
     AppState: AppState,
     CurrentPageState: CurrentPageState,
+    SearchState: SearchState,
   };
 });

@@ -17,6 +17,10 @@ cr.define('app_management.util', function() {
         pageType: PageType.MAIN,
         selectedAppId: null,
       },
+      search: {
+        term: null,
+        results: null,
+      },
     };
   }
 

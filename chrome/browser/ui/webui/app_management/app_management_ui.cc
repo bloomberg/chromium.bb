@@ -37,6 +37,7 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("location", IDS_APP_MANAGEMENT_LOCATION);
   source->AddLocalizedString("microphone", IDS_APP_MANAGEMENT_MICROPHONE);
   source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
+  source->AddLocalizedString("noSearchResults", IDS_APP_MANAGEMENT_NO_RESULTS);
   source->AddLocalizedString("notificationSublabel",
                              IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL);
   source->AddLocalizedString("notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS);
@@ -120,6 +121,9 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("reducers.js", IDR_APP_MANAGEMENT_REDUCERS_JS);
   source->AddResourcePath("router.html", IDR_APP_MANAGEMENT_ROUTER_HTML);
   source->AddResourcePath("router.js", IDR_APP_MANAGEMENT_ROUTER_JS);
+  source->AddResourcePath("search_view.html",
+                          IDR_APP_MANAGEMENT_SEARCH_VIEW_HTML);
+  source->AddResourcePath("search_view.js", IDR_APP_MANAGEMENT_SEARCH_VIEW_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_APP_MANAGEMENT_SHARED_STYLE_HTML);
   source->AddResourcePath("shared_vars.html",

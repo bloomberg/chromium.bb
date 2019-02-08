@@ -130,6 +130,22 @@ suite('app state', function() {
     assertEquals(PageType.MAIN, state.currentPage.pageType);
   });
 
+  test('state updates when search starts', function() {
+    // State updates when a search term has been typed in.
+    let action = app_management.actions.setSearchTerm('searchTerm');
+    state = app_management.reduceAction(state, action);
+
+    assertEquals('searchTerm', state.search.term);
+    assertEquals(PageType.SEARCH, state.currentPage.pageType);
+
+    // Search disappears when there is no term entered.
+    action = app_management.actions.clearSearch();
+    state = app_management.reduceAction(state, action);
+    assertEquals(PageType.MAIN, state.currentPage.pageType);
+
+    assertEquals(null, state.search.term);
+  });
+
   test('state updates when changing to notifications page', function() {
     const action = app_management.actions.changePage(PageType.NOTIFICATIONS);
     state = app_management.reduceAction(state, action);

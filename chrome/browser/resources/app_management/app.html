@@ -8,6 +8,7 @@
 <link rel="import" href="notifications_view.html">
 <link rel="import" href="pwa_permission_view.html">
 <link rel="import" href="router.html">
+<link rel="import" href="search_view.html">
 <link rel="import" href="store.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
@@ -26,7 +27,10 @@
       background: var(--md-toolbar-color);
     }
     </style>
-    <cr-toolbar page-name="$i18n{title}" search-prompt="$i18n{searchPrompt}">
+    <cr-toolbar
+        page-name="$i18n{title}"
+        search-prompt="$i18n{searchPrompt}"
+        on-search-changed="onSearchChanged_">
     </cr-toolbar>
     <app-management-dom-switch id="view-selector"
         route="[[selectedRouteId_(currentPage_)]]">
@@ -40,6 +44,8 @@
         <app-management-chrome-app-permission-view
             route-id="chrome-app-permission-view">
         </app-management-chrome-app-permission-view>
+        <app-management-search-view route-id="search-view">
+        </app-management-search-view>
       </template>
     </app-management-dom-switch>
     <app-management-router></app-management-router>
