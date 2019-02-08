@@ -681,7 +681,7 @@ TEST_F(SessionServiceTest, PruneFromMiddle) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
@@ -714,11 +714,11 @@ TEST_F(SessionServiceTest, PruneFromMiddle) {
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   ASSERT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(3U, tab->navigations.size());
-  EXPECT_EQ(GURL(base_url + base::IntToString(0)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(0)),
             tab->navigations[0].virtual_url());
-  EXPECT_EQ(GURL(base_url + base::IntToString(3)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(3)),
             tab->navigations[1].virtual_url());
-  EXPECT_EQ(GURL(base_url + base::IntToString(4)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(4)),
             tab->navigations[2].virtual_url());
 }
 
