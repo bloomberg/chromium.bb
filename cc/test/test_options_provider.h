@@ -61,7 +61,7 @@ class TestOptionsProvider : public ImageProvider,
   class DiscardableManager;
 
   // ImageProvider implementation.
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override;
 
   testing::StrictMock<MockCanvas> canvas_;

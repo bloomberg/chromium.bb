@@ -335,7 +335,7 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
   SkIRect int_src_rect;
   src_rect.roundOut(&int_src_rect);
   DrawImage draw_image(image_, int_src_rect, quality, total_image_matrix);
-  auto decoded_draw_image = image_provider->GetDecodedDrawImage(draw_image);
+  auto decoded_draw_image = image_provider->GetRasterContent(draw_image);
   if (!decoded_draw_image)
     return nullptr;
 

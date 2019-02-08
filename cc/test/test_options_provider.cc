@@ -61,13 +61,14 @@ void TestOptionsProvider::PushFonts() {
   CHECK(strike_client_.readStrikeData(font_data.data(), font_data.size()));
 }
 
-ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
+ImageProvider::ScopedResult TestOptionsProvider::GetRasterContent(
     const DrawImage& draw_image) {
+  DCHECK(!draw_image.paint_image().IsPaintWorklet());
   uint32_t image_id = draw_image.paint_image().GetSkImage()->uniqueID();
   // Lock and reuse the entry if possible.
   const EntryKey entry_key(TransferCacheEntryType::kImage, image_id);
   if (LockEntryDirect(entry_key)) {
-    return ScopedDecodedDrawImage(
+    return ScopedResult(
         DecodedDrawImage(image_id, SkSize::MakeEmpty(), draw_image.scale(),
                          draw_image.filter_quality(), false, true));
   }
@@ -86,12 +87,12 @@ ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
   std::vector<uint8_t> data;
   data.resize(cache_entry.SerializedSize());
   if (!cache_entry.Serialize(base::span<uint8_t>(data.data(), data.size()))) {
-    return ScopedDecodedDrawImage();
+    return ScopedResult();
   }
 
   CreateEntryDirect(entry_key, base::span<uint8_t>(data.data(), data.size()));
 
-  return ScopedDecodedDrawImage(
+  return ScopedResult(
       DecodedDrawImage(image_id, SkSize::MakeEmpty(), draw_image.scale(),
                        draw_image.filter_quality(), false, true));
 }

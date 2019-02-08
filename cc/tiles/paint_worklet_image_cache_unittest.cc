@@ -7,6 +7,7 @@
 #include "cc/tiles/paint_worklet_image_cache.h"
 
 #include "cc/paint/draw_image.h"
+#include "cc/raster/paint_worklet_image_provider.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_paint_worklet_input.h"
 #include "cc/test/test_paint_worklet_layer_painter.h"
@@ -52,7 +53,7 @@ scoped_refptr<TileTask> GetTaskForPaintWorkletImage(
   return cache->GetTaskForPaintWorkletImage(draw_image);
 }
 
-void TestPaintRecord(PaintRecord* record) {
+void TestPaintRecord(const PaintRecord* record) {
   EXPECT_EQ(record->total_op_count(), 1u);
 
   // GetOpAtForTesting check whether the type is the same as DrawImageOp or not.
@@ -67,12 +68,49 @@ TEST(PaintWorkletImageCacheTest, GetTaskForImage) {
   scoped_refptr<TileTask> task =
       GetTaskForPaintWorkletImage(paint_image, &cache);
   EXPECT_TRUE(task);
+  PaintWorkletImageProvider provider(&cache);
 
   TestTileTaskRunner::ProcessTask(task.get());
 
-  PaintRecord* record =
-      cache.GetPaintRecordForTest(paint_image.paint_worklet_input());
-  TestPaintRecord(record);
+  {
+    ImageProvider::ScopedResult result =
+        provider.GetPaintRecordResult(paint_image.paint_worklet_input());
+    EXPECT_TRUE(result.paint_record());
+    TestPaintRecord(result.paint_record());
+
+    base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+        records = cache.GetRecordsForTest();
+    // Test the ref count.
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 1u);
+  }
+  base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+      records = cache.GetRecordsForTest();
+  // Test the ref count, which should have been decremented when the result
+  // goes out of the scope.
+  EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 0u);
+
+  {
+    ImageProvider::ScopedResult result =
+        provider.GetPaintRecordResult(paint_image.paint_worklet_input());
+
+    base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+        records = cache.GetRecordsForTest();
+    // Test the ref count.
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 1u);
+
+    ImageProvider::ScopedResult moved_result = std::move(result);
+
+    EXPECT_FALSE(result);
+
+    EXPECT_TRUE(moved_result.paint_record());
+    TestPaintRecord(moved_result.paint_record());
+
+    // Once moved, the ref count from |result| should have been transferred to
+    // |moved_result|, so there should be only one un-ref when they both go out
+    // of scope.
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 1u);
+  }
+  EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 0u);
 }
 
 TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {

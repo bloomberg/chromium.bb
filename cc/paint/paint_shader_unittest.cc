@@ -37,17 +37,18 @@ class MockImageProvider : public ImageProvider {
   MockImageProvider() = default;
   ~MockImageProvider() override = default;
 
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override {
+    DCHECK(!draw_image.paint_image().IsPaintWorklet());
     draw_image_ = draw_image;
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(10, 10);
     bitmap.eraseColor(SK_ColorBLACK);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    return ScopedDecodedDrawImage(
-        DecodedDrawImage(image, SkSize::MakeEmpty(), SkSize::Make(1.0f, 1.0f),
-                         draw_image.filter_quality(), true));
+    return ScopedResult(DecodedDrawImage(image, SkSize::MakeEmpty(),
+                                         SkSize::Make(1.0f, 1.0f),
+                                         draw_image.filter_quality(), true));
   }
 
   const DrawImage& draw_image() const { return draw_image_; }

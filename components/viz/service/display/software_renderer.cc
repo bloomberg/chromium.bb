@@ -46,14 +46,16 @@ class AnimatedImagesProvider : public cc::ImageProvider {
       : image_animation_map_(image_animation_map) {}
   ~AnimatedImagesProvider() override = default;
 
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const cc::DrawImage& draw_image) override {
+    // TODO(xidachen): Ensure this function works for paint worklet generated
+    // images.
     const auto& paint_image = draw_image.paint_image();
     auto it = image_animation_map_->find(paint_image.stable_id());
     size_t frame_index = it == image_animation_map_->end()
                              ? cc::PaintImage::kDefaultFrameIndex
                              : it->second;
-    return ScopedDecodedDrawImage(cc::DecodedDrawImage(
+    return ScopedResult(cc::DecodedDrawImage(
         paint_image.GetSkImageForFrame(
             frame_index, cc::PaintImage::kDefaultGeneratorClientId),
         SkSize::Make(0, 0), SkSize::Make(1.f, 1.f), draw_image.filter_quality(),

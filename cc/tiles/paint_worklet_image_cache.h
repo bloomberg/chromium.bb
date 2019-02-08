@@ -33,7 +33,10 @@ class CC_EXPORT PaintWorkletImageCache {
 
   void PaintImageInTask(const PaintImage& paint_image);
 
-  PaintRecord* GetPaintRecordForTest(PaintWorkletInput* input);
+  // Returns a callback to decrement the ref count for the corresponding entry.
+  std::pair<PaintRecord*, base::OnceCallback<void()>> GetPaintRecordAndRef(
+      PaintWorkletInput* input);
+
   const base::flat_map<PaintWorkletInput*,
                        std::pair<sk_sp<PaintRecord>, size_t>>&
   GetRecordsForTest() {
@@ -41,10 +44,12 @@ class CC_EXPORT PaintWorkletImageCache {
   }
 
  private:
+  void DecrementCacheRefCount(PaintWorkletInput* input);
   // This is a map of paint worklet inputs to a pair of paint record and a
   // reference count. The paint record is the representation of the worklet
   // output based on the input, and the reference count is the number of times
   // that it is used for tile rasterization.
+  // TODO(xidachen): use a struct instead of std::pair.
   base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
       records_;
   // The PaintWorkletImageCache is owned by ImageController, which has the same

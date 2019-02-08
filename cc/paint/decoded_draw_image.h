@@ -54,6 +54,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
     return transfer_cache_entry_needs_mips_;
   }
   bool is_budgeted() const { return is_budgeted_; }
+  operator bool() const { return image_ || transfer_cache_entry_id_; }
 
  private:
   sk_sp<const SkImage> image_;

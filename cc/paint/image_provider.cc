@@ -4,39 +4,48 @@
 
 #include "cc/paint/image_provider.h"
 
+#include "cc/paint/paint_record.h"
+
 namespace cc {
 
-ImageProvider::ScopedDecodedDrawImage::ScopedDecodedDrawImage() = default;
+ImageProvider::ScopedResult::ScopedResult() = default;
 
-ImageProvider::ScopedDecodedDrawImage::ScopedDecodedDrawImage(
-    DecodedDrawImage image)
+ImageProvider::ScopedResult::ScopedResult(DecodedDrawImage image)
     : image_(std::move(image)) {}
 
-ImageProvider::ScopedDecodedDrawImage::ScopedDecodedDrawImage(
-    DecodedDrawImage image,
-    DestructionCallback callback)
+ImageProvider::ScopedResult::ScopedResult(DecodedDrawImage image,
+                                          DestructionCallback callback)
     : image_(std::move(image)), destruction_callback_(std::move(callback)) {}
 
-ImageProvider::ScopedDecodedDrawImage::ScopedDecodedDrawImage(
-    ScopedDecodedDrawImage&& other) {
-  image_ = std::move(other.image_);
-  destruction_callback_ = std::move(other.destruction_callback_);
+ImageProvider::ScopedResult::ScopedResult(const PaintRecord* record,
+                                          DestructionCallback callback)
+    : record_(record), destruction_callback_(std::move(callback)) {
+  DCHECK(!destruction_callback_.is_null());
 }
 
-ImageProvider::ScopedDecodedDrawImage& ImageProvider::ScopedDecodedDrawImage::
-operator=(ScopedDecodedDrawImage&& other) {
+ImageProvider::ScopedResult::ScopedResult(ScopedResult&& other)
+    : image_(std::move(other.image_)),
+      record_(other.record_),
+      destruction_callback_(std::move(other.destruction_callback_)) {
+  other.record_ = nullptr;
+}
+
+ImageProvider::ScopedResult& ImageProvider::ScopedResult::operator=(
+    ScopedResult&& other) {
   DestroyDecode();
 
   image_ = std::move(other.image_);
+  record_ = other.record_;
   destruction_callback_ = std::move(other.destruction_callback_);
+  other.record_ = nullptr;
   return *this;
 }
 
-ImageProvider::ScopedDecodedDrawImage::~ScopedDecodedDrawImage() {
+ImageProvider::ScopedResult::~ScopedResult() {
   DestroyDecode();
 }
 
-void ImageProvider::ScopedDecodedDrawImage::DestroyDecode() {
+void ImageProvider::ScopedResult::DestroyDecode() {
   if (!destruction_callback_.is_null())
     std::move(destruction_callback_).Run();
 }

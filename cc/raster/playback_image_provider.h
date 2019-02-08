@@ -42,7 +42,7 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
   PlaybackImageProvider& operator=(PlaybackImageProvider&& other);
 
   // ImageProvider implementation.
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override;
 
  private:
