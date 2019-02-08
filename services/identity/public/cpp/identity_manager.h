@@ -350,6 +350,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // returns null.
   AccountsMutator* GetAccountsMutator();
 
+  // Turns on observation of network::CookieManager changes.
+  void StartObservingCookieChanges();
+
   // Loads credentials from a backing persistent store to make them available
   // after service is used between profile restarts.
   // NOTE: In normal usage this method SHOULD NOT be called as the loading of

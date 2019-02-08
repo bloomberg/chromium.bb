@@ -47,6 +47,9 @@ class TestCookieManager : public network::mojom::CookieManager {
   void SetForceKeepSessionState() override {}
   void BlockThirdPartyCookies(bool block) override {}
 
+  void DispatchCookieChange(const net::CanonicalCookie& cookie,
+                            network::mojom::CookieChangeCause cause);
+
  private:
   // List of observers receiving cookie change notifications.
   std::vector<network::mojom::CookieChangeListenerPtr> cookie_change_listeners_;
