@@ -24,11 +24,6 @@ ShowProgressBarAction::~ShowProgressBarAction() {}
 void ShowProgressBarAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  if (proto_.show_progress_bar().progress() == 0) {
-    // Old script might still contain a ShowProgressBar action that clears the
-    // progress. Ignore these.
-    return;
-  }
   if (!proto_.show_progress_bar().message().empty()) {
     delegate->SetStatusMessage(proto_.show_progress_bar().message());
   }
