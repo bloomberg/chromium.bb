@@ -129,7 +129,6 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
      * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
      */
     private void setStateForSuggestion(PropertyModel model, SuggestionAnswer answer) {
-        float density = mContext.getResources().getDisplayMetrics().density;
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
         int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
@@ -140,7 +139,7 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         if (mEnableNewAnswerLayout) {
             details = AnswerTextNewLayout.from(mContext, answer);
         } else {
-            details = AnswerTextClassic.from(mContext, answer, density);
+            details = AnswerTextClassic.from(mContext, answer);
         }
 
         model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
