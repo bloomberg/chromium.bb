@@ -20,6 +20,7 @@ from chromite.api.gen import test_archive_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.utils import matching
 
 
 class Error(Exception):
@@ -53,11 +54,7 @@ class MethodNotFoundError(Error):
 
 
 def GetParser():
-  """Build the argument parser.
-
-  The API parser comprises a subparser hierarchy. The general form is:
-  `script service method`, e.g. `build_api image test`.
-  """
+  """Build the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
   parser.add_argument('service_method',
@@ -74,10 +71,19 @@ def GetParser():
   return parser
 
 
-def _ParseArgs(argv):
+def _ParseArgs(argv, router):
   """Parse and validate arguments."""
   parser = GetParser()
   opts = parser.parse_args(argv)
+
+  methods = router.ListMethods()
+  if opts.service_method not in methods:
+    matched = matching.GetMostLikelyMatchedObject(methods, opts.service_method,
+                                                  matched_score_threshold=0.6)
+    error = 'Unrecognized service name.'
+    if matched:
+      error += '\nDid you mean: \n%s' % '\n'.join(matched)
+    parser.error(error)
 
   parts = opts.service_method.split('/')
 
@@ -125,6 +131,15 @@ class Router(object):
             (proto_module, service_name))
 
       self._services[svc.full_name] = (svc, module_name)
+
+  def ListMethods(self):
+    """List all methods registered with the router."""
+    services = []
+    for service_name, (svc, _module) in self._services.items():
+      for method_name in svc.methods_by_name.keys():
+        services.append('%s/%s' % (service_name, method_name))
+
+    return sorted(services)
 
   def Route(self, service_name, method_name, input_json):
     """Dispatch the request.
@@ -238,10 +253,10 @@ def RegisterServices(router):
 
 
 def main(argv):
-  opts = _ParseArgs(argv)
-
   router = Router()
   RegisterServices(router)
+
+  opts = _ParseArgs(argv, router)
 
   try:
     input_proto = osutils.ReadFile(opts.input_json)

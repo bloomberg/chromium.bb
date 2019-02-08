@@ -31,6 +31,9 @@ Unlike lib, code in scripts will not and should not be imported anywhere. Instea
 ### `chromite/third_party`
 This folder contains all the third_party python libraries required by Chromite. You need a very strong reason to add any library to the current list. Please confirm with the owners beforehand.
 
+### `chromite/utils`
+This folder contains smaller, generic utility functionality that is not tied to any specific entities in the codebase that would make them more at home in a lib module.
+
 ### `chromite/*`
 There are smaller folders with miscellaneous functions like config, licencing, cidb, etc.
 
