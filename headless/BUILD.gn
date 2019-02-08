@@ -606,17 +606,8 @@ if (is_mac) {
     ]
 
     deps = [
-      "//base",
       "//components/crash/content/app:chrome_crashpad_handler",
     ]
-
-    if (is_component_build) {
-      sources += [ "$root_out_dir/libbase.dylib" ]
-      if (use_custom_libcxx) {
-        sources += [ "$root_out_dir/libc++.dylib" ]
-        deps += [ "//buildtools/third_party/libc++:libc++" ]
-      }
-    }
 
     outputs = [
       "$root_out_dir/Helpers/{{source_file_part}}",

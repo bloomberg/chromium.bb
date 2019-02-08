@@ -219,6 +219,10 @@ if (is_mac) {
         # Chromium Framework.framework/Versions/A/Helpers/
         "-rpath",
         "@loader_path/../../../..",
+
+        # The handler can be executed from headless_browsertests in Helpers/
+        "-rpath",
+        "@loader_path/..",
       ]
     }
   }
