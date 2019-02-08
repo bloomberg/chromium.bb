@@ -438,9 +438,25 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
             << job_record->output_buffer_index;
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
-  EnqueueOutput(job_record.get());
   input_job_queue_.emplace(std::move(job_record));
-  EnqueueInput();
+  ProcessJobsTask();
+}
+
+void V4L2ImageProcessor::ProcessJobsTask() {
+  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+
+  while (!input_job_queue_.empty()) {
+    // The output buffer is already decided, but we need one free input buffer
+    // to schedule the job
+    if (input_queue_->FreeBuffersCount() == 0)
+      break;
+
+    auto job_record = std::move(input_job_queue_.front());
+    input_job_queue_.pop();
+    EnqueueInput(job_record.get());
+    EnqueueOutput(job_record.get());
+    running_jobs_.emplace(std::move(job_record));
+  }
 }
 
 bool V4L2ImageProcessor::Reset() {
@@ -641,7 +657,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
     return;
 
   Dequeue();
-  EnqueueInput();
+  ProcessJobsTask();
 
   if (!device_->ClearDevicePollInterrupt()) {
     NotifyError();
@@ -664,15 +680,14 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
             << "]";
 }
 
-void V4L2ImageProcessor::EnqueueInput() {
+void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
-  while (!input_job_queue_.empty() && input_queue_->FreeBuffersCount() > 0) {
-    if (!EnqueueInputRecord())
-      return;
-  }
+  if (!EnqueueInputRecord(job_record))
+    return;
+
   if (old_inputs_queued == 0 && input_queue_->QueuedBuffersCount() != 0) {
     // We started up a previously empty queue.
     // Queue state changed; signal interrupt.
@@ -764,14 +779,11 @@ void V4L2ImageProcessor::Dequeue() {
   }
 }
 
-bool V4L2ImageProcessor::EnqueueInputRecord() {
+bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK(!input_job_queue_.empty());
   DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
 
   // Enqueue an input (VIDEO_OUTPUT) buffer for an input video frame.
-  std::unique_ptr<JobRecord> job_record = std::move(input_job_queue_.front());
-  input_job_queue_.pop();
   V4L2WritableBufferRef buffer(input_queue_->GetFreeBuffer());
   DCHECK(buffer.IsValid());
 
@@ -799,8 +811,6 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   DVLOGF(4) << "enqueued frame ts="
             << job_record->input_frame->timestamp().InMilliseconds()
             << " to device.";
-
-  running_jobs_.emplace(std::move(job_record));
 
   return true;
 }

@@ -117,10 +117,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                      ErrorCB error_cb);
 
   bool Initialize();
-  void EnqueueInput();
+  void EnqueueInput(const JobRecord* job_record);
   void EnqueueOutput(const JobRecord* job_record);
   void Dequeue();
-  bool EnqueueInputRecord();
+  bool EnqueueInputRecord(const JobRecord* job_record);
   bool EnqueueOutputRecord(const JobRecord* job_record);
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
@@ -139,6 +139,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                        FrameReadyCB cb) override;
 
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
+  void ProcessJobsTask();
   void ServiceDeviceTask();
 
   // Allocate/Destroy the input/output V4L2 buffers.
