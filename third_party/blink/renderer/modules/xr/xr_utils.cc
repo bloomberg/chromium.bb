@@ -24,11 +24,10 @@ DOMFloat32Array* transformationMatrixToDOMFloat32Array(
 }
 
 // Normalize to have length = 1.0
-DOMPointReadOnly* makeNormalizedQuaternion(DOMPointInit* q) {
-  double x = q->x();
-  double y = q->y();
-  double z = q->z();
-  double w = q->w();
+DOMPointReadOnly* makeNormalizedQuaternion(double x,
+                                           double y,
+                                           double z,
+                                           double w) {
   double length = std::sqrt((x * x) + (y * y) + (z * z) + (w * w));
   if (length == 0.0) {
     // Return a default value instead of crashing.

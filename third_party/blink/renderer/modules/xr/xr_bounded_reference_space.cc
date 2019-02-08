@@ -72,7 +72,7 @@ XRBoundedReferenceSpace::TransformBasePose(
 
 void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounds_geometry_);
-  XRSpace::Trace(visitor);
+  XRReferenceSpace::Trace(visitor);
 }
 
 }  // namespace blink

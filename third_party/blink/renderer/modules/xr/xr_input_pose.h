@@ -5,8 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_POSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_POSE_H_
 
+#include <utility>
+
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
+#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -24,14 +27,14 @@ class XRInputPose final : public ScriptWrappable {
   ~XRInputPose() override;
 
   XRRay* targetRay() const { return target_ray_; }
-  DOMFloat32Array* gripMatrix() const;
+  XRRigidTransform* gripTransform() const { return grip_transform_; }
   bool emulatedPosition() const { return emulated_position_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRRay> target_ray_;
-  const std::unique_ptr<TransformationMatrix> grip_matrix_;
+  Member<XRRigidTransform> grip_transform_;
   const bool emulated_position_;
 };
 

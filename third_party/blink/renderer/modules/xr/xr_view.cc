@@ -44,6 +44,9 @@ XRView& XRView::operator=(const XRView& other) {
   AssignMatrices(other);
   offset_ = other.offset_;
 
+  transform_ =
+      MakeGarbageCollected<XRRigidTransform>(*(other.transform_.Get()));
+
   // Don't copy the inverse projection matrix because it is rarely used.
   // Just set this flag so that if UnprojectPointer is called, this matrix
   // gets computed.
@@ -221,12 +224,27 @@ void XRView::UpdateViewMatrix(TransformationMatrix inv_pose_matrix) {
   // matrix
   inv_pose_matrix.PostTranslate3d(-offset_.X(), -offset_.Y(), -offset_.Z());
   view_matrix_ = transformationMatrixToDOMFloat32Array(inv_pose_matrix);
+
+  // transform's matrix is the inverse of the view matrix
+  // can't use the original pose matrix because it has translation applied
+  // after taking the inverse
+  // compute the inverse lazily
+  DCHECK(inv_pose_matrix.IsInvertible());
+  inv_pose_ = TransformationMatrix::Create(inv_pose_matrix);
+}
+
+XRRigidTransform* XRView::transform() {
+  if (!transform_) {
+    transform_ = MakeGarbageCollected<XRRigidTransform>(inv_pose_->Inverse());
+  }
+  return transform_;
 }
 
 void XRView::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(projection_matrix_);
   visitor->Trace(view_matrix_);
+  visitor->Trace(transform_);
   ScriptWrappable::Trace(visitor);
 }
 

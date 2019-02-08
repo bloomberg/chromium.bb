@@ -8,5 +8,5 @@
     Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRSpace : EventTarget {
-  Float32Array? getTransformTo(XRSpace other);
+  XRRigidTransform? getTransformTo(XRSpace other);
 };

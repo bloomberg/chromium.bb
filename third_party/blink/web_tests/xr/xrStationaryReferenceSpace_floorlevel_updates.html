@@ -44,7 +44,7 @@ let testFunction = function(session, t, fakeDeviceController) {
         t.step( () => {
           let pose = xrFrame.getViewerPose(referenceSpace);
 
-          let poseMatrix = pose.poseModelMatrix;
+          let poseMatrix = pose.transform.matrix;
           assert_approx_equals(poseMatrix[12], 0.0, FLOAT_EPSILON);
           assert_greater_than(poseMatrix[13], 1.0);
           assert_approx_equals(poseMatrix[14], 0.0, FLOAT_EPSILON);
@@ -62,7 +62,7 @@ let testFunction = function(session, t, fakeDeviceController) {
           let pose = xrFrame.getViewerPose(referenceSpace);
           assert_not_equals(pose, null);
 
-          let poseMatrix = pose.poseModelMatrix;
+          let poseMatrix = pose.transform.matrix;
           assert_matrices_approx_equal(poseMatrix, VALID_STAGE_TRANSFORM);
         });
 

@@ -70,10 +70,11 @@ let testFunction =
         t.step( () => {
           // When a grip matrix is present but no pointer offset is specified,
           // the grip and pointer matrices should be the same.
-          assert_matrices_approx_equal(input_pose.gripMatrix, VALID_GRIP,
+          assert_not_equals(input_pose.gripTransform, null);
+          assert_matrices_approx_equal(input_pose.gripTransform.matrix, VALID_GRIP,
             FLOAT_EPSILON, "Grip matrix is not equal to input.");
           assert_matrices_approx_equal(input_pose.targetRay.transformMatrix,
-            input_pose.gripMatrix, FLOAT_EPSILON,
+            input_pose.gripTransform.matrix, FLOAT_EPSILON,
             "Grip matrix is not equal to target ray matrix.");
         });
 
@@ -91,7 +92,8 @@ let testFunction =
           // When a grip matrix and pointer offset are specified,
           // pointer matrix should be grip matrix multiplied with the pointer
           // offset.
-          assert_matrices_approx_equal(input_pose.gripMatrix, VALID_GRIP,
+          assert_not_equals(input_pose.gripTransform, null);
+          assert_matrices_approx_equal(input_pose.gripTransform.matrix, VALID_GRIP,
             FLOAT_EPSILON, "Grip matrix is not equal to input valid grip.");
           assert_matrices_approx_equal(input_pose.targetRay.transformMatrix,
             VALID_GRIP_WITH_POINTER_OFFSET, FLOAT_EPSILON,

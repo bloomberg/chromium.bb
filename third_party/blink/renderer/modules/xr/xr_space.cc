@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -15,7 +16,7 @@ XRSpace::~XRSpace() = default;
 
 // If possible, get the matrix required to transform between two coordinate
 // systems.
-DOMFloat32Array* XRSpace::getTransformTo(XRSpace* other) const {
+XRRigidTransform* XRSpace::getTransformTo(XRSpace* other) const {
   if (session_ != other->session()) {
     // Cannot get relationships between coordinate systems that belong to
     // different sessions.

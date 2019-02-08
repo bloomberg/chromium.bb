@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class XRRigidTransform;
 class XRSession;
 
 class XRSpace : public EventTargetWithInlineData {
@@ -22,7 +23,7 @@ class XRSpace : public EventTargetWithInlineData {
   explicit XRSpace(XRSession*);
   ~XRSpace() override;
 
-  DOMFloat32Array* getTransformTo(XRSpace*) const;
+  XRRigidTransform* getTransformTo(XRSpace*) const;
 
   XRSession* session() const { return session_; }
 

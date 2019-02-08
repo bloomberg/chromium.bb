@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
+
 namespace blink {
 
 class XRSession;
@@ -24,9 +26,6 @@ class XRView final : public ScriptWrappable {
   enum XREye { kEyeLeft = 0, kEyeRight = 1 };
 
   XRView(XRSession*, XREye);
-
-  // Default constructor, which I think is needed along with the copy
-  // constructors to make a deep copy of HeapVector<Member<XRView>>
   XRView();
 
   // Make deep copies.
@@ -39,6 +38,7 @@ class XRView final : public ScriptWrappable {
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
   DOMFloat32Array* viewMatrix() const { return view_matrix_; }
+  XRRigidTransform* transform();
 
   void UpdateProjectionMatrixFromRawValues(
       const WTF::Vector<float>& projection_matrix,
@@ -76,9 +76,11 @@ class XRView final : public ScriptWrappable {
   XREye eye_;
   String eye_string_;
   Member<XRSession> session_;
+  Member<XRRigidTransform> transform_;
   Member<DOMFloat32Array> projection_matrix_;
   Member<DOMFloat32Array> view_matrix_;
   FloatPoint3D offset_;
+  std::unique_ptr<TransformationMatrix> inv_pose_;
   std::unique_ptr<TransformationMatrix> inv_projection_;
   bool inv_projection_dirty_ = true;
 };

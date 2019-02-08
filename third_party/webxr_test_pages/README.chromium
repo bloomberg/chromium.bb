@@ -38,3 +38,8 @@ In order to serve the samples locally, few steps are required:
 2. Serve files, for example by running
    `python -m SimpleHTTPServer <port number>` in
    src/third_party/webxr_test_pages/webxr-samples
+
+3. If you are having trouble with the python server such as it being unreliable
+   serving media like the gltf files, try using "npm serve".
+   To install: `sudo npm install -g serve`
+   To run: `serve .` in src/third_party/webxr_test_pages/webxr-samples

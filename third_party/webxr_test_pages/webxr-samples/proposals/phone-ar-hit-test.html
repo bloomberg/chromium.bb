@@ -246,12 +246,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // If requested, use the pose to cast a reticle into the scene using a
         // continuous hit test. For the moment we're just using the flower
         // as the "reticle".
-        if (useReticle.checked && pose && pose.poseModelMatrix) {
+        if (useReticle.checked && pose && pose.transform.matrix) {
           vec3.set(rayOrigin, 0, 0, 0);
-          vec3.transformMat4(rayOrigin, rayOrigin, pose.poseModelMatrix);
+          vec3.transformMat4(rayOrigin, rayOrigin, pose.transform.matrix);
 
           vec3.set(rayDirection, 0, 0, -1);
-          vec3.transformMat4(rayDirection, rayDirection, pose.poseModelMatrix);
+          vec3.transformMat4(rayDirection, rayDirection, pose.transform.matrix);
           vec3.sub(rayDirection, rayDirection, rayOrigin);
           vec3.normalize(rayDirection, rayDirection);
 
