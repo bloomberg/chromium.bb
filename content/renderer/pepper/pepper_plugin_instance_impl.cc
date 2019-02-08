@@ -1937,13 +1937,6 @@ bool PepperPluginInstanceImpl::SupportsPrintInterface() {
   return GetPreferredPrintOutputFormat(&format, params);
 }
 
-bool PepperPluginInstanceImpl::IsPrintScalingDisabled() {
-  DCHECK(plugin_print_interface_);
-  if (!plugin_print_interface_)
-    return false;
-  return plugin_print_interface_->IsScalingDisabled(pp_instance()) == PP_TRUE;
-}
-
 int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);

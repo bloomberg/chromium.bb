@@ -138,9 +138,6 @@ class WebPlugin {
   // Whether the plugin supports its own paginated print. The other print
   // interface methods are called only if this method returns true.
   virtual bool SupportsPaginatedPrint() { return false; }
-  // Returns true if the printed content should not be scaled to
-  // the printer's printable area.
-  virtual bool IsPrintScalingDisabled() { return false; }
   // Returns true on success and sets the out parameter to the print preset
   // options for the document.
   virtual bool GetPrintPresetOptionsFromDocument(WebPrintPresetOptions*) {

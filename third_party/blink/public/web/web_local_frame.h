@@ -684,11 +684,6 @@ class WebLocalFrame : public WebFrame {
   // This function should be called after pairs of PrintBegin() and PrintEnd().
   virtual void DispatchAfterPrintEvent() = 0;
 
-  // If the frame contains a full-frame plugin or the given node refers to a
-  // plugin whose content indicates that printed output should not be scaled,
-  // return true, otherwise return false.
-  virtual bool IsPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
-
   // Advance the focus of the WebView to next text input element from current
   // input field wrt sequential navigation with TAB or Shift + TAB
   // WebFocusTypeForward simulates TAB and WebFocusTypeBackward simulates

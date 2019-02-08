@@ -78,7 +78,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   void SelectFindResult(bool forward, int identifier) override;
   void StopFind() override;
   bool SupportsPaginatedPrint() override;
-  bool IsPrintScalingDisabled() override;
 
   int PrintBegin(const blink::WebPrintParams& print_params) override;
   void PrintPage(int page_number, cc::PaintCanvas* canvas) override;

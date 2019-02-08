@@ -169,9 +169,6 @@ class CORE_EXPORT WebPluginContainerImpl final
   // Whether the plugin supports its own paginated print. The other print
   // interface methods are called only if this method returns true.
   bool SupportsPaginatedPrint() const;
-  // If the plugin content should not be scaled to the printable area of
-  // the page, then this method should return true.
-  bool IsPrintScalingDisabled() const;
   // Returns true on success and sets the out parameter to the print preset
   // options for the document.
   bool GetPrintPresetOptionsFromDocument(WebPrintPresetOptions*) const;

@@ -220,7 +220,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   float GetPrintPageShrink(int page) override;
   void PrintEnd() override;
   void DispatchAfterPrintEvent() override;
-  bool IsPrintScalingDisabledForPlugin(const WebNode&) override;
   bool GetPrintPresetOptionsForPlugin(const WebNode&,
                                       WebPrintPresetOptions*) override;
   bool HasCustomPageSizeStyle(int page_index) override;
