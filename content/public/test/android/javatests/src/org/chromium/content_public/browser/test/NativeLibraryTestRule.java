@@ -61,7 +61,7 @@ public class NativeLibraryTestRule implements TestRule {
             try {
                 // Extract compressed resource paks.
                 ResourceExtractor resourceExtractor = ResourceExtractor.get();
-                resourceExtractor.startExtractingResources();
+                resourceExtractor.startExtractingResources("en");
                 resourceExtractor.waitForCompletion();
 
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)

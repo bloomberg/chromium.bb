@@ -16,6 +16,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.SysUtils;
@@ -28,6 +29,7 @@ import org.chromium.base.memory.MemoryPressureUma;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeLocalizationUtils;
 import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.FileProviderHelper;
@@ -257,7 +259,8 @@ public class ChromeBrowserInitializer {
         // Check to see if we need to extract any new resources from the APK. This could
         // be on first run when we need to extract all the .pak files we need, or after
         // the user has switched locale, in which case we want new locale resources.
-        ResourceExtractor.get().startExtractingResources();
+        ResourceExtractor.get().startExtractingResources(LocaleUtils.toLanguage(
+                ChromeLocalizationUtils.getUiLocaleStringForCompressedPak()));
 
         mPostInflationStartupComplete = true;
     }

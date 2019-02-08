@@ -443,7 +443,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     @Override
     public void initChromiumBrowserProcessForTests() {
         ResourceExtractor resourceExtractor = ResourceExtractor.get();
-        resourceExtractor.startExtractingResources();
+        resourceExtractor.startExtractingResources("en");
         resourceExtractor.waitForCompletion();
         nativeSetCommandLineFlags(false);
     }
