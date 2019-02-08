@@ -4,6 +4,8 @@
 
 #include "extensions/common/host_id.h"
 
+#include <tuple>
+
 HostID::HostID()
     : type_(HostType::EXTENSIONS) {
 }
@@ -21,13 +23,9 @@ HostID::~HostID() {
 }
 
 bool HostID::operator<(const HostID& host_id) const {
-  if (type_ != host_id.type())
-    return type_ < host_id.type();
-  else if (id_ != host_id.id())
-    return id_ < host_id.id();
-  return false;
+  return std::tie(type_, id_) < std::tie(host_id.type_, host_id.id_);
 }
 
 bool HostID::operator==(const HostID& host_id) const {
-  return type_ == host_id.type() && id_ == host_id.id();
+  return type_ == host_id.type_ && id_ == host_id.id_;
 }
