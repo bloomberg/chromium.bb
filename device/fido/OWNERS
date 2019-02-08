@@ -5,15 +5,19 @@ kpaulhamus@chromium.org
 
 # TouchID, Windows Hello.
 martinkr@google.com
-martinkr@chromium.org # prefer google.com address
+# (Secondary email; prefer google.com address.)
+martinkr@chromium.org
 
 # Attestation and legacy U2F implementation.
 agl@chromium.org
 
 # Emeriti; for occasional reviews
-engedy@chromium.org # esp. view & frame lifetimes
-jdoerrie@chromium.org # Bluetooth
-hongjunchoi@chromium.org # CTAP2 implementation
+# esp. view & frame lifetimes
+engedy@chromium.org
+# Bluetooth
+jdoerrie@chromium.org
+# CTAP2 implementation
+hongjunchoi@chromium.org
 
 # TEAM: identity-dev@chromium.org
 # COMPONENT: Blink>WebAuthentication
