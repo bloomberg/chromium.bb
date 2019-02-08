@@ -128,7 +128,7 @@ void AssistantQueryView::SetText(const std::string& high_confidence_text,
       label_->AddStyleRange(gfx::Range(high_confidence_text_16.length(),
                                        high_confidence_text_16.length() +
                                            low_confidence_text_16.length()),
-                            CreateStyleInfo(kTextColorHint));
+                            CreateStyleInfo(kTextColorSecondary));
     }
   }
   label_->SizeToFit(width());
