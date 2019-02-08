@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-Found 376 tests; 321 PASS, 55 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 377 tests; 322 PASS, 55 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
-PASS Partial interface Document: original interface defined
+PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
 PASS Partial interface Window: original interface defined
 PASS MediaList interface: existence and properties of interface object
 PASS MediaList interface object length
@@ -376,6 +376,7 @@ PASS Window interface: calling getComputedStyle(Element, CSSOMString) on window 
 PASS Document interface: attribute styleSheets
 PASS Document interface: document must inherit property "styleSheets" with the proper type
 PASS Document interface: new Document() must inherit property "styleSheets" with the proper type
+PASS ShadowRoot interface: attribute styleSheets
 PASS ProcessingInstruction interface: attribute sheet
 PASS ProcessingInstruction interface: xmlss_pi must inherit property "sheet" with the proper type
 Harness: the test ran to completion.
