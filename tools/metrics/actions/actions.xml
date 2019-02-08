@@ -20037,6 +20037,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tablet.WindowDrag.OpenedOverview">
+  <owner>minch@chromium.org</owner>
+  <description>
+    User dragged a window from top in tablet mode and opened overview behind.
+  </description>
+</action>
+
 <action name="Tablet_BackButton">
   <owner>sammiequon@chromium.org</owner>
   <description>

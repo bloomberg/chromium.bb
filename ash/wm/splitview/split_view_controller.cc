@@ -536,6 +536,11 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
                            base::Time::Now() - splitview_start_time_);
 }
 
+bool SplitViewController::IsWindowInSplitView(
+    const aura::Window* window) const {
+  return window && (window == left_window_ || window == right_window_);
+}
+
 void SplitViewController::OnWindowDragStarted(aura::Window* dragged_window) {
   DCHECK(dragged_window);
   if (dragged_window == left_window_ || dragged_window == right_window_)

@@ -1706,6 +1706,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Panel"/>
 </enum>
 
+<enum name="AppWindowDragEndWindowState">
+  <int value="0" label="Maximized or Fullscreen"/>
+  <int value="1" label="In Overview"/>
+  <int value="2" label="In Splitview"/>
+</enum>
+
 <enum name="ArcAuthAccountCheckStatus">
   <int value="0" label="Account is up to date"/>
   <int value="1" label="New account"/>
@@ -51670,6 +51676,11 @@ would be helpful to identify which type is being sent.
       label="Discarded a tab playing audio (included in the previous one)"/>
 </enum>
 
+<enum name="TabDragType">
+  <int value="0" label="Source Browser Window"/>
+  <int value="1" label="Tab In The Browser Window."/>
+</enum>
+
 <enum name="TabForegroundState">
   <int value="0" label="Foreground (app in foreground)"/>
   <int value="1" label="Background (app in foreground)"/>
@@ -56413,6 +56424,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Desktop"/>
   <int value="2" label="Metro Aura"/>
   <int value="3" label="Desktop Aura"/>
+</enum>
+
+<enum name="WindowDragEndEventType">
+  <int value="0" label="Drag ends with normal end event."/>
+  <int value="1" label="Drag has been reverted."/>
+  <int value="2" label="Drag ends with fling."/>
 </enum>
 
 <enum name="WindowOcclusionState">

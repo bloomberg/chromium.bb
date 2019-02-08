@@ -135,6 +135,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Ends the split view mode.
   void EndSplitView(EndReason end_reason = EndReason::kNormal);
 
+  // Returns true if |window| is a snapped window in splitview.
+  bool IsWindowInSplitView(const aura::Window* window) const;
+
   // Called when a window (either it's browser window or an app window) start/
   // end being dragged.
   void OnWindowDragStarted(aura::Window* dragged_window);
