@@ -9,12 +9,55 @@ const filelist = {};
 
 /**
  * File table list.
- * @constructor
- * @struct
- * @extends {cr.ui.table.TableList}
  */
-function FileTableList() {
-  throw new Error('Designed to decorate elements');
+class FileTableList extends cr.ui.table.TableList {
+  constructor() {
+    // To silence closure compiler.
+    super();
+    /*
+     * @type {?function(number, number)}
+     */
+    this.onMergeItems_ = null;
+
+    throw new Error('Designed to decorate elements');
+  }
+
+  /**
+   * @param {function(number, number)} onMergeItems callback called from
+   *     |mergeItems| with the parameters |beginIndex| and |endIndex|.
+   */
+  setOnMergeItems(onMergeItems) {
+    assert(!this.onMergeItems_);
+    this.onMergeItems_ = onMergeItems;
+  }
+
+  /** @override */
+  mergeItems(beginIndex, endIndex) {
+    cr.ui.table.TableList.prototype.mergeItems.call(this, beginIndex, endIndex);
+
+    // Make sure that list item's selected attribute is updated just after the
+    // mergeItems operation is done. This prevents checkmarks on selected items
+    // from being animated unintentionally by redraw.
+    for (let i = beginIndex; i < endIndex; i++) {
+      const item = this.getListItemByIndex(i);
+      if (!item) {
+        continue;
+      }
+      const isSelected = this.selectionModel.getIndexSelected(i);
+      if (item.selected != isSelected) {
+        item.selected = isSelected;
+      }
+    }
+
+    if (this.onMergeItems_) {
+      this.onMergeItems_(beginIndex, endIndex);
+    }
+  }
+
+  /** @override */
+  createSelectionController(sm) {
+    return new FileListSelectionController(assert(sm));
+  }
 }
 
 /**
@@ -23,106 +66,61 @@ function FileTableList() {
  */
 FileTableList.decorate = self => {
   self.__proto__ = FileTableList.prototype;
-};
-
-FileTableList.prototype.__proto__ = cr.ui.table.TableList.prototype;
-
-/**
- * @type {?function(number, number)}
- */
-FileTableList.prototype.onMergeItems_ = null;
-
-/**
- * @param {function(number, number)} onMergeItems callback called from
- *     |mergeItems| with the parameters |beginIndex| and |endIndex|.
- */
-FileTableList.prototype.setOnMergeItems = function(onMergeItems) {
-  assert(!this.onMergeItems_);
-  this.onMergeItems_ = onMergeItems;
-};
-
-/** @override */
-FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
-  cr.ui.table.TableList.prototype.mergeItems.call(this, beginIndex, endIndex);
-
-  // Make sure that list item's selected attribute is updated just after the
-  // mergeItems operation is done. This prevents checkmarks on selected items
-  // from being animated unintentionally by redraw.
-  for (let i = beginIndex; i < endIndex; i++) {
-    const item = this.getListItemByIndex(i);
-    if (!item) {
-      continue;
-    }
-    const isSelected = this.selectionModel.getIndexSelected(i);
-    if (item.selected != isSelected) {
-      item.selected = isSelected;
-    }
-  }
-
-  if (this.onMergeItems_) {
-    this.onMergeItems_(beginIndex, endIndex);
-  }
-};
-
-/** @override */
-FileTableList.prototype.createSelectionController = function(sm) {
-  return new FileListSelectionController(assert(sm));
+  self.onMergeItems_ = null;
 };
 
 /**
  * Selection controller for the file table list.
- * @param {!cr.ui.ListSelectionModel} selectionModel The selection model to
- *     interact with.
- * @constructor
- * @extends {cr.ui.ListSelectionController}
- * @struct
  */
-function FileListSelectionController(selectionModel) {
-  cr.ui.ListSelectionController.call(this, selectionModel);
-
+class FileListSelectionController extends cr.ui.ListSelectionController {
   /**
-   * Whether to allow touch-specific interaction.
-   * @type {boolean}
+   * @param {!cr.ui.ListSelectionModel} selectionModel The selection model to
+   *     interact with.
    */
-  this.enableTouchMode_ = false;
-  util.isTouchModeEnabled().then(enabled => {
-    this.enableTouchMode_ = enabled;
-  });
+  constructor(selectionModel) {
+    super(selectionModel);
+    //cr.ui.ListSelectionController.call(this, selectionModel);
 
-  /**
-   * @type {!FileTapHandler}
-   * @const
-   */
-  this.tapHandler_ = new FileTapHandler();
+    /**
+     * Whether to allow touch-specific interaction.
+     * @type {boolean}
+     */
+    this.enableTouchMode_ = false;
+    util.isTouchModeEnabled().then(enabled => {
+      this.enableTouchMode_ = enabled;
+    });
+
+    /**
+     * @type {!FileTapHandler}
+     * @const
+     */
+    this.tapHandler_ = new FileTapHandler();
+  }
+
+  /** @override */
+  handlePointerDownUp(e, index) {
+    filelist.handlePointerDownUp.call(this, e, index);
+  }
+
+  /** @override */
+  handleTouchEvents(e, index) {
+    if (!this.enableTouchMode_) {
+      return;
+    }
+    if (this.tapHandler_.handleTouchEvents(
+            e, index, filelist.handleTap.bind(this))) {
+      // If a tap event is processed, FileTapHandler cancels the event to prevent
+      // triggering click events. Then it results not moving the focus to the
+      // list. So we do that here explicitly.
+      filelist.focusParentList(e);
+    }
+  }
+
+  /** @override */
+  handleKeyDown(e) {
+    filelist.handleKeyDown.call(this, e);
+  }
 }
-
-FileListSelectionController.prototype = /** @struct */ {
-  __proto__: cr.ui.ListSelectionController.prototype
-};
-
-/** @override */
-FileListSelectionController.prototype.handlePointerDownUp = function(e, index) {
-  filelist.handlePointerDownUp.call(this, e, index);
-};
-
-/** @override */
-FileListSelectionController.prototype.handleTouchEvents = function(e, index) {
-  if (!this.enableTouchMode_) {
-    return;
-  }
-  if (this.tapHandler_.handleTouchEvents(
-          e, index, filelist.handleTap.bind(this))) {
-    // If a tap event is processed, FileTapHandler cancels the event to prevent
-    // triggering click events. Then it results not moving the focus to the
-    // list. So we do that here explicitly.
-    filelist.focusParentList(e);
-  }
-};
-
-/** @override */
-FileListSelectionController.prototype.handleKeyDown = function(e) {
-  filelist.handleKeyDown.call(this, e);
-};
 
 /**
  * Common item decoration for table's and grid's items.
