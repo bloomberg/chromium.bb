@@ -65,7 +65,7 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
   DCHECK(layout_image->GetDocument().GetSecurityOrigin());
   if (!Performance::PassesTimingAllowCheck(
           layout_image->CachedImage()->GetResponse(),
-          *layout_image->GetDocument().GetSecurityOrigin(), AtomicString(),
+          *layout_image->GetDocument().GetSecurityOrigin(),
           &layout_image->GetDocument()))
     return;
 

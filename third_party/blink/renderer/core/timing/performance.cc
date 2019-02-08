@@ -405,7 +405,6 @@ void Performance::setResourceTimingBufferSize(unsigned size) {
 bool Performance::PassesTimingAllowCheck(
     const ResourceResponse& response,
     const SecurityOrigin& initiator_security_origin,
-    const AtomicString& original_timing_allow_origin,
     ExecutionContext* context) {
   const KURL& response_url = response.ResponseUrl();
   scoped_refptr<const SecurityOrigin> resource_origin =
@@ -414,9 +413,7 @@ bool Performance::PassesTimingAllowCheck(
     return true;
 
   const AtomicString& timing_allow_origin_string =
-      original_timing_allow_origin.IsEmpty()
-          ? response.HttpHeaderField(http_names::kTimingAllowOrigin)
-          : original_timing_allow_origin;
+      response.HttpHeaderField(http_names::kTimingAllowOrigin);
   if (timing_allow_origin_string.IsEmpty() ||
       EqualIgnoringASCIICase(timing_allow_origin_string, "null"))
     return false;
@@ -455,12 +452,11 @@ bool Performance::AllowsTimingRedirect(
     const SecurityOrigin& initiator_security_origin,
     ExecutionContext* context) {
   if (!PassesTimingAllowCheck(final_response, initiator_security_origin,
-                              AtomicString(), context))
+                              context))
     return false;
 
   for (const ResourceResponse& response : redirect_chain) {
-    if (!PassesTimingAllowCheck(response, initiator_security_origin,
-                                AtomicString(), context))
+    if (!PassesTimingAllowCheck(response, initiator_security_origin, context))
       return false;
   }
 
@@ -495,8 +491,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   result.finish_time = info.LoadFinishTime();
 
   result.allow_timing_details = PassesTimingAllowCheck(
-      final_response, destination_origin, info.OriginalTimingAllowOrigin(),
-      &context_for_use_counter);
+      final_response, destination_origin, &context_for_use_counter);
 
   const Vector<ResourceResponse>& redirect_chain = info.RedirectChain();
   if (!redirect_chain.IsEmpty()) {

@@ -1142,13 +1142,6 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   scoped_refptr<ResourceTimingInfo> info =
       ResourceTimingInfo::Create(fetch_initiator, CurrentTimeTicks());
 
-  if (resource->IsCacheValidator()) {
-    const AtomicString& timing_allow_origin =
-        resource->GetResponse().HttpHeaderField(http_names::kTimingAllowOrigin);
-    if (!timing_allow_origin.IsEmpty())
-      info->SetOriginalTimingAllowOrigin(timing_allow_origin);
-  }
-
   resource_timing_info_map_.insert(resource, std::move(info));
 }
 
