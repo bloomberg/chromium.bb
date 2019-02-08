@@ -204,8 +204,10 @@ void SearchBoxView::SetupCloseButton() {
                   gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
                                         search_box_color()));
   close->SetVisible(false);
-  close->SetAccessibleName(
+  base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_CLEAR_SEARCHBOX));
+  close->SetAccessibleName(close_button_label);
+  close->SetTooltipText(close_button_label);
 }
 
 void SearchBoxView::SetupBackButton() {
