@@ -53,6 +53,7 @@ source_set("startup") {
     ":startup_basic",
     "//base",
     "//components/ntp_snippets",
+    "//components/search_engines:search_engines",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/first_run",

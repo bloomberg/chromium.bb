@@ -45,6 +45,9 @@ extern const char kChromeAppGroupCommandCommandPreference[];
 // The command to open a URL. Parameter must contain the URL.
 extern const char kChromeAppGroupOpenURLCommand[];
 
+// The command to search some text. Parameter must contain the text.
+extern const char kChromeAppGroupSearchTextCommand[];
+
 // The command to trigger a voice search.
 extern const char kChromeAppGroupVoiceSearchCommand[];
 
@@ -64,9 +67,9 @@ extern const char kChromeAppGroupQRScannerCommand[];
 // |kChromeAppGroupCommandAppPreference| issued the command.
 extern const char kChromeAppGroupCommandTimePreference[];
 
-// The key in kChromeAppGroupCommandPreference containing the URL to open for if
-// the command requires one.
-extern const char kChromeAppGroupCommandURLPreference[];
+// The key in kChromeAppGroupCommandPreference containing the text use for the
+// command if it requires one. This could be a URL, a string, etc.
+extern const char kChromeAppGroupCommandTextPreference[];
 
 // The key in kChromeAppGroupCommandPreference containing the index to open for
 // if the command requires one.

@@ -16,6 +16,7 @@ enum NTPTabOpeningPostOpeningAction {
   START_QR_CODE_SCANNER,
   FOCUS_OMNIBOX,
   NTP_TAB_OPENING_POST_OPENING_ACTION_COUNT,
+  SEARCH_TEXT,
 };
 
 class GURL;
@@ -48,6 +49,8 @@ class GURL;
     NTPTabOpeningPostOpeningAction postOpeningAction;
 // Boolean to track if a Payment Request response is requested at startup.
 @property(nonatomic, readwrite, assign) BOOL completePaymentRequest;
+// Text query that should be executed on startup.
+@property(nonatomic, readwrite, copy) NSString* textQuery;
 
 - (instancetype)init NS_UNAVAILABLE;
 

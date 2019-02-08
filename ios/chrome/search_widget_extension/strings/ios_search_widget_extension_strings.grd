@@ -142,14 +142,17 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_SCAN_QR_CODE" desc="Label in the widget extension for the action to launch the app and open the qr code scanner. [Length: 30em]">
         Scan QR Code
       </message>
-      <message name="IDS_IOS_NO_COPIED_LINK_TITLE" desc="Label in the widget extension for the title of the copied link section when there is no copied link.">
-        No Copied Link
+      <message name="IDS_IOS_NO_COPIED_CONTENT_TITLE" desc="Label in the widget extension for the title of the copied content section when there is no copied content.">
+        Nothing in clipboard
       </message>
-      <message name="IDS_IOS_NO_COPIED_LINK_MESSAGE" desc="Label in the widget extension for the message shown in the copied link section when there is no copied link.">
-        Links you copy will appear here.
+      <message name="IDS_IOS_NO_COPIED_CONTENT_MESSAGE" desc="Label in the widget extension for the message shown in the copied link section when there is no copied content.">
+        Content you copy will appear here.
       </message>
-      <message name="IDS_IOS_OPEN_COPIED_LINK" desc="Label in the widget extension for the title of the copied link section when there is a copied link displayed.">
-        Open Copied Link
+      <message name="IDS_IOS_OPEN_COPIED_LINK" desc="Label in the widget extension for the title of the copied content section when there is a copied link displayed.">
+        Visit Link You Copied
+      </message>
+      <message name="IDS_IOS_OPEN_COPIED_TEXT" desc="Label in the widget extension for the title of the copied content section when there is copied text displayed.">
+        Search for Text You Copied
       </message>
     </messages>
   </release>

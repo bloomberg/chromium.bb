@@ -16,6 +16,7 @@ include_rules = [
   "+components/payments/core",
   "+components/prefs",
   "+components/reading_list/core",
+  "+components/search_engines",
   "+components/suggestions",
   "+components/sync/driver",
   "+components/task_scheduler_util",

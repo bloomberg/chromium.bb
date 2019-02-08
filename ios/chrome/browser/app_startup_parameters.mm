@@ -24,6 +24,7 @@
 @synthesize postOpeningAction = _postOpeningAction;
 @synthesize launchInIncognito = _launchInIncognito;
 @synthesize completePaymentRequest = _completePaymentRequest;
+@synthesize textQuery = _textQuery;
 
 - (const GURL&)externalURL {
   return _externalURL;
@@ -87,6 +88,9 @@
       break;
     case FOCUS_OMNIBOX:
       [description appendString:@", should focus omnibox"];
+      break;
+    case SEARCH_TEXT:
+      [description appendString:@", should search for text"];
       break;
     default:
       break;
