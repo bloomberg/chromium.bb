@@ -14,6 +14,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -51,7 +52,7 @@ class SmbService : public KeyedService,
   using StartReadDirIfSuccessfulCallback =
       base::OnceCallback<void(bool should_retry_start_read_dir)>;
 
-  explicit SmbService(Profile* profile);
+  SmbService(Profile* profile, std::unique_ptr<base::TickClock> tick_clock);
   ~SmbService() override;
 
   // Gets the singleton instance for the |context|.
@@ -239,6 +240,7 @@ class SmbService : public KeyedService,
   static bool service_should_run_;
   const ProviderId provider_id_;
   Profile* profile_;
+  std::unique_ptr<base::TickClock> tick_clock_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
   std::unique_ptr<SmbShareFinder> share_finder_;
   // |mount_id| -> |reply|. Stored callbacks to run after updating credential.
