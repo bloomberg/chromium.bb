@@ -109,8 +109,10 @@ class MEDIA_EXPORT MediaLog {
   std::unique_ptr<MediaLogEvent> CreateTimeEvent(MediaLogEvent::Type type,
                                                  const std::string& property,
                                                  base::TimeDelta value);
+  std::unique_ptr<MediaLogEvent> CreateTimeEvent(MediaLogEvent::Type type,
+                                                 const std::string& property,
+                                                 double value);
   std::unique_ptr<MediaLogEvent> CreateLoadEvent(const std::string& url);
-  std::unique_ptr<MediaLogEvent> CreateSeekEvent(double seconds);
   std::unique_ptr<MediaLogEvent> CreatePipelineStateChangedEvent(
       PipelineImpl::State state);
   std::unique_ptr<MediaLogEvent> CreatePipelineErrorEvent(PipelineStatus error);
