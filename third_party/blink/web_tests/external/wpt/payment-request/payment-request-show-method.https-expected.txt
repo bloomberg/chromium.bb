@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Calling show() without being triggered by user interaction throws assert_throws: function "function() { throw e }" threw object "UnknownError: Request failed" that is not a DOMException SecurityError: property "code" is equal to 0, expected 18
+Harness: the test ran to completion.
+
