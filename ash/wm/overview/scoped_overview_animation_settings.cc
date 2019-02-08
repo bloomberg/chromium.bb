@@ -18,46 +18,72 @@ namespace ash {
 namespace {
 
 // The time duration for transformation animations.
-constexpr int kTransitionMs = 300;
+constexpr base::TimeDelta kTransition = base::TimeDelta::FromMilliseconds(300);
 
 // The time duration for fading out when closing an item.
-constexpr int kCloseFadeOutMs = 100;
+constexpr base::TimeDelta kCloseFadeOut =
+    base::TimeDelta::FromMilliseconds(100);
 
 // The time duration for scaling down when an item is closed.
-constexpr int kCloseScaleMs = 100;
+constexpr base::TimeDelta kCloseScale = base::TimeDelta::FromMilliseconds(100);
 
 // The time duration for widgets to fade in.
-constexpr int kFadeInDelayMs = 83;
-constexpr int kFadeInMs = 167;
+constexpr base::TimeDelta kFadeInDelay = base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kFadeIn = base::TimeDelta::FromMilliseconds(167);
 
 // The time duration for widgets to fade out.
-constexpr int kFadeOutMs = 100;
+constexpr base::TimeDelta kFadeOut = base::TimeDelta::FromMilliseconds(100);
 
-constexpr int kFromHomeLauncherDelayMs = 250;
-constexpr int kHomeLauncherTransitionMs = 250;
+constexpr base::TimeDelta kFromHomeLauncherDelay =
+    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kHomeLauncherTransition =
+    base::TimeDelta::FromMilliseconds(250);
+
+// Time it takes for the selector widget to move to the next target. The same
+// time is used for fading out shield widget when the overview mode is opened
+// or closed.
+constexpr base::TimeDelta kOverviewSelectorTransition =
+    base::TimeDelta::FromMilliseconds(250);
+
+// Time duration of the show animation of the drop target.
+constexpr base::TimeDelta kDropTargetFadeIn =
+    base::TimeDelta::FromMilliseconds(250);
+
+// Duration of the show/hide animation of the overview title bar.
+constexpr base::TimeDelta kOverviewTitleFade =
+    base::TimeDelta::FromMilliseconds(167);
 
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
       return base::TimeDelta();
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-      return base::TimeDelta::FromMilliseconds(kFadeInMs);
+      return kFadeIn;
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
-      return base::TimeDelta::FromMilliseconds(kFadeOutMs);
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT:
+      return kFadeOut;
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
-      return base::TimeDelta::FromMilliseconds(kTransitionMs);
-    case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
-      return base::TimeDelta::FromMilliseconds(kCloseScaleMs);
-    case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
-      return base::TimeDelta::FromMilliseconds(kCloseFadeOutMs);
+      return kTransition;
+    case OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM:
+      return kCloseScale;
+    case OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM:
+      return kCloseFadeOut;
     case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
-      return base::TimeDelta::FromMilliseconds(kHomeLauncherTransitionMs);
-  }
+      return kHomeLauncherTransition;
+    case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
+      return kDropTargetFadeIn;
+    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
+    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
+      return kOverviewSelectorTransition;
+    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
+    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
+      return kOverviewTitleFade;
+  };
   NOTREACHED();
   return base::TimeDelta();
 }
@@ -115,20 +141,26 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW:
+    case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
+    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
+    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
+    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
+    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER:
     case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
       return g_reporter_enter.Pointer();
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
       return g_reporter_exit.Pointer();
-    case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
-    case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+    case OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM:
+    case OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM:
       return g_reporter_close.Pointer();
   }
   NOTREACHED();
@@ -140,41 +172,46 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
 ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
     OverviewAnimationType animation_type,
     aura::Window* window)
-    : animation_settings_(new ui::ScopedLayerAnimationSettings(
-          window->layer()->GetAnimator())) {
+    : ScopedOverviewAnimationSettings(animation_type,
+                                      window->layer()->GetAnimator()) {}
+
+ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
+    OverviewAnimationType animation_type,
+    ui::LayerAnimator* animator)
+    : animation_settings_(
+          std::make_unique<ui::ScopedLayerAnimationSettings>(animator)) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-      window->layer()->GetAnimator()->SchedulePauseForProperties(
-          base::TimeDelta::FromMilliseconds(kFadeInDelayMs),
-          ui::LayerAnimationElement::OPACITY);
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      animator->SchedulePauseForProperties(kFadeInDelay,
+                                           ui::LayerAnimationElement::OPACITY);
       break;
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW:
+    case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
+      animation_settings_->SetTweenType(gfx::Tween::ZERO);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      animation_settings_->SetTweenType(gfx::Tween::ZERO);
       break;
-    case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
-    case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
+    case OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM:
+    case OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM:
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
@@ -183,13 +220,40 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-      window->layer()->GetAnimator()->SchedulePauseForProperties(
-          base::TimeDelta::FromMilliseconds(kFromHomeLauncherDelayMs),
-          ui::LayerAnimationElement::OPACITY |
-              ui::LayerAnimationElement::TRANSFORM);
+      animator->SchedulePauseForProperties(
+          kFromHomeLauncherDelay, ui::LayerAnimationElement::OPACITY |
+                                      ui::LayerAnimationElement::TRANSFORM);
       break;
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      break;
+    case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
+      animation_settings_->SetTweenType(gfx::Tween::EASE_IN);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      break;
+    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
+      animation_settings_->SetTweenType(gfx::Tween::EASE_IN_OUT);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      break;
+    case OVERVIEW_ANIMATION_SELECTION_WINDOW:
+      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      break;
+    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
+      animation_settings_->SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      animator->SchedulePauseForProperties(kOverviewTitleFade,
+                                           ui::LayerAnimationElement::OPACITY);
+      break;
+    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
+      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;

@@ -97,17 +97,17 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // reposition with animation.
   void AddItem(aura::Window* window, bool reposition, bool animate);
 
-  // Removes |selector_item| from the grid. If |reprosition| is ture, reposition
+  // Removes |overview_item| from the grid. If |reposition| is true, reposition
   // all window items in the grid after removing the item.
-  void RemoveItem(OverviewItem* selector_item, bool reposition);
+  void RemoveItem(OverviewItem* overview_item, bool reposition);
 
   // Sets bounds for the window grid and positions all windows in the grid.
   void SetBoundsAndUpdatePositions(const gfx::Rect& bounds_in_screen);
   void SetBoundsAndUpdatePositionsIgnoringWindow(const gfx::Rect& bounds,
                                                  OverviewItem* ignored_item);
 
-  // Shows or hides the selection widget. To be called by a window selector item
-  // when it is dragged.
+  // Shows or hides the selection widget. To be called by an overview item when
+  // it is dragged.
   void SetSelectionWidgetVisibility(bool visible);
 
   void ShowNoRecentsWindowMessage(bool visible);
@@ -132,7 +132,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Returns true if |window| is the placeholder window from the drop target.
   bool IsDropTargetWindow(aura::Window* window) const;
 
-  // Returns the selector item that accociates with |drop_target_widget_|.
+  // Returns the overview item that accociates with |drop_target_widget_|.
   // Returns nullptr if overview does not have the drop target.
   OverviewItem* GetDropTarget();
 
@@ -160,9 +160,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
 
   // Calculates |should_animate_when_entering_| and
-  // |should_animate_when_exiting_| of the window selector items based on where
+  // |should_animate_when_exiting_| of the overview items based on where
   // the first MRU window covering the available workspace is found.
-  // |selector_item| is not nullptr if |selector_item| is the selected item when
+  // |selected_item| is not nullptr if |selected_item| is the selected item when
   // exiting overview mode.
   void CalculateWindowListAnimationStates(
       OverviewItem* selected_item,
@@ -203,14 +203,13 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
       const gfx::Rect& work_area,
       OverviewSession::UpdateAnimationSettingsCallback callback);
 
-  // Returns the window of the window selector item that contains
-  // |location_in_screen|.
+  // Returns the window of the overview item that contains |location_in_screen|.
   aura::Window* GetTargetWindowOnLocation(const gfx::Point& location_in_screen);
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
-  // Returns how many window selector items are in the grid.
+  // Returns how many overview items are in the grid.
   size_t size() const { return window_list_.size(); }
 
   // Returns true if the selection widget is active.
@@ -266,7 +265,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Moves the selection widget to the targeted window.
   void MoveSelectionWidgetToTarget(bool animate);
 
-  // Gets the layout of the window selector items. Layout is done in 2 stages
+  // Gets the layout of the overview items. Layout is done in 2 stages
   // maintaining fixed MRU ordering.
   // 1. Optimal height is determined. In this stage |height| is bisected to find
   //    maximum height which still allows all the windows to fit.
@@ -296,16 +295,16 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                               int* out_min_right,
                               int* out_max_right);
 
-  // Calculates |selector_item|'s |should_animate_when_entering_|,
-  // |should_animate_when_exiting_|. |selected| is true if if |selector_item| is
+  // Calculates |overview_item|'s |should_animate_when_entering_|,
+  // |should_animate_when_exiting_|. |selected| is true if |overview_item| is
   // the selected item when exiting overview mode.
   void CalculateOverviewItemAnimationState(
-      OverviewItem* selector_item,
+      OverviewItem* overview_item,
       bool* has_fullscreen_coverred,
       bool selected,
       OverviewSession::OverviewTransition transition);
 
-  // Returns the window selector item iterator that contains |window|.
+  // Returns the overview item iterator that contains |window|.
   std::vector<std::unique_ptr<OverviewItem>>::iterator
   GetOverviewItemIterContainingWindow(aura::Window* window);
 
@@ -316,7 +315,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Root window the grid is in.
   aura::Window* root_window_;
 
-  // Pointer to the window selector that spawned this grid.
+  // Pointer to the OverviewSession that spawned this grid.
   OverviewSession* overview_session_;
 
   // Vector containing all the windows in this grid.

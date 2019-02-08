@@ -16,17 +16,21 @@ class Window;
 
 namespace ui {
 class ImplicitAnimationObserver;
+class LayerAnimator;
 class ScopedLayerAnimationSettings;
 }  // namespace ui
 
 namespace ash {
 
 // ScopedOverviewAnimationSettings correctly configures the animation
-// settings for an aura::Window given an OverviewAnimationType.
+// settings for an aura::Window or ui::LayerAnimator given an
+// OverviewAnimationType.
 class ScopedOverviewAnimationSettings {
  public:
   ScopedOverviewAnimationSettings(OverviewAnimationType animation_type,
                                   aura::Window* window);
+  ScopedOverviewAnimationSettings(OverviewAnimationType animation_type,
+                                  ui::LayerAnimator* animator);
   ~ScopedOverviewAnimationSettings();
   void AddObserver(ui::ImplicitAnimationObserver* observer);
   void CacheRenderSurface();

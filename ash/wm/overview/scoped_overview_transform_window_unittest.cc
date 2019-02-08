@@ -156,11 +156,11 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingLetteredRect) {
   EXPECT_TRUE(overview_bounds.Contains(transformed_rect));
 
   // Verify that for an extreme window, the transform window stores the
-  // original window selector bounds, minus the header.
-  gfx::Rect selector_bounds = overview_bounds;
-  selector_bounds.Inset(0, overview_header, 0, 0);
+  // original overview item bounds, minus the header.
+  gfx::Rect new_overview_bounds = overview_bounds;
+  new_overview_bounds.Inset(0, overview_header, 0, 0);
   ASSERT_TRUE(transform_window.overview_bounds().has_value());
-  EXPECT_EQ(transform_window.overview_bounds().value(), selector_bounds);
+  EXPECT_EQ(transform_window.overview_bounds().value(), new_overview_bounds);
 }
 
 // Verify that a window which will be displayed like a pillar box on the window
@@ -195,11 +195,11 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingPillaredRect) {
   EXPECT_TRUE(overview_bounds.Contains(transformed_rect));
 
   // Verify that for an extreme window, the transform window stores the
-  // original window selector bounds, minus the header.
-  gfx::Rect selector_bounds = overview_bounds;
-  selector_bounds.Inset(0, overview_header, 0, 0);
+  // original overview item bounds, minus the header.
+  gfx::Rect new_overview_bounds = overview_bounds;
+  new_overview_bounds.Inset(0, overview_header, 0, 0);
   ASSERT_TRUE(transform_window.overview_bounds().has_value());
-  EXPECT_EQ(transform_window.overview_bounds().value(), selector_bounds);
+  EXPECT_EQ(transform_window.overview_bounds().value(), new_overview_bounds);
 }
 
 // Tests the cases when very wide or tall windows enter overview mode.

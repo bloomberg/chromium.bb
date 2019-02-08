@@ -171,9 +171,9 @@ class ScopedOverviewTransformWindow::WindowMask : public ui::LayerDelegate,
 };
 
 ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
-    OverviewItem* selector_item,
+    OverviewItem* overview_item,
     aura::Window* window)
-    : selector_item_(selector_item),
+    : overview_item_(overview_item),
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
@@ -231,7 +231,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
 
   if (reset_transform) {
     ScopedAnimationSettings animation_settings_list;
-    BeginScopedAnimation(selector_item_->GetExitTransformAnimationType(),
+    BeginScopedAnimation(overview_item_->GetExitTransformAnimationType(),
                          &animation_settings_list);
     // Use identity transform directly to reset window's transform when exiting
     // overview.
@@ -248,7 +248,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
   }
 
   ScopedOverviewAnimationSettings animation_settings(
-      selector_item_->GetExitOverviewAnimationType(), window_);
+      overview_item_->GetExitOverviewAnimationType(), window_);
   SetOpacity(original_opacity_);
   window_->layer()->SetMaskLayer(original_mask_layer_);
 }
@@ -266,7 +266,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
 
     // Create a start animation observer if this is an enter overview layout
     // animation.
-    if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER) {
+    if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER) {
       auto start_observer = std::make_unique<StartAnimationObserver>();
       settings->AddObserver(start_observer.get());
       Shell::Get()->overview_controller()->AddStartAnimationObserver(
@@ -276,7 +276,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
     animation_settings->push_back(std::move(settings));
   }
 
-  if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW &&
+  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
       animation_settings->size() > 0u) {
     animation_settings->front()->AddObserver(this);
   }
@@ -465,8 +465,8 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
     return;
   }
 
-  // Add the mask which gives the window selector items rounded corners, and add
-  // the shadow around the window.
+  // Add the mask which gives the overview item rounded corners, and add the
+  // shadow around the window.
   ui::Layer* layer = minimized_widget_
                          ? minimized_widget_->GetNativeWindow()->layer()
                          : window_->layer();
@@ -513,12 +513,12 @@ void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
     ui::LayerAnimationSequence* sequence) {
   // Remove the mask before animating because masks affect animation
   // performance. The mask will be added back once the animation is completed.
-  selector_item_->UpdateMaskAndShadow();
+  overview_item_->UpdateMaskAndShadow();
 }
 
 void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
-  selector_item_->UpdateMaskAndShadow();
-  selector_item_->OnDragAnimationCompleted();
+  overview_item_->UpdateMaskAndShadow();
+  overview_item_->OnDragAnimationCompleted();
 }
 
 gfx::Rect ScopedOverviewTransformWindow::GetMaskBoundsForTesting() const {

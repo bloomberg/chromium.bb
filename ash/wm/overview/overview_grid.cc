@@ -6,10 +6,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <memory>
-#include <set>
 #include <utility>
-#include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -50,7 +47,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
-#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -65,11 +61,6 @@
 
 namespace ash {
 namespace {
-
-// Time it takes for the selector widget to move to the next target. The same
-// time is used for fading out shield widget when the overview mode is opened
-// or closed.
-constexpr int kOverviewSelectorTransitionMilliseconds = 250;
 
 // The color and opacity of the screen shield in overview.
 constexpr SkColor kShieldColor = SkColorSetARGB(255, 0, 0, 0);
@@ -103,9 +94,6 @@ constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
 constexpr SkColor kNoItemsIndicatorBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 constexpr float kNoItemsIndicatorBackgroundOpacity = 0.8f;
-
-// Time duration of the show animation of the drop target.
-constexpr int kDropTargetTransitionMilliseconds = 250;
 
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(OverviewSession::Direction direction,
@@ -149,15 +137,12 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
 
   if (animate) {
     widget->SetOpacity(0.f);
-    ui::ScopedLayerAnimationSettings animation_settings(
-        widget->GetNativeWindow()->layer()->GetAnimator());
-    animation_settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kDropTargetTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::EASE_IN);
-    animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN, widget->GetNativeWindow());
+    widget->SetOpacity(1.f);
+  } else {
+    widget->SetOpacity(1.f);
   }
-  widget->SetOpacity(1.f);
   return widget;
 }
 
@@ -455,8 +440,8 @@ void OverviewGrid::PositionWindows(
   // |window_list_|.
   OverviewAnimationType animation_type =
       transition == OverviewSession::OverviewTransition::kEnter
-          ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER
-          : OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW;
+          ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER
+          : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW;
   for (size_t i = 0; i < window_list_.size(); ++i) {
     OverviewItem* window_item = window_list_[i].get();
     if (window_item->animating_to_close() ||
@@ -579,12 +564,12 @@ void OverviewGrid::AddItem(aura::Window* window,
     PositionWindows(animate);
 }
 
-void OverviewGrid::RemoveItem(OverviewItem* selector_item, bool reposition) {
-  auto iter = GetOverviewItemIterContainingWindow(selector_item->GetWindow());
+void OverviewGrid::RemoveItem(OverviewItem* overview_item, bool reposition) {
+  auto iter = GetOverviewItemIterContainingWindow(overview_item->GetWindow());
   if (iter != window_list_.end()) {
-    window_observer_.Remove(selector_item->GetWindow());
+    window_observer_.Remove(overview_item->GetWindow());
     window_state_observer_.Remove(
-        wm::GetWindowState(selector_item->GetWindow()));
+        wm::GetWindowState(overview_item->GetWindow()));
     // Erase from the list first because deleting OverviewItem can lead to
     // iterating through the |window_list_|.
     std::unique_ptr<OverviewItem> tmp = std::move(*iter);
@@ -703,8 +688,8 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
     }
 
     // Also clear ash::kIsDeferredTabDraggingTargetWindowKey key on the target
-    // window selector item so that it can't merge into this window selector
-    // item if the dragged window is currently in preview window area.
+    // overview item so that it can't merge into this overview item if the
+    // dragged window is currently in preview window area.
     if (target_window && !IsDropTargetWindow(target_window))
       target_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
 
@@ -712,7 +697,7 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
   }
 
   // Show the selection widget if |location_in_screen| is contained by the
-  // browser windows' selector items in overview.
+  // browser windows' overview item in overview.
   if (target_window &&
       target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
     size_t previous_selected_index = selected_index_;
@@ -826,7 +811,7 @@ void OverviewGrid::OnWindowDestroying(aura::Window* window) {
 
   if (empty()) {
     selection_widget_.reset();
-    // If the grid is now empty, notify the window selector so that it erases us
+    // If the grid is now empty, notify |overview_session_| so that it erases us
     // from its grid list.
     if (overview_session_)
       overview_session_->OnGridEmpty(this);
@@ -909,8 +894,8 @@ void OverviewGrid::OnStartingAnimationComplete() {
 
 bool OverviewGrid::ShouldAnimateWallpaper() const {
   // If one of the windows covers the workspace, we do not need to animate.
-  for (const auto& selector_item : window_list_) {
-    if (CanCoverAvailableWorkspace(selector_item->GetWindow()))
+  for (const auto& overview_item : window_list_) {
+    if (CanCoverAvailableWorkspace(overview_item->GetWindow()))
       return false;
   }
 
@@ -1181,7 +1166,7 @@ void OverviewGrid::UpdateYPositionAndOpacity(
 
 aura::Window* OverviewGrid::GetTargetWindowOnLocation(
     const gfx::Point& location_in_screen) {
-  // Find the window selector item that contains |location_in_screen|.
+  // Find the overview item that contains |location_in_screen|.
   auto iter =
       std::find_if(window_list_.begin(), window_list_.end(),
                    [&location_in_screen](std::unique_ptr<OverviewItem>& item) {
@@ -1219,13 +1204,8 @@ void OverviewGrid::InitShieldWidget(bool animate) {
 
   if (animate) {
     shield_widget_->SetOpacity(initial_opacity);
-    ui::ScopedLayerAnimationSettings animation_settings(
-        widget_window->layer()->GetAnimator());
-    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
-    animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_SHIELD_FADE,
+                                             shield_widget_->GetNativeWindow());
     shield_widget_->SetOpacity(1.f);
   } else {
     shield_widget_->SetOpacity(1.f);
@@ -1266,21 +1246,15 @@ void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
     gfx::Vector2d fade_out_direction =
         GetSlideVectorForFadeIn(direction, old_selection_window->bounds());
 
-    ui::ScopedLayerAnimationSettings animation_settings(
-        old_selection_window->layer()->GetAnimator());
-    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    animation_settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_SELECTION_WINDOW, old_selection_window);
     // CleanupAnimationObserver will delete itself (and the widget) when the
-    // motion animation is complete.
-    // Ownership over the observer is passed to the
-    // overview_session_->delegate() which has longer lifetime so that
-    // animations can continue even after the overview mode is shut down.
+    // motion animation is complete. Ownership over the observer is passed to
+    // the overview_session_->delegate() which has longer lifetime so that
+    // animations can continue even after the overview session is shut down.
     std::unique_ptr<CleanupAnimationObserver> observer(
         new CleanupAnimationObserver(std::move(selection_widget_)));
-    animation_settings.AddObserver(observer.get());
+    settings.AddObserver(observer.get());
     overview_session_->delegate()->AddDelayedAnimationObserver(
         std::move(observer));
     old_selection->SetOpacity(0.f);
@@ -1305,27 +1279,16 @@ void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
   gfx::Rect bounds = SelectedWindow()->target_bounds();
   ::wm::ConvertRectFromScreen(root_window_, &bounds);
   if (animate) {
-    aura::Window* selection_widget_window =
-        selection_widget_->GetNativeWindow();
-    ui::ScopedLayerAnimationSettings animation_settings(
-        selection_widget_window->layer()->GetAnimator());
-    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
-    animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_SELECTION_WINDOW,
+        selection_widget_->GetNativeWindow());
     selection_widget_->SetBounds(bounds);
     selection_widget_->SetOpacity(1.f);
 
     if (selector_shadow_) {
-      ui::ScopedLayerAnimationSettings animation_settings_shadow(
+      ScopedOverviewAnimationSettings settings(
+          OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW,
           selector_shadow_->shadow_layer()->GetAnimator());
-      animation_settings_shadow.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(
-              kOverviewSelectorTransitionMilliseconds));
-      animation_settings_shadow.SetTweenType(gfx::Tween::EASE_IN_OUT);
-      animation_settings_shadow.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       bounds.Inset(1, 1);
       selector_shadow_->SetContentBounds(
           gfx::Rect(gfx::Point(1, 1), bounds.size()));
@@ -1549,23 +1512,23 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
 }
 
 void OverviewGrid::CalculateOverviewItemAnimationState(
-    OverviewItem* selector_item,
+    OverviewItem* overview_item,
     bool* has_covered_available_workspace,
     bool selected,
     OverviewSession::OverviewTransition transition) {
-  if (!selector_item)
+  if (!overview_item)
     return;
 
-  aura::Window* window = selector_item->GetWindow();
-  // |selector_item| should be contained in the |window_list_|.
+  aura::Window* window = overview_item->GetWindow();
+  // |overview_item| should be contained in the |window_list_|.
   DCHECK(GetOverviewItemContaining(window));
 
   bool can_cover_available_workspace = CanCoverAvailableWorkspace(window);
   const bool should_animate = selected || !(*has_covered_available_workspace);
   if (transition == OverviewSession::OverviewTransition::kEnter)
-    selector_item->set_should_animate_when_entering(should_animate);
+    overview_item->set_should_animate_when_entering(should_animate);
   if (transition == OverviewSession::OverviewTransition::kExit)
-    selector_item->set_should_animate_when_exiting(should_animate);
+    overview_item->set_should_animate_when_exiting(should_animate);
 
   if (!(*has_covered_available_workspace) && can_cover_available_workspace)
     *has_covered_available_workspace = true;
