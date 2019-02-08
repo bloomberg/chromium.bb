@@ -122,11 +122,6 @@ struct {{hash_fn_name}} {
 };
 
 template <>
-struct DefaultHash<{{enum_name}}> {
-  using Hash = {{hash_fn_name}};
-};
-
-template <>
 struct HashTraits<{{enum_name}}>
     : public GenericHashTraits<{{enum_name}}> {
   static_assert({{empty_value_unused}},
@@ -143,6 +138,20 @@ struct HashTraits<{{enum_name}}>
   static bool IsDeletedValue(const {{enum_name}}& value) {
     return value == static_cast<{{enum_name}}>({{deleted_value}});
   }
+};
+}  // namespace WTF
+{%- endmacro %}
+
+{%- macro enum_hash_blink_forward(enum) %}
+{%-   set enum_name = enum|get_qualified_name_for_kind(
+          flatten_nested_kind=True, include_variant=False) %}
+{%-   set hash_fn_name = enum|wtf_hash_fn_name_for_enum %}
+namespace WTF {
+struct {{hash_fn_name}};
+
+template <>
+struct DefaultHash<{{enum_name}}> {
+  using Hash = {{hash_fn_name}};
 };
 }  // namespace WTF
 {%- endmacro %}
