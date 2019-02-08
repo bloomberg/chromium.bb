@@ -111,6 +111,7 @@ const char* const kPublicSessionWhitelist[] = {
     "ilnpadgckeacioehlommkaafedibdeob",  // Enterprise DeviceAttributes
     "oflckobdemeldmjddmlbaiaookhhcngo",  // Citrix Receiver QA version
     "ljacajndfccfgnfohlgkdphmbnpkjflk",  // Chrome Remote Desktop (Dev Build)
+    "behllobkkfkfnphdnhnkndlbkcpglgmj",  // Autotest
 
     // Google Apps:
     "mclkkofklkfljcocdinagocijmpgbhab",  // Google input tools
