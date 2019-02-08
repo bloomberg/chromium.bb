@@ -5,7 +5,7 @@ kpaulhamus@chromium.org
 
 # TouchID, Windows Hello.
 martinkr@google.com
-martinkr@chromium.org # prefer @google.com
+martinkr@chromium.org # prefer google.com address
 
 # Attestation and legacy U2F implementation.
 agl@chromium.org
