@@ -1269,10 +1269,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
+
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
     enabled_features.emplace_back(chromeos::features::kCrostiniFiles);
   }
+
+  if (!IsNativeSmbTest()) {
+    disabled_features.emplace_back(features::kNativeSmb);
+  }
+
   if (IsDriveFsTest()) {
     enabled_features.emplace_back(chromeos::features::kDriveFs);
   } else {
@@ -1414,6 +1420,10 @@ bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
 
 bool FileManagerBrowserTestBase::GetIsOffline() const {
   return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableNativeSmb() const {
+  return true;
 }
 
 bool FileManagerBrowserTestBase::GetStartWithNoVolumesMounted() const {
@@ -1837,7 +1847,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "isSmbEnabled") {
-    *output = IsSmbEnabled() ? "true" : "false";
+    *output = IsNativeSmbTest() ? "true" : "false";
     return;
   }
 
@@ -1892,10 +1902,6 @@ void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
       ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
   ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
   waiter.EnableVirtualKeyboard();
-}
-
-bool FileManagerBrowserTestBase::IsSmbEnabled() const {
-  return base::FeatureList::IsEnabled(features::kNativeSmb);
 }
 
 }  // namespace file_manager

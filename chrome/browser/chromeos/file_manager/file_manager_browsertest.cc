@@ -6,12 +6,10 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -67,6 +65,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& DisableNativeSmb() {
+    enable_native_smb = false;
+    return *this;
+  }
+
   TestCase& DontMountVolumes() {
     mount_no_volumes = true;
     return *this;
@@ -99,6 +102,9 @@ struct TestCase {
     if (test.enable_drivefs.value_or(false))
       name.append("_DriveFs");
 
+    if (!test.enable_native_smb)
+      name.append("_DisableNativeSmb");
+
     if (test.enable_myfiles_volume.value_or(false))
       name.append("_MyFilesVolume");
 
@@ -114,6 +120,7 @@ struct TestCase {
   bool with_browser = false;
   bool needs_zip = false;
   bool offline = false;
+  bool enable_native_smb = true;
   bool mount_no_volumes = false;
 };
 
@@ -188,12 +195,15 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 
   bool GetIsOffline() const override { return GetParam().offline; }
 
+  bool GetEnableNativeSmb() const override {
+    return GetParam().enable_native_smb;
+  }
+
   bool GetStartWithNoVolumesMounted() const override {
     return GetParam().mount_no_volumes;
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
 };
 
@@ -843,10 +853,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     Providers, /* providers.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("requestMount"),
+                      TestCase("requestMount").DisableNativeSmb(),
                       TestCase("requestMountMultipleMounts"),
+                      TestCase("requestMountMultipleMounts").DisableNativeSmb(),
                       TestCase("requestMountSourceDevice"),
+                      TestCase("requestMountSourceDevice").DisableNativeSmb(),
                       TestCase("requestMountSourceFile"),
-                      TestCase("providerEject")));
+                      TestCase("requestMountSourceFile").DisableNativeSmb(),
+                      TestCase("providerEject"),
+                      TestCase("providerEject").DisableNativeSmb()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu, /* gear_menu.js */
