@@ -35,9 +35,9 @@ class FileListSelectionModel extends cr.ui.ListSelectionModel {
    */
   adjustToReordering(permutation) {
     // Look at the old state.
-    var oldSelectedItemsCount = this.selectedIndexes.length;
-    var oldLeadIndex = this.leadIndex;
-    var newSelectedItemsCount =
+    const oldSelectedItemsCount = this.selectedIndexes.length;
+    const oldLeadIndex = this.leadIndex;
+    const newSelectedItemsCount =
         this.selectedIndexes.filter(i => permutation[i] != -1).length;
     // Call the superclass function.
     super.adjustToReordering(permutation);
@@ -59,7 +59,7 @@ class FileListSelectionModel extends cr.ui.ListSelectionModel {
     // mode. When the number of selected item is one, the mode depends on the
     // last keyboard/mouse operation. In this case, the mode is controlled from
     // outside. See filelist.handlePointerDownUp and filelist.handleKeyDown.
-    var selectedIndexes = this.selectedIndexes;
+    const selectedIndexes = this.selectedIndexes;
     if (selectedIndexes.length === 0) {
       this.isCheckSelectMode_ = false;
     } else if (selectedIndexes.length >= 2) {
