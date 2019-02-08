@@ -973,9 +973,15 @@ bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
 
 base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
-  return l10n_util::GetStringUTF16(
-      model()->ClassifiesAsSearch(GetClipboardText()) ? IDS_PASTE_AND_SEARCH
-                                                      : IDS_PASTE_AND_GO);
+  base::string16 clipboard_text = GetClipboardText();
+  // If the clipboard text is too long, this command will be disabled, so
+  // we skip the potentially expensive classification of the text and default to
+  // IDS_PASTE_AND_SEARCH.
+  bool paste_and_search =
+      clipboard_text.size() > OmniboxEditModel::kMaxPasteAndGoTextLength ||
+      model()->ClassifiesAsSearch(clipboard_text);
+  return l10n_util::GetStringUTF16(paste_and_search ? IDS_PASTE_AND_SEARCH
+                                                    : IDS_PASTE_AND_GO);
 }
 
 const char* OmniboxViewViews::GetClassName() const {
