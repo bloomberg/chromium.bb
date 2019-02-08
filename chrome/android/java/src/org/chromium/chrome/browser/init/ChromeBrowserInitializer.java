@@ -240,6 +240,9 @@ public class ChromeBrowserInitializer {
         ChromeStrictMode.configureStrictMode();
         ChromeWebApkHost.init();
 
+        // Time this call takes in background from test devices:
+        // - Pixel 2: ~10 ms
+        // - Nokia 1 (Android Go): 20-200 ms
         warmUpSharedPrefs();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();

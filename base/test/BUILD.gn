@@ -93,6 +93,7 @@ static_library("test_support") {
     "perf_time_logger.h",
     "power_monitor_test_base.cc",
     "power_monitor_test_base.h",
+    "reached_code_profiler_android.cc",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_environment_variable_override.cc",
@@ -435,6 +436,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
+      "android/javatests/src/org/chromium/base/test/ReachedCodeProfiler.java",
       "android/javatests/src/org/chromium/base/test/task/TaskSchedulerTestHelpers.java",
       "android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
     ]

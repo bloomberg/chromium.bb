@@ -146,6 +146,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kProgressBarThrottleFeature,
     &kPwaImprovedSplashScreen,
     &kPwaPersistentNotification,
+    &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kSearchReadyOmniboxFeature,
     &kSearchEnginePromoExistingDevice,
@@ -409,6 +410,9 @@ const base::Feature kPwaImprovedSplashScreen{"PwaImprovedSplashScreen",
 
 const base::Feature kPwaPersistentNotification{
     "PwaPersistentNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

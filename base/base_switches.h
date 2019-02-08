@@ -45,6 +45,7 @@ extern const char kEnableCrashReporterForTesting[];
 #endif
 
 #if defined(OS_ANDROID)
+extern const char kEnableReachedCodeProfiler[];
 extern const char kOrderfileMemoryOptimization[];
 #endif
 
