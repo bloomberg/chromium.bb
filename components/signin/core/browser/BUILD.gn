@@ -78,6 +78,8 @@ static_library("internals") {
     "device_id_helper.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
+    "oauth2_token_service_delegate_android.cc",
+    "oauth2_token_service_delegate_android.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
     "signin_client.cc",
@@ -136,8 +138,6 @@ static_library("browser") {
     "mirror_account_reconcilor_delegate.h",
     "mutable_profile_oauth2_token_service_delegate.cc",
     "mutable_profile_oauth2_token_service_delegate.h",
-    "oauth2_token_service_delegate_android.cc",
-    "oauth2_token_service_delegate_android.h",
     "signin_error_controller.cc",
     "signin_error_controller.h",
     "signin_header_helper.cc",
@@ -206,10 +206,6 @@ static_library("browser") {
       "dice_header_helper.cc",
       "dice_header_helper.h",
     ]
-  }
-
-  if (is_android) {
-    deps += [ "android:jni_headers" ]
   }
 }
 
