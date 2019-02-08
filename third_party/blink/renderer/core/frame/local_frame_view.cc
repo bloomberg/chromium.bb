@@ -2306,14 +2306,7 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
         *this);
   }
 
-  // We need to run more phases only if the target is beyond kCompositingClean.
-  if (target_state > DocumentLifecycle::kCompositingClean) {
-    // TODO(vmpstr): Why is composited selection only updated if we're moving
-    // past kCompositingClean?
-    UpdateCompositedSelectionIfNeeded();
-    return true;
-  }
-  return false;
+  return target_state > DocumentLifecycle::kCompositingClean;
 }
 
 bool LocalFrameView::RunPrePaintLifecyclePhase(
@@ -2353,6 +2346,8 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
 
     PrePaintTreeWalk().WalkTree(*this);
   }
+
+  UpdateCompositedSelectionIfNeeded();
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPrePaintClean);
