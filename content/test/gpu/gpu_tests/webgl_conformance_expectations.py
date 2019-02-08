@@ -247,6 +247,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / Intel
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['win', 'intel'], bug=825338)
+    self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['win', 'intel'], bug=929009)
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
 
@@ -364,10 +366,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
-
-    # Win / Intel / Validating command decoder
-    self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
-        ['win', 'intel', 'no_passthrough', 'd3d11'], bug=929009)
 
     # D3D9 / Passthrough command decoder
     self.Fail('conformance/textures/canvas/' +
