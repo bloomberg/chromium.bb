@@ -11,11 +11,13 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
@@ -190,8 +192,38 @@ void ActiveNetworkIcon::UpdateActiveNetworks() {
   ActiveNetworksChanged(active_networks);
 }
 
+void ActiveNetworkIcon::SetCellularUninitializedMsg() {
+  if (network_state_handler_->GetTechnologyState(
+          NetworkTypePattern::Cellular()) ==
+      NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
+    cellular_uninitialized_msg_ = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
+    uninitialized_state_time_ = base::Time::Now();
+    return;
+  }
+
+  if (network_state_handler_->GetScanningByType(
+          NetworkTypePattern::Cellular())) {
+    cellular_uninitialized_msg_ = IDS_ASH_STATUS_TRAY_MOBILE_SCANNING;
+    uninitialized_state_time_ = base::Time::Now();
+    return;
+  }
+
+  // There can be a delay between leaving the Initializing state and when
+  // a Cellular device shows up, so keep showing the initializing
+  // animation for a bit to avoid flashing the disconnect icon.
+  const int kInitializingDelaySeconds = 1;
+  base::TimeDelta dtime = base::Time::Now() - uninitialized_state_time_;
+  if (dtime.InSeconds() >= kInitializingDelaySeconds)
+    cellular_uninitialized_msg_ = 0;
+}
+
 void ActiveNetworkIcon::DeviceListChanged() {
   UpdateActiveNetworks();
+}
+
+void ActiveNetworkIcon::DevicePropertiesUpdated(
+    const chromeos::DeviceState* device) {
+  SetCellularUninitializedMsg();
 }
 
 void ActiveNetworkIcon::ActiveNetworksChanged(
@@ -238,7 +270,7 @@ void ActiveNetworkIcon::ActiveNetworksChanged(
   active_non_cellular_ =
       GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
 
-  cellular_uninitialized_msg_ = network_icon::GetCellularUninitializedMsg();
+  SetCellularUninitializedMsg();
 }
 
 void ActiveNetworkIcon::OnShuttingDown() {

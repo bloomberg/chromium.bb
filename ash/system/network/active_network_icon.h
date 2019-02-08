@@ -12,6 +12,7 @@
 #include "ash/system/network/network_icon.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -59,6 +60,10 @@ class ASH_EXPORT ActiveNetworkIcon
   gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
                                       bool* animating);
 
+  int cellular_uninitialized_msg_for_test() const {
+    return cellular_uninitialized_msg_;
+  }
+
  private:
   gfx::ImageSkia GetDefaultImageImpl(
       const chromeos::NetworkState* default_network,
@@ -71,9 +76,11 @@ class ASH_EXPORT ActiveNetworkIcon
                                              bool* animating);
 
   void UpdateActiveNetworks();
+  void SetCellularUninitializedMsg();
 
   // chromeos::NetworkStateHandlerObserver
   void DeviceListChanged() override;
+  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
   void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
                                  active_networks) override;
   void OnShuttingDown() override;
@@ -84,6 +91,7 @@ class ASH_EXPORT ActiveNetworkIcon
   const chromeos::NetworkState* active_cellular_ = nullptr;
   const chromeos::NetworkState* active_vpn_ = nullptr;
   int cellular_uninitialized_msg_ = 0;
+  base::Time uninitialized_state_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveNetworkIcon);
 };

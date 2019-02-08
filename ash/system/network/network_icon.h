@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_NETWORK_NETWORK_ICON_H_
 #define ASH_SYSTEM_NETWORK_NETWORK_ICON_H_
 
+#include <set>
 #include <string>
 
 #include "ash/ash_export.h"
@@ -87,14 +88,10 @@ ASH_EXPORT base::string16 GetLabelForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
-// Updates and returns the appropriate message id if the cellular network
-// is uninitialized.
-ASH_EXPORT int GetCellularUninitializedMsg();
-
-// Called when the list of networks changes. Retrieves the list of networks
-// from the global NetworkStateHandler instance and removes cached entries
-// that are no longer in the list.
-ASH_EXPORT void PurgeNetworkIconCache();
+// Called periodically with the current list of network paths. Removes cached
+// entries that are no longer in the list.
+ASH_EXPORT void PurgeNetworkIconCache(
+    const std::set<std::string>& network_paths);
 
 // Called by ChromeVox to give a verbal indication of the network icon. Returns
 // the signal strength of |network|, if it is a network type with a signal

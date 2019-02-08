@@ -5,6 +5,7 @@
 #include "ash/system/network/network_icon.h"
 
 #include <memory>
+#include <set>
 
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/active_network_icon.h"
@@ -47,7 +48,7 @@ class NetworkIconTest : public testing::Test {
 
   void TearDown() override {
     active_network_icon_.reset();
-    PurgeNetworkIconCache();
+    PurgeNetworkIconCache(std::set<std::string>());
   }
 
   std::string ConfigureService(const std::string& shill_json_string) {
@@ -117,6 +118,10 @@ class NetworkIconTest : public testing::Test {
                                       bool* animating) {
     *image = active_network_icon_->GetSingleImage(icon_type, animating);
     *label = active_network_icon_->GetDefaultLabel(icon_type);
+  }
+
+  int GetCellularUninitializedMsg() {
+    return active_network_icon_->cellular_uninitialized_msg_for_test();
   }
 
   // The icon for a Tether network should be the same as one for a cellular
