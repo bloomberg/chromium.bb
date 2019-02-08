@@ -5,11 +5,9 @@
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 
 #include "base/bind.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -81,8 +79,6 @@ TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
   testing::Mock::VerifyAndClearExpectations(store_.get());
   EXPECT_CALL(*store_, ClearGaiaPasswordHash("username2"));
   auto* identity_manager = identity_test_env()->identity_manager();
-  AccountFetcherService* account_fetcher_service =
-      AccountFetcherServiceFactory::GetForProfile(testing_profile_.get());
   identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       /*gaia_id=*/"secondary_account_id",
       /*email=*/"username2",
@@ -91,7 +87,8 @@ TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   // This call is necessary to ensure that the account removal is fully
   // processed in this testing context.
-  account_fetcher_service->EnableNetworkFetchesForTest();
+  identity_test_env()
+      ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
   identity_manager->GetAccountsMutator()->RemoveAccount(
       "secondary_account_id",
       signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);
