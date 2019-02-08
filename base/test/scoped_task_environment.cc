@@ -334,15 +334,10 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
   CHECK(base::ThreadTaskRunnerHandle::IsSet())
       << "ThreadTaskRunnerHandle should've been set now.";
 
-  // Instantiate a TaskScheduler with 2 threads in each of its 4 pools. Threads
-  // stay alive even when they don't have work.
-  // Each pool uses two threads to prevent deadlocks in unit tests that have a
-  // sequence that uses WithBaseSyncPrimitives() to wait on the result of
-  // another sequence. This isn't perfect (doesn't solve wait chains) but solves
-  // the basic use case for now.
-  // TODO(fdoray/jeffreyhe): Make the TaskScheduler dynamically replace blocked
-  // threads and get rid of this limitation. http://crbug.com/738104
-  constexpr int kMaxThreads = 2;
+  // Instantiate a TaskScheduler with 4 workers per pool. Having multiple threads
+  // prevents deadlocks should some blocking APIs not use ScopedBlockingCall. It also
+  // allows enough concurrency to allow TSAN to spot data races.
+  constexpr int kMaxThreads = 4;
   const TimeDelta kSuggestedReclaimTime = TimeDelta::Max();
   const SchedulerWorkerPoolParams worker_pool_params(kMaxThreads,
                                                      kSuggestedReclaimTime);
@@ -350,8 +345,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
       "ScopedTaskEnvironment", WrapUnique(task_tracker_)));
   task_scheduler_ = TaskScheduler::GetInstance();
   TaskScheduler::GetInstance()->Start({
-    worker_pool_params, worker_pool_params, worker_pool_params,
-        worker_pool_params
+    worker_pool_params, worker_pool_params
 #if defined(OS_WIN)
         ,
         // Enable the MTA in unit tests to match the browser process'
