@@ -5,6 +5,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 
 namespace switches {
 
@@ -43,5 +44,16 @@ bool AreExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 }
+
+#if defined(OS_WIN)
+// Toggles between IAccessible and UI Automation platform API.
+const char kEnableExperimentalUIAutomation[] =
+    "enable-experimental-ui-automation";
+
+bool IsExperimentalAccessibilityPlatformUIAEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalUIAutomation);
+}
+#endif
 
 }  // namespace switches

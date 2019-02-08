@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/common/content_switches.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -218,9 +219,9 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
   DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
 
   if (kIdScreenReaderHoneyPot == obj_id) {
-    // When an MSAA client has responded to our fake event on this id,
-    // enable basic accessibility support. (Full screen reader support is
-    // detected later when specific more advanced APIs are accessed.)
+    // When an MSAA client has responded to fake event for this id,
+    // only basic accessibility support is enabled. (Full screen reader support
+    // is detected later when specific, more advanced APIs are accessed.)
     for (ui::IAccessible2UsageObserver& observer :
          ui::GetIAccessible2UsageObserverList()) {
       observer.OnScreenReaderHoneyPotQueried();
@@ -231,7 +232,21 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
   if (!host_)
     return static_cast<LRESULT>(0L);
 
-  if (static_cast<DWORD>(OBJID_CLIENT) == obj_id) {
+  bool is_uia_request = static_cast<DWORD>(UiaRootObjectId) == obj_id;
+  bool is_msaa_request = static_cast<DWORD>(OBJID_CLIENT) == obj_id;
+
+  if ((is_uia_request &&
+       ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) ||
+      (is_msaa_request &&
+       !::switches::IsExperimentalAccessibilityPlatformUIAEnabled())) {
+    if (is_uia_request) {
+      // UIA, by design, insulates providers from knowing about the client(s)
+      // asking for information. When UIA interface is requested, the presence
+      // of a full-fledged accessibility technology is assumed and all support
+      // is enabled.
+      BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+    }
+
     RenderWidgetHostImpl* rwhi =
         RenderWidgetHostImpl::From(host_->GetRenderWidgetHost());
     if (!rwhi)
@@ -243,10 +258,17 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     if (!manager || !manager->GetRoot())
       return static_cast<LRESULT>(0L);
 
-    Microsoft::WRL::ComPtr<IAccessible> root(
-        ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM());
-    return LresultFromObject(IID_IAccessible, w_param,
-                             static_cast<IAccessible*>(root.Detach()));
+    BrowserAccessibilityComWin* root =
+        ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
+
+    if (is_uia_request) {
+      Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia(root);
+      return UiaReturnRawElementProvider(hwnd(), w_param, l_param,
+                                         root_uia.Detach());
+    } else {
+      Microsoft::WRL::ComPtr<IAccessible> root_msaa(root);
+      return LresultFromObject(IID_IAccessible, w_param, root_msaa.Detach());
+    }
   }
 
   if (static_cast<DWORD>(OBJID_CARET) == obj_id && host_->HasFocus()) {
