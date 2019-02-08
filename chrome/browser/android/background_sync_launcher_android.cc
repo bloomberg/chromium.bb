@@ -4,7 +4,10 @@
 
 #include "chrome/browser/android/background_sync_launcher_android.h"
 
+#include "base/feature_list.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "content/public/browser/browser_thread.h"
+#include "jni/BackgroundSyncBackgroundTaskScheduler_jni.h"
 #include "jni/BackgroundSyncLauncher_jni.h"
 
 using content::BrowserThread;
@@ -42,8 +45,18 @@ void BackgroundSyncLauncherAndroid::LaunchBrowserIfStoppedImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BackgroundSyncLauncher_launchBrowserIfStopped(
-      env, java_launcher_, launch_when_next_online, min_delay_ms);
+
+  if (!base::FeatureList::IsEnabled(
+          chrome::android::kBackgroundTaskSchedulerForBackgroundSync)) {
+    Java_BackgroundSyncLauncher_launchBrowserIfStopped(
+        env, java_gcm_network_manager_launcher_, launch_when_next_online,
+        min_delay_ms);
+    return;
+  }
+
+  Java_BackgroundSyncBackgroundTaskScheduler_launchBrowserIfStopped(
+      env, java_background_sync_background_task_scheduler_launcher_,
+      launch_when_next_online, min_delay_ms);
 }
 
 // static
@@ -67,12 +80,26 @@ BackgroundSyncLauncherAndroid::BackgroundSyncLauncherAndroid() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_launcher_.Reset(Java_BackgroundSyncLauncher_create(env));
+
+  if (!base::FeatureList::IsEnabled(
+          chrome::android::kBackgroundTaskSchedulerForBackgroundSync)) {
+    java_gcm_network_manager_launcher_.Reset(
+        Java_BackgroundSyncLauncher_create(env));
+    return;
+  }
+
+  java_background_sync_background_task_scheduler_launcher_.Reset(
+      Java_BackgroundSyncBackgroundTaskScheduler_getInstance(env));
 }
 
 BackgroundSyncLauncherAndroid::~BackgroundSyncLauncherAndroid() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kBackgroundTaskSchedulerForBackgroundSync)) {
+    return;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BackgroundSyncLauncher_destroy(env, java_launcher_);
+  Java_BackgroundSyncLauncher_destroy(env, java_gcm_network_manager_launcher_);
 }

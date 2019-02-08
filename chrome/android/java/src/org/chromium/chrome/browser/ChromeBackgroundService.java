@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -70,6 +71,14 @@ public class ChromeBackgroundService extends GcmTaskService {
     }
 
     private void handleBackgroundSyncEvent(Context context, String tag) {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.BACKGROUND_TASK_SCHEDULER_FOR_BACKGROUND_SYNC)) {
+            // If BackgroundTaskScheduler has been used to schedule a background
+            // task for Background Sync, we simply reschedule the existing task(s).
+            BackgroundSyncBackgroundTaskScheduler.getInstance().reschedule();
+            return;
+        }
+
         if (!BackgroundSyncLauncher.hasInstance()) {
             // Start the browser. The browser's BackgroundSyncManager (for the active profile) will
             // start, check the network, and run any necessary sync events. This task runs with a
