@@ -129,6 +129,7 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
       known_to_have_no_overflow_and_no_fallback_fonts_(false),
       contains_only_whitespace_or_nbsp_(
           static_cast<unsigned>(OnlyWhitespaceOrNbsp::kUnknown)),
+      is_text_fragment_(false),
       has_abstract_inline_text_box_(false),
       min_width_(-1),
       max_width_(-1),
@@ -164,10 +165,6 @@ LayoutText* LayoutText::CreateEmptyAnonymous(
   text->SetDocumentForAnonymous(&doc);
   text->SetStyle(std::move(style));
   return text;
-}
-
-bool LayoutText::IsTextFragment() const {
-  return false;
 }
 
 bool LayoutText::IsWordBreak() const {

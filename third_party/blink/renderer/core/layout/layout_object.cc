@@ -1869,7 +1869,15 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
 #endif  // NDEBUG
 
 bool LayoutObject::IsSelected() const {
-  return LayoutSelection::IsSelected(*this);
+  // Keep this fast and small, used in very hot functions to skip computing
+  // selection when this is not selected. This function may be inlined in
+  // link-optimized builds, but keeping fast and small helps running perf
+  // tests.
+  return GetSelectionState() != SelectionState::kNone ||
+         // TODO(kojii): Can't we set SelectionState() properly to
+         // LayoutTextFragment too?
+         (IsText() && ToLayoutText(*this).IsTextFragment() &&
+          LayoutSelection::IsSelected(*this));
 }
 
 bool LayoutObject::IsSelectable() const {

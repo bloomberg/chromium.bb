@@ -42,7 +42,9 @@ LayoutTextFragment::LayoutTextFragment(Node* node,
       fragment_length_(length),
       is_remaining_text_layout_object_(false),
       content_string_(str),
-      first_letter_pseudo_element_(nullptr) {}
+      first_letter_pseudo_element_(nullptr) {
+  is_text_fragment_ = true;
+}
 
 LayoutTextFragment::~LayoutTextFragment() {
   DCHECK(!first_letter_pseudo_element_);
