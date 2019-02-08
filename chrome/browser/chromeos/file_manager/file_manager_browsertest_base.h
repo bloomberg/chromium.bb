@@ -54,6 +54,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
+  virtual bool GetEnableNativeSmb() const;
   virtual bool GetStartWithNoVolumesMounted() const;
 
   // Launches the test extension from GetTestExtensionManifestName() and uses
@@ -83,6 +84,10 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Returns true if Drive should act as if offline.
   bool IsOfflineTest() const { return GetIsOffline(); }
 
+  // Returns true if the test needs a native SMB file system provider.
+  bool IsNativeSmbTest() const { return GetEnableNativeSmb(); }
+
+  // Returns true if FilesApp should start with no volumes mounted.
   bool DoesTestStartWithNoVolumesMounted() const {
     return GetStartWithNoVolumesMounted();
   }
