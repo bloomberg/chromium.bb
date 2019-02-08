@@ -8,6 +8,9 @@ option optimize_for = LITE_RUNTIME;
 
 package usage_stats;
 
+option java_package = "org.chromium.chrome.browser.usage_stats";
+option java_outer_classname = "WebsiteEventProtos";
+
 message WebsiteEvent {
   // Fully-qualified domain name of the website. Example: "docs.google.com".
   optional string fqdn = 1;
