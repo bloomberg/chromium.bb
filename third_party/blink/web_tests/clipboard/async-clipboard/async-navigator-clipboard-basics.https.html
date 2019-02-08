@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Async Clipboard basic tests</title>
+<title>Async Clipboard input type validation tests</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../http/tests/resources/permissions-helper.js"></script>
@@ -18,32 +18,31 @@ test(() => {
   assert_equals(navigator.clipboard, navigator.clipboard);
 }, "navigator.clipboard exists");
 
-/* clipboard.write() */
+/* clipboard.write(Blob/text) */
 
 promise_test(async () => {
   await getPermissions();
-  const dt = new DataTransfer();
-  dt.items.add("Howdy", "text/plain");
-  await navigator.clipboard.write(dt);
-}, "navigator.clipboard.write(DataTransfer) succeeds");
+  const blob = new Blob(["hello"], {type: 'text/plain'});
+  await navigator.clipboard.write(blob);
+}, "navigator.clipboard.write(Blob) succeeds");
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write());
-}, "navigator.clipboard.write() fails (expect DataTransfer)");
+}, "navigator.clipboard.write() fails (expect Blob)");
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write(null));
-}, "navigator.clipboard.write(null) fails (expect DataTransfer)");
+}, "navigator.clipboard.write(null) fails (expect Blob)");
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write("Bad string"));
-}, "navigator.clipboard.write(DOMString) fails (expect DataTransfer)");
+}, "navigator.clipboard.write(DOMString) fails (expect Blob)");
 
 
 /* clipboard.writeText() */
@@ -59,13 +58,13 @@ promise_test(async t => {
                          navigator.clipboard.writeText());
 }, "navigator.clipboard.writeText() fails (expect DOMString)");
 
-
-/* clipboard.read() */
+/* Blob/text or Blob/imageclipboard.read() */
 
 promise_test(async () => {
   await getPermissions();
   const result = await navigator.clipboard.read();
-  assert_true(result instanceof DataTransfer);
+  assert_true(result instanceof Blob);
+  assert_equals(typeof result, "object");
 }, "navigator.clipboard.read() succeeds");
 
 

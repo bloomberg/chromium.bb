@@ -20,22 +20,13 @@ ScriptPromise Clipboard::readText(ScriptState* script_state) {
   return ClipboardPromise::CreateForReadText(script_state);
 }
 
-ScriptPromise Clipboard::readImageExperimental(ScriptState* script_state) {
-  return ClipboardPromise::CreateForReadImage(script_state);
-}
-
-ScriptPromise Clipboard::write(ScriptState* script_state, DataTransfer* data) {
+ScriptPromise Clipboard::write(ScriptState* script_state, Blob* data) {
   return ClipboardPromise::CreateForWrite(script_state, data);
 }
 
 ScriptPromise Clipboard::writeText(ScriptState* script_state,
                                    const String& data) {
   return ClipboardPromise::CreateForWriteText(script_state, data);
-}
-
-ScriptPromise Clipboard::writeImageExperimental(ScriptState* script_state,
-                                                Blob* data) {
-  return ClipboardPromise::CreateForWriteImage(script_state, data);
 }
 
 const AtomicString& Clipboard::InterfaceName() const {
