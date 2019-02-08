@@ -63,7 +63,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsConnection {
   mojom::DriveFs* drivefs_interface() const { return drivefs_.get(); }
 
  private:
-  void CleanUp();
   void OnMojoConnectionError();
 
   std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener_;

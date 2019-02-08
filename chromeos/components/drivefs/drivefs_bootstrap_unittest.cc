@@ -137,7 +137,7 @@ TEST_F(DriveFsBootstrapTest, Listen_Connect_Destroy) {
   auto token = ListenForConnection();
   EXPECT_CALL(*this, OnInit());
   WaitForConnection(token);
-  EXPECT_CALL(*this, OnDisconnect());
+  EXPECT_CALL(*this, OnDisconnect()).Times(0);
   connection_.reset();
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(
