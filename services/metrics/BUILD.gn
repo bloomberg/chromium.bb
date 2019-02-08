@@ -2,13 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
-service_manifest("manifest") {
-  name = "metrics"
-  source = "manifest.json"
-}
-
 source_set("metrics") {
   sources = [
     "metrics_mojo_service.cc",

@@ -6,7 +6,6 @@ import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//services/network/public/cpp/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 jumbo_component("network_service") {
   sources = [
@@ -438,9 +437,4 @@ jumbo_source_set("test_support") {
     "//services/network:network_service",
     "//testing/gtest",
   ]
-}
-
-service_manifest("manifest") {
-  name = "network"
-  source = "manifest.json"
 }
