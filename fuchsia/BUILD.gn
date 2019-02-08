@@ -138,6 +138,7 @@ group("gn_all") {
     "engine:web_engine_browsertests",
     "engine:web_engine_unittests",
     "http:http_service_tests",
+    "modular:modular_unittests",
     "runners:cast_runner",
     "runners:cast_runner_browsertests",
     "runners:cast_runner_integration_tests",

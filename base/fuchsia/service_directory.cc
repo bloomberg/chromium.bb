@@ -19,11 +19,10 @@ namespace fuchsia {
 
 ServiceDirectory::ServiceDirectory(
     fidl::InterfaceRequest<::fuchsia::io::Directory> request) {
-  zx_status_t status =
-      svc_dir_create(async_get_default_dispatcher(),
-                     request.TakeChannel().release(), &svc_dir_);
-  ZX_CHECK(status == ZX_OK, status);
+  Initialize(std::move(request));
 }
+
+ServiceDirectory::ServiceDirectory() = default;
 
 ServiceDirectory::ServiceDirectory(zx::channel request)
     : ServiceDirectory(fidl::InterfaceRequest<::fuchsia::io::Directory>(
@@ -45,10 +44,22 @@ ServiceDirectory* ServiceDirectory::GetDefault() {
   return directory.get();
 }
 
+void ServiceDirectory::Initialize(
+    fidl::InterfaceRequest<::fuchsia::io::Directory> request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!svc_dir_);
+
+  zx_status_t status =
+      svc_dir_create(async_get_default_dispatcher(),
+                     request.TakeChannel().release(), &svc_dir_);
+  ZX_CHECK(status == ZX_OK, status);
+}
+
 void ServiceDirectory::AddServiceUnsafe(
     StringPiece name,
     RepeatingCallback<void(zx::channel)> connect_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(svc_dir_);
   DCHECK(services_.find(name) == services_.end());
 
   std::string name_str = name.as_string();
@@ -67,6 +78,7 @@ void ServiceDirectory::AddServiceUnsafe(
 
 void ServiceDirectory::RemoveService(StringPiece name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(svc_dir_);
 
   std::string name_str = name.as_string();
 

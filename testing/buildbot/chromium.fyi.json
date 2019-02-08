@@ -4102,6 +4102,12 @@
         "test": "media_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "modular_unittests"
+      },
+      {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter"
         ],
@@ -4302,6 +4308,17 @@
           ]
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "modular_unittests"
       },
       {
         "args": [
@@ -4549,6 +4566,17 @@
           ]
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "modular_unittests"
       },
       {
         "args": [
