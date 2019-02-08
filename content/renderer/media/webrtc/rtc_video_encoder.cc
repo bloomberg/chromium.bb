@@ -59,6 +59,8 @@ webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
     media::VideoCodecProfile profile) {
   if (profile >= media::VP8PROFILE_MIN && profile <= media::VP8PROFILE_MAX) {
     return webrtc::kVideoCodecVP8;
+  } else if (profile == media::VP9PROFILE_MIN) {
+    return webrtc::kVideoCodecVP9;
   } else if (profile >= media::H264PROFILE_MIN &&
              profile <= media::H264PROFILE_MAX) {
     return webrtc::kVideoCodecH264;
@@ -773,6 +775,7 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   memset(&header, 0, sizeof(header));
   switch (video_codec_type_) {
     case webrtc::kVideoCodecVP8:
+    case webrtc::kVideoCodecVP9:
       // Generate a header describing a single fragment.
       header.VerifyAndAllocateFragmentationHeader(1);
       header.fragmentationOffset[0] = 0;
@@ -798,6 +801,29 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   info.codecType = video_codec_type_;
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
     info.codecSpecific.VP8.keyIdx = -1;
+  } else if (video_codec_type_ == webrtc::kVideoCodecVP9) {
+    bool key_frame = image._frameType == webrtc::kVideoFrameKey;
+    info.codecSpecific.VP9.inter_pic_predicted = key_frame ? false : true;
+    info.codecSpecific.VP9.flexible_mode = false;
+    info.codecSpecific.VP9.ss_data_available = key_frame ? true : false;
+    info.codecSpecific.VP9.temporal_idx = webrtc::kNoTemporalIdx;
+    info.codecSpecific.VP9.temporal_up_switch = true;
+    info.codecSpecific.VP9.inter_layer_predicted = false;
+    info.codecSpecific.VP9.gof_idx = 0;
+    info.codecSpecific.VP9.num_spatial_layers = 1;
+    info.codecSpecific.VP9.first_frame_in_picture = true;
+    info.codecSpecific.VP9.end_of_picture = true;
+    info.codecSpecific.VP9.spatial_layer_resolution_present = false;
+    if (info.codecSpecific.VP9.ss_data_available) {
+      info.codecSpecific.VP9.spatial_layer_resolution_present = true;
+      info.codecSpecific.VP9.width[0] = image._encodedWidth;
+      info.codecSpecific.VP9.height[0] = image._encodedHeight;
+      info.codecSpecific.VP9.gof.num_frames_in_gof = 1;
+      info.codecSpecific.VP9.gof.temporal_idx[0] = 0;
+      info.codecSpecific.VP9.gof.temporal_up_switch[0] = false;
+      info.codecSpecific.VP9.gof.num_ref_pics[0] = 1;
+      info.codecSpecific.VP9.gof.pid_diff[0][0] = 1;
+    }
   }
 
   const auto result =
@@ -849,6 +875,12 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
       DVLOG(1) << "Falling back to software encoder.";
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     }
+  }
+  if (codec_settings->codecType == webrtc::kVideoCodecVP9 &&
+      codec_settings->VP9().numberOfSpatialLayers > 1) {
+    DVLOG(1)
+        << "VP9 SVC not yet supported by HW codecs, falling back to sofware.";
+    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
   }
 
   impl_ =

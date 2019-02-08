@@ -31137,6 +31137,7 @@ from previous Chrome versions.
   <int value="-1261263046"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:disabled"/>
   <int value="-1259901957" label="VrBrowserKeyboard:disabled"/>
+  <int value="-1256823053" label="WebRtcHWVP9Encoding:enabled"/>
   <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1253608371" label="IncognitoStrings:disabled"/>
@@ -32064,6 +32065,7 @@ from previous Chrome versions.
   <int value="392782890" label="SafeBrowsingTelemetryForApkDownloads:enabled"/>
   <int value="393704200" label="account-consistency"/>
   <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
+  <int value="399039205" label="enable-webrtc-hw-vp9-encoding"/>
   <int value="400272381" label="LazyFrameLoading:disabled"/>
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
@@ -32354,6 +32356,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:enabled"/>
   <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
+  <int value="910725730" label="WebRtcHWVP9Encoding:disabled"/>
   <int value="912119426" label="InfiniteSessionRestore:disabled"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>

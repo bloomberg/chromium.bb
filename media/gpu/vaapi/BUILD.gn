@@ -65,6 +65,8 @@ source_set("vaapi") {
     "vaapi_wrapper.h",
     "vp8_encoder.cc",
     "vp8_encoder.h",
+    "vp9_encoder.cc",
+    "vp9_encoder.h",
   ]
 
   configs += [ "//third_party/libyuv:libyuv_config" ]

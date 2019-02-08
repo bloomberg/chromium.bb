@@ -31,6 +31,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
@@ -42,6 +43,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder.h"
@@ -49,6 +51,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp8_parser.h"
+#include "media/filters/vp9_parser.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
@@ -128,9 +131,9 @@ const unsigned int kFlushTimeoutMs = 2000;
 // - |width| and |height| are in pixels.
 // - |profile| to encode into (values of VideoCodecProfile).
 // - |out_filename| filename to save the encoded stream to (optional). The
-//   format for H264 is Annex-B byte stream. The format for VP8 is IVF. Output
-//   stream is saved for the simple encode test only. H264 raw stream and IVF
-//   can be used as input of VDA unittest. H264 raw stream can be played by
+//   format for H264 is Annex-B byte stream. The format for VP8 and VP9 is IVF.
+//   Output stream is saved for the simple encode test only. H264 raw stream and
+//   IVF can be used as input of VDA unittest. H264 raw stream can be played by
 //   "mplayer -fps 25 out.h264" and IVF can be played by mplayer directly.
 //   Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
 // Further parameters are optional (need to provide preceding positional
@@ -296,6 +299,10 @@ static bool IsH264(VideoCodecProfile profile) {
 
 static bool IsVP8(VideoCodecProfile profile) {
   return profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX;
+}
+
+static bool IsVP9(VideoCodecProfile profile) {
+  return profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX;
 }
 
 // Helper functions to do string conversions.
@@ -797,6 +804,36 @@ void VP8Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   frame_cb_.Run(header.IsKeyframe(), visible_size_);
 }
 
+class VP9Validator : public StreamValidator {
+ public:
+  explicit VP9Validator(const FrameFoundCallback& frame_cb)
+      : StreamValidator(frame_cb), parser_(false), seen_keyframe_(false) {}
+
+  void ProcessStreamBuffer(const uint8_t* stream, size_t size) override;
+
+ private:
+  Vp9Parser parser_;
+  // Have we already got a keyframe in the stream?
+  bool seen_keyframe_;
+};
+
+void VP9Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
+  // TODO(posciak): We could be getting more frames in the buffer, but there is
+  // no simple way to detect this. We'd need to parse the frames and go through
+  // partition numbers/sizes. For now assume one frame per buffer.
+  Vp9FrameHeader header;
+  parser_.SetStream(stream, size, nullptr);
+  EXPECT_TRUE(Vp9Parser::kInvalidStream !=
+              parser_.ParseNextFrame(&header, nullptr));
+  if (header.IsKeyframe()) {
+    seen_keyframe_ = true;
+    visible_size_.SetSize(header.render_width, header.render_height);
+  }
+
+  EXPECT_TRUE(seen_keyframe_);
+  ASSERT_FALSE(visible_size_.IsEmpty());
+  frame_cb_.Run(header.IsKeyframe(), visible_size_);
+}
 // static
 std::unique_ptr<StreamValidator> StreamValidator::Create(
     VideoCodecProfile profile,
@@ -807,6 +844,8 @@ std::unique_ptr<StreamValidator> StreamValidator::Create(
     validator.reset(new H264Validator(frame_cb));
   } else if (IsVP8(profile)) {
     validator.reset(new VP8Validator(frame_cb));
+  } else if (IsVP9(profile)) {
+    validator.reset(new VP9Validator(frame_cb));
   } else {
     LOG(FATAL) << "Unsupported profile: " << GetProfileName(profile);
   }
@@ -895,18 +934,24 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   gfx::Size natural_size(visible_size.size());
   // The default output format of ffmpeg video decoder is YV12.
   VideoDecoderConfig config;
-  if (IsVP8(profile_))
+  if (IsVP8(profile_)) {
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
                       VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
-  else if (IsH264(profile_))
+  } else if (IsVP9(profile_)) {
+    config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, pixel_format_,
+                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      visible_size, natural_size, EmptyExtraData(),
+                      Unencrypted());
+  } else if (IsH264(profile_)) {
     config.Initialize(kCodecH264, H264PROFILE_MAIN, pixel_format_,
                       VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
-  else
+  } else {
     LOG_ASSERT(0) << "Invalid profile " << GetProfileName(profile_);
+  }
 
   decoder_->Initialize(
       config, false, nullptr,
@@ -1319,7 +1364,7 @@ class VEAClient : public VEAClientBase {
   void LogPerf();
 
   // Write IVF file header to test_stream_->out_filename.
-  void WriteIvfFileHeader();
+  void WriteIvfFileHeader(uint32_t fourcc);
 
   // Write an IVF frame header to test_stream_->out_filename.
   void WriteIvfFrameHeader(int frame_index, size_t frame_size);
@@ -1653,6 +1698,8 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   DCHECK(thread_checker_.CalledOnValidThread());
   ASSERT_EQ(CS_INITIALIZED, state_);
   SetState(CS_ENCODING);
+  constexpr uint32_t kVp8Fourcc = 0x30385056;
+  constexpr uint32_t kVp9Fourcc = 0x30395056;
 
   if (quality_validator_)
     quality_validator_->Initialize(input_coded_size,
@@ -1672,8 +1719,13 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
              << kMinFramesForBitrateTests << " frames";
     num_frames_to_encode_ = kMinFramesForBitrateTests;
   }
-  if (save_to_file_ && IsVP8(test_stream_->requested_profile))
-    WriteIvfFileHeader();
+  if (save_to_file_) {
+    if (IsVP8(test_stream_->requested_profile)) {
+      WriteIvfFileHeader(kVp8Fourcc);
+    } else if (IsVP9(test_stream_->requested_profile)) {
+      WriteIvfFileHeader(kVp9Fourcc);
+    }
+  }
 
   input_coded_size_ = input_coded_size;
   num_required_input_buffers_ = input_count;
@@ -1761,7 +1813,8 @@ void VEAClient::BitstreamBufferReady(
     }
 
     if (save_to_file_) {
-      if (IsVP8(test_stream_->requested_profile))
+      if (IsVP8(test_stream_->requested_profile) ||
+          IsVP9(test_stream_->requested_profile))
         WriteIvfFrameHeader(num_encoded_frames_ - 1,
                             metadata.payload_size_bytes);
 
@@ -2117,13 +2170,13 @@ void VEAClient::VerifyStreamProperties() {
   }
 }
 
-void VEAClient::WriteIvfFileHeader() {
+void VEAClient::WriteIvfFileHeader(uint32_t fourcc) {
   DCHECK(thread_checker_.CalledOnValidThread());
   IvfFileHeader header = {};
   memcpy(header.signature, kIvfHeaderSignature, sizeof(header.signature));
   header.version = 0;
   header.header_size = sizeof(header);
-  header.fourcc = 0x30385056;  // VP80
+  header.fourcc = fourcc;  // VP80 or VP90
   header.width =
       base::checked_cast<uint16_t>(test_stream_->visible_size.width());
   header.height =
@@ -2681,6 +2734,12 @@ class VEATestSuite : public base::TestSuite {
 int main(int argc, char** argv) {
   mojo::core::Init();
   media::VEATestSuite test_suite(argc, argv);
+
+#if BUILDFLAG(USE_VAAPI)
+  base::test::ScopedFeatureList scoped_feature_list;
+  // TODO(crbug.com/811912): remove once enabled by default.
+  scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
+#endif
 
   base::ShadowingAtExitManager at_exit_manager;
 

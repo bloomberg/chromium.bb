@@ -345,6 +345,8 @@ source_set("common") {
       "vp8_picture.h",
       "vp8_reference_frame_vector.cc",
       "vp8_reference_frame_vector.h",
+      "vp9_reference_frame_vector.cc",
+      "vp9_reference_frame_vector.h",
     ]
   }
 
