@@ -83,6 +83,7 @@ class BrowserAppMenuButton : public AppMenuButton,
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
 
   AppMenuIconController::TypeAndSeverity type_and_severity_{

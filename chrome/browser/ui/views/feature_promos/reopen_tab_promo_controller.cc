@@ -53,7 +53,7 @@ void ReopenTabPromoController::OnTabReopened(int command_id) {
   iph_service_->TabReopened();
 
   if (command_id == AppMenuModel::kMinRecentTabsCommandId) {
-    DCHECK_EQ(StepAtDismissal::kBubbleShown, promo_step_);
+    DCHECK_EQ(StepAtDismissal::kMenuOpened, promo_step_);
     promo_step_ = StepAtDismissal::kTabReopened;
   }
 }
@@ -70,6 +70,9 @@ void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
 void ReopenTabPromoController::AppMenuShown() {
   // Close the promo bubble since it doesn't automatically close on click.
   promo_bubble_->GetWidget()->Close();
+
+  // Stop showing promo on app menu button.
+  browser_view_->toolbar()->app_menu_button()->SetPromoFeature(base::nullopt);
 
   promo_step_ = StepAtDismissal::kMenuOpened;
 }
