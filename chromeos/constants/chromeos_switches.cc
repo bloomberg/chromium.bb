@@ -648,5 +648,9 @@ bool ShouldShowPlayStoreInDemoMode() {
   return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
 }
 
+bool ShouldSkipOobePostLogin() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kOobeSkipPostLogin);
+}
+
 }  // namespace switches
 }  // namespace chromeos
