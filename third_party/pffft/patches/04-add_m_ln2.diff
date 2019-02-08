@@ -1,0 +1,15 @@
+diff --git a/third_party/pffft/src/test_pffft.c b/third_party/pffft/src/test_pffft.c
+index ab78b4dcc0d5..deaf98ed9f09 100644
+--- a/third_party/pffft/src/test_pffft.c
++++ b/third_party/pffft/src/test_pffft.c
+@@ -45,6 +45,10 @@
+ #  include <fftw3.h>
+ #endif
+ 
++#ifndef M_LN2
++#define M_LN2 0.693147180559945309417
++#endif
++
+ #define MAX(x,y) ((x)>(y)?(x):(y))
+ 
+ double frand() {
