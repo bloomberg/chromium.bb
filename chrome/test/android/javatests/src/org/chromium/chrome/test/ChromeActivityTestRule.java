@@ -145,6 +145,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         try {
             ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
             Thread.setDefaultUncaughtExceptionHandler(mDefaultUncaughtExceptionHandler);
+            if (mSetActivity != null) {
+                // This is to ensure onDestroy() is performed before starting the next test.
+                ApplicationTestUtils.finishActivity(mSetActivity);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to tearDown", e);
         }
