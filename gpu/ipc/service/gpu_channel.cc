@@ -127,6 +127,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   scoped_refptr<ImageDecodeAcceleratorStub> image_decode_accelerator_stub_;
   base::ThreadChecker io_thread_checker_;
 
+  bool allow_crash_for_testing_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
 };
 
@@ -145,6 +147,9 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
               static_cast<int32_t>(
                   GpuChannelReservedRoutes::kImageDecodeAccelerator))) {
   io_thread_checker_.DetachFromThread();
+  allow_crash_for_testing_ = gpu_channel->gpu_channel_manager()
+                                 ->gpu_preferences()
+                                 .enable_gpu_benchmarking_extension;
 }
 
 GpuChannelMessageFilter::~GpuChannelMessageFilter() {
@@ -240,6 +245,18 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     case GpuChannelMsg_CreateSharedImage::ID:
     case GpuChannelMsg_DestroySharedImage::ID:
       return MessageErrorHandler(message, "Invalid message");
+    case GpuChannelMsg_CrashForTesting::ID:
+      // Handle this message early, on the IO thread, in case the main
+      // thread is hung. This is the purpose of this message: generating
+      // minidumps on the bots, which are symbolized later by the test
+      // harness. Only pay attention to this message if Telemetry's GPU
+      // benchmarking extension was enabled via the command line, which
+      // exposes privileged APIs to JavaScript.
+      if (allow_crash_for_testing_) {
+        gl::Crash();
+      }
+      // Won't be reached if the extension is enabled.
+      return MessageErrorHandler(message, "Crashes for testing are disabled");
     default:
       break;
   }
@@ -510,7 +527,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CrashForTesting, OnCrashForTesting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -707,16 +723,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   }
 
   RemoveRoute(route_id);
-}
-
-void GpuChannel::OnCrashForTesting() {
-  // Only pay attention to this message if Telemetry's GPU
-  // benchmarking extension was enabled via the command line, which
-  // exposes privileged APIs to JavaScript.
-  if (!gpu_channel_manager_->gpu_preferences()
-           .enable_gpu_benchmarking_extension)
-    return;
-  gl::Crash();
 }
 
 void GpuChannel::CacheShader(const std::string& key,

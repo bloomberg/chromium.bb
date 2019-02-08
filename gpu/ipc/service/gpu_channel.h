@@ -169,7 +169,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
                              gpu::ContextResult* result,
                              gpu::Capabilities* capabilities);
   void OnDestroyCommandBuffer(int32_t route_id);
-  void OnCrashForTesting();
 
   std::unique_ptr<IPC::SyncChannel> sync_channel_;  // nullptr in tests.
   IPC::Sender* channel_;  // Same as sync_channel_.get() except in tests.
