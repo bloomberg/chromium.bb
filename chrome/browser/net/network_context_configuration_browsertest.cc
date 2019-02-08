@@ -187,6 +187,8 @@ class NetworkContextConfigurationBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
     if (GetParam().network_service_state != NetworkServiceState::kDisabled)
       feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    else
+      feature_list_.InitAndDisableFeature(network::features::kNetworkService);
   }
 
   void SetUpOnMainThread() override {
