@@ -108,6 +108,8 @@ class FakeOSUserManager : public OSUserManager {
                            const base::string16& email,
                            BSTR* sid);
 
+  size_t GetUserCount() const { return username_to_info_.size(); }
+
  private:
   OSUserManager* original_manager_;
   DWORD next_rid_ = 0;
