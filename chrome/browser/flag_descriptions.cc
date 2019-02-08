@@ -1874,6 +1874,10 @@ const char kTabHoverCardsDescription[] =
     "Enables a popup containing tab information to be visible when hovering "
     "over a tab. This will replace tooltips for tabs.";
 
+const char kTabHoverCardImagesName[] = "Tab Hover Card Images";
+const char kTabHoverCardImagesDescription[] =
+    "Shows a preview image in tab hover cards, if tab hover cards are enabled.";
+
 const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
 const char kTabsInCbdDescription[] =
     "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";

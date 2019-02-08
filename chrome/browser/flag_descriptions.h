@@ -1115,6 +1115,9 @@ extern const char kTabGroupsDescription[];
 extern const char kTabHoverCardsName[];
 extern const char kTabHoverCardsDescription[];
 
+extern const char kTabHoverCardImagesName[];
+extern const char kTabHoverCardImagesDescription[];
+
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 

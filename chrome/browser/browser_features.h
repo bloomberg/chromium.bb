@@ -24,9 +24,11 @@ extern const base::Feature kDoubleTapToZoomInTabletMode;
 extern const base::Feature kWebUIDarkMode;
 #endif
 
+extern const base::Feature kTabGroups;
+
 extern const base::Feature kTabHoverCards;
 
-extern const base::Feature kTabGroups;
+extern const base::Feature kTabHoverCardImages;
 
 }  // namespace features
 
