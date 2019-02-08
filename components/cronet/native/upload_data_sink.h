@@ -31,7 +31,7 @@ class Cronet_UploadDataSinkImpl : public Cronet_UploadDataSink {
   ~Cronet_UploadDataSinkImpl() override;
 
   // Initialize length and attach upload to request. Called on client thread.
-  bool InitRequest(CronetURLRequest* request);
+  void InitRequest(CronetURLRequest* request);
 
   // Mark stream as closed and post |Close()| callback to consumer.
   void PostCloseToExecutor();

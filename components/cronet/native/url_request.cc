@@ -346,8 +346,7 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
         params->upload_data_provider_executor
             ? params->upload_data_provider_executor
             : executor);
-    if (!upload_data_sink_->InitRequest(request_))
-      return engine_->CheckResult(Cronet_RESULT_NULL_POINTER_CALLBACK);
+    upload_data_sink_->InitRequest(request_);
     request_->SetHttpMethod("POST");
   }
 
