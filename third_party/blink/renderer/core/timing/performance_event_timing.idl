@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 // https://github.com/wicg/event-timing
-[Exposed=Window]
-interface PerformanceEventTiming : PerformanceEntry {
+[
+    Exposed=Window,
+    OriginTrialEnabled=EventTiming
+] interface PerformanceEventTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp processingStart;
     readonly attribute DOMHighResTimeStamp processingEnd;
     readonly attribute boolean cancelable;

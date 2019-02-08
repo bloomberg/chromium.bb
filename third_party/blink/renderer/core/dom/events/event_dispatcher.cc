@@ -140,15 +140,14 @@ DispatchEventResult EventDispatcher::Dispatch() {
     return DispatchEventResult::kNotCanceled;
   }
   std::unique_ptr<EventTiming> eventTiming;
-  const Document& document = node_->GetDocument();
-  LocalFrame* frame = document.GetFrame();
-  if (frame && frame->DomWindow()) {
-    if (origin_trials::EventTimingEnabled(&document)) {
-      UseCounter::Count(document,
+  if (origin_trials::EventTimingEnabled(&node_->GetDocument())) {
+    LocalFrame* frame = node_->GetDocument().GetFrame();
+    if (frame && frame->DomWindow()) {
+      UseCounter::Count(node_->GetDocument(),
                         WebFeature::kPerformanceEventTimingConstructor);
+      eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
+      eventTiming->WillDispatchEvent(*event_);
     }
-    eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
-    eventTiming->WillDispatchEvent(*event_);
   }
   event_->GetEventPath().EnsureWindowEventContext();
 
@@ -156,6 +155,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
       event_->IsMouseEvent() && event_->type() == event_type_names::kClick;
 
   if (is_click && event_->isTrusted()) {
+    Document& document = node_->GetDocument();
+    LocalFrame* frame = document.GetFrame();
     if (frame) {
       // A genuine mouse click cannot be triggered by script so we don't expect
       // there are any script in the stack.

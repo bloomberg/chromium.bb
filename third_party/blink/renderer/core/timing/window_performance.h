@@ -69,10 +69,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   bool ShouldBufferEntries();
 
-  // Currently, returns false always for frames that are not main frames because
-  // we're only shipping FirstInputTiming on main frames. For main frames,
-  // returns true if the first input has not yet been calculated.
-  bool FirstInputDesired() const;
+  bool FirstInputDetected() const { return !!first_input_timing_; }
 
   // This method creates a PerformanceEventTiming and if needed creates a swap
   // promise to calculate the |duration| attribute when such promise is
