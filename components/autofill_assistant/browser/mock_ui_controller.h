@@ -27,12 +27,8 @@ class MockUiController : public UiController {
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(OnChipsChanged, void(const std::vector<Chip>& chips));
-  MOCK_METHOD3(
-      GetPaymentInformation,
-      void(payments::mojom::PaymentOptionsPtr payment_options,
-           base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
-               callback,
-           const std::vector<std::string>& supported_basic_card_networks));
+  MOCK_METHOD1(OnPaymentRequestChanged,
+               void(const PaymentRequestOptions* options));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
   MOCK_METHOD1(OnProgressChanged, void(int progress));
   MOCK_METHOD1(OnTouchableAreaChanged, void(const std::vector<RectF>& areas));

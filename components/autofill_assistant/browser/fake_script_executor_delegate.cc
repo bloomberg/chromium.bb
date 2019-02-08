@@ -70,4 +70,9 @@ void FakeScriptExecutorDelegate::SetChips(
     std::unique_ptr<std::vector<Chip>> chips) {
   chips_ = std::move(chips);
 }
+
+void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
+    std::unique_ptr<PaymentRequestOptions> options) {
+  payment_request_options_ = std::move(options);
+}
 }  // namespace autofill_assistant

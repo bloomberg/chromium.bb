@@ -37,6 +37,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void ClearDetails() override;
   void SetProgress(int progress) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
+  void SetPaymentRequestOptions(
+      std::unique_ptr<PaymentRequestOptions> options) override;
 
   void SetService(Service* service) { service_ = service; }
 
@@ -58,6 +60,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   std::vector<Chip>* GetChips() { return chips_.get(); }
 
+  PaymentRequestOptions* GetOptions() { return payment_request_options_.get(); }
+
  private:
   Service* service_ = nullptr;
   UiController* ui_controller_ = nullptr;
@@ -68,6 +72,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::string status_message_;
   std::unique_ptr<Details> details_;
   std::unique_ptr<std::vector<Chip>> chips_;
+  std::unique_ptr<PaymentRequestOptions> payment_request_options_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScriptExecutorDelegate);
 };

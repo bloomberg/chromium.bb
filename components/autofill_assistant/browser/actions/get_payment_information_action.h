@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
-#include "components/autofill_assistant/browser/payment_information.h"
+#include "components/autofill_assistant/browser/payment_request.h"
 
 namespace autofill_assistant {
 

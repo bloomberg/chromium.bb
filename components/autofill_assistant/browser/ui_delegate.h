@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/metrics.h"
+#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
 
@@ -53,6 +55,15 @@ class UiDelegate {
 
   // Returns the drop out reason for the last state transition to STOPPED.
   virtual Metrics::DropOutReason GetDropOutReason() const = 0;
+
+  // If the controller is waiting for payment request information, this
+  // field contains a non-null options describing the request.
+  virtual const PaymentRequestOptions* GetPaymentRequestOptions() const = 0;
+
+  // Sets payment information, in response to the current payment request
+  // options.
+  virtual void SetPaymentInformation(
+      std::unique_ptr<PaymentInformation> payment_information) = 0;
 
   // Adds the rectangles that correspond to the current touchable area to the
   // given vector.

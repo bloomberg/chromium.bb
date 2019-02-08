@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/metrics.h"
+#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
@@ -83,6 +84,8 @@ class Controller : public ScriptExecutorDelegate,
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void EnterState(AutofillAssistantState state) override;
   bool IsCookieExperimentEnabled() const;
+  void SetPaymentRequestOptions(
+      std::unique_ptr<PaymentRequestOptions> options) override;
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;
@@ -94,6 +97,9 @@ class Controller : public ScriptExecutorDelegate,
   void SelectChip(int chip_index) override;
   std::string GetDebugContext() override;
   Metrics::DropOutReason GetDropOutReason() const override;
+  const PaymentRequestOptions* GetPaymentRequestOptions() const override;
+  void SetPaymentInformation(
+      std::unique_ptr<PaymentInformation> payment_information) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
 
  private:
@@ -216,6 +222,8 @@ class Controller : public ScriptExecutorDelegate,
 
   // Drop out reason set when the controller enters a STOPPED state.
   Metrics::DropOutReason stop_reason_ = Metrics::AA_START;
+
+  std::unique_ptr<PaymentRequestOptions> payment_request_options_;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script
