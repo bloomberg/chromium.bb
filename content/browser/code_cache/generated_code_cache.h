@@ -61,7 +61,8 @@ class CONTENT_EXPORT GeneratedCodeCache {
     kCreate,
     kError,
     kIncompleteEntry,
-    kMaxValue = kIncompleteEntry
+    kWriteFailed,
+    kMaxValue = kWriteFailed
   };
 
   // Returns the resource URL from the key. The key has the format prefix +

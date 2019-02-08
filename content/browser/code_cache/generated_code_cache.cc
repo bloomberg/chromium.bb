@@ -422,6 +422,11 @@ void GeneratedCodeCache::CompleteForWriteData(
 }
 
 void GeneratedCodeCache::WriteDataCompleted(const std::string& key, int rv) {
+  if (rv < 0) {
+    CollectStatistics(CacheEntryStatus::kWriteFailed);
+    // The write failed; we should delete the entry.
+    DeleteEntryImpl(key);
+  }
   IssueQueuedOperationForEntry(key);
 }
 
@@ -490,17 +495,18 @@ void GeneratedCodeCache::ReadDataComplete(
   } else {
     // DiskCache ensures that the operations that are queued for an entry
     // go in order. Hence, we would either read an empty data or read the full
-    // data.
+    // data. Note that if WriteData failed, buffer->size() is 0 so we handle
+    // that case here.
     CollectStatistics(CacheEntryStatus::kHit);
-    DCHECK_GE(buffer->size(), kResponseTimeSizeInBytes);
-    int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
-    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(raw_response_time));
+    int64_t raw_response_time = 0;
     std::vector<uint8_t> data;
-    if (buffer->size() > kResponseTimeSizeInBytes) {
+    if (buffer->size() >= kResponseTimeSizeInBytes) {
+      raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
       data = std::vector<uint8_t>(buffer->data() + kResponseTimeSizeInBytes,
                                   buffer->data() + buffer->size());
     }
+    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(raw_response_time));
     std::move(callback).Run(response_time, data);
   }
   IssueQueuedOperationForEntry(key);
