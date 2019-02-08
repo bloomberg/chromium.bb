@@ -21,7 +21,7 @@
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
 
@@ -49,7 +49,7 @@ class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public ConnectionObserver<mojom::AuthInstance>,
                        public chromeos::AccountManager::Observer,
-                       public AccountTrackerService::Observer,
+                       public identity::IdentityManager::Observer,
                        public ArcSessionManager::Observer {
  public:
   using GetGoogleAccountsInArcCallback =
@@ -101,11 +101,14 @@ class ArcAuthService : public KeyedService,
   void OnAccountRemoved(
       const chromeos::AccountManager::AccountKey& account_key) override;
 
-  // AccountTrackerService::Observer:
-  void OnAccountRemoved(const AccountInfo& account_info) override;
+  // IdentityManager::Observer:
+  void OnAccountRemovedWithInfo(const AccountInfo& account_info) override;
 
   // ArcSessionManager::Observer:
   void OnArcInitialStart() override;
+
+  // KeyedService:
+  void Shutdown() override;
 
   void SkipMergeSessionForTesting();
 
@@ -193,7 +196,7 @@ class ArcAuthService : public KeyedService,
 
   // Non-owning pointers.
   Profile* const profile_;
-  chromeos::AccountManager* account_manager_ = nullptr;
+  chromeos::AccountManager* const account_manager_;
   AccountTrackerService* const account_tracker_service_;
   identity::IdentityManager* const identity_manager_;
   ArcBridgeService* const arc_bridge_service_;
