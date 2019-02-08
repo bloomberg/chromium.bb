@@ -179,15 +179,6 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Request the player to pause playback.
   virtual void RequestPause() = 0;
 
-  // Notify the client that one of the state used by Picture-in-Picture has
-  // changed. The client will then have to poll the states from the associated
-  // WebMediaPlayer.
-  // The states are:
-  //  - Delegate ID;
-  //  - Surface ID;
-  //  - Natural Size.
-  virtual void OnPictureInPictureStateChange() = 0;
-
  protected:
   ~WebMediaPlayerClient() = default;
 };

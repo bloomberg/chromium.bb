@@ -55,7 +55,6 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
   void PictureInPictureControlClicked(const WebString& control_id) override {
     NOTREACHED();
   }
-  void OnPictureInPictureStateChange() final { NOTREACHED(); }
 };
 
 }  // namespace blink

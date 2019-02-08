@@ -5,11 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 
-#include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
-#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -26,17 +23,14 @@ struct WebSize;
 // PictureInPictureControllerImpl instance is associated to a Document. It is
 // supplement and therefore can be lazy-initiated. Callers should consider
 // whether they want to instantiate an object when they make a call.
-class MODULES_EXPORT PictureInPictureControllerImpl
-    : public PictureInPictureController,
-      public PageVisibilityObserver,
-      public DocumentShutdownObserver,
-      public blink::mojom::blink::PictureInPictureDelegate {
+class PictureInPictureControllerImpl : public PictureInPictureController,
+                                       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
   WTF_MAKE_NONCOPYABLE(PictureInPictureControllerImpl);
 
  public:
   explicit PictureInPictureControllerImpl(Document&);
-  ~PictureInPictureControllerImpl() override = default;
+  ~PictureInPictureControllerImpl() override;
 
   // Meant to be called internally by PictureInPictureController::From()
   // through ModulesInitializer.
@@ -73,23 +67,11 @@ class MODULES_EXPORT PictureInPictureControllerImpl
       const std::vector<PictureInPictureControlInfo>&) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
-  void OnPictureInPictureStateChange() override;
 
-  // Implementation of PictureInPictureDelegate.
-  void PictureInPictureWindowSizeChanged(const blink::WebSize&) override;
-
-  // Implementation of PageVisibilityObserver.
+  // PageVisibilityObserver implementation.
   void PageVisibilityChanged() override;
 
-  // Implementation of DocumentShutdownObserver.
-  void ContextDestroyed(Document*) override;
-
   void Trace(blink::Visitor*) override;
-
-  mojo::Binding<mojom::blink::PictureInPictureDelegate>&
-  GetDelegateBindingForTesting() {
-    return delegate_binding_;
-  }
 
  private:
   void OnEnteredPictureInPicture(HTMLVideoElement*,
@@ -97,10 +79,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
                                  const WebSize& picture_in_picture_window_size);
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
   void OnPictureInPictureControlClicked(const WebString& control_id) override;
-
-  // Makes sure the `picture_in_picture_service_` is set. Returns whether it was
-  // initialized successfully.
-  bool EnsureService();
 
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;
@@ -111,12 +89,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
 
   // The Picture-in-Picture window for the associated document.
   Member<PictureInPictureWindow> picture_in_picture_window_;
-
-  // Mojo bindings for the delegate interface implemented by |this|.
-  mojo::Binding<mojom::blink::PictureInPictureDelegate> delegate_binding_;
-
-  // Picture-in-Picture service living in the browser process.
-  mojom::blink::PictureInPictureServicePtr picture_in_picture_service_;
 };
 
 }  // namespace blink

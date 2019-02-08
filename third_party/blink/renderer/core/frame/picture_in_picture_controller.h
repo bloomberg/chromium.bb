@@ -83,8 +83,6 @@ class CORE_EXPORT PictureInPictureController
       HTMLVideoElement*,
       const std::vector<PictureInPictureControlInfo>&) = 0;
 
-  // Notifies that one of the states used by Picture-in-Picture has changed.
-  virtual void OnPictureInPictureStateChange() = 0;
 
   void Trace(blink::Visitor*) override;
 

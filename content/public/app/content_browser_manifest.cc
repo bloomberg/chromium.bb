@@ -227,7 +227,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.MediaSessionService",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
-                  "blink.mojom.PictureInPictureService",
                   "blink.mojom.Portal",
                   "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.PresentationService",

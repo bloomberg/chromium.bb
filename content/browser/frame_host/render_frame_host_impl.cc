@@ -73,7 +73,6 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
-#include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/quota_dispatcher_host.h"
@@ -4084,9 +4083,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
-      &PictureInPictureServiceImpl::Create, base::Unretained(this)));
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
