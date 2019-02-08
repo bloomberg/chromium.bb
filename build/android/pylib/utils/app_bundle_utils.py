@@ -20,18 +20,19 @@ import bundletool
 _ALL_ABIS = ['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']
 
 
-def _CreateMinimalDeviceSpec(bundle_path):
+def _CreateMinimalDeviceSpec(bundle_path, sdk_version):
   # Could also use "bundletool dump resources", but reading directly is faster.
-  with zipfile.ZipFile(bundle_path) as f:
-    manifest_data = f.read('base/manifest/AndroidManifest.xml')
-  min_sdk_version = int(
-      re.search(r'minSdkVersion.*?(\d+)', manifest_data).group(1))
+  if not sdk_version:
+    with zipfile.ZipFile(bundle_path) as f:
+      manifest_data = f.read('base/manifest/AndroidManifest.xml')
+    sdk_version = int(
+        re.search(r'minSdkVersion.*?(\d+)', manifest_data).group(1))
 
   # Setting sdkVersion=minSdkVersion prevents multiple per-minSdkVersion .apk
   # files from being created within the .apks file.
   return {
       'screenDensity': 1000,  # Ignored since we don't split on density.
-      'sdkVersion': min_sdk_version,
+      'sdkVersion': sdk_version,
       'supportedAbis': _ALL_ABIS,  # Our .aab files are already split on abi.
       'supportedLocales': ['en'],
   }
@@ -45,6 +46,7 @@ def GenerateBundleApks(bundle_path,
                        keystore_alias,
                        universal=False,
                        minimal=False,
+                       minimal_sdk_version=None,
                        check_for_noop=True):
   """Generate an .apks archive from a an app bundle if needed.
 
@@ -59,11 +61,12 @@ def GenerateBundleApks(bundle_path,
     universal: Whether to create a single APK that contains the contents of all
       modules.
     minimal: Create the minimal set of apks possible (english-only).
+    minimal_sdk_version: When minimal=True, use this sdkVersion.
     check_for_noop: Use md5_check to short-circuit when inputs have not changed.
   """
   device_spec = None
   if minimal:
-    device_spec = _CreateMinimalDeviceSpec(bundle_path)
+    device_spec = _CreateMinimalDeviceSpec(bundle_path, minimal_sdk_version)
 
   def rebuild():
     logging.info('Building %s', bundle_apks_path)
