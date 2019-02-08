@@ -87,7 +87,7 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
       has_font_units_(false),
       has_root_font_units_(false),
       absolutized_(false),
-      base_url_(base_url),
+      base_url_(base_url.IsValid() ? base_url.GetString() : String()),
       charset_(charset) {
   DCHECK(!range.AtEnd());
   ConsumeAndUpdateTokens(range);
