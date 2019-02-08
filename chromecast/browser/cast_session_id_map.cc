@@ -53,7 +53,14 @@ CastSessionIdMap* CastSessionIdMap::GetInstance(
 void CastSessionIdMap::SetSessionId(std::string session_id,
                                     content::WebContents* web_contents) {
   base::UnguessableToken group_id = web_contents->GetAudioGroupId();
-  GetInstance()->SetSessionIdInternal(session_id, group_id, web_contents);
+  // Unretained is safe here, because the singleton CastSessionIdMap never gets
+  // destroyed.
+  auto destroyed_callback = base::BindOnce(&CastSessionIdMap::OnGroupDestroyed,
+                                           base::Unretained(GetInstance()));
+  auto group_observer = std::make_unique<GroupObserver>(
+      web_contents, std::move(destroyed_callback));
+  GetInstance()->SetSessionIdInternal(session_id, group_id,
+                                      std::move(group_observer));
 }
 
 // static
@@ -74,7 +81,7 @@ CastSessionIdMap::~CastSessionIdMap() = default;
 void CastSessionIdMap::SetSessionIdInternal(
     std::string session_id,
     base::UnguessableToken group_id,
-    content::WebContents* web_contents) {
+    std::unique_ptr<GroupObserver> group_observer) {
   if (!supports_group_id_)
     return;
 
@@ -82,26 +89,19 @@ void CastSessionIdMap::SetSessionIdInternal(
     // Unretained is safe here, because the singleton CastSessionIdMap never
     // gets destroyed.
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CastSessionIdMap::SetSessionIdInternal,
-                       base::Unretained(this), std::move(session_id),
-                       group_id, web_contents));
+        FROM_HERE, base::BindOnce(&CastSessionIdMap::SetSessionIdInternal,
+                                  base::Unretained(this), std::move(session_id),
+                                  group_id, std::move(group_observer)));
     return;
   }
 
   // This check is required to bind to the current sequence.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(web_contents);
   DCHECK(GetSessionIdInternal(group_id.ToString()).empty());
+  DCHECK(group_observer);
 
   VLOG(1) << "Mapping session_id=" << session_id
           << " to group_id=" << group_id.ToString();
-  // Unretained is safe here, because the singleton CastSessionIdMap never gets
-  // destroyed.
-  auto destroyed_callback = base::BindOnce(&CastSessionIdMap::OnGroupDestroyed,
-                                           base::Unretained(this));
-  auto group_observer = std::make_unique<GroupObserver>(
-      web_contents, std::move(destroyed_callback));
   auto group_data = std::make_pair(session_id, std::move(group_observer));
   mapping_.emplace(group_id.ToString(), std::move(group_data));
 }
