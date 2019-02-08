@@ -7,25 +7,31 @@
 
 #include <wayland-client.h>
 
-#include "ui/events/event_modifiers.h"
+#include "ui/base/buildflags.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/keyboard/event_auto_repeat_handler.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace ui {
 
+class KeyboardLayoutEngine;
+#if BUILDFLAG(USE_XKBCOMMON)
+class XkbKeyboardLayoutEngine;
+#endif
 class WaylandConnection;
 
 class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
  public:
-  WaylandKeyboard(wl_keyboard* keyboard, const EventDispatchCallback& callback);
+  WaylandKeyboard(wl_keyboard* keyboard,
+                  KeyboardLayoutEngine* keyboard_layout_engine,
+                  const EventDispatchCallback& callback);
   virtual ~WaylandKeyboard();
 
   void set_connection(WaylandConnection* connection) {
     connection_ = connection;
   }
 
-  int modifiers() { return event_modifiers_.GetModifierFlags(); }
+  int modifiers() { return modifiers_; }
 
  private:
   // wl_keyboard_listener
@@ -63,7 +69,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
 
   static void SyncCallback(void* data, struct wl_callback* cb, uint32_t time);
 
-  void UpdateModifier(int modifier_flag, bool down);
+  void UpdateModifier(int modifier, bool down);
 
   // EventAutoRepeatHandler::Delegate
   void FlushInput(base::OnceClosure closure) override;
@@ -76,13 +82,19 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
   WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;
   EventDispatchCallback callback_;
-  EventModifiers event_modifiers_;
+  int modifiers_ = 0;
 
   // Key repeat handler.
   static const wl_callback_listener callback_listener_;
   EventAutoRepeatHandler auto_repeat_handler_;
   base::OnceClosure auto_repeat_closure_;
   wl::Object<wl_callback> sync_callback_;
+
+#if BUILDFLAG(USE_XKBCOMMON)
+  XkbKeyboardLayoutEngine* layout_engine_;
+#else
+  KeyboardLayoutEngine* layout_engine_;
+#endif
 };
 
 }  // namespace ui

@@ -82,10 +82,6 @@ source_set("wayland") {
 
   import("//ui/base/ui_features.gni")
   if (use_xkbcommon) {
-    sources += [
-      "wayland_xkb_keyboard_layout_engine.cc",
-      "wayland_xkb_keyboard_layout_engine.h",
-    ]
     configs += [ "//ui/events/ozone:xkbcommon" ]
   }
 

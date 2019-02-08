@@ -8,6 +8,7 @@
 #include <xkbcommon/xkbcommon-names.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -832,7 +833,7 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
       DVLOG(3) << "XKB keyboard layout does not contain " << flags[i].xkb_name;
     } else {
       xkb_mod_mask_t flag = static_cast<xkb_mod_mask_t>(1) << index;
-      XkbFlagMapEntry e = {flags[i].ui_flag, flag};
+      XkbFlagMapEntry e = {flags[i].ui_flag, flag, index};
       xkb_flag_map_.push_back(e);
     }
   }
@@ -859,6 +860,23 @@ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
   xkb_flags |= num_lock_mod_mask_;
 #endif
   return xkb_flags;
+}
+
+int XkbKeyboardLayoutEngine::GetModifierFlags(uint32_t depressed,
+                                              uint32_t latched,
+                                              uint32_t locked,
+                                              uint32_t group) const {
+  auto* state = xkb_state_.get();
+  xkb_state_update_mask(state, depressed, latched, locked, 0, 0, group);
+  auto component = static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
+                                                    XKB_STATE_MODS_LATCHED |
+                                                    XKB_STATE_MODS_LOCKED);
+  int ui_flags = 0;
+  for (const auto& entry : xkb_flag_map_) {
+    if (xkb_state_mod_index_is_active(state, entry.xkb_index, component))
+      ui_flags |= entry.ui_flag;
+  }
+  return ui_flags;
 }
 
 bool XkbKeyboardLayoutEngine::XkbLookup(xkb_keycode_t xkb_keycode,

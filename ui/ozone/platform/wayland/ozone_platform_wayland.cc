@@ -4,6 +4,11 @@
 
 #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/buildflags.h"
@@ -27,7 +32,7 @@
 
 #if BUILDFLAG(USE_XKBCOMMON)
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
-#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
+#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 #else
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
@@ -140,8 +145,7 @@ class OzonePlatformWayland : public OzonePlatform {
   void InitializeUI(const InitParams& args) override {
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<WaylandXkbKeyboardLayoutEngine>(
-            xkb_evdev_code_converter_));
+        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
 #else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         std::make_unique<StubKeyboardLayoutEngine>());

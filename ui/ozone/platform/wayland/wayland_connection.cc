@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/wayland_buffer_manager.h"
 #include "ui/ozone/platform/wayland/wayland_input_method_context.h"
@@ -539,8 +540,9 @@ void WaylandConnection::Capabilities(void* data,
         return;
       }
       connection->keyboard_ = std::make_unique<WaylandKeyboard>(
-          keyboard, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
-                                        base::Unretained(connection)));
+          keyboard, KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
+          base::BindRepeating(&WaylandConnection::DispatchUiEvent,
+                              base::Unretained(connection)));
       connection->keyboard_->set_connection(connection);
     }
   } else if (connection->keyboard_) {

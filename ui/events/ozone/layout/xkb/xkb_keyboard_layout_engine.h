@@ -9,6 +9,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/free_deleter.h"
@@ -26,7 +27,7 @@ namespace ui {
 class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
     : public KeyboardLayoutEngine {
  public:
-  XkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
+  explicit XkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
   ~XkbKeyboardLayoutEngine() override;
 
   // KeyboardLayoutEngine:
@@ -45,6 +46,11 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
               DomKey* dom_key,
               KeyboardCode* key_code) const override;
 
+  int GetModifierFlags(uint32_t depressed,
+                       uint32_t latched,
+                       uint32_t locked,
+                       uint32_t group) const;
+
   static void ParseLayoutName(const std::string& layout_name,
                               std::string* layout_id,
                               std::string* layout_variant);
@@ -54,6 +60,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   struct XkbFlagMapEntry {
     int ui_flag;
     xkb_mod_mask_t xkb_flag;
+    xkb_mod_index_t xkb_index;
   };
   std::vector<XkbFlagMapEntry> xkb_flag_map_;
 
