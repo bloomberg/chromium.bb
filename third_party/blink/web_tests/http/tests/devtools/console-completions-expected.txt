@@ -3,7 +3,6 @@ Tests completions prototype chain and scope variables.
 Completions for objectC.:
 {
     priority : 2
-    subtitle : "C"
     text : "instanceMember"
 }
 {
@@ -12,6 +11,7 @@ Completions for objectC.:
 }
 {
     priority : 3
+    subtitle : "C"
     text : "EPriorityMember"
 }
 {
@@ -39,7 +39,6 @@ Completions for objectC.:
 Completions for prefix:
 {
     priority : 4
-    subtitle : "Window"
     text : "prefixA"
 }
 {
