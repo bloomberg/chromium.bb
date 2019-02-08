@@ -495,9 +495,11 @@ replaceGrouping(const TranslationTableHeader *table, const InString **input,
 			memcpy(chars, (*input)->chars, (*input)->length * sizeof(widechar));
 			chars[startReplace] = replaceStart;
 			chars[p] = replaceEnd;
-			*input = &(InString){
+			static InString stringStore;
+			stringStore = (InString){
 				.chars = chars, .length = (*input)->length, .bufferIndex = idx
 			};
+			*input = &stringStore;
 		}
 	} else {
 		if (transOpcode == CTO_Context) {
@@ -546,7 +548,9 @@ removeGrouping(const InString **input, OutString *output, int passCharDots,
 				if (k == p) continue;
 				chars[len++] = (*input)->chars[k];
 			}
-			*input = &(InString){.chars = chars, .length = len, .bufferIndex = idx };
+			static InString stringStore;
+			stringStore = (InString){.chars = chars, .length = len, .bufferIndex = idx };
+			*input = &stringStore;
 		}
 	} else {
 		for (p = output->length - 1; p >= 0; p--) {
@@ -1091,7 +1095,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	// *outlen = i;
 	// return 1;
 	const TranslationTableHeader *table;
-	const InString *input;
+	InString input;
 	OutString output;
 	// posMapping contains position mapping info between the initial input and the output
 	// of the current pass. It is 1 longer than the output. The values are monotonically
@@ -1130,23 +1134,23 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	if (table == NULL || *inlen < 0 || *outlen < 0) return 0;
 	k = 0;
 	while (k < *inlen && inbufx[k]) k++;
-	input = &(InString){.chars = inbufx, .length = k, .bufferIndex = -1 };
+	input = (InString){.chars = inbufx, .length = k, .bufferIndex = -1 };
 	haveEmphasis = 0;
-	if (!(typebuf = _lou_allocMem(alloc_typebuf, 0, input->length, *outlen))) return 0;
+	if (!(typebuf = _lou_allocMem(alloc_typebuf, 0, input.length, *outlen))) return 0;
 	if (typeform != NULL) {
-		for (k = 0; k < input->length; k++) {
+		for (k = 0; k < input.length; k++) {
 			typebuf[k] = typeform[k];
 			if (typebuf[k] & EMPHASIS) haveEmphasis = 1;
 		}
 	} else
-		memset(typebuf, 0, input->length * sizeof(formtype));
+		memset(typebuf, 0, input.length * sizeof(formtype));
 
-	if ((wordBuffer = _lou_allocMem(alloc_wordBuffer, 0, input->length, *outlen)))
-		memset(wordBuffer, 0, (input->length + 4) * sizeof(unsigned int));
+	if ((wordBuffer = _lou_allocMem(alloc_wordBuffer, 0, input.length, *outlen)))
+		memset(wordBuffer, 0, (input.length + 4) * sizeof(unsigned int));
 	else
 		return 0;
-	if ((emphasisBuffer = _lou_allocMem(alloc_emphasisBuffer, 0, input->length, *outlen)))
-		memset(emphasisBuffer, 0, (input->length + 4) * sizeof(EmphasisInfo));
+	if ((emphasisBuffer = _lou_allocMem(alloc_emphasisBuffer, 0, input.length, *outlen)))
+		memset(emphasisBuffer, 0, (input.length + 4) * sizeof(EmphasisInfo));
 	else
 		return 0;
 
@@ -1155,23 +1159,23 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	else
 		srcSpacing = NULL;
 	if (outputPos != NULL)
-		for (k = 0; k < input->length; k++) outputPos[k] = -1;
+		for (k = 0; k < input.length; k++) outputPos[k] = -1;
 	if (cursorPos != NULL && *cursorPos >= 0) {
 		cursorStatus = 0;
 		cursorPosition = *cursorPos;
 		if ((mode & (compbrlAtCursor | compbrlLeftCursor))) {
 			compbrlStart = cursorPosition;
-			if (checkAttr(input->chars[compbrlStart], CTC_Space, 0, table))
+			if (checkAttr(input.chars[compbrlStart], CTC_Space, 0, table))
 				compbrlEnd = compbrlStart + 1;
 			else {
 				while (compbrlStart >= 0 &&
-						!checkAttr(input->chars[compbrlStart], CTC_Space, 0, table))
+						!checkAttr(input.chars[compbrlStart], CTC_Space, 0, table))
 					compbrlStart--;
 				compbrlStart++;
 				compbrlEnd = cursorPosition;
 				if (!(mode & compbrlLeftCursor))
-					while (compbrlEnd < input->length &&
-							!checkAttr(input->chars[compbrlEnd], CTC_Space, 0, table))
+					while (compbrlEnd < input.length &&
+							!checkAttr(input.chars[compbrlEnd], CTC_Space, 0, table))
 						compbrlEnd++;
 			}
 		}
@@ -1179,16 +1183,16 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		cursorPosition = -1;
 		cursorStatus = 1; /* so it won't check cursor position */
 	}
-	if (!(posMapping1 = _lou_allocMem(alloc_posMapping1, 0, input->length, *outlen)))
+	if (!(posMapping1 = _lou_allocMem(alloc_posMapping1, 0, input.length, *outlen)))
 		return 0;
 	if (table->numPasses > 1 || table->corrections) {
-		if (!(posMapping2 = _lou_allocMem(alloc_posMapping2, 0, input->length, *outlen)))
+		if (!(posMapping2 = _lou_allocMem(alloc_posMapping2, 0, input.length, *outlen)))
 			return 0;
-		if (!(posMapping3 = _lou_allocMem(alloc_posMapping3, 0, input->length, *outlen)))
+		if (!(posMapping3 = _lou_allocMem(alloc_posMapping3, 0, input.length, *outlen)))
 			return 0;
 	}
 	if (srcSpacing != NULL) {
-		if (!(destSpacing = _lou_allocMem(alloc_destSpacing, 0, input->length, *outlen)))
+		if (!(destSpacing = _lou_allocMem(alloc_destSpacing, 0, input.length, *outlen)))
 			goodTrans = 0;
 		else
 			memset(destSpacing, '*', *outlen);
@@ -1220,18 +1224,18 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		int realInlen;
 		switch (currentPass) {
 		case 0:
-			goodTrans = makeCorrections(table, input, &output, passPosMapping, typebuf,
+			goodTrans = makeCorrections(table, &input, &output, passPosMapping, typebuf,
 					&realInlen, &posIncremented, &cursorPosition, &cursorStatus);
 			break;
 		case 1: {
-			goodTrans = translateString(table, mode, currentPass, input, &output,
+			goodTrans = translateString(table, mode, currentPass, &input, &output,
 					passPosMapping, typebuf, srcSpacing, destSpacing, wordBuffer,
 					emphasisBuffer, haveEmphasis, &realInlen, &posIncremented,
 					&cursorPosition, &cursorStatus, compbrlStart, compbrlEnd);
 			break;
 		}
 		default:
-			goodTrans = translatePass(table, currentPass, input, &output, passPosMapping,
+			goodTrans = translatePass(table, currentPass, &input, &output, passPosMapping,
 					&realInlen, &posIncremented, &cursorPosition, &cursorStatus);
 			break;
 		}
@@ -1250,8 +1254,8 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		currentPass++;
 		if (currentPass <= table->numPasses && goodTrans) {
 			int idx;
-			releaseStringBuffer(input->bufferIndex);
-			input = &(InString){.chars = output.chars,
+			releaseStringBuffer(input.bufferIndex);
+			input = (InString){.chars = output.chars,
 				.length = output.length,
 				.bufferIndex = output.bufferIndex };
 			idx = getStringBuffer(*outlen);
@@ -1309,8 +1313,8 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		}
 	}
 	if (destSpacing != NULL) {
-		memcpy(srcSpacing, destSpacing, input->length);
-		srcSpacing[input->length] = 0;
+		memcpy(srcSpacing, destSpacing, input.length);
+		srcSpacing[input.length] = 0;
 	}
 	if (cursorPos != NULL && *cursorPos != -1) {
 		if (outputPos != NULL)
@@ -3298,7 +3302,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 	widechar groupingOp;
 	int numericMode;
 	int dontContract;
-	const LastWord *lastWord;
+	LastWord lastWord;
 	int insertEmphasesFrom;
 	TranslationTableCharacter *curCharDef;
 	const widechar *repwordStart;
@@ -3313,7 +3317,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 	translation_direction = 1;
 	markSyllables(table, input, typebuf, &transOpcode, &transRule, &transCharslen);
 	numericMode = 0;
-	lastWord = &(LastWord){ 0, 0, 0 };
+	lastWord = (LastWord){ 0, 0, 0 };
 	dontContract = 0;
 	prevTransOpcode = CTO_None;
 	prevType = curType = prevTypeform = plain_text;
@@ -3375,7 +3379,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 		case CTO_CompBrl:
 		case CTO_Literal:
 			if (!doCompbrl(table, &pos, input, output, posMapping, emphasisBuffer,
-						&transRule, cursorPosition, cursorStatus, lastWord,
+						&transRule, cursorPosition, cursorStatus, &lastWord,
 						&insertEmphasesFrom))
 				goto failure;
 			continue;
@@ -3469,7 +3473,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 			break;
 		case CTO_NoCont:
 			if (!dontContract)
-				doNocont(table, &pos, output, mode, input, lastWord, &dontContract,
+				doNocont(table, &pos, output, mode, input, &lastWord, &dontContract,
 						&insertEmphasesFrom);
 			continue;
 		default:
@@ -3592,7 +3596,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 		}
 		if (((pos > 0) && checkAttr(input->chars[pos - 1], CTC_Space, 0, table) &&
 					(transOpcode != CTO_JoinableWord))) {
-			lastWord = &(LastWord){ pos, output->length, insertEmphasesFrom };
+			lastWord = (LastWord){ pos, output->length, insertEmphasesFrom };
 		}
 		if (srcSpacing != NULL && srcSpacing[pos] >= '0' && srcSpacing[pos] <= '9')
 			destSpacing[output->length] = srcSpacing[pos];
@@ -3606,10 +3610,10 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 			emphasisBuffer, haveEmphasis, transOpcode, cursorPosition, cursorStatus);
 
 failure:
-	if (lastWord->outPos != 0 && pos < input->length &&
+	if (lastWord.outPos != 0 && pos < input->length &&
 			!checkAttr(input->chars[pos], CTC_Space, 0, table)) {
-		pos = lastWord->inPos;
-		output->length = lastWord->outPos;
+		pos = lastWord.inPos;
+		output->length = lastWord.outPos;
 	}
 	if (pos < input->length) {
 		while (checkAttr(input->chars[pos], CTC_Space, 0, table))
