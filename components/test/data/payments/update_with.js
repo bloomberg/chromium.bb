@@ -47,9 +47,24 @@ function showPaymentRequest(pr) {
 }
 
 /**
- * Calls updateWith() with no shipping options
+ * Calls updateWith() with {}
  */
-function updateWithNoShippingOptions() {  // eslint-disable-line no-unused-vars
+function updateWithEmpty() {  // eslint-disable-line no-unused-vars
+  var pr = buildPaymentRequest();
+  var updatedDetails = {};
+  pr.addEventListener('shippingaddresschange', function(e) {
+    e.updateWith(updatedDetails);
+  });
+  pr.addEventListener('shippingoptionchange', function(e) {
+    e.updateWith(updatedDetails);
+  });
+  showPaymentRequest(pr);
+}
+
+/**
+ * Calls updateWith() with total
+ */
+function updateWithTotal() {  // eslint-disable-line no-unused-vars
   var pr = buildPaymentRequest();
   var updatedDetails = {
     total: {label: 'Updated total', amount: {currency: 'USD', value: '10.00'}},
@@ -69,7 +84,6 @@ function updateWithNoShippingOptions() {  // eslint-disable-line no-unused-vars
 function updateWithShippingOptions() {  // eslint-disable-line no-unused-vars
   var pr = buildPaymentRequest();
   var updatedDetails = {
-    total: {label: 'Updated total', amount: {currency: 'USD', value: '10.00'}},
     shippingOptions: [{
       selected: true,
       id: 'updatedShipping',

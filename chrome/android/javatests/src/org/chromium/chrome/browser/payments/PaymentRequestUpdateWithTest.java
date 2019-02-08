@@ -53,13 +53,31 @@ public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
     }
 
     /**
-     * A merchant that calls updateWith() without shipping options will not cause timeouts in UI.
+     * A merchant that calls updateWith() with {} will not cause timeouts in UI.
      */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testUpdateWithNoShippingOptions() throws Throwable {
-        mRule.triggerUIAndWait("updateWithNoShippingOptions", mRule.getReadyForInput());
+    public void testUpdateWithEmpty() throws Throwable {
+        mRule.triggerUIAndWait("updateWithEmpty", mRule.getReadyForInput());
+        Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
+        mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
+        mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
+        Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
+        mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
+        mRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
+        mRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE, mRule.getDismissed());
+        mRule.expectResultContains(new String[] {"freeShipping"});
+    }
+
+    /** A merchant that calls updateWith() with total will not cause timeouts in UI. */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testUpdateWithTotal() throws Throwable {
+        mRule.triggerUIAndWait("updateWithTotal", mRule.getReadyForInput());
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
@@ -81,7 +99,7 @@ public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
         Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
-        Assert.assertEquals("USD $10.00", mRule.getOrderSummaryTotal());
+        Assert.assertEquals("USD $5.00", mRule.getOrderSummaryTotal());
         mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
         mRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mRule.getReadyToUnmask());
