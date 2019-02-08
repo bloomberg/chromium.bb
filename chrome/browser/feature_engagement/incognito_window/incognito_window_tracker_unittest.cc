@@ -153,8 +153,8 @@ class IncognitoWindowTrackerTest : public testing::Test {
     incognito_window_params["session_rate"] = "<=3";
     incognito_window_params["availability"] = "any";
     incognito_window_params["x_date_released_in_seconds"] =
-        base::NumberToString(
-            first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
+        base::NumberToString(static_cast<int64_t>(
+            first_run::GetFirstRunSentinelCreationTime().ToDoubleT()));
     SetFeatureParams(kIPHIncognitoWindowFeature, incognito_window_params);
 
     // Start the DesktopSessionDurationTracker to track active session time.
