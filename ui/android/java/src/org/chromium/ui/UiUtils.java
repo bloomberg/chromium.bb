@@ -8,9 +8,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.SurfaceView;
 import android.view.View;
@@ -460,6 +465,22 @@ public class UiUtils {
             }
         }
         return indexInParent;
+    }
+
+    /**
+     * Gets a drawable from the resources and applies the specified tint to it. Uses Support Library
+     * for vector drawables and tinting on older Android versions.
+     * @param drawableId The resource id for the drawable.
+     * @param tintColorId The resource id for the color or ColorStateList.
+     */
+    public static Drawable getTintedDrawable(
+            Context context, @DrawableRes int drawableId, @ColorRes int tintColorId) {
+        Drawable drawable = AppCompatResources.getDrawable(context, drawableId);
+        assert drawable != null;
+        drawable = DrawableCompat.wrap(drawable).mutate();
+        DrawableCompat.setTintList(
+                drawable, AppCompatResources.getColorStateList(context, tintColorId));
+        return drawable;
     }
 
     /**
