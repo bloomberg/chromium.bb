@@ -2,7 +2,8 @@
 tommi@chromium.org
 
 # Text-to-speech
-dmazzoni@chromium.org
-dtseng@chromium.org
+per-file *tts_*=dmazzoni@chromium.org
+per-file *tts_*=dtseng@chromium.org
+per-file *tts_*=katie@chromium.org
 
 # COMPONENT: Blink>Speech
