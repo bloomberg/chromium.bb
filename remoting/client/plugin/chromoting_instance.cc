@@ -228,17 +228,14 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Initialize TaskScheduler. TaskScheduler::StartWithDefaultParams() doesn't
   // work on NACL.
   base::TaskScheduler::Create("RemotingChromeApp");
-  constexpr int kBackgroundMaxThreads = 1;
-  constexpr int kBackgroundBlockingMaxThreads = 2;
-  constexpr int kForegroundMaxThreads = 1;
-  constexpr int kForegroundBlockingMaxThreads = 2;
+  // TODO(etiennep): Change this to 2 in future CL.
+  constexpr int kBackgroundMaxThreads = 3;
+  constexpr int kForegroundMaxThreads = 3;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
   base::TaskScheduler::GetInstance()->Start(
       {{kBackgroundMaxThreads, kSuggestedReclaimTime},
-       {kBackgroundBlockingMaxThreads, kSuggestedReclaimTime},
-       {kForegroundMaxThreads, kSuggestedReclaimTime},
-       {kForegroundBlockingMaxThreads, kSuggestedReclaimTime}});
+       {kForegroundMaxThreads, kSuggestedReclaimTime}});
 
   return true;
 }

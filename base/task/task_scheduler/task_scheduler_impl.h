@@ -103,8 +103,12 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   // TODO(fdoray): Move all methods used by TaskSchedulerImpl to the
   // SchedulerWorkerPool interface and remove the SchedulerWorkerPool*Impl*
   // accessors.
-  SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(
-      const TaskTraits& traits) const;
+  SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(const TaskTraits& traits);
+  const SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(
+      const TaskTraits& traits) const {
+    return const_cast<TaskSchedulerImpl*>(this)->GetWorkerPoolImplForTraits(
+        traits);
+  }
 
   // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
   // |all_tasks_user_blocking_| is set.
@@ -136,12 +140,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
-  // Owns all the pools managed by this TaskScheduler.
-  std::vector<std::unique_ptr<SchedulerWorkerPoolImpl>> worker_pools_;
-
-  // Maps an environment from EnvironmentType to a pool in |worker_pools_|.
-  SchedulerWorkerPoolImpl* environment_to_worker_pool_[static_cast<int>(
-      EnvironmentType::ENVIRONMENT_COUNT)];
+  Optional<SchedulerWorkerPoolImpl> foreground_pool_;
+  Optional<SchedulerWorkerPoolImpl> background_pool_;
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.

@@ -154,19 +154,15 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   service_process_state_ = std::move(state);
 
   // Initialize TaskScheduler.
-  constexpr int kMaxBackgroundThreads = 1;
-  constexpr int kMaxBackgroundBlockingThreads = 1;
-  constexpr int kMaxForegroundThreads = 3;
-  constexpr int kMaxForegroundBlockingThreads = 3;
+  constexpr int kMaxBackgroundThreads = 2;
+  constexpr int kMaxForegroundThreads = 6;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
 
   base::TaskScheduler::Create("CloudPrintServiceProcess");
   base::TaskScheduler::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
-       {kMaxBackgroundBlockingThreads, kSuggestedReclaimTime},
-       {kMaxForegroundThreads, kSuggestedReclaimTime},
-       {kMaxForegroundBlockingThreads, kSuggestedReclaimTime,
+       {kMaxForegroundThreads, kSuggestedReclaimTime,
         base::SchedulerBackwardCompatibility::INIT_COM_STA}});
 
   // The NetworkChangeNotifier must be created after TaskScheduler because it

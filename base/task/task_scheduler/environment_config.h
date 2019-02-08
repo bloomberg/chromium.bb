@@ -14,19 +14,18 @@
 namespace base {
 namespace internal {
 
+// TODO(etiennep): This is now specific to
+// SchedulerSingleThreadTaskRunnerManager, move it there.
 enum EnvironmentType {
   FOREGROUND = 0,
   FOREGROUND_BLOCKING,
-  // Pools will only be created for the environment above on platforms that
-  // don't support SchedulerWorkers running with a background priority.
-  ENVIRONMENT_COUNT_WITHOUT_BACKGROUND_PRIORITY,
-  BACKGROUND = ENVIRONMENT_COUNT_WITHOUT_BACKGROUND_PRIORITY,
+  BACKGROUND,
   BACKGROUND_BLOCKING,
   ENVIRONMENT_COUNT  // Always last.
 };
 
 // Order must match the EnvironmentType enum.
-constexpr struct {
+struct EnvironmentParams {
   // The threads and histograms of this environment will be labeled with
   // the task scheduler name concatenated to this.
   const char* name_suffix;
@@ -34,7 +33,9 @@ constexpr struct {
   // Preferred priority for threads in this environment; the actual thread
   // priority depends on shutdown state and platform capabilities.
   ThreadPriority priority_hint;
-} kEnvironmentParams[] = {
+};
+
+constexpr EnvironmentParams kEnvironmentParams[] = {
     {"Foreground", base::ThreadPriority::NORMAL},
     {"ForegroundBlocking", base::ThreadPriority::NORMAL},
     {"Background", base::ThreadPriority::BACKGROUND},
