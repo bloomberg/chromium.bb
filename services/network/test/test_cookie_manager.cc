@@ -27,4 +27,12 @@ void TestCookieManager::AddCookieChangeListener(
   cookie_change_listeners_.push_back(std::move(listener));
 }
 
+void TestCookieManager::DispatchCookieChange(
+    const net::CanonicalCookie& cookie,
+    network::mojom::CookieChangeCause cause) {
+  for (auto& cookie_change_listener_ : cookie_change_listeners_) {
+    cookie_change_listener_->OnCookieChange(cookie, cause);
+  }
+}
+
 }  // namespace network

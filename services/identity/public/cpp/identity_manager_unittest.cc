@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/identity_manager.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -27,6 +29,7 @@
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_cookie_manager.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -515,8 +518,6 @@ class IdentityManagerTest : public testing::Test {
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
 
-    gaia_cookie_manager_service_.InitCookieListener();
-
     RecreateSigninAndIdentityManager(
         signin::AccountConsistencyMethod::kDisabled,
         SigninManagerSetup::kWithAuthenticatedAccout);
@@ -634,6 +635,8 @@ class IdentityManagerTest : public testing::Test {
                                        const OAuthMultiloginResult& result) {
     consumer->OnOAuthMultiloginFinished(result);
   }
+
+  TestSigninClient* signin_client() { return &signin_client_; }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
@@ -2243,6 +2246,69 @@ TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
 
   const std::vector<net::CanonicalCookie>& cookies = result.cookies();
   SimulateCookieDeletedByUser(gaia_cookie_manager_service(), cookies[0]);
+  run_loop.Run();
+}
+
+TEST_F(IdentityManagerTest, StartObservingCookieChanges) {
+  const char kTestAccountId[] = "account_id";
+  const char kTestAccountId2[] = "account_id2";
+  const std::vector<std::string> account_ids = {kTestAccountId,
+                                                kTestAccountId2};
+
+  auto test_cookie_manager = std::make_unique<network::TestCookieManager>();
+  network::TestCookieManager* test_cookie_manager_ptr =
+      test_cookie_manager.get();
+  signin_client()->set_cookie_manager(std::move(test_cookie_manager));
+
+  identity_manager()->StartObservingCookieChanges();
+
+  // Needed to insert request in the queue.
+  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
+                                                     gaia::GaiaSource::kChrome);
+
+  // Sample success cookie response.
+  std::string data =
+      R"()]}'
+      {
+        "status": "OK",
+        "cookies":[
+        {
+            "name":"APISID",
+            "value":"vAlUe1",
+            "domain":".google.com",
+            "path":"/",
+            "isSecure":true,
+            "isHttpOnly":false,
+            "priority":"HIGH",
+            "maxAge":63070000
+          }
+        ]
+      }
+    )";
+  OAuthMultiloginResult result(data);
+
+  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_cookie_deleted_by_user_callback(
+      run_loop.QuitClosure());
+
+  const std::vector<net::CanonicalCookie>& cookies = result.cookies();
+
+  // Dispatch a known change of a known cookie instance *through the mojo
+  // pipe* in order to ensure the GCMS is listening to CookieManager changes.
+  //
+  // It is important the the cause of the change is known here (ie
+  // network::mojom::CookieChangeCause::EXPLICIT) so the test can block of the
+  // proper IdentityManager observer callback to be called (in this case
+  // OnAccountsCookieDeletedByUserAction).
+  //
+  // Note that this call differs from calling SimulateCookieDeletedByUser()
+  // directly in the sense that SimulateCookieDeletedByUser() does not go
+  // through any mojo pipe.
+  test_cookie_manager_ptr->DispatchCookieChange(
+      cookies[0], network::mojom::CookieChangeCause::EXPLICIT);
   run_loop.Run();
 }
 
