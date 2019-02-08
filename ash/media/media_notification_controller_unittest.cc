@@ -191,4 +191,24 @@ TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
             notification->custom_view_type());
 }
 
+// Test that if we recieve a null media session info that we hide the
+// notification.
+TEST_F(MediaNotificationControllerTest, HandleNullMediaSessionInfo) {
+  ExpectNotificationCount(0);
+
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  ExpectNotificationCount(1);
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionInfoChanged(nullptr);
+
+  ExpectNotificationCount(0);
+}
+
 }  // namespace ash

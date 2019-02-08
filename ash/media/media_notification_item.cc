@@ -85,7 +85,6 @@ void MediaNotificationItem::SetView(MediaNotificationView* view) {
   view_ = view;
 
   if (view) {
-    DCHECK(!session_info_.is_null());
     view_->UpdateWithMediaSessionInfo(session_info_);
     view_->UpdateWithMediaMetadata(session_metadata_);
     view_->UpdateWithMediaActions(session_actions_);
@@ -99,7 +98,7 @@ void MediaNotificationItem::FlushForTesting() {
 void MediaNotificationItem::MaybeHideOrShowNotification() {
   // If the |is_controllable| bit is set in MediaSessionInfo then we should show
   // a media notification.
-  if (!session_info_->is_controllable) {
+  if (!session_info_ || !session_info_->is_controllable) {
     HideNotification();
     return;
   }

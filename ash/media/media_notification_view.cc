@@ -205,8 +205,9 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
 
 void MediaNotificationView::UpdateWithMediaSessionInfo(
     const media_session::mojom::MediaSessionInfoPtr& session_info) {
-  bool playing = session_info->playback_state ==
-                 media_session::mojom::MediaPlaybackState::kPlaying;
+  bool playing =
+      session_info && session_info->playback_state ==
+                          media_session::mojom::MediaPlaybackState::kPlaying;
   play_pause_button_->SetToggled(playing);
 
   MediaSessionAction action =
