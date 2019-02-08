@@ -21,7 +21,6 @@ import org.chromium.components.omnibox.SuggestionAnswer;
  */
 class AnswerTextClassic extends AnswerText {
     private static final String TAG = "AnswerTextClassic";
-    private final float mDensity;
 
     /**
      * Convert SuggestionAnswer to array of elements that directly translate to user-presented
@@ -29,15 +28,13 @@ class AnswerTextClassic extends AnswerText {
      *
      * @param context Current context.
      * @param answer Specifies answer to be converted.
-     * @param density Screen density which will be used to properly size and layout images and top-
-     *                aligned text.
      * @return array of AnswerText elements to use to construct suggestion item.
      */
-    static AnswerText[] from(Context context, SuggestionAnswer answer, final float density) {
+    static AnswerText[] from(Context context, SuggestionAnswer answer) {
         AnswerText[] result = new AnswerText[2];
 
-        result[0] = new AnswerTextClassic(context, answer.getFirstLine(), density);
-        result[1] = new AnswerTextClassic(context, answer.getSecondLine(), density);
+        result[0] = new AnswerTextClassic(context, answer.getFirstLine());
+        result[1] = new AnswerTextClassic(context, answer.getSecondLine());
 
         // Trim number of presented query lines.
         result[0].mMaxLines = 1;
@@ -50,11 +47,9 @@ class AnswerTextClassic extends AnswerText {
      *
      * @param context Current context.
      * @param line Suggestion line that will be converted to Answer Text.
-     * @param density Screen density.
      */
-    AnswerTextClassic(Context context, SuggestionAnswer.ImageLine line, float density) {
+    AnswerTextClassic(Context context, SuggestionAnswer.ImageLine line) {
         super(context);
-        mDensity = density;
         build(line);
     }
 
@@ -72,8 +67,8 @@ class AnswerTextClassic extends AnswerText {
             case AnswerTextType.TOP_ALIGNED:
                 TextAppearanceSpan style = new TextAppearanceSpan(
                         mContext, R.style.TextAppearance_OmniboxAnswerTextSmall);
-                return new MetricAffectingSpan[] {
-                        style, new TopAlignedSpan(style.getTextSize(), mHeightSp, mDensity)};
+                return new MetricAffectingSpan[] {style,
+                        new TopAlignedSpan(style.getTextSize(), (int) (mHeightSp * mDensity))};
 
             case AnswerTextType.DESCRIPTION_NEGATIVE:
                 res = R.style.TextAppearance_OmniboxAnswerDescriptionNegative;
@@ -124,23 +119,20 @@ class AnswerTextClassic extends AnswerText {
      * the top of the ascent).
      */
     private static class TopAlignedSpan extends MetricAffectingSpan {
-        private final int mTextHeightSp;
-        private final int mMaxTextHeightSp;
-        private final float mDensity;
+        private final int mTextHeightPx;
+        private final int mMaxTextHeightPx;
 
         private Integer mBaselineShift;
 
         /**
          * Constructor for TopAlignedSpan.
          *
-         * @param textHeightSp The total height in SP of the text covered by this span.
-         * @param maxTextHeightSp The total height in SP of the text we wish to top-align with.
-         * @param density The display density.
+         * @param textHeightPx The total height in pixels of the text covered by this span.
+         * @param maxTextHeightPx The total height in pixels of the text we wish to top-align with.
          */
-        public TopAlignedSpan(int textHeightSp, int maxTextHeightSp, float density) {
-            mTextHeightSp = textHeightSp;
-            mMaxTextHeightSp = maxTextHeightSp;
-            mDensity = density;
+        public TopAlignedSpan(int textHeightPx, int maxTextHeightPx) {
+            mTextHeightPx = textHeightPx;
+            mMaxTextHeightPx = maxTextHeightPx;
         }
 
         @Override
@@ -160,8 +152,8 @@ class AnswerTextClassic extends AnswerText {
             Paint.FontMetrics metrics = tp.getFontMetrics();
             float ascentProportion = metrics.ascent / (metrics.top - metrics.bottom);
 
-            int textAscentPx = (int) (mTextHeightSp * ascentProportion * mDensity);
-            int maxTextAscentPx = (int) (mMaxTextHeightSp * ascentProportion * mDensity);
+            int textAscentPx = (int) (mTextHeightPx * ascentProportion);
+            int maxTextAscentPx = (int) (mMaxTextHeightPx * ascentProportion);
 
             mBaselineShift = -(maxTextAscentPx - textAscentPx); // Up is -y.
         }

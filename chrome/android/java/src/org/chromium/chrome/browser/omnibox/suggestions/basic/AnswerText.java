@@ -20,10 +20,23 @@ import java.util.List;
  * AnswerText specifies details to be presented in a single line of omnibox suggestion.
  */
 abstract class AnswerText {
-    Context mContext;
+    final Context mContext;
+    /** Density of current display. */
+    final float mDensity;
     /** Content of the line of text in omnibox suggestion. */
     SpannableStringBuilder mText;
-    /** Max height of the text. */
+    /**
+     * Height of the mText.
+     * Each AnswerText can be a combination of multiple text styles (both sizes and colors).
+     * This height holds either
+     * - running maximum (during build phase)
+     * - final maximum (after build phase)
+     * height of the text contained in mText.
+     * Note: since all our AnswerTexts always use the largest text as the very first span of the
+     * whole content, it is safe to assume that this field contains the height of the largest text
+     * element in all cases, except when computing styles for the first span (= during the very
+     * first call to getAppearanceForText()).
+     */
     int mHeightSp;
     /** Whether content can wrap around to present more details. */
     int mMaxLines;
@@ -35,6 +48,7 @@ abstract class AnswerText {
      */
     AnswerText(Context context) {
         mContext = context;
+        mDensity = context.getResources().getDisplayMetrics().density;
     }
 
     /**
@@ -46,6 +60,10 @@ abstract class AnswerText {
     protected void build(SuggestionAnswer.ImageLine line) {
         mText = new SpannableStringBuilder();
         mMaxLines = 1;
+
+        // This method also computes height of the entire text span.
+        // Ensure we're not rebuilding or appending once AnswerText has been constructed.
+        assert mHeightSp == 0;
 
         List<SuggestionAnswer.TextField> textFields = line.getTextFields();
         for (int i = 0; i < textFields.size(); i++) {
@@ -73,10 +91,12 @@ abstract class AnswerText {
     @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
     private void appendAndStyleText(SuggestionAnswer.TextField textField) {
         MetricAffectingSpan[] styles = getAppearanceForText(textField.getType());
+        // Determine the maximum height of the TextAppearanceSpans that are applied for this field.
         for (MetricAffectingSpan style : styles) {
             if (!(style instanceof TextAppearanceSpan)) continue;
             TextAppearanceSpan textStyle = (TextAppearanceSpan) style;
-            if (mHeightSp < textStyle.getTextSize()) mHeightSp = textStyle.getTextSize();
+            int textHeightSp = (int) (textStyle.getTextSize() / mDensity);
+            if (mHeightSp < textHeightSp) mHeightSp = textHeightSp;
         }
 
         // Unescape HTML entities (e.g. "&quot;", "&gt;").
