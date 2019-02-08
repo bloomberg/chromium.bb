@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 static_library("heap_profiling") {
@@ -60,11 +59,6 @@ source_set("unit_tests") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//testing/gtest",
   ]
-}
-
-service_manifest("manifest") {
-  name = "heap_profiling"
-  source = "heap_profiling_manifest.json"
 }
 
 fuzzer_test("profiling_fuzzer") {

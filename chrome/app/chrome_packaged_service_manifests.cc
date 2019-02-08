@@ -10,8 +10,8 @@
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "chrome/services/noop/public/cpp/manifest.h"
-#include "components/services/patch/manifest.h"
-#include "components/services/unzip/manifest.h"
+#include "components/services/patch/public/cpp/manifest.h"
+#include "components/services/unzip/public/cpp/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -58,7 +58,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "components/services/pdf_compositor/pdf_compositor_manifest.h"  // nogncheck
+#include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -135,8 +135,8 @@ GetChromePackagedServiceManifests() {
       GetChromeManifest(),
       GetFileUtilManifest(),
       GetNoopManifest(),
-      patch_service::GetManifest(),
-      unzip_service::GetManifest(),
+      patch::GetManifest(),
+      unzip::GetManifest(),
       proxy_resolver::GetManifest(),
       prefs::GetLocalStateManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -146,7 +146,7 @@ GetChromePackagedServiceManifests() {
       GetMediaGalleryUtilManifest(),
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
-      pdf_compositor::GetManifest(),
+      printing::GetPdfCompositorManifest(),
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
       GetChromePrintingManifest(),

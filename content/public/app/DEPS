@@ -18,7 +18,7 @@ specific_include_rules = {
     "+chromeos/assistant/buildflags.h",
     "+chromeos/services/assistant/public/cpp/audio_decoder_manifest.h",
     "+components/services/font/public/cpp/manifest.h",
-    "+components/services/heap_profiling/manifest.h",
+    "+components/services/heap_profiling/public/cpp/manifest.h",
     "+media/mojo/services/cdm_manifest.h",
     "+media/mojo/services/media_manifest.h",
     "+services/data_decoder/manifest.h",

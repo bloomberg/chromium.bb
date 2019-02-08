@@ -31,3 +31,16 @@ static_library("test_support") {
     "//services/service_manager/public/cpp/test:test_support",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/services/unzip/public/interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}

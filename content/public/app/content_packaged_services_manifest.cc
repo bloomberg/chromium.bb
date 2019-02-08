@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/manifest.h"
+#include "components/services/heap_profiling/public/cpp/manifest.h"
 #include "content/public/common/service_names.mojom.h"
 #include "media/mojo/services/cdm_manifest.h"
 #include "media/mojo/services/media_manifest.h"

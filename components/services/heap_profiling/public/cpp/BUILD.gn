@@ -50,3 +50,17 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/services/heap_profiling/public/mojom",
+    "//services/resource_coordinator/public/mojom",
+    "//services/service_manager/public/cpp",
+  ]
+}
