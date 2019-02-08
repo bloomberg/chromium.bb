@@ -25,6 +25,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/base/ime/input_method.h"
@@ -1767,13 +1768,27 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
   DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
 
   // Accessibility readers will send an OBJID_CLIENT message
-  if (delegate_->GetNativeViewAccessible() &&
-      static_cast<DWORD>(OBJID_CLIENT) == obj_id) {
-    // Retrieve MSAA dispatch object for the root view.
-    Microsoft::WRL::ComPtr<IAccessible> root(
-        delegate_->GetNativeViewAccessible());
-    reference_result = LresultFromObject(IID_IAccessible, w_param,
-        static_cast<IAccessible*>(root.Detach()));
+  if (delegate_->GetNativeViewAccessible()) {
+    bool is_uia_request = static_cast<DWORD>(UiaRootObjectId) == obj_id;
+    bool is_msaa_request = static_cast<DWORD>(OBJID_CLIENT) == obj_id;
+
+    // Expose either the UIA or the MSAA implementation, but not both, depending
+    // on the state of the feature flag.
+    if (is_uia_request &&
+        ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+      // Retrieve UIA object for the root view.
+      Microsoft::WRL::ComPtr<IRawElementProviderSimple> root;
+      delegate_->GetNativeViewAccessible()->QueryInterface(IID_PPV_ARGS(&root));
+      reference_result =
+          UiaReturnRawElementProvider(hwnd(), w_param, l_param, root.Detach());
+    } else if (is_msaa_request &&
+               !::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+      // Retrieve MSAA dispatch object for the root view.
+      Microsoft::WRL::ComPtr<IAccessible> root(
+          delegate_->GetNativeViewAccessible());
+      reference_result = LresultFromObject(
+          IID_IAccessible, w_param, static_cast<IAccessible*>(root.Detach()));
+    }
   } else if (::GetFocus() == hwnd() && ax_system_caret_ &&
              static_cast<DWORD>(OBJID_CARET) == obj_id) {
     Microsoft::WRL::ComPtr<IAccessible> ax_system_caret_accessible =

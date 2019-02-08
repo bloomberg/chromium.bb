@@ -2067,6 +2067,7 @@ jumbo_source_set("browser") {
       "imm32.lib",
       "oleacc.lib",
       "portabledeviceguids.lib",
+      "uiautomationcore.lib",
       "wtsapi32.lib",
     ]
   }
