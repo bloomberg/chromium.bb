@@ -211,11 +211,12 @@ void BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency() {
 
   bluetooth_device->SetConnectionLatency(
       device::BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_LOW,
-      base::Bind(&BluetoothLowEnergyWeaveClientConnection::CreateGattConnection,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(
-          &BluetoothLowEnergyWeaveClientConnection::OnSetConnectionLatencyError,
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&BluetoothLowEnergyWeaveClientConnection::
+                              OnSetConnectionLatencySuccess,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothLowEnergyWeaveClientConnection::
+                              OnSetConnectionLatencyErrorOrTimeout,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
@@ -321,6 +322,11 @@ void BluetoothLowEnergyWeaveClientConnection::OnTimeoutForSubStatus(
   // Ensure that |timed_out_sub_status| is still the active status.
   DCHECK(timed_out_sub_status == sub_status());
 
+  if (timed_out_sub_status == SubStatus::WAITING_CONNECTION_LATENCY) {
+    OnSetConnectionLatencyErrorOrTimeout();
+    return;
+  }
+
   PA_LOG(ERROR) << "Timed out waiting during SubStatus "
                 << SubStatusToString(timed_out_sub_status) << ". "
                 << "Destroying connection.";
@@ -328,10 +334,6 @@ void BluetoothLowEnergyWeaveClientConnection::OnTimeoutForSubStatus(
   BleWeaveConnectionResult result =
       BleWeaveConnectionResult::BLE_WEAVE_CONNECTION_RESULT_MAX;
   switch (timed_out_sub_status) {
-    case SubStatus::WAITING_CONNECTION_LATENCY:
-      result = BleWeaveConnectionResult::
-          BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_SETTING_CONNECTION_LATENCY;
-      break;
     case SubStatus::WAITING_GATT_CONNECTION:
       result = BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_CREATING_GATT_CONNECTION;
@@ -483,10 +485,35 @@ void BluetoothLowEnergyWeaveClientConnection::CompleteConnection() {
   SetSubStatus(SubStatus::CONNECTED_AND_IDLE);
 }
 
-void BluetoothLowEnergyWeaveClientConnection::OnSetConnectionLatencyError() {
+void BluetoothLowEnergyWeaveClientConnection::OnSetConnectionLatencySuccess() {
+  // TODO(crbug.com/929518): Record how long it took to set connection latency.
+
+  // It's possible that we timed out when attempting to set the connection
+  // latency before this callback was called, resulting in this class moving
+  // forward with a GATT connection (i.e., in any state other than
+  // |SubStatus::WAITING_CONNECTION_LATENCY|). That could mean, at this point in
+  // time, that we're in the middle of connecting, already connected, or any
+  // state in between. That's fine; simply early return in order to prevent
+  // trying to create yet another GATT connection (which will fail).
+  if (sub_status() != SubStatus::WAITING_CONNECTION_LATENCY) {
+    PA_LOG(WARNING) << "Setting connection latency succeeded but GATT "
+                    << "connection to " << GetDeviceInfoLogString()
+                    << " is already in progress or complete.";
+    return;
+  }
+
+  CreateGattConnection();
+}
+
+void BluetoothLowEnergyWeaveClientConnection::
+    OnSetConnectionLatencyErrorOrTimeout() {
+  // TODO(crbug.com/929518): Record when setting connection latency fails or
+  // times out.
+
   DCHECK(sub_status_ == SubStatus::WAITING_CONNECTION_LATENCY);
-  PA_LOG(WARNING) << "Error setting connection latency for connection to "
-                  << GetDeviceInfoLogString() << ".";
+  PA_LOG(WARNING)
+      << "Error or timeout setting connection latency for connection to "
+      << GetDeviceInfoLogString() << ".";
 
   // Even if setting the connection latency fails, continue with the
   // connection. This is unfortunate but should not be considered a fatal error.

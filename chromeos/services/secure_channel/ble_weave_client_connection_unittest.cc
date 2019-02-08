@@ -1465,15 +1465,42 @@ TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,
   ASSERT_FALSE(connection_latency_callback_.is_null());
   ASSERT_FALSE(connection_latency_error_callback_.is_null());
 
+  EXPECT_CALL(*mock_bluetooth_device_, CreateGattConnection(_, _))
+      .WillOnce(DoAll(SaveArg<0>(&create_gatt_connection_success_callback_),
+                      SaveArg<1>(&create_gatt_connection_error_callback_)));
+
   // Simulate a timeout.
   test_timer_->Fire();
 
-  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
-  EXPECT_EQ(connection->status(), Connection::Status::DISCONNECTED);
+  EXPECT_FALSE(create_gatt_connection_error_callback_.is_null());
+  ASSERT_FALSE(create_gatt_connection_success_callback_.is_null());
 
+  // Robustness check: simulate the SetConnectionLatency success callback firing
+  // while a GATT connection is in progress. It should recognize that a GATT
+  // connection is in progress and not call CreateGattConnection a 2nd time.
+  connection_latency_callback_.Run();
+
+  // Preparing |connection| to run |create_gatt_connection_success_callback_|.
+  EXPECT_CALL(*connection, CreateCharacteristicsFinder(_, _))
+      .WillOnce(DoAll(
+          SaveArg<0>(&characteristics_finder_success_callback_),
+          SaveArg<1>(&characteristics_finder_error_callback_),
+          Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
+
+  create_gatt_connection_success_callback_.Run(
+      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+          adapter_, kTestRemoteDeviceBluetoothAddress));
+
+  CharacteristicsFound(connection.get());
+  NotifySessionStarted(connection.get());
+  ConnectionResponseReceived(connection.get(), kDefaultMaxPacketSize);
+
+  VerifyGattConnectionResultSuccess();
+
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
-          BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_SETTING_CONNECTION_LATENCY);
+          BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,

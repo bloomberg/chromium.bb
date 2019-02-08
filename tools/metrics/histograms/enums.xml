@@ -44404,7 +44404,7 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="ProximityAuth_BleWeaveConnectionResult">
   <int value="0" label="Closed normally"/>
-  <int value="1" label="Timeout: Setting connection latency"/>
+  <int value="1" label="(Deprecated) Timeout: Setting connection latency"/>
   <int value="2" label="Timeout: Creating GATT connection"/>
   <int value="3" label="Timeout: Starting notify session"/>
   <int value="4" label="Timeout: Finding GATT characteristics"/>
