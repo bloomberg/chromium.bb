@@ -74,7 +74,7 @@ std::string AccountMapping::SerializeAsString() const {
   value.append(kSeparator);
   value.append(StatusToString(status));
   value.append(kSeparator);
-  value.append(base::Int64ToString(status_change_timestamp.ToInternalValue()));
+  value.append(base::NumberToString(status_change_timestamp.ToInternalValue()));
   if (!last_message_id.empty()) {
     value.append(kSeparator);
     value.append(last_message_id);

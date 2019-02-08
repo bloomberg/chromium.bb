@@ -479,7 +479,7 @@ TEST_F(InstanceIDGetTokenRequestTest, RequestDataAndURL) {
   EXPECT_EQ(base::NumberToString(kSecurityToken), auth_tokenizer.token());
 
   std::map<std::string, std::string> expected_pairs;
-  expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
+  expected_pairs["gmsv"] = base::NumberToString(kGCMVersion);
   expected_pairs["app"] = kAppId;
   expected_pairs["sender"] = kDeveloperId;
   expected_pairs["device"] = base::NumberToString(kAndroidId);
@@ -501,7 +501,7 @@ TEST_F(InstanceIDGetTokenRequestTest, RequestDataWithSubtype) {
 
   // Same as RequestDataAndURL except "app" and "X-subtype".
   std::map<std::string, std::string> expected_pairs;
-  expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
+  expected_pairs["gmsv"] = base::NumberToString(kGCMVersion);
   expected_pairs["app"] = kProductCategoryForSubtypes;
   expected_pairs["X-subtype"] = kAppId;
   expected_pairs["sender"] = kDeveloperId;

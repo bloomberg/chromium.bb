@@ -43,7 +43,7 @@ class TestAuthService : public DummyAuthService {
 
     if (refresh_token() == kTestRefreshToken) {
       const std::string token =
-          kTestAccessToken + base::IntToString(auth_try_count_);
+          kTestAccessToken + base::NumberToString(auth_try_count_);
       set_access_token(token);
       callback.Run(HTTP_SUCCESS, token);
     } else {

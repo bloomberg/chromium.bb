@@ -48,7 +48,7 @@ void InstanceIDDeleteTokenRequestHandler::BuildRequestBody(std::string* body){
   BuildFormEncoding(kSenderKey, authorized_entity_, body);
   BuildFormEncoding(kScopeKey, scope_, body);
   BuildFormEncoding(kExtraScopeKey, scope_, body);
-  BuildFormEncoding(kGMSVersionKey, base::IntToString(gcm_version_), body);
+  BuildFormEncoding(kGMSVersionKey, base::NumberToString(gcm_version_), body);
 }
 
 UnregistrationRequest::Status

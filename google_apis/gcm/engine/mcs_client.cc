@@ -463,7 +463,7 @@ void MCSClient::ResetStateAndBuildLoginRequest(
     // Ensure that the custom heartbeat interval is communicated to the server.
     mcs_proto::Setting* setting = request->add_setting();
     setting->set_name(kHeartbeatIntervalSettingName);
-    setting->set_value(base::IntToString(
+    setting->set_value(base::NumberToString(
         heartbeat_manager_.GetClientHeartbeatIntervalMs()));
   }
 
@@ -927,7 +927,7 @@ void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
 }
 
 MCSClient::PersistentId MCSClient::GetNextPersistentId() {
-  return base::Int64ToString(base::TimeTicks::Now().ToInternalValue());
+  return base::NumberToString(base::TimeTicks::Now().ToInternalValue());
 }
 
 void MCSClient::OnConnectionResetByHeartbeat(
