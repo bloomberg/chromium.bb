@@ -46,9 +46,10 @@ enum ShelfItemType {
 // Source of the launch or activation request, for tracking.
 // These values match ash::ShelfLaunchSource.
 enum ShelfLaunchSource {
-  UNKNOWN,          // The item was launched from outside the app list.
+  UNKNOWN,          // The item was launched from elsewhere.
   APP_LIST,         // The item was launched from a generic app list view.
   APP_LIST_SEARCH,  // The item was launched from an app list search view.
+  SHELF,            // The item was launched from the shelf.
 };
 
 // The Shelf controller allows clients (eg. Chrome) to control the ash shelf.

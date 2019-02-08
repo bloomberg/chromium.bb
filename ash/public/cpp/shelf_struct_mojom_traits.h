@@ -160,6 +160,8 @@ struct EnumTraits<ash::mojom::ShelfLaunchSource, ash::ShelfLaunchSource> {
         return ash::mojom::ShelfLaunchSource::APP_LIST;
       case ash::LAUNCH_FROM_APP_LIST_SEARCH:
         return ash::mojom::ShelfLaunchSource::APP_LIST_SEARCH;
+      case ash::LAUNCH_FROM_SHELF:
+        return ash::mojom::ShelfLaunchSource::SHELF;
     }
     NOTREACHED();
     return ash::mojom::ShelfLaunchSource::UNKNOWN;
@@ -176,6 +178,9 @@ struct EnumTraits<ash::mojom::ShelfLaunchSource, ash::ShelfLaunchSource> {
         return true;
       case ash::mojom::ShelfLaunchSource::APP_LIST_SEARCH:
         *out = ash::LAUNCH_FROM_APP_LIST_SEARCH;
+        return true;
+      case ash::mojom::ShelfLaunchSource::SHELF:
+        *out = ash::LAUNCH_FROM_SHELF;
         return true;
     }
     NOTREACHED();

@@ -684,7 +684,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // Notify the item of its selection; handle the result in AfterItemSelected.
   item_awaiting_response_ = item.id;
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
-      ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_UNKNOWN,
+      ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_SHELF,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
                      item, sender, base::Passed(ui::Event::Clone(event)),
                      ink_drop));
