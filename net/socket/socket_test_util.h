@@ -643,6 +643,18 @@ class MockClientSocketFactory : public ClientSocketFactory {
       ProxyDelegate* proxy_delegate,
       bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<StreamSocket> stream_socket,
+      const std::string& user_agent,
+      const HostPortPair& endpoint,
+      const ProxyServer& proxy_server,
+      HttpAuthController* http_auth_controller,
+      bool tunnel,
+      bool using_spdy,
+      NextProto negotiated_protocol,
+      ProxyDelegate* proxy_delegate,
+      bool is_https_proxy,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override;
   const std::vector<uint16_t>& udp_client_socket_ports() const {
     return udp_client_socket_ports_;
   }
@@ -817,7 +829,12 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
 
 class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
  public:
-  MockProxyClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
+  // TODO(mmenke): Remove this constructor.
+  MockProxyClientSocket(
+      std::unique_ptr<ClientSocketHandle> client_socket_handle,
+      HttpAuthController* auth_controller,
+      ProxyClientSocketDataProvider* data);
+  MockProxyClientSocket(std::unique_ptr<StreamSocket> stream_socket,
                         HttpAuthController* auth_controller,
                         ProxyClientSocketDataProvider* data);
   ~MockProxyClientSocket() override;
@@ -871,7 +888,9 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
   void RunCallbackAsync(CompletionOnceCallback callback, int result);
 
   NetLogWithSource net_log_;
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
+  std::unique_ptr<StreamSocket> stream_socket_;
+  StreamSocket* socket_;
   ProxyClientSocketDataProvider* data_;
   scoped_refptr<HttpAuthController> auth_controller_;
 

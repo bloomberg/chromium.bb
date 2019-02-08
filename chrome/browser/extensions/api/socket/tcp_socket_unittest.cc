@@ -541,6 +541,21 @@ class TestSocketFactory : public net::ClientSocketFactory {
     NOTIMPLEMENTED();
     return nullptr;
   }
+  std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<net::StreamSocket> stream_socket,
+      const std::string& user_agent,
+      const net::HostPortPair& endpoint,
+      const net::ProxyServer& proxy_server,
+      net::HttpAuthController* http_auth_controller,
+      bool tunnel,
+      bool using_spdy,
+      net::NextProto negotiated_protocol,
+      net::ProxyDelegate* proxy_delegate,
+      bool is_https_proxy,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
 
  private:
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> providers_;
