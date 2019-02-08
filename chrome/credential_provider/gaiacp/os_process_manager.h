@@ -24,7 +24,7 @@ class ScopedProcessInformation;
 namespace credential_provider {
 
 // Manages OS processes and process attributes.
-class OSProcessManager {
+class [[clang::lto_visibility_public]] OSProcessManager {
  public:
   static OSProcessManager* Get();
 
