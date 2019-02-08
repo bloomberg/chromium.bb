@@ -388,10 +388,7 @@ message UninstallPackageProgressSignal {
     SUCCEEDED = 0;
 
     // Uninstall failed to complete, the specific reason will be in
-    // failure_details. If the failure is due to another package(s) being
-    // dependent on this one, then dependency_list will also be populated with
-    // the list of those dependent packages.  No further signals will be sent
-    // after this one.
+    // failure_details. No further signals will be sent after this one.
     FAILED = 1;
 
     // This is sent while the uninstall is in progress. progress_percent will be
@@ -407,16 +404,6 @@ message UninstallPackageProgressSignal {
 
   // Details relating to the failure state.
   string failure_details = 6;
-
-  message Dependency {
-    // The package that depends on this one.
-    string package_id = 1;
-    // A one-line, human-readable summary of the package. Should be localized
-    // but depends on the package.
-    string summary = 2;
-  }
-
-  repeated Dependency dependency_list = 7;
 }
 
 // Request for creating an LXD container.
