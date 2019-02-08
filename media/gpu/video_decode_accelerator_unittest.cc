@@ -1162,11 +1162,6 @@ CreateAndInitializeVideoFrameValidator(
       prefix_output_yuv = GetTestDataFile(filepath);
     }
   }
-#if BUILDFLAG(USE_VAAPI)
-  bool linear = false;
-#else
-  bool linear = true;
-#endif
 
   // Read md5 frame checksums.
   std::vector<std::string> frame_checksums;
@@ -1181,7 +1176,7 @@ CreateAndInitializeVideoFrameValidator(
   }
 
   return media::test::VideoFrameValidator::Create(
-      g_frame_validator_flags, prefix_output_yuv, frame_checksums, linear);
+      g_frame_validator_flags, prefix_output_yuv, frame_checksums);
 }
 
 // Fails on Win only. crbug.com/849368
