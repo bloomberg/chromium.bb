@@ -516,4 +516,18 @@ void IdentityTestEnvironment::
   account_fetcher_service_->EnableNetworkFetchesForTest();
 }
 
+void IdentityTestEnvironment::SimulateSuccessfulFetchOfAccountInfo(
+    const std::string& account_id,
+    const std::string& email,
+    const std::string& gaia,
+    const std::string& hosted_domain,
+    const std::string& full_name,
+    const std::string& given_name,
+    const std::string& locale,
+    const std::string& picture_url) {
+  account_fetcher_service_->FakeUserInfoFetchSuccess(
+      account_id, email, gaia, hosted_domain, full_name, given_name, locale,
+      picture_url);
+}
+
 }  // namespace identity
