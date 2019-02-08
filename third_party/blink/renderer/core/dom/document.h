@@ -514,15 +514,15 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleAndLayout();
   void LayoutUpdated();
   enum RunPostLayoutTasks {
-    kRunPostLayoutTasksAsyhnchronously,
+    kRunPostLayoutTasksAsynchronously,
     kRunPostLayoutTasksSynchronously,
   };
   void UpdateStyleAndLayoutIgnorePendingStylesheets(
-      RunPostLayoutTasks = kRunPostLayoutTasksAsyhnchronously);
+      RunPostLayoutTasks = kRunPostLayoutTasksAsynchronously);
   // Same as UpdateStyleAndLayoutIgnorePendingStyleSheets()
   // but allows style & layout tree calculation for invisible nodes.
   void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
-      RunPostLayoutTasks = kRunPostLayoutTasksAsyhnchronously);
+      RunPostLayoutTasks = kRunPostLayoutTasksAsynchronously);
   void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
   scoped_refptr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(
       Element*);
