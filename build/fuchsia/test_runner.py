@@ -21,8 +21,11 @@ from net_test_server import SetupTestServer
 from run_package import RunPackage, RunPackageArgs
 
 DEFAULT_TEST_CONCURRENCY = 4
+# TODO(https://crbug.com/930182): Migrate off of deprecated global storage.
 TEST_RESULT_PATH = '/data/test_summary.json'
+TEST_RESULT_SCP_PATH = '/data/deprecated-global-persistent-storage/test_summary.json'
 TEST_FILTER_PATH = '/data/test_filter.txt'
+TEST_FILTER_SCP_PATH = '/data/deprecated-global-persistent-storage/test_filter.txt'
 
 def main():
   parser = argparse.ArgumentParser()
@@ -103,7 +106,7 @@ def main():
     target.Start()
 
     if args.test_launcher_filter_file:
-      target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH)
+      target.PutFile(args.test_launcher_filter_file, TEST_FILTER_SCP_PATH)
       child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
 
     test_server = None
@@ -119,7 +122,7 @@ def main():
       test_server.Stop()
 
     if args.test_launcher_summary_output:
-      target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output)
+      target.GetFile(TEST_RESULT_SCP_PATH, args.test_launcher_summary_output)
 
     return returncode
 
