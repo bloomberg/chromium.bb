@@ -26,6 +26,8 @@ bool StyleRecalcChange::ShouldRecalcStyleFor(const Node& node) const {
     return true;
   if (node.NeedsStyleRecalc())
     return true;
+  if (node.GetForceReattachLayoutTree())
+    return true;
   if (propagate_ != kClearEnsured)
     return false;
   if (const ComputedStyle* old_style = node.GetComputedStyle())

@@ -257,20 +257,12 @@ void ReattachLegacyLayoutObjectList::AddForceLegacyAtBFCAncestor(
   if (start == bfc)
     return;
   DCHECK(bfc) << start;
-  if (std::any_of(blocks_.begin(), blocks_.end(),
-                  [bfc](const LayoutObject* object) {
-                    return bfc == object ||
-                           bfc->GetNode()->IsDescendantOf(object->GetNode());
-                  }))
-    return;
-  auto** itr = std::remove_if(
-      blocks_.begin(), blocks_.end(), [bfc](const LayoutObject* object) {
-        return object->GetNode()->IsDescendantOf(bfc->GetNode());
-      });
-  blocks_.resize(static_cast<wtf_size_t>(std::distance(blocks_.begin(), itr)));
+  Element* bfc_element = ToElement(bfc->GetNode());
+  DCHECK(bfc_element);
   // Mark BFC root is added into the list.
-  bfc->MutableStyle()->SetForceLegacyLayout(true);
-  blocks_.push_back(bfc);
+  // TODO(futhark): We should not mutate the ComputedStyle here.
+  bfc_element->MutableComputedStyle()->SetForceLegacyLayout(true);
+  reattach_elements_.push_back(bfc_element);
 }
 
 bool ReattachLegacyLayoutObjectList::IsCollecting() const {
@@ -283,10 +275,10 @@ void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
   if (state == State::kBuildingLegacyLayoutTree)
     return;
   DCHECK_EQ(state, State::kCollecting);
-  if (blocks_.IsEmpty())
+  if (reattach_elements_.IsEmpty())
     return;
-  for (const LayoutObject* block : blocks_)
-    ToElement(*block->GetNode()).LazyReattachIfAttached();
+  for (Element* element : reattach_elements_)
+    element->SetForceReattachLayoutTree();
   state_ = State::kForcingLegacyLayout;
   document_->GetStyleEngine().RecalcStyle({});
   document_->GetStyleEngine().RebuildLayoutTree();
@@ -295,6 +287,7 @@ void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
 
 void ReattachLegacyLayoutObjectList::Trace(Visitor* visitor) {
   visitor->Trace(document_);
+  visitor->Trace(reattach_elements_);
 }
 
 ReattachLegacyLayoutObjectList& Document::GetReattachLegacyLayoutObjectList() {
