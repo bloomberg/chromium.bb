@@ -280,7 +280,7 @@ base::FilePath DatabaseTracker::GetOriginDirectory(
       origin_directory = it->second;
     } else {
       origin_directory =
-          base::IntToString16(incognito_origin_directories_generator_++);
+          base::NumberToString16(incognito_origin_directories_generator_++);
       incognito_origin_directories_[origin_identifier] = origin_directory;
     }
   }
@@ -302,7 +302,7 @@ base::FilePath DatabaseTracker::GetFullDBFilePath(
     return base::FilePath();
 
   return GetOriginDirectory(origin_identifier)
-      .AppendASCII(base::Int64ToString(id));
+      .AppendASCII(base::NumberToString(id));
 }
 
 bool DatabaseTracker::GetOriginInfo(const std::string& origin_identifier,

@@ -1131,7 +1131,7 @@ std::map<std::string, std::string> QuotaManager::GetStatistics() {
     temporary_storage_evictor_->GetStatistics(&stats);
     for (const auto& origin_usage_pair : stats) {
       statistics[origin_usage_pair.first] =
-          base::Int64ToString(origin_usage_pair.second);
+          base::NumberToString(origin_usage_pair.second);
     }
   }
   return statistics;

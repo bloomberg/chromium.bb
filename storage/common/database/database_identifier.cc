@@ -189,7 +189,7 @@ std::string DatabaseIdentifier::ToString() const {
   if (is_unique_)
     return "__0";
   return scheme_ + "_" + EscapeIPv6Hostname(hostname_) + "_" +
-         base::IntToString(port_);
+         base::NumberToString(port_);
 }
 
 GURL DatabaseIdentifier::ToOrigin() const {
@@ -199,7 +199,7 @@ GURL DatabaseIdentifier::ToOrigin() const {
     return GURL();
   if (port_ == 0)
     return GURL(scheme_ + "://" + hostname_);
-  return GURL(scheme_ + "://" + hostname_ + ":" + base::IntToString(port_));
+  return GURL(scheme_ + "://" + hostname_ + ":" + base::NumberToString(port_));
 }
 
 }  // namespace storage
