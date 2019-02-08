@@ -15,8 +15,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/page_resource_coordinator.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
-#include "chrome/browser/resource_coordinator/render_process_user_data.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_memory_metrics_reporter.h"
@@ -111,8 +111,8 @@ void ResourceCoordinatorTabHelper::RenderFrameCreated(
     parent_frame_node->AddChildFrame(*frame.get());
   }
 
-  RenderProcessUserData* user_data =
-      RenderProcessUserData::GetForRenderProcessHost(
+  performance_manager::RenderProcessUserData* user_data =
+      performance_manager::RenderProcessUserData::GetForRenderProcessHost(
           render_frame_host->GetProcess());
   // In unittests the user data isn't populated as the relevant main parts
   // is not in play.

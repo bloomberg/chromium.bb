@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/render_process_user_data.h"
+#include "chrome/browser/performance_manager/render_process_user_data.h"
 
 #include <memory>
 #include <utility>
@@ -16,7 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 namespace {
 
@@ -76,4 +76,4 @@ RenderProcessUserData* RenderProcessUserData::GetForRenderProcessHost(
       host->GetUserData(kRenderProcessUserDataKey));
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
