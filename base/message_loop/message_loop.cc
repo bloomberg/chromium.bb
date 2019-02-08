@@ -172,10 +172,9 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 }
 
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
-    : backend_(
-          sequence_manager::internal::SequenceManagerImpl::
-              CreateUnboundWithPump(sequence_manager::SequenceManager::Settings{
-                  .message_loop_type = type})),
+    : backend_(sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
+          sequence_manager::SequenceManager::Settings{.message_loop_type =
+                                                          type})),
       default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
       pump_factory_(std::move(pump_factory)) {
@@ -211,12 +210,6 @@ void MessageLoop::BindToCurrentThread() {
       << "should only have one message loop per thread";
 
   backend_->BindToCurrentThread(std::move(pump));
-
-#if defined(OS_ANDROID)
-  // On Android, attach to the native loop when there is one.
-  if (type_ == TYPE_UI || type_ == TYPE_JAVA)
-    backend_->AttachToMessagePump();
-#endif
 }
 
 std::unique_ptr<MessagePump> MessageLoop::CreateMessagePump() {

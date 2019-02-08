@@ -48,16 +48,14 @@ std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThreadWithPump(
     std::unique_ptr<MessagePump> message_pump,
     SequenceManager::Settings settings) {
   std::unique_ptr<SequenceManager> sequence_manager =
-      internal::SequenceManagerImpl::CreateUnboundWithPump(std::move(settings));
+      internal::SequenceManagerImpl::CreateUnbound(std::move(settings));
   sequence_manager->BindToMessagePump(std::move(message_pump));
   return sequence_manager;
 }
 
 std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoopBase* message_loop_base,
     SequenceManager::Settings settings) {
-  return internal::SequenceManagerImpl::CreateUnbound(message_loop_base,
-                                                      std::move(settings));
+  return internal::SequenceManagerImpl::CreateUnbound(std::move(settings));
 }
 
 namespace internal {
@@ -178,25 +176,17 @@ SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateOnCurrentThread(
     SequenceManager::Settings settings) {
-  std::unique_ptr<SequenceManagerImpl> manager =
-      CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated(),
-                    std::move(settings));
+  MessageLoopBase* message_loop_base =
+      MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated();
+  std::unique_ptr<SequenceManagerImpl> manager(new SequenceManagerImpl(
+      ThreadControllerImpl::Create(message_loop_base, settings.clock),
+      std::move(settings)));
   manager->BindToCurrentThread();
-  manager->CompleteInitializationOnBoundThread();
   return manager;
 }
 
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
-    MessageLoopBase* message_loop_base,
-    SequenceManager::Settings settings) {
-  return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerImpl::Create(message_loop_base, settings.clock),
-      std::move(settings)));
-}
-
-// static
-std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnboundWithPump(
     SequenceManager::Settings settings) {
   return WrapUnique(new SequenceManagerImpl(
       ThreadControllerWithMessagePumpImpl::CreateUnbound(settings.clock),
@@ -212,15 +202,22 @@ void SequenceManagerImpl::BindToMessageLoop(
 void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
   controller_->BindToCurrentThread(std::move(pump));
   CompleteInitializationOnBoundThread();
+
+  // On Android attach to the native loop when there is one.
+#if defined(OS_ANDROID)
+  if (type_ == TYPE_UI || type_ == TYPE_JAVA)
+    controller_->AttachToMessagePump();
+#endif
 }
 
 void SequenceManagerImpl::BindToCurrentThread() {
   associated_thread_->BindToCurrentThread();
+  CompleteInitializationOnBoundThread();
 }
 
 void SequenceManagerImpl::BindToCurrentThread(
     std::unique_ptr<MessagePump> pump) {
-  BindToCurrentThread();
+  associated_thread_->BindToCurrentThread();
   BindToMessagePump(std::move(pump));
 }
 
@@ -893,7 +890,7 @@ bool SequenceManagerImpl::IsTaskExecutionAllowed() const {
   return controller_->IsTaskExecutionAllowed();
 }
 
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
 void SequenceManagerImpl::AttachToMessagePump() {
   return controller_->AttachToMessagePump();
 }

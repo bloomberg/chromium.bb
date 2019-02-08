@@ -89,26 +89,17 @@ class BASE_EXPORT SequenceManagerImpl
   static std::unique_ptr<SequenceManagerImpl> CreateOnCurrentThread(
       SequenceManager::Settings settings = SequenceManager::Settings());
 
-  // Create a SequenceManager for a future thread that will run the provided
-  // MessageLoop. The SequenceManager can be initialized on the current thread
-  // and then needs to be bound and initialized on the target thread by calling
-  // BindToCurrentThread() and CompleteInitializationOnBoundThread() during the
-  // thread's startup. If |message_loop| is null then BindToMessageLoop() must
-  // be called instead of CompleteInitializationOnBoundThread.
-  //
-  // This function should be called only once per MessageLoop.
+  // Create an unbound SequenceManager (typically for a future thread). The
+  // SequenceManager can be initialized on the current thread and then needs to
+  // be bound and initialized on the target thread by calling one of the Bind*()
+  // methods.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
-      MessageLoopBase* message_loop_base,
-      SequenceManager::Settings settings = Settings());
-
-  static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
       SequenceManager::Settings settings);
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
   void BindToMessageLoop(MessageLoopBase* message_loop_base) override;
   void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) override;
-  void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
@@ -157,7 +148,7 @@ class BASE_EXPORT SequenceManagerImpl
   void SetAddQueueTimeToTasks(bool enable) override;
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
   void AttachToMessagePump() override;
 #endif
   bool IsIdleForTesting() override;
@@ -301,6 +292,8 @@ class BASE_EXPORT SequenceManagerImpl
     ObserverList<MessageLoopCurrent::DestructionObserver>::Unchecked
         destruction_observers;
   };
+
+  void CompleteInitializationOnBoundThread();
 
   // TaskQueueSelector::Observer:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
