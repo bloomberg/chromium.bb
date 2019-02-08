@@ -271,7 +271,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void StopFind();
 
   bool SupportsPrintInterface();
-  bool IsPrintScalingDisabled();
   int PrintBegin(const blink::WebPrintParams& print_params);
   void PrintPage(int page_number, cc::PaintCanvas* canvas);
   void PrintEnd();

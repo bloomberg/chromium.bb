@@ -397,10 +397,6 @@ bool WebPluginContainerImpl::SupportsPaginatedPrint() const {
   return web_plugin_->SupportsPaginatedPrint();
 }
 
-bool WebPluginContainerImpl::IsPrintScalingDisabled() const {
-  return web_plugin_->IsPrintScalingDisabled();
-}
-
 bool WebPluginContainerImpl::GetPrintPresetOptionsFromDocument(
     WebPrintPresetOptions* preset_options) const {
   return web_plugin_->GetPrintPresetOptionsFromDocument(preset_options);
