@@ -95,10 +95,10 @@ namespace {
 // current entries are [google, digg, yahoo], with the current entry google,
 // and the user types in cnet, then digg and yahoo are pruned.
 void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
-                         bool from_front,
+                         int index,
                          int count) {
   PrunedDetails details;
-  details.from_front = from_front;
+  details.index = index;
   details.count = count;
   nav_controller->delegate()->NotifyNavigationListPruned(details);
 }
@@ -2404,8 +2404,11 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
       entries_.pop_back();
       current_size--;
     }
-    if (num_pruned > 0)  // Only notify if we did prune something.
-      NotifyPrunedEntries(this, false, num_pruned);
+    if (num_pruned > 0) {  // Only notify if we did prune something.
+      NotifyPrunedEntries(this,
+                          last_committed_entry_index_ + 1 /* start index */,
+                          num_pruned /* count */);
+    }
   }
 
   PruneOldestEntryIfFull();
@@ -2421,7 +2424,7 @@ void NavigationControllerImpl::PruneOldestEntryIfFull() {
   DCHECK_EQ(max_entry_count(), entries_.size());
   DCHECK_GT(last_committed_entry_index_, 0);
   RemoveEntryAtIndex(0);
-  NotifyPrunedEntries(this, true, 1);
+  NotifyPrunedEntries(this, 0 /* start index */, 1 /* count */);
   // TODO(crbug.com/907167): Consider removing the earliest skippable entry
   // instead of the first entry.
 }
