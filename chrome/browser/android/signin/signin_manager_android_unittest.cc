@@ -104,7 +104,10 @@ class SigninManagerAndroidTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SigninManagerAndroidTest);
 };
 
-TEST_F(SigninManagerAndroidTest, DeleteGoogleServiceWorkerCaches) {
+// TODO(crbug.com/929456): This test does not actually test anything; the
+// CannedBrowsingDataCacheStorageHelper isn't hooked up to observe any
+// deletions. Disabled to allow refactoring of browsing data code.
+TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
   struct TestCase {
     std::string worker_url;
     bool should_be_deleted;
@@ -128,6 +131,8 @@ TEST_F(SigninManagerAndroidTest, DeleteGoogleServiceWorkerCaches) {
       {"https://google.com:8444/worker.html", true},
   };
 
+  // TODO(crbug.com/929456): This helper is not attached anywhere to
+  // be able to observe deletions.
   // Add service workers.
   scoped_refptr<CannedBrowsingDataCacheStorageHelper> helper(
       new CannedBrowsingDataCacheStorageHelper(
@@ -151,6 +156,7 @@ TEST_F(SigninManagerAndroidTest, DeleteGoogleServiceWorkerCaches) {
   for (const auto& info : helper->GetCacheStorageUsageInfo())
     remaining_cache_storages.insert(info.origin.spec());
 
+  // TODO(crbug.com/929456): If deleted, the key should not be present.
   for (const TestCase& test_case : kTestCases) {
     EXPECT_EQ(test_case.should_be_deleted,
               base::ContainsKey(remaining_cache_storages, test_case.worker_url))
