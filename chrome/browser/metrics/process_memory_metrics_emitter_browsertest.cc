@@ -744,12 +744,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckPageInfoUkmMetrics(url, true);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
-#else
-#define MAYBE_FetchThreeTimes FetchThreeTimes
-#endif
-IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
+// Flaky test: https://crbug.com/731466
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
+                       DISABLED_FetchThreeTimes) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
