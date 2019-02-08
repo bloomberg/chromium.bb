@@ -78,13 +78,16 @@ base::DictionaryValue GetBackgroundInfoAsDict(
   return background_info;
 }
 
-std::unique_ptr<base::DictionaryValue> NtpCustomBackgroundDefaults() {
-  std::unique_ptr<base::DictionaryValue> defaults =
-      std::make_unique<base::DictionaryValue>();
-  defaults->SetString(kNtpCustomBackgroundURL, std::string());
-  defaults->SetString(kNtpCustomBackgroundAttributionLine1, std::string());
-  defaults->SetString(kNtpCustomBackgroundAttributionLine2, std::string());
-  defaults->SetString(kNtpCustomBackgroundAttributionActionURL, std::string());
+base::Value NtpCustomBackgroundDefaults() {
+  base::Value defaults(base::Value::Type::DICTIONARY);
+  defaults.SetKey(kNtpCustomBackgroundURL,
+                  base::Value(base::Value::Type::STRING));
+  defaults.SetKey(kNtpCustomBackgroundAttributionLine1,
+                  base::Value(base::Value::Type::STRING));
+  defaults.SetKey(kNtpCustomBackgroundAttributionLine2,
+                  base::Value(base::Value::Type::STRING));
+  defaults.SetKey(kNtpCustomBackgroundAttributionActionURL,
+                  base::Value(base::Value::Type::STRING));
   return defaults;
 }
 

@@ -44,16 +44,15 @@ const char kRequestFrozenTimeMs[] = "request_frozen_time_ms";
 // Default value for max_impressions specified by the VASCO team.
 const int kDefaultMaxImpressions = 4;
 
-std::unique_ptr<base::DictionaryValue> ImpressionDictDefaults() {
-  std::unique_ptr<base::DictionaryValue> defaults =
-      std::make_unique<base::DictionaryValue>();
-  defaults->SetInteger(kFirstShownTimeMs, 0);
-  defaults->SetInteger(kImpressionCapExpireTimeMs, 0);
-  defaults->SetInteger(kImpressionsCount, 0);
-  defaults->SetBoolean(kIsRequestFrozen, false);
-  defaults->SetInteger(kMaxImpressions, kDefaultMaxImpressions);
-  defaults->SetInteger(kRequestFreezeTimeMs, 0);
-  defaults->SetInteger(kRequestFrozenTimeMs, 0);
+base::Value ImpressionDictDefaults() {
+  base::Value defaults(base::Value::Type::DICTIONARY);
+  defaults.SetKey(kFirstShownTimeMs, base::Value(0));
+  defaults.SetKey(kImpressionCapExpireTimeMs, base::Value(0));
+  defaults.SetKey(kImpressionsCount, base::Value(0));
+  defaults.SetKey(kIsRequestFrozen, base::Value(false));
+  defaults.SetKey(kMaxImpressions, base::Value(kDefaultMaxImpressions));
+  defaults.SetKey(kRequestFreezeTimeMs, base::Value(0));
+  defaults.SetKey(kRequestFrozenTimeMs, base::Value(0));
   return defaults;
 }
 
