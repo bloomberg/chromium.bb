@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -131,7 +132,6 @@ bool NGCaretNavigator::IsValidCaretPosition(const Position& position) const {
     return false;
   if (IsIgnoredInCaretMovement(index))
     return false;
-  // TODO(xiaochengh): Handle other cases
   return true;
 }
 
@@ -156,7 +156,40 @@ bool NGCaretNavigator::IsCollapsedSpaceByLineWrap(unsigned index) const {
 }
 
 bool NGCaretNavigator::IsIgnoredInCaretMovement(unsigned index) const {
-  // TODO(xiaochengh): Include floats, out-of-flows and CSS-generated contents.
+  DCHECK_LT(index, GetText().length());
+  const NGInlineItem& item = GetData().FindItemForTextOffset(index);
+
+  // Caret navigation works on text, atomic inlines and non-ZWS controls only.
+  switch (item.Type()) {
+    case NGInlineItem::kText:
+    case NGInlineItem::kAtomicInline:
+      break;
+    case NGInlineItem::kControl:
+      if (GetText()[index] == kZeroWidthSpaceCharacter)
+        return true;
+      break;
+    default:
+      return true;
+  }
+
+  // Ignore CSS generate contents.
+  // TODO(xiaochengh): This might be general enough to be merged into
+  // |NGInlineItem| as a member function.
+  DCHECK(item.GetLayoutObject());
+  const LayoutObject* object = item.GetLayoutObject();
+  if (const auto* text_fragment = ToLayoutTextFragmentOrNull(object)) {
+    // ::first-letter |LayoutTextFragment| returns null for |GetNode()|. Check
+    // |AssociatedTextNode()| to see if it's created by a text node.
+    if (!text_fragment->AssociatedTextNode())
+      return true;
+  } else {
+    if (!object->NonPseudoNode())
+      return true;
+  }
+
+  // Ignore collapsed whitespaces that not visually at line end due to bidi.
+  // Caret movement should move over them as if they don't exist to match the
+  // existing behavior.
   return IsCollapsedSpaceByLineWrap(index) &&
          index != VisualLastCharacterOf(ContainingLineOf(index));
 }
@@ -321,7 +354,6 @@ NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::MoveCaretInternal(
     if (next.type != VisualMovementResultType::kWithinContext)
       return {next.type, base::nullopt};
 
-    // TODO(xiaochengh): Handle editing-ignored contents, e.g., CSS-generated.
     if (next.has_passed_character)
       has_passed_character = true;
 

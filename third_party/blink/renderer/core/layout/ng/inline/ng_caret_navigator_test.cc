@@ -393,4 +393,31 @@ TEST_F(NGCaretNavigatorTest, SoftLineWrapAtHyphen) {
   EXPECT_TRUE(RightPositionOf(CaretAfter(6)).IsAfterContext());
 }
 
+TEST_F(NGCaretNavigatorTest, MoveOverPseudoElementInBidi) {
+  SetupHtml("container",
+            "<style>.bidi::before,.bidi::after{content:'a\\05D0 b'}</style>"
+            "<div id=container>&#x05D0;&#x05D1; &#x05D2;&#x05D3; "
+            "<span class=bidi>&#x05D4;&#x05D5;</span>"
+            " &#x05D6;&#x05D7; &#x05D8;&#x05D9;</div>");
+
+  // Text: "AB CD aAbEFaAb GH IJ"
+  // Rendered as: "DC BA aAbFEaAb JI HG"
+
+  // Moving right from "BA |" should arrive at "F|E"
+  EXPECT_TRUE(RightPositionOf(CaretAfter(5)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(10), *RightPositionOf(CaretAfter(5)).position);
+
+  // Moving left from "|FE" should arrive at "BA| "
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(10)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(5), *LeftPositionOf(CaretAfter(10)).position);
+
+  // Moving right from "FE|" should arrive at " |JI"
+  EXPECT_TRUE(RightPositionOf(CaretBefore(9)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(14), *RightPositionOf(CaretBefore(9)).position);
+
+  // Moving left from "| JI" should arrive at "F|E"
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(14)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(9), *LeftPositionOf(CaretBefore(14)).position);
+}
+
 }  // namespace blink
