@@ -9,7 +9,7 @@
   // This is a less strict version of synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html
   // See synthetic-pinch-zoom-gesture.js.
 
-  const MOUSE_INPUT = 2;  // Gesture source type from synthetic_gesture_params.h
+  const MOUSE_INPUT = GestureSourceType.MOUSE_INPUT;
 
   const t = async_test(
       "This tests that gpuBenchmarking.pinchBy is relatively accurate when zooming in slowly for touchpad pinch.");

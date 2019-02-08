@@ -13,7 +13,7 @@
 <select multiple id='sel'></select>
 
 <script>
-  const MOUSE_INPUT = 2;  // Gesture source type from synthetic_gesture_params.h
+  const MOUSE_INPUT = GestureSourceType.MOUSE_INPUT;
 
   internals.settings.setScrollAnimatorEnabled(false);
   let sel = document.getElementById('sel');
