@@ -13,7 +13,7 @@ typedef wchar_t* BSTR;
 namespace credential_provider {
 
 // Manages OS users on the system.
-class OSUserManager {
+class [[clang::lto_visibility_public]] OSUserManager {
  public:
   // Minimum length for password buffer when calling GenerateRandomPassword().
   static const int kMinPasswordLength = 24;

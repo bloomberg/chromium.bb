@@ -14,7 +14,7 @@ namespace credential_provider {
 
 class FakeScopedLsaPolicyFactory;
 
-class ScopedLsaPolicy {
+class [[clang::lto_visibility_public]] ScopedLsaPolicy {
  public:
   static std::unique_ptr<ScopedLsaPolicy> Create(ACCESS_MASK mask);
 
