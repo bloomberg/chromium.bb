@@ -9,10 +9,9 @@
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_strip_view.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_view_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/highlight_button.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,12 +28,6 @@ const CGFloat kActivityIndicatorRadius = 10;
 // Duration to wait before changing visibility of subviews after they are added.
 const CGFloat kUpdateSubviewsDelay = 0.1;
 
-// Duration of the animation to make the activity indicator visible.
-const NSTimeInterval kActivityIndicatorVisbilityAnimationDuration = 0.4;
-
-// Title color of the action buttons in RGB.
-const int kButtonTitleColor = 0x4285f4;
-
 // Padding for contents of the button.
 const CGFloat kButtonPadding = 12;
 
@@ -43,7 +36,7 @@ const CGFloat kButtonPadding = 12;
 @interface TranslateInfobarLanguageTabView ()
 
 // Button subview providing the tappable area.
-@property(nonatomic, weak) MDCFlatButton* button;
+@property(nonatomic, weak) UIButton* button;
 
 // Activity indicator replacing the button when in loading state.
 @property(nonatomic, weak) MDCActivityIndicator* activityIndicator;
@@ -100,21 +93,16 @@ const CGFloat kButtonPadding = 12;
   ]];
   AddSameCenterConstraints(self, self.activityIndicator);
 
-  MDCFlatButton* button = [[MDCFlatButton alloc] init];
+  UIButton* button = [[HighlightButton alloc] init];
   self.button = button;
   self.button.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.button setUnderlyingColorHint:[UIColor blackColor]];
   self.button.contentEdgeInsets = UIEdgeInsetsMake(
       kButtonPadding, kButtonPadding, kButtonPadding, kButtonPadding);
-  self.button.titleLabel.adjustsFontSizeToFitWidth = YES;
-  self.button.titleLabel.minimumScaleFactor = 0.6f;
   [self.button setTitle:self.title forState:UIControlStateNormal];
-  self.button.uppercaseTitle = NO;
-  [self.button
-      setTitleFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-          forState:UIControlStateNormal];
+  self.button.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  self.button.titleLabel.adjustsFontForContentSizeCategory = YES;
   [self.button setTitleColor:[self titleColor] forState:UIControlStateNormal];
-  self.button.inkColor = [[MDCPalette greyPalette] tint300];
   [self.button addTarget:self
                   action:@selector(buttonWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
@@ -127,16 +115,11 @@ const CGFloat kButtonPadding = 12;
 - (void)updateSubviewsForState:(TranslateInfobarLanguageTabViewState)state {
   if (state == TranslateInfobarLanguageTabViewStateLoading) {
     [self.activityIndicator startAnimating];
-    // Animate showing the activity indicator and hiding the button. Otherwise
-    // the ripple effect on the button won't be seen.
-    [UIView animateWithDuration:kActivityIndicatorVisbilityAnimationDuration
-                     animations:^{
-                       self.activityIndicator.alpha = 1.0;
-                       self.button.alpha = 0.0;
-                     }];
+    self.activityIndicator.hidden = NO;
+    self.button.hidden = YES;
   } else {
-    self.button.alpha = 1.0;
-    self.activityIndicator.alpha = 0.0;
+    self.button.hidden = NO;
+    self.activityIndicator.hidden = YES;
     [self.activityIndicator stopAnimating];
 
     [self.button setTitleColor:[self titleColor] forState:UIControlStateNormal];
@@ -146,7 +129,7 @@ const CGFloat kButtonPadding = 12;
 // Returns the button's title color depending on the state.
 - (UIColor*)titleColor {
   return self.state == TranslateInfobarLanguageTabViewStateSelected
-             ? UIColorFromRGB(kButtonTitleColor)
+             ? [[MDCPalette cr_bluePalette] tint500]
              : [[MDCPalette greyPalette] tint600];
 }
 
