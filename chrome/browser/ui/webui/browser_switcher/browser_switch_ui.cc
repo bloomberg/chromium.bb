@@ -8,8 +8,16 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
+#include "chrome/browser/browser_switcher/alternative_browser_driver.h"
+#include "chrome/browser/browser_switcher/browser_switcher_service.h"
+#include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
+#include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -22,6 +30,27 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace {
+
+// Returns true if there's only 1 tab left open in this profile. Incognito
+// window tabs count as the same profile.
+bool IsLastTab(const Profile* profile) {
+  profile = profile->GetOriginalProfile();
+  int tab_count = 0;
+  for (const Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->GetOriginalProfile() != profile)
+      continue;
+    tab_count += browser->tab_strip_model()->count();
+    if (tab_count > 1)
+      return false;
+  }
+  return true;
+}
+
+browser_switcher::BrowserSwitcherService* GetBrowserSwitcherService(
+    content::WebUI* web_ui) {
+  return browser_switcher::BrowserSwitcherServiceFactory::GetForBrowserContext(
+      web_ui->GetWebContents()->GetBrowserContext());
+}
 
 content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
     content::WebUI* web_ui) {
@@ -37,6 +66,11 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   source->AddResourcePath("app.js", IDR_BROWSER_SWITCHER_APP_JS);
   source->AddResourcePath("browser_switch.html",
                           IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
+  source->AddResourcePath("browser_switcher_proxy.html",
+                          IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_HTML);
+  source->AddResourcePath("browser_switcher_proxy.js",
+                          IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_JS);
+
   source->SetDefaultResource(IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
   source->UseGzip();
 
@@ -53,12 +87,12 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
 
  private:
   // Launches the given URL in the configured alternative browser. Acts as a
-  // bridge for |AlternativeBrowserDriver::TryLaunch()|.
-  void HandleLaunchAlternativeBrowser(const base::ListValue* args);
-
-  // Closes the current tab, since calling |window.close()| from JavaScript is
-  // not normally allowed.
-  void HandleCloseTab(const base::ListValue* args);
+  // bridge for |AlternativeBrowserDriver::TryLaunch()|. Then, if that succeeds,
+  // closes the current tab.
+  //
+  // If it fails, the JavaScript promise is rejected. If it succeeds, the
+  // JavaScript promise is not resolved, because we close the tab anyways.
+  void HandleLaunchAlternativeBrowserAndCloseTab(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
@@ -68,22 +102,57 @@ BrowserSwitchHandler::~BrowserSwitchHandler() = default;
 
 void BrowserSwitchHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "launchAlternativeBrowser",
-      base::BindRepeating(&BrowserSwitchHandler::HandleLaunchAlternativeBrowser,
-                          base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "closeTab", base::BindRepeating(&BrowserSwitchHandler::HandleCloseTab,
-                                      base::Unretained(this)));
+      "launchAlternativeBrowserAndCloseTab",
+      base::BindRepeating(
+          &BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab,
+          base::Unretained(this)));
 }
 
-void BrowserSwitchHandler::HandleLaunchAlternativeBrowser(
+void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
     const base::ListValue* args) {
-  // Not yet implemented.
-}
+  DCHECK(args);
+  AllowJavascript();
 
-void BrowserSwitchHandler::HandleCloseTab(const base::ListValue* args) {
-  // Not yet implemented.
+  std::string callback_id = args->GetList()[0].GetString();
+  std::string url_spec = args->GetList()[1].GetString();
+  GURL url(url_spec);
+
+  auto* service = GetBrowserSwitcherService(web_ui());
+  bool should_switch = service->sitelist()->ShouldSwitch(url);
+  if (!url.is_valid() || !should_switch) {
+    // This URL shouldn't open in an alternative browser. Abort launch, because
+    // something weird is going on (e.g. race condition from a new sitelist
+    // being loaded).
+    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    return;
+  }
+
+  bool success;
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("BrowserSwitcher.LaunchTime");
+    success = service->driver()->TryLaunch(url);
+    UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
+  }
+
+  if (!success) {
+    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    return;
+  }
+
+  // TODO(nicolaso): Find a fix: when the last tab closes, restarting Chrome
+  // causes it to immediately open the alternative browser, and then close
+  // Chrome again.
+  auto* profile = Profile::FromWebUI(web_ui());
+
+  if (service->prefs().KeepLastTab() && IsLastTab(profile)) {
+    // TODO(nicolaso): Show the NTP after cancelling the navigation.
+  } else {
+    // We don't need to resolve the promise, because the tab will close anyways.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&content::WebContents::ClosePage,
+                       base::Unretained(web_ui()->GetWebContents())));
+  }
 }
 
 }  // namespace

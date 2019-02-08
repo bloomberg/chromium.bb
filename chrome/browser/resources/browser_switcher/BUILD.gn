@@ -8,6 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":app",
     ":browser_switcher",
+    ":browser_switcher_proxy",
   ]
 }
 
@@ -18,4 +19,10 @@ js_library("app") {
 }
 
 js_library("browser_switcher") {
+}
+
+js_library("browser_switcher_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
 }

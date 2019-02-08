@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
@@ -16,33 +15,29 @@
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/url_util.h"
 
 namespace browser_switcher {
 
 namespace {
 
-// Returns true if there's only 1 tab left open in this profile. Incognito
-// window tabs count as the same profile.
-bool IsLastTab(const Profile* profile) {
-  profile = profile->GetOriginalProfile();
-  int tab_count = 0;
-  for (const Browser* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->GetOriginalProfile() != profile)
-      continue;
-    tab_count += browser->tab_strip_model()->count();
-    if (tab_count > 1)
-      return false;
-  }
-  return true;
+// Open 'chrome://browser-switch/?url=...' in the current tab.
+void OpenBrowserSwitchPage(content::WebContents* web_contents,
+                           const GURL& url,
+                           ui::PageTransition transition_type) {
+  GURL about_url(chrome::kChromeUIBrowserSwitchURL);
+  about_url = net::AppendQueryParameter(about_url, "url", url.spec());
+  content::OpenURLParams params(about_url, content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
+                                transition_type, false);
+  web_contents->OpenURL(params);
 }
 
 bool MaybeLaunchAlternativeBrowser(
@@ -73,31 +68,11 @@ bool MaybeLaunchAlternativeBrowser(
     return true;
   }
 
-  // TODO(nicolaso): Once the chrome://browserswitch page is implemented, open
-  // that instead of immediately launching the browser/closing the tab.
-  bool success;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("BrowserSwitcher.LaunchTime");
-    success = service->driver()->TryLaunch(url);
-    UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
-  }
-  if (success) {
-    const Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    if (service->prefs().KeepLastTab() && IsLastTab(profile)) {
-      // TODO(nicolaso): Show the NTP after cancelling the navigation.
-    } else {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&content::WebContents::ClosePage,
-                                    base::Unretained(web_contents)));
-    }
-    return true;
-  }
-
-  // Launching the browser failed, fall back to loading the page normally.
-  //
-  // TODO(nicolaso): Show an error page instead.
-  return false;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OpenBrowserSwitchPage, base::Unretained(web_contents),
+                     url, params.transition_type()));
+  return true;
 }
 
 }  // namespace

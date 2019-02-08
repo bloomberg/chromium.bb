@@ -31,10 +31,8 @@ Polymer({
       return;
     }
 
-    // TODO(nicolaso): Use a BrowserProxy to make testing easier.
-    cr.sendWithPromise('launchAlternativeBrowser', this.url_).then(() => {
-      chrome.send('closeTab');
-    });
+    const proxy = browser_switcher.BrowserSwitcherProxyImpl.getInstance();
+    proxy.launchAlternativeBrowserAndCloseTab(this.url_);
   },
 });
 })();

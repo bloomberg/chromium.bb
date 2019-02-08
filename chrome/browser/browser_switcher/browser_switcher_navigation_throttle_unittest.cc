@@ -9,13 +9,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
-#include "chrome/browser/browser_switcher/mock_alternative_browser_driver.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -60,11 +58,6 @@ class BrowserSwitcherNavigationThrottleTest
         BrowserSwitcherServiceFactory::GetForBrowserContext(
             web_contents()->GetBrowserContext());
 
-    std::unique_ptr<MockAlternativeBrowserDriver> driver =
-        std::make_unique<MockAlternativeBrowserDriver>();
-    driver_ = driver.get();
-    service->SetDriverForTesting(std::move(driver));
-
     std::unique_ptr<MockBrowserSwitcherSitelist> sitelist =
         std::make_unique<MockBrowserSwitcherSitelist>();
     sitelist_ = sitelist.get();
@@ -81,11 +74,9 @@ class BrowserSwitcherNavigationThrottleTest
     return BrowserSwitcherNavigationThrottle::MaybeCreateThrottleFor(handle);
   }
 
-  MockAlternativeBrowserDriver* driver() { return driver_; }
   MockBrowserSwitcherSitelist* sitelist() { return sitelist_; }
 
  private:
-  MockAlternativeBrowserDriver* driver_;
   MockBrowserSwitcherSitelist* sitelist_;
 };
 
@@ -100,7 +91,6 @@ TEST_F(BrowserSwitcherNavigationThrottleTest, ShouldIgnoreNavigation) {
 
 TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnStartRequest) {
   EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(true));
-  EXPECT_CALL(*driver(), TryLaunch(_)).WillOnce(Return(true));
   std::unique_ptr<MockNavigationHandle> handle =
       CreateMockNavigationHandle(GURL("https://example.com/"));
   std::unique_ptr<NavigationThrottle> throttle =
@@ -114,7 +104,6 @@ TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnRedirectRequest) {
   EXPECT_CALL(*sitelist(), ShouldSwitch(_))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
-  EXPECT_CALL(*driver(), TryLaunch(_)).WillOnce(Return(true));
   std::unique_ptr<MockNavigationHandle> handle =
       CreateMockNavigationHandle(GURL("https://yahoo.com/"));
   std::unique_ptr<NavigationThrottle> throttle =
@@ -124,16 +113,6 @@ TEST_F(BrowserSwitcherNavigationThrottleTest, LaunchesOnRedirectRequest) {
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
             throttle->WillRedirectRequest());
   base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(BrowserSwitcherNavigationThrottleTest, FallsBackToLoadingNormally) {
-  EXPECT_CALL(*sitelist(), ShouldSwitch(_)).WillOnce(Return(true));
-  EXPECT_CALL(*driver(), TryLaunch(_)).WillOnce(Return(false));
-  std::unique_ptr<MockNavigationHandle> handle =
-      CreateMockNavigationHandle(GURL("https://yahoo.com/"));
-  std::unique_ptr<NavigationThrottle> throttle =
-      CreateNavigationThrottle(handle.get());
-  EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillStartRequest());
 }
 
 }  // namespace browser_switcher
