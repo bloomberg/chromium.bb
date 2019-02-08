@@ -19,9 +19,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -36,8 +34,6 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -173,9 +169,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     builder.SetPrefService(
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(
             std::move(prefs)));
-    builder.AddTestingFactory(
-        AccountFetcherServiceFactory::GetInstance(),
-        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
     builder.AddTestingFactory(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));
@@ -786,9 +779,8 @@ TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
   // Explicitly forcing this call is necessary for the clearing of the primary
   // account to result in the account being fully removed in this testing
   // context.
-  AccountFetcherService* account_fetcher_service =
-      AccountFetcherServiceFactory::GetForProfile(profile_.get());
-  account_fetcher_service->EnableNetworkFetchesForTest();
+  identity_test_env()
+      ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
 #endif
 
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
