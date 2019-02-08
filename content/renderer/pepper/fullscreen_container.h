@@ -20,12 +20,6 @@ namespace content {
 // plugins, that only handles painting.
 class FullscreenContainer {
  public:
-  // Invalidates the full plugin region.
-  virtual void Invalidate() = 0;
-
-  // Invalidates a partial region of the plugin.
-  virtual void InvalidateRect(const blink::WebRect&) = 0;
-
   // Scrolls a partial region of the plugin in the given direction.
   virtual void ScrollRect(int dx, int dy, const blink::WebRect&) = 0;
 

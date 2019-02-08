@@ -124,11 +124,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 #endif
   }
 
-  void InvalidateRect(const IntRect& paint_rect) override {
-    if (!paint_rect.IsEmpty())
-      popup_->WidgetClient()->DidInvalidateRect(paint_rect);
-  }
-
   void ScheduleAnimation(const LocalFrameView*) override {
     if (WebTestSupport::IsRunningWebTest()) {
       // In single threaded web tests, the main frame's WebWidgetClient
@@ -435,9 +430,6 @@ void WebPagePopupImpl::Resize(const WebSize& new_size_in_viewport) {
     MainFrame().View()->Resize(new_size_in_viewport);
     page_->GetVisualViewport().SetSize(new_size_in_viewport);
   }
-
-  widget_client_->DidInvalidateRect(
-      WebRect(0, 0, new_size.width, new_size.height));
 }
 
 WebInputEventResult WebPagePopupImpl::HandleKeyEvent(

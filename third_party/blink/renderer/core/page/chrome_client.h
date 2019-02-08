@@ -110,7 +110,8 @@ class CORE_EXPORT ChromeClient
 
   virtual void ChromeDestroyed() = 0;
 
-  // Requests the host invalidate the contents.
+  // For non-composited WebViews that exist to contribute to a "parent" WebView
+  // painting. This informs the client of the area that needs to be redrawn.
   virtual void InvalidateRect(const IntRect& update_rect) = 0;
 
   // Converts the rect from the viewport coordinates to screen coordinates.

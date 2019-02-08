@@ -64,9 +64,6 @@ class WebWidgetClient {
  public:
   virtual ~WebWidgetClient() = default;
 
-  // Called when a region of the WebWidget needs to be re-painted.
-  virtual void DidInvalidateRect(const WebRect&) {}
-
   // Called to request a BeginMainFrame from the compositor. For tests with
   // single thread and no scheduler, the impl should schedule a task to run
   // a synchronous composite.

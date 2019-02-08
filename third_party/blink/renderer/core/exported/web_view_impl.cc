@@ -3239,8 +3239,8 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 
 void WebViewImpl::InvalidateRect(const IntRect& rect) {
   // This is only for WebViewPlugin.
-  if (!does_composite_ && AsWidget().client)
-    AsWidget().client->DidInvalidateRect(rect);
+  if (!does_composite_ && AsView().client)
+    AsView().client->DidInvalidateRect(rect);
 }
 
 PaintLayerCompositor* WebViewImpl::Compositor() const {
