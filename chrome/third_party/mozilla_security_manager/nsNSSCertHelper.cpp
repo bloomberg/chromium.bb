@@ -1081,9 +1081,9 @@ std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
       case rsaKey: {
         rv = l10n_util::GetStringFUTF8(
             IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT,
-            base::UintToString16(key->u.rsa.modulus.len * 8),
+            base::NumberToString16(key->u.rsa.modulus.len * 8),
             base::UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.modulus)),
-            base::UintToString16(key->u.rsa.publicExponent.len * 8),
+            base::NumberToString16(key->u.rsa.publicExponent.len * 8),
             base::UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.publicExponent)));
         break;
       }
