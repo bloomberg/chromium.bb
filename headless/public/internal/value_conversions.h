@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "headless/lib/browser/protocol/protocol_string.h"
+#include "headless/lib/browser/protocol/base_string_adapter.h"
 #include "headless/public/util/error_reporter.h"
 
 namespace headless {

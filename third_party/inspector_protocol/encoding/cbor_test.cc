@@ -113,7 +113,7 @@ TEST(EncodeDecodeInt32Test, CantRoundtripUint32) {
   // Now try to decode; we treat this as an invalid INT32.
   CBORTokenizer tokenizer(span<uint8_t>(&encoded[0], encoded.size()));
   // 0xdeadbeef is > std::numerical_limits<int32_t>::max().
-  EXPECT_EQ(CBORTokenTag::ERROR, tokenizer.TokenTag());
+  EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
   EXPECT_EQ(Error::CBOR_INVALID_INT32, tokenizer.Status().error);
 }
 
@@ -136,7 +136,7 @@ TEST(EncodeDecodeInt32Test, DecodeErrorCases) {
     span<uint8_t> encoded_bytes(&test.data[0], test.data.size());
     CBORTokenizer tokenizer(
         span<uint8_t>(&encoded_bytes[0], encoded_bytes.size()));
-    EXPECT_EQ(CBORTokenTag::ERROR, tokenizer.TokenTag());
+    EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
     EXPECT_EQ(Error::CBOR_INVALID_INT32, tokenizer.Status().error);
   }
 }
@@ -292,7 +292,7 @@ TEST(EncodeDecodeString16Test, ErrorCases) {
   for (const TestCase& test : tests) {
     SCOPED_TRACE(test.msg);
     CBORTokenizer tokenizer(span<uint8_t>(&test.data[0], test.data.size()));
-    EXPECT_EQ(CBORTokenTag::ERROR, tokenizer.TokenTag());
+    EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
     EXPECT_EQ(Error::CBOR_INVALID_STRING16, tokenizer.Status().error);
   }
 }

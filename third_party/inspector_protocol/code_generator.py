@@ -623,7 +623,7 @@ def main():
         lib_templates_dir = os.path.join(module_path, "lib")
         # Note these should be sorted in the right order.
         # TODO(dgozman): sort them programmatically based on commented includes.
-        lib_h_templates = [
+        protocol_h_templates = [
             "ErrorSupport_h.template",
             "Values_h.template",
             "Object_h.template",
@@ -634,7 +634,7 @@ def main():
             "Parser_h.template",
         ]
 
-        lib_cpp_templates = [
+        protocol_cpp_templates = [
             "Protocol_cpp.template",
             "ErrorSupport_cpp.template",
             "Values_cpp.template",
@@ -649,6 +649,14 @@ def main():
             "FrontendChannel_h.template",
         ]
 
+        base_string_adapter_h_templates = [
+            "base_string_adapter_h.template",
+        ]
+
+        base_string_adapter_cc_templates = [
+            "base_string_adapter_cc.template",
+        ]
+
         def generate_lib_file(file_name, template_files):
             parts = []
             for template_file in template_files:
@@ -658,8 +666,10 @@ def main():
             outputs[file_name] = "\n\n".join(parts)
 
         generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "Forward.h")), forward_h_templates)
-        generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "Protocol.h")), lib_h_templates)
-        generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "Protocol.cpp")), lib_cpp_templates)
+        generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "Protocol.h")), protocol_h_templates)
+        generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "Protocol.cpp")), protocol_cpp_templates)
+        generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "base_string_adapter.h")), base_string_adapter_h_templates)
+        generate_lib_file(os.path.join(config.lib.output, to_file_name(config, "base_string_adapter.cc")), base_string_adapter_cc_templates)
 
     # Make gyp / make generatos happy, otherwise make rebuilds world.
     inputs_ts = max(map(os.path.getmtime, inputs))

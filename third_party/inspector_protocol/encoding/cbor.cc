@@ -47,7 +47,13 @@ static constexpr uint8_t kEncodedNull =
     EncodeInitialByte(MajorType::SIMPLE_VALUE, 22);
 static constexpr uint8_t kInitialByteForDouble =
     EncodeInitialByte(MajorType::SIMPLE_VALUE, 27);
+}  // namespace
 
+uint8_t EncodeTrue() { return kEncodedTrue; }
+uint8_t EncodeFalse() { return kEncodedFalse; }
+uint8_t EncodeNull() { return kEncodedNull; }
+
+namespace {
 // TAG 24 indicates that what follows is a byte string which is
 // encoded in CBOR format. We use this as a wrapper for
 // maps and arrays, allowing us to skip them, because the
@@ -71,7 +77,19 @@ static constexpr uint8_t kInitialByteIndefiniteLengthMap =
 // length maps / arrays.
 static constexpr uint8_t kStopByte =
     EncodeInitialByte(MajorType::SIMPLE_VALUE, 31);
+}  // namespace
 
+uint8_t EncodeIndefiniteLengthArrayStart() {
+  return kInitialByteIndefiniteLengthArray;
+}
+
+uint8_t EncodeIndefiniteLengthMapStart() {
+  return kInitialByteIndefiniteLengthMap;
+}
+
+uint8_t EncodeStop() { return kStopByte; }
+
+namespace {
 // See RFC 7049 Table 3 and Section 2.4.4.2. This is used as a prefix for
 // arbitrary binary data encoded as BYTE_STRING.
 static constexpr uint8_t kExpectedConversionToBase64Tag =
@@ -116,7 +134,8 @@ void WriteTokenStart(MajorType type, uint64_t value,
   if (value <= std::numeric_limits<uint32_t>::max()) {
     // 32 bit uint: 1 initial byte + 4 bytes payload.
     encoded->push_back(EncodeInitialByte(type, kAdditionalInformation4Bytes));
-    WriteBytesMostSignificantByteFirst<uint32_t>(value, encoded);
+    WriteBytesMostSignificantByteFirst<uint32_t>(static_cast<uint32_t>(value),
+                                                 encoded);
     return;
   }
   // 64 bit uint: 1 initial byte + 8 bytes payload.
@@ -400,7 +419,7 @@ bool ParseValue(int32_t stack_depth, CBORTokenizer* tokenizer,
   if (tokenizer->TokenTag() == CBORTokenTag::ENVELOPE)
     tokenizer->EnterEnvelope();
   switch (tokenizer->TokenTag()) {
-    case CBORTokenTag::ERROR:
+    case CBORTokenTag::ERROR_VALUE:
       out->HandleError(tokenizer->Status());
       return false;
     case CBORTokenTag::DONE:
@@ -463,7 +482,7 @@ bool ParseArray(int32_t stack_depth, CBORTokenizer* tokenizer,
           Status{Error::CBOR_UNEXPECTED_EOF_IN_ARRAY, tokenizer->Status().pos});
       return false;
     }
-    if (tokenizer->TokenTag() == CBORTokenTag::ERROR) {
+    if (tokenizer->TokenTag() == CBORTokenTag::ERROR_VALUE) {
       out->HandleError(tokenizer->Status());
       return false;
     }
@@ -489,7 +508,7 @@ bool ParseMap(int32_t stack_depth, CBORTokenizer* tokenizer,
           Status{Error::CBOR_UNEXPECTED_EOF_IN_MAP, tokenizer->Status().pos});
       return false;
     }
-    if (tokenizer->TokenTag() == CBORTokenTag::ERROR) {
+    if (tokenizer->TokenTag() == CBORTokenTag::ERROR_VALUE) {
       out->HandleError(tokenizer->Status());
       return false;
     }
@@ -522,7 +541,7 @@ void ParseCBOR(span<uint8_t> bytes, JSONParserHandler* json_out) {
     return;
   }
   CBORTokenizer tokenizer(bytes);
-  if (tokenizer.TokenTag() == CBORTokenTag::ERROR) {
+  if (tokenizer.TokenTag() == CBORTokenTag::ERROR_VALUE) {
     json_out->HandleError(tokenizer.Status());
     return;
   }
@@ -537,7 +556,7 @@ void ParseCBOR(span<uint8_t> bytes, JSONParserHandler* json_out) {
   }
   if (!ParseMap(/*stack_depth=*/1, &tokenizer, json_out)) return;
   if (tokenizer.TokenTag() == CBORTokenTag::DONE) return;
-  if (tokenizer.TokenTag() == CBORTokenTag::ERROR) {
+  if (tokenizer.TokenTag() == CBORTokenTag::ERROR_VALUE) {
     json_out->HandleError(tokenizer.Status());
     return;
   }
@@ -553,7 +572,7 @@ CBORTokenizer::~CBORTokenizer() {}
 CBORTokenTag CBORTokenizer::TokenTag() const { return token_tag_; }
 
 void CBORTokenizer::Next() {
-  if (token_tag_ == CBORTokenTag::ERROR || token_tag_ == CBORTokenTag::DONE)
+  if (token_tag_ == CBORTokenTag::ERROR_VALUE || token_tag_ == CBORTokenTag::DONE)
     return;
   ReadNextToken(/*enter_envelope=*/false);
 }
@@ -568,9 +587,10 @@ Status CBORTokenizer::Status() const { return status_; }
 int32_t CBORTokenizer::GetInt32() const {
   assert(token_tag_ == CBORTokenTag::INT32);
   // The range checks happen in ::ReadNextToken().
-  return token_start_type_ == MajorType::UNSIGNED
-             ? token_start_internal_value_
-             : -static_cast<int64_t>(token_start_internal_value_) - 1;
+  return static_cast<uint32_t>(
+      token_start_type_ == MajorType::UNSIGNED
+          ? token_start_internal_value_
+          : -static_cast<int64_t>(token_start_internal_value_) - 1);
 }
 
 double CBORTokenizer::GetDouble() const {
@@ -744,7 +764,7 @@ void CBORTokenizer::SetToken(CBORTokenTag token_tag,
 }
 
 void CBORTokenizer::SetError(Error error) {
-  token_tag_ = CBORTokenTag::ERROR;
+  token_tag_ = CBORTokenTag::ERROR_VALUE;
   status_.error = error;
 }
 
