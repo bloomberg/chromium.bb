@@ -466,9 +466,8 @@ TEST_P(GLES3DecoderTest, GetInternalformativValidArgsSamples) {
                                         GL_NUM_SAMPLE_COUNTS, 1, _))
       .WillOnce(SetArgPointee<4>(kNumSampleCounts))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8,
-                                        GL_SAMPLES, kNumSampleCounts,
-                                        result->GetData()))
+  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8, GL_SAMPLES,
+                                        kNumSampleCounts, _))
       .Times(1)
       .RetiresOnSaturation();
   result->size = 0;

@@ -772,6 +772,13 @@ static void GL_BINDING_CALL Mock_glGetIntegervRobustANGLE(GLenum pname,
                                                           GLsizei bufSize,
                                                           GLsizei* length,
                                                           GLint* data);
+static void GL_BINDING_CALL
+Mock_glGetInternalformatSampleivNV(GLenum target,
+                                   GLenum internalformat,
+                                   GLsizei samples,
+                                   GLenum pname,
+                                   GLsizei bufSize,
+                                   GLint* params);
 static void GL_BINDING_CALL Mock_glGetInternalformativ(GLenum target,
                                                        GLenum internalformat,
                                                        GLenum pname,

@@ -835,6 +835,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool InitializeShaderTranslator();
   void DestroyShaderTranslator();
 
+  GLint ComputeMaxSamples();
   void UpdateCapabilities();
 
   // Helpers for the glGen and glDelete functions.
@@ -1936,6 +1937,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Wrapper for glFenceSync.
   GLsync DoFenceSync(GLenum condition, GLbitfield flags);
+
+  GLsizei InternalFormatSampleCountsHelper(
+      GLenum target,
+      GLenum format,
+      std::vector<GLint>* out_sample_counts);
 
   // Common validation for multisample extensions.
   bool ValidateRenderbufferStorageMultisample(GLsizei samples,
@@ -4157,7 +4163,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   if (feature_info_->feature_flags().multisampled_render_to_texture ||
       feature_info_->feature_flags().chromium_framebuffer_multisample ||
       feature_info_->IsWebGL2OrES3Context()) {
-    DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples, 1);
+    caps.max_samples = ComputeMaxSamples();
   }
 
   caps.num_stencil_bits = num_stencil_bits_;
@@ -4272,6 +4278,40 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       group_->gpu_preferences().texture_target_exception_list;
 
   return caps;
+}
+
+GLint GLES2DecoderImpl::ComputeMaxSamples() {
+  GLint max_samples = 0;
+  DoGetIntegerv(GL_MAX_SAMPLES, &max_samples, 1);
+
+  if (feature_info_->IsWebGLContext() &&
+      feature_info_->feature_flags().nv_internalformat_sample_query) {
+    std::vector<GLint> temp;
+
+    auto minWithSamplesForFormat = [&](GLenum internalformat) {
+      temp.clear();
+      InternalFormatSampleCountsHelper(GL_RENDERBUFFER, internalformat, &temp);
+      max_samples = std::min(max_samples, temp[0]);
+    };
+
+    // OpenGL ES 3.0.5, section 4.4.2.2: "Implementations must support creation
+    // of renderbuffers in these required formats with up to the value of
+    // MAX_SAMPLES multisamples, with the exception of signed and unsigned
+    // integer formats."
+
+    // OpenGL ES 3.0.5, section 3.8.3.1
+    minWithSamplesForFormat(GL_RGBA8);
+    minWithSamplesForFormat(GL_SRGB8_ALPHA8);
+    minWithSamplesForFormat(GL_RGB10_A2);
+    minWithSamplesForFormat(GL_RGBA4);
+    minWithSamplesForFormat(GL_RGB5_A1);
+    minWithSamplesForFormat(GL_RGB8);
+    minWithSamplesForFormat(GL_RGB565);
+    minWithSamplesForFormat(GL_RG8);
+    minWithSamplesForFormat(GL_R8);
+  }
+
+  return max_samples;
 }
 
 void GLES2DecoderImpl::UpdateCapabilities() {
@@ -18659,6 +18699,80 @@ GLsync GLES2DecoderImpl::DoFenceSync(GLenum condition, GLbitfield flags) {
   return api()->glFenceSyncFn(condition, flags);
 }
 
+GLsizei GLES2DecoderImpl::InternalFormatSampleCountsHelper(
+    GLenum target,
+    GLenum internalformat,
+    std::vector<GLint>* out_sample_counts) {
+  DCHECK(out_sample_counts == nullptr || out_sample_counts->size() == 0);
+
+  GLint num_sample_counts = 0;
+  if (gl_version_info().IsLowerThanGL(4, 2)) {
+    // No multisampling for integer formats.
+    if (GLES2Util::IsIntegerFormat(internalformat)) {
+      return 0;
+    }
+
+    GLint max_samples = renderbuffer_manager()->max_samples();
+    num_sample_counts = max_samples;
+
+    if (out_sample_counts != nullptr) {
+      out_sample_counts->reserve(num_sample_counts);
+      for (GLint sample_count = max_samples; sample_count > 0; --sample_count) {
+        out_sample_counts->push_back(sample_count);
+      }
+    }
+  } else {
+    api()->glGetInternalformativFn(target, internalformat, GL_NUM_SAMPLE_COUNTS,
+                                   1, &num_sample_counts);
+
+    bool remove_nonconformant_sample_counts =
+        feature_info_->IsWebGLContext() &&
+        feature_info_->feature_flags().nv_internalformat_sample_query;
+
+    if (out_sample_counts != nullptr || remove_nonconformant_sample_counts) {
+      std::vector<GLint> sample_counts(num_sample_counts);
+      api()->glGetInternalformativFn(target, internalformat, GL_SAMPLES,
+                                     num_sample_counts, sample_counts.data());
+
+      if (remove_nonconformant_sample_counts) {
+        ScopedGLErrorSuppressor suppressor(
+            "GLES2DecoderImpl::InternalFormatSampleCountsHelper",
+            error_state_.get());
+
+        auto is_nonconformant = [this, target,
+                                 internalformat](GLint sample_count) {
+          GLint conformant = GL_FALSE;
+          api()->glGetInternalformatSampleivNVFn(target, internalformat,
+                                                 sample_count, GL_CONFORMANT_NV,
+                                                 1, &conformant);
+
+          // getInternalformatSampleivNV does not work for all formats on NVIDIA
+          // Shield TV drivers. Assume that formats with large sample counts are
+          // non-conformant in case the query generates an error.
+          if (api()->glGetErrorFn() != GL_NO_ERROR) {
+            return sample_count > 8;
+          }
+          return conformant == GL_FALSE;
+        };
+
+        sample_counts.erase(
+            std::remove_if(sample_counts.begin(), sample_counts.end(),
+                           is_nonconformant),
+            sample_counts.end());
+        num_sample_counts = sample_counts.size();
+      }
+
+      if (out_sample_counts != nullptr) {
+        *out_sample_counts = std::move(sample_counts);
+      }
+    }
+  }
+
+  DCHECK(out_sample_counts == nullptr ||
+         out_sample_counts->size() == static_cast<size_t>(num_sample_counts));
+  return num_sample_counts;
+}
+
 error::Error GLES2DecoderImpl::HandleGetInternalformativ(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -18684,52 +18798,37 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   }
 
   typedef cmds::GetInternalformativ::Result Result;
+
+  GLsizei num_sample_counts = 0;
+  std::vector<GLint> sample_counts;
+
   GLsizei num_values = 0;
-  std::vector<GLint> samples;
-  if (gl_version_info().IsLowerThanGL(4, 2)) {
-    if (!GLES2Util::IsIntegerFormat(format)) {
-      // No multisampling for integer formats.
-      GLint max_samples = renderbuffer_manager()->max_samples();
-      while (max_samples > 0) {
-        samples.push_back(max_samples);
-        --max_samples;
-      }
-    }
-    switch (pname) {
-      case GL_NUM_SAMPLE_COUNTS:
-        num_values = 1;
-        break;
-      case GL_SAMPLES:
-        num_values = static_cast<GLsizei>(samples.size());
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  } else {
-    switch (pname) {
-      case GL_NUM_SAMPLE_COUNTS:
-        num_values = 1;
-        break;
-      case GL_SAMPLES:
-        {
-          GLint value = 0;
-          api()->glGetInternalformativFn(target, format, GL_NUM_SAMPLE_COUNTS,
-                                         1, &value);
-          num_values = static_cast<GLsizei>(value);
-        }
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  GLint* values = nullptr;
+  switch (pname) {
+    case GL_NUM_SAMPLE_COUNTS:
+      num_sample_counts =
+          InternalFormatSampleCountsHelper(target, format, nullptr);
+      num_values = 1;
+      values = &num_sample_counts;
+      break;
+    case GL_SAMPLES:
+      num_sample_counts =
+          InternalFormatSampleCountsHelper(target, format, &sample_counts);
+      num_values = num_sample_counts;
+      values = sample_counts.data();
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
+
   uint32_t checked_size = 0;
   if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
     return error::kOutOfBounds;
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, checked_size);
+
   GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
@@ -18738,23 +18837,8 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  if (gl_version_info().IsLowerThanGL(4, 2)) {
-    switch (pname) {
-      case GL_NUM_SAMPLE_COUNTS:
-        params[0] = static_cast<GLint>(samples.size());
-        break;
-      case GL_SAMPLES:
-        for (size_t ii = 0; ii < samples.size(); ++ii) {
-          params[ii] = samples[ii];
-        }
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  } else {
-    api()->glGetInternalformativFn(target, format, pname, num_values, params);
-  }
+
+  std::copy(values, &values[num_values], params);
   result->SetNumResults(num_values);
   return error::kNoError;
 }

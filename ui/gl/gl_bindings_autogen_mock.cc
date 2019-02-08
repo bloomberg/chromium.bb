@@ -1867,6 +1867,18 @@ MockGLInterface::Mock_glGetIntegervRobustANGLE(GLenum pname,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glGetInternalformatSampleivNV(GLenum target,
+                                                    GLenum internalformat,
+                                                    GLsizei samples,
+                                                    GLenum pname,
+                                                    GLsizei bufSize,
+                                                    GLint* params) {
+  MakeGlMockFunctionUnique("glGetInternalformatSampleivNV");
+  interface_->GetInternalformatSampleivNV(target, internalformat, samples,
+                                          pname, bufSize, params);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glGetInternalformativ(GLenum target,
                                             GLenum internalformat,
                                             GLenum pname,
@@ -5375,6 +5387,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glGetIntegervRobustANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glGetIntegervRobustANGLE);
+  if (strcmp(name, "glGetInternalformatSampleivNV") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetInternalformatSampleivNV);
   if (strcmp(name, "glGetInternalformativ") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glGetInternalformativ);
   if (strcmp(name, "glGetInternalformativRobustANGLE") == 0)
