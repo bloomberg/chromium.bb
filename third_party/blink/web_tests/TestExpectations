@@ -3946,7 +3946,6 @@ crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/gro
 crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
-crbug.com/626703 external/wpt/payment-request/payment-request-show-method.https.html [ Pass Failure ]
 crbug.com/626703 external/wpt/performance-timeline/po-observe.html [ Timeout ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_disabled_form_control-manual.html [ Timeout Pass ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Timeout ]
