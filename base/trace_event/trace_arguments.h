@@ -260,7 +260,14 @@ union BASE_EXPORT TraceValue {
   // TRACE_VALUE_TYPE_XXX value.
   void AppendAsJSON(unsigned char type, std::string* out) const;
 
+  // Output current value as a string. If the output string is to be used
+  // in a JSON format use AppendAsJSON instead. |type| must be valid
+  // TRACE_VALUE_TYPE_XXX value.
+  void AppendAsString(unsigned char type, std::string* out) const;
+
  private:
+  void Append(unsigned char type, bool as_json, std::string* out) const;
+
   // InnerType<T>::type removes reference, cv-qualifications and decays
   // function and arrays into pointers. Only used internally.
   template <typename T>

@@ -238,7 +238,7 @@ void TraceEventETWExport::AddEvent(char phase,
       // created exceed WPA's 4094 byte limit and are shown as:
       // "Unable to parse data". See crbug.com/488257
     } else {
-      args->values()[i].AppendAsJSON(args->types()[i], arg_values_string + i);
+      args->values()[i].AppendAsString(args->types()[i], arg_values_string + i);
     }
   }
 

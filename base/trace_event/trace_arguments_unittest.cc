@@ -5,6 +5,7 @@
 #include "base/trace_event/trace_arguments.h"
 
 #include <gtest/gtest.h>
+#include <limits>
 #include <string>
 
 namespace base {
@@ -87,22 +88,69 @@ static void CheckJSONFor(TraceValue v, char type, const char* expected) {
   EXPECT_STREQ(expected, out.c_str());
 }
 
-TEST(TraceArguments, TraceValueAppendAsJSON) {
+static void CheckStringFor(TraceValue v, char type, const char* expected) {
+  std::string out;
+  v.AppendAsString(type, &out);
+  EXPECT_STREQ(expected, out.c_str());
+}
+
+TEST(TraceArguments, TraceValueAppend) {
   TraceValue v;
 
   v.Init(-1024);
   CheckJSONFor(v, TRACE_VALUE_TYPE_INT, "-1024");
+  CheckStringFor(v, TRACE_VALUE_TYPE_INT, "-1024");
   v.Init(1024ULL);
   CheckJSONFor(v, TRACE_VALUE_TYPE_UINT, "1024");
+  CheckStringFor(v, TRACE_VALUE_TYPE_UINT, "1024");
   v.Init(3.1415926535);
   CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "3.1415926535");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "3.1415926535");
+  v.Init(2.0);
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "2.0");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "2.0");
+  v.Init(0.5);
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "0.5");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "0.5");
+  v.Init(-0.5);
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "-0.5");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "-0.5");
+  v.Init(std::numeric_limits<double>::quiet_NaN());
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "\"NaN\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "NaN");
+  v.Init(std::numeric_limits<double>::quiet_NaN());
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "\"NaN\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "NaN");
+  v.Init(std::numeric_limits<double>::infinity());
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "\"Infinity\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "Infinity");
+  v.Init(-std::numeric_limits<double>::infinity());
+  CheckJSONFor(v, TRACE_VALUE_TYPE_DOUBLE, "\"-Infinity\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_DOUBLE, "-Infinity");
   v.Init(true);
   CheckJSONFor(v, TRACE_VALUE_TYPE_BOOL, "true");
+  CheckStringFor(v, TRACE_VALUE_TYPE_BOOL, "true");
   v.Init(false);
   CheckJSONFor(v, TRACE_VALUE_TYPE_BOOL, "false");
+  CheckStringFor(v, TRACE_VALUE_TYPE_BOOL, "false");
   v.Init("Some \"nice\" String");
   CheckJSONFor(v, TRACE_VALUE_TYPE_STRING, "\"Some \\\"nice\\\" String\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_STRING, "Some \"nice\" String");
   CheckJSONFor(v, TRACE_VALUE_TYPE_COPY_STRING, "\"Some \\\"nice\\\" String\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_COPY_STRING, "Some \"nice\" String");
+
+  int* p = nullptr;
+  v.Init(p);
+  CheckJSONFor(v, TRACE_VALUE_TYPE_POINTER, "\"0x0\"");
+  CheckStringFor(v, TRACE_VALUE_TYPE_POINTER, "0x0");
+
+  const char kText[] = "Hello World";
+  bool destroy_flag = false;
+  TraceArguments args("arg1",
+                      std::make_unique<MyConvertable>(kText, &destroy_flag));
+
+  CheckJSONFor(std::move(args.values()[0]), args.types()[0], kText);
+  CheckStringFor(std::move(args.values()[0]), args.types()[0], kText);
 }
 
 TEST(TraceArguments, DefaultConstruction) {
