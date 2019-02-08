@@ -10,12 +10,6 @@ to receive metadata and control media playback in a unified way on Chrome.
 
 # Audio Focus
 
-To get started the following flags should be enabled:
-
-* #enable-audio-focus - This enables audio focus on Chrome.
-* #enable-arc-unified-audio-focus - enables ARC++ integration. This means that
-  ARC++ apps will request audio focus from Chrome (Chrome OS only).
-
 When audio focus is enabled all the different media sessions will request audio
 focus. A media session can request three different types of audio focus:
 
@@ -63,12 +57,16 @@ mojo API. The observer will then receive notifications when the active media
 session changes. This can be used to determine whether there is any current
 media playback.
 
-# Active Media Controller
+# Media Controller Manager
 
-The media session service also exposes a [MediaController](https://cs.chromium.org/chromium/src/services/media_session/public/mojom/media_controller.mojom)
-mojo API. This can be used to control the active media session. It will
-automatically route commands to the active media session, even if the media
-session changes.
+The media session service also exposes a [MediaControllerManager](https://cs.chromium.org/chromium/src/services/media_session/public/mojom/media_controller.mojom)
+mojo API. This can be used to create a [MediaController](https://cs.chromium.org/chromium/src/services/media_session/public/mojom/media_controller.mojom)
+instance. These can be used to control and observe a media session. This can
+be an individual media session or the active media session.
+
+If the controller is created using `CreateActiveMediaController` then it will
+follow the active media session. This means you do not need to create a new
+media controller if the active media session changes.
 
 **There is also a MediaSession mojo API. This is used for session / service
 communication and should not be used for control.**.
@@ -91,5 +89,14 @@ There is a [MockMediaSession](https://cs.chromium.org/chromium/src/services/medi
 C++ class that can be used for simulating a media session in unit tests. The
 [//services/media_session/public/cpp/test](https://cs.chromium.org/chromium/src/services/media_session/public/cpp/test/)
 directory also contains a number of other useful test utilities.
+
+# Current Media Session service integrations
+
+The following clients are integrated with the media session service and expose
+a media session and request audio focus:
+
+* content::WebContents
+* ARC++ apps (requires Android Pie)
+* Assistant
 
 Questions? - Feel free to reach out to beccahughes@chromium.org.
