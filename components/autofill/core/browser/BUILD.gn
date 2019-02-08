@@ -197,6 +197,8 @@ jumbo_static_library("browser") {
     "sync_utils.h",
     "test_data_creator.cc",
     "test_data_creator.h",
+    "travel_field.cc",
+    "travel_field.h",
     "ui/card_unmask_prompt_controller.h",
     "ui/card_unmask_prompt_controller_impl.cc",
     "ui/card_unmask_prompt_controller_impl.h",
