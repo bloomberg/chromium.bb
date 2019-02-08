@@ -682,6 +682,7 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
     parent = nullptr;
   if (!IsWindowKnown(transient_parent))
     transient_parent = nullptr;
+  const bool is_top_level = IsTopLevel(window);
   mojom::WindowDataPtr window_data(mojom::WindowData::New());
   window_data->parent_id =
       parent ? TransportIdForWindow(parent) : kInvalidTransportId;
@@ -691,10 +692,12 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
       transient_parent ? TransportIdForWindow(transient_parent)
                        : kInvalidTransportId;
   window_data->bounds =
-      IsTopLevel(window) ? window->GetBoundsInScreen() : window->bounds();
+      is_top_level ? window->GetBoundsInScreen() : window->bounds();
   window_data->properties =
       window_service_->property_converter()->GetTransportProperties(window);
-  window_data->visible = window->TargetVisibility();
+  window_data->visible = (!IsClientRootWindow(window) || is_top_level)
+                             ? window->TargetVisibility()
+                             : window->IsVisible();
   return window_data;
 }
 

@@ -2626,6 +2626,22 @@ TEST_F(WindowTreeClientTest, ChangeFocusInEmbedRootWindow) {
   window_tree_client()->OnWindowFocused(server_id(embed_root->window()));
 }
 
+// Verifies visibility from server is applied properly when an embed root is
+// created.
+TEST_F(WindowTreeClientTest, EmbedRootVisibility) {
+  for (bool visible : {true, false}) {
+    TestEmbedRootDelegate embed_root_delegate;
+    std::unique_ptr<EmbedRoot> embed_root =
+        window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
+    WindowTreeClientTestApi(window_tree_client_impl())
+        .CallOnEmbedFromToken(embed_root.get(), visible);
+    ASSERT_TRUE(embed_root->window());
+    EXPECT_EQ(visible, embed_root->window()->TargetVisibility());
+    EXPECT_EQ(visible,
+              embed_root->window()->GetHost()->compositor()->IsVisible());
+  }
+}
+
 TEST_F(WindowTreeClientTest, PerformWindowMove) {
   int call_count = 0;
   bool last_result = false;

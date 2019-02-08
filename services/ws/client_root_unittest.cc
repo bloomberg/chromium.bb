@@ -5,6 +5,7 @@
 #include "services/ws/client_root.h"
 
 #include <string>
+#include <vector>
 
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -118,6 +119,132 @@ TEST(ClientRoot, EmbedBoundsInScreen) {
   iter = FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
   ASSERT_NE(iter, embedding_changes->end());
   EXPECT_EQ(gfx::Rect(112, 64, 3, 4), iter->bounds2);
+}
+
+TEST(ClientRoot, EmbedWindowServerVisibilityChanges) {
+  WindowServiceTestSetup setup;
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
+  embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(embed_window);
+  ASSERT_TRUE(embedding_helper);
+  window->AddChild(embed_window);
+  top_level->AddChild(window);
+  std::vector<Change>* embedding_changes = embedding_helper->changes();
+  embedding_changes->clear();
+  embed_window->Show();
+  // As |top_level| isn't shown, no change yet.
+  EXPECT_TRUE(embedding_changes->empty());
+  top_level->Show();
+  EXPECT_TRUE(embedding_changes->empty());
+
+  // As all ancestor are visible, showing the window should notify the client.
+  window->Show();
+  ASSERT_EQ(1u, embedding_changes->size());
+  {
+    const Change& show_change = (*embedding_changes)[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_VISIBILITY_CHANGED, show_change.type);
+    EXPECT_TRUE(show_change.bool_value);
+    EXPECT_EQ(embedding_helper->window_tree_test_helper->TransportIdForWindow(
+                  embed_window),
+              show_change.window_id);
+  }
+  embedding_changes->clear();
+
+  // Hiding an ancestor should trigger hiding the window.
+  top_level->Hide();
+  ASSERT_EQ(1u, embedding_changes->size());
+  {
+    const Change& hide_change = (*embedding_changes)[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_VISIBILITY_CHANGED, hide_change.type);
+    EXPECT_FALSE(hide_change.bool_value);
+    EXPECT_EQ(embedding_helper->window_tree_test_helper->TransportIdForWindow(
+                  embed_window),
+              hide_change.window_id);
+  }
+  embedding_changes->clear();
+
+  // Showing an ancestor should trigger showing the window.
+  top_level->Show();
+  ASSERT_EQ(1u, embedding_changes->size());
+  {
+    const Change& show_change = (*embedding_changes)[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_VISIBILITY_CHANGED, show_change.type);
+    EXPECT_TRUE(show_change.bool_value);
+    EXPECT_EQ(embedding_helper->window_tree_test_helper->TransportIdForWindow(
+                  embed_window),
+              show_change.window_id);
+  }
+  embedding_changes->clear();
+
+  // Removing an ancestor from the WindowTreeHost implicitly hides the window.
+  top_level->RemoveChild(window);
+  ASSERT_EQ(1u, embedding_changes->size());
+  {
+    const Change& hide_change = (*embedding_changes)[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_VISIBILITY_CHANGED, hide_change.type);
+    EXPECT_FALSE(hide_change.bool_value);
+    EXPECT_EQ(embedding_helper->window_tree_test_helper->TransportIdForWindow(
+                  embed_window),
+              hide_change.window_id);
+  }
+  embedding_changes->clear();
+
+  // Adding an ancestor to the WindowTreeHost implicitly shows the window.
+  top_level->AddChild(window);
+  {
+    auto iter = FirstChangeOfType(*embedding_changes,
+                                  CHANGE_TYPE_NODE_VISIBILITY_CHANGED);
+    ASSERT_NE(iter, embedding_changes->end());
+    const Change& show_change = *iter;
+    EXPECT_EQ(CHANGE_TYPE_NODE_VISIBILITY_CHANGED, show_change.type);
+    EXPECT_TRUE(show_change.bool_value);
+    EXPECT_EQ(embedding_helper->window_tree_test_helper->TransportIdForWindow(
+                  embed_window),
+              show_change.window_id);
+  }
+  embedding_changes->clear();
+
+  embed_window->Hide();
+  ASSERT_EQ(1u, embedding_changes->size());
+  {
+    const Change& hide_change = (*embedding_changes)[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_VISIBILITY_CHANGED, hide_change.type);
+    EXPECT_FALSE(hide_change.bool_value);
+    EXPECT_EQ(embedding_helper->window_tree_test_helper->TransportIdForWindow(
+                  embed_window),
+              hide_change.window_id);
+  }
+}
+
+TEST(ClientRoot, EmbedWindowClientVisibilityChanges) {
+  WindowServiceTestSetup setup;
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
+  embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(embed_window);
+  ASSERT_TRUE(embedding_helper);
+  window->AddChild(embed_window);
+  top_level->AddChild(window);
+  std::vector<Change>* embedding_changes = embedding_helper->changes();
+  embedding_changes->clear();
+
+  // Changes initiated by the client should not callback to the client.
+  embedding_helper->window_tree_test_helper->SetWindowVisibility(embed_window,
+                                                                 true);
+  EXPECT_TRUE(embed_window->TargetVisibility());
+  EXPECT_TRUE(embedding_changes->empty());
+
+  embedding_helper->window_tree_test_helper->SetWindowVisibility(embed_window,
+                                                                 false);
+  EXPECT_FALSE(embed_window->TargetVisibility());
+  EXPECT_TRUE(embedding_changes->empty());
 }
 
 }  // namespace

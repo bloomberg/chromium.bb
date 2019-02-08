@@ -58,13 +58,14 @@ void WindowTreeClientTestApi::CallOnCaptureChanged(Window* new_capture,
       old_capture ? WindowPortMus::Get(old_capture)->server_id() : 0);
 }
 
-void WindowTreeClientTestApi::CallOnEmbedFromToken(EmbedRoot* embed_root) {
+void WindowTreeClientTestApi::CallOnEmbedFromToken(EmbedRoot* embed_root,
+                                                   bool visible) {
   embed_root->OnScheduledEmbedForExistingClient(
       base::UnguessableToken::Create());
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
   parent_local_surface_id_allocator.GenerateId();
   tree_client_impl_->OnEmbedFromToken(
-      embed_root->token(), CreateWindowDataForEmbed(), kDisplayId,
+      embed_root->token(), CreateWindowDataForEmbed(visible), kDisplayId,
       parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
 }
 
@@ -106,7 +107,8 @@ bool WindowTreeClientTestApi::HasChangeInFlightOfType(ChangeType type) {
   return false;
 }
 
-ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed() {
+ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed(
+    bool visible) {
   ws::mojom::WindowDataPtr root_data(ws::mojom::WindowData::New());
   root_data->parent_id = 0;
   // OnEmbed() is passed windows the client doesn't own. Use a |client_id| of 1
@@ -116,7 +118,7 @@ ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed() {
   const ws::Id client_id = 1;
   root_data->window_id =
       (client_id << 32) | tree_client_impl_->GetRoots().size();
-  root_data->visible = true;
+  root_data->visible = visible;
   return root_data;
 }
 

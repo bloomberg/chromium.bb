@@ -55,8 +55,9 @@ class WindowTreeClientTestApi {
   void CallOnCaptureChanged(Window* new_capture, Window* old_capture);
 
   // Simulates the EmbedRoot receiving the token from the WindowTree and then
-  // the WindowTree calling OnEmbedFromToken().
-  void CallOnEmbedFromToken(EmbedRoot* embed_root);
+  // the WindowTree calling OnEmbedFromToken(). |visible| is the initial value
+  // to supply from the server for the visibility.
+  void CallOnEmbedFromToken(EmbedRoot* embed_root, bool visible = true);
 
   // Sets the WindowTree. This calls WindowTreeConnectionEstablished(), which
   // means it should only be called once, during setup.
@@ -83,7 +84,8 @@ class WindowTreeClientTestApi {
 #endif
   friend void test::WaitForAllChangesToComplete(WindowTreeClient* client);
 
-  ws::mojom::WindowDataPtr CreateWindowDataForEmbed();
+  // |visible| whether the window is visible.
+  ws::mojom::WindowDataPtr CreateWindowDataForEmbed(bool visible = true);
 
   // This is private as WaitForAllChangesToComplete() (in
   // change_completion_waiter) should be used instead.
