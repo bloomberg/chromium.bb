@@ -25,7 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/account_id/account_id.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

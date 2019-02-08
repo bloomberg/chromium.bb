@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/local_device_info_provider.h"
