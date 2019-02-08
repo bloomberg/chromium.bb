@@ -94,7 +94,7 @@ public class AddToHomescreenDialog implements View.OnClickListener {
     public void show() {
         View view = mActivity.getLayoutInflater().inflate(R.layout.add_to_homescreen_dialog, null);
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme)
+                new AlertDialog.Builder(mActivity, R.style.Theme_Chromium_AlertDialog)
                         .setTitle(AppBannerManager.getHomescreenLanguageOption())
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override

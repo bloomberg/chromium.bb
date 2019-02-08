@@ -6,7 +6,7 @@
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:alpha="@dimen/default_disabled_alpha"
-        android:color="@color/modern_grey_100"
+        android:color="@color/modern_secondary_color"
         android:state_enabled="false" />
     <item android:alpha="@dimen/chip_background_selected_focused_alpha"
         android:color="@color/modern_blue_600"
@@ -18,5 +18,5 @@
     <item android:alpha="@dimen/default_focused_alpha"
         android:color="@color/modern_grey_800"
         android:state_focused="true" />
-    <item android:color="@android:color/white" />
+    <item android:color="@color/modern_primary_color" />
 </selector>

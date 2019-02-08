@@ -489,8 +489,9 @@ public class OMADownloadHandler extends BroadcastReceiver
                         DOWNLOAD_STATUS_USER_CANCELLED);
             }
         };
-        new AlertDialog.Builder(
-                ApplicationStatus.getLastTrackedFocusedActivity(), R.style.AlertDialogTheme)
+        new AlertDialog
+                .Builder(ApplicationStatus.getLastTrackedFocusedActivity(),
+                        R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.proceed_oma_download_message)
                 .setPositiveButton(R.string.ok, clickListener)
                 .setNegativeButton(R.string.cancel, clickListener)
@@ -518,8 +519,9 @@ public class OMADownloadHandler extends BroadcastReceiver
                         DownloadItem.INVALID_DOWNLOAD_ID, statusMessage);
             }
         };
-        new AlertDialog.Builder(
-                ApplicationStatus.getLastTrackedFocusedActivity(), R.style.AlertDialogTheme)
+        new AlertDialog
+                .Builder(ApplicationStatus.getLastTrackedFocusedActivity(),
+                        R.style.Theme_Chromium_AlertDialog)
                 .setTitle(titleId)
                 .setPositiveButton(R.string.ok, clickListener)
                 .setCancelable(false)

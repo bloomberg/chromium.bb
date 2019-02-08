@@ -82,8 +82,8 @@ class DropdownPopupWindowImpl
 
         ViewRectProvider rectProvider = new ViewRectProvider(mAnchorView);
         rectProvider.setIncludePadding(true);
-        mBackground =
-                ApiCompatibilityUtils.getDrawable(context.getResources(), R.drawable.popup_bg);
+        mBackground = ApiCompatibilityUtils.getDrawable(
+                context.getResources(), R.drawable.popup_bg_tinted);
         mAnchoredPopupWindow = new AnchoredPopupWindow(
                 context, mAnchorView, mBackground, mContentView, rectProvider);
         mAnchoredPopupWindow.addOnDismissListener(onDismissLitener);
@@ -117,8 +117,8 @@ class DropdownPopupWindowImpl
     public void onPreLayoutChange(
             boolean positionBelow, int x, int y, int width, int height, Rect anchorRect) {
         mBackground.setBounds(anchorRect);
-        mAnchoredPopupWindow.setBackgroundDrawable(
-                ApiCompatibilityUtils.getDrawable(mContext.getResources(), R.drawable.popup_bg));
+        mAnchoredPopupWindow.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                mContext.getResources(), R.drawable.popup_bg_tinted));
     }
 
     /**

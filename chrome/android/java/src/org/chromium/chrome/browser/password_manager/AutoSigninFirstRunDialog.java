@@ -67,7 +67,7 @@ public class AutoSigninFirstRunDialog
 
     private void show() {
         final AlertDialog.Builder builder =
-                new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
                         .setTitle(mTitle)
                         .setPositiveButton(mOkButtonText, this)
                         .setNegativeButton(mTurnOffButtonText, this);

@@ -364,7 +364,7 @@ public class FeedNewTabPage extends NewTabPage {
                 mSectionHeaderView, mUiConfig, mDefaultMargin, mWideMargin);
 
         View view = mStream.getView();
-        view.setBackgroundColor(Color.WHITE);
+        view.setBackgroundResource(R.color.modern_primary_color);
         mRootView.addView(view);
 
         UiUtils.removeViewFromParent(mNewTabPageLayout);

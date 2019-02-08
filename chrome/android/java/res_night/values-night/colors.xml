@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- TODO(huayinz): Change the colors. -->
-    <color name="modern_primary_color">#610000FF</color>
+    <color name="light_active_color">@color/modern_blue_300</color>
+    <color name="control_normal_color">@color/modern_grey_200</color>
 </resources>

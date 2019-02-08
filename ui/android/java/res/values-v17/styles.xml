@@ -8,7 +8,7 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="DropdownPopupWindow" parent="@android:style/Widget.ListPopupWindow">
-        <item name="android:popupBackground">@drawable/popup_bg</item>
+        <item name="android:popupBackground">@drawable/popup_bg_tinted</item>
     </style>
 
     <!-- Buttons -->
@@ -87,7 +87,6 @@
     </style>
 
     <!-- Used by Chrome and Content -->
-    <!-- TODO(huayinz): Update prefixes for text appearance styles in ui/android. -->
     <style name="TextAppearance" parent="android:TextAppearance" tools:ignore="UnusedResources" />
     <style name="TextAppearance.RobotoMediumStyle">
         <item name="android:fontFamily">sans-serif</item>

@@ -36,7 +36,8 @@ public class PermissionDialogView {
     public PermissionDialogView(PermissionDialogDelegate delegate) {
         mDialogDelegate = delegate;
         ChromeActivity activity = mDialogDelegate.getTab().getActivity();
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
         mDialog = builder.create();
         mDialog.getDelegate().setHandleNativeActionModesEnabled(false);
         mDialog.setCanceledOnTouchOutside(false);

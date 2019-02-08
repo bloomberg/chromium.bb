@@ -202,8 +202,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
         // Need to explicitly set the background here.  Relying on it being set in the style caused
         // an incorrectly drawn background.
-        mPopup.setBackgroundDrawable(
-                ApiCompatibilityUtils.getDrawable(context.getResources(), R.drawable.popup_bg));
+        mPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                context.getResources(), R.drawable.popup_bg_tinted));
         if (!isByPermanentButton) {
             mPopup.setAnimationStyle(
                     showFromBottom ? R.style.OverflowMenuAnimBottom : R.style.OverflowMenuAnim);

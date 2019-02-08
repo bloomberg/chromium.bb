@@ -66,12 +66,12 @@ public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
         textView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Construct the dialog.
-        AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
-                .setView(view)
-                .setTitle(R.string.clear_browsing_data_history_dialog_title)
-                .setPositiveButton(
-                        R.string.ok_got_it, this)
-                .create();
+        AlertDialog dialog =
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                        .setView(view)
+                        .setTitle(R.string.clear_browsing_data_history_dialog_title)
+                        .setPositiveButton(R.string.ok_got_it, this)
+                        .create();
 
         dialog.setCanceledOnTouchOutside(false);
         return dialog;

@@ -16,7 +16,7 @@
         android:layout_height="@dimen/bottom_sheet_peek_height"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="@android:color/white" >
+        android:background="@color/modern_primary_color" >
 
         <!-- Use 48dp width and 16dp end/start padding to produce a 16dp, centered icon. -->
         <ImageView

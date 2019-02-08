@@ -215,7 +215,7 @@ public class SSLClientCertificateRequest {
          */
         public void show() {
             final AlertDialog.Builder builder =
-                    new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme);
+                    new AlertDialog.Builder(mActivity, R.style.Theme_Chromium_AlertDialog);
             builder.setTitle(R.string.client_cert_unsupported_title)
                     .setMessage(R.string.client_cert_unsupported_message)
                     .setNegativeButton(R.string.close,

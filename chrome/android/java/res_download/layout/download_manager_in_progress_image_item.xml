@@ -11,7 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
-    android:background="@color/modern_grey_100" >
+    android:background="@color/modern_secondary_color" >
 
     <!-- Set the src attribute in Java to wrap the drawable properly. -->
     <ImageView

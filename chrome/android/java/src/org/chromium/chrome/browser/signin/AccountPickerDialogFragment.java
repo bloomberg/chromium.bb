@@ -230,7 +230,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme);
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog);
         LayoutInflater inflater = LayoutInflater.from(builder.getContext());
         RecyclerView recyclerView =
                 (RecyclerView) inflater.inflate(R.layout.account_picker_dialog_body, null);

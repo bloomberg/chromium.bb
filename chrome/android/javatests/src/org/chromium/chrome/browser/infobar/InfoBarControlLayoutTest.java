@@ -44,7 +44,7 @@ public class InfoBarControlLayoutTest {
     @Before
     public void setUp() throws Exception {
         mContext = InstrumentationRegistry.getTargetContext();
-        mContext.setTheme(R.style.MainTheme);
+        mContext.setTheme(R.style.Theme_Chromium_WithWindowAnimation);
     }
 
     /**

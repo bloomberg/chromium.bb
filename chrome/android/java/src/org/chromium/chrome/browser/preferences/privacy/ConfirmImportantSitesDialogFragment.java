@@ -318,10 +318,10 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
         mSitesListView.setAdapter(mAdapter);
         mSitesListView.setOnItemClickListener(mAdapter);
         final AlertDialog.Builder builder =
-                new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                         .setTitle(R.string.storage_clear_site_storage_title)
-                        .setPositiveButton(R.string.clear_browsing_data_important_dialog_button,
-                                listener)
+                        .setPositiveButton(
+                                R.string.clear_browsing_data_important_dialog_button, listener)
                         .setNegativeButton(R.string.cancel, listener)
                         .setView(messageAndListView);
         mDialog = builder.create();

@@ -2431,7 +2431,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public static int getThemeId() {
         boolean useLowEndTheme =
                 SysUtils.isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
-        return (useLowEndTheme ? R.style.MainTheme_LowEnd : R.style.MainTheme);
+        return (useLowEndTheme ? R.style.Theme_Chromium_WithWindowAnimation_LowEnd
+                               : R.style.Theme_Chromium_WithWindowAnimation);
     }
 
     /**
@@ -2458,7 +2459,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     private void setLowEndTheme() {
-        if (getThemeId() == R.style.MainTheme_LowEnd) setTheme(R.style.MainTheme_LowEnd);
+        if (getThemeId() == R.style.Theme_Chromium_WithWindowAnimation_LowEnd)
+            setTheme(R.style.Theme_Chromium_WithWindowAnimation_LowEnd);
     }
 
     /**

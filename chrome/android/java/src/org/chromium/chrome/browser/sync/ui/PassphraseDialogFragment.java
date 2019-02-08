@@ -130,19 +130,21 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
                 ApiCompatibilityUtils.getColor(getResources(), R.color.input_underline_error_color),
                 PorterDuff.Mode.SRC_IN);
 
-        final AlertDialog d = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
-                .setView(v)
-                .setPositiveButton(R.string.submit, new Dialog.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface d, int which) {
-                        // We override the onclick. This is a hack to not dismiss the dialog after
-                        // click of OK and instead dismiss it after confirming the passphrase
-                        // is correct.
-                    }
-                })
-                 .setNegativeButton(R.string.cancel, this)
-                 .setTitle(R.string.sign_in_google_account)
-                 .create();
+        final AlertDialog d =
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                        .setView(v)
+                        .setPositiveButton(R.string.submit,
+                                new Dialog.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface d, int which) {
+                                        // We override the onclick. This is a hack to not dismiss
+                                        // the dialog after click of OK and instead dismiss it after
+                                        // confirming the passphrase is correct.
+                                    }
+                                })
+                        .setNegativeButton(R.string.cancel, this)
+                        .setTitle(R.string.sign_in_google_account)
+                        .create();
 
         d.getDelegate().setHandleNativeActionModesEnabled(false);
         d.setOnShowListener(new DialogInterface.OnShowListener() {

@@ -55,7 +55,7 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
             return;
         }
 
-        mDialog = new Dialog(mActivity, R.style.ModalDialogTheme);
+        mDialog = new Dialog(mActivity, R.style.Theme_Chromium_ModalDialog);
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't

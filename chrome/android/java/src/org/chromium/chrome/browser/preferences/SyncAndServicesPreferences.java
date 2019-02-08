@@ -603,7 +603,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+            return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                     .setTitle(R.string.cancel_sync_dialog_title)
                     .setMessage(R.string.cancel_sync_dialog_message)
                     .setNegativeButton(R.string.back, (dialog, which) -> dialog.cancel())

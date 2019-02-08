@@ -131,7 +131,7 @@ public class AutofillKeyboardAccessoryBridge
 
     @CalledByNative
     private void confirmDeletion(String title, String body) {
-        new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+        new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(title)
                 .setMessage(body)
                 .setNegativeButton(R.string.cancel, null)

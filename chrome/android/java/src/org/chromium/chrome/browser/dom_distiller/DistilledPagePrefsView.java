@@ -80,7 +80,8 @@ public class DistilledPagePrefsView extends LinearLayout
     }
 
     public static void showDialog(Context context) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(context, R.style.Theme_Chromium_AlertDialog);
         builder.setView(DistilledPagePrefsView.create(context));
         builder.show();
     }

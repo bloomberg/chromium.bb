@@ -68,7 +68,8 @@ public class ExportErrorDialogFragment extends DialogFragment {
         } else {
             detailedDescription.setVisibility(View.GONE);
         }
-        return new AlertDialog.Builder(getActivity(), R.style.SimpleDialog)
+        return new AlertDialog
+                .Builder(getActivity(), R.style.Theme_Chromium_AlertDialog_NoActionBar)
                 .setView(dialog)
                 .setTitle(R.string.save_password_preferences_export_error_title)
                 .setPositiveButton(mParams.positiveButtonLabelId, mHandler)

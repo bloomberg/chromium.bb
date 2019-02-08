@@ -90,8 +90,9 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         mPagerView = initPagerView(activity, params, itemGroups,
                 (TabularContextMenuViewPager) view.findViewById(R.id.custom_pager));
 
-        final ContextMenuDialog dialog = new ContextMenuDialog(activity, R.style.DialogWhenLarge,
-                touchPointXPx, touchPointYPx, mTopContentOffsetPx, mPagerView);
+        final ContextMenuDialog dialog =
+                new ContextMenuDialog(activity, R.style.Theme_Chromium_DialogWhenLarge,
+                        touchPointXPx, touchPointYPx, mTopContentOffsetPx, mPagerView);
         dialog.setContentView(view);
 
         return dialog;

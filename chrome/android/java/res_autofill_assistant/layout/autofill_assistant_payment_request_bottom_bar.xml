@@ -10,7 +10,7 @@
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:paddingTop="@dimen/editor_dialog_section_large_spacing"
-    android:background="@android:color/white"
+    android:background="@color/modern_primary_color"
     android:gravity="end"
     android:orientation="horizontal"
     android:visibility="gone" >

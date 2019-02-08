@@ -189,7 +189,7 @@ public class AccountChooserDialog
         }
         mAdapter = generateAccountsArrayAdapter(mContext, mCredentials);
         final AlertDialog.Builder builder =
-                new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
                         .setCustomTitle(titleView)
                         .setNegativeButton(R.string.cancel, this)
                         .setAdapter(mAdapter, new DialogInterface.OnClickListener() {
