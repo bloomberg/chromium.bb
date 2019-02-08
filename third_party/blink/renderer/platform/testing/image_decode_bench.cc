@@ -4,13 +4,7 @@
 
 // Provides a minimal wrapping of the Blink image decoders. Used to perform
 // a non-threaded, memory-to-memory image decode using micro second accuracy
-// clocks to measure image decode time. Basic usage:
-//
-//   % ninja -C out/Release image_decode_bench &&
-//      ./out/Release/image_decode_bench file [iterations]
-//
-// TODO(noel): Consider adding md5 checksum support to WTF. Use it to compute
-// the decoded image frame md5 and output that value.
+// clocks to measure image decode time.
 //
 // TODO(noel): Consider integrating this tool in Chrome telemetry for realz,
 // using the image corpora used to assess Blink image decode performance. See
@@ -84,54 +78,58 @@ void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
 
 }  // namespace
 
-int ImageDecodeBenchMain(int argc, char* argv[]) {
-  base::CommandLine::Init(argc, argv);
-  const char* program = argv[0];
+void ImageDecodeBenchMain(int argc, char* argv[]) {
+  int option, iterations = 1;
 
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s file [iterations]\n", program);
+  auto usage_exit = [&] {
+    fprintf(stderr, "Usage: %s [-i iterations] file [file...]\n", argv[0]);
     exit(1);
+  };
+
+  for (option = 1; option < argc; ++option) {
+    if (argv[option][0] != '-')
+      break;  // End of optional arguments.
+    if (std::string(argv[option]) != "-i")
+      usage_exit();
+    iterations = (++option < argc) ? atoi(argv[option]) : 0;
+    if (iterations < 1)
+      usage_exit();
   }
 
-  // Control bench decode iterations.
+  if (option >= argc)
+    usage_exit();
 
-  size_t decode_iterations = 1;
-  if (argc >= 3) {
-    char* end = nullptr;
-    decode_iterations = strtol(argv[2], &end, 10);
-    if (*end != '\0' || !decode_iterations) {
-      fprintf(stderr,
-              "Second argument should be number of iterations. "
-              "The default is 1. You supplied %s\n",
-              argv[2]);
-      exit(1);
-    }
-  }
+  // Setup Blink platform.
 
   std::unique_ptr<Platform> platform = std::make_unique<Platform>();
   Platform::CreateMainThreadAndInitialize(platform.get());
 
-  // Read entire file content into |data| (a contiguous block of memory) then
-  // decode it to verify the image and record its ImageMeta data.
+  // Bench each image file.
 
-  ImageMeta image = {argv[1], 0, 0, 0, 0};
-  scoped_refptr<SharedBuffer> data = ReadFile(argv[1]);
-  DecodeImageData(data.get(), &image);
+  while (option < argc) {
+    const char* name = argv[option++];
 
-  // Image decode bench for decode_iterations.
+    // Read entire file content into |data| (a contiguous block of memory) then
+    // decode it to verify the image and record its ImageMeta data.
 
-  double total_time = 0.0;
-  for (size_t i = 0; i < decode_iterations; ++i) {
-    image.time = 0.0;
+    ImageMeta image = {name, 0, 0, 0, 0};
+    scoped_refptr<SharedBuffer> data = ReadFile(name);
     DecodeImageData(data.get(), &image);
-    total_time += image.time;
+
+    // Image decode bench for iterations.
+
+    double total_time = 0.0;
+    for (int i = 0; i < iterations; ++i) {
+      image.time = 0.0;
+      DecodeImageData(data.get(), &image);
+      total_time += image.time;
+    }
+
+    // Results to stdout.
+
+    double average_time = total_time / iterations;
+    printf("%f %f %s\n", total_time, average_time, name);
   }
-
-  // Results to stdout.
-
-  double average_time = total_time / decode_iterations;
-  printf("%f %f\n", total_time, average_time);
-  return 0;
 }
 
 }  // namespace blink
@@ -139,5 +137,7 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   base::MessageLoop message_loop;
   mojo::core::Init();
-  return blink::ImageDecodeBenchMain(argc, argv);
+  base::CommandLine::Init(argc, argv);
+  blink::ImageDecodeBenchMain(argc, argv);
+  return 0;
 }
