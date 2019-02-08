@@ -21,6 +21,7 @@ midi
 oversized-images
 payment
 picture-in-picture
+serial
 speaker
 sync-script
 sync-xhr

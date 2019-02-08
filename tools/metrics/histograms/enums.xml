@@ -21580,6 +21580,7 @@ Called by update_net_error_codes.py.-->
   <int value="39" label="OrientationLock"/>
   <int value="40" label="Presentation"/>
   <int value="41" label="Frobulate"/>
+  <int value="42" label="Serial"/>
 </enum>
 
 <enum name="FeedbackSource">
