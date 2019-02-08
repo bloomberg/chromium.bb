@@ -56,14 +56,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
   const AtomicString& InitiatorType() const { return type_; }
 
-  void SetOriginalTimingAllowOrigin(
-      const AtomicString& original_timing_allow_origin) {
-    original_timing_allow_origin_ = original_timing_allow_origin;
-  }
-  const AtomicString& OriginalTimingAllowOrigin() const {
-    return original_timing_allow_origin_;
-  }
-
   void SetLoadFinishTime(TimeTicks time) { load_finish_time_ = time; }
   TimeTicks LoadFinishTime() const { return load_finish_time_; }
 
@@ -102,7 +94,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
       : type_(type), initial_time_(time) {}
 
   AtomicString type_;
-  AtomicString original_timing_allow_origin_;
   TimeTicks initial_time_;
   TimeTicks load_finish_time_;
   KURL initial_url_;
