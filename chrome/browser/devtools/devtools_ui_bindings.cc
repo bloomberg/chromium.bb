@@ -427,7 +427,6 @@ class DevToolsUIBindings::FrontendWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -496,11 +495,6 @@ void DevToolsUIBindings::FrontendWebContentsObserver::ReadyToCommitNavigation(
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
-    DocumentAvailableInMainFrame() {
-  devtools_bindings_->DocumentAvailableInMainFrame();
-}
-
-void DevToolsUIBindings::FrontendWebContentsObserver::
     DocumentOnLoadCompletedInMainFrame() {
   devtools_bindings_->DocumentOnLoadCompletedInMainFrame();
 }
@@ -533,7 +527,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       devices_updates_enabled_(false),
       frontend_loaded_(false),
-      reloading_(false),
       weak_factory_(this) {
   g_devtools_ui_bindings_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
@@ -601,7 +594,7 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
 void DevToolsUIBindings::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host, const std::string& message) {
   DCHECK(agent_host == agent_host_.get());
-  if (!frontend_host_ || reloading_)
+  if (!frontend_host_)
     return;
 
   if (message.length() < kMaxMessageChunkSize) {
@@ -1073,7 +1066,7 @@ void DevToolsUIBindings::SetOpenNewWindowForPopups(bool value) {
 
 void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(
     const std::string& message) {
-  if (agent_host_.get() && !reloading_)
+  if (agent_host_.get())
     agent_host_->DispatchProtocolMessage(this, message);
 }
 
@@ -1317,11 +1310,6 @@ void DevToolsUIBindings::AttachTo(
   InnerAttach();
 }
 
-void DevToolsUIBindings::Reload() {
-  reloading_ = true;
-  web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
-}
-
 void DevToolsUIBindings::Detach() {
   if (agent_host_.get())
     agent_host_->DetachClient(this);
@@ -1361,6 +1349,10 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
 void DevToolsUIBindings::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
+    if (frontend_loaded_ && agent_host_.get()) {
+      agent_host_->DetachClient(this);
+      InnerAttach();
+    }
     if (!IsValidFrontendURL(navigation_handle->GetURL())) {
       LOG(ERROR) << "Attempt to navigate to an invalid DevTools front-end URL: "
                  << navigation_handle->GetURL().spec();
@@ -1395,16 +1387,6 @@ void DevToolsUIBindings::ReadyToCommitNavigation(
   std::string script = base::StringPrintf("%s(\"%s\")", it->second.c_str(),
                                           base::GenerateGUID().c_str());
   content::DevToolsFrontendHost::SetupExtensionsAPI(frame, script);
-}
-
-void DevToolsUIBindings::DocumentAvailableInMainFrame() {
-  if (!reloading_)
-    return;
-  reloading_ = false;
-  if (agent_host_.get()) {
-    agent_host_->DetachClient(this);
-    InnerAttach();
-  }
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
