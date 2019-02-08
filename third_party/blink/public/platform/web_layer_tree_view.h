@@ -78,10 +78,6 @@ class WebLayerTreeView {
 
   // Initialization and lifecycle --------------------------------------
 
-  // Sets the root of the tree. The root is set by way of the constructor.
-  virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
-  virtual void ClearRootLayer() {}
-
   // TODO(loyso): This should use CompositorAnimationHost. crbug.com/584551
   virtual cc::AnimationHost* CompositorAnimationHost() { return nullptr; }
 

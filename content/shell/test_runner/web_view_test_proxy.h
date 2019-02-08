@@ -59,6 +59,7 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
                        content::RenderWidget* render_widget);
 
   // blink::WebWidgetClient implementation.
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   void ScheduleAnimation() override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;

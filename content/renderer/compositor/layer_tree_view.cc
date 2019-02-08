@@ -304,14 +304,6 @@ viz::FrameSinkId LayerTreeView::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void LayerTreeView::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  layer_tree_host_->SetRootLayer(std::move(layer));
-}
-
-void LayerTreeView::ClearRootLayer() {
-  layer_tree_host_->SetRootLayer(nullptr);
-}
-
 void LayerTreeView::SetNonBlinkManagedRootLayer(
     scoped_refptr<cc::Layer> layer) {
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));

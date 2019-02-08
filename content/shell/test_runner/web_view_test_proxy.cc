@@ -29,6 +29,9 @@ ProxyWebWidgetClient::ProxyWebWidgetClient(
       widget_test_client_(widget_test_client),
       render_widget_(render_widget) {}
 
+void ProxyWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+  base_class_widget_client_->SetRootLayer(std::move(layer));
+}
 void ProxyWebWidgetClient::ScheduleAnimation() {
   // When using threaded compositing, have the RenderWidget schedule a request
   // for a frame, as we use the compositor's scheduler. Otherwise the testing

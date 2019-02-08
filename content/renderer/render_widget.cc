@@ -1133,6 +1133,10 @@ void RenderWidget::DidCompletePageScaleAnimation() {
     delegate()->DidCompletePageScaleAnimationForWidget();
 }
 
+void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+  layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
+}
+
 void RenderWidget::ScheduleAnimation() {
   // This call is not needed in single thread mode for tests without a
   // scheduler, but they need to override the WebWidgetClient and replace this

@@ -3202,7 +3202,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     visual_viewport_container_layer_ = visual_viewport.ContainerLayer();
     root_layer_ = root_graphics_layer_->CcLayer();
     UpdateDeviceEmulationTransform();
-    layer_tree_view_->SetRootLayer(root_layer_);
+    AsWidget().client->SetRootLayer(root_layer_);
     // We register viewport layers here since there may not be a layer
     // tree view prior to this point.
     RegisterViewportLayersWithCompositor();
@@ -3214,7 +3214,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
     scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
-    layer_tree_view_->ClearRootLayer();
+    AsWidget().client->SetRootLayer(nullptr);
     layer_tree_view_->ClearViewportLayers();
   }
 }
@@ -3223,16 +3223,14 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   if (!layer_tree_view_)
     return;
 
-  if (layer) {
-    root_layer_ = layer;
-    layer_tree_view_->SetRootLayer(root_layer_);
-  } else {
-    root_layer_ = nullptr;
+  root_layer_ = std::move(layer);
+  AsWidget().client->SetRootLayer(root_layer_);
+
+  if (!root_layer_) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
     scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
-    layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
   }
 }

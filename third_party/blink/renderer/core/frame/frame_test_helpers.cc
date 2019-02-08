@@ -621,6 +621,10 @@ TestWebWidgetClient::TestWebWidgetClient(
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
 }
 
+void TestWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+  layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
+}
+
 void TestWebWidgetClient::DidMeaningfulLayout(
     WebMeaningfulLayout meaningful_layout) {
   switch (meaningful_layout) {

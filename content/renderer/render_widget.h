@@ -346,6 +346,7 @@ class CONTENT_EXPORT RenderWidget
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
+  void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
   void SetShowPaintRects(bool) override;

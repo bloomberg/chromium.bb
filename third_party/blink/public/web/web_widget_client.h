@@ -64,6 +64,10 @@ class WebWidgetClient {
  public:
   virtual ~WebWidgetClient() = default;
 
+  // Sets the root layer of the tree in the compositor. It may be null to remove
+  // the root layer in which case nothing would be shown by the compositor.
+  virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
+
   // Called to request a BeginMainFrame from the compositor. For tests with
   // single thread and no scheduler, the impl should schedule a task to run
   // a synchronous composite.

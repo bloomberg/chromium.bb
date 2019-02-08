@@ -117,7 +117,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   explicit WebPagePopupImpl(WebWidgetClient*);
   void DestroyPage();
-  void SetRootLayer(cc::Layer*);
+  void SetRootLayer(scoped_refptr<cc::Layer>);
 
   WebRect WindowRectInScreen() const;
 
