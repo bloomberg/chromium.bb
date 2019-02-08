@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -73,7 +72,6 @@ class CastSessionIdMap {
       mapping_;
   base::SequencedTaskRunner* const task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CastSessionIdMap> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSessionIdMap);
 };
