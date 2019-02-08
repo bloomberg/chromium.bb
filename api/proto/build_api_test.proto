@@ -1,7 +1,6 @@
 syntax = 'proto3';
 package chromite.api;
 import "build_api.proto";
-import "google/protobuf/empty.proto";
 
 // Messages used to test build_api message and service handling.
 
@@ -26,14 +25,8 @@ service TestApiService {
 
   // Method that has input and output messages.
   rpc InputOutputMethod(TestRequestMessage) returns (TestResultMessage);
-  // Method with only input message.
-  rpc InputMethod(TestRequestMessage) returns (google.protobuf.Empty);
-  // Method with only output message.
-  rpc OutputMethod(google.protobuf.Empty) returns (TestResultMessage);
-  // Method with no input or output message.
-  rpc NoIoMethod(google.protobuf.Empty) returns (google.protobuf.Empty);
   // Method name override.
-  rpc RenamedMethod(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc RenamedMethod(TestRequestMessage) returns (TestResultMessage) {
     option (method_options) = {
       implementation_name: 'CorrectName'
     };
@@ -50,12 +43,11 @@ service InsideChrootApiService {
   };
 
   // No override of service level inside assertion.
-  rpc InsideServiceInsideMethod(google.protobuf.Empty)
-    returns (google.protobuf.Empty);
+  rpc InsideServiceInsideMethod(TestRequestMessage) returns (TestResultMessage);
 
   // Override service level inside assertion with outside assertion.
-  rpc InsideServiceOutsideMethod(google.protobuf.Empty)
-    returns (google.protobuf.Empty) {
+  rpc InsideServiceOutsideMethod(TestRequestMessage)
+    returns (TestResultMessage) {
     option (method_options) = {
       method_chroot_assert: OUTSIDE,
     };
@@ -72,12 +64,12 @@ service OutsideChrootApiService {
   };
 
   // No override of service level outside assertion.
-  rpc OutsideServiceOutsideMethod(google.protobuf.Empty)
-    returns (google.protobuf.Empty);
+  rpc OutsideServiceOutsideMethod(TestRequestMessage)
+    returns (TestResultMessage);
 
   // Override service level outside assertion with inside assertion.
-  rpc OutsideServiceInsideMethod(google.protobuf.Empty)
-    returns (google.protobuf.Empty) {
+  rpc OutsideServiceInsideMethod(TestRequestMessage)
+    returns (TestResultMessage) {
     option (method_options) = {
       method_chroot_assert: INSIDE,
     };

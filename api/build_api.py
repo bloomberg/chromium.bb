@@ -8,9 +8,7 @@
 from __future__ import print_function
 
 import importlib
-import os
 
-from google.protobuf import empty_pb2
 from google.protobuf import json_format
 from google.protobuf import symbol_database
 
@@ -25,6 +23,10 @@ from chromite.lib import osutils
 
 class Error(Exception):
   """Base error class for the module."""
+
+
+class InvalidInputFormatError(Error):
+  """Raised when the passed input protobuf can't be parsed."""
 
 
 # API Service Errors.
@@ -62,10 +64,10 @@ def GetParser():
                            'called.')
 
   parser.add_argument(
-      '--input-json', type='path',
+      '--input-json', type='path', required=True,
       help='Path to the JSON serialized input argument protobuf message.')
   parser.add_argument(
-      '--output-json', type='path',
+      '--output-json', type='path', required=True,
       help='The path to which the result protobuf message should be written.')
 
   return parser
@@ -151,23 +153,17 @@ class Router(object):
       raise UnknownMethodError('The %s method has not been defined in the %s '
                                'service.' % (method_name, service_name))
 
-    # Service method argument magic: do not pass the arguments when the method
-    # is expecting the Empty message. Additions of optional arguments/return
-    # values are still backwards compatible, but the implementation signature
-    # is simplified and more explicit about what its expecting.
-    args = []
     # Parse the input file to build an instance of the input message.
     input_msg = self._sym_db.GetPrototype(method_desc.input_type)()
-    if not isinstance(input_msg, empty_pb2.Empty):
+    try:
       json_format.Parse(input_json, input_msg, ignore_unknown_fields=True)
-      args.append(input_msg)
+    except json_format.ParseError as e:
+      raise InvalidInputFormatError(
+          'Unable to parse the input json: %s' % e.message)
 
     # Get an empty output message instance.
     output_msg = self._sym_db.GetPrototype(method_desc.output_type)()
-    if not isinstance(output_msg, empty_pb2.Empty):
-      args.append(output_msg)
 
-    # TODO(saklein) Do we need this? Are aliases useful? Maybe dump it.
     # Allow proto-based method name override.
     method_options = method_desc.GetOptions().Extensions[self._method_options]
     if method_options.HasField('implementation_name'):
@@ -181,7 +177,7 @@ class Router(object):
     method_impl = self._GetMethod(module_name, method_name)
 
     # Successfully located; call and return.
-    method_impl(*args)
+    method_impl(input_msg, output_msg)
     return output_msg
 
   def _HandleChrootAssert(self, service_options, method_options):
@@ -245,13 +241,19 @@ def main(argv):
   router = Router()
   RegisterServices(router)
 
-  if os.path.exists(opts.input_json):
+  try:
     input_proto = osutils.ReadFile(opts.input_json)
-  else:
-    input_proto = None
+  except IOError as e:
+    cros_build_lib.Die('Unable to read input file: %s' % e.message)
 
-  output_msg = router.Route(opts.service, opts.method, input_proto)
+  try:
+    output_msg = router.Route(opts.service, opts.method, input_proto)
+  except Error as e:
+    # Error derivatives are handled nicely, but let anything else bubble up.
+    cros_build_lib.Die(e.message)
 
-  if opts.output_json:
-    output_content = json_format.MessageToJson(output_msg)
+  output_content = json_format.MessageToJson(output_msg)
+  try:
     osutils.WriteFile(opts.output_json, output_content)
+  except IOError as e:
+    cros_build_lib.Die('Unable to write output file: %s' % e.message)

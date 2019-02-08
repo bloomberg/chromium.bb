@@ -13,7 +13,6 @@ _sym_db = _symbol_database.Default()
 
 
 import build_api_pb2 as build__api__pb2
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x14\x62uild_api_test.proto\x12\x0c\x63hromite.api\x1a\x0f\x62uild_api.proto\x1a\x1bgoogle/protobuf/empty.proto\" \n\x12TestRequestMessage\x12\n\n\x02id\x18\x01 \x01(\t\"#\n\x11TestResultMessage\x12\x0e\n\x06result\x18\x01 \x01(\t2\xa2\x03\n\x0eTestApiService\x12V\n\x11InputOutputMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12G\n\x0bInputMethod\x12 .chromite.api.TestRequestMessage\x1a\x16.google.protobuf.Empty\x12G\n\x0cOutputMethod\x12\x16.google.protobuf.Empty\x1a\x1f.chromite.api.TestResultMessage\x12<\n\nNoIoMethod\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12R\n\rRenamedMethod\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x11\xc2\xed\x1a\r\n\x0b\x43orrectName\x1a\x14\xc2\xed\x1a\x10\n\x0e\x62uild_api_test2\xd3\x01\n\x16InsideChrootApiService\x12K\n\x19InsideServiceInsideMethod\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12T\n\x1aInsideServiceOutsideMethod\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x06\xc2\xed\x1a\x02\x10\x02\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x01\x32\xd6\x01\n\x17OutsideChrootApiService\x12M\n\x1bOutsideServiceOutsideMethod\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12T\n\x1aOutsideServiceInsideMethod\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x14\x62uild_api_test.proto\x12\x0c\x63hromite.api\x1a\x0f\x62uild_api.proto\" \n\x12TestRequestMessage\x12\n\n\x02id\x18\x01 \x01(\t\"#\n\x11TestResultMessage\x12\x0e\n\x06result\x18\x01 \x01(\t2\xe5\x01\n\x0eTestApiService\x12V\n\x11InputOutputMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12\x65\n\rRenamedMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x11\xc2\xed\x1a\r\n\x0b\x43orrectName\x1a\x14\xc2\xed\x1a\x10\n\x0e\x62uild_api_test2\xf9\x01\n\x16InsideChrootApiService\x12^\n\x19InsideServiceInsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12g\n\x1aInsideServiceOutsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x06\xc2\xed\x1a\x02\x10\x02\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x01\x32\xfc\x01\n\x17OutsideChrootApiService\x12`\n\x1bOutsideServiceOutsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12g\n\x1aOutsideServiceInsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x02\x62\x06proto3')
   ,
-  dependencies=[build__api__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
+  dependencies=[build__api__pb2.DESCRIPTOR,])
 
 
 
@@ -54,8 +53,8 @@ _TESTREQUESTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=84,
-  serialized_end=116,
+  serialized_start=55,
+  serialized_end=87,
 )
 
 
@@ -85,8 +84,8 @@ _TESTRESULTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=118,
-  serialized_end=153,
+  serialized_start=89,
+  serialized_end=124,
 )
 
 DESCRIPTOR.message_types_by_name['TestRequestMessage'] = _TESTREQUESTMESSAGE
@@ -115,8 +114,8 @@ _TESTAPISERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\020\n\016build_api_test'),
-  serialized_start=156,
-  serialized_end=574,
+  serialized_start=127,
+  serialized_end=356,
   methods=[
   _descriptor.MethodDescriptor(
     name='InputOutputMethod',
@@ -128,39 +127,12 @@ _TESTAPISERVICE = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
-    name='InputMethod',
-    full_name='chromite.api.TestApiService.InputMethod',
+    name='RenamedMethod',
+    full_name='chromite.api.TestApiService.RenamedMethod',
     index=1,
     containing_service=None,
     input_type=_TESTREQUESTMESSAGE,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='OutputMethod',
-    full_name='chromite.api.TestApiService.OutputMethod',
-    index=2,
-    containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     output_type=_TESTRESULTMESSAGE,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='NoIoMethod',
-    full_name='chromite.api.TestApiService.NoIoMethod',
-    index=3,
-    containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    serialized_options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='RenamedMethod',
-    full_name='chromite.api.TestApiService.RenamedMethod',
-    index=4,
-    containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     serialized_options=_b('\302\355\032\r\n\013CorrectName'),
   ),
 ])
@@ -175,16 +147,16 @@ _INSIDECHROOTAPISERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=_b('\302\355\032\022\n\016build_api_test\020\001'),
-  serialized_start=577,
-  serialized_end=788,
+  serialized_start=359,
+  serialized_end=608,
   methods=[
   _descriptor.MethodDescriptor(
     name='InsideServiceInsideMethod',
     full_name='chromite.api.InsideChrootApiService.InsideServiceInsideMethod',
     index=0,
     containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    input_type=_TESTREQUESTMESSAGE,
+    output_type=_TESTRESULTMESSAGE,
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
@@ -192,8 +164,8 @@ _INSIDECHROOTAPISERVICE = _descriptor.ServiceDescriptor(
     full_name='chromite.api.InsideChrootApiService.InsideServiceOutsideMethod',
     index=1,
     containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    input_type=_TESTREQUESTMESSAGE,
+    output_type=_TESTRESULTMESSAGE,
     serialized_options=_b('\302\355\032\002\020\002'),
   ),
 ])
@@ -208,16 +180,16 @@ _OUTSIDECHROOTAPISERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=2,
   serialized_options=_b('\302\355\032\022\n\016build_api_test\020\002'),
-  serialized_start=791,
-  serialized_end=1005,
+  serialized_start=611,
+  serialized_end=863,
   methods=[
   _descriptor.MethodDescriptor(
     name='OutsideServiceOutsideMethod',
     full_name='chromite.api.OutsideChrootApiService.OutsideServiceOutsideMethod',
     index=0,
     containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    input_type=_TESTREQUESTMESSAGE,
+    output_type=_TESTRESULTMESSAGE,
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
@@ -225,8 +197,8 @@ _OUTSIDECHROOTAPISERVICE = _descriptor.ServiceDescriptor(
     full_name='chromite.api.OutsideChrootApiService.OutsideServiceInsideMethod',
     index=1,
     containing_service=None,
-    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
-    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    input_type=_TESTREQUESTMESSAGE,
+    output_type=_TESTRESULTMESSAGE,
     serialized_options=_b('\302\355\032\002\020\001'),
   ),
 ])

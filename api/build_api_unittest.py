@@ -32,67 +32,11 @@ class RouterTest(cros_test_lib.MockTestCase):
     self.router.Route('chromite.api.TestApiService', 'InputOutputMethod',
                       self._INPUT_JSON)
 
-    # Implementation expecting two methods with definitions that have Empty
-    # for the input, output, and both messages.
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'InputMethod',
-                        self._INPUT_JSON)
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'OutputMethod',
-                        self._INPUT_JSON)
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'NoIoMethod',
-                        self._INPUT_JSON)
-
-  def testInputMethod(self):
-    """Test methods with only an input message."""
-    def impl(input_msg):
-      self.assertIsInstance(input_msg, build_api_test_pb2.TestRequestMessage)
-
-    self.PatchObject(self.router, '_GetMethod', return_value=impl)
-
-    self.router.Route('chromite.api.TestApiService', 'InputMethod',
-                      self._INPUT_JSON)
-
-    # Test errors raised for implementations expecting input message with
-    # definitions that expect both messages, output only, and neither.
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'InputOutputMethod',
-                        self._INPUT_JSON)
-    with self.assertRaises(AssertionError):
-      self.router.Route('chromite.api.TestApiService', 'OutputMethod',
-                        self._INPUT_JSON)
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'NoIoMethod',
-                        self._INPUT_JSON)
-
-  def testOutputMethod(self):
-    """Test methods with only an output message."""
-    def impl(output_msg):
-      self.assertIsInstance(output_msg, build_api_test_pb2.TestResultMessage)
-
-    self.PatchObject(self.router, '_GetMethod', return_value=impl)
-
-    self.router.Route('chromite.api.TestApiService', 'OutputMethod',
-                      self._INPUT_JSON)
-
-    # Test errors raised for implementations expecting input message with
-    # definitions that expect both messages, output only, and neither.
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'InputOutputMethod',
-                        self._INPUT_JSON)
-    with self.assertRaises(AssertionError):
-      self.router.Route('chromite.api.TestApiService', 'InputMethod',
-                        self._INPUT_JSON)
-    with self.assertRaises(TypeError):
-      self.router.Route('chromite.api.TestApiService', 'NoIoMethod',
-                        self._INPUT_JSON)
-
   def testRenameMethod(self):
     """Test implementation name config."""
     def _GetMethod(_, method_name):
       self.assertEqual('CorrectName', method_name)
-      return lambda: None
+      return lambda x, y: None
 
     self.PatchObject(self.router, '_GetMethod', side_effect=_GetMethod)
 
@@ -104,7 +48,7 @@ class RouterTest(cros_test_lib.MockTestCase):
     # Helper variables/functions to make the patches simpler.
     should_be_called = False
     is_inside = False
-    def impl():
+    def impl(_input_msg, _output_msg):
       self.assertTrue(should_be_called,
                       'The implementation should not have been called.')
     def inside():
@@ -140,7 +84,7 @@ class RouterTest(cros_test_lib.MockTestCase):
     # Helper variables/functions to make the patches simpler.
     should_be_called = False
     is_inside = False
-    def impl():
+    def impl(_input_msg, _output_msg):
       self.assertTrue(should_be_called,
                       'The implementation should not have been called.')
 
