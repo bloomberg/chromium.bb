@@ -341,7 +341,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // Used to target wheel events for the duration of a scroll.
   RenderWidgetHostViewBase* wheel_target_ = nullptr;
   // Maintains the same target between mouse down and mouse up.
-  TargetData mouse_capture_target_;
+  RenderWidgetHostViewBase* mouse_capture_target_ = nullptr;
 
   // Tracked for the purpose of generating MouseEnter and MouseLeave events.
   RenderWidgetHostViewBase* last_mouse_move_target_;
