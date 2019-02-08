@@ -2835,7 +2835,9 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "new-password-form-parsing"
+                        "new-password-form-parsing",
+                        "new-password-form-parsing-for-saving",
+                        "only-new-password-form-parsing"
                     ]
                 }
             ]
