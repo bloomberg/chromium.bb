@@ -187,12 +187,16 @@ class SmbService : public KeyedService,
   bool IsNTLMAuthenticationEnabled() const;
 
   // Gets the list of all shares preconfigured via policy with mode
-  // |policy_mode|.
+  // |policy_mode|. If |policy_mode| is "unknown", returns a list of all shares
+  // preconfigured with a mode that does not match any currently known mode.
+  // This can occur if a new policy is added not yet supported by CrOS.
   std::vector<SmbUrl> GetPreconfiguredSharePaths(
       const std::string& policy_mode) const;
 
   // Gets the shares preconfigured via policy that should be displayed in the
-  // discovery dropdown.
+  // discovery dropdown. This includes shares that are explicitly set to be
+  // shown in the dropdown as well as shares configured with an unrecognized
+  // mode.
   std::vector<SmbUrl> GetPreconfiguredSharePathsForDropdown() const;
 
   // Gets the shares preconfigured via policy that should be premounted.
