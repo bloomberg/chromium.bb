@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -275,6 +276,16 @@ Response BrowserHandler::GetBrowserCommandLine(
 
 Response BrowserHandler::Crash() {
   CHECK(false);
+  return Response::OK();
+}
+
+Response BrowserHandler::CrashGpuProcess() {
+  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                           false /* force_create */,
+                           base::BindOnce([](GpuProcessHost* host) {
+                             if (host)
+                               host->gpu_service()->Crash();
+                           }));
   return Response::OK();
 }
 

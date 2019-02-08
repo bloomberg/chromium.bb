@@ -77,6 +77,7 @@ class GpuIntegrationTest(
     # interference with the test results.
     browser_args.append(
       '--disable-gpu-process-for-dx12-vulkan-info-collection')
+
     # Append the new arguments.
     browser_options.AppendExtraBrowserArgs(browser_args)
     cls._last_launched_browser_args = set(browser_args)

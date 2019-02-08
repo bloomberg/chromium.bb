@@ -54,6 +54,7 @@ class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
   Response ResetPermissions(Maybe<std::string> browser_context_id) override;
 
   Response Crash() override;
+  Response CrashGpuProcess() override;
 
  private:
   Response FindBrowserContext(const Maybe<std::string>& browser_context_id,
