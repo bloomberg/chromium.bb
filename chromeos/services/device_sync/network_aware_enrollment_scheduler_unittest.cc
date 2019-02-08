@@ -13,10 +13,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/fake_cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +60,7 @@ class FakePersistentEnrollmentSchedulerFactory
 
 }  // namespace
 
-class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public NetworkStateTest {
+class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public testing::Test {
  protected:
   DeviceSyncNetworkAwareEnrollmentSchedulerTest() = default;
   ~DeviceSyncNetworkAwareEnrollmentSchedulerTest() override = default;
@@ -73,22 +71,14 @@ class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public NetworkStateTest {
     PersistentEnrollmentScheduler::Factory::SetFactoryForTesting(
         fake_persistent_enrollment_scheduler_factory_.get());
 
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-    ClearDefaultServices();
-
     fake_delegate_ =
         std::make_unique<FakeCryptAuthEnrollmentSchedulerDelegate>();
     scheduler_ = NetworkAwareEnrollmentScheduler::Factory::Get()->BuildInstance(
         fake_delegate_.get(), nullptr /* pref_service */,
-        network_state_handler());
+        helper_.network_state_handler());
   }
 
   void TearDown() override {
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
-
     PersistentEnrollmentScheduler::Factory::SetFactoryForTesting(nullptr);
   }
 
@@ -102,7 +92,7 @@ class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public NetworkStateTest {
        << "  \"State\": \"" << shill::kStateIdle << "\""
        << "}";
 
-    wifi_network_service_path_ = ConfigureService(ss.str());
+    wifi_network_service_path_ = helper_.ConfigureService(ss.str());
   }
 
   void SetWifiNetworkStatus(NetworkConnectionStatus connection_status) {
@@ -119,18 +109,16 @@ class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public NetworkStateTest {
         break;
     }
 
-    SetServiceProperty(wifi_network_service_path_, shill::kStateProperty,
-                       base::Value(shill_connection_status));
+    helper_.SetServiceProperty(wifi_network_service_path_,
+                               shill::kStateProperty,
+                               base::Value(shill_connection_status));
     base::RunLoop().RunUntilIdle();
   }
 
   void RemoveWifiNetwork() {
     EXPECT_TRUE(!wifi_network_service_path_.empty());
 
-    DBusThreadManager::Get()
-        ->GetShillServiceClient()
-        ->GetTestInterface()
-        ->RemoveService(wifi_network_service_path_);
+    helper_.service_test()->RemoveService(wifi_network_service_path_);
     base::RunLoop().RunUntilIdle();
 
     wifi_network_service_path_.clear();
@@ -149,6 +137,7 @@ class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public NetworkStateTest {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
 
   std::unique_ptr<FakePersistentEnrollmentSchedulerFactory>
       fake_persistent_enrollment_scheduler_factory_;

@@ -16,9 +16,8 @@
 #include "chromeos/components/tether/fake_tether_session_completion_logger.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/tether_session_completion_logger.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -44,17 +43,14 @@ std::string CreateConnectedWifiConfigurationJsonString() {
 
 }  // namespace
 
-class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
+class TetherNetworkDisconnectionHandlerTest : public testing::Test {
  protected:
-  TetherNetworkDisconnectionHandlerTest() : NetworkStateTest() {}
+  TetherNetworkDisconnectionHandlerTest() {}
   ~TetherNetworkDisconnectionHandlerTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-
     wifi_service_path_ =
-        ConfigureService(CreateConnectedWifiConfigurationJsonString());
+        helper_.ConfigureService(CreateConnectedWifiConfigurationJsonString());
 
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_disconnect_tethering_request_sender_ =
@@ -65,7 +61,7 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
         std::make_unique<FakeTetherSessionCompletionLogger>();
 
     handler_ = base::WrapUnique(new TetherNetworkDisconnectionHandler(
-        fake_active_host_.get(), network_state_handler(),
+        fake_active_host_.get(), helper_.network_state_handler(),
         fake_network_configuration_remover_.get(),
         fake_disconnect_tethering_request_sender_.get(),
         fake_tether_session_completion_logger_.get()));
@@ -77,18 +73,16 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   void TearDown() override {
     // Delete handler before the NetworkStateHandler and |fake_active_host_|.
     handler_.reset();
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
   }
 
   void NotifyDisconnected() {
-    SetServiceProperty(wifi_service_path_, std::string(shill::kStateProperty),
-                       base::Value(shill::kStateIdle));
+    helper_.SetServiceProperty(wifi_service_path_,
+                               std::string(shill::kStateProperty),
+                               base::Value(shill::kStateIdle));
   }
 
   void SetWiFiTechnologyStateEnabled(bool enabled) {
-    network_state_handler()->SetTechnologyEnabled(
+    helper_.network_state_handler()->SetTechnologyEnabled(
         chromeos::NetworkTypePattern::WiFi(), enabled,
         chromeos::network_handler::ErrorCallback());
     base::RunLoop().RunUntilIdle();
@@ -122,6 +116,7 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::string wifi_service_path_;
 

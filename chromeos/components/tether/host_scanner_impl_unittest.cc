@@ -26,9 +26,7 @@
 #include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto_test_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_shill_service_client.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -192,7 +190,7 @@ CreateFakeScannedDeviceInfos(
 
 }  // namespace
 
-class HostScannerImplTest : public NetworkStateTest {
+class HostScannerImplTest : public testing::Test {
  protected:
   HostScannerImplTest()
       : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(4)),
@@ -200,10 +198,6 @@ class HostScannerImplTest : public NetworkStateTest {
   }
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkHandler::Initialize();
-    NetworkStateTest::SetUp();
-
     scanned_device_infos_from_current_scan_.clear();
 
     fake_device_sync_client_ =
@@ -236,7 +230,7 @@ class HostScannerImplTest : public NetworkStateTest {
 
     host_scanner_ = base::WrapUnique(new HostScannerImpl(
         fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
-        network_state_handler(), session_manager_.get(),
+        helper_.network_state_handler(), session_manager_.get(),
         fake_tether_host_fetcher_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
@@ -252,10 +246,6 @@ class HostScannerImplTest : public NetworkStateTest {
   void TearDown() override {
     host_scanner_->RemoveObserver(test_observer_.get());
     HostScannerOperation::Factory::SetInstanceForTesting(nullptr);
-
-    NetworkStateTest::TearDown();
-    NetworkHandler::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
   // Causes |fake_operation| to receive the scan result in
@@ -389,7 +379,7 @@ class HostScannerImplTest : public NetworkStateTest {
        << "  \"State\": \"" << shill::kStateConfiguration << "\""
        << "}";
 
-    ConfigureService(ss.str());
+    helper_.ConfigureService(ss.str());
   }
 
   void SetScreenLockedState(bool is_locked) {
@@ -398,8 +388,13 @@ class HostScannerImplTest : public NetworkStateTest {
                   : session_manager::SessionState::LOGIN_PRIMARY);
   }
 
+  NetworkStateHandler* network_state_handler() {
+    return helper_.network_state_handler();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
   const multidevice::RemoteDeviceRefList test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;

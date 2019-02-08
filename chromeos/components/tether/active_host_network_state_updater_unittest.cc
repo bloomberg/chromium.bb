@@ -10,9 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/components/tether/fake_active_host.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -39,15 +38,13 @@ std::string CreateWifiConfigurationJsonString(const std::string& guid) {
 
 }  // namespace
 
-class ActiveHostNetworkStateUpdaterTest : public NetworkStateTest {
+class ActiveHostNetworkStateUpdaterTest : public testing::Test {
  protected:
-  ActiveHostNetworkStateUpdaterTest() : NetworkStateTest() {}
+  ActiveHostNetworkStateUpdaterTest() {}
   ~ActiveHostNetworkStateUpdaterTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-    network_state_handler()->SetTetherTechnologyState(
+    helper_.network_state_handler()->SetTetherTechnologyState(
         NetworkStateHandler::TECHNOLOGY_ENABLED);
     SetUpTetherNetwork();
     SetUpWifiNetwork();
@@ -55,32 +52,30 @@ class ActiveHostNetworkStateUpdaterTest : public NetworkStateTest {
     fake_active_host_ = std::make_unique<FakeActiveHost>();
 
     updater_ = base::WrapUnique(new ActiveHostNetworkStateUpdater(
-        fake_active_host_.get(), network_state_handler()));
+        fake_active_host_.get(), helper_.network_state_handler()));
   }
 
   void SetUpTetherNetwork() {
     // Add tether network whose status will be changed during the test.
-    network_state_handler()->AddTetherNetworkState(
+    helper_.network_state_handler()->AddTetherNetworkState(
         kTetherNetworkGuid, "TetherNetworkName", "TetherNetworkCarrier",
         100 /* battery_percentage */, 100 /* signal_strength */,
         true /* has_connected_to_host */);
   }
 
   void SetUpWifiNetwork() {
-    ConfigureService(CreateWifiConfigurationJsonString(kWifiNetworkGuid));
-    network_state_handler()->AssociateTetherNetworkStateWithWifiNetwork(
+    helper_.ConfigureService(
+        CreateWifiConfigurationJsonString(kWifiNetworkGuid));
+    helper_.network_state_handler()->AssociateTetherNetworkStateWithWifiNetwork(
         kTetherNetworkGuid, kWifiNetworkGuid);
   }
 
-  void TearDown() override {
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
-  }
+  void TearDown() override {}
 
   void VerifyDisconnected() {
     const NetworkState* network_state =
-        network_state_handler()->GetNetworkStateFromGuid(kTetherNetworkGuid);
+        helper_.network_state_handler()->GetNetworkStateFromGuid(
+            kTetherNetworkGuid);
     EXPECT_TRUE(network_state);
     EXPECT_TRUE(!network_state->IsConnectedState() &&
                 !network_state->IsConnectingState());
@@ -88,19 +83,23 @@ class ActiveHostNetworkStateUpdaterTest : public NetworkStateTest {
 
   void VerifyConnecting() {
     const NetworkState* network_state =
-        network_state_handler()->GetNetworkStateFromGuid(kTetherNetworkGuid);
+        helper_.network_state_handler()->GetNetworkStateFromGuid(
+            kTetherNetworkGuid);
     EXPECT_TRUE(network_state);
     EXPECT_TRUE(network_state->IsConnectingState());
   }
 
   void VerifyConnected() {
     const NetworkState* network_state =
-        network_state_handler()->GetNetworkStateFromGuid(kTetherNetworkGuid);
+        helper_.network_state_handler()->GetNetworkStateFromGuid(
+            kTetherNetworkGuid);
     EXPECT_TRUE(network_state);
     EXPECT_TRUE(network_state->IsConnectedState());
   }
 
   base::MessageLoop message_loop_;
+
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
 

@@ -11,15 +11,14 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -91,7 +90,7 @@ std::string ExtensionControlledAndUserSettingOncValue(
 
 }  // namespace
 
-class UIProxyConfigServiceTest : public NetworkStateTest {
+class UIProxyConfigServiceTest : public testing::Test {
  public:
   UIProxyConfigServiceTest()
       : scoped_task_environment_(
@@ -103,23 +102,12 @@ class UIProxyConfigServiceTest : public NetworkStateTest {
   }
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-    ClearDefaultServices();
-    NetworkHandler::Initialize();
-    ConfigureService(kTestUserWifiConfig);
-    ConfigureService(kTestSharedWifiConfig);
-    ConfigureService(kTestUnconfiguredWifiConfig);
+    helper_.ConfigureService(kTestUserWifiConfig);
+    helper_.ConfigureService(kTestSharedWifiConfig);
+    helper_.ConfigureService(kTestUnconfiguredWifiConfig);
   }
 
-  void TearDown() override {
-    NetworkHandler::Shutdown();
-
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-
-    DBusThreadManager::Shutdown();
-  }
+  void TearDown() override {}
 
   ~UIProxyConfigServiceTest() override = default;
 
@@ -137,6 +125,7 @@ class UIProxyConfigServiceTest : public NetworkStateTest {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
 };
 
 TEST_F(UIProxyConfigServiceTest, UnknownNetwork) {

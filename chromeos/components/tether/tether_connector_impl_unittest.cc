@@ -24,11 +24,10 @@
 #include "chromeos/components/tether/mock_host_connection_metrics_logger.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_connector.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -134,16 +133,14 @@ class FakeConnectTetheringOperationFactory
 
 }  // namespace
 
-class TetherConnectorImplTest : public NetworkStateTest {
+class TetherConnectorImplTest : public testing::Test {
  public:
   TetherConnectorImplTest()
       : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(2u)) {}
   ~TetherConnectorImplTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-    network_state_handler()->SetTetherTechnologyState(
+    helper_.network_state_handler()->SetTetherTechnologyState(
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     fake_operation_factory_ =
@@ -155,8 +152,8 @@ class TetherConnectorImplTest : public NetworkStateTest {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
-    fake_wifi_hotspot_connector_ =
-        std::make_unique<FakeWifiHotspotConnector>(network_state_handler());
+    fake_wifi_hotspot_connector_ = std::make_unique<FakeWifiHotspotConnector>(
+        helper_.network_state_handler());
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
@@ -179,7 +176,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
 
     tether_connector_ = base::WrapUnique(new TetherConnectorImpl(
         fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
-        network_state_handler(), fake_wifi_hotspot_connector_.get(),
+        helper_.network_state_handler(), fake_wifi_hotspot_connector_.get(),
         fake_active_host_.get(), fake_tether_host_fetcher_.get(),
         mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
@@ -196,10 +193,6 @@ class TetherConnectorImplTest : public NetworkStateTest {
     // destroyed to ensure that NetworkStateHandler has zero observers by the
     // time it reaches its destructor.
     fake_wifi_hotspot_connector_.reset();
-
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
   }
 
   std::string GetTetherNetworkGuid(const std::string& device_id) {
@@ -230,7 +223,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
                                 int signal_strength,
                                 bool has_connected_to_host,
                                 bool setup_required) {
-    network_state_handler()->AddTetherNetworkState(
+    helper_.network_state_handler()->AddTetherNetworkState(
         tether_network_guid, device_name, carrier, battery_percentage,
         signal_strength, has_connected_to_host);
     fake_host_scan_cache_->SetHostScanResult(
@@ -245,7 +238,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
   }
 
   void SuccessfullyJoinWifiNetwork() {
-    ConfigureService(CreateWifiConfigurationJsonString());
+    helper_.ConfigureService(CreateWifiConfigurationJsonString());
     fake_wifi_hotspot_connector_->CallMostRecentCallback(kWifiNetworkGuid);
   }
 
@@ -321,6 +314,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
 
   const multidevice::RemoteDeviceRefList test_devices_;
   const base::MessageLoop message_loop_;
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::unique_ptr<FakeConnectTetheringOperationFactory> fake_operation_factory_;
   std::unique_ptr<FakeWifiHotspotConnector> fake_wifi_hotspot_connector_;

@@ -485,6 +485,7 @@ void NetworkConfigurationHandler::NetworkListChanged() {
 
 void NetworkConfigurationHandler::OnShuttingDown() {
   network_state_handler_->RemoveObserver(this, FROM_HERE);
+  network_state_handler_ = nullptr;
 }
 
 // NetworkConfigurationHandler Private methods
@@ -492,7 +493,11 @@ void NetworkConfigurationHandler::OnShuttingDown() {
 NetworkConfigurationHandler::NetworkConfigurationHandler()
     : network_state_handler_(nullptr), weak_ptr_factory_(this) {}
 
-NetworkConfigurationHandler::~NetworkConfigurationHandler() = default;
+NetworkConfigurationHandler::~NetworkConfigurationHandler() {
+  // Make sure that this has been removed as a NetworkStateHandler observer.
+  if (network_state_handler_)
+    OnShuttingDown();
+}
 
 void NetworkConfigurationHandler::Init(
     NetworkStateHandler* network_state_handler,
