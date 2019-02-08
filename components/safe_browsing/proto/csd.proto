@@ -681,7 +681,12 @@ message ClientDownloadRequest {
   // protection for Advanced Protection users.
   optional bool request_ap_verdicts = 67;
 
-  // next available tag number: 68;
+  // For archives files the number of files and directories contained within the
+  // archive.
+  optional int32 archive_file_count = 68;
+  optional int32 archive_directory_count = 69;
+
+  // next available tag number: 70;
 }
 
 message ReferrerChainOptions {
