@@ -198,6 +198,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     public void overrideTabSwitcherBehavior(
             OnClickListener newClickListener, OverviewModeBehavior overviewModeBehavior) {
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(newClickListener);
+        mMediator.setOverviewModeBehavior(overviewModeBehavior);
     }
 
     /**

@@ -14,5 +14,10 @@ class TabListContainerProperties {
     public static final PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_VISIBLE, IS_INCOGNITO};
+    public static final PropertyModel
+            .WritableObjectPropertyKey<TabListRecyclerView.VisibilityListener> VISIBILITY_LISTENER =
+            new PropertyModel.WritableObjectPropertyKey<>();
+
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {IS_VISIBLE, IS_INCOGNITO, VISIBILITY_LISTENER};
 }

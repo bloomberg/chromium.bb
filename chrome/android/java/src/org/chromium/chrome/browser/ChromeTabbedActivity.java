@@ -645,6 +645,10 @@ public class ChromeTabbedActivity
                 UsageStatsService.getInstance().createPageViewObserver(mTabModelSelectorImpl, this);
             }
 
+            if (FeatureUtilities.isGridTabSwitcherEnabled(this)) {
+                getComponent().resolveGridTabSwitcherCoordinator();
+            }
+
             super.finishNativeInitialization();
         } finally {
             TraceEvent.end("ChromeTabbedActivity.finishNativeInitialization");

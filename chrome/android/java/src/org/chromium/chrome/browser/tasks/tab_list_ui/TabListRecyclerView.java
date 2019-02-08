@@ -21,14 +21,55 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
 
+    /**
+     * An interface to listen to visibility related changes on this {@link RecyclerView}.
+     */
+    interface VisibilityListener {
+        /**
+         * Called before the animation to show the tab list has started.
+         */
+        void startedShowing();
+
+        /**
+         * Called when the animation to show the tab list is finished.
+         */
+        void finishedShowing();
+
+        /**
+         * Called before the animation to hide the tab list has started.
+         */
+        void startedHiding();
+
+        /**
+         * Called when the animation to show the tab list is finished.
+         */
+        void finishedHiding();
+    }
+
     private ValueAnimator mFadeInAnimator;
     private ValueAnimator mFadeOutAnimator;
+    private VisibilityListener mListener;
 
+    /**
+     * Basic constructor to use during inflation from xml.
+     */
     public TabListRecyclerView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
     }
 
+    /**
+     * Set the {@link VisibilityListener} that will listen on granular visibility events.
+     * @param listener The {@link VisibilityListener} to use.
+     */
+    void setVisibilityListener(VisibilityListener listener) {
+        mListener = listener;
+    }
+
+    /**
+     * Start showing the tab list.
+     */
     void startShowing() {
+        mListener.startedShowing();
         cancelAllAnimations();
         setAlpha(0);
         setVisibility(View.VISIBLE);
@@ -36,9 +77,19 @@ class TabListRecyclerView extends RecyclerView {
         mFadeInAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
         mFadeInAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
         mFadeInAnimator.start();
+        mFadeInAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mListener.finishedShowing();
+            }
+        });
     }
 
+    /**
+     * Start hiding the tab list.
+     */
     void startHiding() {
+        mListener.startedHiding();
         cancelAllAnimations();
         mFadeOutAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 0);
         mFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
@@ -47,6 +98,7 @@ class TabListRecyclerView extends RecyclerView {
             @Override
             public void onAnimationEnd(Animator animation) {
                 setVisibility(View.INVISIBLE);
+                mListener.finishedHiding();
             }
         });
         mFadeOutAnimator.start();

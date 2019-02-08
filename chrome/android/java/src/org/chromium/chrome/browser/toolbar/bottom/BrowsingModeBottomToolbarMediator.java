@@ -105,6 +105,9 @@ class BrowsingModeBottomToolbarMediator
     }
 
     void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(this);
+        }
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeBehavior.addOverviewModeObserver(this);
     }
