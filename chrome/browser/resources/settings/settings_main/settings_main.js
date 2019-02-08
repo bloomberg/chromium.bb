@@ -65,7 +65,12 @@ Polymer({
     },
 
     /** @private */
-    showingSubpage_: Boolean,
+    showingSubpage_: {
+      type: Boolean,
+      // TODO(dpapad): Initial value only needed for Polymer 1, remove once
+      // Polymer 2 migration is done.
+      value: false,
+    },
 
     toolbarSpinnerActive: {
       type: Boolean,
@@ -228,13 +233,10 @@ Polymer({
   },
 
   /**
-   * @private
-   * @param {boolean} inSearchMode Whether a search operation is in progress or
-   *     previous search results are being displayed.
-   * @param {boolean} showingSubpage Whether a subpage is being shown.
    * @return {boolean}
+   * @private
    */
-  showManagedHeader_: function(inSearchMode, showingSubpage) {
-    return !inSearchMode && !showingSubpage;
+  showManagedHeader_: function() {
+    return !this.inSearchMode_ && !this.showingSubpage_;
   },
 });
