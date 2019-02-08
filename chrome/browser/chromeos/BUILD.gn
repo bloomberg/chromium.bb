@@ -2214,6 +2214,7 @@ source_set("unit_tests") {
     "child_accounts/usage_time_limit_processor_unittest.cc",
     "child_accounts/usage_time_state_notifier_unittest.cc",
     "crostini/crostini_manager_unittest.cc",
+    "crostini/crostini_package_service_unittest.cc",
     "crostini/crostini_share_path_unittest.cc",
     "crostini/crosvm_metrics_unittest.cc",
     "crostini/crosvm_process_list_unittest.cc",

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -117,6 +118,11 @@ void CrostiniPackageService::Shutdown() {
   manager->RemoveLinuxPackageOperationProgressObserver(this);
 }
 
+void CrostiniPackageService::SetNotificationStateChangeCallbackForTesting(
+    StateChangeCallback state_change_callback) {
+  testing_state_change_callback_ = std::move(state_change_callback);
+}
+
 void CrostiniPackageService::NotificationCompleted(
     CrostiniPackageNotification* notification) {
   for (auto it = finished_notifications_.begin();
@@ -147,6 +153,9 @@ void CrostiniPackageService::InstallLinuxPackage(
     const std::string& container_name,
     const std::string& package_path,
     CrostiniManager::InstallLinuxPackageCallback callback) {
+  const ContainerIdentifier container_id(vm_name, container_name);
+  containers_with_pending_installs_.insert(container_id);
+
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
       vm_name, container_name, package_path,
       base::BindOnce(&CrostiniPackageService::OnInstallLinuxPackage,
@@ -213,8 +222,8 @@ std::string CrostiniPackageService::ContainerIdentifierToString(
 
 bool CrostiniPackageService::ContainerHasRunningOperation(
     const ContainerIdentifier& container_id) const {
-  return running_notifications_.find(container_id) !=
-         running_notifications_.end();
+  return base::ContainsKey(running_notifications_, container_id) ||
+         base::ContainsKey(containers_with_pending_installs_, container_id);
 }
 
 void CrostiniPackageService::CreateRunningNotification(
@@ -279,6 +288,9 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
       StartQueuedUninstall(container_id);
     }
   }
+  if (testing_state_change_callback_) {
+    testing_state_change_callback_.Run(status);
+  }
 }
 
 void CrostiniPackageService::OnGetLinuxPackageInfo(
@@ -295,9 +307,18 @@ void CrostiniPackageService::OnInstallLinuxPackage(
     CrostiniManager::InstallLinuxPackageCallback callback,
     CrostiniResult result) {
   std::move(callback).Run(result);
-  if (result != CrostiniResult::SUCCESS)
-    return;
   const ContainerIdentifier container_id(vm_name, container_name);
+  containers_with_pending_installs_.erase(container_id);
+  if (result != CrostiniResult::SUCCESS) {
+    // We never show a notification for this failed install, so this is our only
+    // chance to kick off uninstalled queued behind the install.
+    auto queued_iter = queued_uninstalls_.find(container_id);
+    if (queued_iter != queued_uninstalls_.end() &&
+        !queued_iter->second.empty()) {
+      StartQueuedUninstall(container_id);
+    }
+    return;
+  }
   CreateRunningNotification(
       container_id,
       CrostiniPackageNotification::NotificationType::PACKAGE_INSTALL,

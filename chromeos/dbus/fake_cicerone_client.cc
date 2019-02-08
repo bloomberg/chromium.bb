@@ -114,6 +114,7 @@ void FakeCiceroneClient::GetContainerAppIcons(
 void FakeCiceroneClient::GetLinuxPackageInfo(
     const vm_tools::cicerone::LinuxPackageInfoRequest& request,
     DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback) {
+  most_recent_linux_package_info_request_ = request;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), get_linux_package_info_response_));
@@ -123,18 +124,28 @@ void FakeCiceroneClient::InstallLinuxPackage(
     const vm_tools::cicerone::InstallLinuxPackageRequest& request,
     DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
         callback) {
+  most_recent_install_linux_package_request_ = request;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), install_linux_package_response_));
+}
+
+void FakeCiceroneClient::SetOnUninstallPackageOwningFileCallback(
+    UninstallPackageOwningFileCallback callback) {
+  uninstall_package_owning_file_callback_ = std::move(callback);
 }
 
 void FakeCiceroneClient::UninstallPackageOwningFile(
     const vm_tools::cicerone::UninstallPackageOwningFileRequest& request,
     DBusMethodCallback<vm_tools::cicerone::UninstallPackageOwningFileResponse>
         callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                uninstall_package_owning_file_response_));
+  if (uninstall_package_owning_file_callback_) {
+    uninstall_package_owning_file_callback_.Run(request, std::move(callback));
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  uninstall_package_owning_file_response_));
+  }
 }
 
 void FakeCiceroneClient::WaitForServiceToBeAvailable(
@@ -275,6 +286,20 @@ void FakeCiceroneClient::NotifyImportLxdContainerProgress(
     const vm_tools::cicerone::ImportLxdContainerProgressSignal& proto) {
   for (auto& observer : observer_list_) {
     observer.OnImportLxdContainerProgress(proto);
+  }
+}
+
+void FakeCiceroneClient::InstallLinuxPackageProgress(
+    const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnInstallLinuxPackageProgress(signal);
+  }
+}
+
+void FakeCiceroneClient::UninstallPackageProgress(
+    const vm_tools::cicerone::UninstallPackageProgressSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnUninstallPackageProgress(signal);
   }
 }
 
