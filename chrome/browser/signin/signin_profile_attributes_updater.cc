@@ -80,7 +80,7 @@ void SigninProfileAttributesUpdater::OnErrorChanged() {
 }
 
 void SigninProfileAttributesUpdater::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   UpdateProfileAttributes();
 }
 

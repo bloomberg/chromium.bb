@@ -129,7 +129,7 @@ void UserPolicySigninService::CallPolicyRegistrationCallback(
 }
 
 void UserPolicySigninService::OnPrimaryAccountSet(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if (!identity_manager()->HasAccountWithRefreshToken(account_info.account_id))
     return;
 

@@ -71,7 +71,8 @@ class SignInObserver : public identity::IdentityManager::Observer {
     QuitLoopRunner();
   }
 
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override {
     DVLOG(1) << "Google signin succeeded.";
     signed_in_ = true;
     QuitLoopRunner();

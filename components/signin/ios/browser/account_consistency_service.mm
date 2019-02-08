@@ -492,7 +492,7 @@ void AccountConsistencyService::OnGaiaAccountsInCookieUpdated(
 }
 
 void AccountConsistencyService::OnPrimaryAccountSet(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   AddChromeConnectedCookies();
 }
 

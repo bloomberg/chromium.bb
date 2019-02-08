@@ -216,7 +216,8 @@ class AboutSigninInternals
   void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnPrimaryAccountSigninFailed(
       const GoogleServiceAuthError& error) override;
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& primary_account_info) override;
 

@@ -61,7 +61,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 
   // identity::IdentityManager::Observer implementation:
   // UserPolicySigninServiceBase is already an observer of IdentityManager.
-  void OnPrimaryAccountSet(const AccountInfo& account_info) override;
+  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info) override;
 

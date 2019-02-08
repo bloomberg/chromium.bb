@@ -121,7 +121,7 @@ void SigninErrorController::OnErrorStateOfRefreshTokenUpdatedForAccount(
 }
 
 void SigninErrorController::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   // Ignore updates to the primary account if not in PRIMARY_ACCOUNT mode.
   if (account_mode_ != AccountMode::PRIMARY_ACCOUNT)
     return;

@@ -198,7 +198,7 @@ void RendererUpdater::OnSessionRestoreStateChanged(
 }
 #endif
 
-void RendererUpdater::OnPrimaryAccountSet(const AccountInfo& account_info) {
+void RendererUpdater::OnPrimaryAccountSet(const CoreAccountInfo& account_info) {
   UpdateAllRenderers();
 }
 

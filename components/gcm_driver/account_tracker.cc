@@ -89,7 +89,7 @@ void AccountTracker::OnRefreshTokenRemovedForAccount(
 }
 
 void AccountTracker::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   TRACE_EVENT0("identity", "AccountTracker::OnPrimaryAccountSet");
 
   std::vector<AccountInfo> accounts =
