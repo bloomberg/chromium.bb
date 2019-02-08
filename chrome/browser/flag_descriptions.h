@@ -2000,9 +2000,6 @@ extern const char kEnablePerUserTimezoneDescription[];
 extern const char kEnablePlayStoreSearchName[];
 extern const char kEnablePlayStoreSearchDescription[];
 
-extern const char kEnableSettingsShortcutSearchName[];
-extern const char kEnableSettingsShortcutSearchDescription[];
-
 extern const char kEnableStylusVirtualKeyboardName[];
 extern const char kEnableStylusVirtualKeyboardDescription[];
 

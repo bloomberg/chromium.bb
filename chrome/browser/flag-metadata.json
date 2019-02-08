@@ -1720,11 +1720,6 @@
     "expiry_milestone": 73
   },
   {
-    "name": "enable-settings-shortcut-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-shill-sandboxing",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
