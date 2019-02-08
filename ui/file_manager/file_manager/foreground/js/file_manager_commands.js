@@ -1345,7 +1345,43 @@ CommandHandler.COMMANDS_['volume-help'] = /** @type {Command} */ ({
     var hideHelp = DialogType.isModal(fileManager.dialogType);
     event.canExecute = !hideHelp;
     event.command.setHidden(hideHelp);
-    fileManager.document.getElementById('help-separator').hidden = hideHelp;
+  }
+});
+
+/**
+ * Opens the send feedback window with pre-populated content.
+ */
+CommandHandler.COMMANDS_['send-feedback'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    let message = {
+      categoryTag: 'chromeos-files-app',
+      requestFeedback: true,
+      feedbackInfo: {
+        description: '',
+      },
+    };
+
+    const kFeedbackExtensionId = 'gfdkimpbcpahaombhbimeihdjnejgicl';
+    // On ChromiumOS the feedback extension is not installed, so we just log
+    // that filing feedback has failed.
+    chrome.runtime.sendMessage(kFeedbackExtensionId, message, (response) => {
+      if (chrome.runtime.lastError) {
+        console.log(
+            'Failed to send feedback: ' + chrome.runtime.lastError.message);
+      }
+    });
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    // Launching the feedback tool is always possible.
+    event.canExecute = true;
   }
 });
 
