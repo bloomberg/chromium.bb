@@ -79,7 +79,6 @@ public class ToolbarTablet extends ToolbarLayout
 
     private NewTabPage mVisibleNtp;
 
-    private boolean mWasAppMenuUpdateBadgeShowing;
     /**
      * Constructs a ToolbarTablet object.
      * @param context The Context in which this View object is created.
@@ -467,13 +466,12 @@ public class ToolbarTablet extends ToolbarLayout
             mForwardButton.setEnabled(false);
             mReloadButton.setEnabled(false);
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
-            mWasAppMenuUpdateBadgeShowing = isShowingAppMenuUpdateBadge();
-            if (mWasAppMenuUpdateBadgeShowing) removeAppMenuUpdateBadge(false);
+            setAppMenuUpdateBadgeSuppressed(true);
         } else {
             mIsInTabSwitcherMode = false;
             mLocationBar.getContainerView().setVisibility(View.VISIBLE);
 
-            if (mWasAppMenuUpdateBadgeShowing) showAppMenuUpdateBadge(false);
+            setAppMenuUpdateBadgeSuppressed(false);
         }
     }
 
