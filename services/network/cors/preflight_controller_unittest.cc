@@ -352,6 +352,24 @@ TEST_F(PreflightControllerTest, CancelPreflightIsCalled) {
   EXPECT_EQ(1u, access_count());
 }
 
+TEST_F(PreflightControllerTest, CheckResponseWithNullHeaders) {
+  GURL url = GURL("https://google.com/finullurl");
+  const ResourceResponseHead response_head;
+  ResourceRequest request;
+  request.url = url;
+  request.request_initiator = url::Origin::Create(request.url);
+  const bool tainted = false;
+  base::Optional<CorsErrorStatus> detected_error_status;
+
+  EXPECT_FALSE(response_head.headers);
+
+  std::unique_ptr<PreflightResult> result =
+      PreflightController::CreatePreflightResultForTesting(
+          url, response_head, request, tainted, &detected_error_status);
+
+  EXPECT_FALSE(result);
+}
+
 }  // namespace
 
 }  // namespace cors
