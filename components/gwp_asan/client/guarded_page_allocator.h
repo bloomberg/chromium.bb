@@ -128,12 +128,12 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
 
-  DISALLOW_COPY_AND_ASSIGN(GuardedPageAllocator);
-
   friend class GuardedPageAllocatorTest;
   FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest,
                            GetNearestValidPageEdgeCases);
   FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest, GetErrorTypeEdgeCases);
+
+  DISALLOW_COPY_AND_ASSIGN(GuardedPageAllocator);
 };
 
 }  // namespace internal
