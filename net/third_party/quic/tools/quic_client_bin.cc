@@ -46,14 +46,9 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
-#include "net/http/transport_security_state.h"
-#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/platform/api/quic_default_proof_providers.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
@@ -66,16 +61,11 @@
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
 
-using net::CertVerifier;
-using net::CTVerifier;
-using net::MultiLogCTVerifier;
-using net::ProofVerifierChromium;
 using quic::ProofVerifier;
 using quic::QuicStringPiece;
 using quic::QuicTextUtils;
 using quic::QuicUrl;
 using spdy::SpdyHeaderBlock;
-using net::TransportSecurityState;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -270,19 +260,11 @@ int main(int argc, char* argv[]) {
         static_cast<quic::QuicTransportVersion>(FLAGS_quic_version)));
   }
   // For secure QUIC we need to verify the cert chain.
-  std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
-  std::unique_ptr<TransportSecurityState> transport_security_state(
-      new TransportSecurityState);
-  std::unique_ptr<MultiLogCTVerifier> ct_verifier(new MultiLogCTVerifier());
-  std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer(
-      new net::DefaultCTPolicyEnforcer());
   std::unique_ptr<ProofVerifier> proof_verifier;
   if (line->HasSwitch("disable-certificate-verification")) {
     proof_verifier = quic::QuicMakeUnique<FakeProofVerifier>();
   } else {
-    proof_verifier = quic::QuicMakeUnique<ProofVerifierChromium>(
-        cert_verifier.get(), ct_policy_enforcer.get(),
-        transport_security_state.get(), ct_verifier.get());
+    proof_verifier = quic::CreateDefaultProofVerifier();
   }
   quic::QuicClient client(quic::QuicSocketAddress(ip_addr, port), server_id,
                           versions, &epoll_server, std::move(proof_verifier));
