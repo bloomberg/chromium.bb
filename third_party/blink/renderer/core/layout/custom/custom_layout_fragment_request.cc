@@ -98,7 +98,7 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
     }
   }
 
-  box->SetOverrideBlockPercentageResolutionSize(
+  box->SetOverridePercentageResolutionBlockSize(
       percentage_resolution_logical_height);
 
   if (box->IsLayoutCustom())
@@ -107,7 +107,7 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   box->ForceLayout();
 
   box->ClearOverrideContainingBlockContentSize();
-  box->ClearOverrideBlockPercentageResolutionSize();
+  box->ClearOverridePercentageResolutionBlockSize();
   box->ClearOverrideSize();
 
   if (box->IsLayoutCustom())

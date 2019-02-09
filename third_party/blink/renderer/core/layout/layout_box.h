@@ -71,7 +71,7 @@ struct LayoutBoxRareData {
         // TODO(rego): We should store these based on physical direction.
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
-        has_override_block_percentage_resolution_size_(false),
+        has_override_percentage_resolution_block_size_(false),
         has_override_available_inline_size_(false),
         has_previous_content_box_rect_and_layout_overflow_rect_(false),
         percent_height_container_(nullptr),
@@ -87,7 +87,7 @@ struct LayoutBoxRareData {
 
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
-  bool has_override_block_percentage_resolution_size_ : 1;
+  bool has_override_percentage_resolution_block_size_ : 1;
   bool has_override_available_inline_size_ : 1;
   bool has_previous_content_box_rect_and_layout_overflow_rect_ : 1;
 
@@ -101,7 +101,7 @@ struct LayoutBoxRareData {
   // LayoutNG. So, since custom layout containers are laid out by legacy, this
   // should be safe.
   union {
-    LayoutUnit override_block_percentage_resolution_size_;
+    LayoutUnit override_percentage_resolution_block_size_;
     LayoutUnit override_available_inline_size_;
   };
 
@@ -790,13 +790,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetOverrideContainingBlockContentLogicalHeight(LayoutUnit);
   void ClearOverrideContainingBlockContentSize();
 
-  // When a block percentage resolution size override has been set, we'll use
+  // When a percentage resolution block size override has been set, we'll use
   // that size to resolve block-size percentages on this box, rather than
   // deducing it from the containing block.
-  LayoutUnit OverrideBlockPercentageResolutionSize() const;
-  bool HasOverrideBlockPercentageResolutionSize() const;
-  void SetOverrideBlockPercentageResolutionSize(LayoutUnit);
-  void ClearOverrideBlockPercentageResolutionSize();
+  LayoutUnit OverridePercentageResolutionBlockSize() const;
+  bool HasOverridePercentageResolutionBlockSize() const;
+  void SetOverridePercentageResolutionBlockSize(LayoutUnit);
+  void ClearOverridePercentageResolutionBlockSize();
 
   // When an available inline size override has been set, we'll use that to fill
   // available inline size, rather than deducing it from the containing block
