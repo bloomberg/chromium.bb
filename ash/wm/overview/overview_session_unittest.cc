@@ -2238,6 +2238,11 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
   EXPECT_FALSE(HasMaskForItem(item2));
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
+
+  // Mask is set asynchronously.
+  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_FALSE(HasMaskForItem(item2));
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
@@ -2262,6 +2267,9 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
       ->layer()
       ->GetAnimator()
       ->StopAnimating();
+  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_FALSE(HasMaskForItem(item2));
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 

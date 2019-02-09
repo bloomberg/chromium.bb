@@ -242,6 +242,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   bool animating_to_close() const { return animating_to_close_; }
   void set_animating_to_close(bool val) { animating_to_close_ = val; }
 
+  void set_disable_mask(bool disable) { disable_mask_ = disable; }
+
   float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
@@ -338,6 +340,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   // True if this overview item is currently being dragged around.
   bool is_being_dragged_ = false;
+
+  // True to always disable mask regardless of the state.
+  bool disable_mask_ = false;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

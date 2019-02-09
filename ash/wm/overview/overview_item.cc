@@ -625,7 +625,8 @@ void OverviewItem::UpdateMaskAndShadow() {
   // 6) this overview item is in animation.
   bool should_show = true;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (!overview_controller || !overview_controller->IsSelecting() ||
+  if (disable_mask_ || !overview_controller ||
+      !overview_controller->IsSelecting() ||
       overview_grid_->window_list().size() > 10 ||
       overview_controller->IsInStartAnimation() || is_being_dragged_ ||
       overview_grid_->IsDropTargetWindow(GetWindow()) ||
