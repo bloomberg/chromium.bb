@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -228,6 +229,8 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   display_->Resize(viewport);
   display_->DrawAndSwap();
   display_->DidReceiveSwapBuffersAck();
+  display_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
+      base::TimeTicks::Now(), base::TimeDelta(), 0 /* flags */));
 }
 
 void SurfacesInstance::AddChildId(const viz::SurfaceId& child_id) {

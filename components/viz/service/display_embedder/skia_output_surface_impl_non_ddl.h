@@ -21,13 +21,8 @@ namespace gl {
 class GLSurface;
 }
 
-namespace gfx {
-struct PresentationFeedback;
-}
-
 namespace gpu {
 class MailboxManager;
-struct SwapBuffersCompleteParams;
 class SyncPointClientState;
 class SyncPointManager;
 class SyncPointOrderData;
@@ -112,9 +107,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   bool GetGrBackendTexture(const ResourceMetadata& metadata,
                            GrBackendTexture* backend_texture);
 
-  void DidSwapBuffersComplete(const gpu::SwapBuffersCompleteParams& params,
-                              const gfx::Size& pixel_size);
-  void BufferPresented(const gfx::PresentationFeedback& feedback);
   void ContextLost();
 
   uint64_t sync_fence_release_ = 0;
@@ -138,9 +130,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
 
   // The current render pass id set by BeginPaintRenderPass.
   RenderPassId current_render_pass_id_ = 0;
-
-  // Whether to send OutputSurfaceClient::DidSwapWithSize notifications.
-  bool needs_swap_size_notifications_ = false;
 
   // Observers for context lost.
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
