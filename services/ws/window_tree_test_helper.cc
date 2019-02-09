@@ -71,6 +71,12 @@ bool WindowTreeTestHelper::ReorderWindow(aura::Window* window,
       direction);
 }
 
+bool WindowTreeTestHelper::SetTransform(aura::Window* window,
+                                        const gfx::Transform& transform) {
+  return window_tree_->SetWindowTransformImpl(ClientWindowIdForWindow(window),
+                                              transform);
+}
+
 bool WindowTreeTestHelper::SetWindowBounds(
     aura::Window* window,
     const gfx::Rect& bounds,

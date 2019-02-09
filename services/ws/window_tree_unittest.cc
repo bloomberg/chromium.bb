@@ -40,6 +40,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/transform.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/focus_controller.h"
@@ -2533,6 +2534,23 @@ TEST(WindowTreeTest, ForcedWindowVisibility) {
       setup.window_tree_test_helper()->SetWindowVisibility(top_level, false));
   EXPECT_TRUE(top_level->IsVisible());
   EXPECT_TRUE(setup.changes()->empty());
+}
+
+TEST(WindowTreeTest, SetWindowTransform) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  gfx::Transform scaled;
+  scaled.Scale(2, 2);
+  EXPECT_FALSE(
+      setup.window_tree_test_helper()->SetTransform(top_level, scaled));
+  EXPECT_EQ(gfx::Transform(), top_level->transform());
+
+  aura::Window* child_window = setup.window_tree_test_helper()->NewWindow();
+  EXPECT_TRUE(
+      setup.window_tree_test_helper()->SetTransform(child_window, scaled));
+  EXPECT_EQ(scaled, child_window->transform());
 }
 
 }  // namespace

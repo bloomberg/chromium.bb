@@ -1253,6 +1253,21 @@ bool WindowTree::SetWindowBoundsImpl(
   return false;
 }
 
+bool WindowTree::SetWindowTransformImpl(const ClientWindowId& window_id,
+                                        const gfx::Transform& transform) {
+  DVLOG(3) << "SetWindowTransform window_id=" << window_id;
+  aura::Window* window = GetWindowByClientId(window_id);
+  // This doesn't allow setting the transform on top-levels as that may conflict
+  // with top-level animations done by the window-manager. Additionally the
+  // window-manager is really the one that should be animating top-levels.
+  if (!window || !IsClientCreatedWindow(window) || IsTopLevel(window)) {
+    DVLOG(1) << "SetWindowTransform failed (invalid window)";
+    return false;
+  }
+  window->SetTransform(transform);
+  return true;
+}
+
 bool WindowTree::ReorderWindowImpl(const ClientWindowId& window_id,
                                    const ClientWindowId& relative_window_id,
                                    mojom::OrderDirection direction) {
@@ -1600,12 +1615,11 @@ void WindowTree::AllocateLocalSurfaceId(Id transport_window_id) {
 }
 
 void WindowTree::SetWindowTransform(uint32_t change_id,
-                                    Id window_id,
+                                    Id transport_window_id,
                                     const gfx::Transform& transform) {
-  // NOTE: Tests may time out if they trigger this NOTIMPLEMENTED because
-  // the change is not ack'd. The code under test may need to change to
-  // avoid triggering window transforms outside the window manager.
-  NOTIMPLEMENTED_LOG_ONCE();
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetWindowTransformImpl(MakeClientWindowId(transport_window_id),
+                                        transform));
 }
 
 void WindowTree::SetClientArea(

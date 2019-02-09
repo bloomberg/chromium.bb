@@ -23,6 +23,7 @@ class Window;
 
 namespace gfx {
 class Insets;
+class Transform;
 }
 
 namespace ui {
@@ -65,6 +66,7 @@ class WindowTreeTestHelper {
   bool ReorderWindow(aura::Window* window,
                      aura::Window* relative_window,
                      mojom::OrderDirection direction);
+  bool SetTransform(aura::Window* window, const gfx::Transform& transform);
   bool SetWindowBounds(aura::Window* window,
                        const gfx::Rect& bounds,
                        const base::Optional<viz::LocalSurfaceIdAllocation>&
