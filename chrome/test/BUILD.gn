@@ -3329,6 +3329,7 @@ test("unit_tests") {
       "../browser/search/search_suggest/search_suggest_loader_impl_unittest.cc",
       "../browser/search/search_suggest/search_suggest_service_unittest.cc",
       "../browser/search/search_unittest.cc",
+      "../browser/send_tab_to_self/send_tab_to_self_util_unittest.cc",
       "../browser/serial/serial_chooser_context_unittest.cc",
       "../browser/sessions/tab_restore_service_unittest.cc",
       "../browser/signin/signin_promo_unittest.cc",

@@ -6,13 +6,14 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
@@ -81,7 +82,10 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                 : l10n_util::GetPluralStringFUTF16(
                       IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB, num_affected_tabs));
   }
-  if (base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(tab_strip->GetWebContentsAt(index));
+  if (send_tab_to_self::ShouldOfferFeature(browser)) {
     AddItemWithStringId(TabStripModel::CommandSendToMyDevices,
                         IDS_TAB_CXMENU_SEND_TO_MY_DEVICES);
   }
