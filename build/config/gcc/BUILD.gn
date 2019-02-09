@@ -65,11 +65,10 @@ config("symbol_visibility_default") {
 config("rpath_for_built_shared_libraries") {
   if (!is_android) {
     # Note: Android doesn't support rpath.
-    rpath_link = "."
     if (current_toolchain != default_toolchain || gcc_target_rpath == "") {
       ldflags = [
         # Want to pass "\$". GN will re-escape as required for ninja.
-        "-Wl,-rpath=\$ORIGIN/${rpath_link}",
+        "-Wl,-rpath=\$ORIGIN/.",
       ]
     } else {
       ldflags = [ "-Wl,-rpath=${gcc_target_rpath}" ]
