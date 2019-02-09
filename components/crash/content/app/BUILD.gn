@@ -198,6 +198,7 @@ if (is_mac) {
     ]
 
     deps = [
+      "//components/gwp_asan/crash_handler",
       "//third_party/crashpad/crashpad/handler:handler",
     ]
 
