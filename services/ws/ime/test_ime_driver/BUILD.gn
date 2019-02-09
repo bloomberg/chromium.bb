@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -32,9 +31,4 @@ service_executable("test_ime_driver") {
     "//services/service_manager/public/cpp",
     "//services/ws/public/mojom",
   ]
-}
-
-service_manifest("manifest") {
-  name = "test_ime_driver"
-  source = "manifest.json"
 }

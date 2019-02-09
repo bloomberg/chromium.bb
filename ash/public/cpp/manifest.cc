@@ -51,7 +51,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
-#include "services/ws/manifest.h"
+#include "services/ws/public/cpp/manifest.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 
 namespace ash {
@@ -122,7 +122,7 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
           .RequireCapability(chromeos::multidevice_setup::mojom::kServiceName,
                              "multidevice_setup")
-          .PackageService(ui::GetManifest())
+          .PackageService(ws::GetManifest())
           .Build()
           .Amend(GetAmendmentForTesting())};
   return *manifest;

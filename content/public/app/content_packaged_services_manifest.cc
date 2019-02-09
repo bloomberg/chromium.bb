@@ -21,7 +21,7 @@
 #include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
 #include "services/video_capture/public/cpp/manifest.h"
-#include "services/viz/manifest.h"
+#include "services/viz/public/cpp/manifest.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/manifest.h"  // nogncheck

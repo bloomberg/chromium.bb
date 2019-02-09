@@ -65,7 +65,7 @@ source_set("manifest") {
     "//base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/ws:manifest",
+    "//services/ws/public/cpp:manifest",
   ]
 }
 

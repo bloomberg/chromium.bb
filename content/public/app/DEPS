@@ -29,6 +29,6 @@ specific_include_rules = {
     "+services/resource_coordinator/public/cpp/manifest.h",
     "+services/shape_detection/public/cpp/manifest.h",
     "+services/tracing/manifest.h",
-    "+services/viz/manifest.h",
+    "+services/viz/public/cpp/manifest.h",
   ],
 }

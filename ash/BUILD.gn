@@ -1489,7 +1489,7 @@ static_library("ash_shell_lib_with_content") {
     "//services/device/public/mojom",
     "//services/ws:lib",
     "//services/ws/ime/test_ime_driver:lib",
-    "//services/ws/ime/test_ime_driver:manifest",
+    "//services/ws/ime/test_ime_driver/public/cpp:manifest",
     "//services/ws/ime/test_ime_driver/public/mojom",
     "//services/ws/remote_view_host",
     "//skia",

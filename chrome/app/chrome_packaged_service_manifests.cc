@@ -32,7 +32,7 @@
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
 #include "mash/public/mojom/launchable.mojom.h"  // nogncheck
 #include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
-#include "ui/accessibility/manifest.h"  // nogncheck
+#include "ui/accessibility/ax_host_manifest.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -177,7 +177,7 @@ GetChromePackagedServiceManifests() {
       GetCupsIppParserManifest(),
       chromeos::ime::GetManifest(),
       chromeos::secure_channel::GetManifest(),
-      ax_host_service::GetManifest(),
+      ui::GetAXHostManifest(),
 #endif
   }};
   return *manifests;

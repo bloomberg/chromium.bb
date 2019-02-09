@@ -73,10 +73,10 @@ source_set("shell") {
     "//net:extras",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
-    "//services/test/echo:manifest",
+    "//services/test/echo/public/cpp:manifest",
     "//services/test/echo/public/mojom",
     "//services/test/user_id:lib",
-    "//services/test/user_id:manifest",
+    "//services/test/user_id/public/cpp:manifest",
     "//services/test/user_id/public/mojom",
     "//ui/base",
   ]

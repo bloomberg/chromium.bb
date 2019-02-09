@@ -33,7 +33,7 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/ws/ime/test_ime_driver/manifest.h"
+#include "services/ws/ime/test_ime_driver/public/cpp/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/window_service.h"

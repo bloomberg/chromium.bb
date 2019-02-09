@@ -917,7 +917,7 @@ jumbo_source_set("test_support") {
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
       "//services/ws/common",
-      "//services/ws/ime/test_ime_driver:manifest",
+      "//services/ws/ime/test_ime_driver/public/cpp:manifest",
       "//services/ws/public/mojom",
       "//services/ws/test_ws:manifest",
       "//testing/gtest",

@@ -33,7 +33,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
-    "//services/ws/ime/test_ime_driver:manifest",
+    "//services/ws/ime/test_ime_driver/public/cpp:manifest",
     "//services/ws/ime/test_ime_driver/public/mojom",
     "//services/ws/public/mojom",
     "//services/ws/test_ws:manifest",
