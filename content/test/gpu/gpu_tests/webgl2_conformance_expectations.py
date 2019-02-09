@@ -88,9 +88,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
-    self.Fail('conformance2/textures/misc/' +
-        'integer-cubemap-specification-order-bug.html',
-        bug=905003) # owner:cwallez, test might be buggy
 
     # Nvidia bugs fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -193,6 +190,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl', 'passthrough'], bug=887578)
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
+    self.Flaky('conformance2/textures/misc/' +
+        'integer-cubemap-specification-order-bug.html',
+        ['win', 'nvidia', 'opengl', 'passthrough'], bug=905003)
 
     # Win / AMD
 
@@ -468,6 +468,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'teximage2d_pbo_cube_00.html',
         ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
 
+    self.Fail('conformance2/textures/misc/' +
+        'integer-cubemap-specification-order-bug.html',
+        ['sierra', ('intel', 0x0a2e)], bug=905003)
+
     # Fails on multiple GPU types.
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
         ['mac'], bug=844311)
@@ -697,6 +701,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # failing rather than flaky.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['highsierra', 'amd'], bug=870856)
+
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['sierra', 'amd'], bug=483282)
@@ -890,6 +895,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=618447)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['linux', 'nvidia'], bug=709351)
+    self.Fail('conformance2/textures/misc/' +
+        'integer-cubemap-specification-order-bug.html',
+        ['linux', 'nvidia'], bug=905003)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['linux', 'nvidia', 'opengl'], bug=680278)
     self.Fail('conformance2/textures/image/' +
