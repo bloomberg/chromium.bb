@@ -493,7 +493,8 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(AutoLaunchedKioskTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, PRE_CrashRestore) {
+// TODO(crbug.com/930345): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, DISABLED_PRE_CrashRestore) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_FALSE(termination_observer_->terminated());
@@ -516,7 +517,8 @@ IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, PRE_CrashRestore) {
   ASSERT_TRUE(CloseAppWindow(kTestKioskApp));
 }
 
-IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, CrashRestore) {
+// TODO(crbug.com/930345): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, DISABLED_CrashRestore) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_FALSE(termination_observer_->terminated());
