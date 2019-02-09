@@ -48,12 +48,12 @@ enum class Error {
 // A status value with position that can be copied. The default status
 // is OK. Usually, error status values should come with a valid position.
 struct Status {
-  static constexpr int64_t npos() { return -1; }
+  static constexpr std::ptrdiff_t npos() { return -1; }
 
   bool ok() const { return error == Error::OK; }
 
   Error error = Error::OK;
-  int64_t pos = npos();
+  std::ptrdiff_t pos = npos();
 };
 }  // namespace inspector_protocol
 #endif  // INSPECTOR_PROTOCOL_ENCODING_STATUS_H_

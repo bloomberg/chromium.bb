@@ -573,13 +573,13 @@ class JsonParser {
 
 void ParseJSONChars(const Platform* platform, span<uint8_t> chars,
                     JSONParserHandler* handler) {
-  JsonParser<uint8_t> parser(platform, handler);
+  JsonParser<uint8_t> parser(deps, handler);
   parser.Parse(chars.data(), chars.size());
 }
 
 void ParseJSONChars(const Platform* platform, span<uint16_t> chars,
                     JSONParserHandler* handler) {
-  JsonParser<uint16_t> parser(platform, handler);
+  JsonParser<uint16_t> parser(deps, handler);
   parser.Parse(chars.data(), chars.size());
 }
 }  // namespace inspector_protocol
