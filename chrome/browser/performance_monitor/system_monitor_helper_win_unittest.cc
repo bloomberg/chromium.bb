@@ -30,7 +30,7 @@ TEST_F(SystemMonitorHelperWinTest, GetFreeMemory) {
       {.free_phys_memory_mb_frequency =
            SystemMonitor::SamplingFrequency::kDefaultFrequency},
       base::TimeTicks::Now());
-  EXPECT_NE(base::nullopt, refreshed_metrics.free_phys_memory_mb.metric_value);
+  EXPECT_GT(refreshed_metrics.free_phys_memory_mb.metric_value, 0);
 }
 
 }  // namespace

@@ -67,7 +67,7 @@ SystemMonitor* SystemMonitor::Get() {
 }
 
 void SystemMonitor::SystemObserver::OnFreePhysicalMemoryMbSample(
-    base::Optional<int> free_phys_memory_mb) {
+    int free_phys_memory_mb) {
   NOTREACHED();
 }
 
