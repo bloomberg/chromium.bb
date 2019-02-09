@@ -2644,6 +2644,8 @@ jumbo_split_static_library("ui") {
       "views/omnibox/omnibox_text_view.h",
       "views/omnibox/omnibox_view_views.cc",
       "views/omnibox/omnibox_view_views.h",
+      "views/omnibox/remove_suggestion_bubble.cc",
+      "views/omnibox/remove_suggestion_bubble.h",
       "views/omnibox/rounded_omnibox_results_frame.cc",
       "views/omnibox/rounded_omnibox_results_frame.h",
       "views/overlay/back_to_tab_image_button.cc",
