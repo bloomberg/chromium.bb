@@ -100,7 +100,7 @@ Polymer({
       return false;
     });
 
-    this.async(function() {
+    setTimeout(() => {
       // This is needed to make sure that the positions of the knobs and their
       // label bubbles are correctly updated when the display settings page is
       // opened for the first time after login. The page need to be fully
@@ -341,7 +341,8 @@ Polymer({
    * @private
    */
   updateKnobs_: function() {
-    if (!this.isReady_ || !this.prefsAvailable()) {
+    if (!this.isReady_ || !this.prefsAvailable() ||
+        this.$.sliderBar.offsetWidth == 0) {
       return;
     }
     const startOffsetMinutes = /** @type {number} */ (
