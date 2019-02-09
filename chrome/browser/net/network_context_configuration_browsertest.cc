@@ -1576,8 +1576,14 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 
 // Test that when there's a proxy configuration at startup, the initial requests
 // use that configuration.
+// Flaky on CrOS only. http://crbug.com/922876
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestInitialProxyConfig DISABLED_TestInitialProxyConfig
+#else
+#define MAYBE_TestInitialProxyConfig TestInitialProxyConfig
+#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
-                       TestInitialProxyConfig) {
+                       MAYBE_TestInitialProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   TestProxyConfigured(/*expect_success=*/true);
@@ -1882,10 +1888,20 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
 
+#if defined(OS_CHROMEOS)
+// There's an extra network change event on ChromeOS, likely from
+// NetworkChangeNotifierChromeos that makes these tests flaky on ChromeOS when
+// there's an out of process network stack.
+//
+// TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.
+#define TEST_CASES(network_context_type) \
+  TestCase({NetworkServiceState::kDisabled, network_context_type})
+#else  // !defined(OS_CHROMEOS)
 #define TEST_CASES(network_context_type)                               \
   TestCase({NetworkServiceState::kDisabled, network_context_type}),    \
       TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})
+#endif  // !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)                        \
