@@ -34,8 +34,8 @@ IDBVersionChangeEvent::IDBVersionChangeEvent()
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(
     const AtomicString& event_type,
-    unsigned long long old_version,
-    const base::Optional<unsigned long long>& new_version,
+    uint64_t old_version,
+    const base::Optional<uint64_t>& new_version,
     mojom::IDBDataLoss data_loss,
     const String& data_loss_message)
     : Event(event_type, Bubbles::kNo, Cancelable::kNo),
@@ -56,7 +56,7 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(
     data_loss_ = mojom::IDBDataLoss::Total;
 }
 
-unsigned long long IDBVersionChangeEvent::newVersion(bool& is_null) const {
+uint64_t IDBVersionChangeEvent::newVersion(bool& is_null) const {
   is_null = !new_version_.has_value();
   return new_version_.value_or(0);
 }

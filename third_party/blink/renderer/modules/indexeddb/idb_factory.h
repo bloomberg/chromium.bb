@@ -59,7 +59,7 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   IDBOpenDBRequest* open(ScriptState*, const String& name, ExceptionState&);
   IDBOpenDBRequest* open(ScriptState*,
                          const String& name,
-                         unsigned long long version,
+                         uint64_t version,
                          ExceptionState&);
   IDBOpenDBRequest* deleteDatabase(ScriptState*,
                                    const String& name,

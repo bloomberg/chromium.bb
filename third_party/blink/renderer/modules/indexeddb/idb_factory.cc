@@ -290,7 +290,7 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
 
 IDBOpenDBRequest* IDBFactory::open(ScriptState* script_state,
                                    const String& name,
-                                   unsigned long long version,
+                                   uint64_t version,
                                    ExceptionState& exception_state) {
   if (!version) {
     exception_state.ThrowTypeError("The version provided must not be 0.");
