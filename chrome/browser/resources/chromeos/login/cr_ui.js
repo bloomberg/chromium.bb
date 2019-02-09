@@ -1,34 +1,12 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * @fileoverview Common OOBE controller methods. This method is shared between
- * OOBE, login, and the lock screen. Add only methods that need to be shared
- * between all *three* screens here, as each additional method increases the
- * time it takes to show the lock screen.
- *
- * If a method needs to be shared between the oobe and login screens, add it to
- * login_non_lock_shared.js.
+ * @fileoverview Common OOBE controller methods for use in OOBE and login.
+ * This file is shared between OOBE and login. Add only methods that need to be
+ * shared between all *two* screens here.
  */
-
-// <include src="test_util.js">
-// <include src="../../../../../ui/login/screen.js">
-// <include src="screen_context.js">
-// <include src="../user_images_grid.js">
-// <include src="apps_menu.js">
-// <include src="../../../../../ui/login/bubble.js">
-// <include src="../../../../../ui/login/display_manager.js">
-// <include src="md_header_bar.js">
-// <include src="md_top_header_bar.js">
-// <include src="demo_mode_test_helper.js">
-
-// <include
-// src="../../../../../ui/login/account_picker/md_screen_account_picker.js">
-
-// <include src="../../../../../ui/login/login_ui_tools.js">
-// <include src="../../../../../ui/login/account_picker/md_user_pod_row.js">
-// <include src="../../../../../ui/login/resource_loader.js">
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;
