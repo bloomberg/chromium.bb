@@ -8,8 +8,79 @@
 
 var isMd = true;
 
-// <include src="md_login_shared.js">
-// <include src="login_non_lock_shared.js">
+// <include src="test_util.js">
+// <include src="../../../../../ui/login/screen.js">
+// <include src="screen_context.js">
+// <include src="../user_images_grid.js">
+// <include src="apps_menu.js">
+// <include src="../../../../../ui/login/bubble.js">
+// <include src="../../../../../ui/login/display_manager.js">
+// <include src="md_header_bar.js">
+// <include src="md_top_header_bar.js">
+// <include src="demo_mode_test_helper.js">
+
+// <include
+// src="../../../../../ui/login/account_picker/md_screen_account_picker.js">
+
+// <include src="../../../../../ui/login/login_ui_tools.js">
+// <include src="../../../../../ui/login/account_picker/md_user_pod_row.js">
+// <include src="../../../../../ui/login/resource_loader.js">
+// <include src="cr_ui.js">
+// <include src="oobe_screen_reset.js">
+// <include src="oobe_screen_autolaunch.js">
+// <include src="oobe_screen_enable_kiosk.js">
+// <include src="oobe_screen_terms_of_service.js">
+// <include src="oobe_screen_user_image.js">
+// <include src="oobe_screen_supervision_transition.js">
+// <include src="oobe_screen_assistant_optin_flow.js">
+// <include src="oobe_select.js">
+
+// <include src="screen_app_launch_splash.js">
+// <include src="screen_arc_kiosk_splash.js">
+// <include src="screen_arc_terms_of_service.js">
+// <include src="screen_error_message.js">
+// <include src="screen_gaia_signin.js">
+// <include src="screen_password_changed.js">
+// <include src="screen_tpm_error.js">
+// <include src="screen_wrong_hwid.js">
+// <include src="screen_confirm_password.js">
+// <include src="screen_fatal_error.js">
+// <include src="screen_device_disabled.js">
+// <include src="screen_unrecoverable_cryptohome_error.js">
+// <include src="screen_active_directory_password_change.js">
+// <include src="screen_encryption_migration.js">
+// <include src="screen_update_required.js">
+// <include src="screen_sync_consent.js">
+// <include src="screen_fingerprint_setup.js">
+// <include src="screen_recommend_apps.js">
+// <include src="screen_app_downloading.js">
+// <include src="screen_discover.js">
+// <include src="screen_marketing_opt_in.js">
+// <include src="screen_multidevice_setup.js">
+
+// <include src="../../gaia_auth_host/authenticator.js">
+
+// Register assets for async loading.
+[{
+  id: SCREEN_OOBE_ENROLLMENT,
+  html: [{url: 'chrome://oobe/enrollment.html', targetID: 'inner-container'}],
+  css: ['chrome://oobe/enrollment.css'],
+  js: ['chrome://oobe/enrollment.js']
+}].forEach(cr.ui.login.ResourceLoader.registerAssets);
+
+(function() {
+'use strict';
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Immediately load async assets.
+  cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
+    // This screen is async-loaded so we manually trigger i18n processing.
+    i18nTemplate.process($('oauth-enrollment'), loadTimeData);
+    // Delayed binding since this isn't defined yet.
+    login.OAuthEnrollmentScreen.register();
+  });
+});
+})();
 // <include src="notification_card.js">
 
 /**
