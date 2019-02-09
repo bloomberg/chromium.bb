@@ -27,6 +27,7 @@ class ClientSocketHandle;
 class HostResolver;
 class NetLog;
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class SocketPerformanceWatcherFactory;
 class StreamSocket;
 class WebSocketEndpointLockManager;
@@ -43,6 +44,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
       bool respect_limits,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
+      ProxyDelegate* proxy_delegate,
       const SSLClientSocketContext& ssl_client_socket_context,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       NetworkQualityEstimator* network_quality_estimator,
@@ -68,6 +70,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
 
   ClientSocketFactory* client_socket_factory;
   HostResolver* host_resolver;
+  ProxyDelegate* proxy_delegate;
   SSLClientSocketContext ssl_client_socket_context;
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
   NetworkQualityEstimator* network_quality_estimator;
@@ -105,16 +108,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   ConnectJob(RequestPriority priority,
              base::TimeDelta timeout_duration,
              const CommonConnectJobParams& common_connect_job_params,
-             Delegate* delegate,
-             const NetLogWithSource& net_log);
-  // Legacy constructor that takes all pointers in CommonSocketParams as
-  // nullptr.
-  // TODO(mmenke): Remove this.
-  ConnectJob(const std::string& group_name,
-             base::TimeDelta timeout_duration,
-             RequestPriority priority,
-             const SocketTag& socket_tag,
-             bool respect_limits,
              Delegate* delegate,
              const NetLogWithSource& net_log);
   virtual ~ConnectJob();

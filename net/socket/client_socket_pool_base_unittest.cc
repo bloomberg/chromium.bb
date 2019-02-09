@@ -328,12 +328,21 @@ class TestConnectJob : public ConnectJob {
                  MockClientSocketFactory* client_socket_factory,
                  NetLog* net_log)
       : ConnectJob(
-            group_name,
-            timeout_duration,
             request.priority(),
-            request.socket_tag(),
-            request.respect_limits() ==
-                ClientSocketPool::RespectLimits::ENABLED,
+            timeout_duration,
+            CommonConnectJobParams(
+                group_name,
+                request.socket_tag(),
+                request.respect_limits() ==
+                    ClientSocketPool::RespectLimits::ENABLED,
+                nullptr /* client_socket_factory */,
+                nullptr /* host_resolver */,
+                nullptr /* proxy_delegate */,
+                SSLClientSocketContext(),
+                nullptr /* socket_performance_watcher_factory */,
+                nullptr /* network_quality_estimator */,
+                net_log,
+                nullptr /* websocket_endpoint_lock_manager */),
             delegate,
             NetLogWithSource::Make(net_log,
                                    NetLogSourceType::TRANSPORT_CONNECT_JOB)),

@@ -30,10 +30,16 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return std::make_unique<HttpProxyConnectJob>(
-      group_name, request.priority(), request.socket_tag(),
-      request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
-      request.params(), proxy_delegate_, transport_pool_, ssl_pool_,
-      network_quality_estimator_, delegate, net_log_);
+      request.priority(),
+      CommonConnectJobParams(
+          group_name, request.socket_tag(),
+          request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
+          nullptr /* client_socket_factory */, nullptr /* host_resolver */,
+          proxy_delegate_, SSLClientSocketContext(),
+          nullptr /* socket_performance_watcher_factory */,
+          network_quality_estimator_, net_log_,
+          nullptr /* websocket_endpoint_lock_manager */),
+      request.params(), transport_pool_, ssl_pool_, delegate);
 }
 
 HttpProxyClientSocketPool::HttpProxyClientSocketPool(

@@ -106,8 +106,9 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   void CreatePool(bool http_proxy_pool) {
     pool_.reset(new TransportClientSocketPool(
         kMaxSockets, kMaxSocketsPerGroup, &socket_factory_, &host_resolver_,
-        cert_verifier_.get(), NULL /* channel_id_service */,
-        transport_security_state_.get(), &ct_verifier_, &ct_policy_enforcer_,
+        NULL /* proxy_delegate */, cert_verifier_.get(),
+        NULL /* channel_id_service */, transport_security_state_.get(),
+        &ct_verifier_, &ct_policy_enforcer_,
         nullptr /* ssl_client_session_cache */,
         std::string() /* ssl_session_cache_shard */,
         nullptr /* ssl_config_service */,

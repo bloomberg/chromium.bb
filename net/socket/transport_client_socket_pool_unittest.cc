@@ -97,6 +97,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
               kMaxSocketsPerGroup,
               &client_socket_factory_,
               host_resolver_.get(),
+              nullptr /* proxy_delegate */,
               &cert_verifier_,
               nullptr /* channel_id_server */,
               &transport_security_state_,
@@ -112,6 +113,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
                                kMaxSocketsPerGroup,
                                ClientSocketFactory::GetDefaultFactory(),
                                host_resolver_.get(),
+                               nullptr /* proxy_delegate */,
                                &cert_verifier_,
                                nullptr /* channel_id_server */,
                                &transport_security_state_,
@@ -444,8 +446,8 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
   TransportClientSocketPool pool(
       kMaxSockets, 1, &client_socket_factory_, host_resolver_.get(),
-      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-      nullptr /* transport_security_state */,
+      nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -1157,8 +1159,8 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
     MockTaggingClientSocketFactory socket_factory;
     TransportClientSocketPool pool(
         kMaxSockets, kMaxSocketsPerGroup, &socket_factory, host_resolver_.get(),
-        nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-        nullptr /* transport_security_state */,
+        nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
+        nullptr /* channel_id_server */, nullptr /* transport_security_state */,
         nullptr /* cert_transparency_verifier */,
         nullptr /* ct_policy_enforcer */,
         nullptr /* ssl_client_session_cache */,
@@ -1204,8 +1206,8 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   TransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup,
       ClientSocketFactory::GetDefaultFactory(), host_resolver_.get(),
-      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-      nullptr /* transport_security_state */,
+      nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -1329,8 +1331,8 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   MockTaggingClientSocketFactory socket_factory;
   TransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &socket_factory, host_resolver_.get(),
-      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
-      nullptr /* transport_security_state */,
+      nullptr /* proxy_delegate */, nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,

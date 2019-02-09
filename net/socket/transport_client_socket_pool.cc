@@ -104,6 +104,7 @@ TransportClientSocketPool::TransportConnectJobFactory::
     TransportConnectJobFactory(
         ClientSocketFactory* client_socket_factory,
         HostResolver* host_resolver,
+        ProxyDelegate* proxy_delegate,
         const SSLClientSocketContext& ssl_client_socket_context,
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
@@ -111,6 +112,7 @@ TransportClientSocketPool::TransportConnectJobFactory::
         HttpProxyClientSocketPool* http_proxy_pool)
     : client_socket_factory_(client_socket_factory),
       host_resolver_(host_resolver),
+      proxy_delegate_(proxy_delegate),
       ssl_client_socket_context_(ssl_client_socket_context),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       network_quality_estimator_(network_quality_estimator),
@@ -130,9 +132,10 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
       CommonConnectJobParams(
           group_name, request.socket_tag(),
           request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
-          client_socket_factory_, host_resolver_, ssl_client_socket_context_,
-          socket_performance_watcher_factory_, network_quality_estimator_,
-          net_log_, nullptr /* websocket_endpoint_lock_manager */),
+          client_socket_factory_, host_resolver_, proxy_delegate_,
+          ssl_client_socket_context_, socket_performance_watcher_factory_,
+          network_quality_estimator_, net_log_,
+          nullptr /* websocket_endpoint_lock_manager */),
       delegate, http_proxy_pool_);
 }
 
@@ -141,6 +144,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets_per_group,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
+    ProxyDelegate* proxy_delegate,
     CertVerifier* cert_verifier,
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
@@ -161,6 +165,7 @@ TransportClientSocketPool::TransportClientSocketPool(
             new TransportConnectJobFactory(
                 client_socket_factory,
                 host_resolver,
+                proxy_delegate,
                 SSLClientSocketContext(cert_verifier,
                                        channel_id_service,
                                        transport_security_state,

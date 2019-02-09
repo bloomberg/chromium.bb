@@ -25,9 +25,7 @@ namespace net {
 class HttpAuthCache;
 class HttpAuthHandlerFactory;
 class HttpProxyClientSocketWrapper;
-class NetLog;
 class NetworkQualityEstimator;
-class ProxyDelegate;
 class SpdySessionPool;
 class SSLSocketParams;
 class TransportClientSocketPool;
@@ -103,17 +101,12 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 // server after connecting the underlying transport socket.
 class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
  public:
-  HttpProxyConnectJob(const std::string& group_name,
-                      RequestPriority priority,
-                      const SocketTag& socket_tag,
-                      bool respect_limits,
+  HttpProxyConnectJob(RequestPriority priority,
+                      const CommonConnectJobParams& common_connect_job_params,
                       const scoped_refptr<HttpProxySocketParams>& params,
-                      ProxyDelegate* proxy_delegate,
                       TransportClientSocketPool* transport_pool,
                       TransportClientSocketPool* ssl_pool,
-                      NetworkQualityEstimator* network_quality_estimator,
-                      Delegate* delegate,
-                      NetLog* net_log);
+                      Delegate* delegate);
   ~HttpProxyConnectJob() override;
 
   // ConnectJob methods.

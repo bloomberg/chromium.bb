@@ -696,6 +696,7 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
                  NULL,
                  NULL,
                  NULL,
+                 NULL,
                  "",
                  NULL,
                  NULL,
@@ -14285,7 +14286,8 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       50,  // Max sockets for pool
       1,   // Max sockets per group
       session_deps_.socket_factory.get(), session_deps_.host_resolver.get(),
-      session_deps_.cert_verifier.get(), session_deps_.channel_id_service.get(),
+      nullptr /* proxy_delegate */, session_deps_.cert_verifier.get(),
+      session_deps_.channel_id_service.get(),
       session_deps_.transport_security_state.get(),
       session_deps_.cert_transparency_verifier.get(),
       session_deps_.ct_policy_enforcer.get(),

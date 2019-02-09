@@ -23,6 +23,7 @@
 #include "net/http/proxy_client_socket.h"
 #include "net/log/net_log_with_source.h"
 #include "net/quic/quic_stream_factory.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session.h"
@@ -35,7 +36,6 @@ class IOBuffer;
 class HttpAuthCache;
 class HttpResponseInfo;
 class IOBuffer;
-class ProxyDelegate;
 class SpdySessionPool;
 class SSLSocketParams;
 class TransportClientSocketPool;
@@ -56,12 +56,10 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
     : public ProxyClientSocket {
  public:
   HttpProxyClientSocketWrapper(
-      const std::string& group_name,
       RequestPriority priority,
-      const SocketTag& socket_tag,
-      bool respect_limits,
       base::TimeDelta connect_timeout_duration,
       base::TimeDelta proxy_negotiation_timeout_duration,
+      const CommonConnectJobParams& common_connect_job_params,
       TransportClientSocketPool* transport_pool,
       TransportClientSocketPool* ssl_pool,
       const scoped_refptr<TransportSocketParams>& transport_params,
@@ -75,7 +73,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       QuicStreamFactory* quic_stream_factory,
       bool is_trusted_proxy,
       bool tunnel,
-      ProxyDelegate* proxy_delegate,
       const NetworkTrafficAnnotationTag& traffic_annotation,
       const NetLogWithSource& net_log);
 
@@ -187,10 +184,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   State next_state_;
 
-  const std::string group_name_;
   RequestPriority priority_;
-  const SocketTag initial_socket_tag_;
-  bool respect_limits_;
   const base::TimeDelta connect_timeout_duration_;
   const base::TimeDelta proxy_negotiation_timeout_duration_;
 
@@ -207,7 +201,8 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   bool has_restarted_;
   const bool tunnel_;
-  ProxyDelegate* const proxy_delegate_;
+
+  const CommonConnectJobParams common_connect_job_params_;
 
   bool using_spdy_;
   bool is_trusted_proxy_;

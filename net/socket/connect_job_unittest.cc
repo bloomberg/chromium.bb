@@ -45,6 +45,7 @@ class TestConnectJob : public ConnectJob {
                 true /* respect_limits */,
                 nullptr /* client_socket_factory */,
                 nullptr /* host_resolver */,
+                nullptr /* proxy_delegate */,
                 SSLClientSocketContext(),
                 nullptr /* socket_performance_watcher_factory */,
                 nullptr /* network_quality_estimator */,

@@ -20,6 +20,7 @@
 #include "net/quic/mock_quic_data.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_test_packet_maker.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
@@ -287,17 +288,25 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   transport_params = nullptr;
 
   client_socket_wrapper_ = std::make_unique<HttpProxyClientSocketWrapper>(
-      /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
-      /*socket_tag=*/SocketTag(),
-      /*respect_limits=*/true,
+      /*request_priority=*/DEFAULT_PRIORITY,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
+      CommonConnectJobParams(
+          "group_name",
+          /*socket_tag=*/SocketTag(),
+          /*respect_limits=*/true,
+          /*client_socket_factory=*/nullptr,
+          /*host_resolver=*/nullptr,
+          /*proxy_delegate=*/nullptr, SSLClientSocketContext(),
+          /*socket_performance_watcher_factory=*/nullptr,
+          /*network_quality_estimator=*/nullptr, net_log_.net_log(),
+          /*websocket_endpoint_lock_manager=*/nullptr),
       /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,
       /*transport_params=*/nullptr, ssl_params, quic_version_, kUserAgent,
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
-      /*is_trusted_proxy=*/false, /*tunnel=*/true, /*proxy_delegate=*/nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS, net_log_);
+      /*is_trusted_proxy=*/false, /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
+      net_log_);
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());
@@ -345,17 +354,25 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   SocketTag tag(getuid(), 0x87654321);
 
   client_socket_wrapper_ = std::make_unique<HttpProxyClientSocketWrapper>(
-      /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
-      /*socket_tag=*/tag,
-      /*respect_limits=*/true,
+      /*request_priority=*/DEFAULT_PRIORITY,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
+      CommonConnectJobParams(
+          /*group_name=*/"group_name",
+          /*socket_tag=*/tag,
+          /*respect_limits=*/true,
+          /*client_socket_factory=*/nullptr,
+          /*host_resolver=*/nullptr,
+          /*proxy_delegate=*/nullptr, SSLClientSocketContext(),
+          /*socket_performance_watcher_factory=*/nullptr,
+          /*network_quality_estimator=*/nullptr, net_log_.net_log(),
+          /*websocket_endpoint_lock_manager=*/nullptr),
       /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,
       /*transport_params=*/nullptr, ssl_params, quic_version_, kUserAgent,
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
-      /*is_trusted_proxy=*/false, /*tunnel=*/true, /*proxy_delegate=*/nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS, net_log_);
+      /*is_trusted_proxy=*/false, /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
+      net_log_);
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());

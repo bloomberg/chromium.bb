@@ -31,6 +31,7 @@ class HttpProxyClientSocketPool;
 class NetLog;
 class NetLogWithSource;
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class SocketPerformanceWatcherFactory;
 class SOCKSSocketParams;
 class SSLSocketParams;
@@ -101,6 +102,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       int max_sockets_per_group,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
+      ProxyDelegate* proxy_delegate,
       CertVerifier* cert_verifier,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
@@ -179,6 +181,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     TransportConnectJobFactory(
         ClientSocketFactory* client_socket_factory,
         HostResolver* host_resolver,
+        ProxyDelegate* proxy_delegate,
         const SSLClientSocketContext& ssl_client_socket_context,
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
@@ -197,6 +200,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
    private:
     ClientSocketFactory* const client_socket_factory_;
     HostResolver* const host_resolver_;
+    ProxyDelegate* const proxy_delegate_;
     const SSLClientSocketContext ssl_client_socket_context_;
     SocketPerformanceWatcherFactory* const socket_performance_watcher_factory_;
     NetworkQualityEstimator* const network_quality_estimator_;
