@@ -25,7 +25,7 @@ using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 class BufferExtensionStreamDataSource final
     : public crashpad::MinidumpUserExtensionStreamDataSource {
  public:
-  BufferExtensionStreamDataSource(uint32_t stream_type, Crash& crash);
+  BufferExtensionStreamDataSource(uint32_t stream_type, const Crash& crash);
 
   size_t StreamDataSize() override;
   bool ReadStreamData(Delegate* delegate) override;
@@ -38,7 +38,7 @@ class BufferExtensionStreamDataSource final
 
 BufferExtensionStreamDataSource::BufferExtensionStreamDataSource(
     uint32_t stream_type,
-    Crash& crash)
+    const Crash& crash)
     : crashpad::MinidumpUserExtensionStreamDataSource(stream_type) {
   bool result = crash.SerializeToString(&data_);
   DCHECK(result);
