@@ -171,19 +171,19 @@ scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
   for (size_t pos = json.find(kSkottieWidthToken); pos != std::string::npos;
        pos = json.find(kSkottieWidthToken)) {
     json.replace(pos, strlen(kSkottieWidthToken),
-                 base::IntToString(size.width()));
+                 base::NumberToString(size.width()));
   }
 
   for (size_t pos = json.find(kSkottieHeightToken); pos != std::string::npos;
        pos = json.find(kSkottieHeightToken)) {
     json.replace(pos, strlen(kSkottieHeightToken),
-                 base::IntToString(size.height()));
+                 base::NumberToString(size.height()));
   }
 
   for (size_t pos = json.find(kSkottieDurationToken); pos != std::string::npos;
        pos = json.find(kSkottieDurationToken)) {
     json.replace(pos, strlen(kSkottieDurationToken),
-                 base::IntToString(duration_secs * kFps));
+                 base::NumberToString(duration_secs * kFps));
   }
 
   return base::MakeRefCounted<SkottieWrapper>(
