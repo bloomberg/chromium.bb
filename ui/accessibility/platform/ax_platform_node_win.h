@@ -218,10 +218,11 @@ class AX_EXPORT IAccessible2UsageObserver {
 extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>::Unchecked&
 GetIAccessible2UsageObserverList();
 
+// TODO(nektar): Remove multithread superclass since we don't support it.
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     AXPlatformNodeWin : public CComObjectRootEx<CComMultiThreadModel>,
-                        public IDispatchImpl<IAccessible2_2,
-                                             &IID_IAccessible2,
+                        public IDispatchImpl<IAccessible2_4,
+                                             &IID_IAccessible2_4,
                                              &LIBID_IAccessible2Lib>,
                         public IAccessibleEx,
                         public IAccessibleText,
@@ -245,11 +246,17 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public AXPlatformNodeBase {
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
+    // TODO(nektar): Change the following to COM_INTERFACE_ENTRY(IDispatch).
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)
+    COM_INTERFACE_ENTRY2(IUnknown, IDispatchImpl)
+    // TODO(nektar): Find a way to remove the following entry because it's not
+    // an interface.
     COM_INTERFACE_ENTRY(AXPlatformNodeWin)
     COM_INTERFACE_ENTRY(IAccessible)
     COM_INTERFACE_ENTRY(IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2_2)
+    COM_INTERFACE_ENTRY(IAccessible2_3)
+    COM_INTERFACE_ENTRY(IAccessible2_4)
     COM_INTERFACE_ENTRY(IAccessibleEx)
     COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IAccessibleTable)
@@ -285,12 +292,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // AXPlatformNodeBase overrides.
   void Destroy() override;
   int GetIndexInParent() override;
-  base::string16 GetValue() override;
+  base::string16 GetValue() const override;
 
   // For the moment, we add a special version of this method which returns a
   // base::string16, but once the hypertext generation code is shared between
   // platforms we can just override AXPlatformNodeBase::GetText().
-  base::string16 GetTextAsString16();
+  base::string16 GetTextAsString16() const;
 
   //
   // IAccessible methods.
@@ -416,6 +423,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_locale(IA2Locale* locale) override;
   IFACEMETHODIMP get_accessibleWithCaret(IUnknown** accessible,
                                          LONG* caret_offset) override;
+
+  //
+  // IAccessible2_3 methods.
+  //
+
+  IFACEMETHODIMP get_selectionRanges(IA2Range** ranges, LONG* nRanges);
+
+  //
+  // IAccessible2_4 methods.
+  //
+
+  IFACEMETHODIMP setSelectionRanges(LONG nRanges, IA2Range* ranges);
 
   //
   // IAccessibleEx methods.
@@ -822,7 +841,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
  protected:
   AXPlatformNodeWin();
 
-  int MSAAState();
+  int MSAAState() const;
 
   int MSAARole();
   std::string StringOverrideForMSAARole();

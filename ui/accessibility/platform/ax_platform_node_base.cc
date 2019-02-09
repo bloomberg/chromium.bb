@@ -78,13 +78,13 @@ gfx::NativeViewAccessible AXPlatformNodeBase::GetFocus() {
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {
+gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() const {
   if (delegate_)
     return delegate_->GetParent();
   return nullptr;
 }
 
-int AXPlatformNodeBase::GetChildCount() {
+int AXPlatformNodeBase::GetChildCount() const {
   if (delegate_)
     return delegate_->GetChildCount();
   return 0;
@@ -307,14 +307,14 @@ AXPlatformNodeBase* AXPlatformNodeBase::FromNativeViewAccessible(
 }
 
 bool AXPlatformNodeBase::SetTextSelection(int start_offset, int end_offset) {
+  if (!delegate_)
+    return false;
+
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kSetSelection;
   action_data.anchor_node_id = action_data.focus_node_id = GetData().id;
   action_data.anchor_offset = start_offset;
   action_data.focus_offset = end_offset;
-  if (!delegate_)
-    return false;
-
   return delegate_->AccessibilityPerformAction(action_data);
 }
 
@@ -325,9 +325,10 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
 }
 
 // TODO(crbug.com/865101) Remove this once the autofill state works.
-bool AXPlatformNodeBase::IsFocusedInputWithSuggestions() {
+bool AXPlatformNodeBase::IsFocusedInputWithSuggestions() const {
   return HasInputSuggestions() && IsPlainTextField() &&
-         delegate_->GetFocus() == GetNativeViewAccessible();
+         delegate_->GetFocus() ==
+             const_cast<AXPlatformNodeBase*>(this)->GetNativeViewAccessible();
 }
 
 bool AXPlatformNodeBase::IsPlainTextField() const {
@@ -346,13 +347,14 @@ bool AXPlatformNodeBase::IsRichTextField() const {
          GetData().HasState(ax::mojom::State::kRichlyEditable);
 }
 
-std::string AXPlatformNodeBase::GetInnerText() {
+std::string AXPlatformNodeBase::GetInnerText() const {
   if (IsTextOnlyObject())
     return GetStringAttribute(ax::mojom::StringAttribute::kName);
 
   std::string text;
   for (int i = 0; i < GetChildCount(); ++i) {
-    gfx::NativeViewAccessible child_accessible = ChildAtIndex(i);
+    gfx::NativeViewAccessible child_accessible =
+        const_cast<AXPlatformNodeBase*>(this)->ChildAtIndex(i);
     AXPlatformNodeBase* child = FromNativeViewAccessible(child_accessible);
     if (!child)
       continue;
@@ -377,7 +379,7 @@ bool AXPlatformNodeBase::IsRangeValueSupported() const {
   }
 }
 
-base::string16 AXPlatformNodeBase::GetRangeValueText() {
+base::string16 AXPlatformNodeBase::GetRangeValueText() const {
   float fval;
   base::string16 value =
       GetString16Attribute(ax::mojom::StringAttribute::kValue);
@@ -572,7 +574,7 @@ bool AXPlatformNodeBase::IsLeaf() {
   }
 }
 
-bool AXPlatformNodeBase::IsChildOfLeaf() {
+bool AXPlatformNodeBase::IsChildOfLeaf() const {
   AXPlatformNodeBase* ancestor = FromNativeViewAccessible(GetParent());
 
   while (ancestor) {
@@ -619,11 +621,11 @@ bool AXPlatformNodeBase::IsVerticallyScrollable() const {
              GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
 }
 
-std::string AXPlatformNodeBase::GetText() {
+std::string AXPlatformNodeBase::GetText() const {
   return GetInnerText();
 }
 
-base::string16 AXPlatformNodeBase::GetValue() {
+base::string16 AXPlatformNodeBase::GetValue() const {
   // Expose slider value.
   if (IsRangeValueSupported()) {
     return GetRangeValueText();
@@ -1008,7 +1010,7 @@ AXHypertext AXPlatformNodeBase::ComputeHypertext() {
   // child object it points to.
   base::string16 hypertext;
   for (int i = 0; i < child_count; ++i) {
-    auto* child = FromNativeViewAccessible(delegate_->ChildAtIndex(i));
+    const auto* child = FromNativeViewAccessible(delegate_->ChildAtIndex(i));
 
     DCHECK(child);
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.

@@ -667,7 +667,15 @@ void BrowserAccessibilityManager::SetValue(const BrowserAccessibility& node,
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::SetSelection(AXPlatformRange range) {
+void BrowserAccessibilityManager::SetSelection(
+    const ui::AXActionData& action_data) {
+  if (!delegate_)
+    return;
+  delegate_->AccessibilityPerformAction(action_data);
+}
+
+void BrowserAccessibilityManager::SetSelection(
+    const BrowserAccessibilityRange& range) {
   if (!delegate_ || range.IsNull())
     return;
 

@@ -520,7 +520,7 @@ int AXPlatformNodeWin::GetIndexInParent() {
   return -1;
 }
 
-base::string16 AXPlatformNodeWin::GetTextAsString16() {
+base::string16 AXPlatformNodeWin::GetTextAsString16() const {
   if (IsChildOfLeaf())
     return base::UTF8ToUTF16(AXPlatformNodeBase::GetText());
 
@@ -1377,6 +1377,108 @@ IFACEMETHODIMP AXPlatformNodeWin::get_locale(IA2Locale* locale) {
 IFACEMETHODIMP AXPlatformNodeWin::get_accessibleWithCaret(IUnknown** accessible,
                                                           LONG* caret_offset) {
   return E_NOTIMPL;
+}
+
+//
+// IAccessible2_3 implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::get_selectionRanges(IA2Range** ranges,
+                                                      LONG* nRanges) {
+  COM_OBJECT_VALIDATE_2_ARGS(ranges, nRanges);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+  int32_t anchor_id = GetDelegate()->GetTreeData().sel_anchor_object_id;
+  auto* anchor_node =
+      static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(anchor_id));
+  if (!anchor_node)
+    return E_FAIL;
+  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
+
+  int32_t focus_id = GetDelegate()->GetTreeData().sel_focus_object_id;
+  auto* focus_node =
+      static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(focus_id));
+  if (!focus_node)
+    return E_FAIL;
+  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
+
+  if (!IsDescendant(anchor_node) || !IsDescendant(focus_node))
+    return S_FALSE;  // No selection within this subtree.
+
+  *ranges = reinterpret_cast<IA2Range*>(CoTaskMemAlloc(sizeof(IA2Range)));
+  anchor_node->AddRef();
+  ranges[0]->anchor = static_cast<IAccessible*>(anchor_node);
+  ranges[0]->anchorOffset = anchor_offset;
+  focus_node->AddRef();
+  ranges[0]->active = static_cast<IAccessible*>(focus_node);
+  ranges[0]->activeOffset = focus_offset;
+  *nRanges = 1;
+  return S_OK;
+}
+
+//
+// IAccessible2_4 implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
+                                                     IA2Range* ranges) {
+  COM_OBJECT_VALIDATE();
+  // Blink supports only one selection range for now.
+  if (nRanges != 1)
+    return E_INVALIDARG;
+  if (!ranges)
+    return E_INVALIDARG;
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  if (!ranges->anchor)
+    return E_INVALIDARG;
+  if (!ranges->active)
+    return E_INVALIDARG;
+
+  Microsoft::WRL::ComPtr<IAccessible> anchor;
+  if (FAILED(ranges->anchor->QueryInterface(IID_PPV_ARGS(&anchor))))
+    return E_INVALIDARG;
+
+  Microsoft::WRL::ComPtr<IAccessible> focus;
+  if (FAILED(ranges->active->QueryInterface(IID_PPV_ARGS(&focus))))
+    return E_INVALIDARG;
+
+  const auto* anchor_node =
+      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(anchor.Get()));
+  const auto* focus_node =
+      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(focus.Get()));
+  if (!anchor_node || !focus_node)
+    return E_INVALIDARG;
+
+  if (ranges->anchorOffset < 0 || ranges->activeOffset < 0)
+    return E_INVALIDARG;
+
+  if (anchor_node->IsTextOnlyObject() || anchor_node->IsPlainTextField()) {
+    if (size_t{ranges->anchorOffset} >
+        anchor_node->GetTextAsString16().length()) {
+      return E_INVALIDARG;
+    }
+  } else {
+    if (ranges->anchorOffset > anchor_node->GetChildCount())
+      return E_INVALIDARG;
+  }
+
+  if (focus_node->IsTextOnlyObject() || focus_node->IsPlainTextField()) {
+    if (size_t{ranges->activeOffset} > focus_node->GetTextAsString16().length())
+      return E_INVALIDARG;
+  } else {
+    if (ranges->activeOffset > focus_node->GetChildCount())
+      return E_INVALIDARG;
+  }
+
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSetSelection;
+  action_data.anchor_node_id = anchor_node->GetData().id;
+  action_data.anchor_offset = int32_t{ranges->anchorOffset};
+  action_data.focus_node_id = focus_node->GetData().id;
+  action_data.focus_offset = int32_t{ranges->activeOffset};
+  if (GetDelegate()->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return S_FALSE;
 }
 
 //
@@ -2632,9 +2734,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnHeaderCells(
     return S_FALSE;
 
   AXPlatformNodeBase* table = GetTable();
-  if (!table) {
+  if (!table)
     return S_FALSE;
-  }
 
   int column = GetTableColumn();
   int columns = GetTableColumnCount();
@@ -2866,9 +2967,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selection(LONG selection_index,
   if (selection_start >= 0 && selection_end >= 0 &&
       selection_start != selection_end) {
     // We should ignore the direction of the selection when exposing start and
-    // end offsets. According to the IA2 Spec the end offset is always increased
-    // by one past the end of the selection. This wouldn't make sense if
-    // end < start.
+    // end offsets. According to the IA2 Spec the end offset is always
+    // increased by one past the end of the selection. This wouldn't make
+    // sense if end < start.
     if (selection_end < selection_start)
       std::swap(selection_start, selection_end);
 
@@ -3903,10 +4004,10 @@ int AXPlatformNodeWin::MSAARole() {
 
     case ax::mojom::Role::kPane:
     case ax::mojom::Role::kWindow:
-      // Do not return ROLE_SYSTEM_WINDOW as that is a special MSAA system role
-      // used to indicate a real native window object. It is automatically
-      // created by oleacc.dll as a parent of the root of our hierarchy,
-      // matching the HWND.
+      // Do not return ROLE_SYSTEM_WINDOW as that is a special MSAA system
+      // role used to indicate a real native window object. It is
+      // automatically created by oleacc.dll as a parent of the root of our
+      // hierarchy, matching the HWND.
       return ROLE_SYSTEM_PANE;
 
     case ax::mojom::Role::kIgnored:
@@ -3955,10 +4056,10 @@ std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
       return "log";
 
     case ax::mojom::Role::kGenericContainer:
-      // Use html tag if available. In the case where there is no tag, e.g. for
-      // anonymous content inserted by blink, treat it as a "div". This can
-      // occur if the markup had a block and inline element as siblings -- blink
-      // will wrap the inline with a block in this case.
+      // Use html tag if available. In the case where there is no tag, e.g.
+      // for anonymous content inserted by blink, treat it as a "div". This
+      // can occur if the markup had a block and inline element as siblings --
+      // blink will wrap the inline with a block in this case.
       if (html_tag.empty())
         return "div";
       return html_tag;
@@ -4179,10 +4280,9 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       break;
     case ax::mojom::Role::kMeter:
       // TODO(accessibiity) Uncomment IA2_ROLE_LEVEL_BAR once screen readers
-      // adopt it. Currently, a <meter> ends up being spoken as a progress bar,
-      // which is confusing.
-      // IA2_ROLE_LEVEL_BAR is the correct mapping according to CORE-AAM.
-      // ia2_role = IA2_ROLE_LEVEL_BAR;
+      // adopt it. Currently, a <meter> ends up being spoken as a progress
+      // bar, which is confusing. IA2_ROLE_LEVEL_BAR is the correct mapping
+      // according to CORE-AAM. ia2_role = IA2_ROLE_LEVEL_BAR;
       break;
     case ax::mojom::Role::kNavigation:
       ia2_role = IA2_ROLE_LANDMARK;
@@ -4731,9 +4831,9 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
       if (data.role == ax::mojom::Role::kToggleButton) {
         properties.emplace_back(L"pressed=false");
       } else if (data.role == ax::mojom::Role::kSwitch) {
-        // ARIA switches are exposed to Windows accessibility as toggle buttons.
-        // For maximum compatibility with ATs, we expose both the pressed and
-        // checked states.
+        // ARIA switches are exposed to Windows accessibility as toggle
+        // buttons. For maximum compatibility with ATs, we expose both the
+        // pressed and checked states.
         properties.emplace_back(L"pressed=false");
         properties.emplace_back(L"checked=false");
       } else {
@@ -4744,9 +4844,9 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
       if (data.role == ax::mojom::Role::kToggleButton) {
         properties.emplace_back(L"pressed=true");
       } else if (data.role == ax::mojom::Role::kSwitch) {
-        // ARIA switches are exposed to Windows accessibility as toggle buttons.
-        // For maximum compatibility with ATs, we expose both the pressed and
-        // checked states.
+        // ARIA switches are exposed to Windows accessibility as toggle
+        // buttons. For maximum compatibility with ATs, we expose both the
+        // pressed and checked states.
         properties.emplace_back(L"pressed=true");
         properties.emplace_back(L"checked=true");
       } else {
@@ -5337,7 +5437,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
   return UIA_DocumentControlTypeId;
 }
 
-base::string16 AXPlatformNodeWin::GetValue() {
+base::string16 AXPlatformNodeWin::GetValue() const {
   base::string16 value = AXPlatformNodeBase::GetValue();
 
   // If this doesn't have a value and is linked then set its value to the URL
@@ -5411,7 +5511,7 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
   return data.HasState(ax::mojom::State::kFocusable);
 }
 
-int AXPlatformNodeWin::MSAAState() {
+int AXPlatformNodeWin::MSAAState() const {
   const AXNodeData& data = GetData();
   int msaa_state = 0;
 
@@ -5438,8 +5538,8 @@ int AXPlatformNodeWin::MSAAState() {
   // TODO(crbug.com/865101) Use
   // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
   // IsFocusedInputWithSuggestions() and rmove the below comment: Note:
-  // suggestions are special-cased here because there is no way for the browser
-  // to know when a suggestion popup is available.
+  // suggestions are special-cased here because there is no way for the
+  // browser to know when a suggestion popup is available.
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup) ||
       IsFocusedInputWithSuggestions())
     msaa_state |= STATE_SYSTEM_HASPOPUP;
@@ -5501,9 +5601,9 @@ int AXPlatformNodeWin::MSAAState() {
       if (data.role == ax::mojom::Role::kToggleButton) {
         msaa_state |= STATE_SYSTEM_PRESSED;
       } else if (data.role == ax::mojom::Role::kSwitch) {
-        // ARIA switches are exposed to Windows accessibility as toggle buttons.
-        // For maximum compatibility with ATs, we expose both the pressed and
-        // checked states.
+        // ARIA switches are exposed to Windows accessibility as toggle
+        // buttons. For maximum compatibility with ATs, we expose both the
+        // pressed and checked states.
         msaa_state |= STATE_SYSTEM_PRESSED | STATE_SYSTEM_CHECKED;
       } else {
         msaa_state |= STATE_SYSTEM_CHECKED;
@@ -5538,7 +5638,7 @@ int AXPlatformNodeWin::MSAAState() {
   // Handle STATE_SYSTEM_FOCUSED
   //
   gfx::NativeViewAccessible focus = GetDelegate()->GetFocus();
-  if (focus == GetNativeViewAccessible())
+  if (focus == const_cast<AXPlatformNodeWin*>(this)->GetNativeViewAccessible())
     msaa_state |= STATE_SYSTEM_FOCUSED;
 
   // In focused single selection UI menus and listboxes, mirror item selection
@@ -5640,7 +5740,8 @@ void AXPlatformNodeWin::RemoveAlertTarget() {
 }
 
 base::string16 AXPlatformNodeWin::TextForIAccessibleText() {
-  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
+  // Special case allows us to get text even in non-HTML case, e.g. browser
+  // UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
   return GetTextAsString16();
@@ -5758,7 +5859,8 @@ HRESULT AXPlatformNodeWin::AllocateComArrayFromVector(
   return S_OK;
 }
 
-// TODO(dmazzoni): Remove this function once combo box refactoring is complete.
+// TODO(dmazzoni): Remove this function once combo box refactoring is
+// complete.
 bool AXPlatformNodeWin::IsAncestorComboBox() {
   auto* parent =
       static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
@@ -5840,10 +5942,11 @@ int32_t AXPlatformNodeWin::GetHypertextOffsetFromChild(
       auto* sibling = static_cast<AXPlatformNodeWin*>(
           FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
       DCHECK(sibling);
-      if (sibling->IsTextOnlyObject())
+      if (sibling->IsTextOnlyObject()) {
         hypertext_offset += (int32_t)sibling->GetTextAsString16().size();
-      else
+      } else {
         ++hypertext_offset;
+      }
     }
     return hypertext_offset;
   }
@@ -5874,14 +5977,14 @@ int AXPlatformNodeWin::GetHypertextOffsetFromEndpoint(
     AXPlatformNodeWin* endpoint_object,
     int endpoint_offset) {
   // There are three cases:
-  // 1. Either the selection endpoint is inside this object or is an ancestor of
-  // of this object. endpoint_offset should be returned.
+  // 1. Either the selection endpoint is inside this object or is an ancestor
+  // of of this object. endpoint_offset should be returned.
   // 2. The selection endpoint is a pure descendant of this object. The offset
   // of the character corresponding to the subtree in which the endpoint is
   // located should be returned.
   // 3. The selection endpoint is in a completely different part of the tree.
-  // Either 0 or text_length should be returned depending on the direction that
-  // one needs to travel to find the endpoint.
+  // Either 0 or text_length should be returned depending on the direction
+  // that one needs to travel to find the endpoint.
 
   // Case 1.
   //
@@ -6024,9 +6127,9 @@ void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(size_t* start,
   // to guess what has changed.
   // -- NOT EDITABLE --
   // When part of the text changes, assume the entire node's text changed. For
-  // example, if "car" changes to "cat" then assume all 3 letters changed. Note,
-  // it is possible (though rare) that CharacterData methods are used to remove,
-  // insert, replace or append a substring.
+  // example, if "car" changes to "cat" then assume all 3 letters changed.
+  // Note, it is possible (though rare) that CharacterData methods are used to
+  // remove, insert, replace or append a substring.
   bool allow_partial_text_node_changes =
       GetData().HasState(ax::mojom::State::kEditable);
   size_t prefix_index = 0;
@@ -6066,7 +6169,7 @@ int AXPlatformNodeWin::GetSelectionAnchor() {
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = GetDelegate()->GetTreeData().sel_anchor_offset;
+  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
   return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
 }
 
@@ -6077,7 +6180,7 @@ int AXPlatformNodeWin::GetSelectionFocus() {
   if (!focus_object)
     return -1;
 
-  int focus_offset = GetDelegate()->GetTreeData().sel_focus_offset;
+  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
   return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
 }
 
@@ -6107,8 +6210,8 @@ void AXPlatformNodeWin::GetSelectionOffsets(int* selection_start,
   // object character.
   // Only case 3 refers to a valid selection because cases 1 and 2 fall
   // outside this object in their entirety.
-  // Selections that span more than one character are by definition inside this
-  // object, so checking them is not necessary.
+  // Selections that span more than one character are by definition inside
+  // this object, so checking them is not necessary.
   if (*selection_start == *selection_end && !HasCaret()) {
     *selection_start = -1;
     *selection_end = -1;
