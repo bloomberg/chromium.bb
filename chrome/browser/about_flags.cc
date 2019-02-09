@@ -1317,10 +1317,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHyperlinkAuditingDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kNoPings)},
 #if defined(OS_ANDROID)
-    {"contextual-search", flag_descriptions::kContextualSearchName,
-     flag_descriptions::kContextualSearchDescription, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
-                               switches::kDisableContextualSearch)},
     {"contextual-search-ml-tap-suppression",
      flag_descriptions::kContextualSearchMlTapSuppressionName,
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
