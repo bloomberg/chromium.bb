@@ -1,0 +1,32 @@
+This is a testharness.js-based test.
+PASS RTCIceTransport constructor does not throw
+PASS RTCIceTransport initial properties are set
+PASS gather() with { iceServers: null } should throw TypeError
+PASS gather() with { iceServers: undefined } should succeed
+PASS gather() with one turns server, one turn server, username, credential should succeed
+PASS gather() with 2 stun servers should succeed
+PASS gather() throws if closed
+PASS gather() transitions gatheringState to 'gathering'
+PASS gather() throws if called twice
+PASS eventually transition gatheringState to 'complete'
+PASS onicecandidate fires with null candidate before gatheringState transitions to 'complete'
+PASS gather() returns at least one host candidate
+PASS gather() returns no candidates with { gatherPolicy: 'relay'} and no turn servers
+PASS start() throws if closed
+PASS start() throws if usernameFragment or password not set
+PASS start() does not transition state to 'checking' if no remote candidates added
+PASS start() with default role sets role attribute to 'controlled'
+PASS start() sets role attribute to 'controlling'
+PASS addRemoteCandidate() throws if closed
+PASS addRemoteCandidate() throws on invalid candidate
+PASS start() transitions state to 'checking' if one remote candidate had been added
+PASS addRemoteCandidate() transitions state to 'checking' if start() had been called before
+PASS start() throws if later called with a different role
+PASS start() flushes remote candidates and transitions state to 'new' if later called with different remote parameters
+PASS Two RTCIceTransports connect to each other
+PASS Two RTCIceTransports configured with the controlling role resolve the conflict in band and still connect.
+PASS Two RTCIceTransports configured with the controlled role resolve the conflict in band and still connect.
+FAIL Selected candidate pair changes once the RTCIceTransports connect. assert_true: local transport selected candidate pair local should be in the list of remote candidates expected true got false
+PASS getSelectedCandidatePair() returns null once the RTCIceTransport is stopped.
+Harness: the test ran to completion.
+
