@@ -27,8 +27,7 @@ bool operator==(const MetricsRefreshFrequencies& lhs,
 class MockMetricsMonitorObserver : public SystemObserver {
  public:
   ~MockMetricsMonitorObserver() override {}
-  MOCK_METHOD1(OnFreePhysicalMemoryMbSample,
-               void(base::Optional<int> free_phys_memory_mb));
+  MOCK_METHOD1(OnFreePhysicalMemoryMbSample, void(int free_phys_memory_mb));
 };
 
 class TestSystemMonitorHelper : public SystemMonitorHelper {
@@ -152,8 +151,7 @@ TEST_F(SystemMonitorTest, ObserverGetsCalled) {
   system_monitor_->AddOrUpdateObserver(&mock_observer_2, {});
 
   // Ensure that we get several samples to verify that the timer logic works.
-  EXPECT_CALL(mock_observer_1,
-              OnFreePhysicalMemoryMbSample(::testing::Optional(42)))
+  EXPECT_CALL(mock_observer_1, OnFreePhysicalMemoryMbSample(::testing::Eq(42)))
       .Times(2);
 
   // The second observer shouldn't be called.

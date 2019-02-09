@@ -54,10 +54,13 @@ SystemMonitorHelperWin::MetricsRefresh SystemMonitorHelperWin::RefreshMetrics(
   if ((refresh_time - last_phys_memory_refresh_default_freq_) >=
       kRefreshIntervalPhysMemoryMbRegFreq) {
     last_phys_memory_refresh_default_freq_ = refresh_time;
-    metrics.free_phys_memory_mb =
-        SystemMonitorHelper::MetricAndRefreshReason<int>(
-            GetFreePhysMemoryMb(),
-            SystemMonitor::SamplingFrequency::kDefaultFrequency);
+    auto free_phys_memory = GetFreePhysMemoryMb();
+    if (free_phys_memory) {
+      metrics.free_phys_memory_mb =
+          SystemMonitorHelper::MetricAndRefreshReason<int>(
+              free_phys_memory.value(),
+              SystemMonitor::SamplingFrequency::kDefaultFrequency);
+    }
   }
 
   return metrics;

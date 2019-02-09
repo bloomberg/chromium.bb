@@ -10,7 +10,6 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -70,10 +69,8 @@ class SystemMonitor {
 
     ~SystemObserver() override = default;
 
-    // Reports the amount of free physical memory, in MB. |free_phys_memory_mb|
-    // can be equal to nullopt if the monitor failed to retrieve this value.
-    virtual void OnFreePhysicalMemoryMbSample(
-        base::Optional<int> free_phys_memory_mb);
+    // Reports the amount of free physical memory, in MB.
+    virtual void OnFreePhysicalMemoryMbSample(int free_phys_memory_mb);
   };
   using ObserverToFrequenciesMap =
       base::flat_map<SystemObserver*, SystemObserver::MetricRefreshFrequencies>;
@@ -113,9 +110,9 @@ class SystemMonitor {
   template <typename T>
   struct MetricAndRefreshReason {
     MetricAndRefreshReason() {}
-    MetricAndRefreshReason(base::Optional<T> value, SamplingFrequency reason)
+    MetricAndRefreshReason(T value, SamplingFrequency reason)
         : metric_value(value), refresh_reason(reason) {}
-    base::Optional<T> metric_value = base::nullopt;
+    T metric_value = {};
     SamplingFrequency refresh_reason = SamplingFrequency::kNoSampling;
   };
 
