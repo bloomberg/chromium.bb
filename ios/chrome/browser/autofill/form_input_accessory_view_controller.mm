@@ -411,6 +411,9 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     if (IsIPadIdiom()) {
       // On iPad the keyboard view can change so this updates it when needed.
       UIView* keyboardView = [self getKeyboardView];
+      if (!keyboardView) {
+        return;
+      }
       if (self.inputAccessoryView.superview) {
         if (keyboardView == self.inputAccessoryView.superview) {
           return;
