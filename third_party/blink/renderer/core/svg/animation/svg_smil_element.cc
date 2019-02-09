@@ -411,10 +411,6 @@ SMILTime SVGSMILElement::ParseClockValue(const String& data) {
   return result;
 }
 
-static void SortTimeList(Vector<SMILTimeWithOrigin>& time_list) {
-  std::sort(time_list.begin(), time_list.end());
-}
-
 bool SVGSMILElement::ParseCondition(const String& value,
                                     BeginOrEnd begin_or_end) {
   String parse_string = value.StripWhiteSpace();
@@ -509,7 +505,7 @@ void SVGSMILElement::ParseBeginOrEnd(const String& parse_string,
           SMILTimeWithOrigin(value, SMILTimeWithOrigin::kParserOrigin));
     }
   }
-  SortTimeList(time_list);
+  std::sort(time_list.begin(), time_list.end());
 }
 
 void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
@@ -711,6 +707,12 @@ SMILTime SVGSMILElement::SimpleDuration() const {
   return std::min(Dur(), SMILTime::Indefinite());
 }
 
+static void InsertSorted(Vector<SMILTimeWithOrigin>& list,
+                         SMILTimeWithOrigin time) {
+  auto* position = std::lower_bound(list.begin(), list.end(), time);
+  list.insert(position - list.begin(), time);
+}
+
 void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
                                      SMILTimeWithOrigin::Origin origin) {
@@ -725,8 +727,7 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
     return;
   Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-  list.push_back(time_with_origin);
-  SortTimeList(list);
+  InsertSorted(list, time_with_origin);
   if (begin_or_end == kBegin)
     BeginListChanged(elapsed);
   else
