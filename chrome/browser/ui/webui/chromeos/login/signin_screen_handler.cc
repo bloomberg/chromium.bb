@@ -335,7 +335,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("moreOptions", IDS_MORE_OPTIONS_BUTTON);
   builder->Add("cancel", IDS_ASH_SHELF_CANCEL_BUTTON);
   builder->Add("signOutUser", IDS_ASH_SHELF_SIGN_OUT_BUTTON);
-  builder->Add("unlockUser", IDS_ASH_SHELF_UNLOCK_BUTTON);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
@@ -451,9 +450,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE);
   builder->Add("unrecoverableCryptohomeErrorRecreatingProfile",
                IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_WAIT_MESSAGE);
-
-  builder->Add("newLockScreenNoteButton",
-               IDS_LOGIN_NEW_LOCK_SCREEN_NOTE_BUTTON_TITLE);
 }
 
 void SigninScreenHandler::RegisterMessages() {

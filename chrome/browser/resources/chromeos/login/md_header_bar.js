@@ -8,16 +8,6 @@
 
 cr.define('login', function() {
   /**
-   * Enum for user actions taken from lock screen header while a lock screen
-   * app is in background.
-   * @enum {string}
-   */
-  var LOCK_SCREEN_APPS_UNLOCK_ACTION = {
-    SIGN_OUT: 'LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT',
-    SHUTDOWN: 'LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN'
-  };
-
-  /**
    * Creates a header bar element.
    *
    * @constructor
@@ -41,13 +31,6 @@ cr.define('login', function() {
 
     // Current UI state of the sign-in screen.
     signinUIState_: SIGNIN_UI_STATE.HIDDEN,
-
-    // Current lock screen apps activity state. This value affects visibility of
-    // tray buttons visible in the header bar - when lock screeen apps state is
-    // FOREGROUND, only the unlock button should be shown (when clicked, the
-    // button issues a request to move lock screen apps to background, in the
-    // state where account picker is visible).
-    lockScreenAppsState_: LOCK_SCREEN_APPS_STATE.NONE,
 
     // Whether to show kiosk apps menu.
     hasApps_: false,
@@ -73,8 +56,6 @@ cr.define('login', function() {
           .addEventListener('click', this.handleSignoutClick_.bind(this));
       $('cancel-multiple-sign-in-button')
           .addEventListener('click', this.handleCancelMultipleSignInClick_);
-      $('unlock-user-button')
-          .addEventListener('click', this.handleUnlockUserClick_);
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)
@@ -209,17 +190,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Unlock user button handler. Sends a request to Chrome to show user pods
-     * in foreground.
-     *
-     * @private
-     */
-    handleUnlockUserClick_: function(e) {
-      chrome.send('closeLockScreenApp');
-      e.preventDefault();
-    },
-
-    /**
      * If true then "Browse as Guest" button is shown.
      *
      * @type {boolean}
@@ -264,16 +234,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Current activity state of lock screen app windows.
-     *
-     * @type {LOCK_SCREEN_APPS_STATE}
-     */
-    set lockScreenAppsState(state) {
-      this.lockScreenAppsState_ = state;
-      this.updateUI_();
-    },
-
-    /**
      * Update whether there are kiosk apps.
      *
      * @type {boolean}
@@ -313,14 +273,9 @@ cr.define('login', function() {
           isMultiProfilesUI || (gaiaIsActive && $('gaia-signin').closable) ||
           (enrollmentIsActive && !$('oauth-enrollment').isAtTheBeginning()) ||
           (gaiaIsActive && !$('gaia-signin').isAtTheBeginning());
-      $('restart-header-bar-item').hidden = !this.showReboot_ ||
-          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      $('shutdown-header-bar-item').hidden = !this.showShutdown_ ||
-          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      $('sign-out-user-item').hidden = !isLockScreen ||
-          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      $('unlock-user-header-bar-item').hidden = !isLockScreen ||
-          this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.FOREGROUND;
+      $('restart-header-bar-item').hidden = !this.showReboot_;
+      $('shutdown-header-bar-item').hidden = !this.showShutdown_;
+      $('sign-out-user-item').hidden = !isLockScreen;
 
       $('add-user-header-bar-item').hidden = $('add-user-button').hidden;
       $('apps-header-bar-item').hidden =
@@ -331,14 +286,6 @@ cr.define('login', function() {
         if (!$('apps-header-bar-item').hidden)
           $('show-apps-button').didShow();
       }
-
-      // Lock screen apps are generally shown maximized - update the header
-      // bar background opacity so the wallpaper is not visible behind it (
-      // since it won't be visible in the rest of UI).
-      this.classList.toggle(
-          'full-header-background',
-          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.FOREGROUND ||
-              this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.BACKGROUND);
     },
 
     /**

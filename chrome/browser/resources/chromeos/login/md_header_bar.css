@@ -15,11 +15,6 @@
   padding-top: 7px;
 }
 
-#login-header-bar.full-header-background {
-  background-color: #000;
-  border-top: 1px solid #000;
-}
-
 #login-header-bar.translucent-background {
   background-color: rgba(0, 0, 0, 0.9);
 }

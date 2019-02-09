@@ -1215,9 +1215,6 @@
   <message name="IDS_LOGIN_NEEDS_DIRCRYPTO_MIGRATION_BANNER" desc="Banner text for users that need to migrate their data to use dircrypto.">
     A critical update is ready to install. Sign in to get started.
   </message>
-  <message name="IDS_LOGIN_NEW_LOCK_SCREEN_NOTE_BUTTON_TITLE" desc="Title for the button on the Chrome OS lock screen that launches an app for taking notes (the action of creating a new note is delegated to the app). The string is primarily intended to be spoken out by accessibility tools - the button is represented by an icon in the lock screen UI.">
-    Create new note
-  </message>
 
   <!-- Network error strings -->
   <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error details in notifications: UNKNOWN">
