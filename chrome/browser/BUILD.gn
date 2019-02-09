@@ -3106,6 +3106,8 @@ jumbo_split_static_library("browser") {
       "search/search_suggest/search_suggest_service_factory.cc",
       "search/search_suggest/search_suggest_service_factory.h",
       "search/search_suggest/search_suggest_service_observer.h",
+      "send_tab_to_self/send_tab_to_self_util.cc",
+      "send_tab_to_self/send_tab_to_self_util.h",
       "serial/chrome_serial_delegate.cc",
       "serial/chrome_serial_delegate.h",
       "serial/serial_chooser_context.cc",
