@@ -10,7 +10,6 @@ import("//chromeos/assistant/assistant.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 static_library("utility") {
   sources = [

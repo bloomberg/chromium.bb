@@ -23,7 +23,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
 

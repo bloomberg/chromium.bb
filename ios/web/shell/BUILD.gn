@@ -5,7 +5,6 @@
 import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
