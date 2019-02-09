@@ -153,6 +153,12 @@ constexpr base::FeatureParam<OmniboxFieldTrial::PedalSuggestionMode>
                           OmniboxFieldTrial::PedalSuggestionMode::DEDICATED,
                           &kPedalSuggestionModeOptions};
 
+// Feature used to show a context menu for suggestions when the user
+// right-clicks a suggestion in the omnibox dropdown. It's currently disabled
+// by default during development, but will eventually be enabled by default.
+const base::Feature kOmniboxContextMenuForSuggestions{
+    "OmniboxContextMenuForSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable clipboard provider, which provides the user with
 // suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
 const base::Feature kEnableClipboardProvider {

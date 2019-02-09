@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
@@ -35,6 +36,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 #if defined(OS_WIN)
 #include "base/win/atl.h"
@@ -59,6 +61,14 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxContextMenuForSuggestions)) {
+    // TODO(tommycli): Replace this with the real translated string from UX.
+    context_menu_contents_.AddItem(COMMAND_REMOVE_SUGGESTION,
+                                   base::ASCIIToUTF16("Remove suggestion..."));
+    set_context_menu_controller(this);
+  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -385,6 +395,44 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   Invalidate();
   SchedulePaint();
+}
+
+void OmniboxResultView::ShowContextMenuForView(views::View* source,
+                                               const gfx::Point& point,
+                                               ui::MenuSourceType source_type) {
+  // Deferred unhover of the result until the context menu is closed.
+  // If the mouse is still over the result when the context menu is closed, the
+  // View will receive an OnMouseMoved call anyways, which sets hover to true.
+  base::RepeatingClosure set_hovered_false = base::BindRepeating(
+      &OmniboxResultView::SetHovered, weak_factory_.GetWeakPtr(), false);
+
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
+      &context_menu_contents_,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
+      set_hovered_false);
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
+                                  gfx::Rect(point, gfx::Size()),
+                                  views::MENU_ANCHOR_TOPLEFT, source_type);
+
+  // Opening the context menu unsets the hover state, but we still want the
+  // result 'hovered' as long as the context menu is open.
+  SetHovered(true);
+}
+
+// ui::SimpleMenuModel::Delegate overrides:
+bool OmniboxResultView::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool OmniboxResultView::IsCommandIdEnabled(int command_id) const {
+  DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
+  return match_.SupportsDeletion();
+}
+
+void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
+  DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
+
+  // TODO(tommycli): Launch modal bubble to confirm removing the suggestion.
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
