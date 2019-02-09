@@ -147,6 +147,9 @@ cr.define('cr.ui', function() {
       this.unlisten(this, 'mousedown', 'onMouseDown_');
       this.unlisten(this, 'blur', 'onBlur_');
       this.removeObservers_();
+      if (this.firstControl_) {
+        this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
+      }
       if (this.row_) {
         this.row_.destroy();
       }
@@ -172,9 +175,6 @@ cr.define('cr.ui', function() {
 
     /** @private */
     removeObservers_: function() {
-      if (this.firstControl_) {
-        this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
-      }
       if (this.controlObservers_.length > 0) {
         this.controlObservers_.forEach(observer => {
           observer.disconnect();

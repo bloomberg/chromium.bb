@@ -44,6 +44,11 @@ suite('cr-focus-row-behavior-test', function() {
     Polymer({
       is: 'focus-row-element',
       behaviors: [cr.ui.FocusRowBehavior],
+      focusCallCount: 0,
+
+      focus: function() {
+        this.focusCallCount++;
+      },
     });
   });
 
@@ -119,5 +124,27 @@ suite('cr-focus-row-behavior-test', function() {
       const button = getDeepActiveElement();
       assertEquals('fake button three', button.textContent.trim());
     });
+  });
+
+  test('when shift+tab pressed on first control, focus on container', () => {
+    const first = testElement.$.control;
+    const second = testElement.$.controlTwo;
+    MockInteractions.pressAndReleaseKeyOn(first, '', 'shift', 'Tab');
+    assertEquals(1, testElement.focusCallCount);
+    MockInteractions.pressAndReleaseKeyOn(second, '', 'shift', 'Tab');
+    assertEquals(1, testElement.focusCallCount);
+
+    // Simulate updating a row with same first control.
+    testElement.fire('dom-change');
+    MockInteractions.pressAndReleaseKeyOn(first, '', 'shift', 'Tab');
+    assertEquals(2, testElement.focusCallCount);
+    MockInteractions.pressAndReleaseKeyOn(second, '', 'shift', 'Tab');
+    assertEquals(2, testElement.focusCallCount);
+
+    // Simulate updating row with different first control.
+    first.remove();
+    testElement.fire('dom-change');
+    MockInteractions.pressAndReleaseKeyOn(second, '', 'shift', 'Tab');
+    assertEquals(3, testElement.focusCallCount);
   });
 });
