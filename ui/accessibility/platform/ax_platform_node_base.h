@@ -54,8 +54,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // These are simple wrappers to our delegate.
   const AXNodeData& GetData() const;
   gfx::NativeViewAccessible GetFocus();
-  gfx::NativeViewAccessible GetParent();
-  int GetChildCount();
+  gfx::NativeViewAccessible GetParent() const;
+  int GetChildCount() const;
   gfx::NativeViewAccessible ChildAtIndex(int index);
 
   // This needs to be implemented for each platform.
@@ -165,7 +165,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to the
   // platform.
-  bool IsChildOfLeaf();
+  bool IsChildOfLeaf() const;
 
   // Returns true if this is a leaf node on this platform, meaning any
   // children should not be exposed to this platform's native accessibility
@@ -189,9 +189,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   bool HasFocus();
 
-  virtual std::string GetText();
+  virtual std::string GetText() const;
 
-  virtual base::string16 GetValue();
+  virtual base::string16 GetValue() const;
 
   // Represents a non-static text node in IAccessibleHypertext (and ATK in the
   // future). This character is embedded in the response to
@@ -217,18 +217,18 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // such as for the Autofill feature. The suggestion popup can be either hidden
   // and available or already visible. This indicates next down arrow key will
   // navigate within the suggestion popup.
-  bool IsFocusedInputWithSuggestions();
+  bool IsFocusedInputWithSuggestions() const;
   bool IsRichTextField() const;
   bool IsRangeValueSupported() const;
 
   // Get the range value text, which might come from aria-valuetext or
   // a floating-point value. This is different from the value string
   // attribute used in input controls such as text boxes and combo boxes.
-  base::string16 GetRangeValueText();
+  base::string16 GetRangeValueText() const;
 
   // |GetInnerText| recursively includes all the text from descendants such as
   // text found in any embedded object.
-  std::string GetInnerText();
+  std::string GetInnerText() const;
 
   // Cast a gfx::NativeViewAccessible to an AXPlatformNodeBase if it is one,
   // or return NULL if it's not an instance of this class.
