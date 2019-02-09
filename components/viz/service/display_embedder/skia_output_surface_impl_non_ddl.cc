@@ -8,6 +8,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -171,7 +172,7 @@ unsigned SkiaOutputSurfaceImplNonDDL::UpdateGpuFence() {
 
 void SkiaOutputSurfaceImplNonDDL::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
-  needs_swap_size_notifications_ = needs_swap_size_notifications;
+  NOTIMPLEMENTED();
 }
 
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
@@ -296,13 +297,8 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::ReleasePromiseSkImages(
 
 void SkiaOutputSurfaceImplNonDDL::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  gpu::SwapBuffersCompleteParams params;
-  params.swap_response.swap_start = base::TimeTicks::Now();
-  params.swap_response.result = gl_surface_->SwapBuffers(base::BindOnce(
-      &SkiaOutputSurfaceImplNonDDL::BufferPresented, base::Unretained(this)));
-  params.swap_response.swap_end = base::TimeTicks::Now();
-
-  DidSwapBuffersComplete(params, gfx::Size());
+  gl_surface_->SwapBuffers(
+      base::DoNothing::Once<const gfx::PresentationFeedback&>());
 }
 
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintRenderPass(
@@ -429,27 +425,6 @@ bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
   return gpu::GetGrBackendTexture(gl_version_info, texture_base->target(),
                                   metadata.size, texture_base->service_id(),
                                   metadata.resource_format, backend_texture);
-}
-
-void SkiaOutputSurfaceImplNonDDL::DidSwapBuffersComplete(
-    const gpu::SwapBuffersCompleteParams& params,
-    const gfx::Size& pixel_size) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(client_);
-
-  DCHECK(params.texture_in_use_responses.empty());
-  DCHECK(params.ca_layer_params.is_empty);
-
-  client_->DidReceiveSwapBuffersAck();
-  if (needs_swap_size_notifications_)
-    client_->DidSwapWithSize(pixel_size);
-}
-
-void SkiaOutputSurfaceImplNonDDL::BufferPresented(
-    const gfx::PresentationFeedback& feedback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(client_);
-  client_->DidReceivePresentationFeedback(feedback);
 }
 
 void SkiaOutputSurfaceImplNonDDL::ContextLost() {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -679,25 +680,30 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  auto did_swap_buffer_complete_callback = base::BindRepeating(
-      &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
-  did_swap_buffer_complete_callback = CreateSafeCallback(
-      client_thread_task_runner_, did_swap_buffer_complete_callback);
-  auto buffer_presented_callback =
-      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
-  buffer_presented_callback =
-      CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback);
-  auto context_lost_callback =
-      base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
-  context_lost_callback =
-      CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
-
   if (task_executor_) {
+    // When |task_executor_| is not nullptr, DidSwapBuffersComplete(),
+    // BufferPresented(), ContextList() are not expected to be called by this
+    // class. The SurfacesInstance will do it.
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
         task_executor_.get(), gl_surface_, std::move(shared_context_state_),
-        sequence_->GetSequenceId(), did_swap_buffer_complete_callback,
-        buffer_presented_callback, context_lost_callback);
+        sequence_->GetSequenceId(),
+        base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
+                                    const gfx::Size&>(),
+        base::DoNothing::Repeatedly<const gfx::PresentationFeedback&>(),
+        base::DoNothing::Repeatedly<>());
   } else {
+    auto did_swap_buffer_complete_callback = base::BindRepeating(
+        &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
+    did_swap_buffer_complete_callback = CreateSafeCallback(
+        client_thread_task_runner_, did_swap_buffer_complete_callback);
+    auto buffer_presented_callback =
+        base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
+    buffer_presented_callback = CreateSafeCallback(client_thread_task_runner_,
+                                                   buffer_presented_callback);
+    auto context_lost_callback =
+        base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
+    context_lost_callback =
+        CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
         gpu_service_, surface_handle_, did_swap_buffer_complete_callback,
         buffer_presented_callback, context_lost_callback);
