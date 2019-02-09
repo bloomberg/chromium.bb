@@ -6,8 +6,6 @@
  * @fileoverview Login UI based on a stripped down OOBE controller.
  */
 
-var isMd = true;
-
 // <include src="test_util.js">
 // <include src="../../../../../ui/login/screen.js">
 // <include src="screen_context.js">
