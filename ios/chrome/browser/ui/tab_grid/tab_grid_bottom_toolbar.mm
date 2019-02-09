@@ -28,6 +28,18 @@
 
 #pragma mark - UIView
 
+// Controls hit testing of the bottom toolbar. When the toolbar is transparent,
+// only respond to tapping on the new tab button.
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent*)event {
+  // The toolbar is not tranparent under compact layout.
+  if ([self shouldUseCompactLayout]) {
+    return [super pointInside:point withEvent:event];
+  }
+  return [self.newTabButton.button
+      pointInside:[self convertPoint:point toView:self.newTabButton.button]
+        withEvent:event];
+}
+
 - (void)willMoveToSuperview:(UIView*)newSuperview {
   // The first time this moves to a superview, perform the view setup.
   if (newSuperview && self.subviews.count == 0) {
