@@ -344,6 +344,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                            const gfx::Rect& bounds,
                            const base::Optional<viz::LocalSurfaceIdAllocation>&
                                local_surface_id_allocation);
+  bool SetWindowTransformImpl(const ClientWindowId& window_id,
+                              const gfx::Transform& transform);
   bool ReorderWindowImpl(const ClientWindowId& window_id,
                          const ClientWindowId& relative_window_id,
                          mojom::OrderDirection direction);
@@ -396,7 +398,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
                                          local_surface_id_allocation) override;
   void AllocateLocalSurfaceId(Id transport_window_id) override;
   void SetWindowTransform(uint32_t change_id,
-                          Id window_id,
+                          Id transport_window_id,
                           const gfx::Transform& transform) override;
   void SetClientArea(Id transport_window_id,
                      const gfx::Insets& insets,
