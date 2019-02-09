@@ -574,7 +574,7 @@ TEST(CTAPResponseTest, TestReadGetInfoResponse) {
       base::ContainsKey(get_info_response->versions(), ProtocolVersion::kU2f));
   EXPECT_TRUE(get_info_response->options().is_platform_device);
   EXPECT_TRUE(get_info_response->options().supports_resident_key);
-  EXPECT_TRUE(get_info_response->options().user_presence_required);
+  EXPECT_TRUE(get_info_response->options().supports_user_presence);
   EXPECT_EQ(AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured,
             get_info_response->options().user_verification_availability);

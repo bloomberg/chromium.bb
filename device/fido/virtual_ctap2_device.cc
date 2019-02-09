@@ -366,8 +366,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   // Step 8.
-  if (request.resident_key_required() && !options.supports_resident_key) {
+  if ((request.resident_key_required() && !options.supports_resident_key) ||
+      !options.supports_user_presence) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  // Step 10.
+  if (!user_verified && mutable_state()->simulate_press_callback) {
+    mutable_state()->simulate_press_callback.Run();
   }
 
   // Create key to register.
@@ -477,6 +483,17 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
 
   if (!found_data)
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
+
+  // Step 6.
+  if (!options.supports_user_presence && request.user_presence_required()) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  // Step 8.
+  if (request.user_presence_required() && !user_verified &&
+      mutable_state()->simulate_press_callback) {
+    mutable_state()->simulate_press_callback.Run();
+  }
 
   found_data->counter++;
   auto authenticator_data =

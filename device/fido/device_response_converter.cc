@@ -233,7 +233,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!option_map_it->second.is_bool())
         return base::nullopt;
 
-      options.user_presence_required = option_map_it->second.GetBool();
+      options.supports_user_presence = option_map_it->second.GetBool();
     }
 
     option_map_it = option_map.find(CBOR(kUserVerificationMapKey));

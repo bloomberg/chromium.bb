@@ -48,7 +48,10 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // Indicates whether the device is capable of verifying the user on its own.
   UserVerificationAvailability user_verification_availability =
       UserVerificationAvailability::kNotSupported;
-  bool user_presence_required = true;
+  // supports_user_presence indicates whether the device can assert user
+  // presence. E.g. a touch for a USB device, or being placed in the reader
+  // field for an NFC device.
+  bool supports_user_presence = true;
   // Represents whether client pin in set and stored in device. Set as null
   // optional if client pin capability is not supported by the authenticator.
   ClientPinAvailability client_pin_availability =

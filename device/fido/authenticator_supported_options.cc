@@ -20,7 +20,7 @@ AuthenticatorSupportedOptions::~AuthenticatorSupportedOptions() = default;
 cbor::Value ConvertToCBOR(const AuthenticatorSupportedOptions& options) {
   cbor::Value::MapValue option_map;
   option_map.emplace(kResidentKeyMapKey, options.supports_resident_key);
-  option_map.emplace(kUserPresenceMapKey, options.user_presence_required);
+  option_map.emplace(kUserPresenceMapKey, options.supports_user_presence);
   option_map.emplace(kPlatformDeviceMapKey, options.is_platform_device);
 
   using UvAvailability =
