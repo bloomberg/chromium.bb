@@ -61,7 +61,7 @@ class LocalTestServer : public BaseTestServer {
 
   // Returns the actual path of document root for test cases. This function
   // should be called by test cases to retrieve the actual document root path.
-  base::FilePath GetDocumentRoot() const { return document_root(); };
+  base::FilePath GetDocumentRoot() const { return document_root(); }
 
  private:
   bool Init(const base::FilePath& document_root);

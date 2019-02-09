@@ -22,7 +22,7 @@ FlingingRenderer::FlingingRenderer(
 
 FlingingRenderer::~FlingingRenderer() {
   controller_->RemoveMediaStatusObserver(this);
-};
+}
 
 // static
 std::unique_ptr<FlingingRenderer> FlingingRenderer::Create(

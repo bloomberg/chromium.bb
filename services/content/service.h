@@ -69,6 +69,6 @@ class Service : public service_manager::Service {
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // SERVICES_CONTENT_SERVICE_H_

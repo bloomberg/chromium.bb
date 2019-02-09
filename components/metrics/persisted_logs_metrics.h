@@ -34,7 +34,7 @@ class PersistedLogsMetrics {
   PersistedLogsMetrics() {}
   virtual ~PersistedLogsMetrics() {}
 
-  virtual void RecordLogReadStatus(LogReadStatus status){};
+  virtual void RecordLogReadStatus(LogReadStatus status) {}
 
   virtual void RecordCompressionRatio(
     size_t compressed_size, size_t original_size) {}

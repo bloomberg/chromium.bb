@@ -166,7 +166,7 @@ TEST_F(PreflightResultTest, MaxAge) {
   EXPECT_EQ(base::TimeTicks(), result2->absolute_expiry_time());
 
   PreflightResult::SetTickClockForTesting(nullptr);
-};
+}
 
 TEST_F(PreflightResultTest, EnsureMethods) {
   for (const auto& test : method_cases) {

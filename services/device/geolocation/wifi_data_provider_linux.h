@@ -12,7 +12,7 @@
 
 namespace dbus {
 class Bus;
-};
+}
 
 namespace device {
 

@@ -28,7 +28,7 @@ namespace content {
 class DetachableResourceHandler::Controller : public ResourceController {
  public:
   explicit Controller(DetachableResourceHandler* detachable_handler)
-      : detachable_handler_(detachable_handler){};
+      : detachable_handler_(detachable_handler) {}
 
   ~Controller() override {}
 

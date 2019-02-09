@@ -78,7 +78,7 @@ struct TypeConverter<std::vector<A>, std::vector<B>> {
     for (const B& item : input)
       result.push_back(mojo::ConvertTo<A>(item));
     return result;
-  };
+  }
 };
 
 }  // namespace mojo

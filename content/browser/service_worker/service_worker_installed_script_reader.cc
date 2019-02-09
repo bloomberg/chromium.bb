@@ -273,4 +273,4 @@ void ServiceWorkerInstalledScriptReader::CompleteSendIfNeeded(
     client_->OnFinished(reason);
 }
 
-};  // namespace content
+}  // namespace content

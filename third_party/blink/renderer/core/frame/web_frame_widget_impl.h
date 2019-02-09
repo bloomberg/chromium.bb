@@ -155,7 +155,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   GraphicsLayer* RootGraphicsLayer() const override {
     return root_graphics_layer_;
-  };
+  }
 
   void Trace(blink::Visitor*) override;
 

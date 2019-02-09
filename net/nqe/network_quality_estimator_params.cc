@@ -538,7 +538,7 @@ void NetworkQualityEstimatorParams::SetUseSmallResponsesForTesting(
 bool NetworkQualityEstimatorParams::use_small_responses() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return use_small_responses_;
-};
+}
 
 // static
 base::TimeDelta NetworkQualityEstimatorParams::GetDefaultTypicalHttpRtt(

@@ -31,4 +31,4 @@ void FakeCompositorFrameSinkClient::InsertResources(
                              resources.end());
 }
 
-};  // namespace viz
+}  // namespace viz

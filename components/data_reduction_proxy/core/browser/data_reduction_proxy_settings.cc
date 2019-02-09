@@ -288,7 +288,7 @@ const net::HttpRequestHeaders&
 DataReductionProxySettings::GetProxyRequestHeaders() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return proxy_request_headers_;
-};
+}
 
 void DataReductionProxySettings::SetProxyRequestHeaders(
     const net::HttpRequestHeaders& headers) {

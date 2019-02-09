@@ -59,7 +59,7 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
 
   const signed_exchange_utils::URLWithRawString& request_url() const {
     return request_url_;
-  };
+  }
   void set_request_url(const signed_exchange_utils::URLWithRawString& url) {
     request_url_ = url;
   }

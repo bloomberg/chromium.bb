@@ -24,7 +24,7 @@ class CONTENT_EXPORT BackgroundSyncController {
   // background sync. Note that disable can be overridden from false to true
   // but overrides from true to false will be ignored.
   virtual void GetParameterOverrides(
-      BackgroundSyncParameters* parameters) const {};
+      BackgroundSyncParameters* parameters) const {}
 
   // Notification that a service worker registration with origin |origin| just
   // registered a background sync event.

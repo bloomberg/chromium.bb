@@ -333,7 +333,7 @@ bool AreSHA1IntermediatesAllowed() {
 #else
   return false;
 #endif
-};
+}
 
 // Sets the "has_*" boolean members in |verify_result| that correspond with
 // the the presence of |hash| somewhere in the certificate chain (excluding the

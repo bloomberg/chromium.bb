@@ -80,13 +80,13 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   OutputFormat VideoFrameOutputFormat(VideoPixelFormat pixel_format) override {
     return video_frame_output_format_;
-  };
+  }
 
   gpu::gles2::GLES2Interface* ContextGL() override { return gles2_; }
 
   void SetVideoFrameOutputFormat(const OutputFormat video_frame_output_format) {
     video_frame_output_format_ = video_frame_output_format;
-  };
+  }
 
   void SetFailToAllocateGpuMemoryBufferForTesting(bool fail) {
     fail_to_allocate_gpu_memory_buffer_ = fail;

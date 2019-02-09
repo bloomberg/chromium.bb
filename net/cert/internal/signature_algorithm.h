@@ -60,7 +60,7 @@ WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input& input,
 class NET_EXPORT SignatureAlgorithmParameters {
  public:
   SignatureAlgorithmParameters() {}
-  virtual ~SignatureAlgorithmParameters(){};
+  virtual ~SignatureAlgorithmParameters() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignatureAlgorithmParameters);

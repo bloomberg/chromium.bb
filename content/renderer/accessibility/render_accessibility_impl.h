@@ -24,7 +24,7 @@
 namespace blink {
 class WebDocument;
 class WebNode;
-};
+}  // namespace blink
 
 namespace ui {
 struct AXActionData;

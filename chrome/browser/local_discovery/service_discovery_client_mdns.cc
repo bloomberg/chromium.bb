@@ -182,7 +182,7 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
 
   void OnMdnsDestroy() override {
     DeleteOnMdnsThread(implementation_.release());
-  };
+  }
 
  protected:
   void set_implementation(std::unique_ptr<T> implementation) {
@@ -279,7 +279,7 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
       PostToMdnsThread(base::Bind(&ServiceResolver::StartResolving,
                                   base::Unretained(implementation())));
     }
-  };
+  }
 
   std::string GetName() const override { return service_name_; }
 
@@ -319,7 +319,7 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
       PostToMdnsThread(base::Bind(&LocalDomainResolver::Start,
                                   base::Unretained(implementation())));
     }
-  };
+  }
 
  private:
   static void OnCallback(const WeakPtr& proxy,

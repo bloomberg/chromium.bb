@@ -77,7 +77,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
 HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() {
   if (parent_client_)
     parent_client_->sessions_.erase(session_id_);
-};
+}
 
 void HeadlessDevToolsClientImpl::AttachToExternalHost(
     ExternalHost* external_host) {

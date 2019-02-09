@@ -53,6 +53,6 @@ class LostNavigationsRecorder : public syncer::LocalChangeObserver {
   std::map<SessionID, id_type> max_recorded_for_tab_;
   DISALLOW_COPY_AND_ASSIGN(LostNavigationsRecorder);
 };
-};  // namespace sync_sessions
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_LOST_NAVIGATIONS_RECORDER_H_

@@ -125,7 +125,7 @@ ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::~ServiceWorkerNavigationloader", this,
       TRACE_EVENT_FLAG_FLOW_IN);
-};
+}
 
 void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

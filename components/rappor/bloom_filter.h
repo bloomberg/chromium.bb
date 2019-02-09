@@ -30,7 +30,7 @@ class BloomFilter {
   void SetString(const std::string& str);
 
   // Returns the current value of the Bloom filter's bit array.
-  const ByteVector& bytes() const { return bytes_; };
+  const ByteVector& bytes() const { return bytes_; }
 
  private:
   // Stores the byte array of the Bloom filter.

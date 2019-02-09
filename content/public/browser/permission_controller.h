@@ -24,7 +24,7 @@ class CONTENT_EXPORT PermissionController
   // cancelling/unsubscribing at a later stage would have no effect.
   static const int kNoPendingOperation = -1;
 
-  ~PermissionController() override{};
+  ~PermissionController() override {}
 
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen

@@ -31,7 +31,7 @@
 
 namespace base {
 class WaitableEvent;
-};  // namespace base
+}  // namespace base
 
 namespace media {
 class GpuVideoAcceleratorFactories;

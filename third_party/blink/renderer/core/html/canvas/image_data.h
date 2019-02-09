@@ -134,7 +134,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   const DOMUint8ClampedArray* data() const;
   ImageDataArray& dataUnion() { return data_union_; }
   const ImageDataArray& dataUnion() const { return data_union_; }
-  void dataUnion(ImageDataArray& result) { result = data_union_; };
+  void dataUnion(ImageDataArray& result) { result = data_union_; }
 
   DOMArrayBufferBase* BufferBase() const;
   CanvasColorParams GetCanvasColorParams();

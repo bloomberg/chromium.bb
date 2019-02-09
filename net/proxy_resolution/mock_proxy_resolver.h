@@ -30,7 +30,7 @@ class MockAsyncProxyResolver : public ProxyResolver {
 
     const GURL& url() const { return url_; }
     ProxyInfo* results() const { return results_; }
-    MockAsyncProxyResolver* Resolver() const { return resolver_; };
+    MockAsyncProxyResolver* Resolver() const { return resolver_; }
 
     void CompleteNow(int rv);
 

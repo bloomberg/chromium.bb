@@ -103,7 +103,7 @@ class CORE_EXPORT FontBuilder {
   }
   static FontVariantEastAsian InitialVariantEastAsian() {
     return FontVariantEastAsian();
-  };
+  }
   static FontDescription::VariantLigatures InitialVariantLigatures() {
     return FontDescription::VariantLigatures();
   }

@@ -76,7 +76,7 @@ class IgnoreErrorsCertVerifierTest : public ::testing::Test {
   void SetUp() override {
     verifier_.set_whitelist(
         IgnoreErrorsCertVerifier::MakeWhitelist(MakeWhitelist()));
-  };
+  }
 
   // The wrapped CertVerifier. Defaults to returning ERR_CERT_INVALID. Owned by
   // |verifier_|.

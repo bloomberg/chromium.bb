@@ -98,7 +98,7 @@ class LargeIconService : public KeyedService {
   virtual void TouchIconFromGoogleServer(const GURL& icon_url) = 0;
 
  protected:
-  LargeIconService(){};
+  LargeIconService() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LargeIconService);

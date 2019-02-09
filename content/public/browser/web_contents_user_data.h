@@ -10,7 +10,7 @@
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
 
-#define WEB_CONTENTS_USER_DATA_KEY_DECL() static constexpr int kUserDataKey = 0;
+#define WEB_CONTENTS_USER_DATA_KEY_DECL() static constexpr int kUserDataKey = 0
 
 #define WEB_CONTENTS_USER_DATA_KEY_IMPL(Type) const int Type::kUserDataKey;
 

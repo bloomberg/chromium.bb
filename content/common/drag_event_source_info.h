@@ -17,6 +17,6 @@ struct CONTENT_EXPORT DragEventSourceInfo {
   ui::DragDropTypes::DragEventSource event_source;
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_COMMON_DRAG_EVENT_SOURCE_INFO_H_

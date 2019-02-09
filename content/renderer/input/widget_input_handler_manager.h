@@ -18,8 +18,8 @@
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
-};  // namespace scheduler
-};  // namespace blink
+}  // namespace scheduler
+}  // namespace blink
 
 namespace content {
 class MainThreadEventQueue;

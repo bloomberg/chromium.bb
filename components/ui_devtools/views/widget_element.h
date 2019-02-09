@@ -25,7 +25,7 @@ class WidgetElement : public views::WidgetRemovalsObserver,
                 UIElementDelegate* ui_element_delegate,
                 UIElement* parent);
   ~WidgetElement() override;
-  views::Widget* widget() const { return widget_; };
+  views::Widget* widget() const { return widget_; }
 
   // views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;

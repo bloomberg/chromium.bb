@@ -11,7 +11,7 @@ ServiceObserverMock::ServiceObserverMock(
     service_manager::mojom::ServiceManagerListenerRequest request)
     : service_name_(service_name), binding_(this, std::move(request)) {}
 
-ServiceObserverMock::~ServiceObserverMock(){};
+ServiceObserverMock::~ServiceObserverMock() {}
 
 void ServiceObserverMock::OnInit(
     std::vector<service_manager::mojom::RunningServiceInfoPtr> instances) {

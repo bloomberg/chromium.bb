@@ -76,7 +76,7 @@ class CastTransport {
   // from CastTransport.
   class Client {
    public:
-    virtual ~Client(){};
+    virtual ~Client() {}
 
     // Audio and Video transport status change is reported on this callback.
     virtual void OnStatusChanged(CastTransportStatus status) = 0;

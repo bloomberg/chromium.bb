@@ -15,8 +15,8 @@ namespace autofill {
 // abstract the data from the metadata.
 struct AutofillMetadata {
  public:
-  AutofillMetadata(){};
-  ~AutofillMetadata(){};
+  AutofillMetadata() {}
+  ~AutofillMetadata() {}
 
   bool operator==(const AutofillMetadata&) const;
   bool operator!=(const AutofillMetadata&) const;

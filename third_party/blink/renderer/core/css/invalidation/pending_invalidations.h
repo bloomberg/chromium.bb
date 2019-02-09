@@ -66,7 +66,7 @@ class CORE_EXPORT PendingInvalidations {
 
  public:
   PendingInvalidations();
-  ~PendingInvalidations(){};
+  ~PendingInvalidations() {}
   void Invalidate(Document&);
   // May immediately invalidate the node and/or add pending invalidation sets to
   // this node.

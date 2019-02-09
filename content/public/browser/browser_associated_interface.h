@@ -110,6 +110,6 @@ class BrowserAssociatedInterface {
   DISALLOW_COPY_AND_ASSIGN(BrowserAssociatedInterface);
 };
 
-};
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_

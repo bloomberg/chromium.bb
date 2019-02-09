@@ -105,6 +105,6 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
 #endif
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_

@@ -121,4 +121,4 @@ void UserInfoFetcher::OnFetchComplete(
   }
 }
 
-};  // namespace policy
+}  // namespace policy

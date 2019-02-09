@@ -30,7 +30,7 @@ bool IsURLSafe(int render_process_id, const GURL& url) {
 
 class CompletedInputStream : public InputStream {
  public:
-  CompletedInputStream(DownloadInterruptReason status) : status_(status){};
+  CompletedInputStream(DownloadInterruptReason status) : status_(status) {}
   ~CompletedInputStream() override = default;
 
   // InputStream

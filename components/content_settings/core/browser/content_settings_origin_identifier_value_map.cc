@@ -82,9 +82,9 @@ bool OriginIdentifierValueMap::PatternPair::operator<(
          std::tie(other.primary_pattern, other.secondary_pattern);
 }
 
-OriginIdentifierValueMap::ValueEntry::ValueEntry(){};
+OriginIdentifierValueMap::ValueEntry::ValueEntry() {}
 
-OriginIdentifierValueMap::ValueEntry::~ValueEntry(){};
+OriginIdentifierValueMap::ValueEntry::~ValueEntry() {}
 
 std::unique_ptr<RuleIterator> OriginIdentifierValueMap::GetRuleIterator(
     ContentSettingsType content_type,

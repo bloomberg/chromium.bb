@@ -25,7 +25,7 @@
 namespace base {
 class RunLoop;
 class WaitableEvent;
-};
+}  // namespace base
 
 namespace mojo {
 class SyncHandleRegistry;

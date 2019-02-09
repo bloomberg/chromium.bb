@@ -40,7 +40,7 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public CryptoMessageParser {
   QuicErrorCode error() const override { return parser_error_; }
   const QuicString& error_detail() const override {
     return parser_error_detail_;
-  };
+  }
 
   // From QuicCryptoStream
   virtual QuicLongHeaderType GetLongHeaderType(

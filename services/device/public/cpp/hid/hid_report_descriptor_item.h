@@ -153,14 +153,14 @@ class HidReportDescriptorItem {
 
   // Previous element in report descriptor.
   // Owned by descriptor instance.
-  HidReportDescriptorItem* previous() const { return previous_; };
+  HidReportDescriptorItem* previous() const { return previous_; }
   // Next element in report descriptor.
   // Owned by descriptor instance.
-  HidReportDescriptorItem* next() const { return next_; };
+  HidReportDescriptorItem* next() const { return next_; }
   // Parent element in report descriptor.
   // Owned by descriptor instance.
   // Can be NULL.
-  HidReportDescriptorItem* parent() const { return parent_; };
+  HidReportDescriptorItem* parent() const { return parent_; }
   // Level in Parent-Children relationship tree.
   // 0 for top-level items (parent()==NULL).
   // 1 if parent() is top-level.

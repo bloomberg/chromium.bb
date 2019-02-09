@@ -14,7 +14,7 @@
 
 namespace net {
 class IOBuffer;
-};
+}
 
 namespace extensions {
 

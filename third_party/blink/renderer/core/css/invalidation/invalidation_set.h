@@ -117,7 +117,7 @@ class CORE_EXPORT InvalidationSet
 
   void SetInvalidationFlags(InvalidationFlags flags) {
     invalidation_flags_ = flags;
-  };
+  }
 
   void SetWholeSubtreeInvalid();
   bool WholeSubtreeInvalid() const {
@@ -157,7 +157,7 @@ class CORE_EXPORT InvalidationSet
 
   const InvalidationFlags GetInvalidationFlags() const {
     return invalidation_flags_;
-  };
+  }
 
   void SetInvalidatesParts() { invalidation_flags_.SetInvalidatesParts(true); }
   bool InvalidatesParts() const {
@@ -294,8 +294,8 @@ class CORE_EXPORT InvalidationSet
     class Range {
      public:
       Range(Iterator begin, Iterator end) : begin_(begin), end_(end) {}
-      Iterator begin() const { return begin_; };
-      Iterator end() const { return end_; };
+      Iterator begin() const { return begin_; }
+      Iterator end() const { return end_; }
 
      private:
       Iterator begin_;

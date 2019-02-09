@@ -126,7 +126,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
     task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               &completed_tasks_);
-  };
+  }
 
   // Lock to exclusively access all the following members that are used to
   // implement the SequencedTaskRunner interfaces.

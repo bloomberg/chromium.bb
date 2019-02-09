@@ -24,7 +24,7 @@ class FormDataEvent : public Event {
 
   void Trace(Visitor* visitor) override;
 
-  FormData* formData() const { return form_data_; };
+  FormData* formData() const { return form_data_; }
 
   const AtomicString& InterfaceName() const override;
 

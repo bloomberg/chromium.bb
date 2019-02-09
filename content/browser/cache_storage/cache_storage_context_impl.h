@@ -47,7 +47,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
                                        const std::string& cache_name) = 0;
 
    protected:
-    virtual ~Observer() {};
+    virtual ~Observer() {}
   };
 
   // Init and Shutdown are for use on the UI thread when the profile,

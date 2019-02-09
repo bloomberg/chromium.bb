@@ -19,7 +19,7 @@
 
 namespace IPC {
 class Message;
-};
+}
 
 namespace content {
 

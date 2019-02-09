@@ -146,7 +146,7 @@ void PopulateResourceResponse(
 class ResourceLoader::Controller : public ResourceController {
  public:
   explicit Controller(ResourceLoader* resource_loader)
-      : resource_loader_(resource_loader){};
+      : resource_loader_(resource_loader) {}
 
   ~Controller() override {}
 

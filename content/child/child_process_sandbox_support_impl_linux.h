@@ -72,6 +72,6 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   DISALLOW_COPY_AND_ASSIGN(WebSandboxSupportLinux);
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_

@@ -10,7 +10,7 @@
 
 namespace net {
 class HttpRequestHeaders;
-};
+}
 
 namespace content {
 
