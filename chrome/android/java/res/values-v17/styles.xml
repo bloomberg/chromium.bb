@@ -208,6 +208,10 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="28">false</item>
     </style>
 
+    <!-- TODO(huayinz): Temporary theme. Remove this. -->
+    <style name="DialogWhenLarge" parent="Base.Theme.Chromium.DialogWhenLarge"
+        tools:ignore="UnusedResources" />
+
     <!-- ThemeOverlay -->
     <style name="OverflowMenuThemeOverlay" parent="Theme.AppCompat.DayNight">
         <item name="android:popupBackground">@null</item>
