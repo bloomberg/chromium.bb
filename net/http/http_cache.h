@@ -58,7 +58,6 @@ class HttpNetworkSession;
 class HttpResponseInfo;
 class IOBuffer;
 class NetLog;
-class ViewCacheHelper;
 struct HttpRequestInfo;
 
 class NET_EXPORT HttpCache : public HttpTransactionFactory {
@@ -299,11 +298,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   friend class TestHttpCacheTransaction;
   friend class TestHttpCache;
   friend class Transaction;
-  friend class ViewCacheHelper;
   struct PendingOp;  // Info for an entry under construction.
 
   // To help with testing.
   friend class MockHttpCache;
+  friend class HttpCacheTest;
 
   using TransactionList = std::list<Transaction*>;
   using TransactionSet = std::unordered_set<Transaction*>;

@@ -414,6 +414,7 @@ MockDiskCache::MockDiskCache()
       double_create_check_(true),
       fail_sparse_requests_(false),
       support_in_memory_entry_data_(true),
+      force_fail_callback_later_(false),
       defer_op_(MockDiskEntry::DEFER_NONE),
       resume_return_code_(0) {}
 
@@ -434,6 +435,11 @@ net::Error MockDiskCache::OpenEntry(const std::string& key,
                                     disk_cache::Entry** entry,
                                     CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
+  if (force_fail_callback_later_) {
+    CallbackLater(std::move(callback), ERR_CACHE_OPEN_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
   if (fail_requests_)
     return ERR_CACHE_OPEN_FAILURE;
 
@@ -471,6 +477,11 @@ net::Error MockDiskCache::CreateEntry(const std::string& key,
                                       disk_cache::Entry** entry,
                                       CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
+  if (force_fail_callback_later_) {
+    CallbackLater(std::move(callback), ERR_CACHE_CREATE_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
   if (fail_requests_)
     return ERR_CACHE_CREATE_FAILURE;
 
@@ -525,6 +536,14 @@ net::Error MockDiskCache::DoomEntry(const std::string& key,
                                     net::RequestPriority request_priority,
                                     CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
+  if (force_fail_callback_later_) {
+    CallbackLater(std::move(callback), ERR_CACHE_DOOM_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
+  if (fail_requests_)
+    return ERR_CACHE_DOOM_FAILURE;
+
   auto it = entries_.find(key);
   if (it != entries_.end()) {
     it->second->Release();
