@@ -45,7 +45,7 @@ class MessageDumper : public mojo::MessageReceiver {
 
   bool Accept(mojo::Message* message) override {
     base::FilePath path = directory_.Append(FILE_PATH_LITERAL("message_") +
-                                            base::IntToString(count_++) +
+                                            base::NumberToString(count_++) +
                                             FILE_PATH_LITERAL(".mojomsg"));
 
     base::File file(path,
