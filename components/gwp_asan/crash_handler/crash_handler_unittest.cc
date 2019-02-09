@@ -4,6 +4,8 @@
 
 #include "components/gwp_asan/crash_handler/crash_handler.h"
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

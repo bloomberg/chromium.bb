@@ -4,6 +4,8 @@
 
 #include "components/gwp_asan/client/sampling_allocator_shims.h"
 
+#include <algorithm>
+
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/compiler_specific.h"

@@ -5,6 +5,8 @@
 #include "components/gwp_asan/crash_handler/crash_handler.h"
 
 #include <stddef.h>
+#include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"

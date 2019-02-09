@@ -7,6 +7,7 @@
 
 #include <array>
 #include <atomic>
+#include <limits>
 #include <memory>
 
 #include "base/compiler_specific.h"

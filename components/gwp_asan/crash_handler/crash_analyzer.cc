@@ -4,9 +4,9 @@
 
 #include "components/gwp_asan/crash_handler/crash_analyzer.h"
 
-#include <algorithm>
-
 #include <stddef.h>
+#include <algorithm>
+#include <string>
 
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
