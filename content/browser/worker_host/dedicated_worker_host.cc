@@ -68,7 +68,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
       blink::mojom::BlobURLTokenPtr blob_url_token,
-      blink::mojom::DedicatedWorkerFactoryClientPtr client) {
+      blink::mojom::DedicatedWorkerHostFactoryClientPtr client) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
 
@@ -116,7 +116,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void DidLoadDedicatedWorker(
-      blink::mojom::DedicatedWorkerFactoryClientPtr client,
+      blink::mojom::DedicatedWorkerHostFactoryClientPtr client,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -238,7 +238,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void CreateDedicatedWorker(
-      blink::mojom::DedicatedWorkerFactoryRequest request) {
+      blink::mojom::DedicatedWorkerHostFactoryRequest request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CreateDedicatedWorkerHostFactory(process_id_, ancestor_render_frame_id_,
                                      origin_, std::move(request));
@@ -262,18 +262,19 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
 // A factory for creating DedicatedWorkerHosts. Its lifetime is managed by
 // the renderer over mojo via a StrongBinding. This lives on the UI thread.
-class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
+class DedicatedWorkerHostFactoryImpl
+    : public blink::mojom::DedicatedWorkerHostFactory {
  public:
-  DedicatedWorkerFactoryImpl(int process_id,
-                             int ancestor_render_frame_id,
-                             const url::Origin& parent_context_origin)
+  DedicatedWorkerHostFactoryImpl(int process_id,
+                                 int ancestor_render_frame_id,
+                                 const url::Origin& parent_context_origin)
       : process_id_(process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
         parent_context_origin_(parent_context_origin) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
-  // blink::mojom::DedicatedWorkerFactory:
+  // blink::mojom::DedicatedWorkerHostFactory:
   void CreateDedicatedWorker(
       const url::Origin& origin,
       service_manager::mojom::InterfaceProviderRequest request) override {
@@ -283,9 +284,10 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
       return;
     }
 
-    // TODO(crbug.com/729021): Once |parent_context_origin_| is no longer races
-    // with the request for |DedicatedWorkerFactory|, enforce that the worker's
-    // origin either matches the creating document's origin, or is unique.
+    // TODO(crbug.com/729021): Once |parent_context_origin_| no longer races
+    // with the request for |DedicatedWorkerHostFactory|, enforce that
+    // the worker's origin either matches the origin of the creating context
+    // (Document or DedicatedWorkerGlobalScope), or is unique.
     mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerHost>(
                                 process_id_, ancestor_render_frame_id_, origin),
                             FilterRendererExposedInterfaces(
@@ -298,7 +300,7 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
       blink::mojom::BlobURLTokenPtr blob_url_token,
-      blink::mojom::DedicatedWorkerFactoryClientPtr client) override {
+      blink::mojom::DedicatedWorkerHostFactoryClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!blink::features::IsPlzDedicatedWorkerEnabled()) {
       mojo::ReportBadMessage("DWH_BROWSER_SCRIPT_FETCH_DISABLED");
@@ -306,9 +308,9 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
     }
 
     // TODO(crbug.com/729021): Once |parent_context_origin_| no longer races
-    // with the request for |DedicatedWorkerFactory|, enforce that the worker's
-    // origin either matches the origin of the creating context (Document or
-    // DedicatedWorkerGlobalScope), or is unique.
+    // with the request for |DedicatedWorkerHostFactory|, enforce that
+    // the worker's origin either matches the origin of the creating context
+    // (Document or DedicatedWorkerGlobalScope), or is unique.
     auto host = std::make_unique<DedicatedWorkerHost>(
         process_id_, ancestor_render_frame_id_, request_initiator_origin);
     auto* host_raw = host.get();
@@ -328,7 +330,7 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
   const int ancestor_render_frame_id_;
   const url::Origin parent_context_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerHostFactoryImpl);
 };
 
 }  // namespace
@@ -337,9 +339,9 @@ void CreateDedicatedWorkerHostFactory(
     int process_id,
     int ancestor_render_frame_id,
     const url::Origin& origin,
-    blink::mojom::DedicatedWorkerFactoryRequest request) {
+    blink::mojom::DedicatedWorkerHostFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerFactoryImpl>(
+  mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerHostFactoryImpl>(
                               process_id, ancestor_render_frame_id, origin),
                           std::move(request));
 }
