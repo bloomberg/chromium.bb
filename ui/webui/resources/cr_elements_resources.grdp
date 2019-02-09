@@ -69,6 +69,14 @@
              file="cr_elements/cr_expand_button/cr_expand_button.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_ICON_BUTTON_HTML"
+             file="cr_elements/cr_icon_button/cr_icon_button.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_ICON_BUTTON_JS"
+             file="cr_elements/cr_icon_button/cr_icon_button.js"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_ICONS_HTML"
              file="cr_elements/icons.html"
              type="chrome_html"

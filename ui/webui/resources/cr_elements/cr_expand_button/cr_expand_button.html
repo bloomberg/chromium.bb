@@ -1,26 +1,23 @@
 <link rel="import" href="../../html/polymer.html">
 
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../shared_style_css.html">
 <link rel="import" href="../shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="cr-expand-button">
   <template>
-    <style include="cr-icons cr-shared-style">
+    <style include="cr-shared-style cr-icons">
       :host {
         @apply --cr-actionable;
         align-items: center;
         display: flex;
+        outline: none;
       }
 
       :host([disabled]) {
         opacity: 0.65;
         pointer-events: none;
-      }
-
-      paper-icon-button-light {
-        @apply --cr-paper-icon-button-margin;
       }
 
       #label {
@@ -30,12 +27,9 @@
     </style>
 
     <div id="label"><slot></slot></div>
-    <paper-icon-button-light class$="[[iconName_(expanded)]]">
-      <button disabled="[[disabled]]" aria-label$="[[alt]]"
-          aria-pressed$="[[getAriaPressed_(expanded)]]"
-          tabindex$="[[tabIndex]]">
-      </button>
-    </paper-icon-button-light>
+    <cr-icon-button class$="[[iconName_(expanded)]]" disabled="[[disabled]]"
+        aria-label$="[[alt]]" aria-pressed$="[[getAriaPressed_(expanded)]]"
+        tabindex="[[tabIndex]]"></cr-icon-button>
   </template>
   <script src="cr_expand_button.js"></script>
 </dom-module>

@@ -41,7 +41,7 @@ suite('<bookmarks-item>', function() {
   });
 
   test('pressing the menu button selects the item', function() {
-    MockInteractions.tap(item.$$('.more-vert-button'));
+    item.$.menuButton.click();
     assertDeepEquals(
         bookmarks.actions.selectItem('2', store.data, {
           clear: true,

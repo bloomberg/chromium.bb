@@ -162,7 +162,8 @@ Polymer({
   onOpenCommandMenu_: function(e) {
     // If the item is not visible, scroll to it before rendering the menu.
     if (e.source == MenuSource.ITEM) {
-      this.scrollToId_(/** @type {BookmarksItemElement} */ (e.path[0]).itemId);
+      this.scrollToId_(
+          /** @type {BookmarksItemElement} */ (e.composedPath()[0]).itemId);
     }
   },
 
@@ -260,8 +261,13 @@ Polymer({
     }
 
     // Prevent the iron-list from changing focus on enter.
-    if (e.path[0] instanceof HTMLButtonElement && e.key == 'Enter') {
-      handled = true;
+    if (e.key == 'Enter') {
+      if (e.composedPath()[0].tagName == 'CR-ICON-BUTTON') {
+        return;
+      }
+      if (e.composedPath()[0] instanceof HTMLButtonElement) {
+        handled = true;
+      }
     }
 
     if (!handled) {
