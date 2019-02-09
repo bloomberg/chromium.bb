@@ -33,6 +33,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
@@ -781,6 +782,88 @@ public class AwContentsTest {
         TestAwContentsClient.AddMessageToConsoleHelper consoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();
         Assert.assertEquals(0, consoleHelper.getMessages().size());
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testFixupOctothorpesInLoadDataContent() {
+        // If there are no octothorpes the function should have no effect.
+        final String noOctothorpeString = "<div id='foo1'>This content has no octothorpe</div>";
+        Assert.assertEquals(noOctothorpeString,
+                AwContents.fixupOctothorpesInLoadDataContent(noOctothorpeString));
+
+        // One '#' followed by a valid DOM id requires us to duplicate it into a real fragment.
+        Assert.assertEquals("abc%23A#A", AwContents.fixupOctothorpesInLoadDataContent("abc#A"));
+        Assert.assertEquals("abc%23a#a", AwContents.fixupOctothorpesInLoadDataContent("abc#a"));
+        Assert.assertEquals("abc%23Aa#Aa", AwContents.fixupOctothorpesInLoadDataContent("abc#Aa"));
+        Assert.assertEquals("abc%23aA#aA", AwContents.fixupOctothorpesInLoadDataContent("abc#aA"));
+        Assert.assertEquals(
+                "abc%23a1-_:.#a1-_:.", AwContents.fixupOctothorpesInLoadDataContent("abc#a1-_:."));
+
+        // One '#' followed by an invalid DOM id just means we encode the '#'.
+        Assert.assertEquals("abc%231", AwContents.fixupOctothorpesInLoadDataContent("abc#1"));
+        Assert.assertEquals("abc%231a", AwContents.fixupOctothorpesInLoadDataContent("abc#1a"));
+        Assert.assertEquals(
+                "abc%23not valid", AwContents.fixupOctothorpesInLoadDataContent("abc#not valid"));
+        Assert.assertEquals("abc%23a@", AwContents.fixupOctothorpesInLoadDataContent("abc#a@"));
+
+        // Multiple '#', whether or not they have a valid DOM id afterwards, just means we encode
+        // the '#'.
+        Assert.assertEquals("abc%23%23a", AwContents.fixupOctothorpesInLoadDataContent("abc##a"));
+        Assert.assertEquals("abc%23a%23b", AwContents.fixupOctothorpesInLoadDataContent("abc#a#b"));
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadDataOctothorpeHandling() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+
+        // Before Android Q, the loadData API is expected to handle the encoding for users.
+        boolean encodeOctothorpes = !BuildInfo.targetsAtLeastQ();
+
+        // A URL with no '#' character.
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html>test</html>", "text/html", false);
+        Assert.assertEquals("data:text/html,<html>test</html>", awContents.getLastCommittedUrl());
+
+        // A URL with one '#' character.
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html>test#foo</html>", "text/html", false);
+        String expectedUrl = encodeOctothorpes ? "data:text/html,<html>test%23foo</html>"
+                                               : "data:text/html,<html>test#foo</html>";
+        Assert.assertEquals(expectedUrl, awContents.getLastCommittedUrl());
+
+        // A URL with many '#' characters.
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html>test#foo#bar#</html>", "text/html", false);
+        expectedUrl = encodeOctothorpes ? "data:text/html,<html>test%23foo%23bar%23</html>"
+                                        : "data:text/html,<html>test#foo#bar#</html>";
+        Assert.assertEquals(expectedUrl, awContents.getLastCommittedUrl());
+
+        // An already encoded '#' character.
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html>test%23foo</html>", "text/html", false);
+        Assert.assertEquals(
+                "data:text/html,<html>test%23foo</html>", awContents.getLastCommittedUrl());
+
+        // A URL with a valid fragment. Before Q, this must be manipulated so that it renders the
+        // same and still scrolls to the fragment location.
+        if (encodeOctothorpes) {
+            String contents = "<div style='height: 5000px'></div><a id='target'>Target</a>#target";
+            mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                    contents, "text/html", false);
+            Assert.assertEquals(
+                    "data:text/html,<div style='height: 5000px'></div><a id='target'>Target</a>"
+                            + "%23target#target",
+                    awContents.getLastCommittedUrl());
+            // TODO(smcgruer): I can physically see that this has scrolled on the test page, and
+            // have traced scrolling through PaintLayerScrollableArea, but I don't know how to check
+            // it.
+        }
     }
 
     private int getHistogramSampleCount(String name) throws Throwable {

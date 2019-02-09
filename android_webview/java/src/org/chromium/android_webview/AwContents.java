@@ -48,6 +48,7 @@ import android.webkit.JavascriptInterface;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
@@ -105,6 +106,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -149,6 +151,13 @@ public class AwContents implements SmartClipProvider {
     // Permit any number of slashes, since chromium seems to canonicalize bad values.
     private static final Pattern sFileAndroidAssetPattern =
             Pattern.compile("^file:/*android_(asset|res).*");
+
+    // Matches a data URL that (may) have a valid fragment selector, pulling the fragment selector
+    // out into a group. Such a URL must contain a single '#' character and everything after that
+    // must be a valid DOM id.
+    // DOM id grammar: https://www.w3.org/TR/1999/REC-html401-19991224/types.html#type-name
+    private static final Pattern sDataURLWithSelectorPattern =
+            Pattern.compile("^[^#]*(#[A-Za-z][A-Za-z0-9\\-_:.]*)$");
 
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
@@ -1724,9 +1733,39 @@ public class AwContents implements SmartClipProvider {
         if (isDestroyedOrNoOperation(WARN)) return;
         if (data != null && data.contains("#")) {
             RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
+            if (!BuildInfo.targetsAtLeastQ() && !isBase64Encoded(encoding)) {
+                // As of Chromium M72, data URI parsing strictly enforces encoding of '#'. To
+                // support WebView applications which were not expecting this change, we do it for
+                // them.
+                data = fixupOctothorpesInLoadDataContent(data);
+            }
         }
         loadUrl(LoadUrlParams.createLoadDataParams(
                 fixupData(data), fixupMimeType(mimeType), isBase64Encoded(encoding)));
+    }
+
+    /**
+     * Helper method to fixup content passed to {@link #loadData} which may not have had '#'
+     * characters encoded correctly. Historically Chromium did not strictly enforce the encoding of
+     * '#' characters in Data URLs; they would be treated both as renderable content and as
+     * potential URL fragments for DOM id matching. This behavior changed in Chromium M72 where
+     * stricter parsing was enforced; the first '#' character now marks the end of the renderable
+     * section and the start of the DOM fragment.
+     *
+     * @param data The content passed to {@link #loadData}, which may contain unencoded '#'s.
+     * @return A version of the input with '#' characters correctly encoded, preserving any DOM id
+     *         selector which may have been present in the original.
+     */
+    @VisibleForTesting
+    public static String fixupOctothorpesInLoadDataContent(String data) {
+        // If the data may have had a valid DOM selector, we duplicate the selector and append it as
+        // a proper URL fragment. For example, "<a id='target'>Target</a>#target" will be converted
+        // to "<a id='target'>Target</a>%23target#target". This preserves both the rendering (which
+        // should render 'Target#target' on the page) and the DOM selector behavior (which should
+        // scroll to the anchor).
+        Matcher matcher = sDataURLWithSelectorPattern.matcher(data);
+        String suffix = matcher.matches() ? matcher.group(1) : "";
+        return data.replace("#", "%23") + suffix;
     }
 
     private @UrlScheme int schemeForUrl(String url) {
