@@ -48,12 +48,12 @@ Polymer({
   },
 
   /** @private */
-  onClearSelectionTap_: function() {
+  onClearSelectionClick_: function() {
     this.fire('clear-selected-items');
   },
 
   /** @private */
-  onDeleteTap_: function() {
+  onDeleteClick_: function() {
     this.fire('delete-selected-items');
   },
 

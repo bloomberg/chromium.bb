@@ -425,6 +425,29 @@ TEST_F('CrElementsRadioGroupTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsIconButtonTest() {}
+
+CrElementsIconButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_icon_button_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsIconButtonTest', 'All', function() {
+  mocha.run();
+});
 
 GEN('#if defined(OS_CHROMEOS)');
 /**

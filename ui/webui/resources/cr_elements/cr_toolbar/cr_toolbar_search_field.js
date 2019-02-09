@@ -77,7 +77,7 @@ Polymer({
    * @private
    */
   computeIconTabIndex_: function(narrow) {
-    return narrow ? 0 : -1;
+    return narrow && !this.hasSearchText ? 0 : -1;
   },
 
   /**
@@ -86,7 +86,7 @@ Polymer({
    * @private
    */
   computeIconAriaHidden_: function(narrow) {
-    return Boolean(!narrow).toString();
+    return Boolean(!narrow || this.hasSearchText).toString();
   },
 
   /**

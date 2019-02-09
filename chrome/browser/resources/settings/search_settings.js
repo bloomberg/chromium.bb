@@ -33,6 +33,7 @@ cr.define('settings', function() {
     'CONTENT',
     'CR-ACTION-MENU',
     'CR-DIALOG',
+    'CR-ICON-BUTTON',
     'CR-SLIDER',
     'DIALOG',
     'IMG',

@@ -71,6 +71,7 @@ CrElementsCheckboxTest.*
 CrElementsDialogTest.*
 CrElementsDrawerTest.*
 CrElementsFingerprintProgressArcTest.*
+CrElementsIconButtonTest.*
 CrElementsInputTest.*
 CrElementsLazyRenderTest.*
 CrElementsPolicyIndicatorBehaviorTest.*

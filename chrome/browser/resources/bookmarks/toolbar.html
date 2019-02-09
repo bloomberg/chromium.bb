@@ -1,8 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="strings.html">
 
@@ -14,14 +15,21 @@
         position: relative;
       }
 
-      paper-icon-button-light.more-actions {
-        margin: 4px;
-      }
-
       cr-toolbar {
         flex: 1;
         --cr-toolbar-field-margin:
             calc(var(--sidebar-width) + var(--splitter-width));
+      }
+
+      cr-icon-button {
+        --cr-icon-button-color: white;
+        --cr-icon-button-ripple-color: white;
+        display: inline-block;
+        margin: 4px;
+      }
+
+      :host-context([dark]) cr-icon-button {
+        --cr-icon-button-color: var(--google-grey-200);
       }
 
       :host(:not([narrow_])) cr-toolbar-selection-overlay {
@@ -36,16 +44,11 @@
         search-prompt="$i18n{searchPrompt}"
         narrow="{{narrow_}}"
         on-search-changed="onSearchChanged_">
-      <paper-icon-button-light class="more-actions more-vert-button">
-        <button id="menuButton"
+      <cr-icon-button iron-icon="cr:more-vert"
+            id="menuButton"
             title="$i18n{organizeButtonTitle}"
             on-click="onMenuButtonOpenTap_"
-            aria-haspopup="menu">
-          <div></div>
-          <div></div>
-          <div></div>
-        </button>
-      </paper-icon-button-light>
+            aria-haspopup="menu"></cr-icon-button>
     </cr-toolbar>
     <cr-toolbar-selection-overlay show="[[showSelectionOverlay]]"
         delete-label="$i18n{delete}"

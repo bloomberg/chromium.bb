@@ -279,17 +279,13 @@ TEST_F('BookmarksFocusTest', 'All', function() {
     test('simple keyboard selection', function() {
       let focusedItem = items[0];
       assertEquals('0', focusedItem.getAttribute('tabindex'));
-      assertEquals(
-          '0',
-          focusedItem.$$('.more-vert-button button').getAttribute('tabindex'));
+      assertEquals(0, focusedItem.$.menuButton.tabIndex);
       focusedItem.focus();
 
       keydown(focusedItem, 'ArrowDown');
       focusedItem = items[1];
       assertEquals('0', focusedItem.getAttribute('tabindex'));
-      assertEquals(
-          '0',
-          focusedItem.$$('.more-vert-button button').getAttribute('tabindex'));
+      assertEquals(0, focusedItem.$.menuButton.tabIndex);
       assertDeepEquals(['3'], normalizeIterable(store.data.selection.items));
 
       keydown(focusedItem, 'ArrowUp');
@@ -444,10 +440,10 @@ TEST_F('BookmarksFocusTest', 'All', function() {
       // Iron-list attempts to focus the whole <bookmarks-item> when pressing
       // enter on the menu button. This checks that we block this behavior
       // during keydown on <bookmarks-list>.
-      const button = items[0].$$('.more-vert-button button');
+      const button = items[0].$.menuButton;
       button.focus();
       keydown(button, 'Enter');
-
+      commandManager.closeCommandMenu();
       assertEquals(button, items[0].root.activeElement);
     });
   });
