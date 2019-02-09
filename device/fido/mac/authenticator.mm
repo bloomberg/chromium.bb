@@ -147,7 +147,7 @@ AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
   options.supports_resident_key = true;
   options.user_verification_availability = AuthenticatorSupportedOptions::
       UserVerificationAvailability::kSupportedAndConfigured;
-  options.user_presence_required = true;
+  options.supports_user_presence = true;
   return options;
 }
 
