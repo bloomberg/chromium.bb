@@ -66,6 +66,10 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public void setToolbarDataProvider(ToolbarDataProvider toolbarDataProvider) {
         mToolbarDataProvider = toolbarDataProvider;
+        // Update status immediately after receiving the data provider to avoid initial presence
+        // glitch on tablet devices. This glitch would be typically seen upon launch of app, right
+        // before the landing page is presented to the user.
+        updateStatusIcon();
     }
 
     /**
