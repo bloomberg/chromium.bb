@@ -100,6 +100,13 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
         mNotificationManager.notify(tag, id, notification);
     }
 
+    @Override
+    public void notify(ChromeNotification notification) {
+        assert notification.getMetadata() != null;
+        mNotificationManager.notify(notification.getMetadata().tag, notification.getMetadata().id,
+                notification.getNotification());
+    }
+
     @TargetApi(Build.VERSION_CODES.O)
     @Override
     public NotificationChannel getNotificationChannel(String channelId) {
