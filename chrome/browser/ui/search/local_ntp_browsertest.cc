@@ -50,6 +50,7 @@
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
+#include "ui/native_theme/test_native_theme.h"
 #include "url/gurl.h"
 
 namespace {
@@ -62,11 +63,21 @@ const int kDefaultMostVisitedItemCount = 1;
 // ntp_tiles::CustomLinksManager.
 const int kDefaultCustomLinkMaxCount = 10;
 
-// Returns the RenderFrameHost corresponding to the most visited iframe in the
+// Name for the Most Visited iframe in the NTP.
+const char kMostVisitedIframe[] = "mv-single";
+// Name for the edit/add custom link iframe in the NTP.
+const char kEditCustomLinkIframe[] = "custom-links-edit";
+
+// Delimiter in the Most Visited icon URL that indicates a dark icon. Keep value
+// in sync with NtpIconSource.
+const char kMVIconDarkParameter[] = "/dark/";
+
+// Returns the RenderFrameHost corresponding to the |iframe_name| in the
 // given |tab|. |tab| must correspond to an NTP.
-content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
+content::RenderFrameHost* GetIframe(content::WebContents* tab,
+                                    const char* iframe_name) {
   for (content::RenderFrameHost* frame : tab->GetAllFrames()) {
-    if (frame->GetFrameName() == "mv-single") {
+    if (frame->GetFrameName() == iframe_name) {
       return frame;
     }
   }
@@ -128,7 +139,6 @@ class LocalNTPTest : public InProcessBrowserTest {
       : LocalNTPTest(/*enabled_features=*/{features::kUseGoogleLocalNtp},
                      /*disabled_features=*/{}) {}
 
- private:
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
     // TopSites, so make sure they are available before running the tests.
@@ -143,6 +153,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     mv_observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
   }
 
+ private:
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -524,8 +535,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
-  // Get the iframe and check that the tiles loaded correctly.
-  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+  // Get the Most Visited iframe and check that the tiles loaded correctly.
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
 
   // Get the total number of (non-empty) tiles from the iframe.
   int total_favicons = 0;
@@ -572,8 +583,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, DontShowAddCustomLinkButtonWhenMaxLinks) {
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
 
-  // Get the iframe and add to maximum number of tiles.
-  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+  // Get the Most Visited iframe and add to maximum number of tiles.
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
   for (int i = kDefaultMostVisitedItemCount; i < kDefaultCustomLinkMaxCount;
        ++i) {
     std::string rid = std::to_string(i + 100);
@@ -610,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
   observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
 
   // Fill tiles up to the maximum count.
-  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
   for (int i = kDefaultMostVisitedItemCount; i < kDefaultCustomLinkMaxCount;
        ++i) {
     std::string rid = std::to_string(i + 100);
@@ -692,6 +703,146 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
       active_tab, "document.documentElement.dir", &dir));
   EXPECT_EQ("rtl", dir);
 }
+
+// Tests that dark mode styling is properly applied to the local NTP.
+class LocalNTPDarkModeTest : public LocalNTPTest {
+ public:
+  LocalNTPDarkModeTest() {}
+
+ protected:
+  ui::TestNativeTheme* theme() { return &theme_; }
+
+  // Returns true if dark mode is applied on the |frame|.
+  bool GetIsDarkModeApplied(const content::ToRenderFrameHost& frame) {
+    bool dark_mode_applied = false;
+    if (instant_test_utils::GetBoolFromJS(
+            frame,
+            "document.documentElement.getAttribute('darkmode') === 'true'",
+            &dark_mode_applied)) {
+      return dark_mode_applied;
+    }
+    return false;
+  }
+
+  // Returns true if dark mode is applied to the Most Visited icon at |index|
+  // (i.e. the icon URL contains the |kMVIconDarkParameter|).
+  bool GetIsDarkTile(const content::ToRenderFrameHost& frame, int index) {
+    bool dark_tile = false;
+    if (instant_test_utils::GetBoolFromJS(
+            frame,
+            base::StringPrintf(
+                "document.querySelectorAll('#mv-tiles .md-icon img')[%d]"
+                ".src.includes('%s')",
+                index, kMVIconDarkParameter),
+            &dark_tile)) {
+      return dark_tile;
+    }
+    return false;
+  }
+
+ private:
+  ui::TestNativeTheme theme_;
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
+  // Initially disable dark mode.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  theme()->SetDarkMode(false);
+  instant_service->SetDarkModeThemeForTesting(theme());
+
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  content::RenderFrameHost* mv_iframe =
+      GetIframe(active_tab, kMostVisitedIframe);
+  content::RenderFrameHost* cl_iframe =
+      GetIframe(active_tab, kEditCustomLinkIframe);
+
+  // Dark mode should not be applied to the main page, iframes, and Most Visited
+  // icons.
+  ASSERT_FALSE(GetIsDarkModeApplied(active_tab));
+  ASSERT_FALSE(GetIsDarkModeApplied(mv_iframe));
+  ASSERT_FALSE(GetIsDarkModeApplied(cl_iframe));
+  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
+    ASSERT_FALSE(GetIsDarkTile(mv_iframe, i));
+  }
+
+  // Enable dark mode and wait until the MV tiles have updated.
+  content::DOMMessageQueue msg_queue(active_tab);
+  theme()->SetDarkMode(true);
+  theme()->NotifyObservers();
+  local_ntp_test_utils::WaitUntilTilesLoaded(active_tab, &msg_queue,
+                                             /*delay=*/0);
+
+  // Check that dark mode has been properly applied.
+  EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
+  EXPECT_TRUE(GetIsDarkModeApplied(mv_iframe));
+  EXPECT_TRUE(GetIsDarkModeApplied(cl_iframe));
+  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
+    EXPECT_TRUE(GetIsDarkTile(mv_iframe, i));
+  }
+
+  // Disable dark mode and wait until the MV tiles have updated.
+  msg_queue.ClearQueue();
+  theme()->SetDarkMode(false);
+  theme()->NotifyObservers();
+  local_ntp_test_utils::WaitUntilTilesLoaded(active_tab, &msg_queue,
+                                             /*delay=*/0);
+
+  // Check that dark mode has been removed.
+  EXPECT_FALSE(GetIsDarkModeApplied(active_tab));
+  EXPECT_FALSE(GetIsDarkModeApplied(mv_iframe));
+  EXPECT_FALSE(GetIsDarkModeApplied(cl_iframe));
+  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
+    EXPECT_FALSE(GetIsDarkTile(mv_iframe, i));
+  }
+}
+
+// Tests that dark mode styling is properly applied to the local NTP on start-
+// up. The test parameter controls whether dark mode is initially enabled or
+// disabled.
+class LocalNTPDarkModeStartupTest : public LocalNTPDarkModeTest,
+                                    public testing::WithParamInterface<bool> {
+ public:
+  LocalNTPDarkModeStartupTest() {}
+
+  bool DarkModeEnabled() { return GetParam(); }
+
+ private:
+  void SetUpOnMainThread() override {
+    LocalNTPTest::SetUpOnMainThread();
+
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+    theme()->SetDarkMode(GetParam());
+    instant_service->SetDarkModeThemeForTesting(theme());
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(LocalNTPDarkModeStartupTest, DarkModeApplied) {
+  const bool kDarkModeEnabled = DarkModeEnabled();
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  content::RenderFrameHost* mv_iframe =
+      GetIframe(active_tab, kMostVisitedIframe);
+  content::RenderFrameHost* cl_iframe =
+      GetIframe(active_tab, kEditCustomLinkIframe);
+
+  // Check that dark mode, if enabled, has been properly applied to the main
+  // page, iframes, and Most Visited icons.
+  EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(active_tab));
+  EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(mv_iframe));
+  EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(cl_iframe));
+  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
+    EXPECT_EQ(kDarkModeEnabled, GetIsDarkTile(mv_iframe, i));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(, LocalNTPDarkModeStartupTest, testing::Bool());
 
 // A minimal implementation of an interstitial page.
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
