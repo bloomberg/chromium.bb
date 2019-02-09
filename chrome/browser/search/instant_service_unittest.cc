@@ -11,6 +11,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -21,11 +22,20 @@
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/section_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/native_theme/test_native_theme.h"
 #include "url/gurl.h"
 
 namespace {
+
+class MockInstantServiceObserver : public InstantServiceObserver {
+ public:
+  MOCK_METHOD1(ThemeInfoChanged, void(const ThemeBackgroundInfo&));
+  MOCK_METHOD2(MostVisitedItemsChanged,
+               void(const std::vector<InstantMostVisitedItem>&, bool));
+};
+
 base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
   base::DictionaryValue background_info;
   background_info.SetKey("background_url", base::Value(background_url.spec()));
@@ -35,6 +45,7 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
 
   return background_info;
 }
+
 }  // namespace
 
 using InstantServiceTest = InstantUnitTestBase;
@@ -432,23 +443,27 @@ class InstantServiceThemeTest : public InstantServiceTest {
 };
 
 TEST_F(InstantServiceThemeTest, DarkModeHandler) {
+  testing::StrictMock<MockInstantServiceObserver> mock_observer;
+  instant_service_->AddObserver(&mock_observer);
   theme()->SetDarkMode(false);
   instant_service_->SetDarkModeThemeForTesting(theme());
-  thread_bundle()->RunUntilIdle();
 
   // Enable dark mode.
+  ThemeBackgroundInfo theme_info;
+  EXPECT_CALL(mock_observer, ThemeInfoChanged(testing::_))
+      .WillOnce(testing::SaveArg<0>(&theme_info));
   theme()->SetDarkMode(true);
   theme()->NotifyObservers();
   thread_bundle()->RunUntilIdle();
 
-  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
-  EXPECT_TRUE(theme_info->using_dark_mode);
+  EXPECT_TRUE(theme_info.using_dark_mode);
 
   // Disable dark mode.
+  EXPECT_CALL(mock_observer, ThemeInfoChanged(testing::_))
+      .WillOnce(testing::SaveArg<0>(&theme_info));
   theme()->SetDarkMode(false);
   theme()->NotifyObservers();
   thread_bundle()->RunUntilIdle();
 
-  theme_info = instant_service_->GetThemeInfoForTesting();
-  EXPECT_FALSE(theme_info->using_dark_mode);
+  EXPECT_FALSE(theme_info.using_dark_mode);
 }

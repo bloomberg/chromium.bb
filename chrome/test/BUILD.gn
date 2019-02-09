@@ -1155,6 +1155,7 @@ test("browser_tests") {
       "//ui/base:test_support",
       "//ui/base/clipboard:clipboard_test_support",
       "//ui/compositor:test_support",
+      "//ui/native_theme:test_support",
       "//ui/resources",
       "//ui/web_dialogs:test_support",
       "//v8",
