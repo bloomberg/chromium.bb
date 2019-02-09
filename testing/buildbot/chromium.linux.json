@@ -1342,6 +1342,16 @@
         "test": "headless_browsertests"
       },
       {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_headless_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_browsertests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1801,6 +1811,10 @@
         "script": "checkperms.py"
       },
       {
+        "name": "headless_python_unittests",
+        "script": "headless_python_unittests.py"
+      },
+      {
         "name": "webkit_lint",
         "script": "webkit_lint.py"
       }
@@ -2108,6 +2122,16 @@
         "test": "gpu_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2820,6 +2844,16 @@
         "test": "gpu_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_headless_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3755,6 +3789,21 @@
         "test": "headless_browsertests"
       },
       {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_headless_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "headless_browsertests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4497,6 +4546,10 @@
       {
         "name": "checkperms",
         "script": "checkperms.py"
+      },
+      {
+        "name": "headless_python_unittests",
+        "script": "headless_python_unittests.py"
       },
       {
         "name": "webkit_lint",

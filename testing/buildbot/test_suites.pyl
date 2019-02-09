@@ -2419,6 +2419,9 @@
       'check_static_initializers': {
         'script': 'check_static_initializers.py',
       },
+      'headless_python_unittests': {
+        'script': 'headless_python_unittests.py',
+      },
       'webkit_lint': {
         'script': 'webkit_lint.py',
       },
@@ -4018,6 +4021,12 @@
       'cronet_tests': {},
       'cronet_unittests': {},
       'headless_browsertests': {},
+      'network_service_headless_browsertests': {
+        'args': [
+          '--enable-features=NetworkService',
+        ],
+        'test': 'headless_browsertests',
+      },
       'headless_unittests': {},
     },
 
