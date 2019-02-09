@@ -200,6 +200,9 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     TransportClientSocketPool* ssl_pool = nullptr;
     if (proxy_info.is_direct()) {
       ssl_pool = session->GetTransportSocketPool(socket_pool_type);
+    } else if (proxy_info.is_socks()) {
+      ssl_pool = session->GetSocketPoolForSOCKSProxy(socket_pool_type,
+                                                     proxy_info.proxy_server());
     } else {
       ssl_pool = session->GetSocketPoolForSSLWithProxy(
           socket_pool_type, proxy_info.proxy_server());

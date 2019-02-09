@@ -115,8 +115,7 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
           nullptr /* socket_performance_watcher_factory */,
           nullptr /* network_quality_estimator */, session_deps->net_log,
           nullptr /* websocket_endpoint_lock_manager */),
-      ssl_params, nullptr /* socks_pool */, nullptr /* http_proxy_pool */,
-      &connect_job_delegate);
+      ssl_params, nullptr /* http_proxy_pool */, &connect_job_delegate);
   connect_job_delegate.StartJobExpectingResult(&connect_job, OK,
                                                false /* expect_sync_result */);
 

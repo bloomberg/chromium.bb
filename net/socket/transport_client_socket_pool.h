@@ -48,15 +48,14 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // |websocket_endpoint_lock_manager| is non-null, a ConnectJob for use by
   // WebSockets should be created.
   //
-  // |socks_pool| and |http_proxy_pool| are for the case of SSLConnectJobs that
-  // will be layered on top of other socket pool types.
-  // TODO(mmenke): Remove them.
+  // |http_proxy_pool| is for the case of SSLConnectJobs that will be layered
+  // on top of an HttpProxyClientSocketPool.
+  // TODO(https://crbug.com/927084): Remove the |http_proxy_pool| argument.
   using CreateConnectJobCallback =
       base::RepeatingCallback<std::unique_ptr<ConnectJob>(
           RequestPriority priority,
           const CommonConnectJobParams& common_connect_job_params,
           ConnectJob::Delegate* delegate,
-          TransportClientSocketPool* socks_pool,
           HttpProxyClientSocketPool* http_proxy_pool)>;
 
   // "Parameters" that own a single callback for creating a ConnectJob that can
@@ -92,10 +91,11 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     DISALLOW_COPY_AND_ASSIGN(SocketParams);
   };
 
-  // If this is being used for an SSL socket pool, |socks_pool| and
-  // |http_proxy_pool| socket pools beneath the SSL socket pool.
+  // If this is being used for an SSL socket pool, the |http_proxy_pool| socket
+  // pool is used for HTTP proxy tunnels beneath the SSL socket pool.
   //
-  // TODO(mmenke): Remove those socket pools.
+  // TODO(https://crbug.com/927084): Remove the |http_proxy_pool| argument, once
+  // the socket pools are flat.
   TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
@@ -112,7 +112,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log,
-      TransportClientSocketPool* socks_pool = nullptr,
       HttpProxyClientSocketPool* http_proxy_pool = nullptr);
 
   ~TransportClientSocketPool() override;
@@ -184,7 +183,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log,
-        TransportClientSocketPool* socks_pool = nullptr,
         HttpProxyClientSocketPool* http_proxy_pool = nullptr);
 
     ~TransportConnectJobFactory() override;
@@ -204,7 +202,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     NetworkQualityEstimator* const network_quality_estimator_;
     NetLog* const net_log_;
 
-    TransportClientSocketPool* const socks_pool_;
     HttpProxyClientSocketPool* const http_proxy_pool_;
 
     DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);

@@ -79,6 +79,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
   virtual void CloseIdleSockets() = 0;
   // Returns the socket pool for direct HTTP and SSL connections.
   virtual TransportClientSocketPool* GetTransportSocketPool() = 0;
+  // Returns the socket pool used for both SOCKS and SSL over SOCKS.
+  // TODO(https://crbug.com/929714): Merge this with
+  // GetSocketPoolForHTTPLikeProxy(), once GetSocketPoolForSSLWithProxy() and
+  // GetSocketPoolForHTTPLikeProxy() have been merged.
   virtual TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& socks_proxy) = 0;
   // Returns the HttpProxyClientSocketPool for a ProxyServer that uses an

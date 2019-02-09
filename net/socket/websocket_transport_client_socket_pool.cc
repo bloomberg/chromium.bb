@@ -137,6 +137,10 @@ int WebSocketTransportClientSocketPool::RequestSocket(
       std::make_unique<ConnectJobDelegate>(this, std::move(callback), handle,
                                            request_net_log);
 
+  // For WebSockets, only the main socket pool uses a
+  // WebSocketTransportClientSocketPool, so there's no need to pass in any
+  // nested socket pools for the proxy case, which use standard proxy socket
+  // pool types on top of a standard TransportClientSocketPool.
   std::unique_ptr<ConnectJob> connect_job =
       casted_params->create_connect_job_callback().Run(
           priority,
@@ -147,7 +151,8 @@ int WebSocketTransportClientSocketPool::RequestSocket(
                                  nullptr /* SocketPerformanceWatcherFactory */,
                                  network_quality_estimator_, pool_net_log_,
                                  websocket_endpoint_lock_manager_),
-          connect_job_delegate.get(), nullptr, nullptr);
+          connect_job_delegate.get(),
+          nullptr /* http_proxy_client_socket_pool */);
 
   int result = connect_job_delegate->Connect(std::move(connect_job));
 

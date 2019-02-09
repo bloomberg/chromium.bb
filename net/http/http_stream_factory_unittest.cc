@@ -402,8 +402,11 @@ class CapturePreconnectsSocketPool : public ParentPool {
   int last_num_streams() const { return last_num_streams_; }
   const std::string& last_group_name() const { return last_group_name_; }
 
-  // Resets |last_num_streams_| to its default value.
-  void reset_last_num_streams() { last_num_streams_ = -1; }
+  // Resets |last_num_streams_| and |last_group_name_| default values.
+  void reset() {
+    last_num_streams_ = -1;
+    last_group_name_.clear();
+  }
 
   int RequestSocket(const std::string& group_name,
                     const void* socket_params,
@@ -551,10 +554,15 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
         proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
-    if (kTests[i].ssl)
+    if (kTests[i].ssl) {
       EXPECT_EQ(kTests[i].num_streams, ssl_conn_pool->last_num_streams());
-    else
+      EXPECT_EQ("http_proxy/" + GetGroupName(kTests[i]),
+                ssl_conn_pool->last_group_name());
+    } else {
       EXPECT_EQ(kTests[i].num_streams, http_proxy_pool->last_num_streams());
+      EXPECT_EQ("http_proxy/" + GetGroupName(kTests[i]),
+                http_proxy_pool->last_group_name());
+    }
   }
 }
 
@@ -573,23 +581,14 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
-    CapturePreconnectsTransportSocketPool* ssl_conn_pool =
-        new CapturePreconnectsTransportSocketPool(
-            session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-            session_deps.transport_security_state.get(),
-            session_deps.cert_transparency_verifier.get(),
-            session_deps.ct_policy_enforcer.get());
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForProxy(
         proxy_server, base::WrapUnique(socks_proxy_pool));
-    mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
-    if (kTests[i].ssl)
-      EXPECT_EQ(kTests[i].num_streams, ssl_conn_pool->last_num_streams());
-    else
-      EXPECT_EQ(kTests[i].num_streams, socks_proxy_pool->last_num_streams());
+    EXPECT_EQ(kTests[i].num_streams, socks_proxy_pool->last_num_streams());
+    EXPECT_EQ("socks4/" + GetGroupName(kTests[i]),
+              socks_proxy_pool->last_group_name());
   }
 }
 
@@ -1375,7 +1374,7 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
       num_streams, request_privacy_mode_disabled);
   EXPECT_EQ(-1, ssl_conn_pool->last_num_streams());
   EXPECT_EQ(num_streams, http_proxy_pool->last_num_streams());
-  http_proxy_pool->reset_last_num_streams();
+  http_proxy_pool->reset();
 
   // Second preconnect job with same privacy mode should not succeed.
   session->http_stream_factory()->PreconnectStreams(
