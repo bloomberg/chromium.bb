@@ -166,8 +166,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#define SK_LEGACY_SRGB_STAGE_CHOICE
-
 // We're turning this off indefinitely,
 // until we can figure out some fundamental problems with its approach.
 //
