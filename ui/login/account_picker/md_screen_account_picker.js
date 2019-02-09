@@ -45,7 +45,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setPublicSessionDisplayName',
       'setPublicSessionLocales',
       'setPublicSessionKeyboardLayouts',
-      'setLockScreenAppsState',
       'setOverlayColors',
       'togglePodBackground',
     ],
@@ -58,9 +57,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
 
     // Whether this screen is currently being shown.
     showing_: false,
-
-    // Last reported lock screen app activity state.
-    lockScreenAppsState_: LOCK_SCREEN_APPS_STATE.NONE,
 
     /** @override */
     decorate: function() {
@@ -125,9 +121,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     onBeforeShow: function(data) {
       this.showing_ = true;
-
-      this.ownerDocument.addEventListener('click',
-          this.handleOwnerDocClick_.bind(this));
 
       chrome.send('loginUIStateChanged', ['account-picker', true]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
@@ -462,59 +455,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setPublicSessionKeyboardLayouts: function(userID, locale, list) {
       $('pod-row').setPublicSessionKeyboardLayouts(userID, locale, list);
-    },
-
-    /**
-     * Updates UI based on the provided lock screen apps state.
-     *
-     * @param {LOCK_SCREEN_APPS_STATE} state The current lock screen apps state.
-     */
-    setLockScreenAppsState: function(state) {
-      if (Oobe.getInstance().displayType != DISPLAY_TYPE.LOCK ||
-          state == this.lockScreenAppsState_) {
-        return;
-      }
-
-      var wasForeground =
-          this.lockScreenAppsState_ === LOCK_SCREEN_APPS_STATE.FOREGROUND;
-      this.lockScreenAppsState_ = state;
-
-      $('top-header-bar').lockScreenAppsState = state;
-
-      // Reset the focused pod if app window is being shown on top of the user
-      // pods. Main goal is to clear any credentials the user might have input.
-      if (state === LOCK_SCREEN_APPS_STATE.FOREGROUND) {
-        $('pod-row').clearFocusedPod();
-        $('pod-row').disabled = true;
-      } else {
-        $('pod-row').disabled = false;
-        if (wasForeground) {
-          // If the app window was moved to background, ensure the active pod is
-          // focused.
-          $('pod-row').maybePreselectPod();
-          $('pod-row').refocusCurrentPod();
-        }
-      }
-    },
-
-    /**
-     * Handles clicks on the document which displays the account picker UI.
-     * If the click event target is outer container - i.e. background portion of
-     * UI with no other UI elements, and lock screen apps are in background, a
-     * request is issued to chrome to move lock screen apps to foreground.
-     * @param {Event} event The click event.
-     */
-    handleOwnerDocClick_: function(event) {
-      if (this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.BACKGROUND ||
-          (event.target != $('account-picker') &&
-           event.target != $('version'))) {
-        return;
-      }
-      chrome.send('setLockScreenAppsState',
-                  [LOCK_SCREEN_APPS_STATE.FOREGROUND]);
-
-      event.preventDefault();
-      event.stopPropagation();
     },
   };
 });

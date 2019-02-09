@@ -14,7 +14,6 @@
 // <include src="../../../../../ui/login/bubble.js">
 // <include src="../../../../../ui/login/display_manager.js">
 // <include src="md_header_bar.js">
-// <include src="md_top_header_bar.js">
 // <include src="demo_mode_test_helper.js">
 
 // <include
@@ -137,7 +136,6 @@ cr.define('cr.ui.Oobe', function() {
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));
-      login.TopHeaderBar.decorate($('top-header-bar'));
 
       chrome.send('screenStateInitialize');
 
