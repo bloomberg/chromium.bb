@@ -605,9 +605,9 @@ void RecentTabsSubMenuModel::OnFaviconDataAvailable(
   int index_in_menu = GetIndexOfCommandId(command_id);
   DCHECK_GT(index_in_menu, -1);
   SetIcon(index_in_menu, image_result.image);
-  ui::MenuModelDelegate* menu_model_delegate = GetMenuModelDelegate();
-  if (menu_model_delegate)
-    menu_model_delegate->OnIconChanged(index_in_menu);
+  ui::MenuModelDelegate* delegate = menu_model_delegate();
+  if (delegate)
+    delegate->OnIconChanged(index_in_menu);
 }
 
 int RecentTabsSubMenuModel::CommandIdToTabVectorIndex(
@@ -662,9 +662,9 @@ void RecentTabsSubMenuModel::TabRestoreServiceChanged(
 
   BuildLocalEntries();
 
-  ui::MenuModelDelegate* menu_model_delegate = GetMenuModelDelegate();
-  if (menu_model_delegate)
-    menu_model_delegate->OnMenuStructureChanged();
+  ui::MenuModelDelegate* delegate = menu_model_delegate();
+  if (delegate)
+    delegate->OnMenuStructureChanged();
 }
 
 void RecentTabsSubMenuModel::TabRestoreServiceDestroyed(
@@ -677,7 +677,7 @@ void RecentTabsSubMenuModel::OnForeignSessionUpdated() {
 
   BuildTabsFromOtherDevices();
 
-  ui::MenuModelDelegate* menu_model_delegate = GetMenuModelDelegate();
-  if (menu_model_delegate)
-    menu_model_delegate->OnMenuStructureChanged();
+  ui::MenuModelDelegate* delegate = menu_model_delegate();
+  if (delegate)
+    delegate->OnMenuStructureChanged();
 }

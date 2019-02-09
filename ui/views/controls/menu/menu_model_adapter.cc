@@ -22,9 +22,13 @@ MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model,
                                ui::EF_RIGHT_MOUSE_BUTTON),
       on_menu_closed_callback_(on_menu_closed_callback) {
   DCHECK(menu_model);
+  menu_model_->SetMenuModelDelegate(nullptr);
+  menu_model_->SetMenuModelDelegate(this);
 }
 
 MenuModelAdapter::~MenuModelAdapter() {
+  if (menu_model_)
+    menu_model_->SetMenuModelDelegate(nullptr);
 }
 
 void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
@@ -50,9 +54,9 @@ void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
 }
 
 MenuItemView* MenuModelAdapter::CreateMenu() {
-  MenuItemView* item = new MenuItemView(this);
-  BuildMenu(item);
-  return item;
+  menu_ = new MenuItemView(this);
+  BuildMenu(menu_);
+  return menu_;
 }
 
 // Static.
@@ -247,6 +251,16 @@ void MenuModelAdapter::WillHideMenu(MenuItemView* menu) {
 void MenuModelAdapter::OnMenuClosed(MenuItemView* menu) {
   if (!on_menu_closed_callback_.is_null())
     on_menu_closed_callback_.Run();
+}
+
+// MenuModelDelegate overrides:
+void MenuModelAdapter::OnMenuStructureChanged() {
+  if (menu_)
+    BuildMenu(menu_);
+}
+
+void MenuModelAdapter::OnMenuClearingDelegate() {
+  menu_model_ = nullptr;
 }
 
 // MenuModelAdapter, private:

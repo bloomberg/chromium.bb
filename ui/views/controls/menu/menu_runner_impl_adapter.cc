@@ -42,8 +42,7 @@ base::TimeTicks MenuRunnerImplAdapter::GetClosingEventTime() const {
   return impl_->GetClosingEventTime();
 }
 
-MenuRunnerImplAdapter::~MenuRunnerImplAdapter() {
-}
+MenuRunnerImplAdapter::~MenuRunnerImplAdapter() = default;
 
 }  // namespace internal
 }  // namespace views

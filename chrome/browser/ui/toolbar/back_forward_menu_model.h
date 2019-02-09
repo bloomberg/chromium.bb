@@ -73,14 +73,6 @@ class BackForwardMenuModel : public ui::MenuModel {
   // Is the item at |index| a separator?
   bool IsSeparator(int index) const;
 
-  // Set the delegate for triggering OnIconChanged.
-  void SetMenuModelDelegate(
-      ui::MenuModelDelegate* menu_model_delegate) override;
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override;
-
- protected:
-  ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
-
  private:
   friend class BackFwdMenuModelTest;
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, BasicCase);
@@ -199,9 +191,6 @@ class BackForwardMenuModel : public ui::MenuModel {
 
   // Used for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
-
-  // Used for receiving notifications when an icon is changed.
-  ui::MenuModelDelegate* menu_model_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardMenuModel);
 };
