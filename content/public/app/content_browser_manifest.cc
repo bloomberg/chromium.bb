@@ -174,7 +174,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "navigation:dedicated_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
-                  "blink.mojom.DedicatedWorkerFactory",
+                  "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.FileSystemManager", "blink.mojom.IDBFactory",
                   "blink.mojom.IdleManager", "blink.mojom.LockManager",
                   "blink.mojom.NotificationService",
@@ -213,7 +213,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.ContactsManager",
                   "blink.mojom.CredentialManager",
                   "blink.mojom.DisplayCutoutHost",
-                  "blink.mojom.DedicatedWorkerFactory",
+                  "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.FileChooser",
                   "blink.mojom.FileSystemManager",
                   "blink.mojom.GeolocationService",

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/worker/dedicated_worker_factory.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -64,11 +64,11 @@ ConnectToWorkerInterfaceProviderForThreadPool(
     ExecutionContext* execution_context,
     scoped_refptr<const SecurityOrigin> script_origin) {
   // TODO(japhet): Implement a proper factory.
-  mojom::blink::DedicatedWorkerFactoryPtr worker_factory;
-  execution_context->GetInterfaceProvider()->GetInterface(&worker_factory);
+  mojom::blink::DedicatedWorkerHostFactoryPtr worker_host_factory;
+  execution_context->GetInterfaceProvider()->GetInterface(&worker_host_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_ptr;
-  worker_factory->CreateDedicatedWorker(
+  worker_host_factory->CreateDedicatedWorker(
       script_origin, mojo::MakeRequest(&interface_provider_ptr));
   return interface_provider_ptr;
 }

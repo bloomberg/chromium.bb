@@ -45732,7 +45732,7 @@ Called by update_net_trust_anchors.py.-->
       label="resource_coordinator.mojom.FrameCoordinationUnit"/>
   <int value="1374541190" label="payments.mojom.PaymentManager"/>
   <int value="1416694600" label="payments.mojom.PaymentRequest"/>
-  <int value="1419976867" label="blink.mojom.DedicatedWorkerFactory"/>
+  <int value="1419976867" label="blink.mojom.DedicatedWorkerHostFactory"/>
   <int value="1448556545" label="content.mojom.InputInjector"/>
   <int value="1548931182" label="shape_detection.mojom.FaceDetectionProvider"/>
   <int value="1558900994" label="device.mojom.NFC"/>

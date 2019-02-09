@@ -20,8 +20,8 @@ const string kNavigation_DedicatedWorkerSpec = "navigation:dedicated_worker";
 
 // PlzDedicatedWorker:
 // An interface implemented by clients (e.g., the renderer where "new Worker()"
-// was invoked) to observe events on the DedicatedWorkerFactory.
-interface DedicatedWorkerFactoryClient {
+// was invoked) to observe events on the DedicatedWorkerHostFactory.
+interface DedicatedWorkerHostFactoryClient {
   // Called when the worker host is created.
   OnWorkerHostCreated(
       // Used for accessing services from the worker.
@@ -52,9 +52,9 @@ interface DedicatedWorkerFactoryClient {
   OnScriptLoadFailed();
 };
 
-// An interface used to instantiate a dedicated worker. The implementation of
-// this interface lives in the browser process.
-interface DedicatedWorkerFactory {
+// An interface used to instantiate a dedicated worker host. The implementation
+// of this interface lives in the browser process.
+interface DedicatedWorkerHostFactory {
   // Non-PlzDedicatedWorker:
   // The factory client should call this instead of CreateAndStartLoad() when
   // PlzDedicatedWorker is disabled.
@@ -62,7 +62,7 @@ interface DedicatedWorkerFactory {
   // Informs the browser that the renderer has created a new dedicated worker,
   // requesting |worker_interface_provider| to provide the worker access to mojo
   // interfaces. |origin| must either be unique or match the origin of the
-  // creating document.
+  // creating context (Document or DedicatedWorkerGlobalScope).
   CreateDedicatedWorker(
       url.mojom.Origin origin,
       service_manager.mojom.InterfaceProvider& worker_interface_provider);
@@ -78,5 +78,5 @@ interface DedicatedWorkerFactory {
   CreateAndStartLoad(url.mojom.Url script_url,
                      url.mojom.Origin origin,
                      blink.mojom.BlobURLToken? blob_url_token,
-                     DedicatedWorkerFactoryClient client);
+                     DedicatedWorkerHostFactoryClient client);
 };

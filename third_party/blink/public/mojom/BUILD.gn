@@ -199,7 +199,7 @@ mojom("mojom_core") {
     "service_worker/service_worker_registration.mojom",
 
     # Depends on controller_service_worker.mojom.
-    "worker/dedicated_worker_factory.mojom",
+    "worker/dedicated_worker_host_factory.mojom",
     "worker/shared_worker_factory.mojom",
   ]
 
