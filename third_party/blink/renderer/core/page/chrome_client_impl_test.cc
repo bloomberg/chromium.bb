@@ -109,7 +109,7 @@ class FakeColorChooserClient
     ColorChooserClient::Trace(visitor);
   }
 
-  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient)
+  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient);
 
   // ColorChooserClient
   void DidChooseColor(const Color& color) override {}
@@ -139,7 +139,7 @@ class FakeDateTimeChooserClient
     DateTimeChooserClient::Trace(visitor);
   }
 
-  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient)
+  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient);
 
   // DateTimeChooserClient
   Element& OwnerElement() const override { return *owner_element_; }

@@ -116,7 +116,8 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
 
 class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
                                            public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsArrayBuffer)
+  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsArrayBuffer);
+
  public:
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {

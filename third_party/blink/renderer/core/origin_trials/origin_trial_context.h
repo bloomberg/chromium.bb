@@ -35,7 +35,8 @@ class ExecutionContext;
 class CORE_EXPORT OriginTrialContext final
     : public GarbageCollectedFinalized<OriginTrialContext>,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
+  USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext);
+
  public:
   static const char kSupplementName[];
 

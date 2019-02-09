@@ -28,7 +28,7 @@ class HTMLVideoElement;
 class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
                                         public PageVisibilityObserver,
                                         public RemotePlaybackObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(VideoWakeLock)
+  USING_GARBAGE_COLLECTED_MIXIN(VideoWakeLock);
 
  public:
   explicit VideoWakeLock(HTMLVideoElement&);

@@ -1379,7 +1379,8 @@ class Mixin : public GarbageCollectedMixin {
 };
 
 class UseMixin : public SimpleObject, public Mixin {
-  USING_GARBAGE_COLLECTED_MIXIN(UseMixin)
+  USING_GARBAGE_COLLECTED_MIXIN(UseMixin);
+
  public:
   static UseMixin* Create() { return MakeGarbageCollected<UseMixin>(); }
 

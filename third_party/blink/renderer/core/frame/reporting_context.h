@@ -21,7 +21,8 @@ class ReportingObserver;
 class CORE_EXPORT ReportingContext final
     : public GarbageCollectedFinalized<ReportingContext>,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(ReportingContext)
+  USING_GARBAGE_COLLECTED_MIXIN(ReportingContext);
+
  public:
   static const char kSupplementName[];
 
