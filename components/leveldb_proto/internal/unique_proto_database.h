@@ -146,7 +146,6 @@ UniqueProtoDatabase<T>::UniqueProtoDatabase(
 
 template <typename T>
 UniqueProtoDatabase<T>::~UniqueProtoDatabase() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (db_.get() &&
       !db_wrapper_->task_runner()->DeleteSoon(FROM_HERE, db_.release())) {
     DLOG(WARNING) << "Proto database will not be deleted.";
