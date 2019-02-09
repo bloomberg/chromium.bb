@@ -103,5 +103,8 @@ public interface ChromeNotificationBuilder {
 
     Notification buildWithBigTextStyle(String bigText);
 
+    @Deprecated
     Notification build();
+
+    ChromeNotification buildChromeNotification();
 }

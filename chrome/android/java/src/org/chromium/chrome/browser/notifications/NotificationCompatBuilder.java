@@ -289,4 +289,10 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     public Notification build() {
         return mBuilder.build();
     }
+
+    @Override
+    public ChromeNotification buildChromeNotification() {
+        assert mMetadata != null;
+        return new ChromeNotification(build(), mMetadata);
+    }
 }
