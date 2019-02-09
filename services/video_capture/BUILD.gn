@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 service_executable("video_capture") {

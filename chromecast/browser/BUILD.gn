@@ -6,7 +6,6 @@ import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
