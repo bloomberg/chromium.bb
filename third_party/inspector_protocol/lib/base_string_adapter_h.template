@@ -4,8 +4,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef {{"_".join(config.protocol.namespace)}}_Parser_h
-#define {{"_".join(config.protocol.namespace)}}_Parser_h
+#ifndef {{"_".join(config.protocol.namespace)}}_BASE_STRING_ADAPTER_H
+#define {{"_".join(config.protocol.namespace)}}_BASE_STRING_ADAPTER_H
 
 #include <memory>
 #include <string>
@@ -123,4 +123,4 @@ std::unique_ptr<base::Value> toBaseValue(Value* value, int depth);
 } // namespace {{namespace}}
 {% endfor %}
 
-#endif // !defined({{"_".join(config.protocol.namespace)}}_Parser_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_BASE_STRING_ADAPTER_H)
