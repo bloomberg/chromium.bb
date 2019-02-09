@@ -4,6 +4,7 @@
 
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
+#include <algorithm>
 #include <iterator>
 #include <memory>
 

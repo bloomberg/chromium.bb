@@ -6,6 +6,8 @@
 
 #include <array>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "base/bits.h"
 #include "base/process/process_metrics.h"
