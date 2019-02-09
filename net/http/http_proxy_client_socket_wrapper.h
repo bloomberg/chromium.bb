@@ -59,7 +59,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       const std::string& group_name,
       RequestPriority priority,
       const SocketTag& socket_tag,
-      ClientSocketPool::RespectLimits respect_limits,
+      bool respect_limits,
       base::TimeDelta connect_timeout_duration,
       base::TimeDelta proxy_negotiation_timeout_duration,
       TransportClientSocketPool* transport_pool,
@@ -190,7 +190,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   const std::string group_name_;
   RequestPriority priority_;
   const SocketTag initial_socket_tag_;
-  ClientSocketPool::RespectLimits respect_limits_;
+  bool respect_limits_;
   const base::TimeDelta connect_timeout_duration_;
   const base::TimeDelta proxy_negotiation_timeout_duration_;
 
