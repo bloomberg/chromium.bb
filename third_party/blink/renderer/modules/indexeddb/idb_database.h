@@ -97,7 +97,7 @@ class MODULES_EXPORT IDBDatabase final
 
   // Implement the IDL
   const String& name() const { return metadata_.name; }
-  unsigned long long version() const { return metadata_.version; }
+  uint64_t version() const { return metadata_.version; }
   DOMStringList* objectStoreNames() const;
 
   IDBObjectStore* createObjectStore(const String& name,

@@ -479,7 +479,7 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
     return;
   }
 
-  base::Optional<unsigned long long> new_version_nullable;
+  base::Optional<uint64_t> new_version_nullable;
   if (new_version != IDBDatabaseMetadata::kNoVersion) {
     new_version_nullable = new_version;
   }
