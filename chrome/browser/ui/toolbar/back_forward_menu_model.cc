@@ -216,15 +216,6 @@ bool BackForwardMenuModel::IsSeparator(int index) const {
   return index == history_items;
 }
 
-void BackForwardMenuModel::SetMenuModelDelegate(
-      ui::MenuModelDelegate* menu_model_delegate) {
-  menu_model_delegate_ = menu_model_delegate;
-}
-
-ui::MenuModelDelegate* BackForwardMenuModel::GetMenuModelDelegate() const {
-  return menu_model_delegate_;
-}
-
 void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   // If the favicon has already been requested for this menu, don't do
   // anything.

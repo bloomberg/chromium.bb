@@ -106,6 +106,7 @@ class VIEWS_EXPORT MenuRunner {
   // |on_menu_closed_callback| is invoked when the menu is closed.
   // Note that with a native menu (e.g. on Mac), the ASYNC flag in |run_types|
   // may be ignored. See http://crbug.com/682544.
+  // The MenuModelDelegate of |menu_model| will be overwritten by this call.
   MenuRunner(ui::MenuModel* menu_model,
              int32_t run_types,
              const base::Closure& on_menu_closed_callback = base::Closure());

@@ -40,7 +40,9 @@ class UI_BASE_EXPORT MenuModel {
                        // background matches the menu's rounded corners.
   };
 
-  virtual ~MenuModel() {}
+  MenuModel();
+
+  virtual ~MenuModel();
 
   // Returns true if any of the items within the model have icons. Not all
   // platforms support icons in menus natively and so this is a hint for
@@ -127,11 +129,12 @@ class UI_BASE_EXPORT MenuModel {
   // should not be deleted here.
   virtual void MenuWillClose() {}
 
-  // Set the MenuModelDelegate. Owned by the caller of this function.
-  virtual void SetMenuModelDelegate(MenuModelDelegate* delegate) = 0;
+  // Set the MenuModelDelegate, owned by the caller of this function. We allow
+  // setting a new one or clearing the current one.
+  void SetMenuModelDelegate(MenuModelDelegate* delegate);
 
   // Gets the MenuModelDelegate.
-  virtual MenuModelDelegate* GetMenuModelDelegate() const = 0;
+  MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
 
   // Retrieves the model and index that contains a specific command id. Returns
   // true if an item with the specified command id is found. |model| is inout,
@@ -139,6 +142,10 @@ class UI_BASE_EXPORT MenuModel {
   static bool GetModelAndIndexForCommandId(int command_id,
                                            MenuModel** model,
                                            int* index);
+
+ private:
+  // MenuModelDelegate. Weak. Could be null.
+  MenuModelDelegate* menu_model_delegate_;
 };
 
 }  // namespace ui

@@ -186,9 +186,6 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   MenuModel* GetSubmenuModelAt(int index) const override;
   void MenuWillShow() override;
   void MenuWillClose() override;
-  void SetMenuModelDelegate(
-      ui::MenuModelDelegate* menu_model_delegate) override;
-  MenuModelDelegate* GetMenuModelDelegate() const override;
 
   // Sets |histogram_name_|.
   void set_histogram_name(const std::string& histogram_name) {
@@ -244,8 +241,6 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   ItemVector items_;
 
   Delegate* delegate_;
-
-  MenuModelDelegate* menu_model_delegate_;
 
   // The UMA histogram name that is be used to log command ids.
   std::string histogram_name_;

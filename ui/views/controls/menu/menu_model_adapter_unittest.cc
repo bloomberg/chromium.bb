@@ -90,10 +90,6 @@ class MenuModelBase : public ui::MenuModel {
 
   void MenuWillClose() override {}
 
-  void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
-
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override { return NULL; }
-
   // Item definition.
   struct Item {
     Item(ItemType item_type,

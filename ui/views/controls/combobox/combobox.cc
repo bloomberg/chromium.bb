@@ -197,13 +197,6 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel,
 
   MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
 
-  void SetMenuModelDelegate(
-      ui::MenuModelDelegate* menu_model_delegate) override {}
-
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override {
-    return nullptr;
-  }
-
   // Overridden from ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override {
     owner_->ModelChanged();

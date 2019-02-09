@@ -52,10 +52,6 @@ class CheckActiveWebContentsMenuModel : public ui::MenuModel {
   bool IsEnabledAt(int index) const override { return false; }
   ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
   void ActivatedAt(int index) override {}
-  void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override {
-    return nullptr;
-  }
 
  private:
   TabStripModel* const tab_strip_model_;

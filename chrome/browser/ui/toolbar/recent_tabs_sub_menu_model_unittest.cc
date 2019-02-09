@@ -91,7 +91,7 @@ class TestRecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   }
 
   ~TestRecentTabsMenuModelDelegate() override {
-    model_->SetMenuModelDelegate(NULL);
+    model_->SetMenuModelDelegate(nullptr);
   }
 
   // ui::MenuModelDelegate implementation:
