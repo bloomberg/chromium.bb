@@ -11252,25 +11252,17 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     ASSERT_TRUE(proxy_server.is_valid());
     CaptureGroupNameTransportSocketPool* socks_conn_pool =
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
-    CaptureGroupNameTransportSocketPool* ssl_conn_pool =
-        new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForProxy(proxy_server,
                                              base::WrapUnique(socks_conn_pool));
-    mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session.get()));
-    if (tests[i].ssl)
-      EXPECT_EQ(tests[i].expected_group_name,
-                ssl_conn_pool->last_group_name_received());
-    else
-      EXPECT_EQ(tests[i].expected_group_name,
-                socks_conn_pool->last_group_name_received());
+    EXPECT_EQ(tests[i].expected_group_name,
+              socks_conn_pool->last_group_name_received());
   }
 }
 

@@ -113,7 +113,6 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         nullptr /* ssl_config_service */,
         nullptr /* socket_performance_watcher_factory */,
         nullptr /* network_quality_estimator */, nullptr /* net_log */,
-        nullptr /* socks_pool */,
         http_proxy_pool ? &http_proxy_socket_pool_ : nullptr));
   }
 

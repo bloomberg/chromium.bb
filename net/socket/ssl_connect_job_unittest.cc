@@ -167,8 +167,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
             nullptr /* network_quality_estimator */, nullptr /* net_log */,
             nullptr /* websocket_lock_endpoint_manager */),
         SSLParams(proxy_scheme),
-        proxy_scheme == ProxyServer::SCHEME_SOCKS5 ? &transport_socket_pool_
-                                                   : nullptr,
         proxy_scheme == ProxyServer::SCHEME_HTTP ? &http_proxy_socket_pool_
                                                  : nullptr,
         test_delegate);
@@ -502,12 +500,13 @@ TEST_F(SSLConnectJobTest, SOCKSBasic) {
 
     MockWrite writes[] = {
         MockWrite(io_mode, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
-        MockWrite(io_mode, base::size(kSOCKS5Request),
-                  base::size(kSOCKS5Request))};
+        MockWrite(io_mode, kSOCKS5Request, base::size(kSOCKS5Request)),
+    };
 
     MockRead reads[] = {
         MockRead(io_mode, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength),
-        MockRead(io_mode, kSOCKS5OkResponse, kSOCKS5OkResponseLength)};
+        MockRead(io_mode, kSOCKS5OkResponse, kSOCKS5OkResponseLength),
+    };
 
     host_resolver_.set_synchronous_mode(io_mode == SYNCHRONOUS);
     StaticSocketDataProvider data(reads, writes);
@@ -523,6 +522,64 @@ TEST_F(SSLConnectJobTest, SOCKSBasic) {
                                           io_mode == SYNCHRONOUS);
     CheckConnectTimesExceptDnsSet(ssl_connect_job->connect_timing());
   }
+}
+
+TEST_F(SSLConnectJobTest, SOCKSHasEstablishedConnection) {
+  const char kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's', 'o',  'c',
+                                 'k',  's',  'h',  'o',  's',  't', 0x01, 0xBB};
+
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength, 0),
+      MockWrite(SYNCHRONOUS, kSOCKS5Request, base::size(kSOCKS5Request), 3),
+  };
+
+  MockRead reads[] = {
+      // Pause so can probe current state.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength, 2),
+      MockRead(SYNCHRONOUS, kSOCKS5OkResponse, kSOCKS5OkResponseLength, 4),
+  };
+
+  host_resolver_.set_ondemand_mode(true);
+  SequencedSocketData data(reads, writes);
+  data.set_connect_data(MockConnect(ASYNC, OK));
+  socket_factory_.AddSocketDataProvider(&data);
+
+  // SSL negotiation hangs. Value returned after SSL negotiation is complete
+  // doesn't matter, as HasEstablishedConnection() may only be used between job
+  // start and job complete.
+  SSLSocketDataProvider ssl(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_SOCKS5);
+  EXPECT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(host_resolver_.has_pending_requests());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, ssl_connect_job->GetLoadState());
+  EXPECT_FALSE(ssl_connect_job->HasEstablishedConnection());
+
+  // DNS resolution completes, and then the ConnectJob tries to connect the
+  // socket, which should succeed asynchronously.
+  host_resolver_.ResolveNow(1);
+  EXPECT_EQ(LOAD_STATE_CONNECTING, ssl_connect_job->GetLoadState());
+  EXPECT_FALSE(ssl_connect_job->HasEstablishedConnection());
+
+  // Spin the message loop until the first read of the handshake.
+  // HasEstablishedConnection() should return true, as a TCP connection has been
+  // successfully established by this point.
+  data.RunUntilPaused();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Finish up the handshake, and spin the message loop until the SSL handshake
+  // starts and hang.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
 }
 
 TEST_F(SSLConnectJobTest, SOCKSRequestPriority) {

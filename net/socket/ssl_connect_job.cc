@@ -24,7 +24,6 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -95,7 +94,6 @@ SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<SSLSocketParams>& params,
-    TransportClientSocketPool* socks_pool,
     HttpProxyClientSocketPool* http_proxy_pool,
     ConnectJob::Delegate* delegate)
     : ConnectJob(priority,
@@ -107,7 +105,6 @@ SSLConnectJob::SSLConnectJob(
                  NetLogWithSource::Make(common_connect_job_params.net_log,
                                         NetLogSourceType::SSL_CONNECT_JOB)),
       params_(params),
-      socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))) {}
@@ -121,9 +118,8 @@ LoadState SSLConnectJob::GetLoadState() const {
     case STATE_TUNNEL_CONNECT:
       return LOAD_STATE_IDLE;
     case STATE_TRANSPORT_CONNECT_COMPLETE:
-      return nested_connect_job_->GetLoadState();
     case STATE_SOCKS_CONNECT_COMPLETE:
-      return transport_socket_handle_->GetLoadState();
+      return nested_connect_job_->GetLoadState();
     case STATE_TUNNEL_CONNECT_COMPLETE:
       if (transport_socket_handle_->socket())
         return LOAD_STATE_ESTABLISHING_PROXY_TUNNEL;
@@ -140,7 +136,7 @@ LoadState SSLConnectJob::GetLoadState() const {
 bool SSLConnectJob::HasEstablishedConnection() const {
   // Return true to prevent creating any backup jobs when this is used on top of
   // another socket pool type.
-  if (socks_pool_ || http_proxy_pool_)
+  if (http_proxy_pool_)
     return true;
 
   // If waiting on a nested ConnectJob, defer to that ConnectJob's state.
@@ -272,22 +268,21 @@ int SSLConnectJob::DoTransportConnectComplete(int result) {
 }
 
 int SSLConnectJob::DoSOCKSConnect() {
-  DCHECK(socks_pool_);
+  DCHECK(!nested_connect_job_);
+  DCHECK(params_->GetSocksProxyConnectionParams());
+
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  scoped_refptr<SOCKSSocketParams> socks_proxy_params =
-      params_->GetSocksProxyConnectionParams();
-  return transport_socket_handle_->Init(
-      group_name(),
-      TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-          socks_proxy_params),
-      priority(), socket_tag(), respect_limits(), callback_, socks_pool_,
-      net_log());
+  nested_connect_job_ = std::make_unique<SOCKSConnectJob>(
+      priority(), common_connect_job_params(),
+      params_->GetSocksProxyConnectionParams(), this);
+  return nested_connect_job_->Connect();
 }
 
 int SSLConnectJob::DoSOCKSConnectComplete(int result) {
-  if (result == OK)
+  if (result == OK) {
     next_state_ = STATE_SSL_CONNECT;
+    nested_socket_ = nested_connect_job_->PassSocket();
+  }
 
   return result;
 }

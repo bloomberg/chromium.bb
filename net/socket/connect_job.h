@@ -157,8 +157,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
 
   // Returns true if the ConnectJob has ever successfully established a TCP
   // connection. Used solely for deciding if a backup job is needed. Once it
-  // starts returning true, must always return true when called in the future,
-  // until NotifyComplete() is invoked.
+  // starts returning true, must always return true when called in the future.
+  // Not safe to call after NotifyComplete() is invoked.
   virtual bool HasEstablishedConnection() const = 0;
 
   // If Connect returns an error (or OnConnectJobComplete reports an error

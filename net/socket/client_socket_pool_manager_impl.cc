@@ -243,8 +243,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
               ct_policy_enforcer_, ssl_client_session_cache_,
               ssl_session_cache_shard_, ssl_config_service_,
               socket_performance_watcher_factory_, network_quality_estimator_,
-              net_log_, nullptr /* no socks proxy */,
-              nullptr /* no http proxy */)));
+              net_log_, nullptr /* no http proxy */)));
   DCHECK(ssl_https_ret.second);
 
   std::pair<HTTPProxySocketPoolMap::iterator, bool> ret =
@@ -261,6 +260,9 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
 TransportClientSocketPool*
 ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
     const ProxyServer& proxy_server) {
+  DCHECK(!proxy_server.is_socks());
+  DCHECK(!proxy_server.is_direct());
+
   TransportSocketPoolMap::const_iterator it =
       ssl_socket_pools_for_proxies_.find(proxy_server);
   if (it != ssl_socket_pools_for_proxies_.end())
@@ -281,8 +283,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
               ssl_session_cache_shard_, ssl_config_service_,
               socket_performance_watcher_factory_, network_quality_estimator_,
               net_log_,
-              proxy_server.is_socks() ? GetSocketPoolForSOCKSProxy(proxy_server)
-                                      : nullptr,
               proxy_server.is_http_like()
                   ? GetSocketPoolForHTTPLikeProxy(proxy_server)
                   : nullptr)));
