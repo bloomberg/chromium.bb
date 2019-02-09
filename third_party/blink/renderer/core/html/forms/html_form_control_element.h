@@ -119,7 +119,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
 
-  FormAssociated* ToFormAssociatedOrNull() override { return this; };
+  FormAssociated* ToFormAssociatedOrNull() override { return this; }
   void AssociateWith(HTMLFormElement*) override;
 
   bool BlocksFormSubmission() const { return blocks_form_submission_; }

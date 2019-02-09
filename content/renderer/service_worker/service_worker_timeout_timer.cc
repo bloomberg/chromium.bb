@@ -74,7 +74,7 @@ ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
   // Abort all callbacks.
   for (auto& event : inflight_events_)
     std::move(event.abort_callback).Run();
-};
+}
 
 int ServiceWorkerTimeoutTimer::StartEvent(
     base::OnceCallback<void(int /* event_id */)> abort_callback) {

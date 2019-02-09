@@ -20,6 +20,6 @@ base::string16 GetBluetoothAddressForDisplay(
 base::string16 GetBluetoothDeviceNameForDisplay(
     const mojom::BluetoothDeviceInfoPtr& device_info);
 
-};  // namespace device
+}  // namespace device
 
 #endif  // SERVICES_DEVICE_PUBLIC_CPP_BLUETOOTH_BLUETOOTH_UTILS_H_

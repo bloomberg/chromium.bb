@@ -40,7 +40,7 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   result->is_client_redirect = info.is_client_redirect;
   result->navigation_timings.input_start = info.input_start;
   return result;
-};
+}
 
 // static
 std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateWithHTMLString(

@@ -107,7 +107,7 @@ std::string BuildMirrorRequestCookieIfPossible(
 }
 
 SigninHeaderHelper::SigninHeaderHelper(const std::string& histogram_suffix)
-    : histogram_suffix_(histogram_suffix){};
+    : histogram_suffix_(histogram_suffix) {}
 SigninHeaderHelper::~SigninHeaderHelper() = default;
 
 bool SigninHeaderHelper::AppendOrRemoveRequestHeader(

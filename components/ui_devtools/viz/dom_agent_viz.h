@@ -36,13 +36,13 @@ class DOMAgentViz : public viz::SurfaceObserver,
   // viz::SurfaceObserver:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnSurfaceActivated(const viz::SurfaceId& surface_id,
-                          base::Optional<base::TimeDelta> duration) override{};
-  void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) override{};
+                          base::Optional<base::TimeDelta> duration) override {}
+  void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
                         const viz::BeginFrameAck& ack) override;
   void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
-                               const viz::BeginFrameArgs& args) override{};
+                               const viz::BeginFrameArgs& args) override {}
   void OnAddedSurfaceReference(const viz::SurfaceId& parent_id,
                                const viz::SurfaceId& child_id) override;
   void OnRemovedSurfaceReference(const viz::SurfaceId& parent_id,

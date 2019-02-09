@@ -319,7 +319,7 @@ class FormStructure {
   // - Name for Autofill of first field
   base::string16 GetIdentifierForRefill() const;
 
-  int developer_engagement_metrics() { return developer_engagement_metrics_; };
+  int developer_engagement_metrics() { return developer_engagement_metrics_; }
 
   void set_randomized_encoder(std::unique_ptr<RandomizedEncoder> encoder);
 
@@ -348,7 +348,7 @@ class FormStructure {
       if (sectioned_indexes.empty())
         return (size_t)-1;  // Shouldn't happen.
       return sectioned_indexes.back().back();
-    };
+    }
 
     void AddFieldIndex(const size_t index, bool is_new_section) {
       if (is_new_section || Empty()) {

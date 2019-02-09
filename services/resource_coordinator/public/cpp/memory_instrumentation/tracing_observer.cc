@@ -42,7 +42,7 @@ std::string ApplyPathFiltering(const std::string& file,
   return file;
 }
 
-};  // namespace
+}  // namespace
 
 TracingObserver::TracingObserver(
     base::trace_event::TraceLog* trace_log,

@@ -215,7 +215,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     net::ct::CTPolicyCompliance,
     net::ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE)
 
-IPC_ENUM_TRAITS(net::ProxyServer::Scheme);  // BitMask.
+IPC_ENUM_TRAITS(net::ProxyServer::Scheme)  // BitMask.
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
                           net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR)

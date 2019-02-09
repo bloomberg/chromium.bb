@@ -13,7 +13,7 @@ struct DataReductionProxyPageLoadTiming;
 // server.
 class DataReductionProxyPingbackClient {
  public:
-  virtual ~DataReductionProxyPingbackClient(){};
+  virtual ~DataReductionProxyPingbackClient() {}
 
   // Sends a pingback to the data saver proxy server about various timing
   // information.

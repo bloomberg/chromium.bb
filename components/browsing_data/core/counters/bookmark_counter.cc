@@ -42,7 +42,7 @@ class BookmarkModelHelper : public bookmarks::BaseBookmarkModelObserver {
                            bool ids_reassigned) override {
     std::move(callback_).Run(model);
     delete this;
-  };
+  }
 
   void BookmarkModelBeingDeleted(
       bookmarks::BookmarkModel* bookmark_model) override {

@@ -38,7 +38,7 @@ class StyleEnvironmentVariables::RootOwner {
     }
 
     return *instance_.get();
-  };
+  }
 
  private:
   scoped_refptr<StyleEnvironmentVariables> instance_;

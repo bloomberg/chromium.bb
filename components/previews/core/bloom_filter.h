@@ -42,7 +42,7 @@ class BloomFilter {
   void Add(const std::string& str);
 
   // Returns the bit array data of this Bloom filter as vector of bytes.
-  const ByteVector& bytes() const { return bytes_; };
+  const ByteVector& bytes() const { return bytes_; }
 
  private:
   // Number of bits to set for each added string.

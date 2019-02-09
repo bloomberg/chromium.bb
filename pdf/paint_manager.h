@@ -18,7 +18,7 @@ class Graphics2D;
 class Instance;
 class Point;
 class Rect;
-};
+}  // namespace pp
 
 // Custom PaintManager for the PDF plugin.  This is branched from the Pepper
 // version.  The difference is that this supports progressive rendering of dirty

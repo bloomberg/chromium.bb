@@ -74,7 +74,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   // This call will happen on the gamepad polling thread. Any initialization
   // that needs to happen on that thread should be done here, not in the
   // constructor.
-  virtual void OnAddedToProvider(){};
+  virtual void OnAddedToProvider() {}
 
  private:
   GamepadPadStateProvider* provider_;

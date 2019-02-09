@@ -77,7 +77,7 @@ void RecordRequestStatus(
   }
 }
 
-};  // namespace
+}  // namespace
 
 namespace syncer {
 

@@ -129,7 +129,7 @@ class DefaultDnsSocketPool : public DnsSocketPool {
  public:
   DefaultDnsSocketPool(ClientSocketFactory* factory,
                        const RandIntCallback& rand_int_callback)
-      : DnsSocketPool(factory, rand_int_callback){};
+      : DnsSocketPool(factory, rand_int_callback) {}
 
   ~DefaultDnsSocketPool() override;
 

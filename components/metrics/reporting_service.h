@@ -72,7 +72,7 @@ class ReportingService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
-  MetricsServiceClient* client() const { return client_; };
+  MetricsServiceClient* client() const { return client_; }
 
  private:
   // Retrieves the log store backing this service.

@@ -158,8 +158,8 @@ class BooleanCapability {
 template <class Traits>
 class EmptyCapability {
  public:
-  EmptyCapability() {};
-  ~EmptyCapability() {};
+  EmptyCapability() {}
+  ~EmptyCapability() {}
 
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;

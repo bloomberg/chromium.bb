@@ -157,11 +157,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     return dest_site_instance_.get();
   }
 
-  RestoreType restore_type() const { return restore_type_; };
+  RestoreType restore_type() const { return restore_type_; }
 
-  bool is_view_source() const { return is_view_source_; };
+  bool is_view_source() const { return is_view_source_; }
 
-  int bindings() const { return bindings_; };
+  int bindings() const { return bindings_; }
 
   bool browser_initiated() const { return browser_initiated_ ; }
 

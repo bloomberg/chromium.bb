@@ -28,7 +28,7 @@ constexpr auto kLongTaskSubTaskThreshold = TimeDelta::FromMilliseconds(12);
 
 void PerformanceMonitor::BypassLongCompileThresholdOnceForTesting() {
   bypass_long_compile_threshold_ = true;
-};
+}
 
 // static
 base::TimeDelta PerformanceMonitor::Threshold(ExecutionContext* context,

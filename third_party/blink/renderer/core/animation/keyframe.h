@@ -159,7 +159,7 @@ class CORE_EXPORT Keyframe : public GarbageCollectedFinalized<Keyframe> {
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const;
 
-    virtual void Trace(Visitor*){};
+    virtual void Trace(Visitor*) {}
 
    protected:
     double offset_;

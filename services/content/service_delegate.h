@@ -38,6 +38,6 @@ class ServiceDelegate {
                                   mojom::NavigableContentsClient* client) = 0;
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // SERVICES_CONTENT_CONTENT_SERVICE_DELEGATE_H_

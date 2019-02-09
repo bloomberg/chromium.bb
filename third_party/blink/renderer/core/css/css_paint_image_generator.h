@@ -30,7 +30,7 @@ class CORE_EXPORT CSSPaintImageGenerator
   class Observer : public GarbageCollectedFinalized<Observer> {
    public:
     virtual ~Observer() = default;
-    ;
+
     virtual void PaintImageGeneratorReady() = 0;
     virtual void Trace(blink::Visitor* visitor) {}
   };

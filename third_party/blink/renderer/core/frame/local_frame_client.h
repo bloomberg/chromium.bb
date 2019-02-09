@@ -443,7 +443,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                          const KURL&,
                                          const String&) {
     return false;
-  };
+  }
 
   // Returns a new WebWorkerFetchContext for a dedicated worker or worklet.
   virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() {

@@ -536,7 +536,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
 }
 
 AboutSigninInternals::RefreshTokenEvent::RefreshTokenEvent()
-    : timestamp(base::Time::Now()){};
+    : timestamp(base::Time::Now()) {}
 
 std::string AboutSigninInternals::RefreshTokenEvent::GetTypeAsString() const {
   switch (type) {

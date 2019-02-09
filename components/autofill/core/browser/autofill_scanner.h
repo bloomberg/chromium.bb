@@ -46,7 +46,7 @@ class AutofillScanner {
   size_t SaveCursor();
 
   // This is only for logging purposes.
-  size_t CursorIndex() { return static_cast<size_t>(cursor_ - begin_); };
+  size_t CursorIndex() { return static_cast<size_t>(cursor_ - begin_); }
 
  private:
   void Init(const std::vector<AutofillField*>& fields);

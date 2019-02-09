@@ -63,7 +63,7 @@ class OverlayAgentAura : public OverlayAgent,
 
   HighlightRectsConfiguration highlight_rect_config() const {
     return highlight_rect_config_;
-  };
+  }
 
   // Return the id of the UI element located at |event|'s root location.
   // The function first searches for the targeted window, then the targeted

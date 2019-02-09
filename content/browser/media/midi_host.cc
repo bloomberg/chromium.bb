@@ -249,6 +249,6 @@ void MidiHost::EndSession() {
     midi_service_->EndSession(this);
   midi_client_.reset();
   midi_session_.Close();
-};
+}
 
 }  // namespace content

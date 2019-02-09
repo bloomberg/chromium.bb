@@ -45,7 +45,7 @@ void VROrientationDeviceProvider::Initialize(
 
 bool VROrientationDeviceProvider::Initialized() {
   return initialized_;
-};
+}
 
 void VROrientationDeviceProvider::DeviceInitialized() {
   // This should only be called after the device is initialized.

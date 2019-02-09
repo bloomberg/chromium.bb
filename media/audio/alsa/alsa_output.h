@@ -226,6 +226,6 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
 MEDIA_EXPORT std::ostream& operator<<(std::ostream& os,
                                       AlsaPcmOutputStream::InternalState);
 
-};  // namespace media
+}  // namespace media
 
 #endif  // MEDIA_AUDIO_ALSA_ALSA_OUTPUT_H_

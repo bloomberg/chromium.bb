@@ -221,7 +221,7 @@ inline TraversalSiblingRange<Traversal<ElementType>>
 Traversal<ElementType>::ChildrenOf(const Node& start) {
   return TraversalSiblingRange<Traversal<ElementType>>(
       Traversal<ElementType>::FirstChild(start));
-};
+}
 
 template <class ElementType>
 inline TraversalDescendantRange<Traversal<ElementType>>

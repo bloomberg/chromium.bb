@@ -13,7 +13,7 @@
 
 namespace heap_profiling {
 FORWARD_DECLARE_TEST(ProfilingJsonExporterTest, MemoryMaps);
-};
+}
 
 namespace memory_instrumentation {
 

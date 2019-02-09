@@ -37,7 +37,7 @@ class SPKIHash {
   size_t size() const { return kLength; }
 
   uint8_t* data() { return data_; }
-  const uint8_t* data() const { return data_; };
+  const uint8_t* data() const { return data_; }
 
  private:
   // The bytes of the hash. Current hashes are SHA256 and thus 32 bytes long.

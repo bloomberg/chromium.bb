@@ -45,7 +45,7 @@ class CONTENT_EXPORT WorkerThread {
   static void PostTask(int id, base::OnceClosure task);
 
  private:
-  WorkerThread(){};
+  WorkerThread() {}
   DISALLOW_COPY_AND_ASSIGN(WorkerThread);
 };
 

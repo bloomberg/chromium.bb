@@ -88,7 +88,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   bool WillUseFallbackContentAtLayout() const;
 
-  FormAssociated* ToFormAssociatedOrNull() override { return this; };
+  FormAssociated* ToFormAssociatedOrNull() override { return this; }
   void AssociateWith(HTMLFormElement*) override;
 
  private:

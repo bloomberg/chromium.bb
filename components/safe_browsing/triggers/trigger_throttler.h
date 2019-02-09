@@ -47,7 +47,7 @@ enum class TriggerType {
 struct TriggerTypeHash {
   std::size_t operator()(TriggerType trigger_type) const {
     return static_cast<std::size_t>(trigger_type);
-  };
+  }
 };
 
 // A map for storing a list of event timestamps for different trigger types.

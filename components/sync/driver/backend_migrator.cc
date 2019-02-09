@@ -206,4 +206,4 @@ ModelTypeSet BackendMigrator::GetPendingMigrationTypesForTest() const {
 
 #undef SLOG
 
-};  // namespace syncer
+}  // namespace syncer

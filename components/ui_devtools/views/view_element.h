@@ -22,7 +22,7 @@ class ViewElement : public views::ViewObserver, public UIElement {
               UIElementDelegate* ui_element_delegate,
               UIElement* parent);
   ~ViewElement() override;
-  views::View* view() const { return view_; };
+  views::View* view() const { return view_; }
 
   // views::ViewObserver
   void OnChildViewRemoved(views::View* parent, views::View* view) override;

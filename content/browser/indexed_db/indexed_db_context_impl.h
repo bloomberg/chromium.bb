@@ -62,7 +62,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
         const base::string16& object_store_name) = 0;
 
    protected:
-    virtual ~Observer() {};
+    virtual ~Observer() {}
   };
 
   // The indexed db directory.

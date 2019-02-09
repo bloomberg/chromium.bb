@@ -60,7 +60,7 @@ class MockAudioLogFactory : public media::mojom::AudioLogFactory {
     MockCreateAudioLog(component, component_id);
     mojo::MakeStrongBinding(base::WrapUnique(mock_logs_[current_mock_log_++]),
                             std::move(audio_log_request));
-  };
+  }
 
   MockAudioLog* GetMockLog(size_t index) { return mock_logs_[index]; }
 

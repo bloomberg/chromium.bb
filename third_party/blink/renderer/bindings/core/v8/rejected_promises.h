@@ -14,7 +14,7 @@
 
 namespace v8 {
 class PromiseRejectMessage;
-};
+}
 
 namespace blink {
 

@@ -16,7 +16,7 @@ namespace media {
 // clients.
 class CAPTURE_EXPORT VideoFrameReceiver {
  public:
-  virtual ~VideoFrameReceiver(){};
+  virtual ~VideoFrameReceiver() {}
 
   // Tells the VideoFrameReceiver that the producer is going to subsequently use
   // the provided buffer as one of possibly many for frame delivery via

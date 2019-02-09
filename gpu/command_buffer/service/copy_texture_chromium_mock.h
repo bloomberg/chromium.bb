@@ -54,7 +54,7 @@ class MockCopyTexImageResourceManager : public CopyTexImageResourceManager {
       GLsizei width,
       GLsizei height,
       GLuint source_framebuffer,
-      GLenum source_framebuffer_internal_format) override{};
+      GLenum source_framebuffer_internal_format) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCopyTexImageResourceManager);

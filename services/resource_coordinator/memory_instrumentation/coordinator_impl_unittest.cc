@@ -276,7 +276,7 @@ mojom::RawOSMemDumpPtr FillRawOSDump(int pid) {
     raw_os_dump->memory_maps.push_back(std::move(vm_region));
   }
   return raw_os_dump;
-};
+}
 
 // Tests that the global dump is acked even in absence of clients.
 TEST_F(CoordinatorImplTest, NoClients) {

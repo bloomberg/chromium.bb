@@ -63,7 +63,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   const std::vector<mojom::HidCollectionInfoPtr>& collections() const {
     return device_->collections;
   }
-  bool has_report_id() const { return device_->has_report_id; };
+  bool has_report_id() const { return device_->has_report_id; }
   size_t max_input_report_size() const {
     return device_->max_input_report_size;
   }

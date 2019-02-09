@@ -92,7 +92,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
 
   void ConnectToClient(network::mojom::URLLoaderClientPtr client);
 
-  const base::Optional<GURL>& fallback_url() const { return fallback_url_; };
+  const base::Optional<GURL>& fallback_url() const { return fallback_url_; }
 
   const base::Optional<GURL>& inner_request_url() const {
     return inner_request_url_;

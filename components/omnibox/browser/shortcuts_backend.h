@@ -40,7 +40,7 @@ void PopulateShortcutsBackendWithTestData(
 namespace history {
 class HistoryService;
 class ShortcutsDatabase;
-};  // namespace history
+}  // namespace history
 
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.

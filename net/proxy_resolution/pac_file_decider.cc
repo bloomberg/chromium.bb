@@ -59,7 +59,7 @@ bool LooksLikePacScript(const base::string16& script) {
 namespace {
 const char kWpadUrl[] = "http://wpad/wpad.dat";
 const int kQuickCheckDelayMs = 1000;
-};  // namespace
+}  // namespace
 
 std::unique_ptr<base::Value> PacFileDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,

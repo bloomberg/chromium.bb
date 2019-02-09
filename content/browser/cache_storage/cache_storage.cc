@@ -237,13 +237,13 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
                           CacheStorageCacheHandle cache_handle) override {
     DCHECK(!base::ContainsKey(cache_handles_, cache_name));
     cache_handles_.insert(std::make_pair(cache_name, std::move(cache_handle)));
-  };
+  }
 
   void NotifyCacheDoomed(CacheStorageCacheHandle cache_handle) override {
     DCHECK(
         base::ContainsKey(cache_handles_, cache_handle.value()->cache_name()));
     cache_handles_.erase(cache_handle.value()->cache_name());
-  };
+  }
 
  private:
   typedef std::map<std::string, CacheStorageCacheHandle> CacheHandles;
@@ -468,7 +468,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
         cache_name_to_cache_dir_.find(cache_handle.value()->cache_name());
     doomed_cache_to_path_[cache_handle.value()] = iter->second;
     cache_name_to_cache_dir_.erase(iter);
-  };
+  }
 
  private:
   friend class MigratedLegacyCacheDirectoryNameTest;

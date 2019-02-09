@@ -27,7 +27,7 @@ class UI_DEVTOOLS_EXPORT OverlayAgent
   protocol::Response hideHighlight() override;
 
  protected:
-  DOMAgent* dom_agent() const { return dom_agent_; };
+  DOMAgent* dom_agent() const { return dom_agent_; }
 
  private:
   DOMAgent* const dom_agent_;

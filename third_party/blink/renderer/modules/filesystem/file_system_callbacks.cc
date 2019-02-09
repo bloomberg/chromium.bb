@@ -122,7 +122,7 @@ void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
 void ScriptErrorCallback::Invoke(base::File::Error error) {
   callback_->InvokeAndReportException(nullptr,
                                       file_error::CreateDOMException(error));
-};
+}
 
 ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
     : callback_(ToV8PersistentCallbackInterface(callback)) {}

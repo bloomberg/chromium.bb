@@ -44,7 +44,7 @@ class WebRTCDataChannelHandlerClient {
 
   virtual void DidChangeReadyState(ReadyState) = 0;
   // TODO(bemasc): Make this pure virtual once Chromium unit tests are updated
-  virtual void DidDecreaseBufferedAmount(unsigned){};
+  virtual void DidDecreaseBufferedAmount(unsigned) {}
   virtual void DidReceiveStringData(const WebString&) = 0;
   virtual void DidReceiveRawData(const char*, size_t) = 0;
   virtual void DidDetectError() = 0;

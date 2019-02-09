@@ -385,6 +385,6 @@ void HTMLFormControlElement::CloneNonAttributePropertiesFrom(
 
 void HTMLFormControlElement::AssociateWith(HTMLFormElement* form) {
   AssociateByParser(form);
-};
+}
 
 }  // namespace blink

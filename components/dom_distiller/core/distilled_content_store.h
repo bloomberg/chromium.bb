@@ -35,8 +35,8 @@ class DistilledContentStore {
   virtual void LoadContent(const ArticleEntry& entry,
                            LoadCallback callback) = 0;
 
-  DistilledContentStore() {};
-  virtual ~DistilledContentStore() {};
+  DistilledContentStore() {}
+  virtual ~DistilledContentStore() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DistilledContentStore);

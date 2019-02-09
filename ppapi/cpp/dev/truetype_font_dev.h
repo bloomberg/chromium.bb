@@ -223,14 +223,14 @@ class TrueTypeFontDescArrayOutputAdapterWithStorage
  public:
   TrueTypeFontDescArrayOutputAdapterWithStorage() {
     set_output(&temp_storage_);
-  };
+  }
 
   virtual ~TrueTypeFontDescArrayOutputAdapterWithStorage() {
     if (!temp_storage_.empty()) {
       // An easy way to release the resource references held by |temp_storage_|.
       output();
     }
-  };
+  }
 
   std::vector<TrueTypeFontDesc_Dev>& output() {
     PP_DCHECK(output_storage_.empty());

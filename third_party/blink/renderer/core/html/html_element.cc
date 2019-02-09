@@ -1496,7 +1496,7 @@ bool HTMLElement::IsFormAssociatedCustomElement() const {
 
 bool HTMLElement::SupportsFocus() const {
   return Element::SupportsFocus() && !IsDisabledFormControl();
-};
+}
 
 bool HTMLElement::IsDisabledFormControl() const {
   if (!IsFormAssociatedCustomElement())

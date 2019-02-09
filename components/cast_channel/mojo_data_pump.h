@@ -14,7 +14,7 @@
 
 namespace net {
 class IOBuffer;
-};  // namespace net
+}  // namespace net
 
 namespace cast_channel {
 

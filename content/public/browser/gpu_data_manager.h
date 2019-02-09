@@ -74,6 +74,6 @@ class GpuDataManager {
   virtual ~GpuDataManager() {}
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_H_

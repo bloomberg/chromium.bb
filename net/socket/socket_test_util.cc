@@ -1004,7 +1004,7 @@ int MockTCPClientSocket::CancelReadIfReady() {
   pending_read_if_ready_callback_.Reset();
   data_->CancelPendingRead();
   return OK;
-};
+}
 
 int MockTCPClientSocket::Write(
     IOBuffer* buf,

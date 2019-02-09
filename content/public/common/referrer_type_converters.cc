@@ -11,7 +11,7 @@ blink::mojom::ReferrerPtr
 TypeConverter<blink::mojom::ReferrerPtr, content::Referrer>::Convert(
     const content::Referrer& input) {
   return blink::mojom::Referrer::New(input.url, input.policy);
-};
+}
 
 // static
 content::Referrer
@@ -20,6 +20,6 @@ TypeConverter<content::Referrer, blink::mojom::ReferrerPtr>::Convert(
   if (!input)
     return content::Referrer();
   return content::Referrer(input->url, input->policy);
-};
+}
 
 }  // namespace mojo

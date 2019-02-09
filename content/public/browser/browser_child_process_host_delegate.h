@@ -28,6 +28,6 @@ class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
   virtual void OnProcessCrashed(int exit_code) {}
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_DELEGATE_H_

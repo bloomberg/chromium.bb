@@ -42,8 +42,7 @@ TestUkmRecorder::TestUkmRecorder() {
   DisableSamplingForTesting();
 }
 
-TestUkmRecorder::~TestUkmRecorder() {
-};
+TestUkmRecorder::~TestUkmRecorder() {}
 
 bool TestUkmRecorder::ShouldRestrictToWhitelistedSourceIds() const {
   // In tests, we want to record all source ids (not just those that are
@@ -163,6 +162,6 @@ TestAutoSetUkmRecorder::TestAutoSetUkmRecorder() : self_ptr_factory_(this) {
 
 TestAutoSetUkmRecorder::~TestAutoSetUkmRecorder() {
   DelegatingUkmRecorder::Get()->RemoveDelegate(this);
-};
+}
 
 }  // namespace ukm

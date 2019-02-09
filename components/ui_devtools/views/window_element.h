@@ -20,7 +20,7 @@ class WindowElement : public aura::WindowObserver, public UIElement {
                 UIElementDelegate* ui_element_delegate,
                 UIElement* parent);
   ~WindowElement() override;
-  aura::Window* window() const { return window_; };
+  aura::Window* window() const { return window_; }
 
   // WindowObserver:
   void OnWindowHierarchyChanging(

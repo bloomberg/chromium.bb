@@ -167,7 +167,7 @@ CommandBufferRecorderBase::~CommandBufferRecorderBase() {
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEndCommandBuffer() failed: " << result;
   }
-};
+}
 
 ScopedMultiUseCommandBufferRecorder::ScopedMultiUseCommandBufferRecorder(
     VulkanCommandBuffer& command_buffer)

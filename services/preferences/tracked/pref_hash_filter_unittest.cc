@@ -245,7 +245,7 @@ std::unique_ptr<PrefHashStoreTransaction> MockPrefHashStore::BeginTransaction(
 std::string MockPrefHashStore::ComputeMac(const std::string& path,
                                           const base::Value* new_value) {
   return "atomic mac for: " + path;
-};
+}
 
 std::unique_ptr<base::DictionaryValue> MockPrefHashStore::ComputeSplitMacs(
     const std::string& path,
@@ -259,7 +259,7 @@ std::unique_ptr<base::DictionaryValue> MockPrefHashStore::ComputeSplitMacs(
                       base::Value("split mac for: " + path + "/" + it.key()));
   }
   return macs_dict;
-};
+}
 
 ValueState MockPrefHashStore::RecordCheckValue(const std::string& path,
                                                const base::Value* value,
@@ -364,7 +364,7 @@ std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> GetConfiguration(
 
 class MockHashStoreContents : public HashStoreContents {
  public:
-  MockHashStoreContents(){};
+  MockHashStoreContents() {}
 
   // Returns the number of hashes stored.
   size_t stored_hashes_count() const { return dictionary_.size(); }

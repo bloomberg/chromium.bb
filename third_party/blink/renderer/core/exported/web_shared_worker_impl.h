@@ -51,11 +51,11 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-};
+}
 
 namespace network {
 class SharedURLLoaderFactory;
-};
+}
 
 namespace blink {
 

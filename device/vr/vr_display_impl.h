@@ -38,10 +38,10 @@ class DEVICE_VR_EXPORT VRDisplayImpl
   void GetEnvironmentIntegrationProvider(
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
-  gfx::Size sessionFrameSize() { return session_frame_size_; };
-  display::Display::Rotation sessionRotation() { return session_rotation_; };
+  gfx::Size sessionFrameSize() { return session_frame_size_; }
+  display::Display::Rotation sessionRotation() { return session_rotation_; }
 
-  device::VRDeviceBase* device() { return device_; };
+  device::VRDeviceBase* device() { return device_; }
 
   // Accessible to tests.
  protected:

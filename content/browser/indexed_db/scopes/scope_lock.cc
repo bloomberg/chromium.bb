@@ -34,7 +34,7 @@ ScopeLock& ScopeLock::operator=(ScopeLock&& other) noexcept {
   this->closure_runner_ = std::move(other.closure_runner_);
   other.is_locked_ = false;
   return *this;
-};
+}
 
 void ScopeLock::Release() {
   if (is_locked_) {
