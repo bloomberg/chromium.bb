@@ -815,7 +815,7 @@ TabDragController::DragBrowserToNewTabStrip(TabStrip* target_tabstrip,
     else
       target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
     // EndMoveLoop is going to snap the window back to its original location.
     // Hide it so users don't see this. Hiding a window in Linux aura causes
     // it to lose capture so skip it.
