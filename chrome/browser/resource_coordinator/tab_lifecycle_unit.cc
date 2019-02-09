@@ -71,6 +71,11 @@ bool IsValidStateChange(LifecycleUnitState from,
           return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
         }
+        case LifecycleUnitState::FROZEN: {
+          // Render-initiated freezing, which happens when freezing a page
+          // through ChromeDriver.
+          return reason == StateChangeReason::RENDERER_INITIATED;
+        }
         default:
           return false;
       }
