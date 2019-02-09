@@ -45,7 +45,7 @@ class MODULES_EXPORT PaymentRequest final
       public ContextLifecycleObserver,
       public ActiveScriptWrappable<PaymentRequest> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest)
+  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest);
   WTF_MAKE_NONCOPYABLE(PaymentRequest);
 
  public:

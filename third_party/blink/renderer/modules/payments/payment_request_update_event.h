@@ -23,7 +23,7 @@ class ScriptState;
 class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
                                                  public PaymentUpdater {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequestUpdateEvent)
+  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequestUpdateEvent);
 
  public:
   PaymentRequestUpdateEvent(ExecutionContext*,
