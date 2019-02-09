@@ -103,7 +103,7 @@ libraries=(
 
 codesign_with_options "${crashpad_handler}" \
                       "${enforcement_flags_helpers}" \
-                      "crashpad_handler"
+                      "chrome_crashpad_handler"
 
 # The app mode loader bundle is modified dynamically at runtime. Just sign the
 # executable, which shouldn't change. In order to do this, the executable needs
