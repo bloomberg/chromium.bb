@@ -252,7 +252,8 @@ int SSLConnectJob::DoTransportConnect() {
 }
 
 int SSLConnectJob::DoTransportConnectComplete(int result) {
-  // TODO(mmenke): Implement a better API to get this information.
+  // TODO(https://crbug.com/927101): Implement a better API to get this
+  // information.
   ClientSocketHandle bogus_handle;
   nested_connect_job_->GetAdditionalErrorState(&bogus_handle);
   connection_attempts_.insert(connection_attempts_.end(),
@@ -350,8 +351,8 @@ int SSLConnectJob::DoSSLConnect() {
 
   // If privacy mode is enabled and the session shard is non-empty, prefix the
   // SSL session shard with "pm/". Otherwise, prefix with "nopm/".
-  // TODO(mmenke): Consider moving this up to the socket pool layer, after
-  // giving socket pools knowledge of privacy mode.
+  // TODO(https://crbug.com/927084): Consider moving this up to the socket pool
+  // layer, after giving socket pools knowledge of privacy mode.
   SSLClientSocketContext context_with_privacy_mode(
       ssl_client_socket_context().cert_verifier,
       ssl_client_socket_context().channel_id_service,

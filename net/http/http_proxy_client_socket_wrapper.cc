@@ -40,7 +40,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     const std::string& group_name,
     RequestPriority priority,
     const SocketTag& socket_tag,
-    ClientSocketPool::RespectLimits respect_limits,
+    bool respect_limits,
     base::TimeDelta connect_timeout_duration,
     base::TimeDelta proxy_negotiation_timeout_duration,
     TransportClientSocketPool* transport_pool,
@@ -143,7 +143,7 @@ HttpProxyClientSocketWrapper::GetAdditionalErrorState() {
 }
 
 void HttpProxyClientSocketWrapper::SetPriority(RequestPriority priority) {
-  if (respect_limits_ == ClientSocketPool::RespectLimits::DISABLED) {
+  if (!respect_limits_) {
     DCHECK_EQ(MAXIMUM_PRIORITY, priority_);
     return;
   }
@@ -503,7 +503,9 @@ int HttpProxyClientSocketWrapper::DoTransportConnect() {
       group_name_,
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           transport_params_),
-      priority_, initial_socket_tag_, respect_limits_,
+      priority_, initial_socket_tag_,
+      respect_limits_ ? ClientSocketPool::RespectLimits::ENABLED
+                      : ClientSocketPool::RespectLimits::DISABLED,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
       transport_pool_, net_log_);

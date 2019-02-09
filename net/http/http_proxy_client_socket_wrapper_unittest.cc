@@ -286,10 +286,10 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
                           SSLConfig(), privacy_mode_);
   transport_params = nullptr;
 
-  client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
+  client_socket_wrapper_ = std::make_unique<HttpProxyClientSocketWrapper>(
       /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
       /*socket_tag=*/SocketTag(),
-      /*respect_limits=*/ClientSocketPool::RespectLimits::ENABLED,
+      /*respect_limits=*/true,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,
@@ -297,7 +297,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
       /*is_trusted_proxy=*/false, /*tunnel=*/true, /*proxy_delegate=*/nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS, net_log_));
+      TRAFFIC_ANNOTATION_FOR_TESTS, net_log_);
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());
@@ -344,10 +344,10 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   transport_params = nullptr;
   SocketTag tag(getuid(), 0x87654321);
 
-  client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
+  client_socket_wrapper_ = std::make_unique<HttpProxyClientSocketWrapper>(
       /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
       /*socket_tag=*/tag,
-      /*respect_limits=*/ClientSocketPool::RespectLimits::ENABLED,
+      /*respect_limits=*/true,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,
@@ -355,7 +355,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
       /*is_trusted_proxy=*/false, /*tunnel=*/true, /*proxy_delegate=*/nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS, net_log_));
+      TRAFFIC_ANNOTATION_FOR_TESTS, net_log_);
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());
