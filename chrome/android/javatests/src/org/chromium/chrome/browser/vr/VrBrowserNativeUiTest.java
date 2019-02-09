@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -329,6 +330,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
+    @DisabledTest(message = "https://crbug.com/930296")
     public void testOverflowMenuAppears()
             throws InterruptedException, TimeoutException, IOException {
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
