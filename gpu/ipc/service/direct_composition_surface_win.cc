@@ -1132,16 +1132,25 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
         (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
          D3D11_RESOURCE_MISC_SHARED_NTHANDLE);
 
+    // Rotated videos are not promoted to overlays.  We plan to implement
+    // rotation using video processor instead of via direct composition.  Also
+    // check for skew and any downscaling specified to direct composition.
+    bool is_overlay_supported_transform =
+        visual_info_.transform.IsPositiveScaleOrTranslation();
+
     // Downscaled video isn't promoted to hardware overlays.  We prefer to blit
     // into the smaller size so that it can be promoted to a hardware overlay.
     float swap_chain_scale_x =
         swap_chain_size.width() * 1.0f / params.content_rect.width();
     float swap_chain_scale_y =
         swap_chain_size.height() * 1.0f / params.content_rect.height();
-    bool is_downscale =
-        (swap_chain_scale_x < 1.0f) || (swap_chain_scale_y < 1.0f);
 
-    if (is_decoder_texture && !is_shared_texture && !is_downscale) {
+    is_overlay_supported_transform = is_overlay_supported_transform &&
+                                     (swap_chain_scale_x >= 1.0f) &&
+                                     (swap_chain_scale_y >= 1.0f);
+
+    if (is_decoder_texture && !is_shared_texture &&
+        is_overlay_supported_transform) {
       if (PresentToDecodeSwapChain(image_dxgi, params.content_rect,
                                    swap_chain_size, needs_commit)) {
         return true;
