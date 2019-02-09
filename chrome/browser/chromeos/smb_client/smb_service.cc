@@ -261,10 +261,10 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
 
   // If using kerberos, the hostname should not be resolved since kerberos
   // service tickets are keyed on hosname.
-  const base::FilePath mount_path =
-      use_chromad_kerberos
-          ? base::FilePath(parsed_url.ToString())
-          : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
+  const std::string url = use_chromad_kerberos
+                              ? parsed_url.ToString()
+                              : share_finder_->GetResolvedUrl(parsed_url);
+  const base::FilePath mount_path(url);
 
   GetSmbProviderClient()->Mount(
       mount_path, IsNTLMAuthenticationEnabled(), workgroup, username,

@@ -52,11 +52,19 @@ std::string SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
   DCHECK(url.IsValid());
 
   const std::string ip_address = scanner_.ResolveHost(url.GetHost());
-  if (ip_address.empty()) {
+  // Return the original URL if the resolved host cannot be found or if there is
+  // no change in the resolved IP address.
+  if (ip_address.empty() || ip_address == url.GetHost()) {
     return url.ToString();
   }
 
   return url.ReplaceHost(ip_address);
+}
+
+bool SmbShareFinder::TryResolveUrl(const SmbUrl& url,
+                                   std::string* updated_url) const {
+  *updated_url = GetResolvedUrl(url);
+  return *updated_url != url.ToString();
 }
 
 void SmbShareFinder::OnHostsDiscovered(HostDiscoveryResponse discovery_callback,
