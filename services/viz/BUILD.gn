@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 service_executable("viz") {
   sources = [
@@ -36,9 +35,4 @@ source_set("lib") {
   public_deps = [
     "//components/viz/service/main",
   ]
-}
-
-service_manifest("manifest") {
-  name = "viz"
-  source = "manifest.json"
 }

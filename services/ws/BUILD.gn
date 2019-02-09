@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 component("lib") {
@@ -242,11 +241,6 @@ source_set("tests") {
   if (toolkit_views) {
     deps += [ "//services/ws/remote_view_host:tests" ]
   }
-}
-
-service_manifest("manifest") {
-  name = "ui"
-  source = "manifest.json"
 }
 
 mojom("test_mojom") {

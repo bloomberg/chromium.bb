@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/ws/ime/test_ime_driver/manifest.h"
+#include "services/ws/ime/test_ime_driver/public/cpp/manifest.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/test_ws/test_manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"

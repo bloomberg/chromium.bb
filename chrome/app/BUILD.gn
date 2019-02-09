@@ -617,7 +617,7 @@ source_set("chrome_packaged_service_manifests") {
       "//chromeos/services/secure_channel/public/cpp:manifest",
       "//mash/public/mojom",
       "//services/ws/public/mojom/input_devices",
-      "//ui/accessibility:manifest",
+      "//ui/accessibility:ax_host_manifest",
     ]
   }
 

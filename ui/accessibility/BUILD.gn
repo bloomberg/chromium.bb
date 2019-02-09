@@ -7,7 +7,6 @@ import("//build/config/jumbo.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
@@ -182,11 +181,6 @@ source_set("ax_assistant") {
   ]
 }
 
-service_manifest("manifest") {
-  name = "ax_host_service"
-  source = "ax_host_service_manifest.json"
-}
-
 static_library("test_support") {
   testonly = true
   sources = [
@@ -285,4 +279,17 @@ fuzzer_test("ax_table_fuzzer") {
   ]
 
   seed_corpus = "fuzz_corpus"
+}
+
+source_set("ax_host_manifest") {
+  sources = [
+    "ax_host_manifest.cc",
+    "ax_host_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//ui/accessibility/mojom",
+  ]
 }

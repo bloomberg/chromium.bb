@@ -15,9 +15,9 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/test/echo/echo_service.h"
-#include "services/test/echo/manifest.h"
+#include "services/test/echo/public/cpp/manifest.h"
 #include "services/test/echo/public/mojom/echo.mojom.h"
-#include "services/test/user_id/manifest.h"
+#include "services/test/user_id/public/cpp/manifest.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

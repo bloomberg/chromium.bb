@@ -237,7 +237,7 @@ source_set("content_packaged_services_manifest") {
     "//services/shape_detection/public/cpp:manifest",
     "//services/tracing:manifest",
     "//services/video_capture/public/cpp:manifest",
-    "//services/viz:manifest",
+    "//services/viz/public/cpp:manifest",
   ]
 
   public_deps = [

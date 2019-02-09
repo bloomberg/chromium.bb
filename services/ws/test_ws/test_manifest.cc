@@ -7,7 +7,7 @@
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
-#include "services/ws/manifest.h"
+#include "services/ws/public/cpp/manifest.h"
 #include "services/ws/test_ws/test_ws.mojom.h"
 
 namespace test_ws {
@@ -25,7 +25,7 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability("service_manager:service_factory",
                             service_manager::Manifest::InterfaceList<
                                 service_manager::mojom::ServiceFactory>())
-          .PackageService(ui::GetManifest())
+          .PackageService(ws::GetManifest())
           .Build()};
   return *manifest;
 }
