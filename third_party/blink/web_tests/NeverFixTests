@@ -2019,6 +2019,7 @@ external/wpt/payment-request/change-shipping-option-manual.https.html [ WontFix 
 external/wpt/payment-request/change-shipping-option-select-last-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-request-abort-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-request-canmakepayment-method-manual.https.html [ WontFix ]
+external/wpt/payment-request/payment-request-hasenrolledinstrument-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-request-multiple-show-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-request-show-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/complete-method-manual.https.html [ WontFix ]

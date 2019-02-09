@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL hasEnrolledInstrument() resolves to false for unsupported payment methods. promise_test: Unhandled rejection with value: object "TypeError: request.hasEnrolledInstrument is not a function"
+Harness: the test ran to completion.
+
