@@ -191,8 +191,8 @@ class MockDiskCache : public disk_cache::Backend {
   // Returns number of doomed entries.
   int doomed_count() const { return doomed_count_; }
 
-  // Fail any subsequent CreateEntry and OpenEntry.
-  void set_fail_requests() { fail_requests_ = true; }
+  // Fail any subsequent CreateEntry, OpenEntry, and DoomEntry
+  void set_fail_requests(bool value) { fail_requests_ = value; }
 
   // Return entries that fail some of their requests.
   void set_soft_failures(bool value) { soft_failures_ = value; }
@@ -210,6 +210,12 @@ class MockDiskCache : public disk_cache::Backend {
   // interface.  Default is true.
   void set_support_in_memory_entry_data(bool value) {
     support_in_memory_entry_data_ = value;
+  }
+
+  // OpenEntry, CreateEntry, and DoomEntry immediately return with
+  // ERR_IO_PENDING and will callback some time later with an error.
+  void set_force_fail_callback_later(bool value) {
+    force_fail_callback_later_ = value;
   }
 
   // Makes all requests for data ranges to fail as not implemented.
@@ -256,6 +262,7 @@ class MockDiskCache : public disk_cache::Backend {
   bool double_create_check_;
   bool fail_sparse_requests_;
   bool support_in_memory_entry_data_;
+  bool force_fail_callback_later_;
 
   // Used for pause and restart.
   MockDiskEntry::DeferOp defer_op_;

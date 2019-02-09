@@ -115,6 +115,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   const CompletionRepeatingCallback& io_callback() { return io_callback_; }
 
+  void SetIOCallBackForTest(CompletionRepeatingCallback cb) {
+    io_callback_ = cb;
+  }
+
   const NetLogWithSource& net_log() const;
 
   // Bypasses the cache lock whenever there is lock contention.
