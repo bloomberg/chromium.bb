@@ -34,6 +34,7 @@ class ClientSocketFactory;
 class HostResolver;
 class NetLog;
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class SSLConfigService;
 class WebSocketEndpointLockManager;
 class WebSocketTransportConnectJob;
@@ -46,6 +47,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       int max_sockets_per_group,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
+      ProxyDelegate* proxy_delegate,
       CertVerifier* cert_verifier,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
@@ -198,6 +200,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   NetLog* const pool_net_log_;
   ClientSocketFactory* const client_socket_factory_;
   HostResolver* const host_resolver_;
+  ProxyDelegate* const proxy_delegate_;
   const SSLClientSocketContext ssl_client_socket_context_;
   NetworkQualityEstimator* const network_quality_estimator_;
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;

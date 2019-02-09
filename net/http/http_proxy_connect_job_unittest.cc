@@ -26,6 +26,7 @@
 #include "net/socket/connect_job_test_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
@@ -56,6 +57,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
                                6 /* max_sockets_pre_group */,
                                &socket_factory_,
                                session_deps_.host_resolver.get(),
+                               nullptr /* proxy_delegate */,
                                session_deps_.cert_verifier.get(),
                                session_deps_.channel_id_service.get(),
                                session_deps_.transport_security_state.get(),
@@ -71,6 +73,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
                          6 /* max_sockets_pre_group */,
                          &socket_factory_,
                          session_deps_.host_resolver.get(),
+                         nullptr /* proxy_delegate */,
                          session_deps_.cert_verifier.get(),
                          session_deps_.channel_id_service.get(),
                          session_deps_.transport_security_state.get(),
@@ -172,10 +175,24 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
       ConnectJob::Delegate* delegate,
       RequestPriority priority) {
     return std::make_unique<HttpProxyConnectJob>(
-        "group_name", priority, SocketTag(), true /* respect_limits */,
-        std::move(http_proxy_socket_params), proxy_delegate_.get(),
-        &transport_socket_pool_, &ssl_socket_pool_, &network_quality_estimator_,
-        delegate, nullptr /* net_log */);
+        priority,
+        CommonConnectJobParams(
+            "group_name", SocketTag(), true /* respect_limits */,
+            &socket_factory_, session_deps_.host_resolver.get(),
+            proxy_delegate_.get(),
+            SSLClientSocketContext(
+                session_deps_.cert_verifier.get(),
+                session_deps_.channel_id_service.get(),
+                session_deps_.transport_security_state.get(),
+                session_deps_.cert_transparency_verifier.get(),
+                session_deps_.ct_policy_enforcer.get(),
+                nullptr /* ssl_session_cache_arg */,
+                std::string() /* ssl_session_cache_shart_arg */),
+            nullptr /* socket_performance_watcher_factory */,
+            &network_quality_estimator_, nullptr /* net_log */,
+            nullptr /* websocket_endpoint_lock_manager */),
+        std::move(http_proxy_socket_params), &transport_socket_pool_,
+        &ssl_socket_pool_, delegate);
   }
 
   void InitProxyDelegate() {

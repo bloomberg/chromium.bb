@@ -96,6 +96,13 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   using HTTPProxySocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<HttpProxyClientSocketPool>>;
 
+  // Creates a TransportClientSocketPool appropriate for use with the passed in
+  // socket pool, passing in all needed parameters.
+  // TODO(mmenke): Can |use_socket_performance_watcher_factory| be removed?
+  std::unique_ptr<TransportClientSocketPool> CreateTransportSocketPool(
+      const ProxyServer& proxy_server,
+      bool use_socket_performance_watcher_factory);
+
   NetLog* const net_log_;
   ClientSocketFactory* const socket_factory_;
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;

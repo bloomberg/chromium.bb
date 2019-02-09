@@ -20,6 +20,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     bool respect_limits,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
+    ProxyDelegate* proxy_delegate,
     const SSLClientSocketContext& ssl_client_socket_context,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
@@ -30,6 +31,7 @@ CommonConnectJobParams::CommonConnectJobParams(
       respect_limits(respect_limits),
       client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
+      proxy_delegate(proxy_delegate),
       ssl_client_socket_context(ssl_client_socket_context),
       socket_performance_watcher_factory(socket_performance_watcher_factory),
       network_quality_estimator(network_quality_estimator),
@@ -61,29 +63,6 @@ ConnectJob::ConnectJob(RequestPriority priority,
                      NetLog::StringCallback(
                          "group_name", &common_connect_job_params.group_name));
 }
-
-ConnectJob::ConnectJob(const std::string& group_name,
-                       base::TimeDelta timeout_duration,
-                       RequestPriority priority,
-                       const SocketTag& socket_tag,
-                       bool respect_limits,
-                       Delegate* delegate,
-                       const NetLogWithSource& net_log)
-    : ConnectJob(priority,
-                 timeout_duration,
-                 CommonConnectJobParams(
-                     group_name,
-                     socket_tag,
-                     respect_limits,
-                     nullptr /* client_socket_factory */,
-                     nullptr /* host_resolver */,
-                     SSLClientSocketContext(),
-                     nullptr /* network_quality_estimator */,
-                     nullptr /* socket_performance_watcher_factory */,
-                     nullptr /* net_log */,
-                     nullptr /* websocket_endpoint_lock_manager */),
-                 delegate,
-                 net_log) {}
 
 ConnectJob::~ConnectJob() {
   net_log().EndEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB);

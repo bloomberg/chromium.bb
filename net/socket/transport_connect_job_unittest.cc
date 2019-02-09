@@ -43,7 +43,8 @@ class TransportConnectJobTest : public TestWithScopedTaskEnvironment {
   CommonConnectJobParams DefaultCommonConnectJobParams() {
     return CommonConnectJobParams(
         kHostName /* group_name */, SocketTag(), true /* respect_limits */,
-        &client_socket_factory_, &host_resolver_, SSLClientSocketContext(),
+        &client_socket_factory_, &host_resolver_, nullptr /* proxy_delegate */,
+        SSLClientSocketContext(),
         nullptr /* socket_performance_watcher_factory */,
         nullptr /* network_quality_estimator */, &net_log_,
         nullptr /* websocket_endpoint_lock_manager */);

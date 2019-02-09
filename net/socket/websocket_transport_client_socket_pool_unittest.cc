@@ -71,6 +71,7 @@ class WebSocketTransportClientSocketPoolTest
               kMaxSocketsPerGroup,
               &client_socket_factory_,
               host_resolver_.get(),
+              nullptr /* proxy_delegate */,
               nullptr /* cert_verifier */,
               nullptr /* channel_id_server */,
               nullptr /* transport_security_state */,
@@ -539,8 +540,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6FallbackSocketIPv4FinishesFirst) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -584,8 +586,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6FallbackSocketIPv6FinishesFirst) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -628,8 +631,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6NoIPv4AddressesToFallbackTo) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -664,8 +668,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -701,8 +706,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -742,8 +748,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -791,8 +798,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
 TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -834,8 +842,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
 TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,
@@ -881,8 +890,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
 TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
   WebSocketTransportClientSocketPool pool(
       kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
-      host_resolver_.get(), nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      host_resolver_.get(), nullptr /* proxy_delegate */,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
       std::string() /* ssl_session_cache_shard */,

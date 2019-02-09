@@ -162,33 +162,26 @@ HttpProxySocketParams::HttpProxySocketParams(
 HttpProxySocketParams::~HttpProxySocketParams() = default;
 
 HttpProxyConnectJob::HttpProxyConnectJob(
-    const std::string& group_name,
     RequestPriority priority,
-    const SocketTag& socket_tag,
-    bool respect_limits,
+    const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<HttpProxySocketParams>& params,
-    ProxyDelegate* proxy_delegate,
     TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* ssl_pool,
-    NetworkQualityEstimator* network_quality_estimator,
-    Delegate* delegate,
-    NetLog* net_log)
+    Delegate* delegate)
     : ConnectJob(
-          group_name,
-          base::TimeDelta() /* The socket takes care of timeouts */,
           priority,
-          socket_tag,
-          respect_limits,
+          base::TimeDelta() /* The socket takes care of timeouts */,
+          common_connect_job_params,
           delegate,
-          NetLogWithSource::Make(net_log,
+          NetLogWithSource::Make(common_connect_job_params.net_log,
                                  NetLogSourceType::HTTP_PROXY_CONNECT_JOB)),
       client_socket_(std::make_unique<HttpProxyClientSocketWrapper>(
-          group_name,
           priority,
-          socket_tag,
-          respect_limits,
-          ConnectionTimeout(*params, network_quality_estimator),
+          ConnectionTimeout(
+              *params,
+              common_connect_job_params.network_quality_estimator),
           base::TimeDelta::FromSeconds(kHttpProxyConnectJobTimeoutInSeconds),
+          common_connect_job_params,
           transport_pool,
           ssl_pool,
           params->transport_params(),
@@ -202,7 +195,6 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->quic_stream_factory(),
           params->is_trusted_proxy(),
           params->tunnel(),
-          proxy_delegate,
           params->traffic_annotation(),
           this->net_log())) {}
 
