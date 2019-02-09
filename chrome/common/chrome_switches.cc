@@ -707,15 +707,9 @@ const char kLocalNtpReload[]                = "local-ntp-reload";
 // Android authentication account type for SPNEGO authentication
 const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
 
-// Disables Contextual Search.
-const char kDisableContextualSearch[] = "disable-contextual-search";
-
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
-
-// Enables Contextual Search.
-const char kEnableContextualSearch[] = "enable-contextual-search";
 
 // Enables a hung renderer InfoBar allowing the user to close or wait on
 // unresponsive web content.

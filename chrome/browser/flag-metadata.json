@@ -403,27 +403,27 @@
   },
   {
     "name": "contextual-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
+    "expiry_milestone": 74
   },
   {
     "name": "contextual-search-ml-tap-suppression",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "contextual-search-ranker-query",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "contextual-search-second-tap",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "contextual-search-unity-integration",
-    // "owners": [ "your-team" ],
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1133,7 +1133,7 @@
   },
   {
     "name": "enable-ephemeral-tab",
-    // "owners": [ "your-team" ],
+    "owners": [ "donnd", "jinsukkim" ],
     "expiry_milestone": 76
   },
   {
@@ -1230,7 +1230,7 @@
   },
   {
     "name": "enable-gesture-navigation",
-    // "owners": [ "jinsukkim@chromium.org" ],
+    "owners": [ "jinsukkim@chromium.org" ],
     "expiry_milestone": 76
   },
   {

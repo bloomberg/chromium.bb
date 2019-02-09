@@ -2314,10 +2314,6 @@ const char kContextualSearchMlTapSuppressionDescription[] =
     "learning.  The \"Contextual Search Ranker prediction\" flag must also be "
     "enabled!";
 
-const char kContextualSearchName[] = "Contextual Search";
-const char kContextualSearchDescription[] =
-    "Whether or not Contextual Search is enabled.";
-
 const char kContextualSearchRankerQueryName[] =
     "Contextual Search Ranker prediction";
 const char kContextualSearchRankerQueryDescription[] =
