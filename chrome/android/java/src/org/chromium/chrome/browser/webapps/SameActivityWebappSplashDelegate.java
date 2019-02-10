@@ -38,9 +38,15 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     /** Whether native was loaded. Native must be loaded in order to record metrics. */
     private boolean mNativeLoaded;
 
+    private Tab mTab;
+
+    private WebappInfo mWebappInfo;
+
     private SameActivityWebappUmaCache mUmaCache;
 
-    private WebApkOfflineDialog mOfflineDialog;
+    private WebApkSplashNetworkErrorObserver mWebApkNetworkErrorObserver;
+
+    private WebApkOfflineDialog mWebApkOfflineDialog;
 
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
         private final View mView;
@@ -70,6 +76,7 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     @Override
     public void showSplash(ViewGroup parentView, WebappInfo webappInfo) {
         mParentView = parentView;
+        mWebappInfo = webappInfo;
         mIsSplashVisible = true;
 
         Context context = ContextUtils.getApplicationContext();
@@ -102,8 +109,14 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     }
 
     @Override
-    public void onNativeLoaded() {
+    public void showSplashWithNative(Tab tab) {
         mNativeLoaded = true;
+        mTab = tab;
+        if (mWebappInfo.isForWebApk()) {
+            mWebApkNetworkErrorObserver =
+                    new WebApkSplashNetworkErrorObserver(this, mWebappInfo.name());
+            mTab.addObserver(mWebApkNetworkErrorObserver);
+        }
         if (mUmaCache != null) mUmaCache.commitMetrics();
     }
 
@@ -116,7 +129,13 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
             @Override
             public void run() {
                 mParentView.removeView(mSplashScreen);
+                if (mWebApkNetworkErrorObserver != null) {
+                    mTab.removeObserver(mWebApkNetworkErrorObserver);
+                    mWebApkNetworkErrorObserver = null;
+                }
+
                 finishSplashscreenTraceEvents();
+                mTab = null;
                 mSplashScreen = null;
                 finishedHidingCallback.run();
             }
@@ -134,21 +153,21 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     }
 
     @Override
-    public boolean isNetworkErrorDialogVisible() {
-        return mOfflineDialog != null && mOfflineDialog.isShowing();
+    public boolean isWebApkNetworkErrorDialogVisible() {
+        return mWebApkOfflineDialog != null && mWebApkOfflineDialog.isShowing();
     }
 
     @Override
-    public void showNetworkErrorDialog(Tab tab, String errorMsg) {
-        mOfflineDialog = new WebApkOfflineDialog();
-        mOfflineDialog.show(tab.getActivity(), errorMsg);
+    public void showWebApkNetworkErrorDialog(String errorMsg) {
+        mWebApkOfflineDialog = new WebApkOfflineDialog();
+        mWebApkOfflineDialog.show(mTab.getActivity(), errorMsg);
     }
 
     @Override
-    public void hideNetworkErrorDialog() {
-        if (mOfflineDialog == null) return;
-        mOfflineDialog.cancel();
-        mOfflineDialog = null;
+    public void hideWebApkNetworkErrorDialog() {
+        if (mWebApkOfflineDialog == null) return;
+        mWebApkOfflineDialog.cancel();
+        mWebApkOfflineDialog = null;
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */

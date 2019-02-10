@@ -13,11 +13,8 @@ interface WebappSplashDelegate {
     /** Shows the splash screen. */
     void showSplash(ViewGroup parentView, WebappInfo webappInfo);
 
-    /**
-     * Called once native has been loaded. This may be called either before or after
-     * {@link #showSplash()}.
-     */
-    void onNativeLoaded();
+    /** Called once native has been loaded and after {@link #showSplash()}. */
+    void showSplashWithNative(Tab tab);
 
     /** Hides the splash screen. Runs the callback once the splash screen is hidden. */
     void hideSplash(Runnable finishedHidingCallback);
@@ -31,12 +28,12 @@ interface WebappSplashDelegate {
      */
     ViewGroup getSplashViewIfChildOf(ViewGroup parent);
 
-    /** Returns whether the network error dialog is visible. */
-    boolean isNetworkErrorDialogVisible();
+    /** Returns whether the WebAPK network error dialog is visible. */
+    boolean isWebApkNetworkErrorDialogVisible();
 
-    /** Shows the network error dialog. */
-    void showNetworkErrorDialog(Tab tab, String errorMsg);
+    /** Shows the WebAPK network error dialog. */
+    void showWebApkNetworkErrorDialog(String errorMsg);
 
-    /** Hides the network error dialog. */
-    void hideNetworkErrorDialog();
+    /** Hides the WebAPK network error dialog. */
+    void hideWebApkNetworkErrorDialog();
 }
