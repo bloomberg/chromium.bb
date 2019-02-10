@@ -293,7 +293,14 @@ public class WebappActivity extends SingleTabActivity {
         setTitle(mWebappInfo.shortName());
 
         super.preInflationStartup();
-        initializeWebappData();
+
+        if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
+            enterImmersiveMode();
+        }
+        try (TraceEvent te = TraceEvent.scoped("WebappActivity.showSplash")) {
+            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+            mSplashController.showSplash(contentView, mWebappInfo);
+        }
     }
 
     @Override
@@ -309,7 +316,7 @@ public class WebappActivity extends SingleTabActivity {
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
         getFullscreenManager().setTab(getActivityTab());
-        mSplashController.onFinishedNativeInit(getActivityTab(), getCompositorViewHolder());
+        mSplashController.showSplashWithNative(getActivityTab(), getCompositorViewHolder());
         super.finishNativeInitialization();
         mIsInitialized = true;
     }
@@ -550,16 +557,6 @@ public class WebappActivity extends SingleTabActivity {
 
     public static WebappInfo popWebappInfo(String id) {
         return Holder.sWebappInfoMap.remove(id);
-    }
-
-    private void initializeWebappData() {
-        try (TraceEvent te = TraceEvent.scoped("WebappActivity.initializeWebappData")) {
-            if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
-                enterImmersiveMode();
-            }
-            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-            mSplashController.showSplashScreen(contentView, mWebappInfo);
-        }
     }
 
     protected void updateStorage(WebappDataStorage storage) {
