@@ -597,6 +597,9 @@ extern const char kEnableZeroSuggestRedirectToChromeDescription[];
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 
+extern const char kEnableWasmCodeCacheName[];
+extern const char kEnableWasmCodeCacheDescription[];
+
 extern const char kEnableWasmThreadsName[];
 extern const char kEnableWasmThreadsDescription[];
 
