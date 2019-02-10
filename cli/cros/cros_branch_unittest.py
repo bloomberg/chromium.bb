@@ -41,19 +41,6 @@ def FileUrl(*args):
   return 'file://%s' % os.path.join(*args)
 
 
-def ParseManifestXml(xml):
-  """Parse the XML into a repo_manifest.Manifest.
-
-  Args:
-    xml: Manifest XML as a string.
-
-  Returns:
-    The parsed repo_manifest.Manifest.
-  """
-  return repo_manifest.Manifest.FromString(
-      xml, allow_unsupported_features=True)
-
-
 def ManifestXml(*args):
   """Joins arbitrary XML and wraps it in a <manifest> element."""
   xml = '\n'.join(args)
@@ -175,7 +162,8 @@ INCLUDE_INTERNAL_XML = """
 """
 
 # Combine the XML chunks above into meaningful files. Create files for
-# both manifest and manifest-internal projects.
+# both manifest and manifest-internal projects, once for TOT and once
+# for a branch named new-branch.
 MANIFEST_FILES = {
     EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_XML,
                                     REMOTE_EXTERNAL_XML,
@@ -183,6 +171,7 @@ MANIFEST_FILES = {
     constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
     constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
 }
+
 MANIFEST_INTERNAL_FILES = {
     EXTERNAL_FILE_NAME: MANIFEST_FILES[EXTERNAL_FILE_NAME],
     INTERNAL_FILE_NAME: ManifestXml(DEFAULT_XML,
@@ -194,13 +183,12 @@ MANIFEST_INTERNAL_FILES = {
                                             INCLUDE_EXTERNAL_XML),
 }
 
-# Finally, store the full, parsed manifest XML. Essentially the output
-# of the command `repo manifest`.
-FULL_XML = ManifestXml(DEFAULT_XML,
-                       REMOTE_EXTERNAL_XML,
-                       REMOTE_INTERNAL_XML,
-                       PROJECTS_EXTERNAL_XML,
-                       PROJECTS_INTERNAL_XML)
+# Finally, store the full, parsed manifest XML for TOT.
+FULL_TOT_XML = ManifestXml(DEFAULT_XML,
+                           REMOTE_EXTERNAL_XML,
+                           REMOTE_INTERNAL_XML,
+                           PROJECTS_EXTERNAL_XML,
+                           PROJECTS_INTERNAL_XML)
 
 
 class ManifestTestCase(cros_test_lib.TestCase):
@@ -280,9 +268,9 @@ class ManifestTestCase(cros_test_lib.TestCase):
     return match[0]
 
   def setUp(self):
-    # Parse and cache the full manifest to take advantage of the
+    # Parse and cache the full TOT manifest to take advantage of the
     # utility functions in repo_manifest.
-    self.full_manifest = repo_manifest.Manifest.FromString(FULL_XML)
+    self.full_manifest = repo_manifest.Manifest.FromString(FULL_TOT_XML)
 
 
 class UtilitiesTest(ManifestTestCase, cros_test_lib.MockTestCase):
@@ -715,6 +703,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
       project: Project ID.
       branch: Expected name for the branch.
     """
+    remote = self.RemoteFor(project)
     self.rc_mock.assertCommandContains(
         ['git', 'push', self.RemoteFor(project), '--delete',
          'refs/heads/%s' % branch],
@@ -987,6 +976,86 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.AssertSynced(['--branch', 'master'])
 
 
+DEFAULT_BRANCHED_XML = """
+  <default remote="cros"/>
+"""
+
+PROJECTS_EXTERNAL_BRANCHED_XML = """
+  <project name="chromiumos/manifest"
+           path="manifest"
+           revision="refs/heads/old-branch"/>
+
+  <project name="chromiumos/overlays/chromiumos-overlay"
+           path="src/third_party/chromiumos-overlay"
+           revision="refs/heads/old-branch"/>
+
+  <project name="external/implicit-pinned"
+           path="src/third_party/implicit-pinned"
+           revision="refs/heads/implicit-pinned"/>
+
+  <project name="chromiumos/multicheckout"
+           path="src/third_party/multicheckout-a"
+           revision="refs/heads/old-branch-multicheckout-a"/>
+
+  <project name="chromiumos/multicheckout"
+           path="src/third_party/multicheckout-b"
+           revision="refs/heads/old-branch-multicheckout-b"/>
+"""
+
+PROJECTS_INTERNAL_BRANCHED_XML = """
+  <project name="chromeos/manifest-internal"
+           path="manifest-internal"
+           remote="cros-internal"
+           revision="refs/heads/old-branch"/>
+
+  <project name="chromeos/explicit-pinned"
+           path="src/explicit-pinned"
+           revision="refs/heads/explicit-pinned"
+           remote="cros-internal">
+    <annotation name="branch-mode" value="pin"/>
+  </project>
+
+  <project name="chromeos/explicit-branch"
+           path="src/explicit-branch"
+           remote="cros-internal"
+           revision="refs/heads/old-branch">
+    <annotation name="branch-mode" value="create"/>
+  </project>
+
+  <project name="chromeos/explicit-tot"
+           path="src/explicit-tot"
+           remote="cros-internal"
+           revision="refs/heads/master">
+    <annotation name="branch-mode" value="tot"/>
+  </project>
+"""
+
+MANIFEST_BRANCHED_FILES = {
+    EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
+                                    REMOTE_EXTERNAL_XML,
+                                    PROJECTS_EXTERNAL_BRANCHED_XML),
+    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
+    constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
+}
+
+MANIFEST_INTERNAL_BRANCHED_FILES = {
+    EXTERNAL_FILE_NAME: MANIFEST_BRANCHED_FILES[EXTERNAL_FILE_NAME],
+    INTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
+                                    REMOTE_INTERNAL_XML,
+                                    PROJECTS_INTERNAL_BRANCHED_XML),
+    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
+                                             INCLUDE_EXTERNAL_XML),
+    constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
+                                            INCLUDE_EXTERNAL_XML),
+}
+
+FULL_BRANCHED_XML = ManifestXml(DEFAULT_BRANCHED_XML,
+                                REMOTE_INTERNAL_XML,
+                                REMOTE_EXTERNAL_XML,
+                                PROJECTS_INTERNAL_BRANCHED_XML,
+                                PROJECTS_EXTERNAL_BRANCHED_XML)
+
+
 class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
   """Test `cros branch` end to end on data generated from ManifestTestCase.
 
@@ -1011,39 +1080,52 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(path)
     return path
 
-  def CreateRef(self, git_repo, ref):
-    """Create a ref in a git repository.
-
-    The ref will point to a new commit containing all previously unstaged
-    changes. If there are no active changes in the repo, the ref will point to a
-    new, empty commit.
+  def GetRemotePath(self, project):
+    """Get the path to the remote project repo.
 
     Args:
-      git_repo: Path to the repository.
-      ref: Name of the ref to create.
+      project: The repo_manifest.Project in question.
+
+    Returns:
+      Absolute path to remote project repository.
+    """
+    return os.path.join(project.Remote().fetch, project.name)
+
+  def CommitRemoteProject(self, git_repo, message):
+    """Run `git commit -a` in the given repo.
+
+    Args:
+      git_repo: Path to the git repo.
+      message: Commit message.
     """
     git.RunGit(git_repo, ['add', '-A'])
-    git.Commit(git_repo, 'Ref %s.' % ref, allow_empty=True)
-    git.CreateBranch(git_repo, git.StripRefs(ref))
+    git.RunGit(git_repo, ['commit', '-m', message])
 
-  def CreateProjectsOnRemote(self, remote, projects):
-    """Create remote git repos for the given projects.
-
-    This method creates two refs for each project: TOT, i.e. a master branch,
-    and a project-specific branch. Any files in the project's directory will
-    exist on both branches.
+  def CreateRemoteBranches(self, manifest):
+    """Create the branches specified in the manifest for each project.
 
     Args:
-      remote: Name of the remote.
-      projects: List of projects IDs to be created on the remote.
+      manifest: Complete repo_manifest.Manifest giving branches for projects.
     """
-    for project in projects:
-      repo_path = self.CreateTempDir(remote, self.NameFor(project))
-      git.Init(repo_path)
-      self.CreateRef(repo_path, 'master')
-      self.CreateRef(repo_path, self.RevisionFor(project))
+    for project in manifest.Projects():
+      git_repo = self.GetRemotePath(project)
+      branch = git.StripRefs(project.Revision())
+      if not git.MatchBranchName(git_repo, branch):
+        git.CreateBranch(git_repo, branch)
 
-  def WriteVersionFile(self, milestone, build, branch, patch):
+  def InitRemoteProjects(self, manifest):
+    """Create remote repositories for all projects in the given manifest.
+
+    Args:
+      manifest: The repo_manifest.Manfiest whose projects should be created.
+    """
+    for project in manifest.Projects():
+      repo_path = self.GetRemotePath(project)
+      osutils.SafeMakedirs(repo_path)
+      git.Init(repo_path)
+      git.Commit(repo_path, '%s base commit' % project.name, allow_empty=True)
+
+  def CommitVersionFile(self, milestone, build, branch, patch):
     """Write chromeos_version.sh to the remote with given version numbers.
 
     Args:
@@ -1065,23 +1147,25 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         'chromeos/config')
     version_file_path = os.path.join(version_file_dir, 'chromeos_version.sh')
     osutils.WriteFile(version_file_path, content)
+    self.CommitRemoteProject(version_file_dir, 'Set version file.')
 
-  def WriteManifest(self, manifest, path):
-    """Write the manifest to the given file name at the given path.
-
-    This method also repairs remote fetch paths, which is not known
-    when the test data is generated.
+  def ParseManifest(self, xml):
+    """Read manifest and with correct remote fetch paths.
 
     Args:
-      manifest: The repo_manifest.Manifest to write.
-      path: The path to write it at.
+      xml: The manifest XML string to parse.
+
+    Returns:
+      The repaired manifest.
     """
+    manifest = repo_manifest.Manifest.FromString(
+        xml, allow_unsupported_features=True)
     for remote in manifest.Remotes():
       remote.fetch = (self.cros_root if remote.GitName() == REMOTES.CROS else
                       self.cros_internal_root)
-    manifest.Write(path)
+    return manifest
 
-  def WriteManifestFiles(self, remote, project, files):
+  def CommitManifestFiles(self, remote, project, files):
     """Write all manifest files to the given remote.
 
     Args:
@@ -1094,8 +1178,9 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     """
     repo_path = self.CreateTempDir(remote, self.NameFor(project))
     for filename, xml in files.iteritems():
-      manifest = ParseManifestXml(xml)
-      self.WriteManifest(manifest, os.path.join(repo_path, filename))
+      manifest_path = os.path.join(repo_path, filename)
+      self.ParseManifest(xml).Write(manifest_path)
+    self.CommitRemoteProject(repo_path, 'Add manifest files.')
     return repo_path
 
   def setUp(self):
@@ -1103,21 +1188,36 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     # because remotes typically know about each other.
     self.cros_root = self.CreateTempDir(REMOTES.CROS)
     self.cros_internal_root = self.CreateTempDir(REMOTES.CROS_INTERNAL)
+    self.full_manifest = self.ParseManifest(FULL_TOT_XML)
 
-    # Add necessary files to remote before creating git repos.
-    self.WriteVersionFile(12, 3, 4, 0)
-    self.WriteManifestFiles(REMOTES.CROS, PROJECTS.MANIFEST, MANIFEST_FILES)
-    self.manifest_internal_root = self.WriteManifestFiles(
+    # Create the remote projects.
+    self.InitRemoteProjects(self.full_manifest)
+
+    # Create TOT on remote.
+    self.CreateRemoteBranches(self.full_manifest)
+    self.CommitVersionFile(12, 3, 0, 0)
+    self.CommitManifestFiles(REMOTES.CROS, PROJECTS.MANIFEST, MANIFEST_FILES)
+    self.manifest_internal_root = self.CommitManifestFiles(
         REMOTES.CROS_INTERNAL,
         PROJECTS.MANIFEST_INTERNAL,
         MANIFEST_INTERNAL_FILES)
 
-    self.CreateProjectsOnRemote(REMOTES.CROS, EXTERNAL_PROJECTS)
-    self.CreateProjectsOnRemote(REMOTES.CROS_INTERNAL, INTERNAL_PROJECTS)
+    # Create an existing branch on remote.
+    self.full_branched_manifest = self.ParseManifest(FULL_BRANCHED_XML)
+    self.CreateRemoteBranches(self.full_branched_manifest)
+    self.CommitVersionFile(12, 3, 1, 0)
+    self.CommitManifestFiles(
+        REMOTES.CROS,
+        PROJECTS.MANIFEST,
+        MANIFEST_BRANCHED_FILES)
+    self.CommitManifestFiles(
+        REMOTES.CROS_INTERNAL,
+        PROJECTS.MANIFEST_INTERNAL,
+        MANIFEST_INTERNAL_BRANCHED_FILES)
 
-    # We want to branch from the full manifest, so put it somewhere accessbile.
-    self.full_manifest_path = os.path.join(self.tempdir, 'manifest.xml')
-    self.WriteManifest(self.full_manifest, self.full_manifest_path)
+    # Recheckout master.
+    for project in self.full_manifest.Projects():
+      git.RunGit(self.GetRemotePath(project), ['checkout', 'master'])
 
     # "Locally" checkout the internal remote.
     self.repo_url = FileUrl(constants.CHROOT_SOURCE_ROOT, '.repo/repo')
@@ -1128,8 +1228,15 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         repo_url=self.repo_url,
         repo_branch='default')
 
+  def tearDown(self):
+    osutils.EmptyDir(self.tempdir)
+
   def testCreate(self):
     """Test create runs without dying."""
+    # We want to branch from the full manifest, so put it somewhere accessbile.
+    full_manifest_path = os.path.join(self.tempdir, 'manifest.xml')
+    self.full_manifest.Write(full_manifest_path)
+
     cros_build_lib.RunCommand(
         ['cros', 'branch',
          '--push',
@@ -1137,5 +1244,26 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--repo-url', self.repo_url,
          '--manifest-url', self.manifest_internal_root,
          'create',
-         '--file', self.full_manifest_path,
+         '--file', full_manifest_path,
          '--custom', 'new-branch'])
+
+  def testRename(self):
+    """Test rename runs without dying."""
+    cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'rename',
+         'old-branch', 'new-branch'])
+
+  def testDelete(self):
+    """Test delete runs without dying."""
+    cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push', '--force',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'delete', 'old-branch'])
