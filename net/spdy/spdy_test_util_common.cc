@@ -22,6 +22,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_transaction.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"

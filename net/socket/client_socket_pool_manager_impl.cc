@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
@@ -177,12 +176,12 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
   return ret.first->second.get();
 }
 
-HttpProxyClientSocketPool*
+TransportClientSocketPool*
 ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
     const ProxyServer& http_proxy) {
   DCHECK(http_proxy.is_http_like());
 
-  HTTPProxySocketPoolMap::const_iterator it =
+  TransportSocketPoolMap::const_iterator it =
       http_proxy_socket_pools_.find(http_proxy);
   if (it != http_proxy_socket_pools_.end()) {
     DCHECK(base::ContainsKey(transport_socket_pools_for_http_proxies_,
@@ -213,13 +212,20 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
               http_proxy, true /* use_socket_performance_watcher_factory */)));
   DCHECK(ssl_https_ret.second);
 
-  std::pair<HTTPProxySocketPoolMap::iterator, bool> ret =
+  std::pair<TransportSocketPoolMap::iterator, bool> ret =
       http_proxy_socket_pools_.insert(std::make_pair(
-          http_proxy, std::make_unique<HttpProxyClientSocketPool>(
-                          sockets_per_proxy_server, sockets_per_group,
-                          tcp_http_ret.first->second.get(),
-                          ssl_https_ret.first->second.get(), proxy_delegate_,
-                          network_quality_estimator_, net_log_)));
+          http_proxy,
+          std::make_unique<TransportClientSocketPool>(
+              sockets_per_proxy_server, sockets_per_group, socket_factory_,
+              host_resolver_, proxy_delegate_, cert_verifier_,
+              channel_id_service_, transport_security_state_,
+              cert_transparency_verifier_, ct_policy_enforcer_,
+              ssl_client_session_cache_, ssl_session_cache_shard_,
+              ssl_config_service_, socket_performance_watcher_factory_,
+              network_quality_estimator_, net_log_,
+              nullptr /* http_proxy_pool_for_ssl_pool */,
+              tcp_http_ret.first->second.get(),
+              ssl_https_ret.first->second.get())));
 
   return ret.first->second.get();
 }
@@ -252,7 +258,9 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
               network_quality_estimator_, net_log_,
               proxy_server.is_http_like()
                   ? GetSocketPoolForHTTPLikeProxy(proxy_server)
-                  : nullptr)));
+                  : nullptr,
+              nullptr /* transport_pool_for_http_proxy_pool */,
+              nullptr /* ssl_pool_for_http_proxy_pool */)));
 
   return ret.first->second.get();
 }

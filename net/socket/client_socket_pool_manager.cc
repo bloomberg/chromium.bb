@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/base/proxy_server.h"
-#include "net/http/http_proxy_client_socket_pool.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_info.h"
@@ -228,17 +228,23 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   // Finally, get the connection started.
 
   if (proxy_info.is_http() || proxy_info.is_https()) {
-    HttpProxyClientSocketPool* pool = session->GetSocketPoolForHTTPLikeProxy(
+    TransportClientSocketPool* pool = session->GetSocketPoolForHTTPLikeProxy(
         socket_pool_type, proxy_info.proxy_server());
     if (num_preconnect_streams) {
-      RequestSocketsForPool(pool, connection_group, http_proxy_params,
-                            num_preconnect_streams, net_log);
+      RequestSocketsForPool(
+          pool, connection_group,
+          TransportClientSocketPool::SocketParams::
+              CreateFromHttpProxySocketParams(http_proxy_params),
+          num_preconnect_streams, net_log);
       return OK;
     }
 
-    return socket_handle->Init(connection_group, http_proxy_params,
-                               request_priority, socket_tag, respect_limits,
-                               std::move(callback), pool, net_log);
+    return socket_handle->Init(
+        connection_group,
+        TransportClientSocketPool::SocketParams::
+            CreateFromHttpProxySocketParams(http_proxy_params),
+        request_priority, socket_tag, respect_limits, std::move(callback), pool,
+        net_log);
   }
 
   if (proxy_info.is_socks()) {

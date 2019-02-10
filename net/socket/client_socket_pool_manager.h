@@ -87,7 +87,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
       const ProxyServer& socks_proxy) = 0;
   // Returns the HttpProxyClientSocketPool for a ProxyServer that uses an
   // "HTTP-like" scheme, as defined by ProxyServer::is_http_like().
-  virtual HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
+  virtual TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) = 0;
   virtual TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
       const ProxyServer& proxy_server) = 0;

@@ -5,7 +5,6 @@
 #include "net/socket/mock_client_socket_pool_manager.h"
 
 #include "base/values.h"
-#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
 
 namespace net {
@@ -27,7 +26,7 @@ void MockClientSocketPoolManager::SetSocketPoolForProxy(
 
 void MockClientSocketPoolManager::SetSocketPoolForHTTPProxy(
     const ProxyServer& http_proxy,
-    std::unique_ptr<HttpProxyClientSocketPool> pool) {
+    std::unique_ptr<TransportClientSocketPool> pool) {
   http_proxy_socket_pools_[http_proxy] = std::move(pool);
 }
 
@@ -61,10 +60,10 @@ MockClientSocketPoolManager::GetSocketPoolForSOCKSProxy(
   return nullptr;
 }
 
-HttpProxyClientSocketPool*
+TransportClientSocketPool*
 MockClientSocketPoolManager::GetSocketPoolForHTTPLikeProxy(
     const ProxyServer& http_proxy) {
-  HTTPProxySocketPoolMap::const_iterator it =
+  TransportClientSocketPoolMap::const_iterator it =
       http_proxy_socket_pools_.find(http_proxy);
   if (it != http_proxy_socket_pools_.end())
     return it->second.get();

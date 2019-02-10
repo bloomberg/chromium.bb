@@ -34,6 +34,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_network_transaction.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_impl.h"
@@ -459,8 +460,6 @@ class CapturePreconnectsSocketPool : public ParentPool {
 
 typedef CapturePreconnectsSocketPool<TransportClientSocketPool>
     CapturePreconnectsTransportSocketPool;
-typedef CapturePreconnectsSocketPool<HttpProxyClientSocketPool>
-    CapturePreconnectsHttpProxySocketPool;
 
 template <typename ParentPool>
 CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
@@ -485,22 +484,6 @@ CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
                  nullptr /* socket_performance_watcher_factory */,
                  nullptr /* network_quality_estimator */,
                  nullptr /* netlog */),
-      last_num_streams_(-1) {}
-
-template <>
-CapturePreconnectsHttpProxySocketPool::CapturePreconnectsSocketPool(
-    HostResolver*,
-    CertVerifier*,
-    TransportSecurityState*,
-    CTVerifier*,
-    CTPolicyEnforcer*)
-    : HttpProxyClientSocketPool(0,
-                                0,
-                                nullptr,
-                                nullptr,
-                                nullptr,
-                                nullptr,
-                                nullptr),
       last_num_streams_(-1) {}
 
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
@@ -536,8 +519,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
     HttpNetworkSessionPeer peer(session.get());
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
-    CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
-        new CapturePreconnectsHttpProxySocketPool(
+    CapturePreconnectsTransportSocketPool* http_proxy_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -1189,8 +1172,8 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     HttpNetworkSessionPeer peer(session.get());
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
-    CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
-        new CapturePreconnectsHttpProxySocketPool(
+    CapturePreconnectsTransportSocketPool* http_proxy_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -1249,8 +1232,8 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
 
       for (int preconnect_request = 0; preconnect_request < 2;
            ++preconnect_request) {
-        CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
-            new CapturePreconnectsHttpProxySocketPool(
+        CapturePreconnectsTransportSocketPool* http_proxy_pool =
+            new CapturePreconnectsTransportSocketPool(
                 session_deps.host_resolver.get(),
                 session_deps.cert_verifier.get(),
                 session_deps.transport_security_state.get(),
@@ -1343,8 +1326,8 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
   ProxyServer proxy_server(ProxyServer::SCHEME_HTTPS,
                            HostPortPair("myproxy.org", 443));
 
-  CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
-      new CapturePreconnectsHttpProxySocketPool(
+  CapturePreconnectsTransportSocketPool* http_proxy_pool =
+      new CapturePreconnectsTransportSocketPool(
           session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
           session_deps.transport_security_state.get(),
           session_deps.cert_transparency_verifier.get(),

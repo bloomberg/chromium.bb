@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/http_proxy_client_socket_pool.h"
 
 #include <map>
 #include <string>
@@ -21,6 +20,7 @@
 #include "net/base/test_proxy_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_with_source.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
@@ -102,14 +102,26 @@ class HttpProxyClientSocketPoolTest
                          nullptr /* socket_performance_watcher_factory */,
                          nullptr /* network_quality_estimator */,
                          nullptr /* net_log */),
-        pool_(
-            std::make_unique<HttpProxyClientSocketPool>(kMaxSockets,
-                                                        kMaxSocketsPerGroup,
-                                                        &transport_socket_pool_,
-                                                        &ssl_socket_pool_,
-                                                        nullptr,
-                                                        &estimator_,
-                                                        nullptr)) {
+        pool_(std::make_unique<TransportClientSocketPool>(
+            kMaxSockets,
+            kMaxSocketsPerGroup,
+            &socket_factory_,
+            session_deps_.host_resolver.get(),
+            nullptr /* proxy_delegate */,
+            session_deps_.cert_verifier.get(),
+            session_deps_.channel_id_service.get(),
+            session_deps_.transport_security_state.get(),
+            session_deps_.cert_transparency_verifier.get(),
+            session_deps_.ct_policy_enforcer.get(),
+            nullptr /* ssl_client_session_cache */,
+            std::string() /* ssl_session_cache_shard */,
+            session_deps_.ssl_config_service.get(),
+            nullptr /* socket_performance_watcher_factory */,
+            &estimator_,
+            nullptr /* net_log */,
+            nullptr /* http_proxy_pool_for_ssl_pool */,
+            &transport_socket_pool_,
+            &ssl_socket_pool_)) {
     session_deps_.host_resolver->set_synchronous_mode(true);
     session_ = CreateNetworkSession();
   }
@@ -117,9 +129,20 @@ class HttpProxyClientSocketPoolTest
   ~HttpProxyClientSocketPoolTest() override = default;
 
   void InitPoolWithProxyDelegate(ProxyDelegate* proxy_delegate) {
-    pool_ = std::make_unique<HttpProxyClientSocketPool>(
-        kMaxSockets, kMaxSocketsPerGroup, &transport_socket_pool_,
-        &ssl_socket_pool_, proxy_delegate, &estimator_, nullptr);
+    pool_ = std::make_unique<TransportClientSocketPool>(
+        kMaxSockets, kMaxSocketsPerGroup, &socket_factory_,
+        session_deps_.host_resolver.get(), proxy_delegate,
+        session_deps_.cert_verifier.get(),
+        session_deps_.channel_id_service.get(),
+        session_deps_.transport_security_state.get(),
+        session_deps_.cert_transparency_verifier.get(),
+        session_deps_.ct_policy_enforcer.get(),
+        nullptr /* ssl_client_session_cache */,
+        std::string() /* ssl_session_cache_shard */,
+        session_deps_.ssl_config_service.get(),
+        nullptr /* socket_performance_watcher_factory */, &estimator_,
+        nullptr /* net_log */, nullptr /* http_proxy_pool_for_ssl_pool */,
+        &transport_socket_pool_, &ssl_socket_pool_);
   }
 
   void AddAuthToCache() {
@@ -155,21 +178,27 @@ class HttpProxyClientSocketPoolTest
 
   // Returns the a correctly constructed HttpProxyParms
   // for the HTTP or HTTPS proxy.
-  scoped_refptr<HttpProxySocketParams> CreateParams(bool tunnel) {
-    return base::MakeRefCounted<HttpProxySocketParams>(
-        CreateHttpProxyParams(), CreateHttpsProxyParams(),
-        quic::QUIC_VERSION_UNSUPPORTED, std::string(),
-        HostPortPair("www.google.com", tunnel ? 443 : 80),
-        session_->http_auth_cache(), session_->http_auth_handler_factory(),
-        session_->spdy_session_pool(), session_->quic_stream_factory(),
-        /*is_trusted_proxy=*/false, tunnel, TRAFFIC_ANNOTATION_FOR_TESTS);
+  scoped_refptr<TransportClientSocketPool::SocketParams> CreateParams(
+      bool tunnel) {
+    return TransportClientSocketPool::SocketParams::
+        CreateFromHttpProxySocketParams(
+            base::MakeRefCounted<HttpProxySocketParams>(
+                CreateHttpProxyParams(), CreateHttpsProxyParams(),
+                quic::QUIC_VERSION_UNSUPPORTED, std::string(),
+                HostPortPair("www.google.com", tunnel ? 443 : 80),
+                session_->http_auth_cache(),
+                session_->http_auth_handler_factory(),
+                session_->spdy_session_pool(), session_->quic_stream_factory(),
+                /*is_trusted_proxy=*/false, tunnel,
+                TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
-  scoped_refptr<HttpProxySocketParams> CreateTunnelParams() {
+  scoped_refptr<TransportClientSocketPool::SocketParams> CreateTunnelParams() {
     return CreateParams(true);
   }
 
-  scoped_refptr<HttpProxySocketParams> CreateNoTunnelParams() {
+  scoped_refptr<TransportClientSocketPool::SocketParams>
+  CreateNoTunnelParams() {
     return CreateParams(false);
   }
 
@@ -222,7 +251,7 @@ class HttpProxyClientSocketPoolTest
   SpdyTestUtil spdy_util_;
   std::unique_ptr<SSLSocketDataProvider> ssl_data_;
   std::unique_ptr<SequencedSocketData> data_;
-  std::unique_ptr<HttpProxyClientSocketPool> pool_;
+  std::unique_ptr<TransportClientSocketPool> pool_;
   ClientSocketHandle handle_;
   TestCompletionCallback callback_;
 };

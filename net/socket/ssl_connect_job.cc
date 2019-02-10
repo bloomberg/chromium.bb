@@ -17,13 +17,14 @@
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/http/http_proxy_client_socket.h"
-#include "net/http/http_proxy_client_socket_pool.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -94,7 +95,7 @@ SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<SSLSocketParams>& params,
-    HttpProxyClientSocketPool* http_proxy_pool,
+    TransportClientSocketPool* http_proxy_pool,
     ConnectJob::Delegate* delegate)
     : ConnectJob(priority,
                  ConnectionTimeout(
@@ -296,8 +297,11 @@ int SSLConnectJob::DoTunnelConnect() {
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
       params_->GetHttpProxyConnectionParams();
   return transport_socket_handle_->Init(
-      group_name(), http_proxy_params, priority(), socket_tag(),
-      respect_limits(), callback_, http_proxy_pool_, net_log());
+      group_name(),
+      TransportClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
+          http_proxy_params),
+      priority(), socket_tag(), respect_limits(), callback_, http_proxy_pool_,
+      net_log());
 }
 
 int SSLConnectJob::DoTunnelConnectComplete(int result) {

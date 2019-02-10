@@ -4,7 +4,6 @@
 
 #include "net/http/http_network_session_peer.h"
 
-#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/transport_client_socket_pool.h"

@@ -60,7 +60,6 @@ class CTVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpNetworkSessionPeer;
-class HttpProxyClientSocketPool;
 class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
@@ -296,7 +295,7 @@ class NET_EXPORT HttpNetworkSession {
   TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       SocketPoolType pool_type,
       const ProxyServer& socks_proxy);
-  HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
+  TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       SocketPoolType pool_type,
       const ProxyServer& http_proxy);
   TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
