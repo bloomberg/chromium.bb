@@ -56,6 +56,17 @@ public abstract class PackagePaths {
             File parent = new File(pi.applicationInfo.nativeLibraryDir).getParentFile();
             if (parent != null) {
                 libPaths.add(new File(parent, arch).getPath());
+
+                // arch is the currently loaded library's ABI name. This is the name of the library
+                // directory in an APK, but may differ from the library directory extracted to the
+                // filesystem. ARM family abi names have a suffix specifying the architecture
+                // version, but may be extracted to directories named "arm64" or "arm".
+                // crbug.com/930342
+                if (arch.startsWith("arm64")) {
+                    libPaths.add(new File(parent, "arm64").getPath());
+                } else if (arch.startsWith("arm")) {
+                    libPaths.add(new File(parent, "arm").getPath());
+                }
             }
             for (String zip : zipPaths) {
                 if (zip.endsWith(".apk")) {
