@@ -5,9 +5,13 @@
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
@@ -42,24 +46,134 @@ Hostname RemoveLocal(const std::string& raw_hostname) {
   return raw_hostname.substr(0, ending_pos);
 }
 
-MDnsHostLocator::MDnsHostLocator() = default;
-MDnsHostLocator::~MDnsHostLocator() = default;
+class MDnsHostLocator::Impl {
+ public:
+  explicit Impl(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : task_runner_(task_runner) {
+    // This object is created on the UI thread, so detach the sequence checker
+    // and let it re-attach the first time we are run on the IO thread.
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
 
-bool MDnsHostLocator::StartListening() {
-  DCHECK(!running_);
+  ~Impl() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
-  running_ = true;
-  socket_factory_ = net::MDnsSocketFactory::CreateDefault();
-  mdns_client_ = net::MDnsClient::CreateDefault();
-  return mdns_client_->StartListening(socket_factory_.get());
+  void FindHosts(FindHostsCallback callback);
+
+ private:
+  // Start running the mDNS query on the IO thread.
+  void FindHostsOnIOThread();
+
+  // Makes the MDnsClient start listening on port 5353 on each network
+  // interface.
+  bool StartListening();
+
+  // Creates a PTR transaction and finds all SMB services in the network.
+  bool CreatePtrTransaction();
+
+  // Creates an SRV transaction, which returns the hostname of |service|.
+  void CreateSrvTransaction(const std::string& service);
+
+  // Creates an A transaction, which returns the address of |raw_hostname|.
+  void CreateATransaction(const std::string& raw_hostname);
+
+  // Handler for the PTR transaction request. Returns true if the transaction
+  // successfully starts.
+  void OnPtrTransactionResponse(net::MDnsTransaction::Result result,
+                                const net::RecordParsed* record);
+
+  // Handler for the SRV transaction request.
+  void OnSrvTransactionResponse(net::MDnsTransaction::Result result,
+                                const net::RecordParsed* record);
+
+  // Handler for the A transaction request.
+  void OnATransactionResponse(const std::string& raw_hostname,
+                              net::MDnsTransaction::Result result,
+                              const net::RecordParsed* record);
+
+  // Resolves services that were found through a PTR transaction request. If
+  // there are no more services to be processed, this will call the
+  // FindHostsCallback with the hosts found.
+  void ResolveServicesFound();
+
+  // Fires the callback if there are no more transactions left.
+  void FireCallbackIfFinished();
+
+  // Fires the callback immediately. If |success| is true, return with the hosts
+  // that were found.
+  void FireCallback(bool success);
+
+ private:
+  // IO thread task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  uint32_t remaining_transactions_ = 0;
+  std::vector<std::string> services_;
+  HostMap results_;
+  FindHostsCallback callback_;
+
+  // Network stack mDNS client.
+  std::unique_ptr<net::MDnsSocketFactory> socket_factory_;
+  std::unique_ptr<net::MDnsClient> mdns_client_;
+  std::vector<std::unique_ptr<net::MDnsTransaction>> transactions_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(Impl);
+};
+
+MDnsHostLocator::MDnsHostLocator()
+    : io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO})),
+      impl_(nullptr, base::OnTaskRunnerDeleter(io_task_runner_)),
+      weak_factory_(this) {}
+
+MDnsHostLocator::~MDnsHostLocator() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void MDnsHostLocator::FindHosts(FindHostsCallback callback) {
-  if (running_) {
-    Reset();
-  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Reset any existing query.
+  weak_factory_.InvalidateWeakPtrs();
+  impl_.reset(new Impl(io_task_runner_));
 
   callback_ = std::move(callback);
+  impl_->FindHosts(base::BindOnce(
+      &MDnsHostLocator::PostFindHostsDone, base::ThreadTaskRunnerHandle::Get(),
+      base::BindOnce(&MDnsHostLocator::OnFindHostsDone,
+                     weak_factory_.GetWeakPtr())));
+}
+
+// static
+void MDnsHostLocator::PostFindHostsDone(
+    scoped_refptr<base::TaskRunner> task_runner,
+    FindHostsCallback callback,
+    bool success,
+    const HostMap& hosts) {
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), success, hosts));
+}
+
+void MDnsHostLocator::OnFindHostsDone(bool success, const HostMap& hosts) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  weak_factory_.InvalidateWeakPtrs();
+  impl_.reset();
+
+  std::move(callback_).Run(success, hosts);
+}
+
+void MDnsHostLocator::Impl::FindHosts(FindHostsCallback callback) {
+  DCHECK(callback_.is_null());
+  callback_ = std::move(callback);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&MDnsHostLocator::Impl::FindHostsOnIOThread,
+                                base::Unretained(this)));
+}
+
+void MDnsHostLocator::Impl::FindHostsOnIOThread() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!(StartListening() && CreatePtrTransaction())) {
     LOG(ERROR) << "Failed to start MDnsHostLocator";
@@ -69,11 +183,23 @@ void MDnsHostLocator::FindHosts(FindHostsCallback callback) {
   }
 }
 
-bool MDnsHostLocator::CreatePtrTransaction() {
+bool MDnsHostLocator::Impl::StartListening() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  socket_factory_ = net::MDnsSocketFactory::CreateDefault();
+  mdns_client_ = net::MDnsClient::CreateDefault();
+  return mdns_client_->StartListening(socket_factory_.get());
+}
+
+bool MDnsHostLocator::Impl::CreatePtrTransaction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::unique_ptr<MDnsTransaction> transaction =
-      mdns_client_->CreateTransaction(net::dns_protocol::kTypePTR,
-                                      kSmbMDnsServiceName, kPtrTransactionFlags,
-                                      GetPtrTransactionHandler());
+      mdns_client_->CreateTransaction(
+          net::dns_protocol::kTypePTR, kSmbMDnsServiceName,
+          kPtrTransactionFlags,
+          base::BindRepeating(&MDnsHostLocator::Impl::OnPtrTransactionResponse,
+                              base::Unretained(this)));
 
   if (!transaction->Start()) {
     LOG(ERROR) << "Failed to start PTR transaction";
@@ -84,11 +210,14 @@ bool MDnsHostLocator::CreatePtrTransaction() {
   return true;
 }
 
-void MDnsHostLocator::CreateSrvTransaction(const std::string& service) {
+void MDnsHostLocator::Impl::CreateSrvTransaction(const std::string& service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::unique_ptr<MDnsTransaction> transaction =
-      mdns_client_->CreateTransaction(net::dns_protocol::kTypeSRV, service,
-                                      kSrvTransactionFlags,
-                                      GetSrvTransactionHandler());
+      mdns_client_->CreateTransaction(
+          net::dns_protocol::kTypeSRV, service, kSrvTransactionFlags,
+          base::BindRepeating(&MDnsHostLocator::Impl::OnSrvTransactionResponse,
+                              base::Unretained(this)));
 
   if (!transaction->Start()) {
     // If the transaction fails to start, fire the callback if there are no more
@@ -102,11 +231,15 @@ void MDnsHostLocator::CreateSrvTransaction(const std::string& service) {
   transactions_.push_back(std::move(transaction));
 }
 
-void MDnsHostLocator::CreateATransaction(const std::string& raw_hostname) {
+void MDnsHostLocator::Impl::CreateATransaction(
+    const std::string& raw_hostname) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::unique_ptr<MDnsTransaction> transaction =
-      mdns_client_->CreateTransaction(net::dns_protocol::kTypeA, raw_hostname,
-                                      kATransactionFlags,
-                                      GetATransactionHandler(raw_hostname));
+      mdns_client_->CreateTransaction(
+          net::dns_protocol::kTypeA, raw_hostname, kATransactionFlags,
+          base::BindRepeating(&MDnsHostLocator::Impl::OnATransactionResponse,
+                              base::Unretained(this), raw_hostname));
 
   if (!transaction->Start()) {
     // If the transaction fails to start, fire the callback if there are no more
@@ -120,9 +253,11 @@ void MDnsHostLocator::CreateATransaction(const std::string& raw_hostname) {
   transactions_.push_back(std::move(transaction));
 }
 
-void MDnsHostLocator::OnPtrTransactionResponse(
+void MDnsHostLocator::Impl::OnPtrTransactionResponse(
     MDnsTransaction::Result result,
     const net::RecordParsed* record) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (result == MDnsTransaction::Result::RESULT_RECORD) {
     DCHECK(record);
 
@@ -140,9 +275,11 @@ void MDnsHostLocator::OnPtrTransactionResponse(
   }
 }
 
-void MDnsHostLocator::OnSrvTransactionResponse(
+void MDnsHostLocator::Impl::OnSrvTransactionResponse(
     MDnsTransaction::Result result,
     const net::RecordParsed* record) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (result != MDnsTransaction::Result::RESULT_RECORD) {
     // SRV transaction wasn't able to get a hostname. Fire the callback if there
     // are no more transactions.
@@ -157,9 +294,12 @@ void MDnsHostLocator::OnSrvTransactionResponse(
   CreateATransaction(srv->target());
 }
 
-void MDnsHostLocator::OnATransactionResponse(const std::string& raw_hostname,
-                                             MDnsTransaction::Result result,
-                                             const net::RecordParsed* record) {
+void MDnsHostLocator::Impl::OnATransactionResponse(
+    const std::string& raw_hostname,
+    MDnsTransaction::Result result,
+    const net::RecordParsed* record) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (result == MDnsTransaction::Result::RESULT_RECORD) {
     DCHECK(record);
 
@@ -174,7 +314,9 @@ void MDnsHostLocator::OnATransactionResponse(const std::string& raw_hostname,
   FireCallbackIfFinished();
 }
 
-void MDnsHostLocator::ResolveServicesFound() {
+void MDnsHostLocator::Impl::ResolveServicesFound() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (services_.empty()) {
     // Call the callback immediately.
     FireCallback(true /* success */);
@@ -185,43 +327,22 @@ void MDnsHostLocator::ResolveServicesFound() {
   }
 }
 
-void MDnsHostLocator::FireCallbackIfFinished() {
-  DCHECK_GT(remaining_transactions_, 0u);
+void MDnsHostLocator::Impl::FireCallbackIfFinished() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  DCHECK_GT(remaining_transactions_, 0u);
   if (--remaining_transactions_ == 0) {
     FireCallback(true /* success */);
   }
 }
 
-void MDnsHostLocator::FireCallback(bool success) {
+void MDnsHostLocator::Impl::FireCallback(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // DCHECK to ensure that remaining_transactions_ is at 0 if success is true.
   DCHECK(!success || (remaining_transactions_ == 0));
 
-  std::move(callback_).Run(success, results_);
-  Reset();
-}
-
-void MDnsHostLocator::Reset() {
-  services_.clear();
-  transactions_.clear();
-  results_.clear();
-  running_ = false;
-}
-
-MDnsTransaction::ResultCallback MDnsHostLocator::GetPtrTransactionHandler() {
-  return base::BindRepeating(&MDnsHostLocator::OnPtrTransactionResponse,
-                             AsWeakPtr());
-}
-
-MDnsTransaction::ResultCallback MDnsHostLocator::GetSrvTransactionHandler() {
-  return base::BindRepeating(&MDnsHostLocator::OnSrvTransactionResponse,
-                             AsWeakPtr());
-}
-
-MDnsTransaction::ResultCallback MDnsHostLocator::GetATransactionHandler(
-    const std::string& raw_hostname) {
-  return base::BindRepeating(&MDnsHostLocator::OnATransactionResponse,
-                             AsWeakPtr(), raw_hostname);
+  std::move(callback_).Run(success, std::move(results_));
 }
 
 }  // namespace smb_client
