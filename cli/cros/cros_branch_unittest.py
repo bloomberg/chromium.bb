@@ -346,6 +346,17 @@ class ManifestTestCase(cros_test_lib.TestCase):
     assert len(match) == 1
     return match[0]
 
+  def PidFor(self, project):
+    """Return the project's ID.
+
+    Args:
+      project: The repo_manifest.Project object.
+
+    Returns:
+      The project ID, always stored as the last component of its path.
+    """
+    return os.path.basename(project.Path())
+
   def setUp(self):
     # Parse and cache the full TOT manifest to take advantage of the
     # utility functions in repo_manifest.
@@ -1108,13 +1119,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         'CHROMEOS_BRANCH=%d' % branch,
         'CHROMEOS_PATCH=%d' % patch,
     ])
-    version_file_dir = self.CreateTempDir(
-        REMOTES.CROS,
-        self.NameFor(PROJECTS.CHROMIUMOS_OVERLAY),
-        'chromeos/config')
-    version_file_path = os.path.join(version_file_dir, 'chromeos_version.sh')
-    osutils.WriteFile(version_file_path, content)
-    self.CommitRemoteProject(version_file_dir, 'Set version file.')
+    osutils.WriteFile(self.version_file, content)
+    self.CommitRemoteProject(self.version_dir, 'Set version file.')
 
   def ParseManifest(self, xml):
     """Read manifest and with correct remote fetch paths.
@@ -1160,10 +1166,20 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     # Create the remote projects.
     self.InitRemoteProjects(self.full_manifest)
 
+    # Cache location of remote version file.
+    self.version_dir = self.CreateTempDir(
+        REMOTES.CROS,
+        self.NameFor(PROJECTS.CHROMIUMOS_OVERLAY),
+        'chromeos/config')
+    self.version_file = os.path.join(self.version_dir, 'chromeos_version.sh')
+
     # Create TOT on remote.
     self.CreateRemoteBranches(self.full_manifest)
     self.CommitVersionFile(12, 3, 0, 0)
-    self.CommitManifestFiles(REMOTES.CROS, PROJECTS.MANIFEST, MANIFEST_FILES)
+    self.manifest_root = self.CommitManifestFiles(
+        REMOTES.CROS,
+        PROJECTS.MANIFEST,
+        MANIFEST_FILES)
     self.manifest_internal_root = self.CommitManifestFiles(
         REMOTES.CROS_INTERNAL,
         PROJECTS.MANIFEST_INTERNAL,
@@ -1172,7 +1188,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     # Create an existing branch on remote.
     self.full_branched_manifest = self.ParseManifest(FULL_BRANCHED_XML)
     self.CreateRemoteBranches(self.full_branched_manifest)
-    self.CommitVersionFile(12, 3, 1, 0)
+    self.CommitVersionFile(12, 2, 1, 0)
     self.CommitManifestFiles(
         REMOTES.CROS,
         PROJECTS.MANIFEST,
@@ -1182,11 +1198,13 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         PROJECTS.MANIFEST_INTERNAL,
         MANIFEST_INTERNAL_BRANCHED_FILES)
 
-    # Recheckout master.
+    # Recheckout master on remote. If we are checked out to old-branch, git will
+    # refuse to delete it.
     for project in self.full_manifest.Projects():
       git.RunGit(self.GetRemotePath(project), ['checkout', 'master'])
 
-    # "Locally" checkout the internal remote.
+    # Finally, we must create a local checkout of the remote. This is where
+    # the `cros branch` will sync and do its job.
     self.repo_url = FileUrl(constants.CHROOT_SOURCE_ROOT, '.repo/repo')
     self.local_root = self.CreateTempDir('local')
     repo_util.Repository.Initialize(
@@ -1197,6 +1215,132 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def tearDown(self):
     osutils.EmptyDir(self.tempdir)
+
+  def AssertProjectBranches(self, pid, branches):
+    """Assert project has the expected remote branches.
+
+    Args:
+      pid: Project ID.
+      branches: List of expected branch names.
+    """
+    git_repo = self.GetRemotePath(self.ProjectFor(pid))
+    actual = git.MatchBranchName(git_repo, '.*', namespace='refs/heads/')
+    self.assertItemsEqual(actual, branches)
+
+  def AssertCrosBranches(self, branches):
+    """Assert remote projects have the expected chromiumos branches.
+
+    In detail:
+      - Asserts all projects have a 'master' branch.
+      - Asserts all PINNED projects also have a '<pid>' branch.
+      - Asserts all BRANCHED projects also have the given branches.
+      - Asserts the MULTICHECKOUT project has 'master', and the given branches
+        with the appropriate suffixes appended.
+
+    Args:
+      branches: List of expected chromiumos branches.
+    """
+    for pid in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertProjectBranches(pid, ['master'] + branches)
+
+    mc_branches = ['master']
+    for pid in MULTI_CHECKOUT_PROJECTS:
+      mc_branches.append(pid)
+      for branch in branches:
+        mc_branches.append('%s-%s' % (branch, pid))
+    for pid in MULTI_CHECKOUT_PROJECTS:
+      self.AssertProjectBranches(pid, mc_branches)
+
+    for pid in PINNED_PROJECTS:
+      self.AssertProjectBranches(pid, ['master', pid])
+
+    for pid in TOT_PROJECTS:
+      self.AssertProjectBranches(pid, ['master'])
+
+  def AssertNoDefaultRevisions(self, manifest):
+    """Assert the given manifest has no default revisions.
+
+    Args:
+      manifest: The repo_manifest.Manifest in question.
+    """
+    self.assertFalse(manifest.Default().revision)
+    for remote in manifest.Remotes():
+      self.assertFalse(remote.revision)
+
+  def AssertProjectRevisionsMatchBranch(self, manifest, branch):
+    """Assert the project revisions align with the given chromiumos branch.
+
+    Args:
+      manifest: The repo_manifest.Manifest in question.
+      branch: Name of the chromiumos branch.
+    """
+    for project in manifest.Projects():
+      pid = self.PidFor(project)
+
+      if pid in SINGLE_CHECKOUT_PROJECTS:
+        self.assertEqual(project.Revision(), 'refs/heads/' + branch)
+
+      elif pid in MULTI_CHECKOUT_PROJECTS:
+        self.assertEqual(project.Revision(), 'refs/heads/%s-%s' % (branch, pid))
+
+      elif pid in PINNED_PROJECTS:
+        repo_path = self.GetRemotePath(self.ProjectFor(pid))
+        expected = git.GetGitRepoRevision(repo_path, branch=pid)
+        self.assertEqual(project.Revision(), expected)
+
+      elif pid in TOT_PROJECTS:
+        self.assertEqual(project.Revision(), 'refs/heads/master')
+
+      else:
+        raise AssertionError('Unexpected project ID: %s' % pid)
+
+  def AssertManifestProjectRepaired(self, root, files, branch):
+    """Assert all manifest XML files in the manifest project were repaired.
+
+    Args:
+      root: Root directory for the manifest project.
+      files: Collection of expected files.
+      branch: Name of the chromiumos branch to expect in project revisions.
+    """
+    git.RunGit(root, ['checkout', branch])
+    for fname in files:
+      manifest = repo_manifest.Manifest.FromFile(
+          os.path.join(root, fname), allow_unsupported_features=True)
+      self.AssertNoDefaultRevisions(manifest)
+      self.AssertProjectRevisionsMatchBranch(manifest, branch)
+
+  def AssertManifestsRepaired(self, branch):
+    """Assert the manifests on the given branch point to it.
+
+    Args:
+      branch: Name of the chromiumos branch to expect in revision attributes.
+    """
+    self.AssertManifestProjectRepaired(
+        self.manifest_root,
+        MANIFEST_FILES.keys(),
+        branch)
+    self.AssertManifestProjectRepaired(
+        self.manifest_internal_root,
+        MANIFEST_INTERNAL_FILES.keys(),
+        branch)
+
+  def AssertVersion(self, version_branch, expected_milestone, expected_build,
+                    expected_branch, expected_patch):
+    """Assert chromeos_version.sh has expected version numbers.
+
+    Args:
+      version_branch: Branch of version file to check.
+      expected_milestone: The Chrome branch number.
+      expected_build: The Chrome OS build number.
+      expected_branch: The branch build number.
+      expected_patch: The patch build number.
+    """
+    git.RunGit(self.version_dir, ['checkout', version_branch])
+    vinfo = VersionInfo(version_file=self.version_file)
+    self.assertEqual(int(vinfo.chrome_branch), expected_milestone)
+    self.assertEqual(int(vinfo.build_number), expected_build)
+    self.assertEqual(int(vinfo.branch_build_number), expected_branch)
+    self.assertEqual(int(vinfo.patch_number), expected_patch)
 
   def testCreate(self):
     """Test create runs without dying."""
@@ -1214,6 +1358,10 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--file', full_manifest_path,
          '--custom', 'new-branch'])
 
+    self.AssertCrosBranches(['old-branch', 'new-branch'])
+    self.AssertManifestsRepaired('new-branch')
+    self.AssertVersion('new-branch', 12, 3, 1, 0)
+
   def testRename(self):
     """Test rename runs without dying."""
     cros_build_lib.RunCommand(
@@ -1225,6 +1373,10 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          'rename',
          'old-branch', 'new-branch'])
 
+    self.AssertCrosBranches(['new-branch'])
+    self.AssertManifestsRepaired('new-branch')
+    self.AssertVersion('new-branch', 12, 2, 1, 0)
+
   def testDelete(self):
     """Test delete runs without dying."""
     cros_build_lib.RunCommand(
@@ -1234,3 +1386,4 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--repo-url', self.repo_url,
          '--manifest-url', self.manifest_internal_root,
          'delete', 'old-branch'])
+    self.AssertCrosBranches([])
