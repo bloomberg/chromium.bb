@@ -313,7 +313,7 @@ TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForSOCKSProxy(
       socks_proxy);
 }
 
-HttpProxyClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPLikeProxy(
+TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPLikeProxy(
     SocketPoolType pool_type,
     const ProxyServer& http_proxy) {
   return GetSocketPoolManager(pool_type)->GetSocketPoolForHTTPLikeProxy(

@@ -679,8 +679,6 @@ class CaptureGroupNameSocketPool : public ParentPool {
 
 typedef CaptureGroupNameSocketPool<TransportClientSocketPool>
 CaptureGroupNameTransportSocketPool;
-typedef CaptureGroupNameSocketPool<HttpProxyClientSocketPool>
-CaptureGroupNameHttpProxySocketPool;
 
 template <typename ParentPool>
 CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
@@ -702,12 +700,6 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
                  NULL,
                  NULL,
                  NULL) {}
-
-template <>
-CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
-    HostResolver* /* host_resolver */,
-    CertVerifier* /* cert_verifier */)
-    : HttpProxyClientSocketPool(0, 0, NULL, NULL, NULL, NULL, NULL) {}
 
 //-----------------------------------------------------------------------------
 
@@ -11179,8 +11171,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
 
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
-    CaptureGroupNameHttpProxySocketPool* http_proxy_pool =
-        new CaptureGroupNameHttpProxySocketPool(NULL, NULL);
+    CaptureGroupNameTransportSocketPool* http_proxy_pool =
+        new CaptureGroupNameTransportSocketPool(NULL, NULL);
     CaptureGroupNameTransportSocketPool* ssl_conn_pool =
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();

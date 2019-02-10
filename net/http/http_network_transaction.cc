@@ -43,7 +43,6 @@
 #include "net/http/http_chunked_decoder.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
-#include "net/http/http_proxy_client_socket_pool.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"

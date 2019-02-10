@@ -31,7 +31,6 @@ class CertVerifier;
 class ChannelIDService;
 class ClientSocketFactory;
 class CTVerifier;
-class HttpProxyClientSocketPool;
 class HostResolver;
 class NetLog;
 class NetworkQualityEstimator;
@@ -74,7 +73,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& proxy_server) override;
 
-  HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
+  TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) override;
 
   TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
@@ -93,8 +92,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
  private:
   using TransportSocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
-  using HTTPProxySocketPoolMap =
-      std::map<ProxyServer, std::unique_ptr<HttpProxyClientSocketPool>>;
 
   // Creates a TransportClientSocketPool appropriate for use with the passed in
   // socket pool, passing in all needed parameters.
@@ -131,7 +128,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
 
   TransportSocketPoolMap transport_socket_pools_for_http_proxies_;
   TransportSocketPoolMap ssl_socket_pools_for_https_proxies_;
-  HTTPProxySocketPoolMap http_proxy_socket_pools_;
+  TransportSocketPoolMap http_proxy_socket_pools_;
   TransportSocketPoolMap ssl_socket_pools_for_proxies_;
 
   THREAD_CHECKER(thread_checker_);

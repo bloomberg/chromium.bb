@@ -205,9 +205,11 @@ LoadState HttpProxyConnectJob::GetLoadState() const {
 }
 
 bool HttpProxyConnectJob::HasEstablishedConnection() const {
+  // Returning true prevents the socket pool this belongs to from using backup
+  // jobs.
   // TODO(https://crbug.com/472729): Implement this, as nested pools are
   // removed.
-  return false;
+  return true;
 }
 
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {

@@ -24,9 +24,9 @@
 namespace net {
 
 class HostPortPair;
-class HttpProxyClientSocketPool;
 class HttpProxySocketParams;
 class SOCKSSocketParams;
+class TransportClientSocketPool;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE SSLSocketParams
@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   SSLConnectJob(RequestPriority priority,
                 const CommonConnectJobParams& common_connect_job_params,
                 const scoped_refptr<SSLSocketParams>& params,
-                HttpProxyClientSocketPool* http_proxy_pool,
+                TransportClientSocketPool* http_proxy_pool,
                 ConnectJob::Delegate* delegate);
   ~SSLConnectJob() override;
 
@@ -142,7 +142,7 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   void ChangePriorityInternal(RequestPriority priority) override;
 
   scoped_refptr<SSLSocketParams> params_;
-  HttpProxyClientSocketPool* const http_proxy_pool_;
+  TransportClientSocketPool* const http_proxy_pool_;
 
   State next_state_;
   CompletionRepeatingCallback callback_;

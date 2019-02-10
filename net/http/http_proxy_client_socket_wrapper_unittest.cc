@@ -14,6 +14,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
