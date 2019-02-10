@@ -992,6 +992,10 @@ const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
 
+const char kEnableWasmCodeCacheName[] = "WebAssembly compiled module cache";
+const char kEnableWasmCodeCacheDescription[] =
+    "Enables caching of compiled WebAssembly modules.";
+
 const char kEnableWasmThreadsName[] = "WebAssembly threads support.";
 const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "

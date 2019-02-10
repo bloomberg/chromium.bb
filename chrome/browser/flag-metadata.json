@@ -1972,6 +1972,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-webassembly-code-cache",
+    "owners": [ "bbudge", "hablich", "wasm-team@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-webassembly-threads",
     "owners": [ "binji", "hablich", "wasm-team@google.com" ],
     "expiry_milestone": 76
