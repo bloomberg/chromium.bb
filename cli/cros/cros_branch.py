@@ -430,15 +430,6 @@ class Branch(object):
     for project, branch in branches:
       self.checkout.RunGit(project, ['checkout', '-B', branch])
 
-  def _DeleteLocalBranches(self, branches):
-    """Delete the given project branches in the local checkout.
-
-    Args:
-      branches: List of ProjectBranches to delete.
-    """
-    for project, branch in branches:
-      self.checkout.RunGit(project, ['branch', '-D', branch])
-
   def _RepairManifestRepositories(self, branches):
     """Repair all manifests in all manifest repositories on current branch.
 
@@ -461,12 +452,13 @@ class Branch(object):
       raise BranchError('Cannot bump version with nonzero patch number.')
     return 'patch' if int(vinfo.branch_build_number) else 'branch'
 
-  def _PushBranchesToRemote(self, branches, force=False):
+  def _PushBranchesToRemote(self, branches, dry_run=True, force=False):
     """Push state of local git branches to remote.
 
     Args:
       branches: List of ProjectBranches to push.
       force: Whether or not to overwrite existing branches on the remote.
+      dry_run: Whether or not to set --dry-run.
     """
     for project, branch in branches:
       branch = git.NormalizeRef(branch)
@@ -475,24 +467,29 @@ class Branch(object):
       # So the refspec should look like 'refs/heads/branch:refs/heads/branch'.
       refspec = '%s:%s' % (branch, branch)
       remote = project.Remote().GitName()
+
       cmd = ['push', remote, refspec]
+      if dry_run:
+        cmd.append('--dry-run')
       if force:
-        cmd += ['--force']
+        cmd.append('--force')
 
       # TODO(evanhernandez): Add check to see if branch exists.
       self.checkout.RunGit(project, cmd)
 
-  def _DeleteBranchesOnRemote(self, branches):
+  def _DeleteBranchesOnRemote(self, branches, dry_run=True):
     """Deletes this branch for all projects on the remote.
 
     Args:
       branches: List of ProjectBranches to delete on remote.
+      dry_run: Whether or not to set --dry-run.
     """
     for project, branch in branches:
-      self.checkout.RunGit(
-          project,
-          ['push', project.Remote().GitName(),
-           '--delete', git.NormalizeRef(branch)])
+      branch = git.NormalizeRef(branch)
+      cmd = ['push', project.Remote().GitName(), '--delete', branch]
+      if dry_run:
+        cmd.append('--dry-run')
+      self.checkout.RunGit(project, cmd)
 
   def Create(self, push=False, force=False):
     """Creates a new branch from the given version.
@@ -505,7 +502,9 @@ class Branch(object):
     """
     branches = self._ProjectBranches(self.name)
     self._CreateLocalBranches(branches)
+
     self._RepairManifestRepositories(branches)
+
     which_version = self._WhichVersionShouldBump()
     self.checkout.BumpVersion(
         which_version,
@@ -513,8 +512,7 @@ class Branch(object):
 
     # Only once every step has succeeded do we push a new branch.
     # This is as close to atomicity as we can get with GOB.
-    if push:
-      self._PushBranchesToRemote(branches, force=force)
+    self._PushBranchesToRemote(branches, dry_run=not push, force=force)
 
   def Rename(self, original, push=False, force=False):
     """Create this branch by renaming some other branch.
@@ -530,13 +528,10 @@ class Branch(object):
     new_branches = self._ProjectBranches(self.name)
     self._CreateLocalBranches(new_branches)
     self._RepairManifestRepositories(new_branches)
+    self._PushBranchesToRemote(new_branches, dry_run=not push, force=force)
 
     old_branches = self._ProjectBranches(original)
-    self._DeleteLocalBranches(old_branches)
-
-    if push:
-      self._PushBranchesToRemote(new_branches, force=force)
-      self._DeleteBranchesOnRemote(old_branches)
+    self._DeleteBranchesOnRemote(old_branches, dry_run=not push)
 
   def Delete(self, push=False, force=False):
     """Delete this branch.
@@ -548,9 +543,7 @@ class Branch(object):
     if push and not force:
       raise BranchError('Must set --force to delete remote branches.')
     branches = self._ProjectBranches(self.name)
-    self._DeleteLocalBranches(branches)
-    if push:
-      self._DeleteBranchesOnRemote(branches)
+    self._DeleteBranchesOnRemote(branches, dry_run=not push)
 
 
 class StandardBranch(Branch):
@@ -693,15 +686,16 @@ Delete Examples:
     create_parser = subparser.add_parser(
         'create', help='Create a branch from a specified maniefest version.')
 
-    sync_group = create_parser.add_argument_group(
+    manifest_group = create_parser.add_argument_group(
         'Manifest',
         description='Which manifest should be branched?')
-    sync_ex_group = sync_group.add_mutually_exclusive_group(required=True)
-    sync_ex_group.add_argument(
+    manifest_ex_group = manifest_group.add_mutually_exclusive_group(
+        required=True)
+    manifest_ex_group.add_argument(
         '--version',
         dest='version',
         help="Manifest version to branch off, e.g. '10509.0.0'.")
-    sync_ex_group.add_argument(
+    manifest_ex_group.add_argument(
         '--file',
         dest='file',
         help='Path to manifest file to branch off.')
@@ -788,7 +782,11 @@ Delete Examples:
           force=self.options.force)
 
     elif self.options.subcommand == 'delete':
-      checkout.SyncBranch(self.options.branch)
+      # Git complains if we delete a branch that is checked out locally.
+      # For branch deletion, we work around this problem by syncing to master.
+      # This works because branch deletion does not update metadata, it just
+      # deletes branches on the remote.
+      checkout.SyncBranch('master')
       branch = Branch(self.options.branch, checkout)
       branch.Delete(push=self.options.push, force=self.options.force)
 

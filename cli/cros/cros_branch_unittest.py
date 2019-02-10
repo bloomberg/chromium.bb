@@ -685,28 +685,6 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
         ['git', 'checkout', '-B', branch],
         cwd=self.PathListRegexFor(project))
 
-  def AssertBranchRenamed(self, project, branch):
-    """Assert current branch renamed for given project.
-
-    Args:
-      project: Project ID.
-      branch: Expected name for the branch.
-    """
-    self.rc_mock.assertCommandContains(
-        ['git', 'branch', '-m', branch],
-        cwd=self.PathListRegexFor(project))
-
-  def AssertBranchDeleted(self, project, branch):
-    """Assert given branch deleted for given project.
-
-    Args:
-      project: Project ID.
-      branch: Expected name for the branch.
-    """
-    self.rc_mock.assertCommandContains(
-        ['git', 'branch', '-D', branch],
-        cwd=self.PathListRegexFor(project))
-
   def AssertProjectNotBranched(self, project):
     """Assert no branch was created for the given project.
 
@@ -715,17 +693,6 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """
     self.rc_mock.assertCommandContains(
         ['git', 'checkout', '-B'],
-        cwd=self.PathListRegexFor(project),
-        expected=False)
-
-  def AssertBranchNotModified(self, project):
-    """Assert no `git branch` calls for given project.
-
-    Args:
-      project: Project ID.
-    """
-    self.rc_mock.assertCommandContains(
-        ['git', 'branch'],
         cwd=self.PathListRegexFor(project),
         expected=False)
 
@@ -841,16 +808,6 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     for project in NON_BRANCHED_PROJECTS:
       self.AssertProjectNotBranched(project)
 
-  def testRenameDeletesOldBranch(self):
-    """Test Rename deletes the original branch."""
-    self.branch.Rename('original')
-    for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertBranchDeleted(project, 'original')
-    for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertBranchDeleted(project, 'original-' + project)
-    for project in NON_BRANCHED_PROJECTS:
-      self.AssertBranchNotModified(project)
-
   def testRenameRepairsManifests(self):
     """Test Rename commits repairs to manifest repositories."""
     self.branch.Rename('original')
@@ -867,6 +824,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
       self.AssertNoPush(project)
 
   def testRenamePushesDeletionOfOldBranch(self):
+    """Test rename deletes old branch on remote."""
     self.branch.Rename('original', push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertRemoteBranchDeleted(project, 'original')
@@ -875,22 +833,11 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     for project in NON_BRANCHED_PROJECTS:
       self.AssertNoPush(project)
 
-  def testDeleteModifiesCorrectProjects(self):
-    """Test Delete deletes correct project branches."""
-    self.branch.Delete()
-    for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertBranchDeleted(project, 'branch')
-    for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertBranchDeleted(project, 'branch-' + project)
-    for project in NON_BRANCHED_PROJECTS:
-      self.AssertBranchNotModified(project)
-
   def testDeleteRequiresForceForRemotePush(self):
     """Verify Delete does nothing when push is True but force is False."""
     with self.assertRaises(BranchError):
       self.branch.Delete(push=True)
     for project in PROJECTS.values():
-      self.AssertBranchNotModified(project)
       self.AssertNoPush(project)
 
   def testDeletePushesDeletions(self):
@@ -1034,10 +981,10 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.RunCommandMock(['rename', 'branch', 'new-branch'])
     self.AssertSynced(['--branch', 'branch'])
 
-  def testDeleteSyncsToBranch(self):
+  def testDeleteSyncsToMaster(self):
     """Test `cros branch delete` calls repo_sync_manifest to sync to branch."""
     self.RunCommandMock(['delete', 'branch'])
-    self.AssertSynced(['--branch', 'branch'])
+    self.AssertSynced(['--branch', 'master'])
 
 
 class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
