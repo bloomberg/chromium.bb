@@ -282,6 +282,7 @@
     amd64-generic-postsubmit
     arkham-postsubmit
     arm-generic-postsubmit
+    arm64-generic-postsubmit
     asuka-postsubmit
     atlas-postsubmit
     auron_paine-postsubmit
@@ -341,6 +342,7 @@
     kefka-postsubmit
     kevin-arcnext-postsubmit
     kevin-postsubmit
+    kevin64-postsubmit
     kip-postsubmit
     kukui-postsubmit
     lakitu-gpu-postsubmit
@@ -2621,6 +2623,7 @@
     amd64-generic-postsubmit
     arkham-postsubmit
     arm-generic-postsubmit
+    arm64-generic-postsubmit
     asuka-postsubmit
     atlas-postsubmit
     auron_paine-postsubmit
@@ -2680,6 +2683,7 @@
     kefka-postsubmit
     kevin-arcnext-postsubmit
     kevin-postsubmit
+    kevin64-postsubmit
     kip-postsubmit
     kukui-postsubmit
     lakitu-gpu-postsubmit

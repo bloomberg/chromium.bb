@@ -1778,6 +1778,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_important_boards = frozenset([
       'amd64-generic',
       'arm-generic',
+      'arm64-generic',
       'atlas',
       'auron_paine',
       'auron_yuna',
@@ -1819,6 +1820,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kalista',
       'kevin',
       'kevin-arcnext',
+      'kevin64',
       'kip',
       'kukui',
       'lakitu',
@@ -1895,10 +1897,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'arm64-generic', # contact:manojgupta@
       'coral', # contact: xixuan@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
-      'kevin64', # contact:manojgupta@
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
