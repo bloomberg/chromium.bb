@@ -95,13 +95,15 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
         base::Bind(&DesktopMediaPickerControllerTest::OnResult,
                    base::Unretained(this));
 
+    DesktopMediaPicker::Params params;
+    params.app_name = base::ASCIIToUTF16("Screenshare Test");
+    params.target_name = base::ASCIIToUTF16("https://foo.com");
+    params.request_audio = true;
+    params.approve_audio_by_default = true;
     controller_.reset([[DesktopMediaPickerController alloc]
         initWithSourceLists:std::move(source_lists)
-                     parent:nil
                    callback:callback
-                    appName:base::ASCIIToUTF16("Screenshare Test")
-                 targetName:base::ASCIIToUTF16("https://foo.com")
-               requestAudio:true]);
+                     params:params]);
   }
 
   void TearDown() override {

@@ -164,6 +164,7 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
   picker_params.target_name = picker_params.app_name;
   picker_params.request_audio =
       pending_request.request.audio_type == blink::MEDIA_DISPLAY_AUDIO_CAPTURE;
+  picker_params.approve_audio_by_default = false;
   pending_request.picker->Show(picker_params, std::move(source_lists),
                                done_callback);
 }
