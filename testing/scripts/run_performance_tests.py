@@ -243,8 +243,9 @@ class TelemetryCommandGenerator(object):
             self._generate_also_run_disabled_tests_args() +
             self._generate_output_args(output_dir) +
             self._generate_story_range_args() +
-            self._generate_reference_build_args() +
-            self._get_passthrough_args()
+            # passthrough args must be before reference args: crbug.com/928928
+            self._get_passthrough_args() +
+            self._generate_reference_build_args()
            )
 
   def _get_passthrough_args(self):
