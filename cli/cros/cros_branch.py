@@ -83,38 +83,6 @@ def CanPinProject(project):
   return explicit_mode == constants.MANIFEST_ATTR_BRANCHING_PIN
 
 
-class CheckoutManager(object):
-  """Context manager for checking out a chromiumos project to a revision.
-
-  This manager handles fetching and checking out to a project's remote ref, as
-  specified in the manifest. It also ensures that the local checkout always
-  returns to its initial state once the context exits.
-  """
-
-  def __init__(self, checkout, project):
-    """Determine whether project needs to be checked out.
-
-    Args:
-      checkout: The CrosCheckout containing the project.
-      project: A repo_manifest.Project to be checked out.
-    """
-    self._path = checkout.AbsoluteProjectPath(project)
-    self._remote = project.Remote().GitName()
-    self._ref = git.NormalizeRef(project.upstream or project.Revision())
-    self._original_ref = git.NormalizeRef(git.GetCurrentBranch(self._path))
-    self._needs_checkout = self._ref != self._original_ref
-
-  def __enter__(self):
-    if self._needs_checkout:
-      git.RunGit(self._path, ['fetch', self._remote, self._ref])
-      git.RunGit(self._path, ['checkout', 'FETCH_HEAD'])
-    return self
-
-  def __exit__(self, exc_type, exc_value, traceback):
-    if self._needs_checkout:
-      git.RunGit(self._path, ['checkout', self._original_ref])
-
-
 class ManifestRepository(object):
   """Represents a git repository of manifest XML files."""
 
@@ -307,18 +275,31 @@ class CrosCheckout(object):
     """Returns VersionInfo for the current checkout."""
     return manifest_version.VersionInfo.from_repo(self.root, **kwargs)
 
-  def BumpVersion(self, which, message):
+  def BumpVersion(self, which, branch, message, dry_run=True):
     """Increment version in chromeos_version.sh and commit it.
 
     Args:
       which: Which version should be incremented. One of
           'chrome_branch', 'build', 'branch, 'patch'.
+      branch: The branch to bump version on.
       message: The commit message for the version bump.
+      dry_run: Whether to use git --dry-run.
     """
     logging.info(message)
+
+    # Fetch the remote ref on which version will be updated.
+    chromiumos_overlay = self.manifest.GetUniqueProject(
+        'chromiumos/overlays/chromiumos-overlay')
+    remote = chromiumos_overlay.Remote().GitName()
+    ref = git.NormalizeRef(branch)
+    self.RunGit(chromiumos_overlay, ['fetch', remote, ref])
+    self.RunGit(chromiumos_overlay, ['checkout', 'FETCH_HEAD'])
+
+    # Do the push.
     new_version = self.ReadVersion(incr_type=which)
     new_version.IncrementVersion()
-    new_version.UpdateVersionFile(message, dry_run=True)
+    remote_ref = git.RemoteRef(remote, ref)
+    new_version.UpdateVersionFile(message, dry_run=dry_run, push_to=remote_ref)
 
   def AbsolutePath(self, *args):
     """Joins the path components with the repo root.
@@ -502,17 +483,16 @@ class Branch(object):
     """
     branches = self._ProjectBranches(self.name)
     self._CreateLocalBranches(branches)
-
     self._RepairManifestRepositories(branches)
+    self._PushBranchesToRemote(branches, dry_run=not push, force=force)
 
+    # Must bump version last because of how VersionInfo is implemented. Sigh...
     which_version = self._WhichVersionShouldBump()
     self.checkout.BumpVersion(
         which_version,
-        'Bump %s number after creating branch %s.' % (which_version, self.name))
-
-    # Only once every step has succeeded do we push a new branch.
-    # This is as close to atomicity as we can get with GOB.
-    self._PushBranchesToRemote(branches, dry_run=not push, force=force)
+        self.name,
+        'Bump %s number after creating branch %s.' % (which_version, self.name),
+        dry_run=not push)
 
   def Rename(self, original, push=False, force=False):
     """Create this branch by renaming some other branch.
@@ -581,15 +561,13 @@ class ReleaseBranch(StandardBranch):
   def Create(self, push=False, force=False):
     super(ReleaseBranch, self).Create(push=push, force=force)
     # When a release branch has been successfully created, we report it by
-    # bumping the milestone on the source branch (usually master).
-    # We intentionally do this *after* the new branch has been pushed.
-    chromiumos_overlay = self.checkout.manifest.GetUniqueProject(
-        'chromiumos/overlays/chromiumos-overlay')
-    with CheckoutManager(self.checkout, chromiumos_overlay):
-      self.checkout.BumpVersion(
-          'chrome_branch',
-          'Bump milestone after creating release branch %s.' % self.name)
-      # TODO(evanhernandez): Push this change to remote.
+    # bumping the milestone on the master. We intentionally do this *after*
+    # the new branch has been pushed.
+    self.checkout.BumpVersion(
+        'chrome_branch',
+        'master',
+        'Bump milestone after creating release branch %s.' % self.name,
+        dry_run=not push)
 
 
 class FactoryBranch(StandardBranch):
