@@ -28,15 +28,6 @@ using testing::_;
 
 namespace {
 
-// Off-class equivalent of WaylandTest::Sync.
-void Sync(wl::TestWaylandServerThread* server) {
-  DCHECK(server);
-
-  server->Resume();
-  base::RunLoop().RunUntilIdle();
-  server->Pause();
-}
-
 // Copied from ui/ozone/test/mock_platform_window_delegate.h to avoid
 // dependency from the whole library (it causes link problems).
 class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
@@ -92,8 +83,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CHECK(window->Initialize(std::move(properties)));
   CHECK_NE(widget, gfx::kNullAcceleratedWidget);
 
+  // Wait until everything is initialised.
   base::RunLoop().RunUntilIdle();
-  server.Pause();
 
   base::FilePath temp_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
@@ -120,6 +111,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     offsets[i] = data_provider.ConsumeIntegralInRange(0U, UINT_MAX);
     modifiers[i] =
         data_provider.ConsumeIntegralInRange(uint64_t(0), UINT64_MAX);
+    if (kPlaneCount > 1 && modifiers[i] == DRM_FORMAT_MOD_INVALID)
+      modifiers[i] = 0;
   }
 
   const uint32_t kBufferId = 1;
@@ -130,12 +123,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                    offsets, kFormat, modifiers, kPlaneCount,
                                    kBufferId);
 
-  Sync(&server);
-  Sync(&server);
+  // Wait until the buffers are created.
+  base::RunLoop().RunUntilIdle();
 
   connection->DestroyZwpLinuxDmabuf(kBufferId);
 
-  Sync(&server);
+  // Wait until the buffers are destroyed.
+  base::RunLoop().RunUntilIdle();
+
+  // Pause the server so it is not running when mock expectations are validated.
+  server.Pause();
 
   return 0;
 }
