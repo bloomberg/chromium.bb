@@ -17,7 +17,7 @@ namespace protocol {
 // Peer-to-peer socket with datagram semantics.
 class P2PDatagramSocket {
  public:
-  virtual ~P2PDatagramSocket() {};
+  virtual ~P2PDatagramSocket() {}
 
   // Receives a packet, up to |buf_len| bytes, from the socket. Size of the
   // incoming packet is returned in case of success. If the packet is larger

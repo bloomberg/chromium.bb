@@ -47,7 +47,7 @@ std::unique_ptr<jingle_xmpp::XmlElement> RejectingAuthenticator::GetNextMessage(
 const std::string& RejectingAuthenticator::GetAuthKey() const {
   NOTREACHED();
   return auth_key_;
-};
+}
 
 std::unique_ptr<ChannelAuthenticator>
 RejectingAuthenticator::CreateChannelAuthenticator() const {

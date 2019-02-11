@@ -168,7 +168,7 @@ JingleSession::OrderedMessageQueue::OnIncomingMessage(
                  << next_incoming_ << " current= " << current;
   }
   return result;
-};
+}
 
 void JingleSession::OrderedMessageQueue::SetInitialId(const std::string& id) {
   int current = GetSequentialId(id);

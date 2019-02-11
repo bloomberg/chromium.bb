@@ -23,7 +23,7 @@ class HostStatusMonitor : public base::RefCountedThreadSafe<HostStatusMonitor> {
 
   const base::ObserverList<HostStatusObserver>::Unchecked& observers() {
     return observers_;
-  };
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<HostStatusMonitor>;
