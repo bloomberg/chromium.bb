@@ -36,14 +36,13 @@ class RecurrenceRankerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ranker_filepath_ = temp_dir_.GetPath().AppendASCII("recurrence_ranker");
 
-    auto* fallback = config_.mutable_fallback_predictor();
-    fallback->set_target_limit(0u);
-    fallback->set_decay_coeff(0.0f);
+    config_.set_target_limit(1000u);
+    config_.set_target_decay_coeff(0.75f);
+    config_.set_min_seconds_between_saves(120);
     // Even if empty, the setting of the oneof |predictor_config| in
     // |RecurrenceRankerConfigProto| is used to determine which predictor is
     // constructed.
     config_.mutable_fake_predictor();
-    config_.set_min_seconds_between_saves(5);
 
     ranker_ =
         std::make_unique<RecurrenceRanker>(ranker_filepath_, config_, false);
@@ -58,9 +57,17 @@ class RecurrenceRankerTest : public testing::Test {
 
     auto* counts =
         proto.mutable_predictor()->mutable_fake_predictor()->mutable_counts();
-    (*counts)["A"] = 1.0f;
-    (*counts)["B"] = 2.0f;
-    (*counts)["C"] = 1.0f;
+    (*counts)[0u] = 1.0f;
+    (*counts)[1u] = 2.0f;
+    (*counts)[2u] = 1.0f;
+
+    FrecencyStore store(1000, 0.75f);
+    store.Update("A");
+    store.Update("B");
+    store.Update("B");
+    store.Update("C");
+    FrecencyStoreProto targets_proto;
+    store.ToProto(proto.mutable_targets());
 
     return proto;
   }
@@ -74,7 +81,7 @@ class RecurrenceRankerTest : public testing::Test {
   base::FilePath ranker_filepath_;
 };
 
-TEST_F(RecurrenceRankerTest, Record) {
+TEST_F(RecurrenceRankerTest, CheckRecord) {
   ranker_->Record("A");
   ranker_->Record("B");
   ranker_->Record("B");
@@ -83,7 +90,7 @@ TEST_F(RecurrenceRankerTest, Record) {
                                                     Pair("B", FloatEq(2.0f))));
 }
 
-TEST_F(RecurrenceRankerTest, Rename) {
+TEST_F(RecurrenceRankerTest, CheckRename) {
   ranker_->Record("A");
   ranker_->Record("B");
   ranker_->Record("B");
@@ -92,7 +99,7 @@ TEST_F(RecurrenceRankerTest, Rename) {
   EXPECT_THAT(ranker_->Rank(), ElementsAre(Pair("A", FloatEq(2.0f))));
 }
 
-TEST_F(RecurrenceRankerTest, Remove) {
+TEST_F(RecurrenceRankerTest, CheckRemove) {
   ranker_->Record("A");
   ranker_->Record("B");
   ranker_->Record("B");
@@ -206,14 +213,10 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
 
   // Construct a second ranker with a slightly different config.
   RecurrenceRankerConfigProto other_config;
-  auto* fallback = other_config.mutable_fallback_predictor();
-  fallback->set_target_limit(0u);
-  fallback->set_decay_coeff(0.0f);
+  other_config.set_target_limit(1000u);
+  other_config.set_target_decay_coeff(0.76f);
+  other_config.set_min_seconds_between_saves(120);
   other_config.mutable_fake_predictor();
-  // This is different.
-  other_config.set_min_seconds_between_saves(
-      config_.min_seconds_between_saves() + 1);
-
   RecurrenceRanker other_ranker(ranker_filepath_, other_config, false);
   Wait();
 
@@ -226,36 +229,31 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
 }
 
 TEST_F(RecurrenceRankerTest, EphemeralUsersUseFrecencyPredictor) {
-  RecurrenceRanker ephemeral_ranker(ranker_filepath_, config_, true);
+  auto ephemeral_ranker =
+      std::make_unique<RecurrenceRanker>(ranker_filepath_, config_, true);
   Wait();
-  EXPECT_THAT(ephemeral_ranker.GetPredictorNameForTesting(),
-              StrEq(ZeroStateFrecencyPredictor::kPredictorName));
+  EXPECT_THAT(ephemeral_ranker->GetPredictorNameForTesting(),
+              StrEq(FrecencyPredictor().GetPredictorName()));
 }
 
-TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
+TEST_F(RecurrenceRankerTest, CheckFrecencyPredictor) {
   RecurrenceRankerConfigProto config;
-  config.set_min_seconds_between_saves(5);
-  auto* predictor = config.mutable_zero_state_frecency_predictor();
-  predictor->set_target_limit(100u);
-  predictor->set_decay_coeff(0.5f);
-  auto* fallback = config.mutable_fallback_predictor();
-  fallback->set_target_limit(100u);
-  fallback->set_decay_coeff(0.5f);
+  config.set_target_limit(1000u);
+  config.set_target_decay_coeff(0.5f);
+  config.set_min_seconds_between_saves(120);
+  config.mutable_frecency_predictor();
 
-  RecurrenceRanker ranker(ranker_filepath_, config, false);
+  RecurrenceRanker frecency_ranker(ranker_filepath_, config, false);
   Wait();
 
-  ranker.Record("A");
-  ranker.Record("D");
-  ranker.Record("C");
-  ranker.Record("E");
-  ranker.Rename("D", "B");
-  ranker.Remove("E");
-  ranker.Rename("E", "A");
+  frecency_ranker.Record("A");
+  frecency_ranker.Record("B");
+  frecency_ranker.Record("C");
 
-  EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.0625f)),
-                                                  Pair("B", FloatEq(0.125f)),
-                                                  Pair("C", FloatEq(0.25f))));
+  EXPECT_THAT(frecency_ranker.Rank(),
+              UnorderedElementsAre(Pair("A", FloatEq(0.125f)),
+                                   Pair("B", FloatEq(0.25f)),
+                                   Pair("C", FloatEq(0.5f))));
 }
 
 }  // namespace app_list

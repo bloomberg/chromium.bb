@@ -217,6 +217,8 @@ DEFINE_EQUIVTO_PROTO_LITE_1(FakeAppLaunchPredictorProto, rank_result);
 
 DEFINE_EQUIVTO_PROTO_LITE_1(FakePredictorProto, counts);
 
+DEFINE_EQUIVTO_PROTO_LITE_DEFAULT(FrecencyPredictorProto);
+
 DEFINE_EQUIVTO_PROTO_LITE_5(FrecencyStoreProto,
                             values,
                             value_limit,
@@ -238,9 +240,12 @@ DEFINE_EQUIVTO_PROTO_LITE_2(HourAppLaunchPredictorProto_FrequencyTable,
 
 DEFINE_EQUIVTO_PROTO_LITE_2(RecurrencePredictorProto,
                             fake_predictor,
-                            zero_state_frecency_predictor);
+                            frecency_predictor);
 
-DEFINE_EQUIVTO_PROTO_LITE_2(RecurrenceRankerProto, config_hash, predictor);
+DEFINE_EQUIVTO_PROTO_LITE_3(RecurrenceRankerProto,
+                            config_hash,
+                            predictor,
+                            targets);
 
 DEFINE_EQUIVTO_PROTO_LITE_2(SerializedMrfuAppLaunchPredictorProto,
                             num_of_trains,
@@ -249,9 +254,6 @@ DEFINE_EQUIVTO_PROTO_LITE_2(SerializedMrfuAppLaunchPredictorProto,
 DEFINE_EQUIVTO_PROTO_LITE_2(SerializedMrfuAppLaunchPredictorProto_Score,
                             num_of_trains_at_last_update,
                             last_score);
-
-DEFINE_EQUIVTO_PROTO_LITE_1(ZeroStateFrecencyPredictorProto, targets);
-
 }  // namespace internal
 
 template <typename Proto>
