@@ -5,7 +5,12 @@
 #ifndef COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_MODEL_OBSERVER_H_
 #define COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_MODEL_OBSERVER_H_
 
+#include <string>
+#include <vector>
+
 namespace send_tab_to_self {
+
+class SendTabToSelfEntry;
 
 // Observer for the Send Tab To Self model. In the observer methods care should
 // be taken to not modify the model.
@@ -18,8 +23,13 @@ class SendTabToSelfModelObserver {
   // is unsafe to use the model.
   virtual void SendTabToSelfModelLoaded() = 0;
 
-  // Invoked when elements of the model are added, removed, or updated.
-  virtual void SendTabToSelfModelChanged() = 0;
+  // Invoked when elements of the model are added or removed. This is the
+  // mechanism for the sync server to push changes in the state of the model to
+  // clients.
+  virtual void SendTabToSelfEntriesAdded(
+      const std::vector<const SendTabToSelfEntry*>& new_entries) = 0;
+  virtual void SendTabToSelfEntriesRemoved(
+      const std::vector<std::string>& guids) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfModelObserver);

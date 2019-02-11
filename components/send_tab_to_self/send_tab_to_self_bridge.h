@@ -64,12 +64,20 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
                                      const std::string& title,
                                      base::Time navigation_time) override;
 
+  void DeleteEntry(const std::string& guid) override;
+  void DismissEntry(const std::string& guid) override;
+
  private:
   using SendTabToSelfEntries =
       std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>;
 
-  // Notify all observers of a change;
-  void NotifySendTabToSelfModelChanged();
+  // Notify all observers of added |entries| when the underlying model changes.
+  void NotifySendTabToSelfEntryAdded(
+      const std::vector<const SendTabToSelfEntry*>& new_entries);
+
+  // Notify all observers when the entries with |guids| have been removed from
+  // the model.
+  void NotifySendTabToSelfEntryDeleted(const std::vector<std::string>& guids);
 
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;

@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
+class SendTabToSelfEntry;
 class SendTabToSelfSyncService;
 }  // namespace send_tab_to_self
 
@@ -34,7 +35,11 @@ class SendTabToSelfUrlChecker
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
-  void SendTabToSelfModelChanged() override;
+  void SendTabToSelfEntriesAdded(
+      const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+          new_entries) override;
+  void SendTabToSelfEntriesRemoved(
+      const std::vector<std::string>& guids_removed) override;
 
  private:
   const GURL url_;
@@ -60,7 +65,11 @@ class SendTabToSelfModelEqualityChecker
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
-  void SendTabToSelfModelChanged() override;
+  void SendTabToSelfEntriesAdded(
+      const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+          new_entries) override;
+  void SendTabToSelfEntriesRemoved(
+      const std::vector<std::string>& guids_removed) override;
 
  private:
   send_tab_to_self::SendTabToSelfSyncService* const service0_;
