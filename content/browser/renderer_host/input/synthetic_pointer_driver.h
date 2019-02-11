@@ -28,16 +28,18 @@ class CONTENT_EXPORT SyntheticPointerDriver {
   virtual void DispatchEvent(SyntheticGestureTarget* target,
                              const base::TimeTicks& timestamp) = 0;
 
-  virtual void Press(float x,
-                     float y,
-                     int index = 0,
-                     SyntheticPointerActionParams::Button button =
-                         SyntheticPointerActionParams::Button::LEFT,
-                     int key_modifiers = 0,
-                     float width = 1.f,
-                     float height = 1.f,
-                     float rotation_angle = 0.f,
-                     float force = 1.f) = 0;
+  virtual void Press(
+      float x,
+      float y,
+      int index = 0,
+      SyntheticPointerActionParams::Button button =
+          SyntheticPointerActionParams::Button::LEFT,
+      int key_modifiers = 0,
+      float width = 1.f,
+      float height = 1.f,
+      float rotation_angle = 0.f,
+      float force = 1.f,
+      const base::TimeTicks& timestamp = base::TimeTicks::Now()) = 0;
   virtual void Move(float x,
                     float y,
                     int index = 0,

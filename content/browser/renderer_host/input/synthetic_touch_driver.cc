@@ -32,7 +32,8 @@ void SyntheticTouchDriver::Press(float x,
                                  float width,
                                  float height,
                                  float rotation_angle,
-                                 float force) {
+                                 float force,
+                                 const base::TimeTicks& timestamp) {
   DCHECK_GE(index, 0);
   DCHECK(pointer_id_map_.find(index) == pointer_id_map_.end());
   int touch_index = touch_event_.PressPoint(x, y, width / 2.f, height / 2.f,
