@@ -193,6 +193,11 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteCookiesMatchingInfoAsync(net::CookieDeletionInfo delete_info,
                                       DeleteCallback callback);
 
+  void DeleteCookiesMatchingPredicateAsync(
+      const base::RepeatingCallback<bool(const net::CanonicalCookie&)>&
+          predicate,
+      DeleteCallback callback);
+
   // Flush to CookieMonster from |cookies|, and run |callback|.
   void FlushStoreFromCookies(base::OnceClosure callback,
                              NSArray<NSHTTPCookie*>* cookies);

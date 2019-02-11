@@ -420,9 +420,14 @@ void CookieStoreIOS::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
   // instead.
   DCHECK(SystemCookiesAllowed());
 
-  // This relies on the fact cookies are given unique creation dates.
-  CookieDeletionInfo delete_info(cookie.CreationDate(), cookie.CreationDate());
-  DeleteCookiesMatchingInfoAsync(std::move(delete_info), std::move(callback));
+  DeleteCookiesMatchingPredicateAsync(base::BindRepeating(
+                                          [](const net::CanonicalCookie& target,
+                                             const net::CanonicalCookie& cc) {
+                                            return cc.IsEquivalent(target) &&
+                                                   cc.Value() == target.Value();
+                                          },
+                                          cookie),
+                                      std::move(callback));
 }
 
 void CookieStoreIOS::DeleteAllCreatedInTimeRangeAsync(
@@ -567,11 +572,25 @@ void CookieStoreIOS::WriteToCookieMonster(NSArray* system_cookies) {
 }
 
 void CookieStoreIOS::DeleteCookiesMatchingInfoAsync(
-    CookieDeletionInfo delete_info,
+    net::CookieDeletionInfo delete_info,
+    DeleteCallback callback) {
+  DeleteCookiesMatchingPredicateAsync(
+      base::BindRepeating(
+          [](const CookieDeletionInfo& delete_info,
+             const net::CanonicalCookie& cc) {
+            return delete_info.Matches(cc);
+          },
+          std::move(delete_info)),
+      std::move(callback));
+}
+
+void CookieStoreIOS::DeleteCookiesMatchingPredicateAsync(
+    const base::RepeatingCallback<bool(const net::CanonicalCookie&)>& predicate,
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   __block DeleteCallback shared_callback = std::move(callback);
-  __block CookieDeletionInfo shared_delete_info = std::move(delete_info);
+  __block base::RepeatingCallback<bool(const net::CanonicalCookie&)>
+      shared_predicate = predicate;
   base::WeakPtr<SystemCookieStore> weak_system_store =
       system_store_->GetWeakPtr();
   system_store_->GetAllCookiesAsync(
@@ -587,7 +606,7 @@ void CookieStoreIOS::DeleteCookiesMatchingInfoAsync(
               weak_system_store->GetCookieCreationTime(cookie);
           CanonicalCookie cc =
               CanonicalCookieFromSystemCookie(cookie, creation_time);
-          if (shared_delete_info.Matches(cc)) {
+          if (shared_predicate.Run(cc)) {
             weak_system_store->DeleteCookieAsync(
                 cookie, SystemCookieStore::SystemCookieCallback());
             to_delete_count++;
