@@ -221,7 +221,7 @@ void HandleToggleTabletMode() {
 }
 
 void HandleTriggerCrash() {
-  CHECK(false) << "Intentional crash via debug accelerator.";
+  LOG(FATAL) << "Intentional crash via debug accelerator.";
 }
 
 }  // namespace
