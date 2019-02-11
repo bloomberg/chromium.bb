@@ -1238,6 +1238,13 @@ void HTMLDocumentParser::DocumentElementAvailable() {
         base::TimeDelta::FromMilliseconds(1000), 50);
   }
   DCHECK(document->documentElement());
+  Element* documentElement = GetDocument()->documentElement();
+  if (documentElement->hasAttribute(u"\u26A1") ||
+      documentElement->hasAttribute("amp") ||
+      documentElement->hasAttribute("i-amphtml-layout")) {
+    GetDocument()->Loader()->DidObserveLoadingBehavior(
+        kWebLoadingBehaviorAmpDocumentLoaded);
+  }
   FetchQueuedPreloads();
 }
 

@@ -44,6 +44,8 @@ enum WebLoadingBehaviorFlag {
   // Indicates that a subresource on the page was a candidate for stale
   // while revalidate and caused a non-stale cache load.
   kStaleWhileRevalidateResourceCandidateCacheLoad = 1 << 9,
+  // Indicates that the page is an AMP document, with <html amp> tag.
+  kWebLoadingBehaviorAmpDocumentLoaded = 1 << 10,
 };
 
 }  // namespace blink
