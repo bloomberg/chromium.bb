@@ -22,13 +22,7 @@ static constexpr float kMinScoreBeforeDelete =
 }  // namespace
 
 FrecencyStore::FrecencyStore(int value_limit, float decay_coeff)
-    : value_limit_(value_limit), decay_coeff_(decay_coeff) {
-  if (decay_coeff <= 0.0f || decay_coeff >= 1.0f) {
-    LOG(ERROR) << "FrecencyStore decay_coeff has invalid value: " << decay_coeff
-               << ", resetting to default.";
-    decay_coeff_ = 0.75f;
-  }
-}
+    : value_limit_(value_limit), decay_coeff_(decay_coeff) {}
 
 FrecencyStore::~FrecencyStore() {}
 

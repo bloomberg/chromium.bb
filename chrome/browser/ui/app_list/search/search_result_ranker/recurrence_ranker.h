@@ -21,6 +21,7 @@
 
 namespace app_list {
 
+class FrecencyStore;
 class RecurrencePredictor;
 class RecurrenceRankerProto;
 
@@ -39,11 +40,8 @@ class RecurrenceRanker {
 
   ~RecurrenceRanker();
 
-  // Record the use of a given target, and train the predictor on it. The one
-  // argument version is a shortcut for an empty query string, useful for
-  // zero-state scenarios.
+  // Record the use of a given target, and train the predictor on it.
   void Record(const std::string& target);
-  void Record(const std::string& target, const std::string& query);
   // Rename a target, while keeping learned information on it.
   void Rename(const std::string& target, const std::string& new_target);
   // Remove a target entirely.
@@ -52,19 +50,14 @@ class RecurrenceRanker {
   // Returns a map of target to score.
   //  - Higher scores are better.
   //  - Score are guaranteed to be in the range [0,1].
-  // The zero-argument version is a shortcut for an empty query string.
   base::flat_map<std::string, float> Rank();
-  base::flat_map<std::string, float> Rank(const std::string& query);
 
   // Returns a sorted vector of <target, score> pairs.
   //  - Higher scores are better.
   //  - Score are guaranteed to be in the range [0,1].
   //  - Pairs are sorted in descending order of score.
   //  - At most n results will be returned.
-  // The one-argument version is a shortcut for an empty query string.
   std::vector<std::pair<std::string, float>> RankTopN(int n);
-  std::vector<std::pair<std::string, float>> RankTopN(int n,
-                                                      const std::string& query);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RecurrenceRankerTest,
@@ -89,6 +82,8 @@ class RecurrenceRanker {
 
   // Internal predictor that drives ranking.
   std::unique_ptr<RecurrencePredictor> predictor_;
+  // A store of all possible targets to return.
+  std::unique_ptr<FrecencyStore> targets_;
 
   // Where to save the ranker.
   const base::FilePath proto_filepath_;
