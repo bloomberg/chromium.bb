@@ -562,8 +562,11 @@ typedef struct SPEED_FEATURES {
   // Calculate RD cost before doing optimize_b, and skip if the cost is large.
   int optimize_b_precheck;
 
-  // Use model rd instead of transform search in dist_wtd_comp
-  int dist_wtd_comp_fast_tx_search;
+  // Use two-loop compound search
+  int two_loop_comp_search;
+
+  // Use model rd instead of transform search in second loop of compound search
+  int second_loop_comp_fast_tx_search;
 
   // Decide when and how to use joint_comp.
   DIST_WTD_COMP_FLAG use_dist_wtd_comp_flag;
