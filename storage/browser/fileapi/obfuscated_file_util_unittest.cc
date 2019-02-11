@@ -43,7 +43,6 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/leveldb_chrome.h"
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemContext;
@@ -152,14 +151,11 @@ bool HasFileSystemType(ObfuscatedFileUtil::AbstractOriginEnumerator* enumerator,
 // could theoretically be shared.  It would basically be a FSFU interface
 // compliance test, and only the subclass-specific bits that look into the
 // implementation would need to be written per-subclass.
-class ObfuscatedFileUtilTest : public testing::Test,
-                               public ::testing::WithParamInterface<bool> {
+class ObfuscatedFileUtilTest : public testing::Test {
  public:
   ObfuscatedFileUtilTest()
-      : is_incognito_(GetParam()),
-        scoped_task_environment_(
+      : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
-
         origin_(GURL("http://www.example.com")),
         type_(storage::kFileSystemTypeTemporary),
         sandbox_file_system_(origin_, type_),
@@ -173,7 +169,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     storage_policy_ = new MockSpecialStoragePolicy();
 
     quota_manager_ = new storage::QuotaManager(
-        is_incognito_, data_dir_.GetPath(),
+        false /* is_incognito */, data_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get(),
         storage::GetQuotaSettingsFunc());
     storage::QuotaSettings settings;
@@ -194,9 +190,6 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
     change_observers_ =
         storage::MockFileChangeObserver::CreateList(&change_observer_);
-
-    if (is_incognito_)
-      incognito_leveldb_environment_ = leveldb_chrome::NewMemEnv("FileSystem");
   }
 
   void TearDown() override {
@@ -254,11 +247,11 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   std::unique_ptr<ObfuscatedFileUtil> CreateObfuscatedFileUtil(
       storage::SpecialStoragePolicy* storage_policy) {
+    // TODO(https://crbug.com/93417): Add support for incognito tests.
     return std::unique_ptr<ObfuscatedFileUtil>(
-        ObfuscatedFileUtil::CreateForTesting(
-            storage_policy, data_dir_path(),
-            is_incognito_ ? incognito_leveldb_environment_.get() : nullptr,
-            is_incognito_));
+        ObfuscatedFileUtil::CreateForTesting(storage_policy, data_dir_path(),
+                                             /*env_override=*/nullptr,
+                                             /*is_incognito=*/false));
   }
 
   ObfuscatedFileUtil* ofu() {
@@ -687,10 +680,6 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   void MaybeDropDatabasesAliveCaseTestBody() {
-    // TODO(https://crbug.com/43417): Enable test after finishing incognito
-    // implementation.
-    if (is_incognito_)
-      return;
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(nullptr);
     file_util->InitOriginDatabase(GURL(), true /*create*/);
@@ -721,10 +710,6 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   void DestroyDirectoryDatabase_IsolatedTestBody() {
-    // TODO(https://crbug.com/43417): Enable test after finishing incognito
-    // implementation.
-    if (is_incognito_)
-      return;
     storage_policy_->AddIsolated(origin_);
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(storage_policy_.get());
@@ -744,10 +729,6 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   void GetDirectoryDatabase_IsolatedTestBody() {
-    // TODO(https://crbug.com/43417): Enable test after finishing incognito
-    // implementation.
-    if (is_incognito_)
-      return;
     storage_policy_->AddIsolated(origin_);
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(storage_policy_.get());
@@ -782,8 +763,6 @@ class ObfuscatedFileUtilTest : public testing::Test,
   const base::FilePath& data_dir_path() const { return data_dir_.GetPath(); }
 
  protected:
-  bool is_incognito_;
-  std::unique_ptr<leveldb::Env> incognito_leveldb_environment_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
@@ -802,9 +781,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, ObfuscatedFileUtilTest, ::testing::Bool());
-
-TEST_P(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
+TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
   int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE;
@@ -889,7 +866,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestTruncate) {
+TEST_F(ObfuscatedFileUtilTest, TestTruncate) {
   bool created = false;
   FileSystemURL url = CreateURLFromUTF8("file");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
@@ -926,7 +903,7 @@ TEST_P(ObfuscatedFileUtilTest, TestTruncate) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
   bool created = false;
   FileSystemURL url = CreateURLFromUTF8("file");
 
@@ -981,7 +958,7 @@ TEST_P(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
   ASSERT_EQ(0, ComputeTotalFileSize());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestEnsureFileExists) {
+TEST_F(ObfuscatedFileUtilTest, TestEnsureFileExists) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");
   bool created = false;
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
@@ -1036,7 +1013,7 @@ TEST_P(ObfuscatedFileUtilTest, TestEnsureFileExists) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestDirectoryOps) {
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
 
   bool exclusive = false;
@@ -1178,7 +1155,7 @@ TEST_P(ObfuscatedFileUtilTest, TestDirectoryOps) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestReadDirectory) {
+TEST_F(ObfuscatedFileUtilTest, TestReadDirectory) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
   bool exclusive = true;
   bool recursive = true;
@@ -1188,15 +1165,15 @@ TEST_P(ObfuscatedFileUtilTest, TestReadDirectory) {
   TestReadDirectoryHelper(url);
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestReadRootWithSlash) {
+TEST_F(ObfuscatedFileUtilTest, TestReadRootWithSlash) {
   TestReadDirectoryHelper(CreateURLFromUTF8(std::string()));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestReadRootWithEmptyString) {
+TEST_F(ObfuscatedFileUtilTest, TestReadRootWithEmptyString) {
   TestReadDirectoryHelper(CreateURLFromUTF8("/"));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
+TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
   FileSystemURL url = CreateURLFromUTF8("file");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
 
@@ -1213,7 +1190,7 @@ TEST_P(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
   EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), url));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestTouch) {
+TEST_F(ObfuscatedFileUtilTest, TestTouch) {
   FileSystemURL url = CreateURLFromUTF8("file");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
 
@@ -1243,7 +1220,7 @@ TEST_P(ObfuscatedFileUtilTest, TestTouch) {
   TestTouchHelper(url, false);
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestPathQuotas) {
+TEST_F(ObfuscatedFileUtilTest, TestPathQuotas) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
 
@@ -1278,7 +1255,7 @@ TEST_P(ObfuscatedFileUtilTest, TestPathQuotas) {
   EXPECT_EQ(1024 - path_cost, context->allowed_bytes_growth());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestCopyOrMoveFileNotFound) {
+TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileNotFound) {
   FileSystemURL source_url = CreateURLFromUTF8("path0.txt");
   FileSystemURL dest_url = CreateURLFromUTF8("path1.txt");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
@@ -1320,7 +1297,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCopyOrMoveFileNotFound) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
+TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
   const int64_t kSourceLength = 5;
   const int64_t kDestLength = 50;
 
@@ -1409,7 +1386,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
   }
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestCopyPathQuotas) {
+TEST_F(ObfuscatedFileUtilTest, TestCopyPathQuotas) {
   FileSystemURL src_url = CreateURLFromUTF8("src path");
   FileSystemURL dest_url = CreateURLFromUTF8("destination path");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
@@ -1439,7 +1416,7 @@ TEST_P(ObfuscatedFileUtilTest, TestCopyPathQuotas) {
                                   FileSystemOperation::OPTION_NONE, is_copy));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestMovePathQuotasWithRename) {
+TEST_F(ObfuscatedFileUtilTest, TestMovePathQuotasWithRename) {
   FileSystemURL src_url = CreateURLFromUTF8("src path");
   FileSystemURL dest_url = CreateURLFromUTF8("destination path");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
@@ -1476,7 +1453,7 @@ TEST_P(ObfuscatedFileUtilTest, TestMovePathQuotasWithRename) {
                                   FileSystemOperation::OPTION_NONE, is_copy));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
+TEST_F(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
   FileSystemURL src_url = CreateURLFromUTF8("src path");
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
   bool created = false;
@@ -1519,12 +1496,12 @@ TEST_P(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
       context->allowed_bytes_growth());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestCopyInForeignFile) {
+TEST_F(ObfuscatedFileUtilTest, TestCopyInForeignFile) {
   TestCopyInForeignFileHelper(false /* overwrite */);
   TestCopyInForeignFileHelper(true /* overwrite */);
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestEnumerator) {
+TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
   FileSystemURL src_url = CreateURLFromUTF8("source dir");
   bool exclusive = true;
@@ -1554,7 +1531,7 @@ TEST_P(ObfuscatedFileUtilTest, TestEnumerator) {
   EXPECT_FALSE(DirectoryExists(dest_url));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
+TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       ofu()->CreateOriginEnumerator());
   // The test helper starts out with a single filesystem.
@@ -1640,7 +1617,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   EXPECT_TRUE(diff.empty());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
+TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
 
   int64_t expected_quota = 0;
@@ -1686,7 +1663,7 @@ TEST_P(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
   EXPECT_EQ(expected_quota, usage());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestInconsistency) {
+TEST_F(ObfuscatedFileUtilTest, TestInconsistency) {
   const FileSystemURL kPath1 = CreateURLFromUTF8("hoge");
   const FileSystemURL kPath2 = CreateURLFromUTF8("fuga");
 
@@ -1761,7 +1738,7 @@ TEST_P(ObfuscatedFileUtilTest, TestInconsistency) {
   EXPECT_EQ(0, file_info.size);
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
+TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   const FileSystemURL kPath[] = {
     CreateURLFromUTF8("foo"),
     CreateURLFromUTF8("bar"),
@@ -1796,7 +1773,7 @@ TEST_P(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   EXPECT_EQ(base::size(kPath) - 1, entries.size());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
   const FileSystemURL dir_url = CreateURLFromUTF8("foo_dir");
 
@@ -1921,7 +1898,7 @@ TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
   EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(nullptr));
   const FileSystemURL dir_url = CreateURLFromUTF8("foo_dir");
 
@@ -1980,7 +1957,7 @@ TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
   EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCopyAndMove) {
+TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCopyAndMove) {
   TestDirectoryTimestampHelper(
       CreateURLFromUTF8("copy overwrite"), true, true);
   TestDirectoryTimestampHelper(
@@ -1991,7 +1968,7 @@ TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCopyAndMove) {
       CreateURLFromUTF8("move non-overwrite"), false, false);
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
+TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
   FileSystemURL dir = CreateURLFromUTF8("foo");
   FileSystemURL url1 = FileSystemURLAppendUTF8(dir, "bar");
   FileSystemURL url2 = FileSystemURLAppendUTF8(dir, "baz");
@@ -2053,7 +2030,7 @@ TEST_P(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
 #else
 #define MAYBE_TestQuotaOnCopyFile TestQuotaOnCopyFile
 #endif
-TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
+TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
   FileSystemURL from_file(CreateURLFromUTF8("fromfile"));
   FileSystemURL obstacle_file(CreateURLFromUTF8("obstaclefile"));
   FileSystemURL to_file1(CreateURLFromUTF8("tofile1"));
@@ -2151,7 +2128,7 @@ TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
   }
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
   FileSystemURL from_file(CreateURLFromUTF8("fromfile"));
   FileSystemURL obstacle_file(CreateURLFromUTF8("obstaclefile"));
   FileSystemURL to_file(CreateURLFromUTF8("tofile"));
@@ -2257,7 +2234,7 @@ TEST_P(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
   context.reset();
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
   FileSystemURL dir(CreateURLFromUTF8("dir"));
   FileSystemURL file(CreateURLFromUTF8("file"));
   FileSystemURL dfile1(CreateURLFromUTF8("dir/dfile1"));
@@ -2321,7 +2298,7 @@ TEST_P(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
   ASSERT_EQ(0, ComputeTotalFileSize());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
   FileSystemURL url(CreateURLFromUTF8("file"));
 
   bool created;
@@ -2370,23 +2347,23 @@ TEST_P(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
   file.Close();
 }
 
-TEST_P(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
+TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
   MaybeDropDatabasesAliveCaseTestBody();
 }
 
-TEST_P(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
+TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
   MaybeDropDatabasesAlreadyDeletedCaseTestBody();
 }
 
-TEST_P(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {
+TEST_F(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {
   DestroyDirectoryDatabase_IsolatedTestBody();
 }
 
-TEST_P(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
+TEST_F(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
   GetDirectoryDatabase_IsolatedTestBody();
 }
 
-TEST_P(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
+TEST_F(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
   FileSystemURL url(CreateURLFromUTF8("file"));
   FileSystemURL path_in_file(CreateURLFromUTF8("file/file"));
   bool created;
@@ -2408,7 +2385,7 @@ TEST_P(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
                                    false /* recursive */));
 }
 
-TEST_P(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
+TEST_F(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
   FileSystemURL file(CreateURLFromUTF8("file"));
   FileSystemURL path_in_file(CreateURLFromUTF8("file/child"));
   FileSystemURL path_in_file_in_file(
@@ -2431,7 +2408,7 @@ TEST_P(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
                                    true /* recursive */));
 }
 
-TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
+TEST_F(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
   const GURL origin1("http://www.example.com:12");
   const GURL origin2("http://www.example.com:1234");
   const GURL origin3("http://nope.example.com");
@@ -2509,7 +2486,7 @@ TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
       origin3, GetTypeString(kFileSystemTypePersistent)));
 }
 
-TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
+TEST_F(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
   const GURL origin1("http://www.example.com:12");
   const GURL origin2("http://www.example.com:1234");
 
