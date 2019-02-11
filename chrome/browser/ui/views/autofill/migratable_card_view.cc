@@ -81,6 +81,10 @@ std::string MigratableCardView::GetGuid() {
   return migratable_credit_card_.credit_card().guid();
 }
 
+const base::string16 MigratableCardView::GetNetworkAndLastFourDigits() const {
+  return migratable_credit_card_.credit_card().NetworkAndLastFourDigits();
+}
+
 std::unique_ptr<views::View>
 MigratableCardView::GetMigratableCardDescriptionView(
     const MigratableCreditCard& migratable_credit_card,
