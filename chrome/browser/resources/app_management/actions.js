@@ -48,10 +48,6 @@ cr.define('app_management.actions', function() {
           'Tried to load app detail page without providing an app id.');
     }
 
-    if (PageType == PageType.SEARCH) {
-      console.warn('This should not be invoked');
-    }
-
     return {
       name: 'change-page',
       pageType: pageType,

@@ -94,25 +94,7 @@ cr.define('app_management', function() {
     }
   };
 
-  /**
-   * TODO(ceciliani) Delete search page type and navigate router by calculating
-   * if there is search.term.
-   * @param {Object} action
-   * @return {Page}
-   */
-  CurrentPageState.changeForSearch = function(action) {
-    if (action.term) {
-      return {
-        pageType: PageType.SEARCH,
-        selectedAppId: null,
-      };
-    } else {
-      return {
-        pageType: PageType.MAIN,
-        selectedAppId: null,
-      };
-    }
-  };
+
   /**
    * @param {Page} currentPage
    * @param {Object} action
@@ -138,10 +120,6 @@ cr.define('app_management', function() {
    */
   CurrentPageState.updateCurrentPage = function(apps, currentPage, action) {
     switch (action.name) {
-      case 'start-search':
-        return CurrentPageState.changeForSearch(action);
-      case 'clear-search':
-        return CurrentPageState.changeForSearch(action);
       case 'change-page':
         return CurrentPageState.changePage(apps, action);
       case 'remove-app':

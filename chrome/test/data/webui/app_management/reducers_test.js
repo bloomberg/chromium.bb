@@ -136,7 +136,6 @@ suite('app state', function() {
     state = app_management.reduceAction(state, action);
 
     assertEquals('searchTerm', state.search.term);
-    assertEquals(PageType.SEARCH, state.currentPage.pageType);
 
     // Search disappears when there is no term entered.
     action = app_management.actions.clearSearch();
