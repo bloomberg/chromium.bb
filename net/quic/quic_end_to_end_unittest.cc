@@ -75,7 +75,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
 
   HttpCache* GetCache() override { return nullptr; }
 
-  HttpNetworkSession* GetSession() override { return session_.get(); };
+  HttpNetworkSession* GetSession() override { return session_.get(); }
 
  private:
   std::unique_ptr<HttpNetworkSession> session_;
