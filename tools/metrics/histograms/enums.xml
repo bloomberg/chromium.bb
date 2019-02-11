@@ -9750,6 +9750,12 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Failed to query dictionary attack counter"/>
 </enum>
 
+<enum name="CrosUsbNotificationClosed">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="By User"/>
+  <int value="2" label="Connect to Linux Clicked"/>
+</enum>
+
 <enum name="CryptAuthSoftwareFeature">
   <int value="0" label="UNKNOWN_FEATURE"/>
   <int value="1" label="BETTER_TOGETHER_HOST"/>

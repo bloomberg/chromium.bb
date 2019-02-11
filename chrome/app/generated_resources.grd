@@ -8793,6 +8793,25 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
     </message>
 
+    <if expr="chromeos">
+      <!-- CrOSUsb Notification -->
+      <message name="IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
+        Connect this device to Linux
+      </message>
+      <message name="IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
+        <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
+      </message>
+      <message name="IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_LINUX" desc="Label for notification button shown to the user when a USB device gets plugged in to allowed Linux to use the device">
+        Connect
+      </message>
+      <message name="IDS_CROSUSB_UNKNOWN_DEVICE_FROM_MANUFACTURER" desc="String describing an unknown device in notification shown when a USB device gets plugged in.">
+        USB device from <ph name="MANUFACTURER_NAME">$1<ex>Google</ex></ph>
+      </message>
+      <message name="IDS_CROSUSB_UNKNOWN_DEVICE" desc="String describing an unknown device in notification shown when a USB device gets plugged in.">
+        USB device
+      </message>
+    </if>
+
     <!-- Audio device strings. -->
     <message name="IDS_DEFAULT_AUDIO_DEVICE_NAME" desc="System default audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
         Default
