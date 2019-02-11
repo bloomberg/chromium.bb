@@ -44,15 +44,6 @@ void AppCacheFrontendImpl::CacheSelected(int32_t host_id,
     host->OnCacheSelected(*info);
 }
 
-void AppCacheFrontendImpl::StatusChanged(const std::vector<int32_t>& host_ids,
-                                         blink::mojom::AppCacheStatus status) {
-  for (auto i = host_ids.begin(); i != host_ids.end(); ++i) {
-    WebApplicationCacheHostImpl* host = GetHost(*i);
-    if (host)
-      host->OnStatusChanged(status);
-  }
-}
-
 void AppCacheFrontendImpl::EventRaised(const std::vector<int32_t>& host_ids,
                                        blink::mojom::AppCacheEventID event_id) {
   DCHECK_NE(event_id,

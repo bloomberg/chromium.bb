@@ -33,9 +33,6 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
     last_status_ = info->status;
   }
 
-  void StatusChanged(const std::vector<int32_t>& host_ids,
-                     blink::mojom::AppCacheStatus status) override {}
-
   void EventRaised(const std::vector<int32_t>& host_ids,
                    blink::mojom::AppCacheEventID event_id) override {}
 

@@ -45,11 +45,6 @@ void AppCacheFrontendProxy::CacheSelected(int32_t host_id,
   GetAppCacheFrontend()->CacheSelected(host_id, std::move(info));
 }
 
-void AppCacheFrontendProxy::StatusChanged(const std::vector<int32_t>& host_ids,
-                                          blink::mojom::AppCacheStatus status) {
-  GetAppCacheFrontend()->StatusChanged(host_ids, status);
-}
-
 void AppCacheFrontendProxy::EventRaised(
     const std::vector<int32_t>& host_ids,
     blink::mojom::AppCacheEventID event_id) {

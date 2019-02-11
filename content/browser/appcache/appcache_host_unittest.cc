@@ -63,8 +63,6 @@ class AppCacheHostTest : public testing::Test {
           last_host_id_(-222),
           last_cache_id_(-222),
           last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
-          last_status_changed_(
-              blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
           last_event_id_(
               blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT),
           content_blocked_(false) {}
@@ -76,10 +74,6 @@ class AppCacheHostTest : public testing::Test {
       last_status_ = info->status;
     }
 
-    void StatusChanged(const std::vector<int32_t>& host_ids,
-                       blink::mojom::AppCacheStatus status) override {
-      last_status_changed_ = status;
-    }
 
     void EventRaised(const std::vector<int32_t>& host_ids,
                      blink::mojom::AppCacheEventID event_id) override {
@@ -118,7 +112,6 @@ class AppCacheHostTest : public testing::Test {
     int32_t last_host_id_;
     int64_t last_cache_id_;
     blink::mojom::AppCacheStatus last_status_;
-    blink::mojom::AppCacheStatus last_status_changed_;
     blink::mojom::AppCacheEventID last_event_id_;
     bool content_blocked_;
     bool appcache_accessed_ = false;
