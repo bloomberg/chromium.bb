@@ -9,11 +9,11 @@
 #if !defined(OS_LINUX)
 
 // static
-OpaqueBrowserFrameViewPlatformSpecific*
+std::unique_ptr<OpaqueBrowserFrameViewPlatformSpecific>
 OpaqueBrowserFrameViewPlatformSpecific::Create(
     OpaqueBrowserFrameView* view,
     OpaqueBrowserFrameViewLayout* layout) {
-  return new OpaqueBrowserFrameViewPlatformSpecific();
+  return std::make_unique<OpaqueBrowserFrameViewPlatformSpecific>();
 }
 
 #endif

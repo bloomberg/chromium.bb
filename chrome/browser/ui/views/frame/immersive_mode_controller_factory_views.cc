@@ -10,11 +10,11 @@
 
 namespace chrome {
 
-ImmersiveModeController* CreateImmersiveModeController() {
+std::unique_ptr<ImmersiveModeController> CreateImmersiveModeController() {
 #if defined(OS_CHROMEOS)
-  return new ImmersiveModeControllerAsh();
+  return std::make_unique<ImmersiveModeControllerAsh>();
 #else
-  return new ImmersiveModeControllerStub();
+  return std::make_unique<ImmersiveModeControllerStub>();
 #endif  // OS_CHROMEOS
 }
 

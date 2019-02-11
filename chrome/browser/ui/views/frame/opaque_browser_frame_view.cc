@@ -122,8 +122,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   layout_->set_delegate(this);
   SetLayoutManager(std::unique_ptr<views::LayoutManager>(layout_));
 
-  platform_observer_.reset(
-      OpaqueBrowserFrameViewPlatformSpecific::Create(this, layout_));
+  platform_observer_ =
+      OpaqueBrowserFrameViewPlatformSpecific::Create(this, layout_);
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
