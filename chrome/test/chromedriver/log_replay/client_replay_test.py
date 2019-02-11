@@ -83,12 +83,9 @@ def GenerateTestLog(test_name, chromedriver_path, chrome_path, log_dir):
       "--log-path=%s" % log_dir,
       "--filter=%s" % ("*" + test_name)
   ]
-  # We hide output from run_py_tests.py, since it is very confusing
-  # to try to interpret the test-within-a-test in the log otherwise.
-  with open(os.devnull, "w") as dev_null:
-    result = subprocess.call(args, stdout=dev_null)
-    if result != 0:
-      raise RuntimeError("run_py_tests.py could not be run or failed.")
+  result = subprocess.call(args)
+  if result != 0:
+    raise RuntimeError("run_py_tests.py could not be run or failed.")
 
 
 class ChromeDriverClientReplayTest(unittest.TestCase):

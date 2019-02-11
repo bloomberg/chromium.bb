@@ -33,6 +33,7 @@ class Server(object):
     chromedriver_args = [exe_path, '--port=%d' % port]
     if log_path:
       chromedriver_args.extend(['--log-path=%s' % log_path])
+      chromedriver_args.extend(['--append-log'])
       if verbose:
         chromedriver_args.extend(['--verbose',
                                   '--vmodule=*/chrome/test/chromedriver/*=3'])
