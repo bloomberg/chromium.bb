@@ -343,8 +343,8 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
     base::DictionaryValue properties;
     std::string mac_address =
         base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X", idx, 0, 0, 0, 0, 0);
-    std::string channel = base::IntToString(idx);
-    std::string strength = base::IntToString(idx * 10);
+    std::string channel = base::NumberToString(idx);
+    std::string strength = base::NumberToString(idx * 10);
     properties.SetKey(shill::kGeoMacAddressProperty, base::Value(mac_address));
     properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));
     properties.SetKey(shill::kGeoSignalStrengthProperty, base::Value(strength));
@@ -356,10 +356,10 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   // This should remain in sync with the format of shill (chromeos) dict entries
   void AddCellTower(int idx) {
     base::DictionaryValue properties;
-    std::string ci = base::IntToString(idx);
-    std::string lac = base::IntToString(idx * 3);
-    std::string mcc = base::IntToString(idx * 100);
-    std::string mnc = base::IntToString(idx * 100 + 1);
+    std::string ci = base::NumberToString(idx);
+    std::string lac = base::NumberToString(idx * 3);
+    std::string mcc = base::NumberToString(idx * 100);
+    std::string mnc = base::NumberToString(idx * 100 + 1);
 
     properties.SetKey(shill::kGeoCellIdProperty, base::Value(ci));
     properties.SetKey(shill::kGeoLocationAreaCodeProperty, base::Value(lac));
@@ -490,7 +490,7 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
   EXPECT_TRUE(GetCellTowers());
   ASSERT_EQ(1u, cell_towers_.size());
   EXPECT_EQ(kCellTower1MNC, cell_towers_[0].mnc);
-  EXPECT_EQ(base::IntToString(1), cell_towers_[0].ci);
+  EXPECT_EQ(base::NumberToString(1), cell_towers_[0].ci);
 
   {
     GeolocationReceiver receiver;

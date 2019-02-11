@@ -176,7 +176,7 @@ void SetShillProperties(const ConfigType cert_config_type,
       properties->SetKey(shill::kL2tpIpsecPinProperty,
                          base::Value(kDefaultTPMPin));
       properties->SetKey(shill::kL2tpIpsecClientCertSlotProperty,
-                         base::Value(base::IntToString(tpm_slot)));
+                         base::Value(base::NumberToString(tpm_slot)));
       properties->SetKey(shill::kL2tpIpsecClientCertIdProperty,
                          base::Value(pkcs11_id));
       break;

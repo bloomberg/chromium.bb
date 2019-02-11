@@ -109,8 +109,7 @@ TEST_F(ProximityAuthLoggingTest, LogWhenBufferIsFull) {
 
   auto iterator = log_buffer->logs()->begin();
   for (size_t i = 0; i < log_buffer->MaxBufferSize() - 1; ++iterator, ++i) {
-    std::string expected_text =
-        "log " + base::IntToString(base::saturated_cast<int>(i + 1));
+    std::string expected_text = "log " + base::NumberToString(i + 1);
     EXPECT_EQ(expected_text, (*iterator).text);
   }
   EXPECT_EQ(kLog1, (*iterator).text);

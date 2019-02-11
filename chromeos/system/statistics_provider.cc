@@ -543,7 +543,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     // testing).
     std::string stub_contents =
         "\"serial_number\"=\"stub_" +
-        base::Int64ToString(base::Time::Now().ToJavaTime()) + "\"\n";
+        base::NumberToString(base::Time::Now().ToJavaTime()) + "\"\n";
     int bytes_written = base::WriteFile(
         machine_info_path, stub_contents.c_str(), stub_contents.size());
     if (bytes_written < static_cast<int>(stub_contents.size())) {

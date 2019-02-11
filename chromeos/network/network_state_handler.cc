@@ -1098,8 +1098,8 @@ void NetworkStateHandler::SetNetworkThrottlingStatus(
     uint32_t upload_rate_kbits,
     uint32_t download_rate_kbits) {
   NET_LOG_EVENT("SetNetworkThrottlingStatus",
-                enabled ? ("true :" + base::IntToString(upload_rate_kbits) +
-                           ", " + base::IntToString(download_rate_kbits))
+                enabled ? ("true :" + base::NumberToString(upload_rate_kbits) +
+                           ", " + base::NumberToString(download_rate_kbits))
                         : "false");
   shill_property_handler_->SetNetworkThrottlingStatus(
       enabled, upload_rate_kbits, download_rate_kbits);
