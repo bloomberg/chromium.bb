@@ -323,7 +323,8 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   EXPECT_EQ(oem_folder->folder_id(), "");
 }
 
-// Verifies that OEM item changes parent when sync change says this.
+// Verifies that OEM item preserves parent and doesn't change parent in case
+// sync change says this.
 TEST_F(AppListSyncableServiceTest, OEMItemIgnoreSyncParent) {
   const std::string oem_app_id = CreateNextAppId(extensions::kWebStoreAppId);
   scoped_refptr<extensions::Extension> oem_app = MakeApp(
@@ -348,7 +349,7 @@ TEST_F(AppListSyncableServiceTest, OEMItemIgnoreSyncParent) {
   content::RunAllTasksUntilIdle();
 
   // Parent folder is not changed.
-  EXPECT_EQ(std::string(), oem_app_item->folder_id());
+  EXPECT_EQ(ash::kOemFolderId, oem_app_item->folder_id());
 }
 
 // Verifies that non-OEM item is not moved to OEM folder by sync.
