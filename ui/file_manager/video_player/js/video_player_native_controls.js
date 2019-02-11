@@ -123,6 +123,16 @@ NativeControlsVideoPlayer.prototype.addKeyControls_ = function() {
         break;
     }
   }.wrap(this));
+
+  getRequiredElement('video-container')
+      .addEventListener('click', (/** MouseEvent */ event) => {
+        // Turn on loop mode when ctrl+click while the video is playing.
+        // If the video is paused, ignore ctrl and play the video.
+        if (event.ctrlKey && !this.videoElement_.paused) {
+          this.setLoopedModeWithFeedback_(true);
+          event.preventDefault();
+        }
+      });
 };
 
 /**
@@ -156,6 +166,30 @@ NativeControlsVideoPlayer.prototype.togglePlayState_ = function() {
   } else {
     this.videoElement_.pause();
   }
+};
+
+/**
+ * Set the looped mode with feedback.
+ *
+ * @param {boolean} on Whether enabled or not.
+ * @private
+ */
+NativeControlsVideoPlayer.prototype.setLoopedModeWithFeedback_ = function(on) {
+  this.videoElement_.loop = on;
+  if (on) {
+    this.showNotification_('VIDEO_PLAYER_LOOPED_MODE');
+  }
+};
+
+/**
+ * Briefly show a text notification at top left corner.
+ *
+ * @param {string} identifier String identifier.
+ * @private
+ */
+NativeControlsVideoPlayer.prototype.showNotification_ = function(identifier) {
+  getRequiredElement('toast-content').textContent = str(identifier);
+  getRequiredElement('toast').show();
 };
 
 /**
@@ -224,6 +258,7 @@ NativeControlsVideoPlayer.prototype.onFirstVideoReady_ = function() {
  * @private
  */
 NativeControlsVideoPlayer.prototype.onPause_ = function() {
+  this.videoElement_.loop = false;
   if (this.videoElement_.currentTime == this.videoElement_.duration) {
     this.advance_(true);
   }
