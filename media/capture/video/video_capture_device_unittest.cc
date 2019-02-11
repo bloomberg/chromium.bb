@@ -881,4 +881,4 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest,
 }
 #endif
 
-};  // namespace media
+}  // namespace media
