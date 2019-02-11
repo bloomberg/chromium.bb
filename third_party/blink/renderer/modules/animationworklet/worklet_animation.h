@@ -112,8 +112,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void NotifyAnimationFinished(double monotonic_time, int group) override {}
   void NotifyAnimationAborted(double monotonic_time, int group) override {}
 
-  void Dispose();
-
   Document* GetDocument() const override { return document_.Get(); }
   AnimationTimeline* GetTimeline() const override { return timeline_; }
   const String& Name() { return animator_name_; }
@@ -130,11 +128,14 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void SetOutputState(
       const AnimationWorkletOutput::AnimationState& state) override;
 
+  base::Optional<base::TimeDelta> CurrentTime() const;
+
   void SetRunningOnMainThreadForTesting(bool running_on_main_thread) {
     running_on_main_thread_ = running_on_main_thread;
   }
 
   void Trace(blink::Visitor*) override;
+  void Dispose();
 
  private:
   void DestroyCompositorAnimation();
@@ -186,7 +187,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void SetPlayState(const Animation::AnimationPlayState& state) {
     play_state_ = state;
   }
-  base::Optional<base::TimeDelta> CurrentTime() const;
 
   unsigned sequence_number_;
 

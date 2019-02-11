@@ -22,6 +22,14 @@ namespace blink {
 
 namespace {
 
+// Only expect precision up to 1 microsecond with an additional epsilon to
+// account for float conversion error (mainly due to timeline time getting
+// converted between float and TimeDelta).
+static constexpr double time_error_ms = 0.001 + 1e-13;
+
+#define EXPECT_TIME_NEAR(expected, value) \
+  EXPECT_NEAR(expected, value, time_error_ms)
+
 KeyframeEffectModelBase* CreateEffectModel() {
   StringKeyframeVector frames_mixed_properties;
   Persistent<StringKeyframe> keyframe = StringKeyframe::Create();
@@ -123,18 +131,9 @@ TEST_F(WorkletAnimationTest, StyleHasCurrentAnimation) {
 
 TEST_F(WorkletAnimationTest,
        CurrentTimeFromDocumentTimelineIsOffsetByStartTime) {
-  // Only expect precision up to 1 microsecond with an additional smaller
-  // component to account for double rounding/conversion error.
-  double error =
-      base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF() + 1e-13;
-
   WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
-  base::TimeTicks first_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
-  base::TimeTicks second_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
 
-  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
+  SimulateFrame(111);
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
 
@@ -144,12 +143,13 @@ TEST_F(WorkletAnimationTest,
   // First state request sets the start time and thus current time should be 0.
   std::unique_ptr<AnimationWorkletInput> input =
       state->TakeWorkletState(id.worklet_id);
-  EXPECT_NEAR(0, input->added_and_updated_animations[0].current_time, error);
+  EXPECT_TIME_NEAR(0, input->added_and_updated_animations[0].current_time);
+
+  SimulateFrame(111 + 123.4);
   state.reset(new AnimationWorkletDispatcherInput);
-  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.worklet_id);
-  EXPECT_NEAR(123.4, input->updated_animations[0].current_time, error);
+  EXPECT_TIME_NEAR(123.4, input->updated_animations[0].current_time);
 }
 
 TEST_F(WorkletAnimationTest,
@@ -180,39 +180,24 @@ TEST_F(WorkletAnimationTest,
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
   WorkletAnimation* worklet_animation = CreateWorkletAnimation(
       GetScriptState(), element_, animator_name_, scroll_timeline);
-  WorkletAnimationId id = worklet_animation->GetWorkletAnimationId();
 
   worklet_animation->play(ASSERT_NO_EXCEPTION);
   worklet_animation->UpdateCompositingState();
 
-  // Only expect precision up to 1 microsecond with an additional smaller
-  // component to account for double rounding/conversion error.
-  double error =
-      base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF() + 1e-13;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
-  std::unique_ptr<AnimationWorkletDispatcherInput> state =
-      std::make_unique<AnimationWorkletDispatcherInput>();
-  worklet_animation->UpdateInputState(state.get());
-  std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.worklet_id);
 
-  EXPECT_NEAR(40, input->added_and_updated_animations[0].current_time, error);
-  state.reset(new AnimationWorkletDispatcherInput);
+  EXPECT_TIME_NEAR(40,
+                   worklet_animation->CurrentTime().value().InMillisecondsF());
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 70), kProgrammaticScroll);
-  worklet_animation->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.worklet_id);
-  EXPECT_NEAR(70, input->updated_animations[0].current_time, error);
+  EXPECT_TIME_NEAR(70,
+                   worklet_animation->CurrentTime().value().InMillisecondsF());
 }
 
 TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
-  base::TimeTicks first_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
-  base::TimeTicks second_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
 
-  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
+  SimulateFrame(111.0);
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
 
@@ -253,7 +238,9 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Input time changes. Need to peek again.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
+  GetDocument().GetAnimationClock().ResetTimeForTesting(
+      base::TimeTicks() + ToTimeDelta(111.0 + 123.4));
+
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.worklet_id);
   EXPECT_EQ(input->peeked_animations.size(), 1u);
@@ -266,120 +253,71 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
 // Verifies correctness of current time when playback rate is set while the
 // animation is in idle state.
 TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
-  GetDocument().GetAnimationClock().ResetTimeForTesting();
-  GetDocument().Timeline().ResetForTesting();
-  double error = base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF();
-
-  WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
-  base::TimeTicks first_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0);
-  base::TimeTicks second_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0 + 123.4);
   double playback_rate = 2.0;
 
-  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
-  DummyExceptionStateForTesting exception_state;
+  SimulateFrame(111.0);
   worklet_animation_->setPlaybackRate(nullptr, playback_rate);
-  worklet_animation_->play(exception_state);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
-
-  std::unique_ptr<AnimationWorkletDispatcherInput> state =
-      std::make_unique<AnimationWorkletDispatcherInput>();
-  worklet_animation_->UpdateInputState(state.get());
-
-  std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.worklet_id);
-
   // Zero current time is not impacted by playback rate.
-  EXPECT_NEAR(0, input->added_and_updated_animations[0].current_time, error);
-  state.reset(new AnimationWorkletDispatcherInput);
-
+  EXPECT_TIME_NEAR(0,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
   // Play the animation until second_ticks.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
-  worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.worklet_id);
-
+  SimulateFrame(111.0 + 123.4);
   // Verify that the current time is updated playback_rate faster than the
   // timeline time.
-  EXPECT_NEAR(123.4 * playback_rate, input->updated_animations[0].current_time,
-              error);
+  EXPECT_TIME_NEAR(123.4 * playback_rate,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
 }
 
 // Verifies correctness of current time when playback rate is set while the
 // animation is playing.
 TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRateWhilePlaying) {
-  GetDocument().GetAnimationClock().ResetTimeForTesting();
-  GetDocument().Timeline().ResetForTesting();
-  double error = base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF();
-
-  WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
-  base::TimeTicks first_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0);
-  base::TimeTicks second_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111.0 + 123.4);
-  base::TimeTicks third_ticks =
-      base::TimeTicks() +
-      base::TimeDelta::FromMillisecondsD(111.0 + 123.4 + 200.0);
+  SimulateFrame(0);
   double playback_rate = 0.5;
-
   // Start animation.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
-  DummyExceptionStateForTesting exception_state;
-  worklet_animation_->play(exception_state);
+  SimulateFrame(111.0);
+  worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
-  std::unique_ptr<AnimationWorkletDispatcherInput> state =
-      std::make_unique<AnimationWorkletDispatcherInput>();
-  worklet_animation_->UpdateInputState(state.get());
-  state.reset(new AnimationWorkletDispatcherInput);
-
   // Update playback rate after second tick.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
-  worklet_animation_->UpdateInputState(state.get());
+  SimulateFrame(111.0 + 123.4);
   worklet_animation_->setPlaybackRate(nullptr, playback_rate);
-  state.reset(new AnimationWorkletDispatcherInput);
-
   // Verify current time after third tick.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(third_ticks);
-  worklet_animation_->UpdateInputState(state.get());
-  std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.worklet_id);
-  EXPECT_NEAR(123.4 + 200.0 * playback_rate,
-              input->updated_animations[0].current_time, error);
+  SimulateFrame(111.0 + 123.4 + 200.0);
+  EXPECT_TIME_NEAR(123.4 + 200.0 * playback_rate,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
 }
 
 TEST_F(WorkletAnimationTest, PausePlay) {
-  double error =
-      base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF() + 1e-13;
-
   SimulateFrame(0);
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Animation::kPending, worklet_animation_->PlayState());
   SimulateFrame(0);
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
   EXPECT_TRUE(worklet_animation_->Playing());
-  EXPECT_NEAR(0, worklet_animation_->CurrentTime().value().InMillisecondsF(),
-              error);
+  EXPECT_TIME_NEAR(0,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
   SimulateFrame(10);
   worklet_animation_->pause(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Animation::kPaused, worklet_animation_->PlayState());
   EXPECT_FALSE(worklet_animation_->Playing());
-  EXPECT_NEAR(10, worklet_animation_->CurrentTime().value().InMillisecondsF(),
-              error);
+  EXPECT_TIME_NEAR(10,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
   SimulateFrame(20);
   EXPECT_EQ(Animation::kPaused, worklet_animation_->PlayState());
-  EXPECT_NEAR(10, worklet_animation_->CurrentTime().value().InMillisecondsF(),
-              error);
+  EXPECT_TIME_NEAR(10,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Animation::kPending, worklet_animation_->PlayState());
   SimulateFrame(20);
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
   EXPECT_TRUE(worklet_animation_->Playing());
-  EXPECT_NEAR(10, worklet_animation_->CurrentTime().value().InMillisecondsF(),
-              error);
+  EXPECT_TIME_NEAR(10,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
   SimulateFrame(30);
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
-  EXPECT_NEAR(20, worklet_animation_->CurrentTime().value().InMillisecondsF(),
-              error);
+  EXPECT_TIME_NEAR(20,
+                   worklet_animation_->CurrentTime().value().InMillisecondsF());
 }
 
 }  //  namespace blink
