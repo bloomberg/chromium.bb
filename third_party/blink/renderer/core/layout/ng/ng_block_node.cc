@@ -172,8 +172,7 @@ NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
                                   node.Style().GetWritingMode(),
                                   node.CreatesNewFormattingContext())
       .SetTextDirection(node.Style().Direction())
-      .SetIsIntermediateLayout(true)
-      .SetFloatsBfcBlockOffset(LayoutUnit());
+      .SetIsIntermediateLayout(true);
 }
 
 LayoutUnit CalculateAvailableInlineSizeForLegacy(
