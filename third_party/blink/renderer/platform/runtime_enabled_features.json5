@@ -114,7 +114,8 @@
     },
     {
       name: "AudioOutputDevices",
-      status: "stable",
+      // Android does not yet support switching of audio output devices
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "AudioVideoTracks",
@@ -229,6 +230,7 @@
     },
     {
       name: "CompositedSelectionUpdate",
+      status: {"Android": "stable"},
     },
     {
       name: "CompositorTouchAction",
@@ -491,6 +493,7 @@
     },
     {
       name: "FastMobileScrolling",
+      status: {"Android": "stable"},
     },
     {
       name: "FeaturePolicyForSandbox",
@@ -541,6 +544,7 @@
     },
     {
       name: "ForceTallerSelectPopup",
+      status: {"ChromeOS": "stable"},
     },
     {
       name: "FormAssociatedCustomElements",
@@ -651,7 +655,8 @@
     },
     {
       name: "InputMultipleFieldsUI",
-      status: "stable",
+      // No plan to support complex UI for date/time INPUT types on Android.
+      status: {"Android": "test", "default": "stable"},
     },
     {
       name: "InstalledApp",
@@ -770,6 +775,7 @@
     },
     {
       name: "MediaCapture",
+      status: {"Android": "stable"},
     },
     {
       name: "MediaCaptureDepth",
@@ -789,6 +795,7 @@
     {
       name: "MediaControlsOverlayPlayButton",
       settable_from_internals: true,
+      status: {"Android": "stable"},
     },
     {
       name: "MediaDocumentDownloadButton",
@@ -861,6 +868,8 @@
     },
     {
       name: "NavigatorContentUtils",
+      // Android does not yet support NavigatorContentUtils.
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "NavigatorDeviceMemory",
@@ -868,7 +877,8 @@
     },
     {
       name: "NetInfoDownlinkMax",
-      status: "stable",
+      // Only Android, ChromeOS support NetInfo downlinkMax, type and ontypechange now
+      status: {"Android": "stable", "ChromeOS": "stable"},
     },
     {
       name: "NetworkService",
@@ -891,12 +901,15 @@
     },
     {
       name: "NotificationConstructor",
-      status: "stable",
+      // Android won't be able to reliably support non-persistent notifications, the
+      // intended behavior for which is in flux by itself.
+      status: {"Android": "", "default": "stable"},
     },
     // NotificationContentImage is not available in all platforms
+    // The Notification Center on Mac OS X does not support content images.
     {
       name: "NotificationContentImage",
-      status: "test",
+      status: {"MacOSX": "test", "default": "stable"},
     },
     {
       name: "Notifications",
@@ -919,10 +932,12 @@
     },
     {
       name: "OnDeviceChange",
-      status: "stable",
+      // Android does not yet support SystemMonitor.
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "OrientationEvent",
+      status: {"Android": "stable"},
     },
     {
       name: "OriginTrials",
@@ -980,7 +995,8 @@
     },
     {
       name: "PagePopup",
-      status: "stable",
+      // Android does not have support for PagePopup
+      status: {"Android": "", "default": "stable"},
     },
     // Compute touch action rects in paint instead of ScrollingCoordinator.
     {
@@ -1046,7 +1062,7 @@
     // Picture-in-Picture API is disabled by default on Android.
     {
       name: "PictureInPictureAPI",
-      status: "stable",
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "PictureInPictureControl",
@@ -1104,12 +1120,11 @@
       name: "RemotePlayback",
       status: "stable",
     },
-    // Whether or not the Remote Playback API backend is implemented.
-    // Not web-exposed, set per platform. For LayoutTests, disabled by
-    // default.
     {
       name: "RemotePlaybackBackend",
       settable_from_internals: true,
+      // Tracking bug for the implementation: https://crbug.com/728609
+      status: {"Android": "stable", "default": ""},
     },
     {
       name: "RenderingPipelineThrottling",
@@ -1229,7 +1244,7 @@
     },
     {
       name: "Serial",
-      status: "experimental",
+      status: {"Android": "", "default": "experimental"},
     },
     {
       name: "SetRootScroller",
@@ -1257,7 +1272,8 @@
     },
     {
       name: "SharedWorker",
-      status: "stable",
+      // Android does not yet support SharedWorker. crbug.com/154571
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "SignatureBasedIntegrity",
@@ -1414,9 +1430,15 @@
       status: "experimental",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
+    // It is also supported in Windows 10 which is handled in runtime_features.cc
     {
       name: "WebBluetooth",
-      status: "experimental",
+      status: {
+        "Android": "stable",
+        "ChromeOS": "stable",
+        "MacOSX": "stable",
+        "default": "experimental",
+      },
     },
     {
       name: "WebBluetoothScanning",
