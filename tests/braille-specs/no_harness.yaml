@@ -4,20 +4,31 @@ table:
   grade: 0
   dots: 6
   __assert-match: no-no-g0.utb
+
 tests:
   # Norwegian alphabet
   - [a b c d e f g h i j k l m n o p q r s t u v w x y z æ ø å Æ Ø Å, ⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵ ⠜ ⠪ ⠡ ⠠⠜ ⠠⠪ ⠠⠡]
   # Letters used in Norwegian
   - [à, ⠷]
+  - [À, ⠠⠷]
   - [ä, ⠜]
+  - [Ä, ⠠⠜]
   - [ç, ⠯]
+  - [Ç, ⠠⠯]
   - [é, ⠿]
+  - [É, ⠠⠿]
   - [è, ⠮]
+  - [È, ⠠⠮]
   - [ê, ⠣]
+  - [Ê, ⠠⠣]
   - [ò, ⠬]
+  - [Ò, ⠠⠬]
   - [ö, ⠪]
+  - [Ö, ⠠⠪]
   - [ü, ⠳]
+  - [Ü, ⠠⠳]
   - [à, ⠷]
+  - [À, ⠠⠷]
   # Alphabets used in Norwegian
   - [vis à vis, ⠧⠊⠎ ⠷ ⠧⠊⠎] # Example 1
   - [à jour, ⠷ ⠚⠕⠥⠗] # Example 2
@@ -570,6 +581,7 @@ tests:
   - [Bildet kostet 125 SEK i Stockholm., ⠠⠃⠊⠇⠙⠑⠞ ⠅⠕⠎⠞⠑⠞ ⠼⠁⠃⠑ ⠠⠠⠎⠑⠅ ⠊ ⠠⠎⠞⠕⠉⠅⠓⠕⠇⠍⠄]
   - [Hytteleia i Århus var DKK 700 pr. døgn., ⠠⠓⠽⠞⠞⠑⠇⠑⠊⠁ ⠊ ⠠⠡⠗⠓⠥⠎ ⠧⠁⠗ ⠠⠠⠙⠅⠅ ⠼⠛⠚⠚ ⠏⠗⠄ ⠙⠪⠛⠝⠄]
   # Edb-sign
+  - ['http://nlb.no', ⠣⠓⠞⠞⠏⠒⠌⠌⠝⠇⠃⠄⠝⠕⠜]
   -
     - Hun har e-postadressen line@online.no.
     - ⠠⠓⠥⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠇⠊⠝⠑⠈⠕⠝⠇⠊⠝⠑⠄⠝⠕⠜⠄
