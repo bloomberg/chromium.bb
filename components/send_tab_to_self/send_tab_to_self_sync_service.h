@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_SERVICE_H_
-#define COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_SERVICE_H_
+#ifndef COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_SYNC_SERVICE_H_
+#define COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_SYNC_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -22,12 +22,12 @@ class SendTabToSelfBridge;
 class SendTabToSelfModel;
 
 // KeyedService responsible for send tab to self sync.
-class SendTabToSelfService : public KeyedService {
+class SendTabToSelfSyncService : public KeyedService {
  public:
-  SendTabToSelfService(
+  SendTabToSelfSyncService(
       version_info::Channel channel,
       const syncer::LocalDeviceInfoProvider* local_device_info_provider);
-  ~SendTabToSelfService() override;
+  ~SendTabToSelfSyncService() override;
 
   SendTabToSelfModel* GetSendTabToSelfModel();
 
@@ -37,9 +37,9 @@ class SendTabToSelfService : public KeyedService {
  private:
   std::unique_ptr<SendTabToSelfBridge> bridge_;
 
-  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfService);
+  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfSyncService);
 };
 
 }  // namespace send_tab_to_self
 
-#endif  // COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_SERVICE_H_
+#endif  // COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_SYNC_SERVICE_H_

@@ -13,7 +13,7 @@
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
-class SendTabToSelfService;
+class SendTabToSelfSyncService;
 }  // namespace send_tab_to_self
 
 namespace send_tab_to_self_helper {
@@ -24,7 +24,7 @@ class SendTabToSelfUrlChecker
     : public StatusChangeChecker,
       public send_tab_to_self::SendTabToSelfModelObserver {
  public:
-  SendTabToSelfUrlChecker(send_tab_to_self::SendTabToSelfService* service,
+  SendTabToSelfUrlChecker(send_tab_to_self::SendTabToSelfSyncService* service,
                           const GURL& url);
   ~SendTabToSelfUrlChecker() override;
 
@@ -38,7 +38,7 @@ class SendTabToSelfUrlChecker
 
  private:
   const GURL url_;
-  send_tab_to_self::SendTabToSelfService* const service_;
+  send_tab_to_self::SendTabToSelfSyncService* const service_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfUrlChecker);
 };
@@ -50,8 +50,8 @@ class SendTabToSelfModelEqualityChecker
       public send_tab_to_self::SendTabToSelfModelObserver {
  public:
   SendTabToSelfModelEqualityChecker(
-      send_tab_to_self::SendTabToSelfService* service0,
-      send_tab_to_self::SendTabToSelfService* service1);
+      send_tab_to_self::SendTabToSelfSyncService* service0,
+      send_tab_to_self::SendTabToSelfSyncService* service1);
   ~SendTabToSelfModelEqualityChecker() override;
 
   // StatusChangeChecker implementation.
@@ -63,8 +63,8 @@ class SendTabToSelfModelEqualityChecker
   void SendTabToSelfModelChanged() override;
 
  private:
-  send_tab_to_self::SendTabToSelfService* const service0_;
-  send_tab_to_self::SendTabToSelfService* const service1_;
+  send_tab_to_self::SendTabToSelfSyncService* const service0_;
+  send_tab_to_self::SendTabToSelfSyncService* const service1_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfModelEqualityChecker);
 };

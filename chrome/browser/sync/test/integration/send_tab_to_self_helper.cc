@@ -9,12 +9,12 @@
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_observer.h"
-#include "components/send_tab_to_self/send_tab_to_self_service.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 
 namespace send_tab_to_self_helper {
 
 SendTabToSelfUrlChecker::SendTabToSelfUrlChecker(
-    send_tab_to_self::SendTabToSelfService* service,
+    send_tab_to_self::SendTabToSelfSyncService* service,
     const GURL& url)
     : url_(url), service_(service) {
   service->GetSendTabToSelfModel()->AddObserver(this);
@@ -48,8 +48,8 @@ void SendTabToSelfUrlChecker::SendTabToSelfModelChanged() {
 }
 
 SendTabToSelfModelEqualityChecker::SendTabToSelfModelEqualityChecker(
-    send_tab_to_self::SendTabToSelfService* service0,
-    send_tab_to_self::SendTabToSelfService* service1)
+    send_tab_to_self::SendTabToSelfSyncService* service0,
+    send_tab_to_self::SendTabToSelfSyncService* service1)
     : service0_(service0), service1_(service1) {
   service0->GetSendTabToSelfModel()->AddObserver(this);
   service1->GetSendTabToSelfModel()->AddObserver(this);
