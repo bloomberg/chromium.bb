@@ -208,7 +208,14 @@ class HeadlessProtocolBrowserTest
 HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
                        "emulation/virtual-time-interrupt.js");
-HEADLESS_PROTOCOL_TEST(VirtualTimeCrossProcessNavigation,
+#if defined(OS_LINUX)
+#define MAYBE_VirtualTimeCrossProcessNavigation \
+  DISABLED_VirtualTimeCrossProcessNavigation
+#else
+#define MAYBE_VirtualTimeCrossProcessNavigation \
+  VirtualTimeCrossProcessNavigation
+#endif
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeCrossProcessNavigation,
                        "emulation/virtual-time-cross-process-navigation.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeDetachFrame,
                        "emulation/virtual-time-detach-frame.js");
