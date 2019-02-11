@@ -21,7 +21,8 @@ from util import jar_info_utils
 
 import jar
 
-sys.path.append(
+sys.path.insert(
+    0,
     os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party', 'colorama', 'src'))
 import colorama
 
