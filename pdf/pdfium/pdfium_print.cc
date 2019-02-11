@@ -232,10 +232,10 @@ std::string GetPageRangeStringFromRange(
     if (!page_number_str.empty())
       page_number_str.push_back(',');
     const PP_PrintPageNumberRange_Dev& range = page_ranges[i];
-    page_number_str.append(base::UintToString(range.first_page_number + 1));
+    page_number_str.append(base::NumberToString(range.first_page_number + 1));
     if (range.first_page_number != range.last_page_number) {
       page_number_str.push_back('-');
-      page_number_str.append(base::UintToString(range.last_page_number + 1));
+      page_number_str.append(base::NumberToString(range.last_page_number + 1));
     }
   }
   return page_number_str;
