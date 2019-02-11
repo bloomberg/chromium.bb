@@ -116,7 +116,7 @@ MockResourceLoader::Status MockResourceLoader::OnWillRead() {
   }
 
   return status_;
-};
+}
 
 MockResourceLoader::Status MockResourceLoader::OnReadCompleted(
     base::StringPiece bytes) {
