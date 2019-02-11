@@ -444,6 +444,9 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
   volume->is_read_only_ = read_only;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->drive_label_ = drive_label;
+  if (volume_type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
+    volume->file_system_type_ = "ext4";
+  }
   return volume;
 }
 
