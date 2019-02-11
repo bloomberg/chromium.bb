@@ -255,7 +255,21 @@ void ArcApps::SetPermission(const std::string& app_id,
 }
 
 void ArcApps::Uninstall(const std::string& app_id) {
-  NOTIMPLEMENTED();
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs_->GetApp(app_id);
+  if (!app_info) {
+    LOG(ERROR) << "Uninstall failed, could not find app with id " << app_id;
+    return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(prefs_->app_connection_holder(),
+                                               UninstallPackage);
+  if (!instance) {
+    LOG(ERROR) << "Uninstall failed, could not find instance";
+    return;
+  }
+
+  instance->UninstallPackage(app_info->package_name);
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
