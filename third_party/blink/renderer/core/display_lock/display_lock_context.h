@@ -235,6 +235,7 @@ class CORE_EXPORT DisplayLockContext final
   Member<ScriptPromiseResolver> update_resolver_;
   Member<ScriptPromiseResolver> acquire_resolver_;
   WeakMember<Element> element_;
+  WeakMember<Document> document_;
 
   StateChangeHelper state_;
   LayoutRect pending_frame_rect_;
