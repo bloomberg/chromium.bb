@@ -287,8 +287,10 @@ bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
     if (window->Contains(target))
       return true;
   }
-  aura::Window* mirror = GetOverviewWindowForMinimizedState();
-  return mirror && mirror->Contains(target);
+
+  if (!minimized_widget_)
+    return false;
+  return minimized_widget_->GetNativeWindow()->Contains(target);
 }
 
 gfx::Rect ScopedOverviewTransformWindow::GetTransformedBounds() const {
@@ -440,17 +442,12 @@ void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
 
 aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() const {
   if (minimized_widget_)
-    return GetOverviewWindowForMinimizedState();
+    return minimized_widget_->GetNativeWindow();
   return window_;
 }
 
 void ScopedOverviewTransformWindow::EnsureVisible() {
   original_opacity_ = 1.f;
-}
-
-aura::Window*
-ScopedOverviewTransformWindow::GetOverviewWindowForMinimizedState() const {
-  return minimized_widget_ ? minimized_widget_->GetNativeWindow() : nullptr;
 }
 
 void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {

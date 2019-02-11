@@ -273,8 +273,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Allows a test to directly set animation state.
   gfx::SlideAnimation* GetBackgroundViewAnimation();
 
-  aura::Window* GetOverviewWindowForMinimizedStateForTest();
-
   // Called before dragging. Scales up the window a little bit to indicate its
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.

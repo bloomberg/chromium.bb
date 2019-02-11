@@ -153,10 +153,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Ensures that a window is visible by setting its opacity to 1.
   void EnsureVisible();
 
-  // Returns an overview window created for minimized window, or nullptr if it
-  // does not exist.
-  aura::Window* GetOverviewWindowForMinimizedState() const;
-
   // Called via OverviewItem from OverviewGrid when |window_|'s bounds
   // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();

@@ -860,10 +860,6 @@ void OverviewItem::AnimateOpacity(float opacity,
   widget_window->layer()->SetOpacity(header_opacity);
 }
 
-aura::Window* OverviewItem::GetOverviewWindowForMinimizedStateForTest() {
-  return transform_window_.GetOverviewWindowForMinimizedState();
-}
-
 void OverviewItem::StartDrag() {
   overview_grid_->SetSelectionWidgetVisibility(false);
 
