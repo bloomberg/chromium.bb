@@ -857,6 +857,9 @@
       name: "MovementXYInBlink",
     },
     {
+      name: "NativeStreams",
+    },
+    {
       name: "NavigatorContentUtils",
     },
     {

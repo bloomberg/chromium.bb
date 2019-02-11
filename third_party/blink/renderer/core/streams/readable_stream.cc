@@ -21,7 +21,8 @@ class ReadableStream::NoopFunction : public ScriptFunction {
     auto* self = MakeGarbageCollected<NoopFunction>(script_state);
     return self->BindToV8Function();
   }
-  NoopFunction(ScriptState* script_state) : ScriptFunction(script_state) {}
+  explicit NoopFunction(ScriptState* script_state)
+      : ScriptFunction(script_state) {}
   ScriptValue Call(ScriptValue value) override { return value; }
 };
 
@@ -318,9 +319,16 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
     return ScriptValue();
   }
 
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    // TODO(ricea): Replace this with a DCHECK once ReadableStreamNative is
+    // implemented.
+    exception_state.ThrowTypeError(
+        "pipeThrough disabled because StreamsNative feature is enabled");
+    return ScriptValue();
+  }
+
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is not in use.
-  // TODO(ricea): Add a CHECK() for the feature flag here.
   WritableStreamWrapper* writable_wrapper =
       static_cast<WritableStreamWrapper*>(dom_writable);
 
@@ -381,9 +389,16 @@ ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    // TODO(ricea): Replace this with a DCHECK once ReadableStreamNative is
+    // implemented.
+    exception_state.ThrowTypeError(
+        "pipeTo disabled because StreamsNative feature is enabled");
+    return ScriptPromise();
+  }
+
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is not in use.
-  // TODO(ricea): Add a CHECK() for the feature flag here.
   WritableStreamWrapper* destination_wrapper =
       static_cast<WritableStreamWrapper*>(destination);
 

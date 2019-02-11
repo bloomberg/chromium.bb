@@ -22,11 +22,15 @@ namespace blink {
 namespace {
 
 // Web platform tests test WritableStream more thoroughly from scripts.
-class WritableStreamTest : public testing::Test {
+class WritableStreamTest : public testing::TestWithParam<bool> {
  public:
+  WritableStreamTest() : feature_(GetParam()) {}
+
+ private:
+  ScopedStreamsNativeForTest feature_;
 };
 
-TEST_F(WritableStreamTest, CreateWithoutArguments) {
+TEST_P(WritableStreamTest, CreateWithoutArguments) {
   V8TestingScope scope;
 
   WritableStream* stream =
@@ -36,7 +40,7 @@ TEST_F(WritableStreamTest, CreateWithoutArguments) {
 }
 
 // Testing getWriter, locked and IsLocked.
-TEST_F(WritableStreamTest, GetWriter) {
+TEST_P(WritableStreamTest, GetWriter) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
 
@@ -55,7 +59,13 @@ TEST_F(WritableStreamTest, GetWriter) {
             base::make_optional(true));
 }
 
-TEST_F(WritableStreamTest, Serialize) {
+TEST_P(WritableStreamTest, Serialize) {
+  // Disable the test when StreamsNative is enabled as WritableStreamNative
+  // doesn't support serialization yet.
+  // TODO(ricea): Re-enable this test when serialization is supported.
+  if (GetParam())
+    return;
+
   ScopedTransferableStreamsForTest enable_transferable_streams(true);
 
   V8TestingScope scope;
@@ -105,6 +115,8 @@ underlying_sink)JS";
   ASSERT_TRUE(result->IsString());
   EXPECT_EQ(ToCoreString(result.As<v8::String>()), "a");
 }
+
+INSTANTIATE_TEST_CASE_P(, WritableStreamTest, ::testing::Values(false, true));
 
 }  // namespace
 

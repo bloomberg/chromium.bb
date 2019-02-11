@@ -1030,6 +1030,16 @@
     "args": ["--enable-features=ScriptStreamingOnPreload"]
   },
   {
+    "prefix": "streams-native",
+    "base": "external/wpt/streams",
+    "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
+  },
+  {
+    "prefix": "streams-native",
+    "base": "http/tests/streams",
+    "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
+  },
+  {
     "prefix": "spatial-navigation-force-outline",
     "base": "fast/spatial-navigation",
     "args": ["--enable-blink-features=SpatialNavigationForcesOutline"]

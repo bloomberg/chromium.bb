@@ -115,8 +115,6 @@
   const verbClosed = 'closed';
   const verbWrittenTo = 'written to';
 
-  let useCounted = false;
-
   // Utility functions (not from the standard).
   function createWriterLockReleasedError(verb) {
     return new TypeError(errWriterLockReleasedPrefix + verb);
@@ -139,11 +137,6 @@
 
   class WritableStream {
     constructor(underlyingSink = {}, strategy = {}) {
-      if (!useCounted) {
-        binding.countUse('WritableStreamConstructor');
-        useCounted = true;
-      }
-
       InitializeWritableStream(this);
       const size = strategy.size;
       let highWaterMark = strategy.highWaterMark;

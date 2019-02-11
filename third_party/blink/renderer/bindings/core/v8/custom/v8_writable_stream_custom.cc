@@ -5,10 +5,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -30,23 +32,32 @@ void V8WritableStream::ConstructorCustom(
   ScriptValue strategy = ScriptValue(ScriptState::Current(info.GetIsolate()),
                                      v8::Undefined(info.GetIsolate()));
   int num_args = info.Length();
-  // TODO(ricea): Switch on Blink feature.
-  auto* impl = MakeGarbageCollected<WritableStreamWrapper>();
-  v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(
-      info.GetIsolate(), V8WritableStream::GetWrapperTypeInfo(), wrapper);
-
   if (num_args >= 1) {
     underlying_sink =
         ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
   }
   if (num_args >= 2)
     strategy = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  v8::Local<v8::Object> wrapper = info.Holder();
 
-  impl->Init(script_state, underlying_sink, strategy, exception_state);
-  if (exception_state.HadException()) {
-    return;
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    auto* impl = MakeGarbageCollected<WritableStreamNative>(
+        script_state, underlying_sink, strategy, exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
+    wrapper = impl->AssociateWithWrapper(
+        info.GetIsolate(), V8WritableStream::GetWrapperTypeInfo(), wrapper);
+  } else {
+    auto* impl = MakeGarbageCollected<WritableStreamWrapper>();
+    wrapper = impl->AssociateWithWrapper(
+        info.GetIsolate(), V8WritableStream::GetWrapperTypeInfo(), wrapper);
+    impl->Init(script_state, underlying_sink, strategy, exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
   }
+
   V8SetReturnValue(info, wrapper);
 }
 
