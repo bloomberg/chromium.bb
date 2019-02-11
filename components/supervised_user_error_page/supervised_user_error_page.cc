@@ -34,7 +34,7 @@ std::string BuildAvatarImageUrl(const std::string& url, int size) {
     // Check if the URL already contains the monogram (-mo) option.
     // In that case, we must use the '-' separator, instead of '/'.
     std::string separator = result.substr(slash - 3, 3) == "/mo" ? "-" : "/";
-    result.insert(slash, separator + "s" + base::IntToString(size) + "-c");
+    result.insert(slash, separator + "s" + base::NumberToString(size) + "-c");
   }
   return result;
 }
