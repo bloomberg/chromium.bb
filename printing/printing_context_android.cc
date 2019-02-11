@@ -117,7 +117,7 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   // TODO(thestig): See if the call to set_device_name() can be removed.
   fd_ = Java_PrintingContext_getFileDescriptor(env, j_printing_context_);
   DCHECK(is_file_descriptor_valid());
-  settings_.set_device_name(base::IntToString16(fd_));
+  settings_.set_device_name(base::NumberToString16(fd_));
 
   ScopedJavaLocalRef<jintArray> intArr =
       Java_PrintingContext_getPages(env, j_printing_context_);
