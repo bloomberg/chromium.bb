@@ -223,6 +223,8 @@ class ASH_EXPORT LockContentsView
     DISALLOW_COPY_AND_ASSIGN(UserState);
   };
 
+  class AutoLoginUserActivityHandler;
+
   using DisplayLayoutAction = base::RepeatingCallback<void(bool landscape)>;
 
   // Focus the next/previous widget.
@@ -405,6 +407,11 @@ class ASH_EXPORT LockContentsView
 
   // Accelerators handled by login screen.
   std::map<ui::Accelerator, AcceleratorAction> accel_map_;
+
+  // Notifies Chrome when user activity is detected on the login screen so that
+  // the auto-login timer can be reset.
+  std::unique_ptr<AutoLoginUserActivityHandler>
+      auto_login_user_activity_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };

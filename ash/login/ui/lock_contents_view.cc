@@ -44,6 +44,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -276,6 +278,28 @@ struct MediumViewLayout {
 
 }  // namespace
 
+class LockContentsView::AutoLoginUserActivityHandler
+    : public ui::UserActivityObserver {
+ public:
+  AutoLoginUserActivityHandler() {
+    observer_.Add(ui::UserActivityDetector::Get());
+  }
+
+  ~AutoLoginUserActivityHandler() override = default;
+
+  void OnUserActivity(const ui::Event* event) override {
+    if (Shell::Get()->login_screen_controller()) {
+      Shell::Get()->login_screen_controller()->NotifyUserActivity();
+    }
+  }
+
+ private:
+  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver> observer_{
+      this};
+
+  DISALLOW_COPY_AND_ASSIGN(AutoLoginUserActivityHandler);
+};
+
 LockContentsView::TestApi::TestApi(LockContentsView* view) : view_(view) {}
 
 LockContentsView::TestApi::~TestApi() = default;
@@ -354,6 +378,10 @@ LockContentsView::LockContentsView(
       screen_type_(screen_type),
       data_dispatcher_(data_dispatcher),
       detachable_base_model_(std::move(detachable_base_model)) {
+  if (screen_type == LockScreen::ScreenType::kLogin)
+    auto_login_user_activity_handler_ =
+        std::make_unique<AutoLoginUserActivityHandler>();
+
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->login_screen_controller()->AddObserver(this);

@@ -287,3 +287,11 @@ void LoginScreenClient::SetPublicSessionKeyboardLayout(
   login_screen_->SetPublicSessionKeyboardLayouts(account_id, locale,
                                                  std::move(result));
 }
+
+void LoginScreenClient::OnUserActivity() {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()
+        ->GetExistingUserController()
+        ->ResetAutoLoginTimer();
+  }
+}
