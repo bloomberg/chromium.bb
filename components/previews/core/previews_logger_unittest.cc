@@ -70,7 +70,7 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
   // Expose the received MessageLogs for testing.
   const std::vector<PreviewsLogger::MessageLog>& messages() const {
     return messages_;
-  };
+  }
 
   // Expose blacklist events info for testing.
   const std::unordered_map<std::string, base::Time>& blacklisted_hosts() {
