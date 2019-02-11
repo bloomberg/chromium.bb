@@ -514,6 +514,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   // clamshell mode or when a task is minimized during a resize.
   if (is_resizing_) {
     is_resizing_ = false;
+    RestoreWindowsTransformAfterResizing();
     FinishWindowResizing(left_window_);
     FinishWindowResizing(right_window_);
   }
