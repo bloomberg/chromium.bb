@@ -173,44 +173,6 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #endif  // OS(POSIX)
 
-#if defined(OS_ANDROID)
-// A class that allows for triggering a clean shutdown from another
-// thread through draining the main thread's msg loop.
-class QuitClosure {
- public:
-  QuitClosure();
-  ~QuitClosure() = default;
-
-  void BindToMainThread(base::RepeatingClosure quit_closure);
-  void QuitFromNonMainThread();
-
- private:
-  base::Lock lock_;
-  base::ConditionVariable cond_var_;
-  base::RepeatingClosure closure_;
-};
-
-QuitClosure::QuitClosure() : cond_var_(&lock_) {
-}
-
-void QuitClosure::BindToMainThread(base::RepeatingClosure quit_closure) {
-  base::AutoLock lock(lock_);
-  closure_ = std::move(quit_closure);
-  cond_var_.Signal();
-}
-
-void QuitClosure::QuitFromNonMainThread() {
-  base::AutoLock lock(lock_);
-  while (closure_.is_null())
-    cond_var_.Wait();
-
-  closure_.Run();
-}
-
-base::LazyInstance<QuitClosure>::DestructorAtExit g_quit_closure =
-    LAZY_INSTANCE_INITIALIZER;
-#endif
-
 base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::PlatformChannelEndpoint endpoint;
@@ -539,10 +501,6 @@ void ChildThreadImpl::Init(const Options& options) {
                      channel_connected_factory_->GetWeakPtr()),
       base::TimeDelta::FromSeconds(connection_timeout));
 
-#if defined(OS_ANDROID)
-  g_quit_closure.Get().BindToMainThread(quit_closure_);
-#endif
-
   // In single-process mode, there is no need to synchronize trials to the
   // browser process (because it's the same process).
   if (!IsInBrowserProcess()) {
@@ -744,16 +702,6 @@ void ChildThreadImpl::OnChildControlRequest(
 ChildThreadImpl* ChildThreadImpl::current() {
   return g_lazy_child_thread_impl_tls.Pointer()->Get();
 }
-
-#if defined(OS_ANDROID)
-// The method must NOT be called on the child thread itself.
-// It may block the child thread if so.
-void ChildThreadImpl::ShutdownThread() {
-  DCHECK(!ChildThreadImpl::current()) <<
-      "this method should NOT be called from child thread itself";
-  g_quit_closure.Get().QuitFromNonMainThread();
-}
-#endif
 
 void ChildThreadImpl::OnProcessFinalRelease() {
   if (on_channel_error_called_)

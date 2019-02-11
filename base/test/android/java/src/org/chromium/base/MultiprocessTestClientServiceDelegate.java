@@ -50,9 +50,6 @@ public class MultiprocessTestClientServiceDelegate implements ChildProcessServic
     }
 
     @Override
-    public void onDestroy() {}
-
-    @Override
     public void preloadNativeLibrary(Context hostContext) {
         LibraryLoader.getInstance().preloadNow();
     }

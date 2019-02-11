@@ -128,12 +128,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // Returns the one child thread. Can only be called on the main thread.
   static ChildThreadImpl* current();
 
-#if defined(OS_ANDROID)
-  // Called on Android's service thread to shutdown the main thread of this
-  // process.
-  static void ShutdownThread();
-#endif
-
  protected:
   friend class ChildProcess;
 
