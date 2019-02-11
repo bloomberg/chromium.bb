@@ -295,7 +295,7 @@ class optional_data<T, false> : public optional_data_base<T> {
 
   optional_data() = default;
 
-  optional_data(const optional_data& rhs) {
+  optional_data(const optional_data& rhs) : optional_data_base<T>() {
     if (rhs.engaged_) {
       this->construct(rhs.data_);
     }
@@ -303,7 +303,8 @@ class optional_data<T, false> : public optional_data_base<T> {
 
   optional_data(optional_data&& rhs) noexcept(
       absl::default_allocator_is_nothrow::value ||
-      std::is_nothrow_move_constructible<T>::value) {
+      std::is_nothrow_move_constructible<T>::value)
+      : optional_data_base<T>() {
     if (rhs.engaged_) {
       this->construct(std::move(rhs.data_));
     }
@@ -467,6 +468,7 @@ struct optional_hash_base<T, decltype(std::hash<absl::remove_const_t<T> >()(
   using argument_type = absl::optional<T>;
   using result_type = size_t;
   size_t operator()(const absl::optional<T>& opt) const {
+    absl::type_traits_internal::AssertHashEnabled<absl::remove_const_t<T>>();
     if (opt) {
       return std::hash<absl::remove_const_t<T> >()(*opt);
     } else {
