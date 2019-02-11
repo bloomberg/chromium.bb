@@ -365,14 +365,6 @@ void ContentsView::UpdateSearchBox(double progress,
 void ContentsView::UpdateExpandArrowOpacity(double progress,
                                             ash::AppListState current_state,
                                             ash::AppListState target_state) {
-  // Don't show |expand_arrow_view_| when the home launcher gestures are
-  // disabled in tablet mode.
-  if (app_list_view_->is_tablet_mode() &&
-      !app_list_features::IsHomeLauncherGesturesEnabled()) {
-    expand_arrow_view_->layer()->SetOpacity(0);
-    return;
-  }
-
   if (current_state == ash::AppListState::kStateSearchResults &&
       (target_state == ash::AppListState::kStateStart ||
        target_state == ash::AppListState::kStateApps)) {

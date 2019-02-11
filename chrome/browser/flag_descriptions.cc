@@ -3311,10 +3311,6 @@ const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
 
-const char kEnableHomeLauncherGesturesName[] = "Enable home launcher gestures";
-const char kEnableHomeLauncherGesturesDescription[] =
-    "Enables using gestures to hide or show the home launcher.";
-
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";

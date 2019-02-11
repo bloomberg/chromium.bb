@@ -1260,13 +1260,6 @@ bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
 }
 
 bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
-  HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-
-  // If there is no |home_launcher_handler|, return early.
-  if (!home_launcher_handler)
-    return false;
-
   // If the shelf is not visible, home gesture shouldn't trigger.
   if (!IsVisible())
     return false;
@@ -1399,8 +1392,8 @@ void ShelfLayoutManager::CompleteAppListDrag(
 
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler &&
-      home_launcher_handler->OnReleaseEvent(gesture_in_screen.location())) {
+  DCHECK(home_launcher_handler);
+  if (home_launcher_handler->OnReleaseEvent(gesture_in_screen.location())) {
     gesture_drag_status_ = GESTURE_DRAG_NONE;
     return;
   }
@@ -1449,7 +1442,8 @@ void ShelfLayoutManager::CancelGestureDrag() {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler && home_launcher_handler->IsDragInProgress())
+    DCHECK(home_launcher_handler);
+    if (home_launcher_handler->IsDragInProgress())
       home_launcher_handler->Cancel();
     else
       Shell::Get()->app_list_controller()->DismissAppList();

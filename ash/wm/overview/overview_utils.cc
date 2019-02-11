@@ -293,11 +293,10 @@ bool IsSlidingOutOverviewFromShelf() {
   if (!Shell::Get()->overview_controller()->IsSelecting())
     return false;
 
-  HomeLauncherGestureHandler* home_launcher_gesture_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_gesture_handler &&
-      home_launcher_gesture_handler->mode() ==
-          HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
+  if (Shell::Get()
+          ->app_list_controller()
+          ->home_launcher_gesture_handler()
+          ->mode() == HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
     return true;
   }
 
