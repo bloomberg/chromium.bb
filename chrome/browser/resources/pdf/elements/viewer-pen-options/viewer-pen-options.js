@@ -172,7 +172,7 @@ Polymer({
    * @param {*} a
    * @param {*} b
    */
-  equal_: function(a,b) {
+  equal_: function(a, b) {
     return a == b;
   },
 
@@ -185,5 +185,15 @@ Polymer({
    */
   lookup_: function(strings, name) {
     return strings ? strings[name] : '';
-  }
+  },
+
+  /**
+   * Used to remove focus when clicking or tapping on a styled input
+   * element. This is a workaround until we can use the :focus-visible
+   * pseudo selector.
+   */
+  blurOnPointerDown(e) {
+    const target = e.target;
+    setTimeout(() => target.blur(), 0);
+  },
 });
