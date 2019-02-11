@@ -31,7 +31,7 @@ const char kTestEmail[] = "test@email.com";
 const char kAPIKey[] = "fakeAPIkey";
 const char kSubscriptionUrl[] = "http://valid-url.test/subscribe";
 const char kSubscriptionUrlSignedIn[] = "http://valid-url.test/subscribe";
-;
+
 const char kSubscriptionUrlSignedOut[] =
     "http://valid-url.test/subscribe?key=fakeAPIkey";
 const char kUnsubscriptionUrl[] = "http://valid-url.test/unsubscribe";
