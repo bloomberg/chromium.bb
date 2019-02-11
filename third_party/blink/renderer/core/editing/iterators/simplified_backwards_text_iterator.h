@@ -127,7 +127,7 @@ class SimplifiedBackwardsTextIteratorAlgorithm {
   Member<const Node> end_node_;
   int end_offset_;
 
-  // Whether m_node has advanced beyond the iteration range (i.e. start_node_).
+  // Whether |node_| has advanced beyond the iteration range (i.e. start_node_).
   bool have_passed_start_node_;
 
   // Should handle first-letter layoutObject in the next call to handleTextNode.

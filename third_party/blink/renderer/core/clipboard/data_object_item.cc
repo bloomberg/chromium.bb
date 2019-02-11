@@ -128,7 +128,7 @@ File* DataObjectItem::GetAsFile() const {
       return file_.Get();
     DCHECK(shared_buffer_);
     // FIXME: This code is currently impossible--we never populate
-    // m_sharedBuffer when dragging in. At some point though, we may need to
+    // |shared_buffer_| when dragging in. At some point though, we may need to
     // support correctly converting a shared buffer into a file.
     return nullptr;
   }

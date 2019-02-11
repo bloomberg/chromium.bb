@@ -34,7 +34,7 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   void SetDefersLoading(bool) override;
   void SetLoadingTaskRunner(base::SingleThreadTaskRunner*) override;
 
-  // Called by |m_observer| to handle destruction of the Document associated
+  // Called by |observer_| to handle destruction of the Document associated
   // with the frame given to the constructor.
   void DocumentDestroyed();
 
@@ -57,13 +57,13 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
 
-  // An adapter which converts the hreadableLoaderClient method
-  // calls into the WebURLLoaderClient method calls.
+  // Converts ThreadableLoaderClient method calls into WebURLLoaderClient method
+  // calls.
   Persistent<ClientAdapter> client_adapter_;
   Persistent<ThreadableLoader> loader_;
 
-  // A ContextLifecycleObserver for cancelling |m_loader| when the Document
-  // is detached.
+  // A ContextLifecycleObserver for cancelling |loader_| when the Document is
+  // detached.
   Persistent<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAssociatedURLLoaderImpl);

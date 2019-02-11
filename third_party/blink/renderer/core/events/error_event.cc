@@ -103,7 +103,7 @@ bool ErrorEvent::CanBeDispatchedInWorld(const DOMWrapperWorld& world) const {
 }
 
 ScriptValue ErrorEvent::error(ScriptState* script_state) const {
-  // Don't return |m_error| when we are in the different worlds to avoid
+  // Don't return |error_| when we are in the different worlds to avoid
   // leaking a V8 value.
   // We do not clone Error objects (exceptions), for 2 reasons:
   // 1) Errors carry a reference to the isolated world's global object, and

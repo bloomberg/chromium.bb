@@ -750,7 +750,7 @@ void TextIteratorAlgorithm<Strategy>::RepresentNodeOffsetZero() {
   // early-return style.
   // When we haven't been emitting any characters,
   // ShouldRepresentNodeOffsetZero() can create VisiblePositions, which is
-  // expensive. So, we perform the inexpensive checks on m_node to see if it
+  // expensive. So, we perform the inexpensive checks on |node_| to see if it
   // necessitates emitting a character first and will early return before
   // encountering ShouldRepresentNodeOffsetZero()s worse case behavior.
   if (ShouldEmitTabBeforeNode(*node_)) {

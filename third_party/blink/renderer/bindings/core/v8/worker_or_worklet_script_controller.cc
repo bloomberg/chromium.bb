@@ -81,12 +81,12 @@ class WorkerOrWorkletScriptController::ExecutionState final {
   // WorkerOrWorkletScriptController::evaluate(), with the contoller using it
   // during script evaluation. To handle nested evaluate() uses,
   // ExecutionStates are chained together;
-  // |m_outerState| keeps a pointer to the context object one level out
+  // |outer_state_| keeps a pointer to the context object one level out
   // (or 0, if outermost.) Upon return from evaluate(), the
   // WorkerOrWorkletScriptController's ExecutionState is popped and the
   // previous one restored (see above dtor.)
   //
-  // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
+  // With Oilpan, |outer_state_| isn't traced. It'll be "up the stack"
   // and its fields will be traced when scanning the stack.
   Member<WorkerOrWorkletScriptController> controller_;
   ExecutionState* outer_state_;

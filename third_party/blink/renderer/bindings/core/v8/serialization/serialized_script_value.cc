@@ -300,7 +300,7 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::NullValue() {
 }
 
 String SerializedScriptValue::ToWireString() const {
-  // Add the padding '\0', but don't put it in |m_dataBuffer|.
+  // Add the padding '\0', but don't put it in |data_buffer_|.
   // This requires direct use of uninitialized strings, though.
   UChar* destination;
   wtf_size_t string_size_bytes =

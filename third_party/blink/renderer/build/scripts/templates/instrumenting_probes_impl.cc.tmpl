@@ -49,7 +49,7 @@ unsigned {{sink_class}}::s_numSinksWith{{agent}} = 0;
 
 void {{sink_class}}::add{{agent}}({{class_name}}* agent) {
   bool already_had_agent = has{{agent}}s();
-  m_{{getter_name}}s.insert(agent);
+  {{getter_name}}s_.insert(agent);
 
   if (!already_had_agent) {
     MutexLocker lock(AgentCountMutex());
@@ -64,7 +64,7 @@ void {{sink_class}}::remove{{agent}}({{class_name}}* agent) {
   if (!has{{agent}}s())
     return;
 
-  m_{{getter_name}}s.erase(agent);
+  {{getter_name}}s_.erase(agent);
 
   if (!has{{agent}}s()) {
     MutexLocker lock(AgentCountMutex());
@@ -82,7 +82,7 @@ void {{sink_class}}::Trace(Visitor* visitor)
 {
 {% for agent in agents %}
 {% set getter_name = agent | to_lower_case %}
-  visitor->Trace(m_{{getter_name}}s);
+  visitor->Trace({{getter_name}}s_);
 {% endfor %}
 }
 

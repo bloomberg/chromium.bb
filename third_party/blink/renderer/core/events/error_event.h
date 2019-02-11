@@ -79,15 +79,14 @@ class ErrorEvent final : public Event {
   ErrorEvent(ScriptState*, const AtomicString&, const ErrorEventInit*);
   ~ErrorEvent() override;
 
-  // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
+  // As |message| is exposed to JavaScript, never return |unsanitized_message_|.
   const String& message() const { return sanitized_message_; }
   const String& filename() const { return location_->Url(); }
   unsigned lineno() const { return location_->LineNumber(); }
   unsigned colno() const { return location_->ColumnNumber(); }
   ScriptValue error(ScriptState*) const;
 
-  // 'messageForConsole' is not exposed to JavaScript, and prefers
-  // 'm_unsanitizedMessage'.
+  // Not exposed to JavaScript, prefers |unsanitized_message_|.
   const String& MessageForConsole() const {
     return !unsanitized_message_.IsEmpty() ? unsanitized_message_
                                            : sanitized_message_;

@@ -1136,9 +1136,9 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
 void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
                                                IntRect& clip_rect,
                                                IntRect& unobscured_rect) {
-  // document().layoutView() can be null when we receive messages from the
+  // GetDocument().LayoutView() can be null when we receive messages from the
   // plugins while we are destroying a frame.
-  // FIXME: Can we just check m_element->document().isActive() ?
+  // TODO: Can we just check element_->GetDocument().IsActive() ?
   if (element_->GetLayoutObject()->GetDocument().GetLayoutView()) {
     // Take our element and get the clip rect from the enclosing layer and
     // frame view.
