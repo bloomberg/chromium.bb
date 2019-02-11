@@ -396,9 +396,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (history_service) {
       // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
-      history_service->ExpireLocalAndRemoteHistoryBetween(
-          WebHistoryServiceFactory::GetForProfile(profile_), std::set<GURL>(),
-          delete_begin_, delete_end_, /*user_initiated*/ true,
+      history_service->DeleteLocalAndRemoteHistoryBetween(
+          WebHistoryServiceFactory::GetForProfile(profile_), delete_begin_,
+          delete_end_,
           base::AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()),
           &history_task_tracker_);
     }

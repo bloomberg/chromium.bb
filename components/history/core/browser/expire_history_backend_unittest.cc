@@ -470,11 +470,53 @@ TEST_F(ExpireHistoryTest, DeleteURLAndFavicon) {
   ASSERT_EQ(1U, visits.size());
 
   // Delete the URL and its dependencies.
-  expirer_.DeleteURL(last_row.url());
+  expirer_.DeleteURL(last_row.url(), base::Time::Max());
 
   // All the normal data + the favicon should be gone.
   EnsureURLInfoGone(last_row, false);
   EXPECT_FALSE(GetFavicon(last_row.url(), favicon_base::IconType::kFavicon));
+  EXPECT_FALSE(HasFavicon(favicon_id));
+}
+
+// Deletes visits to a URL with a time bound. The url, favicon and the second
+// visit should not get deleted.
+TEST_F(ExpireHistoryTest, DeleteURLWithTimeBound) {
+  URLID url_ids[3];
+  base::Time visit_times[4];
+  AddExampleData(url_ids, visit_times);
+
+  // Remove the first url because it shares the favicon with the second url.
+  URLRow first_row;
+  ASSERT_TRUE(main_db_->GetURLRow(url_ids[0], &first_row));
+  expirer_.DeleteURL(first_row.url(), base::Time::Max());
+
+  // Verify things are the way we expect with a URL row, favicon.
+  URLRow second_row;
+  ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &second_row));
+  favicon_base::FaviconID favicon_id =
+      GetFavicon(second_row.url(), favicon_base::IconType::kFavicon);
+  EXPECT_TRUE(HasFavicon(favicon_id));
+
+  VisitVector visits;
+  main_db_->GetVisitsForURL(url_ids[1], &visits);
+  ASSERT_EQ(2U, visits.size());
+
+  // Delete the first visit but not the URL and dependencies.
+  expirer_.DeleteURL(second_row.url(), visits[0].visit_time);
+  // The second visit, URL and favicon should still be there.
+  ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &second_row));
+  VisitVector visits_after_deletion;
+  main_db_->GetVisitsForURL(url_ids[1], &visits_after_deletion);
+  ASSERT_EQ(1U, visits_after_deletion.size());
+  EXPECT_EQ(visits[1].visit_time, visits_after_deletion[0].visit_time);
+  EXPECT_TRUE(GetFavicon(second_row.url(), favicon_base::IconType::kFavicon));
+  EXPECT_TRUE(HasFavicon(favicon_id));
+
+  // Delete the second visit.
+  expirer_.DeleteURL(second_row.url(), visits[1].visit_time);
+  // All the normal data + the favicon should be gone.
+  EnsureURLInfoGone(second_row, false);
+  EXPECT_FALSE(GetFavicon(second_row.url(), favicon_base::IconType::kFavicon));
   EXPECT_FALSE(HasFavicon(favicon_id));
 }
 
@@ -497,7 +539,7 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   EXPECT_EQ(2U, visits.size());
 
   // Delete the URL and its dependencies.
-  expirer_.DeleteURL(last_row.url());
+  expirer_.DeleteURL(last_row.url(), base::Time::Max());
 
   // All the normal data except the favicon should be gone.
   EnsureURLInfoGone(last_row, false);
@@ -518,7 +560,7 @@ TEST_F(ExpireHistoryTest, DeleteStarredVisitedURL) {
   StarURL(url_row.url());
 
   // Attempt to delete the url.
-  expirer_.DeleteURL(url_row.url());
+  expirer_.DeleteURL(url_row.url(), base::Time::Max());
 
   // Verify it no longer exists.
   GURL url = url_row.url();
@@ -541,7 +583,7 @@ TEST_F(ExpireHistoryTest, DeleteStarredUnvisitedURL) {
   StarURL(url);
 
   // Delete it.
-  expirer_.DeleteURL(url);
+  expirer_.DeleteURL(url, base::Time::Max());
 
   // The favicon should exist.
   favicon_base::FaviconID favicon_id =
@@ -550,7 +592,7 @@ TEST_F(ExpireHistoryTest, DeleteStarredUnvisitedURL) {
 
   // Unstar the URL and try again to delete it.
   history_client_.ClearAllBookmarks();
-  expirer_.DeleteURL(url);
+  expirer_.DeleteURL(url, base::Time::Max());
 
   // The favicon should be gone.
   favicon_id = GetFavicon(url, favicon_base::IconType::kFavicon);
@@ -581,7 +623,7 @@ TEST_F(ExpireHistoryTest, DeleteURLs) {
   StarURL(rows[0].url());
 
   // Delete the URLs and their dependencies.
-  expirer_.DeleteURLs(urls);
+  expirer_.DeleteURLs(urls, base::Time::Max());
 
   EnsureURLInfoGone(rows[0], false);
   EnsureURLInfoGone(rows[1], false);

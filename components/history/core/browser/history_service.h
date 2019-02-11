@@ -360,13 +360,15 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Removes all visits to the given URLs in the specified time range. Calls
   // ExpireHistoryBetween() to delete local visits, and handles deletion of
   // synced visits if appropriate.
-  void ExpireLocalAndRemoteHistoryBetween(WebHistoryService* web_history,
-                                          const std::set<GURL>& restrict_urls,
+  void DeleteLocalAndRemoteHistoryBetween(WebHistoryService* web_history,
                                           base::Time begin_time,
                                           base::Time end_time,
-                                          bool user_initiated,
                                           base::OnceClosure callback,
                                           base::CancelableTaskTracker* tracker);
+
+  // Removes all visits to the given url. Calls DeleteUrl() to delete local
+  // visits and handles deletion of synced visits if appropriate.
+  void DeleteLocalAndRemoteUrl(WebHistoryService* web_history, const GURL& url);
 
   // Processes the given |delete_directive| and sends it to the
   // SyncChangeProcessor (if it exists).  Returns any error resulting

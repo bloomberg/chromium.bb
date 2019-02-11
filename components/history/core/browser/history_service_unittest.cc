@@ -617,6 +617,10 @@ class HistoryDBTaskImpl : public HistoryDBTask {
 // static
 const int HistoryDBTaskImpl::kWantInvokeCount = 2;
 
+base::Time UnixUsecToTime(int64_t usec) {
+  return base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(usec);
+}
+
 }  // namespace
 
 TEST_F(HistoryServiceTest, HistoryDBTask) {
@@ -666,8 +670,7 @@ TEST_F(HistoryServiceTest, ProcessLocalDeleteDirectiveSyncOnline) {
 
   const GURL test_url("http://www.google.com/");
   for (int64_t i = 1; i <= 10; ++i) {
-    base::Time t =
-        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    base::Time t = UnixUsecToTime(i);
     history_service_->AddPage(test_url, t, nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
@@ -729,8 +732,7 @@ TEST_F(HistoryServiceTest, ProcessGlobalIdDeleteDirective) {
   ASSERT_TRUE(history_service_.get());
   const GURL test_url("http://www.google.com/");
   for (int64_t i = 1; i <= 20; i++) {
-    base::Time t =
-        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    base::Time t = UnixUsecToTime(i);
     history_service_->AddPage(test_url, t, nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
@@ -782,16 +784,11 @@ TEST_F(HistoryServiceTest, ProcessGlobalIdDeleteDirective) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   ASSERT_EQ(5, query_url_row_.visit_count());
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1),
-            query_url_visits_[0].visit_time);
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(2),
-            query_url_visits_[1].visit_time);
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(11),
-            query_url_visits_[2].visit_time);
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(12),
-            query_url_visits_[3].visit_time);
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(20),
-            query_url_visits_[4].visit_time);
+  EXPECT_EQ(UnixUsecToTime(1), query_url_visits_[0].visit_time);
+  EXPECT_EQ(UnixUsecToTime(2), query_url_visits_[1].visit_time);
+  EXPECT_EQ(UnixUsecToTime(11), query_url_visits_[2].visit_time);
+  EXPECT_EQ(UnixUsecToTime(12), query_url_visits_[3].visit_time);
+  EXPECT_EQ(UnixUsecToTime(20), query_url_visits_[4].visit_time);
 
   // Expect two sync changes for deleting processed directives.
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
@@ -808,8 +805,7 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
   ASSERT_TRUE(history_service_.get());
   const GURL test_url("http://www.google.com/");
   for (int64_t i = 1; i <= 10; ++i) {
-    base::Time t =
-        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(i);
+    base::Time t = UnixUsecToTime(i);
     history_service_->AddPage(test_url, t, nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                               history::SOURCE_BROWSED, false);
@@ -855,14 +851,79 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   ASSERT_EQ(3, query_url_row_.visit_count());
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1),
-            query_url_visits_[0].visit_time);
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(6),
-            query_url_visits_[1].visit_time);
-  EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(7),
-            query_url_visits_[2].visit_time);
+  EXPECT_EQ(UnixUsecToTime(1), query_url_visits_[0].visit_time);
+  EXPECT_EQ(UnixUsecToTime(6), query_url_visits_[1].visit_time);
+  EXPECT_EQ(UnixUsecToTime(7), query_url_visits_[2].visit_time);
 
   // Expect two sync changes for deleting processed directives.
+  const syncer::SyncChangeList& sync_changes = change_processor.changes();
+  ASSERT_EQ(2u, sync_changes.size());
+  EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
+  EXPECT_EQ(1, syncer::SyncDataRemote(sync_changes[0].sync_data()).GetId());
+  EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[1].change_type());
+  EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
+}
+
+// Create a delete directive for urls.  The expected entries should be
+// deleted.
+TEST_F(HistoryServiceTest, ProcessUrlDeleteDirective) {
+  ASSERT_TRUE(history_service_.get());
+  const GURL test_url1("http://www.google.com/");
+  const GURL test_url2("http://maps.google.com/");
+
+  history_service_->AddPage(test_url1, UnixUsecToTime(3), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url2, UnixUsecToTime(6), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
+  history_service_->AddPage(test_url1, UnixUsecToTime(10), nullptr, 0, GURL(),
+                            history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
+
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url1));
+  ASSERT_EQ(2, query_url_row_.visit_count());
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url2));
+
+  // Delete the first visit of url1 and all visits of url2.
+  syncer::SyncDataList directives;
+  sync_pb::EntitySpecifics entity_specs1;
+  sync_pb::UrlDirective* url_directive =
+      entity_specs1.mutable_history_delete_directive()->mutable_url_directive();
+  url_directive->set_url(test_url1.spec());
+  url_directive->set_end_time_usec(8);
+  directives.push_back(syncer::SyncData::CreateRemoteData(1, entity_specs1));
+  sync_pb::EntitySpecifics entity_specs2;
+  url_directive =
+      entity_specs2.mutable_history_delete_directive()->mutable_url_directive();
+  url_directive->set_url(test_url2.spec());
+  url_directive->set_end_time_usec(8);
+  directives.push_back(syncer::SyncData::CreateRemoteData(2, entity_specs2));
+
+  syncer::FakeSyncChangeProcessor change_processor;
+  EXPECT_FALSE(history_service_
+                   ->MergeDataAndStartSyncing(
+                       syncer::HISTORY_DELETE_DIRECTIVES, directives,
+                       std::unique_ptr<syncer::SyncChangeProcessor>(
+                           new syncer::SyncChangeProcessorWrapperForTest(
+                               &change_processor)),
+                       std::unique_ptr<syncer::SyncErrorFactory>())
+                   .error()
+                   .IsSet());
+
+  // Inject a task to check status and keep message loop filled before
+  // directive processing finishes.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CheckDirectiveProcessingResult,
+                     base::Time::Now() + base::TimeDelta::FromSeconds(10),
+                     &change_processor, 2));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(QueryURL(history_service_.get(), test_url1));
+  EXPECT_EQ(UnixUsecToTime(10), query_url_visits_[0].visit_time);
+  EXPECT_FALSE(QueryURL(history_service_.get(), test_url2));
+
+  // Expect a sync change for deleting processed directives.
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
