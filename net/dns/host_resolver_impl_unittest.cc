@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
@@ -1446,7 +1447,15 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
   proc_->SignalMultiple(requests_.size());
 }
 
-TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback_ResolveHost) {
+// Flaky on Fuchsia and Linux ASAN. crbug.com/930483
+#if defined(OS_FUCHSIA) || defined(OS_LINUX)
+#define MAYBE_DeleteWithinAbortedCallback_ResolveHost \
+  DISABLED_DeleteWithinAbortedCallback_ResolveHost
+#else
+#define MAYBE_DeleteWithinAbortedCallback_ResolveHost \
+  DeleteWithinAbortedCallback_ResolveHost
+#endif
+TEST_F(HostResolverImplTest, MAYBE_DeleteWithinAbortedCallback_ResolveHost) {
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
   ResolveHostResponseHelper::Callback custom_callback =
       base::BindLambdaForTesting(
