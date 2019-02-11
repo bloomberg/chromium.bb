@@ -141,6 +141,10 @@ template("google_apis_tmpl") {
       "//services/network/public/cpp",
     ]
 
+    if (use_official_google_api_keys) {
+      deps += [ "internal:generate_metrics_key_header" ]
+    }
+
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
