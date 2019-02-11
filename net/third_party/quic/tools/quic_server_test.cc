@@ -12,6 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_port_utils.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_loopback.h"
@@ -85,7 +86,8 @@ class TestQuicServer : public QuicServer {
 class QuicServerEpollInTest : public QuicTest {
  public:
   QuicServerEpollInTest()
-      : port_(kTestPort), server_address_(QuicIpAddress::Loopback4(), port_) {}
+      : port_(QuicPickUnusedPortOrDie()),
+        server_address_(TestLoopback(), port_) {}
 
   void StartListening() {
     server_.CreateUDPSocketAndListen(server_address_);

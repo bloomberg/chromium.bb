@@ -24,6 +24,7 @@
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_port_utils.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_sleep.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
@@ -271,7 +272,8 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   EndToEndTest()
       : initialized_(false),
         connect_to_server_on_initialize_(true),
-        server_address_(QuicSocketAddress(TestLoopback(), 0)),
+        server_address_(
+            QuicSocketAddress(TestLoopback(), QuicPickUnusedPortOrDie())),
         server_hostname_("test.example.com"),
         client_writer_(nullptr),
         server_writer_(nullptr),
@@ -311,10 +313,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     AddToCache("/bar", 200, kBarResponseBody);
   }
 
-  ~EndToEndTest() override {
-    // TODO(rtenneti): port RecycleUnusedPort if needed.
-    // RecycleUnusedPort(server_address_.port());
-  }
+  ~EndToEndTest() override { QuicRecyclePort(server_address_.port()); }
 
   virtual void CreateClientWithWriter() {
     client_.reset(CreateQuicClient(client_writer_));
