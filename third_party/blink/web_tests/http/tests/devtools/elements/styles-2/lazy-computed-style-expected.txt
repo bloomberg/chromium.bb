@@ -32,6 +32,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ==== All styles (computed should be there) ====
 background-attachment: scroll;
     initial - #inspected <style>…</style>
@@ -55,6 +60,8 @@ background-repeat-y: ;
     initial - #inspected <style>…</style>
 background-size: auto;
     initial - #inspected <style>…</style>
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 font-family: Courier;
@@ -90,5 +97,10 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

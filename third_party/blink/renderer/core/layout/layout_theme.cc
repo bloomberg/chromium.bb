@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/fallback_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/string_truncator.h"
@@ -975,6 +976,12 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   // box and turns off the Windows XP theme)
   // for now, we will not honor it.
   style.ResetBorder();
+}
+
+Color LayoutTheme::RootElementColor(ColorScheme color_scheme) const {
+  if (color_scheme == ColorScheme::kDark)
+    return Color::kWhite;
+  return ComputedStyleInitialValues::InitialColor();
 }
 
 }  // namespace blink

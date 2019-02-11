@@ -290,7 +290,8 @@ static Color ResolveStopColor(const CSSValue& stop_color,
                               const Document& document,
                               const ComputedStyle& style) {
   return document.GetTextLinkColors().ColorFromCSSValue(
-      stop_color, style.VisitedDependentColor(GetCSSPropertyColor()));
+      stop_color, style.VisitedDependentColor(GetCSSPropertyColor()),
+      document.GetColorScheme());
 }
 
 void CSSGradientValue::AddDeprecatedStops(GradientDesc& desc,

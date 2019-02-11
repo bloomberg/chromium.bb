@@ -108,7 +108,8 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
                                           const CSSValue& value,
                                           bool for_visited_link) {
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, state.Style()->GetColor(), for_visited_link);
+      value, state.Style()->GetColor(), state.GetDocument().GetColorScheme(),
+      for_visited_link);
 }
 
 scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
@@ -1358,7 +1359,7 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
       ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor)
     return StyleColor::CurrentColor();
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), for_visited_link);
+      value, Color(), state.GetDocument().GetColorScheme(), for_visited_link);
 }
 
 StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
@@ -1372,7 +1373,7 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
       return StyleAutoColor::AutoColor();
   }
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), for_visited_link);
+      value, Color(), state.GetDocument().GetColorScheme(), for_visited_link);
 }
 
 SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
@@ -1715,8 +1716,8 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     if (value_id == CSSValueCurrentcolor)
       return value;
     if (StyleColor::IsColorKeyword(value_id)) {
-      Color color =
-          document.GetTextLinkColors().ColorFromCSSValue(value, Color(), false);
+      Color color = document.GetTextLinkColors().ColorFromCSSValue(
+          value, Color(), document.GetColorScheme(), false);
       return *CSSColorValue::Create(color.Rgb());
     }
   }

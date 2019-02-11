@@ -59,6 +59,7 @@ void TextLinkColors::ResetActiveLinkColor() {
 
 Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         Color current_color,
+                                        ColorScheme color_scheme,
                                         bool for_visited_link) const {
   if (value.IsColorValue())
     return ToCSSColorValue(value).Value();
@@ -78,6 +79,8 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
       return LayoutTheme::GetTheme().FocusRingColor();
     case CSSValueCurrentcolor:
       return current_color;
+    case CSSValueInternalRootColor:
+      return LayoutTheme::GetTheme().RootElementColor(color_scheme);
     default:
       return StyleColor::ColorFromKeyword(value_id);
   }

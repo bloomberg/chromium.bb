@@ -12,6 +12,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 iframe style:
 [expanded] 
 element.style { ()
@@ -24,5 +29,10 @@ body { (styles-iframe-data.html:4 -> styles-iframe-data.html:4:9)
 body { (user agent stylesheet)
     display: block;
     margin: 8px;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

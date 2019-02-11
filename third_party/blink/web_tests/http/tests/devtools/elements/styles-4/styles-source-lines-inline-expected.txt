@@ -12,4 +12,9 @@ element.style { ()
 div { (user agent stylesheet)
 /-- overloaded --/     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 

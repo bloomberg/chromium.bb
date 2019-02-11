@@ -12,6 +12,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 print media emulated:
 [expanded] 
 element.style { ()
@@ -29,6 +34,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 tty media emulated:
 [expanded] 
 element.style { ()
@@ -45,6 +55,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 No media emulated:
 [expanded] 
 element.style { ()
@@ -56,5 +71,10 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

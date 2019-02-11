@@ -23,6 +23,11 @@ element.style { ()
 [$div$] { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+[$html$] { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== Pseudo ::before element ========
 [expanded] 
 [$#inspected:before, $].some-other-selector { (<style>…</style>)

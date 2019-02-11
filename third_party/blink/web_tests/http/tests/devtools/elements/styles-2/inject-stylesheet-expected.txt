@@ -31,6 +31,7 @@ border-top-style: solid;
     solid - #main injected stylesheet
 color: rgb(255, 0, 0);
     red - #main injected stylesheet
+    OVERLOADED -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 -webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) 100% / 1 / 0px stretch;
@@ -66,6 +67,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 iframe style:
 background-attachment: scroll;
     initial - #iframeBody injected stylesheet
@@ -97,6 +103,8 @@ background-repeat-y: ;
 background-size: auto;
     initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - body user agent stylesheet
 margin-bottom: 8px;
@@ -146,5 +154,10 @@ body { (user agent stylesheet)
         margin-right: 8px;
         margin-bottom: 8px;
         margin-left: 8px;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

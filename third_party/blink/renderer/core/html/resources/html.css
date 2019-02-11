@@ -24,7 +24,8 @@
 @namespace "http://www.w3.org/1999/xhtml";
 
 html {
-    display: block
+    display: block;
+    color: -internal-root-color;
 }
 
 /* children of the <head> element all have display:none */
