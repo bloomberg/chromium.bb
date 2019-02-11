@@ -2664,18 +2664,25 @@ if (enable_java_templates) {
 
     if (!_is_bundle_module) {
       # Generate size-info/*.jar.info files.
-      if (defined(invoker.name) && _proguard_enabled) {
-        _jar_info_target = "${target_name}__jar_size_info"
-        create_final_jar_info(_jar_info_target) {
-          is_bundle = false
-          output = "$root_build_dir/size-info/${invoker.name}.apk.jar.info"
-          build_config = _build_config
-          deps = [
-            ":$_build_config_target",
-            ":$_java_target",
-          ]
+      if (defined(invoker.name)) {
+        # Create size info files for targets that care about size
+        # (have proguard enabled).
+        if (_proguard_enabled) {
+          _size_info_target = "${target_name}__size_info"
+          create_size_info_files(_size_info_target) {
+            name = "${invoker.name}.apk"
+            build_config = _build_config
+            packaged_resources_path = _packaged_resources_path
+            deps = _deps + [
+                     ":$_build_config_target",
+                     ":$_compile_resources_target",
+                     ":$_java_target",
+                   ]
+          }
+          _final_deps += [ ":$_size_info_target" ]
+        } else {
+          not_needed(invoker, [ "name" ])
         }
-        _final_deps += [ ":$_jar_info_target" ]
       }
 
       _keystore_path = android_keystore_path
@@ -2705,9 +2712,6 @@ if (enable_java_templates) {
         assets_build_config = _build_config
         dex_path = _final_dex_path
         load_library_from_apk = _load_library_from_apk
-
-        # This is used to generate *.apk.pak.info files.
-        apk_name = invoker.name
 
         keystore_name = _keystore_name
         keystore_path = _keystore_path
@@ -3988,14 +3992,6 @@ if (enable_java_templates) {
           ":${_unsplit_dex_target}",
         ]
       }
-
-      _jar_info_target = "${target_name}__jar_size_info"
-      create_final_jar_info(_jar_info_target) {
-        is_bundle = true
-        output = "$root_build_dir/size-info/$_bundle_name.aab.jar.info"
-        build_config = _build_config
-        deps = _module_targets + [ ":$_build_config_target" ]
-      }
     }
 
     _all_create_module_targets = []
@@ -4121,6 +4117,17 @@ if (enable_java_templates) {
       }
     }
 
+    # Create size info files for targets that care about size
+    # (have proguard enabled).
+    if (_proguard_enabled) {
+      _size_info_target = "${target_name}__size_info"
+      create_size_info_files(_size_info_target) {
+        name = "$_bundle_name.aab"
+        deps = _module_targets + [ ":$_build_config_target" ]
+        module_build_configs = _all_module_build_configs
+      }
+    }
+
     # Generate a wrapper script for the bundle.
     _android_aapt2_path = android_sdk_tools_bundle_aapt2
 
@@ -4177,8 +4184,8 @@ if (enable_java_templates) {
         ":${target_name}__bundle",
         ":${target_name}__wrapper_script",
       ]
-      if (defined(_jar_info_target)) {
-        public_deps += [ ":$_jar_info_target" ]
+      if (defined(_size_info_target)) {
+        public_deps += [ ":$_size_info_target" ]
       }
     }
   }

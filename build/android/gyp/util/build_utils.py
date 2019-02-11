@@ -83,24 +83,33 @@ def ReadBuildVars(path):
     return dict(l.rstrip().split('=', 1) for l in f)
 
 
-def ParseGnList(gn_string):
-  """Converts a command-line parameter into a list.
+def ParseGnList(value):
+  """Converts a "GN-list" command-line parameter into a list.
 
-  If the input starts with a '[' it is assumed to be a GN-formatted list and
-  it will be parsed accordingly. When empty an empty list will be returned.
-  Otherwise, the parameter will be treated as a single raw string (not
-  GN-formatted in that it's not assumed to have literal quotes that must be
-  removed) and a list will be returned containing that string.
+  Conversions handled:
+    * None -> []
+    * '' -> []
+    * 'asdf' -> ['asdf']
+    * '["a", "b"]' -> ['a', 'b']
+    * ['["a", "b"]', 'c'] -> ['a', 'b', 'c']  (flattened list)
 
   The common use for this behavior is in the Android build where things can
   take lists of @FileArg references that are expanded via ExpandFileArgs.
   """
-  if gn_string.startswith('['):
-    parser = gn_helpers.GNValueParser(gn_string)
-    return parser.ParseList()
-  if len(gn_string):
-    return [ gn_string ]
-  return []
+  # Convert None to [].
+  if not value:
+    return []
+  # Convert a list of GN lists to a flattened list.
+  if isinstance(value, list):
+    ret = []
+    for arg in value:
+      ret.extend(ParseGnList(arg))
+    return ret
+  # Convert normal GN list.
+  if value.startswith('['):
+    return gn_helpers.GNValueParser(value).ParseList()
+  # Convert a single string value to a list.
+  return [value]
 
 
 def CheckOptions(options, parser, required=None):
