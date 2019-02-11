@@ -97,14 +97,13 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
 
   FaviconCache favicon_cache_;
   SessionsGlobalIdMapper global_id_mapper_;
-  SessionStore::Factory session_store_factory_;
+  std::unique_ptr<SessionStore> store_;
 
   // All data dependent on sync being starting or started.
   struct SyncingState {
     SyncingState();
     ~SyncingState();
 
-    std::unique_ptr<SessionStore> store;
     std::unique_ptr<OpenTabsUIDelegateImpl> open_tabs_ui_delegate;
     std::unique_ptr<LocalSessionEventHandlerImpl> local_session_event_handler;
 
@@ -118,6 +117,7 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
     bool local_data_out_of_sync = false;
   };
 
+  // TODO(mastiz): We should rather rename this to |syncing_state_|.
   base::Optional<SyncingState> syncing_;
 
   base::WeakPtrFactory<SessionSyncBridge> weak_ptr_factory_;
