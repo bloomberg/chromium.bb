@@ -67,7 +67,7 @@ using base::StringPrintf;
 namespace {
 
 std::string ToDisplayName(int64_t id) {
-  return "x-" + base::Int64ToString(id);
+  return "x-" + base::NumberToString(id);
 }
 
 }  // namespace

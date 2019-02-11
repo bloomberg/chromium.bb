@@ -225,7 +225,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // Window origin should be adjusted for minimum visibility (25px).
     int expected_x = -50 + wm::kMinimumOnScreenArea;
 
-    EXPECT_EQ(base::IntToString(expected_x) + ",10 50x60",
+    EXPECT_EQ(base::NumberToString(expected_x) + ",10 50x60",
               window_->bounds().ToString());
   }
   // Dropping a window that is larger than the destination work area

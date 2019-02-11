@@ -84,7 +84,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   void SelectedPageChanged(int old_selected, int new_selected) override {
     if (!selected_pages_.empty())
       selected_pages_ += ',';
-    selected_pages_ += base::IntToString(new_selected);
+    selected_pages_ += base::NumberToString(new_selected);
 
     if (wait_)
       ui_run_loop_->QuitWhenIdle();
@@ -1293,7 +1293,7 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
     EXPECT_EQ(view_model->view_at(i), test_api_->GetViewAtVisualIndex(
                                           i / GetTilesPerPage(0) /* page */,
                                           i % GetTilesPerPage(0) /* slot */));
-    EXPECT_EQ("Item " + base::IntToString(i),
+    EXPECT_EQ("Item " + base::NumberToString(i),
               view_model->view_at(i)->item()->id());
   }
 
@@ -1301,7 +1301,7 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
   // two pages. It will only be added after user operations.
   std::string model_content = "Item 0";
   for (int i = 1; i < kApps; ++i)
-    model_content.append(",Item " + base::IntToString(i));
+    model_content.append(",Item " + base::NumberToString(i));
   EXPECT_EQ(model_content, model_->GetModelContent());
 
   // Drag the last item to the first item's left position in previous page.
@@ -1321,14 +1321,14 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
     EXPECT_EQ(view_model->view_at(i), test_api_->GetViewAtVisualIndex(
                                           i / GetTilesPerPage(0) /* page */,
                                           i % GetTilesPerPage(0) /* slot */));
-    EXPECT_EQ("Item " + base::IntToString((i + kApps - 1) % kApps),
+    EXPECT_EQ("Item " + base::NumberToString((i + kApps - 1) % kApps),
               view_model->view_at(i)->item()->id());
   }
 
   // A "page break" item is added to split the pages.
-  model_content = "Item " + base::IntToString(kApps - 1);
+  model_content = "Item " + base::NumberToString(kApps - 1);
   for (int i = 1; i < kApps; ++i) {
-    model_content.append(",Item " + base::IntToString(i - 1));
+    model_content.append(",Item " + base::NumberToString(i - 1));
     if (i == GetTilesPerPage(0) - 1)
       model_content.append(",PageBreakItem");
   }
@@ -1348,15 +1348,15 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
     EXPECT_EQ(view_model->view_at(i), test_api_->GetViewAtVisualIndex(
                                           i / GetTilesPerPage(0) /* page */,
                                           i % GetTilesPerPage(0) /* slot */));
-    EXPECT_EQ("Item " + base::IntToString((i + kApps - 2) % kApps),
+    EXPECT_EQ("Item " + base::NumberToString((i + kApps - 2) % kApps),
               view_model->view_at(i)->item()->id());
   }
 
   // A "page break" item still exists.
-  model_content = "Item " + base::IntToString(kApps - 2) + ",Item " +
-                  base::IntToString(kApps - 1);
+  model_content = "Item " + base::NumberToString(kApps - 2) + ",Item " +
+                  base::NumberToString(kApps - 1);
   for (int i = 2; i < kApps; ++i) {
-    model_content.append(",Item " + base::IntToString(i - 2));
+    model_content.append(",Item " + base::NumberToString(i - 2));
     if (i == GetTilesPerPage(0) - 1)
       model_content.append(",PageBreakItem");
   }

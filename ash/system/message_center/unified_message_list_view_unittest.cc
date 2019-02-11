@@ -103,7 +103,7 @@ class UnifiedMessageListViewTest : public AshTestBase,
 
  protected:
   std::string AddNotification(bool pinned = false) {
-    std::string id = base::IntToString(id_++);
+    std::string id = base::NumberToString(id_++);
     auto notification = std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
         base::UTF8ToUTF16("test title"), base::UTF8ToUTF16("test message"),

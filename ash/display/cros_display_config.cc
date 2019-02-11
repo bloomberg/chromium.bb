@@ -110,8 +110,8 @@ std::vector<mojom::DisplayLayoutPtr> GetDisplayLayouts() {
     if (placement.display_id == display::kInvalidDisplayId)
       continue;
     auto layout = mojom::DisplayLayout::New();
-    layout->id = base::Int64ToString(placement.display_id);
-    layout->parent_id = base::Int64ToString(placement.parent_display_id);
+    layout->id = base::NumberToString(placement.display_id);
+    layout->parent_id = base::NumberToString(placement.parent_display_id);
     layout->position = GetMojomDisplayLayoutPosition(placement.position);
     layout->offset = placement.offset;
     layouts.emplace_back(std::move(layout));
@@ -139,8 +139,8 @@ std::vector<mojom::DisplayLayoutPtr> GetDisplayUnifiedLayouts() {
       const int64_t parent_id = column_index == 0
                                     ? matrix[row_index - 1][column_index]
                                     : row[column_index - 1];
-      layout->id = base::Int64ToString(display_id);
-      layout->parent_id = base::Int64ToString(parent_id);
+      layout->id = base::NumberToString(display_id);
+      layout->parent_id = base::NumberToString(parent_id);
       layout->position = column_index == 0
                              ? mojom::DisplayLayoutPosition::kBottom
                              : mojom::DisplayLayoutPosition::kRight;
@@ -239,7 +239,7 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
       display_manager->GetDisplayInfo(display.id());
 
   auto info = mojom::DisplayUnitInfo::New();
-  info->id = base::Int64ToString(display.id());
+  info->id = base::NumberToString(display.id());
   info->name = display_manager->GetDisplayNameForId(display.id());
 
   if (!display_info.manufacturer_id().empty() ||
@@ -500,10 +500,10 @@ void CrosDisplayConfig::GetDisplayLayoutInfo(
   } else if (display_manager->IsInMirrorMode()) {
     info->layout_mode = mojom::DisplayLayoutMode::kMirrored;
     info->mirror_source_id =
-        base::Int64ToString(display_manager->mirroring_source_id());
+        base::NumberToString(display_manager->mirroring_source_id());
     info->mirror_destination_ids = std::vector<std::string>();
     for (int64_t id : display_manager->GetMirroringDestinationDisplayIdList())
-      info->mirror_destination_ids->emplace_back(base::Int64ToString(id));
+      info->mirror_destination_ids->emplace_back(base::NumberToString(id));
   } else {
     info->layout_mode = mojom::DisplayLayoutMode::kNormal;
   }

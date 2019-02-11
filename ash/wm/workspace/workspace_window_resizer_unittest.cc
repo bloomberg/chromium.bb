@@ -157,7 +157,7 @@ class WorkspaceWindowResizerTest : public AshTestBase {
       if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
         if (!result.empty())
           result += " ";
-        result += base::IntToString((*i)->id());
+        result += base::NumberToString((*i)->id());
       }
     }
     return result;
@@ -631,7 +631,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     // With the resolution of 500x600 we will hit in this case the 50% screen
     // size setting.
     // TODO(varkha): Insets are updated because of http://crbug.com/292238
-    EXPECT_EQ("250,0 250x" + base::IntToString(bottom),
+    EXPECT_EQ("250,0 250x" + base::NumberToString(bottom),
               window_->bounds().ToString());
     EXPECT_EQ("800,10 400x60",
               window_state->GetRestoreBoundsInScreen().ToString());
@@ -819,7 +819,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
   resizer->Drag(CalculateDragPoint(*resizer, 0, 600), 0);
   int expected_y =
       kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;
-  EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x400",
+  EXPECT_EQ("100," + base::NumberToString(expected_y) + " 300x400",
             window_->bounds().ToString());
 }
 
@@ -849,7 +849,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
     // When the mouse cursor is in the primary display, the window cannot move
     // on non-work area but can get all the way towards the bottom,
     // restricted only by the window height.
-    EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x20",
+    EXPECT_EQ("100," + base::NumberToString(expected_y) + " 300x20",
               window_->bounds().ToString());
     // Revert the drag in order to not remember the restore bounds.
     resizer->RevertDrag();
@@ -868,7 +868,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
         kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;
     // When the mouse cursor is in the primary display, the window cannot move
     // on non-work area with kMinOnscreenHeight margin.
-    EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x400",
+    EXPECT_EQ("100," + base::NumberToString(expected_y) + " 300x400",
               window_->bounds().ToString());
     resizer->CompleteDrag();
   }
@@ -924,8 +924,9 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
       window_.get(), gfx::Point(pixels_to_left_border, 0), HTRIGHT));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, -window_width, 0), 0);
-  EXPECT_EQ(base::IntToString(window_x) + ",100 " +
-                base::IntToString(wm::kMinimumOnScreenArea - window_x) + "x380",
+  EXPECT_EQ(base::NumberToString(window_x) + ",100 " +
+                base::NumberToString(wm::kMinimumOnScreenArea - window_x) +
+                "x380",
             window_->bounds().ToString());
 }
 
@@ -942,9 +943,9 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTLEFT));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::IntToString(right - wm::kMinimumOnScreenArea) + ",100 " +
-                base::IntToString(window_width - pixels_to_right_border +
-                                  wm::kMinimumOnScreenArea) +
+  EXPECT_EQ(base::NumberToString(right - wm::kMinimumOnScreenArea) + ",100 " +
+                base::NumberToString(window_width - pixels_to_right_border +
+                                     wm::kMinimumOnScreenArea) +
                 "x380",
             window_->bounds().ToString());
 }
@@ -961,10 +962,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
       window_.get(), gfx::Point(0, bottom - delta_to_bottom), HTTOP));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 0, bottom), 0);
-  EXPECT_EQ("100," + base::IntToString(bottom - wm::kMinimumOnScreenArea) +
+  EXPECT_EQ("100," + base::NumberToString(bottom - wm::kMinimumOnScreenArea) +
                 " 300x" +
-                base::IntToString(height -
-                                  (delta_to_bottom - wm::kMinimumOnScreenArea)),
+                base::NumberToString(
+                    height - (delta_to_bottom - wm::kMinimumOnScreenArea)),
             window_->bounds().ToString());
 }
 
@@ -985,8 +986,8 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTCAPTION));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::IntToString(right - wm::kMinimumOnScreenArea) + ",100 " +
-                base::IntToString(window_width) + "x380",
+  EXPECT_EQ(base::NumberToString(right - wm::kMinimumOnScreenArea) + ",100 " +
+                base::NumberToString(window_width) + "x380",
             window_->bounds().ToString());
 
   // With secondary display.  Operation itself is same but doesn't change
@@ -996,8 +997,8 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
                                          gfx::Insets(0, 0, 50, 0));
   window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::IntToString(window_x + window_width) + ",100 " +
-                base::IntToString(window_width) + "x380",
+  EXPECT_EQ(base::NumberToString(window_x + window_width) + ",100 " +
+                base::NumberToString(window_width) + "x380",
             window_->bounds().ToString());
 }
 

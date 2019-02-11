@@ -105,7 +105,7 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
   item.type = TYPE_APP;
   item.status = STATUS_RUNNING;
   while (!test_api()->IsOverflowButtonVisible()) {
-    item.id = ShelfID(base::IntToString(shelf_model()->item_count()));
+    item.id = ShelfID(base::NumberToString(shelf_model()->item_count()));
     shelf_model()->Add(item);
     ASSERT_LT(shelf_model()->item_count(), 10000);
   }

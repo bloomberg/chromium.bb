@@ -476,7 +476,7 @@ void LoginPasswordView::Clear() {
 }
 
 void LoginPasswordView::InsertNumber(int value) {
-  textfield_->InsertOrReplaceText(base::IntToString16(value));
+  textfield_->InsertOrReplaceText(base::NumberToString16(value));
 }
 
 void LoginPasswordView::Backspace() {

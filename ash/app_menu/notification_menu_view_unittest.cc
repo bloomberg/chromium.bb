@@ -222,7 +222,7 @@ TEST_F(NotificationMenuViewTest, Basic) {
 
   // The counter should update to 1, and the displayed NotificationItemView
   // should match the notification.
-  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(1), test_api()->GetCounterViewContents());
   EXPECT_EQ(1, test_api()->GetItemViewCount());
   CheckDisplayedNotification(notification_0);
 
@@ -231,13 +231,13 @@ TEST_F(NotificationMenuViewTest, Basic) {
   const message_center::Notification notification_1 =
       AddNotification("notification_id_1", base::ASCIIToUTF16("title_1"),
                       base::ASCIIToUTF16("message_1"));
-  EXPECT_EQ(base::IntToString16(2), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(2), test_api()->GetCounterViewContents());
   EXPECT_EQ(2, test_api()->GetItemViewCount());
   CheckDisplayedNotification(notification_1);
 
   // Remove |notification_1|, |notification_0| should be shown.
   notification_menu_view()->OnNotificationRemoved(notification_1.id());
-  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(1), test_api()->GetCounterViewContents());
   EXPECT_EQ(1, test_api()->GetItemViewCount());
   CheckDisplayedNotification(notification_0);
 }
@@ -309,7 +309,7 @@ TEST_F(NotificationMenuViewTest, RemoveOlderNotification) {
                       base::ASCIIToUTF16("message_1"));
 
   // The latest notification should be shown.
-  EXPECT_EQ(base::IntToString16(2), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(2), test_api()->GetCounterViewContents());
   EXPECT_EQ(2, test_api()->GetItemViewCount());
   CheckDisplayedNotification(notification_1);
 
@@ -317,7 +317,7 @@ TEST_F(NotificationMenuViewTest, RemoveOlderNotification) {
   notification_menu_view()->OnNotificationRemoved(notification_0.id());
 
   // The latest notification, |notification_1|, should be shown.
-  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(1), test_api()->GetCounterViewContents());
   EXPECT_EQ(1, test_api()->GetItemViewCount());
   CheckDisplayedNotification(notification_1);
 }
@@ -424,7 +424,7 @@ TEST_F(NotificationMenuViewTest, UpdateNotification) {
 
   // The displayed notification's contents should have changed to match the
   // updated notification.
-  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(1), test_api()->GetCounterViewContents());
   EXPECT_EQ(1, test_api()->GetItemViewCount());
   CheckDisplayedNotification(updated_notification);
 
@@ -433,7 +433,7 @@ TEST_F(NotificationMenuViewTest, UpdateNotification) {
                      base::ASCIIToUTF16("Bad Message"));
 
   // Test that the displayed notification has not been changed.
-  EXPECT_EQ(base::IntToString16(1), test_api()->GetCounterViewContents());
+  EXPECT_EQ(base::NumberToString16(1), test_api()->GetCounterViewContents());
   EXPECT_EQ(1, test_api()->GetItemViewCount());
   CheckDisplayedNotification(updated_notification);
 }

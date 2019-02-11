@@ -761,7 +761,7 @@ bool WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
   auto wallpaper_info_dict = std::make_unique<base::DictionaryValue>();
   wallpaper_info_dict->SetString(
       kNewWallpaperDateNodeName,
-      base::Int64ToString(info.date.ToInternalValue()));
+      base::NumberToString(info.date.ToInternalValue()));
   wallpaper_info_dict->SetString(kNewWallpaperLocationNodeName, info.location);
   wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
   wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);

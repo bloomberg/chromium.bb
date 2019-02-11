@@ -178,17 +178,17 @@ void TouchDataToValue(
   std::string str;
   for (std::size_t row = 0; row < touch_calibration_data.point_pairs.size();
        row++) {
-    str +=
-        base::IntToString(touch_calibration_data.point_pairs[row].first.x()) +
-        " ";
-    str +=
-        base::IntToString(touch_calibration_data.point_pairs[row].first.y()) +
-        " ";
-    str +=
-        base::IntToString(touch_calibration_data.point_pairs[row].second.x()) +
-        " ";
-    str +=
-        base::IntToString(touch_calibration_data.point_pairs[row].second.y());
+    str += base::NumberToString(
+               touch_calibration_data.point_pairs[row].first.x()) +
+           " ";
+    str += base::NumberToString(
+               touch_calibration_data.point_pairs[row].first.y()) +
+           " ";
+    str += base::NumberToString(
+               touch_calibration_data.point_pairs[row].second.x()) +
+           " ";
+    str += base::NumberToString(
+        touch_calibration_data.point_pairs[row].second.y());
     if (row != touch_calibration_data.point_pairs.size() - 1)
       str += " ";
   }
@@ -580,7 +580,7 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
 
     property_value->SetDouble(kDisplayZoom, info.zoom_factor());
 
-    pref_data->Set(base::Int64ToString(id), std::move(property_value));
+    pref_data->Set(base::NumberToString(id), std::move(property_value));
   }
 }
 
@@ -686,7 +686,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
       // display id as key. This is a 1 to 1 mapping of a single entry from
       // AssociationInfoMap to its serialized form.
       association_info_map_value.SetKey(
-          base::Int64ToString(association_info.first),
+          base::NumberToString(association_info.first),
           association_info_value->Clone());
     }
     if (association_info_map_value.empty())
@@ -719,7 +719,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
                                    base::Value(association.first.ToString()));
     association_info_value->SetKey(
         kPortAssociationDisplayId,
-        base::Value(base::Int64ToString(association.second)));
+        base::Value(base::NumberToString(association.second)));
 
     pref_data->SetKey(association.first.SecondaryIdToString(),
                       association_info_value->Clone());
@@ -734,7 +734,7 @@ void StoreExternalDisplayMirrorInfo(PrefService* pref_service) {
   const std::set<int64_t>& external_display_mirror_info =
       GetDisplayManager()->external_display_mirror_info();
   for (const auto& id : external_display_mirror_info)
-    pref_data->GetList().emplace_back(base::Value(base::Int64ToString(id)));
+    pref_data->GetList().emplace_back(base::Value(base::NumberToString(id)));
 }
 
 // Stores mixed mirror mode parameters. Clear the preferences if
@@ -751,12 +751,12 @@ void StoreDisplayMixedMirrorModeParams(
     return;
 
   pref_data->SetKey(kMirroringSourceId,
-                    base::Value(base::Int64ToString(mixed_params->source_id)));
+                    base::Value(base::NumberToString(mixed_params->source_id)));
 
   base::ListValue mirroring_destination_ids_value;
   for (const auto& id : mixed_params->destination_ids) {
     mirroring_destination_ids_value.GetList().emplace_back(
-        base::Value(base::Int64ToString(id)));
+        base::Value(base::NumberToString(id)));
   }
   pref_data->SetKey(kMirroringDestinationIds,
                     std::move(mirroring_destination_ids_value));
@@ -961,7 +961,7 @@ void DisplayPrefs::StoreLegacyTouchDataForTest(
   std::unique_ptr<base::DictionaryValue> property_value =
       std::make_unique<base::DictionaryValue>();
   TouchDataToValue(data, property_value.get());
-  pref_data->Set(base::Int64ToString(display_id), std::move(property_value));
+  pref_data->Set(base::NumberToString(display_id), std::move(property_value));
 }
 
 bool DisplayPrefs::ParseTouchCalibrationStringForTest(
