@@ -130,6 +130,13 @@ class SmbService : public KeyedService,
       const std::vector<ProvidedFileSystemInfo>& file_systems,
       const std::vector<SmbUrl>& preconfigured_shares);
 
+  // Closure for OnHostDiscovered(). |reply| is passed down to
+  // UpdateSharePath().
+  void OnHostsDiscoveredForUpdateSharePath(
+      int32_t mount_id,
+      const std::string& share_path,
+      StartReadDirIfSuccessfulCallback reply);
+
   // Attempts to remount a share with the information in |file_system_info|.
   void Remount(const ProvidedFileSystemInfo& file_system_info);
 
@@ -234,10 +241,15 @@ class SmbService : public KeyedService,
                                  StartReadDirIfSuccessfulCallback reply,
                                  smbprovider::ErrorType error);
 
+  // Helper function that determines if HostDiscovery can be run again. Returns
+  // false if HostDiscovery was recently run.
+  bool ShouldRunHostDiscoveryAgain() const;
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
   static bool service_should_run_;
+  base::TimeTicks previous_host_discovery_time_;
   const ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<base::TickClock> tick_clock_;
