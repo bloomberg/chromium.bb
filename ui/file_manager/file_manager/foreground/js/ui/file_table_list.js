@@ -79,7 +79,6 @@ class FileListSelectionController extends cr.ui.ListSelectionController {
    */
   constructor(selectionModel) {
     super(selectionModel);
-    //cr.ui.ListSelectionController.call(this, selectionModel);
 
     /**
      * Whether to allow touch-specific interaction.
@@ -109,9 +108,9 @@ class FileListSelectionController extends cr.ui.ListSelectionController {
     }
     if (this.tapHandler_.handleTouchEvents(
             e, index, filelist.handleTap.bind(this))) {
-      // If a tap event is processed, FileTapHandler cancels the event to prevent
-      // triggering click events. Then it results not moving the focus to the
-      // list. So we do that here explicitly.
+      // If a tap event is processed, FileTapHandler cancels the event to
+      // prevent triggering click events. Then it results not moving the focus
+      // to the list. So we do that here explicitly.
       filelist.focusParentList(e);
     }
   }
@@ -368,8 +367,9 @@ filelist.handlePointerDownUp = function(e, index) {
   // If multiple selection is allowed and the checkmark is clicked without
   // modifiers(Ctrl/Shift), the click should toggle the item's selection.
   // (i.e. same behavior as Ctrl+Click)
-  const isClickOnCheckmark = isTargetCheckmark && sm.multiple && index != -1 &&
-                           !e.shiftKey && !e.ctrlKey && e.button == 0;
+  const isClickOnCheckmark =
+      (isTargetCheckmark && sm.multiple && index != -1 && !e.shiftKey &&
+       !e.ctrlKey && e.button == 0);
 
   sm.beginChange();
 
@@ -460,7 +460,7 @@ filelist.handleKeyDown = function(e) {
       if (e.keyCode == SPACE_KEY_CODE) {
         return;
       }
-    // Protect all but the most basic navigation commands in anything else.
+      // Protect all but the most basic navigation commands in anything else.
     } else if (e.key != 'ArrowUp' && e.key != 'ArrowDown') {
       return;
     }
@@ -511,22 +511,22 @@ filelist.handleKeyDown = function(e) {
       newIndex = this.getLastIndex();
       break;
     case 'ArrowUp':
-      newIndex = leadIndex == -1 ?
-          this.getLastIndex() : this.getIndexAbove(leadIndex);
+      newIndex =
+          leadIndex == -1 ? this.getLastIndex() : this.getIndexAbove(leadIndex);
       break;
     case 'ArrowDown':
-      newIndex = leadIndex == -1 ?
-          this.getFirstIndex() : this.getIndexBelow(leadIndex);
+      newIndex = leadIndex == -1 ? this.getFirstIndex() :
+                                   this.getIndexBelow(leadIndex);
       break;
     case 'ArrowLeft':
     case 'MediaTrackPrevious':
-      newIndex = leadIndex == -1 ?
-          this.getLastIndex() : this.getIndexBefore(leadIndex);
+      newIndex = leadIndex == -1 ? this.getLastIndex() :
+                                   this.getIndexBefore(leadIndex);
       break;
     case 'ArrowRight':
     case 'MediaTrackNext':
-      newIndex = leadIndex == -1 ?
-          this.getFirstIndex() : this.getIndexAfter(leadIndex);
+      newIndex = leadIndex == -1 ? this.getFirstIndex() :
+                                   this.getIndexAfter(leadIndex);
       break;
     default:
       prevent = false;
