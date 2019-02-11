@@ -21,6 +21,14 @@ const int kSeparatorId = -1;
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel::Delegate, public:
 
+bool SimpleMenuModel::Delegate::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool SimpleMenuModel::Delegate::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
 bool SimpleMenuModel::Delegate::IsCommandIdVisible(int command_id) const {
   return true;
 }

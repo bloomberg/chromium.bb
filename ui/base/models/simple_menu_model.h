@@ -30,9 +30,14 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
    public:
     ~Delegate() override {}
 
-    // Methods for determining the state of specific command ids.
-    virtual bool IsCommandIdChecked(int command_id) const = 0;
-    virtual bool IsCommandIdEnabled(int command_id) const = 0;
+    // Makes |command_id| appear toggled true if it's a "check" or "radio" type
+    // menu item. This has no effect for menu items with no boolean state.
+    virtual bool IsCommandIdChecked(int command_id) const;
+
+    // Delegate should return true if |command_id| should be enabled.
+    virtual bool IsCommandIdEnabled(int command_id) const;
+
+    // Delegate should return true if |command_id| should be visible.
     virtual bool IsCommandIdVisible(int command_id) const;
 
     // Some command ids have labels, sublabels, minor text and icons that change
