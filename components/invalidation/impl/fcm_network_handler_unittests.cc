@@ -149,7 +149,7 @@ class MockGCMDriver : public gcm::GCMDriver {
 
 class MockInstanceIDDriver : public InstanceIDDriver {
  public:
-  MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr){};
+  MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
   ~MockInstanceIDDriver() override = default;
 
   MOCK_METHOD1(GetInstanceID, InstanceID*(const std::string& app_id));

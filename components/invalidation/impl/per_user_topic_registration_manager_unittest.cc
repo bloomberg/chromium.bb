@@ -90,7 +90,7 @@ network::URLLoaderCompletionStatus CreateStatusForTest(
   return response_status;
 }
 
-};  // namespace
+}  // namespace
 
 class RegistrationManagerStateObserver
     : public PerUserTopicRegistrationManager::Observer {
