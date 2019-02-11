@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/selector.h"
 
+#include "base/strings/string_util.h"
+
 namespace autofill_assistant {
 
 Selector::Selector() : pseudo_type(PseudoType::UNDEFINED) {}
@@ -39,6 +41,16 @@ bool Selector::operator==(const Selector& other) const {
 
 bool Selector::empty() const {
   return this->selectors.empty();
+}
+
+std::ostream& operator<<(std::ostream& out, const Selector& selector) {
+#ifdef NDEBUG
+  out << selector.selectors.size() << " element(s)";
+  return out;
+#else
+  out << "elements=[" << base::JoinString(selector.selectors, ",") << "]";
+  return out;
+#endif  // NDEBUG
 }
 
 }  // namespace autofill_assistant

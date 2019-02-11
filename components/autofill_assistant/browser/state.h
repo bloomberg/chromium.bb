@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_STATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_STATE_H_
 
+#include <ostream>
+
 namespace autofill_assistant {
 
 // High-level states the Autofill Assistant can be in.
@@ -46,6 +48,43 @@ enum class AutofillAssistantState {
   // Status message contains the final message.
   STOPPED
 };
+
+inline std::ostream& operator<<(std::ostream& out,
+                                const AutofillAssistantState& state) {
+#ifdef NDEBUG
+  // Non-debugging builds write the enum number.
+  out << static_cast<int>(state);
+  return out;
+#else
+  // Debugging builds write a string representation of |state|.
+  switch (state) {
+    case AutofillAssistantState::INACTIVE:
+      out << "INACTIVE";
+      break;
+    case AutofillAssistantState::STARTING:
+      out << "STARTING";
+      break;
+    case AutofillAssistantState::RUNNING:
+      out << "RUNNING";
+      break;
+    case AutofillAssistantState::PROMPT:
+      out << "PROMPT";
+      break;
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+      out << "AUTOSTART_FALLBACK_PROMPT";
+      break;
+    case AutofillAssistantState::MODAL_DIALOG:
+      out << "MODAL_DIALOG";
+      break;
+    case AutofillAssistantState::STOPPED:
+      out << "STOPPED";
+      break;
+      // Intentionally no default case to make compilation fail if a new value
+      // was added to the enum but not to this list.
+  }
+  return out;
+#endif  // NDEBUG
+}
 
 }  // namespace autofill_assistant
 
