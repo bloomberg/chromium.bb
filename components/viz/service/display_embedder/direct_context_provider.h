@@ -35,6 +35,7 @@ namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
 class GLES2Interface;
+class TextureManager;
 }  // namespace gles2
 }  // namespace gpu
 
@@ -60,7 +61,14 @@ class VIZ_SERVICE_EXPORT DirectContextProvider
                         const gpu::GpuPreferences& gpu_preferences,
                         gpu::gles2::FeatureInfo* feature_info);
   gpu::DecoderContext* decoder() { return decoder_.get(); }
-  void SetGLRendererCopierRequiredState();
+
+  // Set required state, including texture_client_id as color attachment 0
+  // of a currently bound framebuffer. If texture_client_id == 0, set FBO0 as
+  // current.
+  void SetGLRendererCopierRequiredState(GLuint texture_client_id);
+  gpu::gles2::TextureManager* texture_manager();
+  GLuint GenClientTextureId();
+  void DeleteClientTextureId(GLuint client_id);
 
   // ContextProvider implementation.
   void AddRef() const override;
@@ -132,6 +140,8 @@ class VIZ_SERVICE_EXPORT DirectContextProvider
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_refptr<gl::GLContext> gl_context_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
+
+  GLuint framebuffer_id_ = 0;
 
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
 };

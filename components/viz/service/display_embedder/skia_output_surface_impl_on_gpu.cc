@@ -12,7 +12,9 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -119,6 +121,99 @@ CreateSharedImageRepresentationFactory(
   return nullptr;
 }
 
+class ScopedSurfaceToTexture {
+ public:
+  ScopedSurfaceToTexture(scoped_refptr<DirectContextProvider> context_provider,
+                         SkSurface* surface)
+      : context_provider_(context_provider) {
+    GrBackendTexture skia_texture =
+        surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
+    GrGLTextureInfo gl_texture_info;
+    skia_texture.getGLTextureInfo(&gl_texture_info);
+    GLuint client_id = context_provider_->GenClientTextureId();
+    auto* texture_manager = context_provider_->texture_manager();
+    texture_ref_ =
+        texture_manager->CreateTexture(client_id, gl_texture_info.fID);
+    texture_manager->SetTarget(texture_ref_.get(), gl_texture_info.fTarget);
+    texture_manager->SetLevelInfo(
+        texture_ref_.get(), gl_texture_info.fTarget,
+        /*level=*/0,
+        /*internal_format=*/GL_RGBA, surface->width(), surface->height(),
+        /*depth=*/1, /*border=*/0,
+        /*format=*/GL_RGBA, /*type=*/GL_UNSIGNED_BYTE,
+        /*cleared_rect=*/gfx::Rect(surface->width(), surface->height()));
+  }
+
+  ~ScopedSurfaceToTexture() {
+    context_provider_->DeleteClientTextureId(client_id());
+
+    // Skia owns the texture. It will delete it when it is done.
+    texture_ref_->ForceContextLost();
+  }
+
+  GLuint client_id() { return texture_ref_->client_id(); }
+
+ private:
+  scoped_refptr<DirectContextProvider> context_provider_;
+  scoped_refptr<gpu::gles2::TextureRef> texture_ref_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSurfaceToTexture);
+};
+
+// This SingleThreadTaskRunner runs tasks on the GPU main thread, where
+// DirectContextProvider can safely service calls. It wraps all posted tasks to
+// ensure that |impl_on_gpu_->context_provider_| is made current and in a known
+// state when the task is run. If |impl_on_gpu| is destructed, pending tasks are
+// no-oped when they are run.
+class ContextCurrentTaskRunner : public base::SingleThreadTaskRunner {
+ public:
+  explicit ContextCurrentTaskRunner(SkiaOutputSurfaceImplOnGpu* impl_on_gpu)
+      : real_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        impl_on_gpu_(impl_on_gpu) {}
+
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    return real_task_runner_->PostDelayedTask(
+        from_here, WrapClosure(std::move(task)), delay);
+  }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    return real_task_runner_->PostNonNestableDelayedTask(
+        from_here, WrapClosure(std::move(task)), delay);
+  }
+
+  bool RunsTasksInCurrentSequence() const override {
+    return real_task_runner_->RunsTasksInCurrentSequence();
+  }
+
+ private:
+  base::OnceClosure WrapClosure(base::OnceClosure task) {
+    return base::BindOnce(
+        [](base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
+           base::OnceClosure task) {
+          if (!impl_on_gpu)
+            return;
+          SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider scoped_use(
+              impl_on_gpu.get(), /*texture_client_id=*/0);
+          if (!scoped_use.valid())
+            return;
+
+          std::move(task).Run();
+        },
+        impl_on_gpu_->weak_ptr(), std::move(task));
+  }
+
+  ~ContextCurrentTaskRunner() override = default;
+
+  scoped_refptr<base::SingleThreadTaskRunner> real_task_runner_;
+  SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextCurrentTaskRunner);
+};
+
 }  // namespace
 
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
@@ -140,7 +235,8 @@ SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
     OffscreenSurface&& offscreen_surface) = default;
 
 SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::ScopedUseContextProvider(
-    SkiaOutputSurfaceImplOnGpu* impl_on_gpu)
+    SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
+    GLuint texture_client_id)
     : impl_on_gpu_(impl_on_gpu) {
   if (!impl_on_gpu_->MakeCurrent()) {
     valid_ = false;
@@ -149,14 +245,15 @@ SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::ScopedUseContextProvider(
 
   // GLRendererCopier uses context_provider_->ContextGL(), which caches GL state
   // and removes state setting calls that it considers redundant. To get to a
-  // safe known GL state, we first call the client side to set the cached state,
-  // then we make driver GL state consistent with that.
-  impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState();
+  // known GL state, we first set driver GL state and then make client side
+  // consistent with that.
   auto* api = impl_on_gpu_->api_;
   api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
   api->glDisableFn(GL_SCISSOR_TEST);
   api->glDisableFn(GL_STENCIL_TEST);
   api->glDisableFn(GL_BLEND);
+  impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState(
+      texture_client_id);
 }
 
 SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::
@@ -250,6 +347,7 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
 
   // ~DirectContextProvider wants either the context to be lost or made current.
   MakeCurrent();
+  context_provider_.reset();
 
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_surface_) {
@@ -481,7 +579,6 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request) {
-  // TODO(crbug.com/914502): Do this on the GPU instead of CPU with GL.
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!MakeCurrent())
@@ -492,22 +589,50 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       id ? offscreen_surfaces_[id].surface.get() : sk_surface_.get();
 
   if (!is_using_vulkan()) {
-    if (!context_provider_) {
+    // Lazy initialize GLRendererCopier.
+    if (!copier_) {
       context_provider_ = base::MakeRefCounted<DirectContextProvider>(
           context_state_->context(), gl_surface_, supports_alpha_,
           gpu_preferences_, feature_info_.get());
-      context_provider_->BindToCurrentThread();
+      auto result = context_provider_->BindToCurrentThread();
+      if (result != gpu::ContextResult::kSuccess) {
+        DLOG(ERROR) << "Couldn't initialize GLRendererCopier";
+        context_provider_ = nullptr;
+        return;
+      }
+      context_current_task_runner_ =
+          base::MakeRefCounted<ContextCurrentTaskRunner>(this);
+      texture_deleter_ =
+          std::make_unique<TextureDeleter>(context_current_task_runner_);
+      copier_ = std::make_unique<GLRendererCopier>(context_provider_,
+                                                   texture_deleter_.get());
+      copier_->set_async_gl_task_runner(context_current_task_runner_);
     }
-    ScopedUseContextProvider use_context_provider(this);
+    surface->flush();
 
-    // TODO(crbug.com/914502): Do this on the GPU instead of CPU with GL.
-    // copier_->CopyFromTextureOrFramebuffer(
-    //     std::move(request), output_rect,
-    //     internal_format, gl_id, surface_size, flipped, color_space);
+    GLuint gl_id = 0;
+    GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
+    // TODO(https://crbug.com/929790): This seems to be because sk_surface_ for
+    // GL has kBottomLeft_kBottomLeft_GrSurfaceOrigin.
+    bool flipped = true;
 
-    // GLRendererCopier may have kicked off a glQuery.
+    base::Optional<ScopedSurfaceToTexture> texture_mapper;
+    if (id) {
+      texture_mapper.emplace(context_provider_.get(), surface);
+      gl_id = texture_mapper.value().client_id();
+      internal_format = GL_RGBA;
+      flipped = false;
+    }
+    gfx::Size surface_size(surface->width(), surface->height());
+    ScopedUseContextProvider use_context_provider(this, gl_id);
+    copier_->CopyFromTextureOrFramebuffer(std::move(request), geometry,
+                                          internal_format, gl_id, surface_size,
+                                          flipped, color_space);
+
     if (decoder()->HasMoreIdleWork() || decoder()->HasPendingQueries())
       ScheduleDelayedWork();
+
+    return;
   }
 
   SkBitmap bitmap;
@@ -590,7 +715,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleDelayedWork() {
 
 void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ScopedUseContextProvider use_context_provider(this);
+  ScopedUseContextProvider use_context_provider(this, /*texture_client_id=*/0);
 
   delayed_work_pending_ = false;
   if (MakeCurrent()) {
@@ -892,6 +1017,9 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
     if (!context_state_->MakeCurrent(gl_surface_.get())) {
       LOG(ERROR) << "Failed to make current.";
       context_lost_callback_.Run();
+      if (context_provider_)
+        context_provider_->decoder()->MarkContextLost(
+            gpu::error::kMakeCurrentFailed);
       return false;
     }
     context_state_->set_need_context_state_reset(true);

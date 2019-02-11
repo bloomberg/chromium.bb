@@ -192,7 +192,8 @@ void SkiaOutputSurfaceImplTest::CopyRequestCallbackOnGpuThread(
 }
 
 TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
-  output_surface_->Reshape(gfx::Size(100.0, 100.0), 1, gfx::ColorSpace(), true,
+  const gfx::Rect surface_rect(0, 0, 100, 100);
+  output_surface_->Reshape(surface_rect.size(), 1, gfx::ColorSpace(), true,
                            false);
   SkCanvas* root_canvas = output_surface_->BeginPaintCurrentFrame();
   SkPaint paint;
@@ -224,10 +225,15 @@ TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
                      color_space));
   request->set_result_task_runner(gpu_thread_->task_runner());
   copy_output::RenderPassGeometry geometry;
-  geometry.result_bounds = output_rect;
+  geometry.result_bounds = surface_rect;
   geometry.result_selection = output_rect;
-  geometry.sampling_bounds = output_rect;
-  geometry.readback_offset = gfx::Vector2d(0, 0);
+  geometry.sampling_bounds = surface_rect;
+  // TODO(https://crbug.com/929790): The need to change the value of
+  // readback_offset when using GLRendererCopier suggests a bug that needs
+  // further investigation because we will still have software readback for
+  // SkiaRenderer with Vulkan.
+  geometry.readback_offset = gfx::Vector2d(0, 90);
+
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
   BlockMainThread();
 }

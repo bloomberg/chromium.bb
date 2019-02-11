@@ -61,7 +61,9 @@ class PlatformWindowSurface;
 namespace viz {
 
 class DirectContextProvider;
+class GLRendererCopier;
 class GpuServiceImpl;
+class TextureDeleter;
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -167,7 +169,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   // will keep cached state consistent with driver GL state.
   class ScopedUseContextProvider {
    public:
-    explicit ScopedUseContextProvider(SkiaOutputSurfaceImplOnGpu* impl_on_gpu);
+    explicit ScopedUseContextProvider(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
+                                      GLuint texture_client_id);
     ~ScopedUseContextProvider();
     bool valid() { return valid_; }
 
@@ -278,7 +281,11 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   ui::LatencyTracker latency_tracker_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> context_current_task_runner_;
   scoped_refptr<DirectContextProvider> context_provider_;
+  std::unique_ptr<TextureDeleter> texture_deleter_;
+  std::unique_ptr<GLRendererCopier> copier_;
+
   bool delayed_work_pending_ = false;
 
   gl::GLApi* api_ = nullptr;
