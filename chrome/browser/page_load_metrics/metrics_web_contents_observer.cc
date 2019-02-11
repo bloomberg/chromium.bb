@@ -55,7 +55,8 @@ UserInitiatedInfo CreateUserInitiatedInfo(
     return UserInitiatedInfo::BrowserInitiated();
 
   return UserInitiatedInfo::RenderInitiated(
-      navigation_handle->HasUserGesture());
+      navigation_handle->HasUserGesture(),
+      !navigation_handle->NavigationInputStart().is_null());
 }
 
 }  // namespace

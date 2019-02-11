@@ -161,16 +161,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   ukm::builders::PageLoad builder(info.source_id);
-  bool is_user_initiated_navigation =
-      // All browser initiated page loads are user-initiated.
-      info.user_initiated_info.browser_initiated ||
-
-      // Renderer-initiated navigations are user-initiated if there is an
-      // associated input timestamp.
-      timing.input_to_navigation_start;
-
-  builder.SetExperimental_Navigation_UserInitiated(
-      is_user_initiated_navigation);
   if (timing.input_to_navigation_start) {
     builder.SetExperimental_InputToNavigationStart(
         timing.input_to_navigation_start.value().InMilliseconds());
@@ -293,6 +283,17 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     builder.SetPageTiming_ForegroundDuration(
         foreground_duration.value().InMilliseconds());
   }
+
+  bool is_user_initiated_navigation =
+      // All browser initiated page loads are user-initiated.
+      info.user_initiated_info.browser_initiated ||
+
+      // Renderer-initiated navigations are user-initiated if there is an
+      // associated input event.
+      info.user_initiated_info.user_input_event;
+
+  builder.SetExperimental_Navigation_UserInitiated(
+      is_user_initiated_navigation);
 
   // Convert to the EffectiveConnectionType as used in SystemProfileProto
   // before persisting the metric.

@@ -202,6 +202,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
         kv.second.get(),
         PageLoad::kPageTiming_NavigationToFailedProvisionalLoadName));
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kExperimental_Navigation_UserInitiatedName,
+        false);
   }
 }
 
