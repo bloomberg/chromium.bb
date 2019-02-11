@@ -23,7 +23,6 @@ class PLATFORM_EXPORT StereoPanner {
  public:
   static std::unique_ptr<StereoPanner> Create(float sample_rate);
   ~StereoPanner() = default;
-  ;
 
   void PanWithSampleAccurateValues(const AudioBus* input_bus,
                                    AudioBus* output_bus,
