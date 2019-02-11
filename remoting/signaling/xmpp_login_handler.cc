@@ -215,7 +215,7 @@ void XmppLoginHandler::StartAuthHandshake() {
              "xmlns:auth=\"http://www.google.com/talk/protocol/auth\">" +
         cookie +
       "</auth>");
-};
+}
 
 void XmppLoginHandler::OnParserError() {
   OnError(SignalStrategy::PROTOCOL_ERROR);

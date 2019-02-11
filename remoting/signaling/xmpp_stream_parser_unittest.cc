@@ -51,18 +51,18 @@ class XmppStreamParserTest : public testing::Test {
 TEST_F(XmppStreamParserTest, ParseXmppStream) {
   parser_->AppendData("<stream><iq>text</iq>");
   EXPECT_EQ(received_stanzas_[0]->Str(), "<iq>text</iq>");
-};
+}
 
 TEST_F(XmppStreamParserTest, HandleMultipleIncomingStanzas) {
   parser_->AppendData("<stream><iq>text</iq><iq>more text</iq>");
   EXPECT_EQ(received_stanzas_[0]->Str(), "<iq>text</iq>");
   EXPECT_EQ(received_stanzas_[1]->Str(), "<iq>more text</iq>");
-};
+}
 
 TEST_F(XmppStreamParserTest, IgnoreWhitespaceBetweenStanzas) {
   parser_->AppendData("<stream> <iq>text</iq>");
   EXPECT_EQ(received_stanzas_[0]->Str(), "<iq>text</iq>");
-};
+}
 
 TEST_F(XmppStreamParserTest, AssembleMessagesFromChunks) {
   parser_->AppendData("<stream><i");
@@ -76,22 +76,22 @@ TEST_F(XmppStreamParserTest, AssembleMessagesFromChunks) {
   parser_->AppendData("</iq>");
 
   EXPECT_EQ(received_stanzas_[0]->Str(), "<iq>😃</iq>");
-};
+}
 
 TEST_F(XmppStreamParserTest, StopParsingOnErrors) {
   parser_->AppendData("<stream><invalidtag p!='a'></invalidtag><iq>text</iq>");
   EXPECT_TRUE(error_);
   EXPECT_TRUE(received_stanzas_.empty());
-};
+}
 
 TEST_F(XmppStreamParserTest, FailOnInvalidStreamHeader) {
   parser_->AppendData("<stream p!='a'>");
   EXPECT_TRUE(error_);
-};
+}
 
 TEST_F(XmppStreamParserTest, FailOnLooseText) {
   parser_->AppendData("stream<");
   EXPECT_TRUE(error_);
-};
+}
 
 }  // namespace remoting

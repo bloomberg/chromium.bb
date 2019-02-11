@@ -120,7 +120,7 @@ class BufferedSocketWriterTest : public testing::Test {
     writer_->Start(base::Bind(&WriteNetSocket, socket_.get()),
                    base::Bind(&BufferedSocketWriterTest::OnWriteFailed,
                               base::Unretained(this)));
-  };
+  }
 
   void OnWriteFailed(int error) {
     write_error_ = error;

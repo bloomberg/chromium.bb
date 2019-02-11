@@ -38,8 +38,8 @@ class IceTransportChannel : public sigslot::has_slots<> {
  public:
   class Delegate {
    public:
-    Delegate() {};
-    virtual ~Delegate() {};
+    Delegate() {}
+    virtual ~Delegate() {}
 
     // Called to pass ICE credentials to the session. Used only for STANDARD
     // version of ICE, see SetIceVersion().

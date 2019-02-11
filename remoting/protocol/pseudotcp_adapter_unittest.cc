@@ -39,7 +39,7 @@ const int kTestDataSize = kMessages * kMessageSize;
 class RateLimiter {
  public:
   virtual ~RateLimiter() = default;
-  ;
+
   // Returns true if the new packet needs to be dropped, false otherwise.
   virtual bool DropNextPacket() = 0;
 };
@@ -107,9 +107,9 @@ class FakeSocket : public P2PDatagramSocket {
 
   void set_rate_limiter(RateLimiter* rate_limiter) {
     rate_limiter_ = rate_limiter;
-  };
+  }
 
-  void set_latency(int latency_ms) { latency_ms_ = latency_ms; };
+  void set_latency(int latency_ms) { latency_ms_ = latency_ms; }
 
   // P2PDatagramSocket interface.
   int Recv(const scoped_refptr<net::IOBuffer>& buf, int buf_len,

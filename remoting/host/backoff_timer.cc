@@ -32,7 +32,7 @@ void BackoffTimer::Stop() {
   timer_->Stop();
   user_task_.Reset();
   backoff_entry_.reset();
-};
+}
 
 void BackoffTimer::SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer) {
   timer_ = std::move(timer);

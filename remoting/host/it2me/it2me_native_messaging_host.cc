@@ -345,7 +345,7 @@ void It2MeNativeMessagingHost::ProcessIncomingIq(
 
   incoming_message_callback_.Run(iq);
   SendMessageToClient(std::move(response));
-};
+}
 
 void It2MeNativeMessagingHost::SendOutgoingIq(const std::string& iq) {
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());

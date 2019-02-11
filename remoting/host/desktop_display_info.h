@@ -46,7 +46,7 @@ class DesktopDisplayInfo {
   bool operator==(const DesktopDisplayInfo& other);
   bool operator!=(const DesktopDisplayInfo& other);
 
-  const std::vector<DisplayGeometry>& displays() const { return displays_; };
+  const std::vector<DisplayGeometry>& displays() const { return displays_; }
 
  private:
   std::vector<DisplayGeometry> displays_;

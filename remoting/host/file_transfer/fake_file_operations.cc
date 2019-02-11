@@ -77,7 +77,7 @@ FakeFileOperations::FakeFileWriter::FakeFileWriter(
 
 FakeFileOperations::FakeFileWriter::~FakeFileWriter() {
   Cancel();
-};
+}
 
 void FakeFileOperations::FakeFileWriter::WriteChunk(std::string data,
                                                     Callback callback) {
