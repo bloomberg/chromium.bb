@@ -401,7 +401,7 @@ class RenderTextTest : public testing::Test {
     test_api_.reset(new test::RenderTextTestApi(GetRenderText()));
   }
 
-  RenderTextHarfBuzz* GetRenderText() { return render_text_.get(); };
+  RenderTextHarfBuzz* GetRenderText() { return render_text_.get(); }
 
   Rect GetSubstringBoundsUnion(const Range& range) {
     const std::vector<Rect> bounds = render_text_->GetSubstringBounds(range);
@@ -485,7 +485,7 @@ class RenderTextTest : public testing::Test {
 
   Canvas* canvas() { return &canvas_; }
   TestSkiaTextRenderer* renderer() { return &renderer_; }
-  test::RenderTextTestApi* test_api() { return test_api_.get(); };
+  test::RenderTextTestApi* test_api() { return test_api_.get(); }
 
  private:
   // Needed to bypass DCHECK in GetFallbackFont.
