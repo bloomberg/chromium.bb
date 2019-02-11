@@ -1,0 +1,168 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/load_time_data.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="management_browser_proxy.html">
+
+<dom-module id="management-ui">
+  <template>
+    <style>
+      :host {
+        @apply --cr-page-host;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      cr-toolbar {
+        --iron-icon-fill-color: white;
+        background-color: var(--md-toolbar-color);
+        color: white;
+        flex-shrink: 0;
+      }
+
+      main {
+        overflow: auto;
+        padding-bottom: 2em;
+      }
+
+      .header {
+        font-weight: 500;
+      }
+
+      h2 {
+        @apply --cr-title-text;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        margin: 1em 0;
+      }
+
+      section {
+        @apply --cr-section;
+      }
+
+      .browser-report {
+        align-items: center;
+        display: flex;
+      }
+
+      .single-column {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .content-indented {
+        margin-inline-start: 20px;
+      }
+
+      .three-line {
+        min-height: var(--cr-section-three-line-min-height);
+      }
+
+      .extension-name {
+        align-items: center;
+        display: flex;
+        flex: 2;
+      }
+
+      .extension-name > div {
+        align-items: center;
+        display: flex;
+      }
+
+      .extension-name img {
+        margin-inline-end: 20px;
+      }
+
+      .extension-permissions {
+        flex: 3;
+      }
+
+      .extensions-list .list-item {
+        display: flex;
+      }
+
+      .browser-report li,
+      .extensions-list li {
+        padding: 2px;
+      }
+
+      .browser-report ul,
+      .extensions-list ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .list-item div {
+        padding: 0 5px 0;
+      }
+    </style>
+
+    <cr-toolbar page-name="$i18n{title}" show-search="[[showSearchInToolbar_]]">
+    </cr-toolbar>
+    <main id="mainContent">
+      <template is="dom-if"
+          if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
+        <section class="three-line single-column">
+          <h2>$i18n{browserReporting}</h2>
+          <div class="content-indented browser-report">
+            <ul>
+              <template is="dom-repeat" items="[[browserReportingInfo_]]">
+                <li>[[item]]</li>
+              </template>
+            </ul>
+          </div>
+        </section>
+      </template>
+      <template is="dom-if" if="[[showExtensionReportingInfo_(extensions_)]]">
+        <section class="three-line single-column">
+          <h2>$i18n{extensionReporting}</h2>
+          <div class="content-indented subtitle">
+            $i18n{extensionsInstalled}
+          </div>
+          <div class="extensions-list">
+            <div class="list-item header">
+              <div class="extension-name">$i18n{extensionName}</div>
+              <div class="extension-permissions">
+                $i18n{extensionPermissions}
+              </div>
+            </div>
+            <template is="dom-repeat" items="[[extensions_]]">
+              <div class="list-item">
+                <div class="extension-name">
+                  <img src="[[item.icon]]" aria-describedby="a11yAssociation">
+                  <span>[[item.name]]</span>
+                </div>
+                <div class="extension-permissions">
+                  <ul>
+                    <template is="dom-repeat" items="[[item.permissions]]"
+                        as="permission">
+                      <li>[[permission]]</li>
+                    </template>
+                  </ul>
+                </div>
+            </template>
+          </div>
+        </section>
+      </template>
+      <if expr="chromeos">
+        <template is="dom-if" if="[[localTrustRoots_]]">
+          <section class="three-line single-column">
+            <h2>$i18n{localTrustRoots}</h2>
+            <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
+          </section>
+        </template>
+      </if>
+      <if expr="not chromeos">
+        <section class="three-line single-column">
+          <p>$i18n{managementDesktopMonitoringNotice}</p>
+        </section>
+      </if>
+    </main>
+  </template>
+  <script src="management_ui.js"></script>
+</dom-module>
