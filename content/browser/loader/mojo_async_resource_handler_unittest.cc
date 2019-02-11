@@ -1420,7 +1420,7 @@ TEST_F(MojoAsyncResourceHandlerTest, SSLInfoOnComplete) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_FALSE(url_loader_client_.completion_status().ssl_info);
-};
+}
 
 // Test that SSLInfo is attached to OnResponseComplete when there is the
 // kURLLoadOptionsSendSSLInfoForCertificateError option.
@@ -1438,7 +1438,7 @@ TEST_F(MojoAsyncResourceHandlerSendSSLInfoForCertificateError,
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.completion_status().ssl_info);
-};
+}
 
 // Test that SSLInfo is not attached to OnResponseComplete when there is the
 // kURLLoadOptionsSendSSLInfoForCertificateError option and a minor SSL error.
@@ -1455,7 +1455,7 @@ TEST_F(MojoAsyncResourceHandlerSendSSLInfoForCertificateError,
             mock_loader_->OnResponseCompleted(net::URLRequestStatus()));
   url_loader_client_.RunUntilComplete();
   EXPECT_FALSE(url_loader_client_.completion_status().ssl_info);
-};
+}
 
 TEST_F(MojoAsyncResourceHandlerTest,
        TransferSizeUpdateCalledForNonBlockedResponse) {

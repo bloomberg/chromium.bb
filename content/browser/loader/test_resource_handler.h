@@ -145,7 +145,7 @@ class TestResourceHandler : public ResourceHandler {
 
   network::ResourceResponse* resource_response() {
     return resource_response_.get();
-  };
+  }
 
   const std::string& body() const { return body_; }
   net::URLRequestStatus final_status() const { return final_status_; }
