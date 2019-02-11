@@ -11,9 +11,16 @@
 -->
 
 <grit-part>
+  <if expr="chromeos">
+    <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
+      <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> management
+    </message>
+  </if>
+  <if expr="not chromeos">
   <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
-    <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> management
-  </message>
+      Chrome Browser management
+    </message>
+  </if>
   <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization">
     Device managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
   </message>

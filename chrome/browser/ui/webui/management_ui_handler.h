@@ -46,11 +46,23 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
-  void HandleGetManagementTitle(const base::ListValue* args);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  void AddExtensionReportingInfo(base::Value* report_sources);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  base::string16 GetEnterpriseManagementStatusString();
 
   void HandleGetDeviceManagementStatus(const base::ListValue* args);
 
+  void HandleGetExtensions(const base::ListValue* args);
+
+#if defined(OS_CHROMEOS)
+  void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
+#endif  // defined(OS_CHROMEOS)
+
   void HandleGetReportingDevice(const base::ListValue* args);
+
+  void HandleGetReportingInfo(const base::ListValue* args);
 
   void HandleGetReportingSecurity(const base::ListValue* args);
 
@@ -58,19 +70,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
   void HandleGetReportingWeb(const base::ListValue* args);
 
-  void HandleGetReportingInfo(const base::ListValue* args);
-
-  void HandleGetBrowserReportingInfo(const base::ListValue* args);
-
-  void HandleGetExtensions(const base::ListValue* args);
-
-  void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  void AddExtensionReportingInfo(base::Value* report_sources);
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-  base::string16 GetEnterpriseManagementStatusString();
+  void HandleInitBrowserReportingInfo(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };

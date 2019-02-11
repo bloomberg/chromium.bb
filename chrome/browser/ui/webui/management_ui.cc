@@ -49,6 +49,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                              IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED);
   source->AddLocalizedString("managementDesktopMonitoringNotice",
                              IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE);
+  source->AddLocalizedString("managementTitle", IDS_MANAGEMENT_TITLE);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   source->AddLocalizedString(kManagementExtensionReportMachineName,
@@ -81,8 +82,12 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 #endif  // defined(OS_CHROMEOS)
   source->SetJsonPath("strings.js");
   // Add required resources.
-  source->AddResourcePath("management.css", IDR_MANAGEMENT_CSS);
-  source->AddResourcePath("management.js", IDR_MANAGEMENT_JS);
+  source->AddResourcePath("management_browser_proxy.html",
+                          IDR_MANAGEMENT_BROWSER_PROXY_HTML);
+  source->AddResourcePath("management_browser_proxy.js",
+                          IDR_MANAGEMENT_BROWSER_PROXY_JS);
+  source->AddResourcePath("management_ui.html", IDR_MANAGEMENT_UI_HTML);
+  source->AddResourcePath("management_ui.js", IDR_MANAGEMENT_UI_JS);
   source->SetDefaultResource(IDR_MANAGEMENT_HTML);
   source->UseGzip();
   return source;

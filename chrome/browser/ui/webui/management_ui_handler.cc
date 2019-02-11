@@ -42,6 +42,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
@@ -93,12 +94,6 @@ std::string GetAccountDomain(Profile* profile) {
 }
 
 #if defined(OS_CHROMEOS)
-
-base::string16 GetManagementPageTitle() {
-  return l10n_util::GetStringFUTF16(
-      IDS_MANAGEMENT_TITLE,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
-}
 
 void AddChromeOSReportingDevice(base::Value* report_sources) {
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -220,12 +215,11 @@ void AddChromeOSReportingInfo(base::Value* report_sources) {
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-
 const char kOnPremReportingExtensionStableId[] =
     "emahakmocgideepebncgnmlmliepgpgb";
 const char kOnPremReportingExtensionBetaId[] =
     "kigjhoekjcpdfjpimbdjegmgecmlicaf";
-const char kCloudReportingExtensionId[] = "empjldejiginopiohodkdoklcjklbaa";
+const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
 const char kPolicyKeyReportMachineIdData[] = "report_machine_id_data";
 const char kPolicyKeyReportUserIdData[] = "report_user_id_data";
 const char kPolicyKeyReportVersionData[] = "report_version_data";
@@ -268,11 +262,11 @@ base::Value GetPowerfulExtensions(const extensions::ExtensionSet& extensions) {
     // Only show extension on page if there is at least one permission
     // message to show.
     if (!permission_messages.empty()) {
-      base::Value extension_to_add(base::Value::Type::DICTIONARY);
-      extension_to_add.SetKey("name", base::Value(extension->name()));
-      extension_to_add.SetKey("permissions",
-                              base::Value(std::move(permission_messages)));
-      powerful_extensions.GetList().push_back(std::move(extension_to_add));
+      std::unique_ptr<base::DictionaryValue> extension_to_add =
+          extensions::util::GetExtensionInfo(extension.get());
+      extension_to_add->SetKey("permissions",
+                               base::Value(std::move(permission_messages)));
+      powerful_extensions.GetList().push_back(std::move(*extension_to_add));
     }
   }
 
@@ -289,16 +283,26 @@ ManagementUIHandler::~ManagementUIHandler() {}
 
 void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getManagementTitle",
-      base::BindRepeating(&ManagementUIHandler::HandleGetManagementTitle,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "getDeviceManagementStatus",
       base::BindRepeating(&ManagementUIHandler::HandleGetDeviceManagementStatus,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getExtensions",
+      base::BindRepeating(&ManagementUIHandler::HandleGetExtensions,
+                          base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "getLocalTrustRootsInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleGetLocalTrustRootsInfo,
+                          base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
       "getReportingDevice",
       base::BindRepeating(&ManagementUIHandler::HandleGetReportingDevice,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportingInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleGetReportingInfo,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getReportingSecurity",
@@ -313,229 +317,9 @@ void ManagementUIHandler::RegisterMessages() {
       base::BindRepeating(&ManagementUIHandler::HandleGetReportingWeb,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getReportingInfo",
-      base::BindRepeating(&ManagementUIHandler::HandleGetReportingInfo,
+      "initBrowserReportingInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleInitBrowserReportingInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getBrowserReportingInfo",
-      base::BindRepeating(&ManagementUIHandler::HandleGetBrowserReportingInfo,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getExtensions",
-      base::BindRepeating(&ManagementUIHandler::HandleGetExtensions,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getLocalTrustRootsInfo",
-      base::BindRepeating(&ManagementUIHandler::HandleGetLocalTrustRootsInfo,
-                          base::Unretained(this)));
-}
-
-base::string16 ManagementUIHandler::GetEnterpriseManagementStatusString() {
-  auto* profile = Profile::FromWebUI(web_ui());
-  const bool account_managed = IsProfileManaged(profile);
-  const std::string account_domain = GetAccountDomain(profile);
-  bool profile_associated_with_gaia_account = true;
-#if defined(OS_CHROMEOS)
-  profile_associated_with_gaia_account =
-      chromeos::IsProfileAssociatedWithGaiaAccount(profile);
-#endif  // defined(OS_CHROMEOS)
-
-  bool device_managed = false;
-  std::string device_domain;
-#if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  device_managed = connector->IsEnterpriseManaged();
-  if (device_managed)
-    device_domain = connector->GetEnterpriseDisplayDomain();
-  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
-    device_domain = connector->GetRealm();
-#endif  // defined(OS_CHROMEOS)
-
-  bool primary_user_managed = false;
-  std::string primary_user_account_domain;
-#if defined(OS_CHROMEOS)
-  auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
-  if (primary_user) {
-    auto* primary_profile =
-        chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-    if (primary_profile) {
-      primary_user_managed = IsProfileManaged(primary_profile);
-      primary_user_account_domain = GetAccountDomain(primary_profile);
-    }
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  if (device_managed) {
-    DCHECK(!device_domain.empty());
-    if (account_managed) {
-      if (device_domain == account_domain ||
-          !profile_associated_with_gaia_account) {
-        return l10n_util::GetStringFUTF16(
-            IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY,
-            base::UTF8ToUTF16(device_domain));
-      }
-      DCHECK(!account_domain.empty());
-      return l10n_util::GetStringFUTF16(
-          IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
-          base::UTF8ToUTF16(device_domain), base::UTF8ToUTF16(account_domain));
-    }
-    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_BY,
-                                      base::UTF8ToUTF16(device_domain));
-  }
-
-  if (account_managed) {
-    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
-                                      base::UTF8ToUTF16(account_domain));
-  }
-
-  if (primary_user_managed) {
-    return l10n_util::GetStringFUTF16(
-        IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
-        base::UTF8ToUTF16(primary_user_account_domain));
-  }
-
-  return l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED);
-}
-
-void ManagementUIHandler::HandleGetManagementTitle(
-    const base::ListValue* args) {
-  AllowJavascript();
-#if defined(OS_CHROMEOS)
-  base::Value title(GetManagementPageTitle());
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */, title);
-#else
-  RejectJavascriptCallback(
-      args->GetList()[0] /* callback_id */,
-      base::Value("No device management title on Chrome desktop"));
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ManagementUIHandler::HandleGetDeviceManagementStatus(
-    const base::ListValue* args) {
-  base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
-  AllowJavascript();
-  base::Value managed_string(GetEnterpriseManagementStatusString());
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            managed_string);
-}
-
-void ManagementUIHandler::HandleGetReportingDevice(
-    const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingDevice(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingSecurity(
-    const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingSecurity(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingUserActivity(
-    const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingUserActivity(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingWeb(const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingWeb(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingInfo(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetBrowserReportingInfo(
-    const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only browsers with extensions enabled report status.
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  AddExtensionReportingInfo(&report_sources);
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
-  AllowJavascript();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // List of all enabled extensions
-  const extensions::ExtensionSet& extensions =
-      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
-          ->enabled_extensions();
-
-  base::Value powerful_extensions = GetPowerfulExtensions(extensions);
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            powerful_extensions);
-#else
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            base::Value(base::Value::Type::LIST));
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-}
-
-void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  base::Value trust_roots_configured(false);
-  AllowJavascript();
-// Only Chrome OS could have installed trusted certificates.
-#if defined(OS_CHROMEOS)
-  policy::PolicyCertService* policy_service =
-      policy::PolicyCertServiceFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
-  if (policy_service && policy_service->has_policy_certificates())
-    trust_roots_configured = base::Value(true);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            trust_roots_configured);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -617,3 +401,195 @@ void ManagementUIHandler::AddExtensionReportingInfo(
   }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+base::string16 ManagementUIHandler::GetEnterpriseManagementStatusString() {
+  auto* profile = Profile::FromWebUI(web_ui());
+  const bool account_managed = IsProfileManaged(profile);
+  const std::string account_domain = GetAccountDomain(profile);
+  bool profile_associated_with_gaia_account = true;
+#if defined(OS_CHROMEOS)
+  profile_associated_with_gaia_account =
+      chromeos::IsProfileAssociatedWithGaiaAccount(profile);
+#endif  // defined(OS_CHROMEOS)
+
+  bool device_managed = false;
+  std::string device_domain;
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  device_managed = connector->IsEnterpriseManaged();
+  if (device_managed)
+    device_domain = connector->GetEnterpriseDisplayDomain();
+  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
+    device_domain = connector->GetRealm();
+#endif  // defined(OS_CHROMEOS)
+
+  bool primary_user_managed = false;
+  std::string primary_user_account_domain;
+#if defined(OS_CHROMEOS)
+  auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (primary_user) {
+    auto* primary_profile =
+        chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+    if (primary_profile) {
+      primary_user_managed = IsProfileManaged(primary_profile);
+      primary_user_account_domain = GetAccountDomain(primary_profile);
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  if (device_managed) {
+    DCHECK(!device_domain.empty());
+    if (account_managed) {
+      if (device_domain == account_domain ||
+          !profile_associated_with_gaia_account) {
+        return l10n_util::GetStringFUTF16(
+            IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY,
+            base::UTF8ToUTF16(device_domain));
+      }
+      DCHECK(!account_domain.empty());
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
+          base::UTF8ToUTF16(device_domain), base::UTF8ToUTF16(account_domain));
+    }
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_BY,
+                                      base::UTF8ToUTF16(device_domain));
+  }
+
+  if (account_managed) {
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
+                                      base::UTF8ToUTF16(account_domain));
+  }
+
+  if (primary_user_managed) {
+    return l10n_util::GetStringFUTF16(
+        IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
+        base::UTF8ToUTF16(primary_user_account_domain));
+  }
+
+  return l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED);
+}
+
+void ManagementUIHandler::HandleGetDeviceManagementStatus(
+    const base::ListValue* args) {
+  base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
+  AllowJavascript();
+  base::Value managed_string(GetEnterpriseManagementStatusString());
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            managed_string);
+}
+
+void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
+  AllowJavascript();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // List of all enabled extensions
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+          ->enabled_extensions();
+
+  base::Value powerful_extensions = GetPowerfulExtensions(extensions);
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            powerful_extensions);
+#else
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            base::Value(base::Value::Type::LIST));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+#if defined(OS_CHROMEOS)
+void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  base::Value trust_roots_configured(false);
+  AllowJavascript();
+
+  policy::PolicyCertService* policy_service =
+      policy::PolicyCertServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  if (policy_service && policy_service->has_policy_certificates())
+    trust_roots_configured = base::Value(true);
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            trust_roots_configured);
+}
+#endif  // defined(OS_CHROMEOS)
+
+void ManagementUIHandler::HandleGetReportingDevice(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingDevice(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingInfo(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingSecurity(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingSecurity(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingUserActivity(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingUserActivity(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleGetReportingWeb(const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+
+// Only Chrome OS devices report status.
+#if defined(OS_CHROMEOS)
+  AddChromeOSReportingWeb(&report_sources);
+#endif  // defined(OS_CHROMEOS)
+
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
+
+void ManagementUIHandler::HandleInitBrowserReportingInfo(
+    const base::ListValue* args) {
+  base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  AddExtensionReportingInfo(&report_sources);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            report_sources);
+}
