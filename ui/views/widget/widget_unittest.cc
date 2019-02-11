@@ -3684,7 +3684,7 @@ class ScaleFactorView : public View {
                                      new_device_scale_factor);
   }
 
-  float last_scale_factor() const { return last_scale_factor_; };
+  float last_scale_factor() const { return last_scale_factor_; }
 
  private:
   float last_scale_factor_ = 0.f;
