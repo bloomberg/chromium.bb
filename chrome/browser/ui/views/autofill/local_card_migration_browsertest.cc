@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/autofill/local_card_migration_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 #include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
+#include "chrome/browser/ui/views/autofill/migratable_card_view.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -50,6 +51,7 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -78,6 +80,11 @@ namespace {
 constexpr char kURLGetUploadDetailsRequest[] =
     "https://payments.google.com/payments/apis/chromepaymentsservice/"
     "getdetailsforsavecard";
+constexpr char kURLMigrateCardRequest[] =
+    "https://payments.google.com/payments/apis-secure/chromepaymentsservice/"
+    "migratecards"
+    "?s7e_suffix=chromewallet";
+
 constexpr char kResponseGetUploadDetailsSuccess[] =
     "{\"legal_message\":{\"line\":[{\"template\":\"Legal message template with "
     "link: "
@@ -87,11 +94,18 @@ constexpr char kResponseGetUploadDetailsFailure[] =
     "{\"error\":{\"code\":\"FAILED_PRECONDITION\",\"user_error_message\":\"An "
     "unexpected error has occurred. Please try again later.\"}}";
 
+constexpr char kResponseMigrateCardSuccess[] =
+    "{\"save_result\":[{\"unique_id\":\"0\", \"status\":\"SUCCESS\"}, "
+    "{\"unique_id\":\"1\", \"status\":\"SUCCESS\"}], "
+    "\"value_prop_display_text\":\"example message.\"}";
+
 constexpr char kCreditCardFormURL[] =
     "/credit_card_upload_form_address_and_cc.html";
 
 constexpr char kFirstCardNumber[] = "5428424047572420";   // Mastercard
 constexpr char kSecondCardNumber[] = "4782187095085933";  // Visa
+constexpr char kThirdCardNumber[] = "4111111111111111";   // Visa
+constexpr char kInvalidCardNumber[] = "4444444444444444";
 
 constexpr double kFakeGeolocationLatitude = 1.23;
 constexpr double kFakeGeolocationLongitude = 4.56;
@@ -157,7 +171,7 @@ class LocalCardMigrationBrowserTest
         ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
 
     // Set up this class as the ObserverForTest implementation.
-    LocalCardMigrationManager* local_card_migration_manager =
+    local_card_migration_manager_ =
         ContentAutofillDriver::GetForRenderFrameHost(
             GetActiveWebContents()->GetMainFrame())
             ->autofill_manager()
@@ -165,7 +179,8 @@ class LocalCardMigrationBrowserTest
             ->GetFormDataImporter()
             ->local_card_migration_manager_.get();
 
-    local_card_migration_manager->SetEventObserverForTesting(this);
+    local_card_migration_manager_->SetEventObserverForTesting(this);
+    personal_data_ = local_card_migration_manager_->personal_data_manager_;
 
     // Set up the fake geolocation data.
     geolocation_overrider_ =
@@ -184,6 +199,7 @@ class LocalCardMigrationBrowserTest
         features::kAutofillCreditCardLocalCardMigration);
     ASSERT_TRUE(harness_->SetupSync());
     SetUploadDetailsRpcPaymentsAccepts();
+    SetUpMigrateCardsRpcPaymentsAccepts();
   }
 
   void NavigateTo(const std::string& file_path) {
@@ -213,16 +229,21 @@ class LocalCardMigrationBrowserTest
       event_waiter_->OnEvent(DialogEvent::RECEIVED_MIGRATE_CARDS_RESPONSE);
   }
 
-  void SaveLocalCard(std::string card_number) {
+  CreditCard SaveLocalCard(std::string card_number,
+                           bool set_as_expired_card = false) {
     CreditCard local_card;
     test::SetCreditCardInfo(&local_card, "John Smith", card_number.c_str(),
-                            "12", test::NextYear().c_str(), "1");
+                            "12",
+                            set_as_expired_card ? test::LastYear().c_str()
+                                                : test::NextYear().c_str(),
+                            "1");
     local_card.set_guid("00000000-0000-0000-0000-" + card_number.substr(0, 12));
     local_card.set_record_type(CreditCard::LOCAL_CARD);
     AddTestCreditCard(browser(), local_card);
+    return local_card;
   }
 
-  void SaveServerCard(std::string card_number) {
+  CreditCard SaveServerCard(std::string card_number) {
     CreditCard server_card;
     test::SetCreditCardInfo(&server_card, "John Smith", card_number.c_str(),
                             "12", test::NextYear().c_str(), "1");
@@ -231,6 +252,7 @@ class LocalCardMigrationBrowserTest
     server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
     server_card.set_server_id("full_id_" + card_number);
     AddTestServerCreditCard(browser(), server_card);
+    return server_card;
   }
 
   void UseCardAndWaitForMigrationOffer(std::string card_number) {
@@ -239,6 +261,13 @@ class LocalCardMigrationBrowserTest
         {DialogEvent::REQUESTED_LOCAL_CARD_MIGRATION,
          DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
     FillAndSubmitFormWithCard(card_number);
+    WaitForObservedEvent();
+  }
+
+  void ClickOnSaveButtonAndWaitForMigrationResults() {
+    ResetEventWaiterForSequence({DialogEvent::SENT_MIGRATE_CARDS_REQUEST,
+                                 DialogEvent::RECEIVED_MIGRATE_CARDS_RESPONSE});
+    ClickOnOkButton(GetLocalCardMigrationMainDialogView());
     WaitForObservedEvent();
   }
 
@@ -270,6 +299,11 @@ class LocalCardMigrationBrowserTest
   void SetUploadDetailsRpcPaymentsDeclines() {
     test_url_loader_factory()->AddResponse(kURLGetUploadDetailsRequest,
                                            kResponseGetUploadDetailsFailure);
+  }
+
+  void SetUpMigrateCardsRpcPaymentsAccepts() {
+    test_url_loader_factory()->AddResponse(kURLMigrateCardRequest,
+                                           kResponseMigrateCardSuccess);
   }
 
   void ClickOnView(views::View* view) {
@@ -397,9 +431,15 @@ class LocalCardMigrationBrowserTest
     return &test_url_loader_factory_;
   }
 
+  void WaitForCardDeletion() { WaitForPersonalDataChange(browser()); }
+
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
+
+  LocalCardMigrationManager* local_card_migration_manager_;
+
+  PersonalDataManager* personal_data_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -463,6 +503,34 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   // No metrics are recorded when migration is not offered.
   histogram_tester.ExpectTotalCount(
       "Autofill.LocalCardMigrationBubbleOffer.FirstShow", 0);
+}
+
+// Ensures that the intermediate migration bubble is shown after reusing
+// a saved server card, if there is at least one card to migrate.
+IN_PROC_BROWSER_TEST_F(
+    LocalCardMigrationBrowserTest,
+    ReusingServerCardWithMigratableLocalCardShowIntermediateMigrationOffer) {
+  base::HistogramTester histogram_tester;
+
+  SaveServerCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+
+  // The intermediate migration bubble should show.
+  EXPECT_TRUE(
+      FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
+                           GetLocalCardMigrationOfferBubbleViews())
+          ->visible());
+  // Metrics
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.LocalCardMigrationBubbleOffer.FirstShow"),
+      ElementsAre(
+          Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED, 1),
+          Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, 1)));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.LocalCardMigrationOrigin.UseOfServerCard",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN, 1);
 }
 
 // Ensures that the intermediate migration bubble is not shown after reusing
@@ -593,6 +661,32 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_SHOWN, 1);
 }
 
+// Ensures that the migration dialog contains all the valid card stored in
+// Chrome browser local storage.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       DialogContainsAllValidMigratableCard) {
+  base::HistogramTester histogram_tester;
+
+  CreditCard first_card = SaveLocalCard(kFirstCardNumber);
+  CreditCard second_card = SaveLocalCard(kSecondCardNumber);
+  SaveLocalCard(kThirdCardNumber, /*set_as_expired_card=*/true);
+  SaveLocalCard(kInvalidCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  // Click the [Continue] button.
+  ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
+
+  views::View* card_list_view = GetCardListView();
+  EXPECT_TRUE(card_list_view->visible());
+  EXPECT_EQ(card_list_view->child_count(), 2);
+  // Cards will be added to database in a reversed order.
+  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->child_at(0))
+                ->GetNetworkAndLastFourDigits(),
+            second_card.NetworkAndLastFourDigits());
+  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->child_at(1))
+                ->GetNetworkAndLastFourDigits(),
+            first_card.NetworkAndLastFourDigits());
+}
+
 // Ensures that rejecting the main migration dialog closes the dialog.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClickingCancelClosesDialog) {
@@ -632,8 +726,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   // Click the [Continue] button in the bubble.
   ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
   // Click the [Save] button in the dialog.
-  // TODO(crbug.com/897998): Add Payments Rpc setup and event waiter.
-  ClickOnOkButton(GetLocalCardMigrationMainDialogView());
+  ClickOnSaveButtonAndWaitForMigrationResults();
 
   // No dialog should be showing.
   EXPECT_EQ(nullptr, GetLocalCardMigrationMainDialogView());
@@ -651,16 +744,27 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
       1);
 }
 
-// TODO(crbug.com/897998): Add these following tests.
-// 1) Reusing a server card shows the intermediate bubble.
-// 2) All valid cards are visible in the migration offer view.
-// 3) Local cards should get deleted after migration.
-// 4) Expired and invalid cards should not be shown.
-// 5) When user navigates away after five seconds, the bubble disappears.
-// 6) When user navigates away after five seconds, the dialog should stay.
-// 7) When user clicks legal message links, browser should show a pop-up window.
-// 8) Simulate checkboxes to ensure
-//    LocalCardMigrationDialogUserSelectionPercentage is logged correctly.
-// 9) Ensure LocalCardMigrationDialogActiveDuration is logged correctly.
+// Ensures local cards will be deleted from browser local storage after being
+// successfully migrated.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       DeleteSuccessfullyMigratedCardsFromLocal) {
+  base::HistogramTester histogram_tester;
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  // Click the [Continue] button in the bubble.
+  ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
+  // Click the [Save] button in the dialog.
+  ClickOnSaveButtonAndWaitForMigrationResults();
+  WaitForCardDeletion();
+
+  EXPECT_EQ(nullptr, personal_data_->GetCreditCardByNumber(kFirstCardNumber));
+  EXPECT_EQ(nullptr, personal_data_->GetCreditCardByNumber(kSecondCardNumber));
+}
+
+// TODO(crbug.com/897998):
+// - Update test set-up and add navagation tests.
+// - Add more tests for feedback dialog.
 
 }  // namespace autofill

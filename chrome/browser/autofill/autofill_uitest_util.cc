@@ -108,4 +108,9 @@ void AddTestAutofillData(Browser* browser,
   observer.Wait();
 }
 
+void WaitForPersonalDataChange(Browser* browser) {
+  PdmChangeWaiter observer(browser);
+  observer.Wait();
+}
+
 }  // namespace autofill

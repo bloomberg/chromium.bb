@@ -36,6 +36,7 @@ class MigratableCardView : public views::View, public views::ButtonListener {
 
   bool IsSelected();
   std::string GetGuid();
+  const base::string16 GetNetworkAndLastFourDigits() const;
 
   std::unique_ptr<views::View> GetMigratableCardDescriptionView(
       const MigratableCreditCard& migratable_credit_card,

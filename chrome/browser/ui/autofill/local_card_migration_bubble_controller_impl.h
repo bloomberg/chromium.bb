@@ -65,6 +65,8 @@ class LocalCardMigrationBubbleControllerImpl
   friend class content::WebContentsUserData<
       LocalCardMigrationBubbleControllerImpl>;
 
+  friend class LocalCardMigrationBrowserTest;
+
   void ShowBubbleImplementation();
 
   // Update the visibility and toggled state of the Omnibox save card icon.
