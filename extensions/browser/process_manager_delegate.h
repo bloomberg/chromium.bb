@@ -7,7 +7,7 @@
 
 namespace content {
 class BrowserContext;
-};
+}
 
 namespace extensions {
 

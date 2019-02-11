@@ -90,12 +90,12 @@ TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValue) {
   RegisterExtension(kExt1, CreateTime(10));
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, false));
-};
+}
 
 TEST_F(ExtensionPrefValueMapTest, GetNotSetPrefValue) {
   RegisterExtension(kExt1, CreateTime(10));
   EXPECT_EQ(std::string(), GetValue(kPref1, false));
-};
+}
 
 // Make sure the last-installed extension wins for each preference.
 TEST_F(ExtensionPrefValueMapTest, Override) {

@@ -141,7 +141,7 @@ testing::AssertionResult CheckCSP(const SanitizedCSPResult& actual,
   return CheckCSP(actual, expected_csp, expected_warnings);
 }
 
-};  // namespace
+}  // namespace
 
 TEST(ExtensionCSPValidator, IsLegal) {
   EXPECT_TRUE(ContentSecurityPolicyIsLegal("foo"));
