@@ -92,16 +92,27 @@ typedef struct PGroup PGroup;
 ** structure. Unless SQLITE_PCACHE_SEPARATE_HEADER is defined, a buffer of
 ** PgHdr1.pCache->szPage bytes is allocated directly before this structure
 ** in memory.
+**
+** Note: Variables isBulkLocal and isAnchor were once type "u8". That works,
+** but causes a 2-byte gap in the structure for most architectures (since
+** pointers must be either 4 or 8-byte aligned). As this structure is located
+** in memory directly after the associated page data, if the database is
+** corrupt, code at the b-tree layer may overread the page buffer and
+** read part of this structure before the corruption is detected. This
+** can cause a valgrind error if the unitialized gap is accessed. Using u16
+** ensures there is no such gap, and therefore no bytes of unitialized memory
+** in the structure.
 */
 struct PgHdr1 {
   sqlite3_pcache_page page;      /* Base class. Must be first. pBuf & pExtra */
   unsigned int iKey;             /* Key value (page number) */
-  u8 isBulkLocal;                /* This page from bulk local storage */
-  u8 isAnchor;                   /* This is the PGroup.lru element */
+  u16 isBulkLocal;               /* This page from bulk local storage */
+  u16 isAnchor;                  /* This is the PGroup.lru element */
   PgHdr1 *pNext;                 /* Next in hash table chain */
   PCache1 *pCache;               /* Cache that currently owns this page */
   PgHdr1 *pLruNext;              /* Next in LRU list of unpinned pages */
   PgHdr1 *pLruPrev;              /* Previous in LRU list of unpinned pages */
+                                 /* NB: pLruPrev is only valid if pLruNext!=0 */
 };
 
 /*
@@ -302,6 +313,7 @@ static int pcache1InitBulk(PCache1 *pCache){
       pX->isBulkLocal = 1;
       pX->isAnchor = 0;
       pX->pNext = pCache->pFree;
+      pX->pLruPrev = 0;           /* Initializing this saves a valgrind error */
       pCache->pFree = pX;
       zBulk += pCache->szAlloc;
     }while( --nBulk );
@@ -574,7 +586,8 @@ static PgHdr1 *pcache1PinPage(PgHdr1 *pPage){
   pPage->pLruPrev->pLruNext = pPage->pLruNext;
   pPage->pLruNext->pLruPrev = pPage->pLruPrev;
   pPage->pLruNext = 0;
-  pPage->pLruPrev = 0;
+  /* pPage->pLruPrev = 0;
+  ** No need to clear pLruPrev as it is never accessed if pLruNext is 0 */
   assert( pPage->isAnchor==0 );
   assert( pPage->pCache->pGroup->lru.isAnchor==1 );
   pPage->pCache->nRecyclable--;
@@ -911,8 +924,9 @@ static SQLITE_NOINLINE PgHdr1 *pcache1FetchStage2(
     pPage->iKey = iKey;
     pPage->pNext = pCache->apHash[h];
     pPage->pCache = pCache;
-    pPage->pLruPrev = 0;
     pPage->pLruNext = 0;
+    /* pPage->pLruPrev = 0;
+    ** No need to clear pLruPrev since it is not accessed when pLruNext==0 */
     *(void **)pPage->page.pExtra = 0;
     pCache->apHash[h] = pPage;
     if( iKey>pCache->iMaxKey ){
@@ -1072,7 +1086,7 @@ static void pcache1Unpin(
   /* It is an error to call this function if the page is already
   ** part of the PGroup LRU list.
   */
-  assert( pPage->pLruPrev==0 && pPage->pLruNext==0 );
+  assert( pPage->pLruNext==0 );
   assert( PAGE_IS_PINNED(pPage) );
 
   if( reuseUnlikely || pGroup->nPurgeable>pGroup->nMaxPage ){

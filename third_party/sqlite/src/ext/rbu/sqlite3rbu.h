@@ -335,6 +335,10 @@ SQLITE_API sqlite3rbu *sqlite3rbu_open(
 ** state database is not already present in the file-system, it is created
 ** with the same permissions as the target db is made.
 **
+** With an RBU vacuum, it is an SQLITE_MISUSE error if the name of the
+** state database ends with "-vactmp". This name is reserved for internal
+** use.
+**
 ** This function does not delete the state database after an RBU vacuum
 ** is completed, even if it created it. However, if the call to
 ** sqlite3rbu_close() returns any value other than SQLITE_OK, the contents

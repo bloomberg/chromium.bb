@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: "tc@google.com" <tc@google.com>
 Date: Tue, 6 Jan 2009 22:39:41 +0000
-Subject: [PATCH 03/45] Custom shell.c helpers to load Chromium's ICU data.
+Subject: [PATCH 3/7] Custom shell.c helpers to load Chromium's ICU data.
 
 History uses fts3 with an icu-based segmenter.  These changes allow building a
 sqlite3 binary for Linux or Windows which can read those files.
@@ -36,10 +36,10 @@ index b838b844a312..3047d172389b 100644
  #    Nothing for unix.
  #
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index 81774f9b100f..b460a58d9a94 100644
+index 57a27c1e3fc1..ee8ebbb92f50 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
-@@ -549,7 +549,7 @@ libsqlite3.a:	$(LIBOBJ)
+@@ -556,7 +556,7 @@ libsqlite3.a:	$(LIBOBJ)
 
  sqlite3$(EXE):	shell.c libsqlite3.a sqlite3.h
  	$(TCCX) $(READLINE_FLAGS) -o sqlite3$(EXE) $(SHELL_OPT) \
@@ -49,10 +49,10 @@ index 81774f9b100f..b460a58d9a94 100644
  sqldiff$(EXE):	$(TOP)/tool/sqldiff.c sqlite3.c sqlite3.h
  	$(TCCX) -o sqldiff$(EXE) -DSQLITE_THREADSAFE=0 \
 diff --git a/third_party/sqlite/src/src/shell.c.in b/third_party/sqlite/src/src/shell.c.in
-index 0007d984d045..b13551dc61f2 100644
+index cca409a6ac73..9ccac2b34ee5 100644
 --- a/third_party/sqlite/src/src/shell.c.in
 +++ b/third_party/sqlite/src/src/shell.c.in
-@@ -8555,6 +8555,16 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
+@@ -8891,6 +8891,16 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
    }
  #endif
 
