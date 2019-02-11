@@ -1061,12 +1061,13 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   }
   VLOG(2) << "ProcessExistingSyncItem: " << sync_item->ToString();
 
-  // OEM app can be moved outside folder or into non-OEM folder, so always sync
-  // the position.
+  // The only place where sync can change an item's folder. Prevent moving OEM
+  // item to the folder, other than OEM folder.
+  const bool update_folder = !AppIsOem(sync_item->item_id);
   model_updater_->UpdateAppItemFromSyncItem(
       sync_item,
       sync_item->item_id != ash::kOemFolderId,  // Don't sync oem folder's name.
-      true /* update_folder */);
+      update_folder);
 }
 
 bool AppListSyncableService::SyncStarted() {
