@@ -83,7 +83,7 @@ NetworkInformation::~NetworkInformation() {
 
 bool NetworkInformation::IsObserving() const {
   return !!connection_observer_handle_;
-};
+}
 
 String NetworkInformation::type() const {
   // type_ is only updated when listening for events, so ask
