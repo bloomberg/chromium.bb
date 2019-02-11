@@ -355,7 +355,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                   ? NGBoxStrut()
                                   : border_padding_ + scrollbars;
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
+      ConstraintSpace(), Node(), border_padding_, CalculateDefaultBlockSize());
 
   child_available_size_ =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
@@ -620,7 +620,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       Node().IsTableCell()
           ? intrinsic_block_size_
           : ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
-                                        intrinsic_block_size_, border_padding_);
+                                        border_padding_, intrinsic_block_size_);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC block offset is still unknown, there's one last thing to take
@@ -1656,9 +1656,9 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
 
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
-  LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), used_block_size + intrinsic_block_size_,
-      border_padding_);
+  LayoutUnit block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
+                                  used_block_size + intrinsic_block_size_);
 
   block_size -= used_block_size;
   DCHECK_GE(block_size, LayoutUnit())

@@ -46,13 +46,16 @@ LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
   LayoutUnit extra = border_scrollbar_padding.BlockSum();
   size += extra;
 
+  NGBoxStrut border_padding =
+      ComputeBorders(space, node) + ComputePadding(space, node.Style());
+
   const ComputedStyle& style = node.Style();
-  LayoutUnit max = ResolveBlockLength(space, style, style.LogicalMaxHeight(),
-                                      size, LengthResolveType::kMaxSize,
-                                      LengthResolvePhase::kLayout);
-  LayoutUnit extent = ResolveBlockLength(space, style, style.LogicalHeight(),
-                                         size, LengthResolveType::kContentSize,
-                                         LengthResolvePhase::kLayout);
+  LayoutUnit max = ResolveBlockLength(
+      space, style, border_padding, style.LogicalMaxHeight(), size,
+      LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
+  LayoutUnit extent = ResolveBlockLength(
+      space, style, border_padding, style.LogicalHeight(), size,
+      LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
   if (extent != NGSizeIndefinite) {
     // A specified height/width will just constrain the maximum length.
     max = std::min(max, extent);
@@ -74,13 +77,15 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
 }
 
 scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
+  // TODO(layout-dev): Store some combination of border, scrollbar, padding on
+  // this class.
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style()) +
                        ComputeIntrinsicPadding(ConstraintSpace(), Node());
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
   NGLogicalSize border_box_size =
-      CalculateBorderBoxSize(ConstraintSpace(), Node());
+      CalculateBorderBoxSize(ConstraintSpace(), Node(), borders + padding);
   NGLogicalSize content_box_size =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
   NGLogicalSize column_size = CalculateColumnSize(content_box_size);

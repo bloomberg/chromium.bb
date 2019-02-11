@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 
+#include <algorithm>
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -52,34 +53,36 @@ bool IsTopDominant(const WritingMode container_writing_mode,
          (container_direction != TextDirection::kRtl);
 }
 
-LayoutUnit ResolveWidth(const Length& width,
-                        const NGConstraintSpace& space,
+LayoutUnit ResolveWidth(const NGConstraintSpace& space,
                         const ComputedStyle& style,
+                        const NGBoxStrut& border_padding,
                         const base::Optional<MinMaxSize>& child_minmax,
+                        const Length& width,
                         LengthResolveType type) {
   if (space.GetWritingMode() == WritingMode::kHorizontalTb) {
-    return ResolveInlineLength(space, style, child_minmax, width, type,
-                               LengthResolvePhase::kLayout);
+    return ResolveInlineLength(space, style, border_padding, child_minmax,
+                               width, type, LengthResolvePhase::kLayout);
   }
   LayoutUnit computed_width =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
-  return ResolveBlockLength(space, style, width, computed_width, type,
-                            LengthResolvePhase::kLayout);
+  return ResolveBlockLength(space, style, border_padding, width, computed_width,
+                            type, LengthResolvePhase::kLayout);
 }
 
-LayoutUnit ResolveHeight(const Length& height,
-                         const NGConstraintSpace& space,
+LayoutUnit ResolveHeight(const NGConstraintSpace& space,
                          const ComputedStyle& style,
+                         const NGBoxStrut& border_padding,
                          const base::Optional<MinMaxSize>& child_minmax,
+                         const Length& height,
                          LengthResolveType type) {
   if (space.GetWritingMode() != WritingMode::kHorizontalTb) {
-    return ResolveInlineLength(space, style, child_minmax, height, type,
-                               LengthResolvePhase::kLayout);
+    return ResolveInlineLength(space, style, border_padding, child_minmax,
+                               height, type, LengthResolvePhase::kLayout);
   }
   LayoutUnit computed_height =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
-  return ResolveBlockLength(space, style, height, computed_height, type,
-                            LengthResolvePhase::kLayout);
+  return ResolveBlockLength(space, style, border_padding, height,
+                            computed_height, type, LengthResolvePhase::kLayout);
 }
 
 // Available size can is maximum length Element can have without overflowing
@@ -132,26 +135,11 @@ LayoutUnit ComputeAvailableHeight(
   return (available_height - margins).ClampNegativeToZero();
 }
 
-LayoutUnit HorizontalBorderPadding(const NGConstraintSpace& space,
-                                   const ComputedStyle& style) {
-  return ResolveMarginPaddingLength(space, style.PaddingLeft()) +
-         ResolveMarginPaddingLength(space, style.PaddingRight()) +
-         LayoutUnit(style.BorderLeftWidth()) +
-         LayoutUnit(style.BorderRightWidth());
-}
-
-LayoutUnit VerticalBorderPadding(const NGConstraintSpace& space,
-                                 const ComputedStyle& style) {
-  return ResolveMarginPaddingLength(space, style.PaddingTop()) +
-         ResolveMarginPaddingLength(space, style.PaddingBottom()) +
-         LayoutUnit(style.BorderTopWidth()) +
-         LayoutUnit(style.BorderBottomWidth());
-}
-
 // Implement absolute horizontal size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
 void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const ComputedStyle& style,
+                               const NGBoxStrut& border_padding,
                                const base::Optional<LayoutUnit>& incoming_width,
                                const NGStaticPosition& static_position,
                                const base::Optional<MinMaxSize>& child_minmax,
@@ -288,23 +276,27 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 
   // If calculated width is outside of min/max constraints,
   // rerun the algorithm with constrained width.
-  LayoutUnit min = ResolveWidth(style.MinWidth(), space, style, child_minmax,
-                                LengthResolveType::kMinSize);
-  LayoutUnit max = ResolveWidth(style.MaxWidth(), space, style, child_minmax,
-                                LengthResolveType::kMaxSize);
+  LayoutUnit min = ResolveWidth(space, style, border_padding, child_minmax,
+                                style.MinWidth(), LengthResolveType::kMinSize);
+  LayoutUnit max = ResolveWidth(space, style, border_padding, child_minmax,
+                                style.MaxWidth(), LengthResolveType::kMaxSize);
   if (width != ConstrainByMinMax(*width, min, max)) {
     width = ConstrainByMinMax(*width, min, max);
     // Because this function only changes "width" when it's not already
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
-    ComputeAbsoluteHorizontal(space, style, width, static_position,
-                              child_minmax, container_writing_mode,
-                              container_direction, position);
+    ComputeAbsoluteHorizontal(
+        space, style, border_padding, width, static_position, child_minmax,
+        container_writing_mode, container_direction, position);
     return;
   }
 
   // Negative widths are not allowed.
-  width = std::max(*width, HorizontalBorderPadding(space, style));
+  LayoutUnit horizontal_border_padding =
+      border_padding
+          .ConvertToPhysical(space.GetWritingMode(), space.Direction())
+          .HorizontalSum();
+  width = std::max(*width, horizontal_border_padding);
 
   position->inset.left = *left + *margin_left;
   position->inset.right = *right + *margin_right;
@@ -317,6 +309,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-height
 void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const ComputedStyle& style,
+                             const NGBoxStrut& border_padding,
                              const base::Optional<LayoutUnit>& incoming_height,
                              const NGStaticPosition& static_position,
                              const base::Optional<MinMaxSize>& child_minmax,
@@ -340,7 +333,6 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   base::Optional<LayoutUnit> bottom;
   if (!style.Bottom().IsAuto())
     bottom = ValueForLength(style.Bottom(), percentage_height);
-  LayoutUnit border_padding = VerticalBorderPadding(space, style);
   base::Optional<LayoutUnit> height = incoming_height;
 
   NGPhysicalSize container_size =
@@ -445,22 +437,28 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   }
   // If calculated height is outside of min/max constraints,
   // rerun the algorithm with constrained width.
-  LayoutUnit min = ResolveHeight(style.MinHeight(), space, style, child_minmax,
-                                 LengthResolveType::kMinSize);
-  LayoutUnit max = ResolveHeight(style.MaxHeight(), space, style, child_minmax,
-                                 LengthResolveType::kMaxSize);
+  LayoutUnit min =
+      ResolveHeight(space, style, border_padding, child_minmax,
+                    style.MinHeight(), LengthResolveType::kMinSize);
+  LayoutUnit max =
+      ResolveHeight(space, style, border_padding, child_minmax,
+                    style.MaxHeight(), LengthResolveType::kMaxSize);
   if (height != ConstrainByMinMax(*height, min, max)) {
     height = ConstrainByMinMax(*height, min, max);
     // Because this function only changes "height" when it's not already
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
-    ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
-                            container_writing_mode, container_direction,
-                            position);
+    ComputeAbsoluteVertical(
+        space, style, border_padding, height, static_position, child_minmax,
+        container_writing_mode, container_direction, position);
     return;
   }
   // Negative heights are not allowed.
-  height = std::max(*height, border_padding);
+  LayoutUnit vertical_border_padding =
+      border_padding
+          .ConvertToPhysical(space.GetWritingMode(), space.Direction())
+          .VerticalSum();
+  height = std::max(*height, vertical_border_padding);
 
   position->inset.top = *top + *margin_top;
   position->inset.bottom = *bottom + *margin_bottom;
@@ -539,6 +537,7 @@ base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
 NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
     const NGStaticPosition& static_position,
     const base::Optional<MinMaxSize>& child_minmax,
     const base::Optional<NGLogicalSize>& replaced_size,
@@ -548,25 +547,25 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
   if (style.IsHorizontalWritingMode()) {
     base::Optional<LayoutUnit> width;
     if (!style.Width().IsAuto()) {
-      width = ResolveWidth(style.Width(), space, style, child_minmax,
-                           LengthResolveType::kContentSize);
+      width = ResolveWidth(space, style, border_padding, child_minmax,
+                           style.Width(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
       width = replaced_size.value().inline_size;
     }
-    ComputeAbsoluteHorizontal(space, style, width, static_position,
-                              child_minmax, container_writing_mode,
-                              container_direction, &position);
+    ComputeAbsoluteHorizontal(
+        space, style, border_padding, width, static_position, child_minmax,
+        container_writing_mode, container_direction, &position);
   } else {
     base::Optional<LayoutUnit> height;
     if (!style.Height().IsAuto()) {
-      height = ResolveHeight(style.Height(), space, style, child_minmax,
-                             LengthResolveType::kContentSize);
+      height = ResolveHeight(space, style, border_padding, child_minmax,
+                             style.Height(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
       height = replaced_size.value().inline_size;
     }
-    ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
-                            container_writing_mode, container_direction,
-                            &position);
+    ComputeAbsoluteVertical(
+        space, style, border_padding, height, static_position, child_minmax,
+        container_writing_mode, container_direction, &position);
   }
   return position;
 }
@@ -574,6 +573,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
 void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
     const NGStaticPosition& static_position,
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<NGLogicalSize>& replaced_size,
@@ -591,25 +591,25 @@ void ComputeFullAbsoluteWithChildBlockSize(
   if (style.IsHorizontalWritingMode()) {
     base::Optional<LayoutUnit> height;
     if (!style.Height().IsAuto()) {
-      height = ResolveHeight(style.Height(), space, style, child_minmax,
-                             LengthResolveType::kContentSize);
+      height = ResolveHeight(space, style, border_padding, child_minmax,
+                             style.Height(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
       height = replaced_size.value().block_size;
     }
-    ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
-                            container_writing_mode, container_direction,
-                            position);
+    ComputeAbsoluteVertical(
+        space, style, border_padding, height, static_position, child_minmax,
+        container_writing_mode, container_direction, position);
   } else {
     base::Optional<LayoutUnit> width;
     if (!style.Width().IsAuto()) {
-      width = ResolveWidth(style.Width(), space, style, child_minmax,
-                           LengthResolveType::kContentSize);
+      width = ResolveWidth(space, style, border_padding, child_minmax,
+                           style.Width(), LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
       width = replaced_size.value().block_size;
     }
-    ComputeAbsoluteHorizontal(space, style, width, static_position,
-                              child_minmax, container_writing_mode,
-                              container_direction, position);
+    ComputeAbsoluteHorizontal(
+        space, style, border_padding, width, static_position, child_minmax,
+        container_writing_mode, container_direction, position);
   }
 }
 
