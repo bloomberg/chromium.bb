@@ -189,7 +189,9 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
                 image->paint_image_id())
           : Image::kUnspecifiedDecode;
 
-  if (layout_image_.IsImagePolicyViolated()) {
+  // TODO(loonybear): Support image policies on other image types in addition to
+  // HTMLImageElement.
+  if (IsHTMLImageElement(node) && layout_image_.IsImagePolicyViolated()) {
     // Does not set an observer for the placeholder image, setting it to null.
     scoped_refptr<PlaceholderImage> placeholder_image =
         PlaceholderImage::Create(nullptr, image->Size(),
