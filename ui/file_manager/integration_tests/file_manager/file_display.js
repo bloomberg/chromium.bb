@@ -231,6 +231,37 @@ testcase.fileDisplayUsbPartition = async function() {
 };
 
 /**
+ * Tests partitions display in the file table when root removable entry
+ * is selected. Checks file system type is displayed.
+ */
+testcase.fileDisplayPartitionFileTable = async function() {
+  const removableGroup = '#directory-tree [root-type-icon="removable"]';
+
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount removable partitions.
+  await sendTestMessage({name: 'mountFakePartitions'});
+
+  // Wait for removable group to appear in the directory tree.
+  await remoteCall.waitForElement(appId, removableGroup);
+
+  // Select the first removable group by clicking the label.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, [removableGroup]));
+
+  // Wait for removable partitions to appear in the file table.
+  const partitionOne = await remoteCall.waitForElement(
+      appId, '#file-list [file-name="partition-1"] .type');
+  console.log(JSON.stringify(partitionOne));
+  chrome.test.assertEq('ext4', partitionOne.text);
+
+  const partitionTwo = await remoteCall.waitForElement(
+      appId, '#file-list [file-name="partition-2"] .type');
+  chrome.test.assertEq('ext4', partitionOne.text);
+};
+
+/**
  * Searches for a string in Downloads and checks that the correct results
  * are displayed.
  *

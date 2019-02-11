@@ -890,6 +890,12 @@ FileTable.prototype.renderType_ = function(entry, columnId, table) {
       ['contentMimeType'])[0].contentMimeType;
   div.textContent = FileListModel.getFileTypeString(
       FileType.getType(entry, mimeType));
+
+  // For removable partitions, display file system type.
+  if (!mimeType && entry.volumeInfo && entry.volumeInfo.diskFileSystemType) {
+    div.textContent = entry.volumeInfo.diskFileSystemType;
+  }
+
   return div;
 };
 
