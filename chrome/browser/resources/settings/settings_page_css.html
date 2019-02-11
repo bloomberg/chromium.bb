@@ -6,14 +6,7 @@
   <template>
     <style>
       :host {
-        box-sizing: border-box;
-        display: block;
-        height: inherit;
-        margin: 0 auto;
-        max-width: calc(var(--settings-card-max-width) + 3 * 2px);
-        min-width: 550px;
-        position: relative;
-        width: 96%;
+        @apply --cr-centered-card-container;
       }
 
       :host(.showing-subpage),
