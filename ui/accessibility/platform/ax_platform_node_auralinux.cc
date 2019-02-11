@@ -2317,6 +2317,10 @@ void AXPlatformNodeAuraLinux::OnSelected() {
     OnFocused();
 }
 
+void AXPlatformNodeAuraLinux::OnSelectedChildrenChanged() {
+  g_signal_emit_by_name(ATK_OBJECT(atk_object_), "selection-changed", true);
+}
+
 bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   if (AXPlatformNodeBase* container = GetSelectionContainer()) {
     ax::mojom::Role role = container->GetData().role;
@@ -2400,6 +2404,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kSelection:
       OnSelected();
+      break;
+    case ax::mojom::Event::kSelectedChildrenChanged:
+      OnSelectedChildrenChanged();
       break;
     case ax::mojom::Event::kValueChanged:
       OnValueChanged();

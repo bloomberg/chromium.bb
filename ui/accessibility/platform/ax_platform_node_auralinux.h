@@ -85,6 +85,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnMenuPopupHide();
   void OnMenuPopupEnd();
   void OnSelected();
+  void OnSelectedChildrenChanged();
   void OnValueChanged();
 
   bool SupportsSelectionWithAtkSelection();

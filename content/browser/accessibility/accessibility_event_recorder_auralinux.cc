@@ -143,6 +143,7 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   AddATKEventListener("ATK:AtkObject:state-change");
   AddATKEventListener("ATK:AtkObject:focus-event");
   AddATKEventListener("ATK:AtkObject:property-change");
+  AddATKEventListener("ATK:AtkSelection:selection-changed");
 }
 
 void AccessibilityEventRecorderAuraLinux::RemoveATKEventListeners() {
