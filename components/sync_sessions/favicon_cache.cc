@@ -519,6 +519,10 @@ void FaviconCache::UpdateMappingsFromForeignTab(const sync_pb::SessionTab& tab,
   }
 }
 
+base::WeakPtr<FaviconCache> FaviconCache::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 size_t FaviconCache::NumFaviconsForTest() const {
   return synced_favicons_.size();
 }

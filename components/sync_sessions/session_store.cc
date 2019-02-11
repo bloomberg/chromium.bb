@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
@@ -100,122 +101,31 @@ void ForwardError(syncer::OnceModelErrorHandler error_handler,
   }
 }
 
-class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
- public:
-  // Raw pointers must not be null and must outlive this object.
-  FactoryImpl(SyncSessionsClient* sessions_client,
-              const SessionStore::RestoredForeignTabCallback&
-                  restored_foreign_tab_callback)
-      : sessions_client_(sessions_client),
-        restored_foreign_tab_callback_(restored_foreign_tab_callback) {
-    DCHECK(sessions_client);
-  }
-
-  ~FactoryImpl() {}
-
-  void Create(const syncer::DeviceInfo& device_info,
-              SessionStore::FactoryCompletionCallback callback) {
-    const std::string& cache_guid = device_info.guid();
-    DCHECK(!cache_guid.empty());
-
-    SessionStore::SessionInfo session_info;
-    session_info.client_name = device_info.client_name();
-    session_info.device_type = device_info.device_type();
-    session_info.session_tag = GetSessionTagWithPrefs(
-        cache_guid, sessions_client_->GetSessionSyncPrefs());
-
-    DVLOG(1) << "Initiating creation of session store";
-
-    sessions_client_->GetStoreFactory().Run(
-        syncer::SESSIONS,
-        base::BindOnce(&FactoryImpl::OnStoreCreated, base::AsWeakPtr(this),
-                       session_info, std::move(callback)));
-  }
-
- private:
-  void OnStoreCreated(const SessionStore::SessionInfo& session_info,
-                      SessionStore::FactoryCompletionCallback callback,
-                      const base::Optional<syncer::ModelError>& error,
-                      std::unique_ptr<ModelTypeStore> store) {
-    if (error) {
-      std::move(callback).Run(error, /*store=*/nullptr,
-                              /*metadata_batch=*/nullptr);
-      return;
-    }
-
-    DCHECK(store);
-    ModelTypeStore* store_copy = store.get();
-    store_copy->ReadAllData(
-        base::BindOnce(&FactoryImpl::OnReadAllData, base::AsWeakPtr(this),
-                       session_info, std::move(callback), std::move(store)));
-  }
-
-  void OnReadAllData(const SessionStore::SessionInfo& session_info,
-                     SessionStore::FactoryCompletionCallback callback,
-                     std::unique_ptr<ModelTypeStore> store,
-                     const base::Optional<syncer::ModelError>& error,
-                     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
-    if (error) {
-      std::move(callback).Run(error, /*store=*/nullptr,
-                              /*metadata_batch=*/nullptr);
-      return;
-    }
-
-    ModelTypeStore* store_raw = store.get();
-    store_raw->ReadAllMetadata(base::BindOnce(
-        &FactoryImpl::OnReadAllMetadata, base::AsWeakPtr(this), session_info,
-        std::move(callback), std::move(store), std::move(record_list)));
-  }
-
-  void OnReadAllMetadata(
-      const SessionStore::SessionInfo& session_info,
-      SessionStore::FactoryCompletionCallback callback,
-      std::unique_ptr<ModelTypeStore> store,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list,
-      const base::Optional<syncer::ModelError>& error,
-      std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
-    // Remove after fixing https://crbug.com/902203.
-    TRACE_EVENT0("browser", "FactoryImpl::OnReadAllMetadata");
-    if (error) {
-      std::move(callback).Run(error, /*store=*/nullptr,
-                              /*metadata_batch=*/nullptr);
-      return;
-    }
-
-    std::map<std::string, sync_pb::SessionSpecifics> initial_data;
-    for (ModelTypeStore::Record& record : *record_list) {
-      const std::string& storage_key = record.id;
-      SessionSpecifics specifics;
-      if (storage_key.empty() ||
-          !specifics.ParseFromString(std::move(record.value))) {
-        DVLOG(1) << "Ignoring corrupt database entry with key: " << storage_key;
-        continue;
-      }
-      initial_data[storage_key].Swap(&specifics);
-    }
-
-    auto session_store = std::make_unique<SessionStore>(
-        sessions_client_, session_info, std::move(store),
-        std::move(initial_data), metadata_batch->GetAllMetadata(),
-        restored_foreign_tab_callback_);
-
-    std::move(callback).Run(/*error=*/base::nullopt, std::move(session_store),
-                            std::move(metadata_batch));
-  }
-
-  SyncSessionsClient* const sessions_client_;
-  const SessionStore::RestoredForeignTabCallback restored_foreign_tab_callback_;
-};
-
 }  // namespace
 
 // static
-SessionStore::Factory SessionStore::CreateFactory(
+void SessionStore::Open(
+    const syncer::DeviceInfo& device_info,
+    const RestoredForeignTabCallback& restored_foreign_tab_callback,
     SyncSessionsClient* sessions_client,
-    const RestoredForeignTabCallback& restored_foreign_tab_callback) {
-  auto factory = std::make_unique<FactoryImpl>(sessions_client,
-                                               restored_foreign_tab_callback);
-  return base::BindRepeating(&FactoryImpl::Create, std::move(factory));
+    OpenCallback callback) {
+  DCHECK(sessions_client);
+  DCHECK(!device_info.guid().empty());
+
+  SessionStore::SessionInfo session_info;
+  session_info.client_name = device_info.client_name();
+  session_info.device_type = device_info.device_type();
+  session_info.session_tag = GetSessionTagWithPrefs(
+      device_info.guid(), sessions_client->GetSessionSyncPrefs());
+
+  DVLOG(1) << "Opening session store";
+  // WrapUnique() used because constructor is private.
+  auto session_store = base::WrapUnique(new SessionStore(
+      session_info, restored_foreign_tab_callback, sessions_client));
+  sessions_client->GetStoreFactory().Run(
+      syncer::SESSIONS,
+      base::BindOnce(&OnStoreCreated, std::move(session_store),
+                     std::move(callback)));
 }
 
 SessionStore::WriteBatch::WriteBatch(
@@ -380,26 +290,109 @@ std::string SessionStore::GetTabClientTagForTest(const std::string& session_tag,
   return TabNodeIdToClientTag(session_tag, tab_node_id);
 }
 
+// static
+void SessionStore::OnStoreCreated(
+    std::unique_ptr<SessionStore> session_store,
+    OpenCallback callback,
+    const base::Optional<syncer::ModelError>& error,
+    std::unique_ptr<ModelTypeStore> underlying_store) {
+  if (error) {
+    std::move(callback).Run(error, /*store=*/nullptr,
+                            /*metadata_batch=*/nullptr);
+    return;
+  }
+
+  DCHECK(underlying_store);
+  ModelTypeStore* underlying_store_copy = underlying_store.get();
+  underlying_store_copy->ReadAllMetadata(
+      base::BindOnce(&OnReadAllMetadata, std::move(session_store),
+                     std::move(callback), std::move(underlying_store)));
+}
+
+// static
+void SessionStore::OnReadAllMetadata(
+    std::unique_ptr<SessionStore> session_store,
+    OpenCallback callback,
+    std::unique_ptr<ModelTypeStore> underlying_store,
+    const base::Optional<syncer::ModelError>& error,
+    std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+  if (error) {
+    std::move(callback).Run(error, /*store=*/nullptr,
+                            /*metadata_batch=*/nullptr);
+    return;
+  }
+
+  ModelTypeStore* underlying_store_copy = underlying_store.get();
+  underlying_store_copy->ReadAllData(base::BindOnce(
+      &OnReadAllData, std::move(session_store), std::move(callback),
+      std::move(underlying_store), std::move(metadata_batch)));
+}
+
+// static
+void SessionStore::OnReadAllData(
+    std::unique_ptr<SessionStore> session_store,
+    OpenCallback callback,
+    std::unique_ptr<ModelTypeStore> underlying_store,
+    std::unique_ptr<syncer::MetadataBatch> metadata_batch,
+    const base::Optional<syncer::ModelError>& error,
+    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  // Remove after fixing https://crbug.com/902203.
+  TRACE_EVENT0("browser", "OnReadAllMetadata");
+  if (error) {
+    std::move(callback).Run(error, /*store=*/nullptr,
+                            /*metadata_batch=*/nullptr);
+    return;
+  }
+
+  std::map<std::string, sync_pb::SessionSpecifics> initial_data;
+  for (ModelTypeStore::Record& record : *record_list) {
+    const std::string& storage_key = record.id;
+    SessionSpecifics specifics;
+    if (storage_key.empty() ||
+        !specifics.ParseFromString(std::move(record.value))) {
+      DVLOG(1) << "Ignoring corrupt database entry with key: " << storage_key;
+      continue;
+    }
+    initial_data[storage_key].Swap(&specifics);
+  }
+
+  // We avoid initialization of the store if the callback was cancelled, in
+  // case dependencies (SessionSyncClient) are already destroyed, even though
+  // the current implementation doesn't seem to crash otherwise.
+  if (callback.IsCancelled()) {
+    return;
+  }
+
+  session_store->Init(std::move(underlying_store), std::move(initial_data),
+                      metadata_batch->GetAllMetadata());
+
+  std::move(callback).Run(/*error=*/base::nullopt, std::move(session_store),
+                          std::move(metadata_batch));
+}
+
 SessionStore::SessionStore(
-    SyncSessionsClient* sessions_client,
     const SessionInfo& local_session_info,
-    std::unique_ptr<ModelTypeStore> store,
-    std::map<std::string, sync_pb::SessionSpecifics> initial_data,
-    const syncer::EntityMetadataMap& initial_metadata,
-    const RestoredForeignTabCallback& restored_foreign_tab_callback)
-    : store_(std::move(store)),
-      local_session_info_(local_session_info),
+    const RestoredForeignTabCallback& restored_foreign_tab_callback,
+    SyncSessionsClient* sessions_client)
+    : local_session_info_(local_session_info),
+      restored_foreign_tab_callback_(restored_foreign_tab_callback),
       session_tracker_(sessions_client),
       weak_ptr_factory_(this) {
-  DCHECK(store_);
+  session_tracker_.InitLocalSession(local_session_info_.session_tag,
+                                    local_session_info_.client_name,
+                                    local_session_info_.device_type);
+}
 
-  DVLOG(1) << "Constructed session store with " << initial_data.size()
+void SessionStore::Init(
+    std::unique_ptr<ModelTypeStore> store,
+    std::map<std::string, sync_pb::SessionSpecifics> initial_data,
+    const syncer::EntityMetadataMap& initial_metadata) {
+  DCHECK(store);
+  store_ = std::move(store);
+
+  DVLOG(1) << "Initializing session store with " << initial_data.size()
            << " restored entities and " << initial_metadata.size()
            << " metadata entries.";
-
-  session_tracker_.InitLocalSession(local_session_info.session_tag,
-                                    local_session_info.client_name,
-                                    local_session_info.device_type);
 
   bool found_local_header = false;
 
@@ -424,13 +417,13 @@ SessionStore::SessionStore(
     const base::Time mtime =
         syncer::ProtoTimeToTime(metadata_it->second.modification_time());
 
-    if (specifics.session_tag() != local_session_info.session_tag) {
+    if (specifics.session_tag() != local_session_info_.session_tag) {
       UpdateTrackerWithSpecifics(specifics, mtime, &session_tracker_);
 
       // Notify listeners. In practice, this has the goal to load the URLs and
       // visit times into the in-memory favicon cache.
       if (specifics.has_tab()) {
-        restored_foreign_tab_callback.Run(specifics.tab(), mtime);
+        restored_foreign_tab_callback_.Run(specifics.tab(), mtime);
       }
     } else if (specifics.has_header()) {
       // This is previously stored local header information. Restoring the local
@@ -529,7 +522,12 @@ std::unique_ptr<SessionStore::WriteBatch> SessionStore::CreateWriteBatch(
 
 void SessionStore::DeleteAllDataAndMetadata() {
   session_tracker_.Clear();
-  return store_->DeleteAllDataAndMetadata(base::DoNothing());
+  store_->DeleteAllDataAndMetadata(base::DoNothing());
+
+  // At all times, the local session must be tracked.
+  session_tracker_.InitLocalSession(local_session_info_.session_tag,
+                                    local_session_info_.client_name,
+                                    local_session_info_.device_type);
 }
 
 }  // namespace sync_sessions

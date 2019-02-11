@@ -165,11 +165,10 @@ class RecentTabsSubMenuModelTest
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
-    helper->ExportToSessionSync(
-        sync_processor_.get(),
-        static_cast<sync_sessions::SessionSyncServiceImpl*>(
-            session_sync_service_)
-            ->GetUnderlyingOpenTabsUIDelegateForTest());
+    helper->ExportToSessionSync(sync_processor_.get());
+    helper->VerifyExport(static_cast<sync_sessions::SessionSyncServiceImpl*>(
+                             session_sync_service_)
+                             ->GetUnderlyingOpenTabsUIDelegateForTest());
   }
 
  private:

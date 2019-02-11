@@ -38,25 +38,23 @@ class SessionStore {
     sync_pb::SyncEnums::DeviceType device_type = sync_pb::SyncEnums::TYPE_UNSET;
   };
 
-  // Creation factory. The instantiation process is quite complex because it
-  // loads state from disk.
-  using FactoryCompletionCallback = base::OnceCallback<void(
+  using OpenCallback = base::OnceCallback<void(
       const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<SessionStore> store,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch)>;
-  using Factory =
-      base::RepeatingCallback<void(const syncer::DeviceInfo& device_info,
-                                   FactoryCompletionCallback callback)>;
   // Mimics signature of FaviconCache::UpdateMappingsFromForeignTab().
   using RestoredForeignTabCallback =
       base::RepeatingCallback<void(const sync_pb::SessionTab&, base::Time)>;
 
-  // Creates a factory object that is capable of constructing instances of type
-  // |SessionStore| and handling the involved IO. |sessions_client| must not be
-  // null and must outlive the factory as well as the instantiated stores.
-  static Factory CreateFactory(
+  // Opens a SessionStore instance, which involves IO to load previous state
+  // from disk. |sessions_client| must not be null and must outlive the
+  // SessionStore instance returned via |callback|, or until the callback is
+  // cancelled.
+  static void Open(
+      const syncer::DeviceInfo& device_info,
+      const RestoredForeignTabCallback& restored_foreign_tab_callback,
       SyncSessionsClient* sessions_client,
-      const RestoredForeignTabCallback& restored_foreign_tab_callback);
+      OpenCallback callback);
 
   // Verifies whether a proto is malformed (e.g. required fields are missing).
   static bool AreValidSpecifics(const sync_pb::SessionSpecifics& specifics);
@@ -120,15 +118,6 @@ class SessionStore {
     DISALLOW_COPY_AND_ASSIGN(WriteBatch);
   };
 
-  // Construction once all data and metadata has been loaded from disk. Use
-  // the factory above to take care of the IO. |sessions_client| must not be
-  // null and must outlive this object.
-  SessionStore(SyncSessionsClient* sessions_client,
-               const SessionInfo& local_session_info,
-               std::unique_ptr<syncer::ModelTypeStore> store,
-               std::map<std::string, sync_pb::SessionSpecifics> initial_data,
-               const syncer::EntityMetadataMap& initial_metadata,
-               const RestoredForeignTabCallback& restored_foreign_tab_callback);
   ~SessionStore();
 
   const SessionInfo& local_session_info() const { return local_session_info_; }
@@ -155,10 +144,43 @@ class SessionStore {
   const SyncedSessionTracker* tracker() const { return &session_tracker_; }
 
  private:
+  static void OnStoreCreated(
+      std::unique_ptr<SessionStore> session_store,
+      OpenCallback callback,
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::ModelTypeStore> underlying_store);
+  static void OnReadAllMetadata(
+      std::unique_ptr<SessionStore> session_store,
+      OpenCallback callback,
+      std::unique_ptr<syncer::ModelTypeStore> underlying_store,
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::MetadataBatch> metadata_batch);
+  static void OnReadAllData(
+      std::unique_ptr<SessionStore> session_store,
+      OpenCallback callback,
+      std::unique_ptr<syncer::ModelTypeStore> underlying_store,
+      std::unique_ptr<syncer::MetadataBatch> metadata_batch,
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::ModelTypeStore::RecordList> record_list);
+
+  // Construction prior to any data being read from disk. Callers are expected
+  // to read state from disk and call Init(). |sessions_client| must not be null
+  // and must outlive this object.
+  SessionStore(const SessionInfo& local_session_info,
+               const RestoredForeignTabCallback& restored_foreign_tab_callback,
+               SyncSessionsClient* sessions_client);
+
+  // Initialization once IO is completed.
+  void Init(std::unique_ptr<syncer::ModelTypeStore> store,
+            std::map<std::string, sync_pb::SessionSpecifics> initial_data,
+            const syncer::EntityMetadataMap& initial_metadata);
+
+  const SessionInfo local_session_info_;
+  const RestoredForeignTabCallback restored_foreign_tab_callback_;
+
   // In charge of actually persisting changes to disk.
   std::unique_ptr<syncer::ModelTypeStore> store_;
 
-  const SessionInfo local_session_info_;
 
   SyncedSessionTracker session_tracker_;
 

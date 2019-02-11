@@ -106,6 +106,8 @@ class FaviconCache : public syncer::SyncableService,
   void UpdateMappingsFromForeignTab(const sync_pb::SessionTab& tab,
                                     base::Time visit_time);
 
+  base::WeakPtr<FaviconCache> GetWeakPtr();
+
   // For testing only.
   size_t NumFaviconsForTest() const;
   size_t NumTasksForTest() const;

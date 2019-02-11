@@ -54,9 +54,8 @@ class RecentTabsBuilderTestHelper {
                        int window_index,
                        int tab_index);
 
-  void ExportToSessionSync(
-      syncer::ModelTypeProcessor* processor,
-      sync_sessions::OpenTabsUIDelegate* verification_delegate);
+  void ExportToSessionSync(syncer::ModelTypeProcessor* processor);
+  void VerifyExport(sync_sessions::OpenTabsUIDelegate* delegate);
 
   std::vector<base::string16> GetTabTitlesSortedByRecency();
 
@@ -71,7 +70,6 @@ class RecentTabsBuilderTestHelper {
   syncer::UpdateResponseData BuildUpdateResponseData(
       const sync_pb::SessionSpecifics& specifics,
       base::Time timestamp);
-  void VerifyExport(sync_sessions::OpenTabsUIDelegate* delegate);
 
   struct TabInfo;
   struct WindowInfo;

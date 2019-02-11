@@ -983,7 +983,6 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   EXPECT_CALL(mock_processor(), ModelReadyToSync(_)).Times(0);
   real_processor()->OnSyncStopping(syncer::CLEAR_METADATA);
 
-  EXPECT_CALL(mock_processor(), ModelReadyToSync(IsEmptyMetadataBatch()));
   StartSyncing();
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(

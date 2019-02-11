@@ -36,6 +36,8 @@ class ModelTypeSyncBridge {
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
+  // TODO(crbug.com/863870): Remove this enum now the sessions has migrated
+  // away.
   enum class StopSyncResponse {
     kModelStillReadyToSync,
     kModelNoLongerReadyToSync

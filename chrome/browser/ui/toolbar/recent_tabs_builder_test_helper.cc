@@ -185,8 +185,7 @@ base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
 }
 
 void RecentTabsBuilderTestHelper::ExportToSessionSync(
-    syncer::ModelTypeProcessor* processor,
-    sync_sessions::OpenTabsUIDelegate* verification_delegate) {
+    syncer::ModelTypeProcessor* processor) {
   syncer::UpdateResponseDataList updates;
 
   for (int s = 0; s < GetSessionCount(); ++s) {
@@ -209,11 +208,11 @@ void RecentTabsBuilderTestHelper::ExportToSessionSync(
   // ClientTagBasedModelTypeProcessor uses ModelTypeProcessorProxy during
   // activation, which involves task posting for receiving updates.
   base::RunLoop().RunUntilIdle();
-  VerifyExport(verification_delegate);
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(
     sync_sessions::OpenTabsUIDelegate* delegate) {
+  DCHECK(delegate);
   // Make sure data is populated correctly in SessionModelAssociator.
   std::vector<const sync_sessions::SyncedSession*> sessions;
   ASSERT_TRUE(delegate->GetAllForeignSessions(&sessions));
