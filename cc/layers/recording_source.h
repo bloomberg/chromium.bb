@@ -55,9 +55,6 @@ class CC_EXPORT RecordingSource {
   // These functions are virtual for testing.
   virtual scoped_refptr<RasterSource> CreateRasterSource() const;
 
-  const DisplayItemList* GetDisplayItemList();
-  gfx::Rect recorded_viewport() const { return recorded_viewport_; }
-
   bool is_solid_color() const { return is_solid_color_; }
 
  protected:
