@@ -38,11 +38,7 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame)
     : ScreenOrientationController(frame),
       ContextLifecycleObserver(frame.GetDocument()),
-      PageVisibilityObserver(frame.GetPage()),
-      dispatch_event_timer_(
-          frame.GetTaskRunner(TaskType::kMiscPlatformAPI),
-          this,
-          &ScreenOrientationControllerImpl::DispatchEventTimerFired) {
+      PageVisibilityObserver(frame.GetPage()) {
   AssociatedInterfaceProvider* provider =
       frame.GetRemoteNavigationAssociatedInterfaces();
   if (provider)
@@ -156,8 +152,11 @@ void ScreenOrientationControllerImpl::NotifyOrientationChanged() {
   }
 
   // Notify current orientation object.
-  if (IsActive() && !dispatch_event_timer_.IsActive())
-    dispatch_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  if (IsActive() && orientation_) {
+    ScopedAllowFullscreen allow_fullscreen(
+        ScopedAllowFullscreen::kOrientationChange);
+    orientation_->DispatchEvent(*Event::Create(event_type_names::kChange));
+  }
 
   // ... and child frames, if they have a ScreenOrientationControllerImpl.
   for (LocalFrame* child_frame : child_frames) {
@@ -204,15 +203,6 @@ void ScreenOrientationControllerImpl::unlock() {
 
 bool ScreenOrientationControllerImpl::MaybeHasActiveLock() const {
   return active_lock_;
-}
-
-void ScreenOrientationControllerImpl::DispatchEventTimerFired(TimerBase*) {
-  if (!orientation_)
-    return;
-
-  ScopedAllowFullscreen allow_fullscreen(
-      ScopedAllowFullscreen::kOrientationChange);
-  orientation_->DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 void ScreenOrientationControllerImpl::ContextDestroyed(ExecutionContext*) {

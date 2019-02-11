@@ -33,9 +33,6 @@ function runEventVisibleTest() {
         assert_false(document.hidden);
     });
 
-    if (window.testRunner)
-        testRunner.setMockScreenOrientation("landscape-primary");
-
     orientationChangeEventContinuation = function() {
         eventVisibleTest.step(function() {
             assert_equals(orientationChangeEventListenerCalls, 1);
@@ -45,6 +42,9 @@ function runEventVisibleTest() {
 
         runNoEventHiddenTest();
     };
+
+    if (window.testRunner)
+        testRunner.setMockScreenOrientation("landscape-primary");
 }
 
 function runNoEventHiddenTest() {
@@ -55,12 +55,13 @@ function runNoEventHiddenTest() {
         assert_true(document.hidden);
     });
 
-    if (window.testRunner)
-        testRunner.setMockScreenOrientation("portrait-primary");
-
     noEventHiddenTest.step(function() {
         assert_equals(orientationChangeEventListenerCalls, 1);
     });
+
+    if (window.testRunner)
+        testRunner.setMockScreenOrientation("portrait-primary");
+
     noEventHiddenTest.done();
 
     runOrientationUnchangeHiddenTest();
@@ -76,9 +77,6 @@ function runOrientationUnchangeHiddenTest() {
 }
 
 function runOrientationUpdateVisibleTest() {
-    if (window.testRunner)
-        testRunner.setPageVisibility("visible");
-
     orientationChangeEventContinuation = function() {
         orientationUpdateVisibleTest.step(function() {
             assert_false(document.hidden);
@@ -92,6 +90,9 @@ function runOrientationUpdateVisibleTest() {
 
         runFrameEventsTest();
     };
+
+    if (window.testRunner)
+        testRunner.setPageVisibility("visible");
 }
 
 function runFrameEventsTest() {
