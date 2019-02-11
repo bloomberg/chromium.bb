@@ -23,7 +23,9 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/fileapi/obfuscated_file_util_delegate.h"
+// TODO(https://crbug.com/93417): To be replaced with
+// obfuscated_file_util_delegate.h
+#include "storage/browser/fileapi/obfuscated_file_util_disk_delegate.h"
 #include "storage/browser/fileapi/sandbox_directory_database.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -340,7 +342,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // Not owned.
   SandboxFileSystemBackendDelegate* sandbox_delegate_;
 
-  std::unique_ptr<ObfuscatedFileUtilDelegate> delegate_;
+  // TODO(https://crbug.com/93417): To be replaced with
+  // ObfuscatedFileUtilDelegate.
+  std::unique_ptr<ObfuscatedFileUtilDiskDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };

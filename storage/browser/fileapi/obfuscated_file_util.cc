@@ -25,8 +25,6 @@
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/obfuscated_file_util_disk_delegate.h"
-#include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "storage/browser/fileapi/sandbox_origin_database.h"
@@ -267,16 +265,14 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
       db_flush_delay_seconds_(10 * 60),  // 10 mins.
       get_type_string_for_url_(std::move(get_type_string_for_url)),
       known_type_strings_(known_type_strings),
-      sandbox_delegate_(sandbox_delegate) {
+      sandbox_delegate_(sandbox_delegate),
+      delegate_(std::make_unique<ObfuscatedFileUtilDiskDelegate>()) {
+  // TODO(https://crbug.com/93417): |delegate_| to be initialized with an
+  // instance of |ObfuscatedFileUtilMemoryDelegate| if |is_incognito| is true.
   DCHECK(!get_type_string_for_url_.is_null());
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(!is_incognito ||
          (env_override && leveldb_chrome::IsMemEnv(env_override)));
-
-  if (is_incognito)
-    delegate_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>();
-  else
-    delegate_ = std::make_unique<ObfuscatedFileUtilDiskDelegate>();
 }
 
 ObfuscatedFileUtil::~ObfuscatedFileUtil() {

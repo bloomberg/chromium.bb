@@ -9,46 +9,42 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/native_file_util.h"
-#include "storage/browser/fileapi/obfuscated_file_util_delegate.h"
 
 namespace storage {
 
 // This delegate performs all ObfuscatedFileUtil tasks that actually touch disk.
 
-class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDiskDelegate
-    : public ObfuscatedFileUtilDelegate {
+// TODO(https://crbug.com/93417): To be driven from abstract class
+// |ObfuscatedFileUtilDelegate|.
+class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDiskDelegate {
  public:
   ObfuscatedFileUtilDiskDelegate();
-  ~ObfuscatedFileUtilDiskDelegate() override;
+  ~ObfuscatedFileUtilDiskDelegate() = default;
 
-  bool DirectoryExists(const base::FilePath& path) override;
-  bool DeleteFileOrDirectory(const base::FilePath& path,
-                             bool recursive) override;
-  bool IsLink(const base::FilePath& file_path) override;
-  bool PathExists(const base::FilePath& path) override;
+  bool DirectoryExists(const base::FilePath& path);
+  bool DeleteFileOrDirectory(const base::FilePath& path, bool recursive);
+  bool IsLink(const base::FilePath& file_path);
+  bool PathExists(const base::FilePath& path);
 
   NativeFileUtil::CopyOrMoveMode CopyOrMoveModeForDestination(
       const FileSystemURL& dest_url,
-      bool copy) override;
-  base::File CreateOrOpen(const base::FilePath& path, int file_flags) override;
-  base::File::Error EnsureFileExists(const base::FilePath& path,
-                                     bool* created) override;
+      bool copy);
+  base::File CreateOrOpen(const base::FilePath& path, int file_flags);
+  base::File::Error EnsureFileExists(const base::FilePath& path, bool* created);
   base::File::Error CreateDirectory(const base::FilePath& path,
                                     bool exclusive,
-                                    bool recursive) override;
+                                    bool recursive);
   base::File::Error GetFileInfo(const base::FilePath& path,
-                                base::File::Info* file_info) override;
+                                base::File::Info* file_info);
   base::File::Error Touch(const base::FilePath& path,
                           const base::Time& last_access_time,
-                          const base::Time& last_modified_time) override;
-  base::File::Error Truncate(const base::FilePath& path,
-                             int64_t length) override;
-  base::File::Error CopyOrMoveFile(
-      const base::FilePath& src_path,
-      const base::FilePath& dest_path,
-      FileSystemOperation::CopyOrMoveOption option,
-      NativeFileUtil::CopyOrMoveMode mode) override;
-  base::File::Error DeleteFile(const base::FilePath& path) override;
+                          const base::Time& last_modified_time);
+  base::File::Error Truncate(const base::FilePath& path, int64_t length);
+  base::File::Error CopyOrMoveFile(const base::FilePath& src_path,
+                                   const base::FilePath& dest_path,
+                                   FileSystemOperation::CopyOrMoveOption option,
+                                   NativeFileUtil::CopyOrMoveMode mode);
+  base::File::Error DeleteFile(const base::FilePath& path);
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilDiskDelegate);
 };
