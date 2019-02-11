@@ -263,4 +263,4 @@ TEST(DnsQueueTest, WrapOnVariousSubstrings) {
   EXPECT_FALSE(tester.Pop());
 }
 
-};  // namespace network_hints
+}  // namespace network_hints
