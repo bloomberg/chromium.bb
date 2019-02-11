@@ -79,7 +79,7 @@ class MockTest : public testing::Test {
       ASSERT_TRUE(reader.PopString(&response_string_));
     }
     run_loop_->Quit();
-  };
+  }
 
  protected:
   std::string response_string_;
