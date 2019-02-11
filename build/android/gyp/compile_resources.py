@@ -646,7 +646,7 @@ def _CreateResourceInfoFile(
         lines.update(zip_info_file.readlines())
   for dest, source in renamed_paths.iteritems():
     lines.add('Rename:{},{}\n'.format(dest, source))
-  with open(apk_info_path, 'w') as info_file:
+  with build_utils.AtomicOutput(apk_info_path) as info_file:
     info_file.writelines(sorted(lines))
 
 

@@ -469,13 +469,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
     logging.info('Completed all steps in _OnStaleMd5')
 
 
-def _ParseAndFlattenGnLists(gn_lists):
-  ret = []
-  for arg in gn_lists:
-    ret.extend(build_utils.ParseGnList(arg))
-  return ret
-
-
 def _ParseOptions(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -559,13 +552,13 @@ def _ParseOptions(argv):
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path',))
 
-  options.bootclasspath = _ParseAndFlattenGnLists(options.bootclasspath)
-  options.full_classpath = _ParseAndFlattenGnLists(options.full_classpath)
-  options.interface_classpath = _ParseAndFlattenGnLists(
+  options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
+  options.full_classpath = build_utils.ParseGnList(options.full_classpath)
+  options.interface_classpath = build_utils.ParseGnList(
       options.interface_classpath)
-  options.processorpath = _ParseAndFlattenGnLists(options.processorpath)
-  options.processors = _ParseAndFlattenGnLists(options.processors)
-  options.java_srcjars = _ParseAndFlattenGnLists(options.java_srcjars)
+  options.processorpath = build_utils.ParseGnList(options.processorpath)
+  options.processors = build_utils.ParseGnList(options.processors)
+  options.java_srcjars = build_utils.ParseGnList(options.java_srcjars)
 
   if options.java_version == '1.8' and options.bootclasspath:
     # Android's boot jar doesn't contain all java 8 classes.

@@ -30,19 +30,18 @@ _NO_COMPRESS_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.wav', '.mp2',
 def _ParseArgs(args):
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
-  parser.add_argument('--assets',
-                      help='GYP-list of files to add as assets in the form '
-                           '"srcPath:zipPath", where ":zipPath" is optional.',
-                      default='[]')
-  parser.add_argument('--java-resources',
-                      help='GYP-list of java_resources JARs to include.',
-                      default='[]')
+  parser.add_argument(
+      '--assets',
+      help='GYP-list of files to add as assets in the form '
+      '"srcPath:zipPath", where ":zipPath" is optional.')
+  parser.add_argument(
+      '--java-resources', help='GYP-list of java_resources JARs to include.')
   parser.add_argument('--write-asset-list',
                       action='store_true',
                       help='Whether to create an assets/assets_list file.')
-  parser.add_argument('--uncompressed-assets',
-                      help='Same as --assets, except disables compression.',
-                      default='[]')
+  parser.add_argument(
+      '--uncompressed-assets',
+      help='Same as --assets, except disables compression.')
   parser.add_argument('--resource-apk',
                       help='An .ap_ file built using aapt',
                       required=True)
@@ -51,10 +50,6 @@ def _ParseArgs(args):
                       required=True)
   parser.add_argument('--format', choices=['apk', 'bundle-module'],
                       default='apk', help='Specify output format.')
-  parser.add_argument('--apk-pak-info-path',
-                      help='Path to the *.apk.pak.info file')
-  parser.add_argument('--apk-res-info-path',
-                      help='Path to the *.apk.res.info file')
   parser.add_argument('--dex-file',
                       help='Path to the classes.dex to use')
   parser.add_argument('--uncompress-dex', action='store_true',
@@ -74,13 +69,13 @@ def _ParseArgs(args):
   parser.add_argument('--secondary-android-abi',
                       help='The secondary Android architecture to use for'
                            'secondary native libraries')
-  parser.add_argument('--native-lib-placeholders',
-                      help='GYP-list of native library placeholders to add.',
-                      default='[]')
-  parser.add_argument('--secondary-native-lib-placeholders',
-                      help='GYP-list of native library placeholders to add '
-                           'for the secondary ABI',
-                      default='[]')
+  parser.add_argument(
+      '--native-lib-placeholders',
+      help='GYP-list of native library placeholders to add.')
+  parser.add_argument(
+      '--secondary-native-lib-placeholders',
+      help='GYP-list of native library placeholders to add '
+      'for the secondary ABI')
   parser.add_argument('--uncompress-shared-libraries', default='False',
       choices=['true', 'True', 'false', 'False'],
       help='Whether to uncompress native shared libraries. Argument must be '
@@ -226,24 +221,6 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
                                  compress=compress)
 
 
-def _MergeResInfoFiles(res_info_path, resource_apk):
-  resource_apk_info_path = resource_apk + '.info'
-  shutil.copy(resource_apk_info_path, res_info_path)
-
-
-def _FilterPakInfoPaths(assets):
-  return [f.split(':')[0] + '.info' for f in assets if f.endswith('.pak')]
-
-
-def _MergePakInfoFiles(merged_path, pak_infos):
-  info_lines = set()
-  for pak_info_path in pak_infos:
-    with open(pak_info_path, 'r') as src_info_file:
-      info_lines.update(src_info_file.readlines())
-  with open(merged_path, 'w') as merged_info_file:
-    merged_info_file.writelines(sorted(info_lines))
-
-
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
@@ -265,11 +242,6 @@ def main(args):
 
   assets = _ExpandPaths(options.assets)
   uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
-
-  if options.apk_pak_info_path:
-    pak_infos = _FilterPakInfoPaths(
-        options.assets + options.uncompressed_assets)
-    depfile_deps.extend(pak_infos)
 
   # Included via .build_config, so need to write it to depfile.
   depfile_deps.extend(x[0] for x in assets)
@@ -387,11 +359,6 @@ def main(args):
                 out_apk,
                 apk_root_dir + apk_path,
                 data=java_resource_jar.read(apk_path))
-
-      if options.apk_pak_info_path:
-        _MergePakInfoFiles(options.apk_pak_info_path, pak_infos)
-      if options.apk_res_info_path:
-        _MergeResInfoFiles(options.apk_res_info_path, options.resource_apk)
 
     if options.format == 'apk':
       finalize_apk.FinalizeApk(options.apksigner_path, options.zipalign_path,

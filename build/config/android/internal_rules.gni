@@ -2340,37 +2340,63 @@ if (enable_java_templates) {
   # Variables:
   #   build_config: Path to APK's build config file. Used to extract the
   #       list of input .jar files from its dependencies.
-  #   output: Output file path.
+  #   name: Name of the apk or app bundle (e.g. "Foo.apk").
+  #   packaged_resources_path: Path to .ap_ file.
   #
-  template("create_final_jar_info") {
-    _output = invoker.output
-    _build_config = invoker.build_config
-    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+  template("create_size_info_files") {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
                                "testonly",
                                "deps",
                              ])
-      script = "//build/android/gyp/merge_jar_info_files.py"
-      inputs = [
-        _build_config,
-      ]
+      script = "//build/android/gyp/create_size_info_files.py"
+      _jar_info_path = "$root_build_dir/size-info/${invoker.name}.jar.info"
+      _pak_info_path = "$root_build_dir/size-info/${invoker.name}.pak.info"
+      _res_info_path = "$root_build_dir/size-info/${invoker.name}.res.info"
       outputs = [
-        _output,
+        _jar_info_path,
+        _pak_info_path,
+        _res_info_path,
       ]
       depfile = "$target_gen_dir/$target_name.d"
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--output",
-        rebase_path(_output, root_build_dir),
-        "--dep-jar-files=@FileArg(" +
-            "$_rebased_build_config:deps_info:javac_full_classpath)",
+        "--jar-info-path",
+        rebase_path(_jar_info_path, root_build_dir),
+        "--pak-info-path",
+        rebase_path(_pak_info_path, root_build_dir),
+        "--res-info-path",
+        rebase_path(_res_info_path, root_build_dir),
       ]
-      if (!invoker.is_bundle) {
+      _is_bundle = defined(invoker.module_build_configs)
+      if (_is_bundle) {
+        inputs = invoker.module_build_configs
+        foreach(_build_config, invoker.module_build_configs) {
+          _rebased_build_config = rebase_path(_build_config, root_build_dir)
+          args += [
+            "--jar-files=@FileArg($_rebased_build_config:deps_info:unprocessed_jar_path)",
+            "--jar-files=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+            "--resource-apk=@FileArg($_rebased_build_config:deps_info:proto_resources_path)",
+            "--assets=@FileArg($_rebased_build_config:assets)",
+            "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
+          ]
+        }
+      } else {
+        inputs = [
+          invoker.build_config,
+          invoker.packaged_resources_path,
+        ]
+        _rebased_build_config =
+            rebase_path(invoker.build_config, root_build_dir)
         args += [
-          "--apk-jar-file=@FileArg($_rebased_build_config:deps_info:jar_path)",
+          "--jar-files=@FileArg($_rebased_build_config:deps_info:jar_path)",
+          "--jar-files=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+          "--resource-apk",
+          rebase_path(invoker.packaged_resources_path, root_build_dir),
+          "--assets=@FileArg($_rebased_build_config:assets)",
+          "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
         ]
       }
     }
@@ -2482,22 +2508,6 @@ if (enable_java_templates) {
         # TODO(mlopatkin) We are relying on the fact that assets_build_config is
         # an APK build_config.
         args += [ "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)" ]
-
-        if (defined(invoker.apk_name)) {
-          # The supersize tool will search in this directory for each apk.
-          _apk_pak_info_path = "size-info/${invoker.apk_name}.apk.pak.info"
-          _apk_res_info_path = "size-info/${invoker.apk_name}.apk.res.info"
-          args += [
-            "--apk-pak-info-path",
-            _apk_pak_info_path,
-            "--apk-res-info-path",
-            _apk_res_info_path,
-          ]
-          outputs += [
-            "$root_build_dir/$_apk_pak_info_path",
-            "$root_build_dir/$_apk_res_info_path",
-          ]
-        }
       }
       if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
         args += [ "--write-asset-list" ]
