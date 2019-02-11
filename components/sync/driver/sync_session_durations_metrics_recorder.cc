@@ -148,7 +148,7 @@ void SyncSessionDurationsMetricsRecorder::OnRefreshTokensLoaded() {
 
 void SyncSessionDurationsMetricsRecorder::
     OnErrorStateOfRefreshTokenUpdatedForAccount(
-        const AccountInfo& account_info,
+        const CoreAccountInfo& account_info,
         const GoogleServiceAuthError& error) {
   DVLOG(1) << __func__;
   HandleSyncAndAccountChange();

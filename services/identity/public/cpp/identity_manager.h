@@ -111,7 +111,7 @@ class IdentityManager : public SigninManagerBase::Observer,
     // |OnRefreshTokenUpdatedForAccount| when the refresh token is updated. It
     // is not called when the refresh token is removed.
     virtual void OnErrorStateOfRefreshTokenUpdatedForAccount(
-        const AccountInfo& account_info,
+        const CoreAccountInfo& account_info,
         const GoogleServiceAuthError& error) {}
 
     // Called after refresh tokens are loaded.

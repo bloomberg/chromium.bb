@@ -414,7 +414,7 @@ void IdentityManager::OnEndBatchChanges() {
 void IdentityManager::OnAuthErrorChanged(
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error) {
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       GetAccountInfoForAccountWithRefreshToken(account_id);
 
   for (auto& observer : observer_list_)

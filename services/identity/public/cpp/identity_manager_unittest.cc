@@ -261,7 +261,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   const std::string& account_from_refresh_token_removed_callback() {
     return account_from_refresh_token_removed_callback_;
   }
-  const AccountInfo&
+  const CoreAccountInfo&
   account_from_error_state_of_refresh_token_updated_callback() {
     return account_from_error_state_of_refresh_token_updated_callback_;
   }
@@ -355,7 +355,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       on_refresh_token_removed_callback_.Run(account_id);
   }
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info,
+      const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override {
     account_from_error_state_of_refresh_token_updated_callback_ = account_info;
     error_from_error_state_of_refresh_token_updated_callback_ = error;
@@ -423,7 +423,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountInfo primary_account_from_cleared_callback_;
   AccountInfo account_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
-  AccountInfo account_from_error_state_of_refresh_token_updated_callback_;
+  CoreAccountInfo account_from_error_state_of_refresh_token_updated_callback_;
   AccountInfo account_from_account_updated_callback_;
   AccountInfo account_from_account_removed_with_info_callback_;
   GoogleServiceAuthError
