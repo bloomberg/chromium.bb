@@ -34,7 +34,7 @@ bool PropertyExists(v8::Local<v8::Context> context,
   v8::Local<v8::Value> value = V8ValueFromScriptSource(context, property);
   EXPECT_FALSE(value.IsEmpty());
   return !value->IsUndefined();
-};
+}
 
 }  // namespace
 
