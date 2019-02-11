@@ -122,6 +122,11 @@ void NavigationBodyLoader::OnUploadProgress(int64_t current_position,
 
 void NavigationBodyLoader::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
+  // Even if IsolatedCodeCaching is landed, this code is still used by
+  // ServiceWorker.
+  // TODO(horo, kinuko): Make a test to cover this function.
+  // TODO(https://crbug.com/930000): Add support for inline script code caching
+  // with the service worker service.
   client_->BodyCodeCacheReceived(data);
 }
 
