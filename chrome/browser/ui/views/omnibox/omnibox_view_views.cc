@@ -1258,14 +1258,11 @@ void OmniboxViewViews::OnBlur() {
   // midst of running but hasn't yet opened the popup, it will be halted.
   // If we fully reverted in this case, we'd lose the cursor/highlight
   // information saved above. Note: popup_model() can be null in tests.
-  //
-  // TODO(tommycli): This seems like it should apply to the Cocoa version of
-  // the Omnibox as well. Investigate moving this into the OmniboxEditModel.
-  if (!model()->user_input_in_progress() && model()->popup_model() &&
-      model()->popup_model()->IsOpen() &&
-      text() != model()->GetPermanentDisplayText()) {
+  OmniboxPopupModel* popup_model = model()->popup_model();
+  if (!model()->user_input_in_progress() && popup_model &&
+      popup_model->IsOpen() && text() != model()->GetPermanentDisplayText()) {
     RevertAll();
-  } else {
+  } else if (!popup_model || popup_model->popup_closes_on_blur()) {
     CloseOmniboxPopup();
   }
 
