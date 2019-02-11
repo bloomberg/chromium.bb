@@ -135,8 +135,8 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
                                     base::SysNSStringToUTF16(suggestion.value),
                                     base::SysNSStringToUTF16(
                                         suggestion.displayDescription),
-                                    base::IntToString16(index + 1),
-                                    base::IntToString16(numSuggestions))];
+                                    base::NumberToString16(index + 1),
+                                    base::NumberToString16(numSuggestions))];
     [self
         setAccessibilityIdentifier:kFormSuggestionLabelAccessibilityIdentifier];
   }
