@@ -17,6 +17,7 @@
 
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_icon_button.html">
   <link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 
   <script src="js/video_player_scripts.js"></script>
 </head>
@@ -41,9 +42,24 @@
         --cr-slider-knob-color: rgb(64, 138, 241);
         --cr-slider-active-color: rgb(66, 133, 244);
       }
+
+      /* Let cr-toast appear at top left corner */
+      cr-toast {
+          bottom: auto;
+          top: 0;
+          transform: translateY(-100px);
+      }
+
+      cr-toast[open] {
+          transform: translateY(0);
+      }
+
     </style>
   </custom-style>
   <div id="video-player" tools>
+    <cr-toast id="toast" duration="3000">
+      <div id="toast-content"></div>
+    </cr-toast>
     <cr-menu id='cast-menu' class='cast-menu tool'
           i18n-values="playon-text:VIDEO_PLAYER_PLAY_ON"></cr-menu>
     <div id="cast-container">
