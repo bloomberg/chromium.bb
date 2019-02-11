@@ -190,7 +190,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl', 'passthrough'], bug=887578)
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
-    self.Flaky('conformance2/textures/misc/' +
+    self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
         ['win', 'nvidia', 'opengl', 'passthrough'], bug=905003)
 
