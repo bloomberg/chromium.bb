@@ -90,6 +90,7 @@ class KeyboardAccessoryView extends LinearLayout {
     }
 
     void setVisible(boolean visible) {
+        if (!visible || getVisibility() != VISIBLE) mBarItemsView.scrollToPosition(0);
         if (visible) {
             show();
         } else {
