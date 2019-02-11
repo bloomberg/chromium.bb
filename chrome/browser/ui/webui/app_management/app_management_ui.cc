@@ -41,6 +41,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("notificationSublabel",
                              IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL);
   source->AddLocalizedString("notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS);
+  source->AddLocalizedString("openAndroidSettings",
+                             IDS_APP_MANAGEMENT_ANDROID_SETTINGS);
   source->AddLocalizedString("openSiteSettings",
                              IDS_APP_MANAGEMENT_SITE_SETTING);
   source->AddLocalizedString("permissions", IDS_APP_MANAGEMENT_PERMISSIONS);
@@ -76,6 +78,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
   source->AddResourcePath("app_item.html", IDR_APP_MANAGEMENT_APP_ITEM_HTML);
   source->AddResourcePath("app_item.js", IDR_APP_MANAGEMENT_APP_ITEM_JS);
+  source->AddResourcePath("arc_permission_view.html",
+                          IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_HTML);
+  source->AddResourcePath("arc_permission_view.js",
+                          IDR_APP_MANAGEMENT_ARC_PERMISSION_VIEW_JS);
   source->AddResourcePath("browser_proxy.html",
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 Polymer({
-  is: 'app-management-pwa-permission-view',
+  is: 'app-management-arc-permission-view',
 
   behaviors: [
     app_management.StoreClient,
@@ -30,7 +30,7 @@ Polymer({
     this.listExpanded_ = false;
   },
 
-  onClickSiteSettingsButton_: function() {
+  onClickNativeSettingsButton_: function() {
     app_management.BrowserProxy.getInstance().handler.openNativeSettings(
         this.app_.id);
   },

@@ -13,7 +13,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
-<dom-module id="app-management-pwa-permission-view">
+<dom-module id="app-management-arc-permission-view">
   <template>
     <style include="app-management-shared-css paper-button-style">
     </style>
@@ -21,8 +21,8 @@
     <app-management-permission-view-header>
       <div slot="extra-right-buttons" class="extra-permission-header-button">
         <paper-button class="native-settings-button secondary-text"
-            on-click="onClickSiteSettingsButton_">
-          $i18n{openSiteSettings}
+            on-click="onClickNativeSettingsButton_">
+          $i18n{openAndroidSettings}
           <paper-icon-button-light class="native-settings-icon icon-external">
             <button></button>
           </paper-icon-button-light>
@@ -30,12 +30,16 @@
       </div>
     </app-management-permission-view-header>
 
+<!--TODO(crbug.com/906508): Factor the expandable card into a separate
+    element. -->
     <div class="permission-list card-container">
-      <app-management-permission-item
+<!--  TODO(rekanorman): Uncomment once notifications permissions are
+      implemented for ARCs. -->
+<!--  <app-management-permission-item
         class="permission-card-row separated-row header-text"
         permission-label="$i18n{notifications}"
-        permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
-      </app-management-permission-item>
+        permission-type="NOTIFICATIONS">
+      </app-management-permission-item> -->
       <div class="permission-card-row">
         <div class="subpermission-list">
           <div class="subpermission-row separated-row"
@@ -56,19 +60,19 @@
                 class="subpermission-row"
                 icon="cr:location-on"
                 permission-label="$i18n{location}"
-                permission-type="CONTENT_SETTINGS_TYPE_GEOLOCATION">
+                permission-type="LOCATION">
             </app-management-permission-item>
             <app-management-permission-item
                 class="subpermission-row"
                 icon="cr:videocam"
                 permission-label="$i18n{camera}"
-                permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA">
+                permission-type="CAMERA">
             </app-management-permission-item>
             <app-management-permission-item
                 class="subpermission-row"
                 icon="cr:mic"
                 permission-label="$i18n{microphone}"
-                permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC">
+                permission-type="MICROPHONE">
             </app-management-permission-item>
           </iron-collapse>
         </div>
@@ -76,5 +80,5 @@
     </div>
     <app-management-metadata-view></app-management-metadata-view>
   </template>
-  <script src="pwa_permission_view.js"></script>
+  <script src="arc_permission_view.js"></script>
 </dom-module>

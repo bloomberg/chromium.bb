@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <grit-part>
+  <message name="IDS_APP_MANAGEMENT_ANDROID_SETTINGS" desc="Label for the open Android settings button on the ARC app permissions page.">
+    Open Android settings
+  </message>
   <message name="IDS_APP_MANAGEMENT_APP_LIST_PREVIEW" desc="A label that summarizes a list of apps by naming up to 3 apps, finishing with 'X more apps' for the rest.">
     {COUNT, plural,
      =0 {None}

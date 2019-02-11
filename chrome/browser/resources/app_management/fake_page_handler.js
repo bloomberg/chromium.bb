@@ -8,29 +8,9 @@ cr.define('app_management', function() {
    */
   class FakePageHandler {
     /**
-     * @param {number} permissionId
-     * @param {Object=} optConfig
-     * @return {!Permission}
+     * @return {!Object<number, Permission>}
      */
-    static createPermission(permissionId, optConfig) {
-      // Changing to kAllow to test notifications sublabel collapsibility, as it
-      // assumes all apps have notification permission.
-      const permission = app_management.util.createPermission(
-          permissionId, PermissionValueType.kTriState, TriState.kAllow);
-
-      if (optConfig) {
-        Object.assign(permission, optConfig);
-      }
-
-      return permission;
-    }
-
-    /**
-     * @param {string} id
-     * @param {Object=} optConfig
-     * @return {!App}
-     */
-    static createApp(id, optConfig) {
+    static createWebPermissions() {
       const permissionIds = [
         PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
         PwaPermissionType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -40,10 +20,55 @@ cr.define('app_management', function() {
 
       const permissions = {};
 
-      for (const type of permissionIds) {
-        permissions[type] = FakePageHandler.createPermission(type);
+      for (const permissionId of permissionIds) {
+        permissions[permissionId] = app_management.util.createPermission(
+            permissionId, PermissionValueType.kTriState, TriState.kAllow);
       }
 
+      return permissions;
+    }
+
+    /**
+     * @return {!Object<number, Permission>}
+     */
+    static createArcPermissions() {
+      const permissionIds = [
+        ArcPermissionType.CAMERA,
+        ArcPermissionType.LOCATION,
+        ArcPermissionType.MICROPHONE,
+      ];
+
+      const permissions = {};
+
+      for (const permissionId of permissionIds) {
+        permissions[permissionId] = app_management.util.createPermission(
+            permissionId, PermissionValueType.kBool, Bool.kTrue);
+      }
+
+      return permissions;
+    }
+
+    /**
+     * @param {AppType} appType
+     * @return {!Object<number, Permission>}
+     */
+    static createPermissions(appType) {
+      switch (appType) {
+        case (AppType.kWeb):
+          return FakePageHandler.createWebPermissions();
+        case (AppType.kArc):
+          return FakePageHandler.createArcPermissions();
+        default:
+          return {};
+      }
+    }
+
+    /**
+     * @param {string} id
+     * @param {Object=} optConfig
+     * @return {!App}
+     */
+    static createApp(id, optConfig) {
       const app = {
         id: id,
         type: apps.mojom.AppType.kWeb,
@@ -52,11 +77,16 @@ cr.define('app_management', function() {
         version: '5.1',
         size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kFalse,
-        permissions: permissions,
+        permissions: {},
       };
 
       if (optConfig) {
         Object.assign(app, optConfig);
+      }
+
+      // Only create default permissions if none were provided in the config.
+      if (!optConfig || optConfig.permissions === undefined) {
+        app.permissions = FakePageHandler.createPermissions(app.type);
       }
 
       return app;
@@ -84,6 +114,7 @@ cr.define('app_management', function() {
     async getExtensionAppPermissionMessages(appId) {
       return [];
     }
+
     /**
      * @param {!Array<App>} appList
      */
