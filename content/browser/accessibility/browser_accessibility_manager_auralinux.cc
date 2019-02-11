@@ -131,6 +131,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LOAD_START:
       FireLoadingEvent(node, true);
       break;
+    case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
+      FireEvent(node, ax::mojom::Event::kSelectedChildrenChanged);
+      break;
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
       FireSelectedEvent(node);
