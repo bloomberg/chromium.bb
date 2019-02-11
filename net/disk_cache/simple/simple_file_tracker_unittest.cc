@@ -376,6 +376,6 @@ TEST_F(SimpleFileTrackerTest, OverLimit) {
 
   for (const auto& entry : entries)
     file_tracker_.Close(entry.get(), SimpleFileTracker::SubFile::FILE_0);
-};
+}
 
 }  // namespace disk_cache
