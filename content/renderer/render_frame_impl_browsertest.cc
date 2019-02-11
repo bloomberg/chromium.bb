@@ -1019,7 +1019,7 @@ class ScopedNewFrameInterfaceProviderExerciser {
   service_manager::mojom::InterfaceProviderRequest
   interface_request_for_initial_empty_document() {
     return std::move(interface_request_for_initial_empty_document_);
-  };
+  }
 
   blink::mojom::DocumentInterfaceBrokerRequest
   document_interface_broker_request_for_initial_empty_document() {
