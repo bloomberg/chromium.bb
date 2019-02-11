@@ -24,7 +24,7 @@ class MODULES_EXPORT MediaControlSliderElement
 
   // Stores the position of the segment in proportion from 0.0 to 1.0.
   struct Position {
-    Position(double left, double width) : left(left), width(width){};
+    Position(double left, double width) : left(left), width(width) {}
     double left;
     double width;
   };

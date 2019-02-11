@@ -44,7 +44,7 @@ class MODULES_EXPORT MediaControlAnimatedArrowContainerElement final
 
     // MediaControlAnimationEventListener::Observer overrides
     void OnAnimationIteration() override;
-    void OnAnimationEnd() override{};
+    void OnAnimationEnd() override {}
     Element& WatchedAnimationElement() const override;
 
     // Shows the animated arrows for a single animation iteration. If the
