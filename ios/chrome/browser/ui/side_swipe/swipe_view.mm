@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
 
+#import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/features.h"
 
@@ -19,7 +20,7 @@
 @property(nonatomic, strong) NSLayoutConstraint* toolbarTopConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* imageTopConstraint;
 
-@property(nonatomic, strong) UIImageView* imageView;
+@property(nonatomic, strong) TopAlignedImageView* imageView;
 
 @end
 
@@ -37,9 +38,7 @@
   if (self) {
     _topMargin = topMargin;
 
-    _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    [_imageView setClipsToBounds:YES];
-    [_imageView setContentMode:UIViewContentModeScaleAspectFill];
+    _imageView = [[TopAlignedImageView alloc] init];
     [_imageView setBackgroundColor:[UIColor whiteColor]];
     [self addSubview:_imageView];
 
