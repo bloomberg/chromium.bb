@@ -143,15 +143,6 @@ class IdentityManager : public SigninManagerBase::Observer,
         const std::string& account_id,
         const GoogleServiceAuthError& error) {}
 
-    // Called whenever setting cookies is completed. If |error| is equal to
-    // GoogleServiceAuthError::AuthErrorNone() then the call succeeded.
-    //
-    // This observer method is called only in response to a call to
-    // SetAccountsInCookie(). To listen for cookie changes, use
-    // OnAccountsInCookieUpdated instead.
-    virtual void OnSetAccountsInCookieCompleted(
-        const GoogleServiceAuthError& error) {}
-
     // Called when the Gaia cookie has been deleted explicitly by a user
     // action, e.g. from the settings or by an extension.
     virtual void OnAccountsCookieDeletedByUserAction() {}
@@ -501,8 +492,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const GoogleServiceAuthError& error) override;
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
-  void OnSetAccountsInCookieCompleted(
       const GoogleServiceAuthError& error) override;
   void OnGaiaCookieDeletedByUserAction() override;
 

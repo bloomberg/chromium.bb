@@ -284,8 +284,6 @@ class AccountReconcilor : public KeyedService,
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
-  void OnSetAccountsInCookieCompleted(
-      const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
@@ -295,6 +293,8 @@ class AccountReconcilor : public KeyedService,
       const std::string& primary_account,
       const std::vector<std::string>& chrome_accounts,
       std::vector<gaia::ListedAccount>&& gaia_accounts);
+
+  void OnSetAccountsInCookieCompleted(const GoogleServiceAuthError& error);
 
   // Lock related methods.
   void IncrementLockCount();

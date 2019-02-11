@@ -371,7 +371,9 @@ TEST_F(GaiaCookieManagerServiceTest, AccessTokenSuccess) {
 
   const std::vector<std::string> account_ids = {account_id1, account_id2};
 
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   RequestMockImpl request1(account_id1);
   RequestMockImpl request2(account_id2);
@@ -415,7 +417,9 @@ TEST_F(GaiaCookieManagerServiceTest,
 
   const std::vector<std::string> account_ids = {account_id1, account_id2};
 
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   RequestMockImpl request1(account_id1);
   RequestMockImpl request2(account_id2);
@@ -453,7 +457,9 @@ TEST_F(GaiaCookieManagerServiceTest, AccessTokenFailurePersistentError) {
 
   const std::vector<std::string> account_ids = {account_id1, account_id2};
 
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   RequestMockImpl request1(account_id1);
   RequestMockImpl request2(account_id2);
@@ -514,7 +520,9 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
 
   const std::vector<std::string> account_ids = {account_id1, account_id2};
 
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   RequestMockImpl request1(account_id1);
   RequestMockImpl request2(account_id2);
@@ -609,7 +617,9 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginSuccessAndCookiesSet) {
       .Times(1);
 
   // Needed to insert request in the queue.
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   helper.StartFetchingMultiLogin(accounts);
 
@@ -644,7 +654,9 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailurePersistentError) {
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
 
   // Needed to insert request in the queue.
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   helper.StartFetchingMultiLogin(accounts);
 
@@ -682,7 +694,9 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailureMaxRetriesReached) {
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
 
   // Needed to insert request in the queue.
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   helper.StartFetchingMultiLogin(accounts);
 
@@ -774,7 +788,9 @@ TEST_F(GaiaCookieManagerServiceTest,
       .Times(1);
 
   // Needed to insert request in the queue.
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   // Both requests for access tokens are successful but they could be returned
   // from cache and be stale.
@@ -855,7 +871,9 @@ TEST_F(GaiaCookieManagerServiceTest,
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
 
   // Needed to insert request in the queue.
-  helper.SetAccountsInCookie(account_ids, gaia::GaiaSource::kChrome);
+  helper.SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   // Both requests for access tokens are successful but they could be returned
   // from cache and be stale.
