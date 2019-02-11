@@ -48,6 +48,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const NGBoxStrut border_scrollbar_padding_;
   const NGBoxStrut borders_;
   const NGBoxStrut padding_;
+  const NGBoxStrut border_padding_;
   const bool is_column_;
   NGLogicalSize border_box_size_;
   NGLogicalSize content_box_size_;
