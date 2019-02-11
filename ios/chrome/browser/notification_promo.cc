@@ -147,7 +147,7 @@ void NotificationPromo::WritePrefs(int promo_id,
 
   base::DictionaryValue promo_dict;
   promo_dict.MergeDictionary(local_state_->GetDictionary(kPrefPromoObject));
-  promo_dict.Set(base::IntToString(promo_id), std::move(ntp_promo));
+  promo_dict.Set(base::NumberToString(promo_id), std::move(ntp_promo));
   local_state_->Set(kPrefPromoObject, promo_dict);
   DVLOG(1) << "WritePrefs " << promo_dict;
 }
@@ -163,7 +163,7 @@ void NotificationPromo::InitFromPrefs() {
     return;
 
   const base::DictionaryValue* ntp_promo = NULL;
-  promo_dict->GetDictionary(base::IntToString(promo_id_), &ntp_promo);
+  promo_dict->GetDictionary(base::NumberToString(promo_id_), &ntp_promo);
   if (!ntp_promo)
     return;
 

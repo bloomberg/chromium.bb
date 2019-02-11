@@ -55,7 +55,7 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
   html_source->AddString(
       version_ui::kCopyright,
       l10n_util::GetStringFUTF16(IDS_IOS_ABOUT_VERSION_COPYRIGHT,
-                                 base::IntToString16(exploded_time.year)));
+                                 base::NumberToString16(exploded_time.year)));
   html_source->AddLocalizedString(version_ui::kRevision,
                                   IDS_VERSION_UI_REVISION);
   std::string last_change = version_info::GetLastChange();

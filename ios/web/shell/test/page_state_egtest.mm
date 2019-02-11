@@ -122,7 +122,7 @@ using web::test::HttpServer;
         performAction:grey_scrollInDirection(kGREYDirectionDown, offset)];
     // Add a query parameter so the next load creates another NavigationItem.
     GURL::Replacements replacements;
-    replacements.SetQueryStr(base::IntToString(i));
+    replacements.SetQueryStr(base::NumberToString(i));
     [ShellEarlGrey loadURL:baseURL.ReplaceComponents(replacements)];
     // Wait for the content offset to be set to {0, 0}.
     WaitForOffset(0.0);

@@ -173,7 +173,7 @@ std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleWriteMessage(
   std::vector<uint8_t> bytes(buffer->size());
   for (size_t i = 0; i < buffer->size(); i++) {
     int one_byte = 0;
-    buffer->GetInteger(base::IntToString(i), &one_byte);
+    buffer->GetInteger(base::NumberToString(i), &one_byte);
     bytes[i] = one_byte;
   }
 

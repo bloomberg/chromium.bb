@@ -95,9 +95,9 @@ class NotificationPromoTest : public PlatformTest {
     field_trial_params["start"] = start_param;
     field_trial_params["end"] = year_from_now_string;
     field_trial_params["promo_text"] = promo_text;
-    field_trial_params["max_views"] = base::IntToString(max_views);
-    field_trial_params["max_seconds"] = base::IntToString(max_seconds);
-    field_trial_params["promo_id"] = base::IntToString(promo_id);
+    field_trial_params["max_views"] = base::NumberToString(max_views);
+    field_trial_params["max_seconds"] = base::NumberToString(max_seconds);
+    field_trial_params["promo_id"] = base::NumberToString(promo_id);
     // Payload parameters.
     base::DictionaryValue* payload;
     test_json_->GetDictionary("payload", &payload);
