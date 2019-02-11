@@ -560,11 +560,11 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 
     if (!command_line->HasSwitch(switches::kCastInitialScreenWidth)) {
       command_line->AppendSwitchASCII(switches::kCastInitialScreenWidth,
-                                      base::IntToString(res.width()));
+                                      base::NumberToString(res.width()));
     }
     if (!command_line->HasSwitch(switches::kCastInitialScreenHeight)) {
       command_line->AppendSwitchASCII(switches::kCastInitialScreenHeight,
-                                      base::IntToString(res.height()));
+                                      base::NumberToString(res.height()));
     }
 
     if (chromecast::IsFeatureEnabled(kSingleBuffer)) {
