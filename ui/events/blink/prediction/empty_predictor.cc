@@ -8,7 +8,7 @@ namespace ui {
 
 EmptyPredictor::EmptyPredictor() {
   Reset();
-};
+}
 
 EmptyPredictor::~EmptyPredictor() = default;
 
