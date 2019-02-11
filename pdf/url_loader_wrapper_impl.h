@@ -17,7 +17,7 @@
 
 namespace pp {
 class Instance;
-};
+}
 
 namespace chrome_pdf {
 
