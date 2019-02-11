@@ -41,6 +41,8 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   void Sync();
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   wl::TestWaylandServerThread server_;
   wl::MockSurface* surface_;
 
@@ -51,7 +53,6 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   bool initialized_ = false;
 
 #if BUILDFLAG(USE_XKBCOMMON)
