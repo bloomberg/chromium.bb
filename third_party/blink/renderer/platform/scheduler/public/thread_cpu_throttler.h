@@ -13,7 +13,7 @@
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-};
+}
 
 namespace blink {
 namespace scheduler {

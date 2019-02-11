@@ -25,7 +25,7 @@ ThreadPoolManager::ThreadPoolManager(SequenceManagerFuzzerProcessor* processor)
       all_threads_ready_(true),
       initial_threads_created_(false) {
   DCHECK(processor_);
-};
+}
 
 ThreadPoolManager::~ThreadPoolManager() = default;
 

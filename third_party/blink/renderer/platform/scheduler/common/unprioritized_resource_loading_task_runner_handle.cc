@@ -16,7 +16,7 @@ UnprioritizedResourceLoadingTaskRunnerHandle::WrapTaskRunner(
 UnprioritizedResourceLoadingTaskRunnerHandle::
     UnprioritizedResourceLoadingTaskRunnerHandle(
         scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)){};
+    : task_runner_(std::move(task_runner)) {}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 UnprioritizedResourceLoadingTaskRunnerHandle::GetTaskRunner() const {

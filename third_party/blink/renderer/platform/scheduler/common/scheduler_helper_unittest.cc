@@ -45,7 +45,7 @@ void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
   }
 }
 
-};  // namespace
+}  // namespace
 
 class SchedulerHelperTest : public testing::Test {
  public:
