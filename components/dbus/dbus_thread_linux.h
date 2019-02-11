@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DBUS_DBUS_THREAD_LINUX_H_
-#define CHROME_BROWSER_DBUS_DBUS_THREAD_LINUX_H_
+#ifndef COMPONENTS_DBUS_DBUS_THREAD_LINUX_H_
+#define COMPONENTS_DBUS_DBUS_THREAD_LINUX_H_
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -18,10 +19,11 @@
 #error On ChromeOS, use DBusThreadManager instead.
 #endif
 
-namespace chrome {
+namespace dbus_thread_linux {
 
-scoped_refptr<base::SingleThreadTaskRunner> GetDBusTaskRunner();
+COMPONENT_EXPORT(DBUS)
+scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
-}  // namespace chrome
+}  // namespace dbus_thread_linux
 
-#endif  // CHROME_BROWSER_DBUS_DBUS_THREAD_LINUX_H_
+#endif  // COMPONENTS_DBUS_DBUS_THREAD_LINUX_H_

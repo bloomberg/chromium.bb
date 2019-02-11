@@ -3565,8 +3565,6 @@ jumbo_split_static_library("browser") {
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
-      "dbus/dbus_thread_linux.cc",
-      "dbus/dbus_thread_linux.h",
       "first_run/upgrade_util.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
@@ -3577,6 +3575,10 @@ jumbo_split_static_library("browser") {
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
     ]
+
+    if (use_dbus) {
+      deps += [ "//components/dbus:dbus_thread_linux" ]
+    }
 
     if (enable_native_notifications) {
       sources += [
