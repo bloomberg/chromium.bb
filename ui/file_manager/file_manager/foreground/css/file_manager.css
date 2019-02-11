@@ -84,8 +84,8 @@ a:focus {
 
 /* Directory tree at the left. */
 .dialog-navigation-list {
-  -webkit-border-end: 1px solid rgba(0, 0, 0, 0.15);
   background-color: rgb(250, 250, 250);
+  border-inline-end: 1px solid rgba(0, 0, 0, 0.15);
   display: flex;
   flex: none;
   flex-direction: column;
@@ -458,11 +458,11 @@ body:not(.check-select) #selection-menu-button {
 }
 
 .cloud-import-combo-button > .buttons > #cloud-import-details-button {
-  -webkit-margin-end: 0;
+  margin-inline-end: 0;
 }
 
 #cloud-import-details-button {
-  -webkit-margin-start: -10px;
+  margin-inline-start: -10px;
   width: 24px;
 }
 
@@ -534,9 +534,9 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details .status .content {
-  -webkit-padding-start: 10px;
   color: #646464;
   flex: 1;
+  padding-inline-start: 10px;
 }
 
 #cloud-import-details .status .content::first-line {
@@ -580,9 +580,9 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #files-selected-label {
-  -webkit-margin-start: 20px;
   display: none;
   font-weight: 500;
+  margin-inline-start: 20px;
 }
 
 body.check-select #files-selected-label {
@@ -601,7 +601,6 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button .icon-arrow-back {
-  -webkit-margin-end: 8px;
   background-image: -webkit-image-set(
       url(../images/files/ui/back.png) 1x,
       url(../images/files/ui/2x/back.png) 2x);
@@ -609,6 +608,7 @@ body.check-select #files-selected-label {
   background-repeat: no-repeat;
   flex: none;
   height: 16px;
+  margin-inline-end: 8px;
   width: 16px;
 }
 
@@ -618,7 +618,7 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button > iron-icon {
-  -webkit-margin-end: 6px;
+  margin-inline-end: 6px;
 }
 
 #cancel-selection-label {
@@ -652,7 +652,7 @@ body.check-select #search-box {
 
 #search-box.has-cursor,
 #search-box.has-text {
-  -webkit-margin-end: 12px;
+  margin-inline-end: 12px;
 }
 
 #search-box.has-cursor cr-input,
@@ -804,7 +804,6 @@ html[dir='rtl'] #search-box .clear {
 
 .dialog-footer select {
   -webkit-appearance: none;
-  -webkit-margin-start: 16px;
   background: -webkit-image-set(
      url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
      url(../images/common/2x/disclosure_arrow_dk_grey_down.png) 2x) no-repeat
@@ -814,6 +813,7 @@ html[dir='rtl'] #search-box .clear {
   border-radius: 0;
   color: rgb(51, 51, 51);
   cursor: pointer;
+  margin-inline-start: 16px;
   outline: none;
   padding: 0 12px 0 0;
 }
@@ -842,13 +842,13 @@ html[dir='rtl'] #search-box .clear {
 }
 
 .progressable .preparing-label {
-  -webkit-margin-start: 20px;
+  margin-inline-start: 20px;
 }
 
 .progressable .progress-bar {
-  -webkit-margin-end: 20px;
-  -webkit-margin-start: 20px;
   flex: auto;
+  margin-inline-end: 20px;
+  margin-inline-start: 20px;
 }
 
 /* The container for breadcrumb elements. */
@@ -896,7 +896,7 @@ body.check-select .breadcrumbs {
 }
 
 .breadcrumbs .breadcrumb-path:first-child {
-  /* -webkit-margin-start isn't proper
+  /* margin-inline-start isn't proper
      because folder names should be ltr even in RTL languages. */
   margin-left: 8px;
 }
@@ -1033,7 +1033,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 .downloads-warning .warning-message {
-  -webkit-margin-end: 40px;
+  margin-inline-end: 40px;
 }
 
 .downloads-warning[hidden] {
@@ -1081,9 +1081,9 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 .volume-warning .drive-text {
-  -webkit-margin-end: 51px;
   flex: none;
   font-size: 16px;
+  margin-inline-end: 51px;
 }
 
 .volume-warning .imitate-paper-button {
@@ -1127,11 +1127,11 @@ html[dir='rtl'] .banner-close {
 .thumbnail-grid {
   /* On the right side, we have less margin to pack items as long as they are
      fully visible. */
-  -webkit-padding-end: 2px;
-  -webkit-padding-start: 11px;
   box-sizing: border-box;
   overflow-y: auto;
   padding-bottom: 16px;
+  padding-inline-end: 2px;
+  padding-inline-start: 11px;
   padding-top: 12px;
   width: 100%;
 }
@@ -1164,17 +1164,17 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .thumbnail-bottom .filename-label {
-  -webkit-padding-end: 6px;
   flex: auto;
   font-weight: 500;
+  padding-inline-end: 6px;
 }
 
 /* Styles specific for the grid view. */
 
 .thumbnail-grid .thumbnail-item {
-  -webkit-margin-start: 4px;
   background-color: rgb(245, 245, 245);
   height: 180px;
+  margin-inline-start: 4px;
   margin-top: 4px;
   overflow: hidden;
   position: relative;
@@ -1198,10 +1198,10 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .thumbnail-grid .checkmark {
-  -webkit-margin-start: 2px;
   background-position: center;
   background-repeat: no-repeat;
   height: 36px;
+  margin-inline-start: 2px;
   opacity: 0;
   position: absolute;
   top: 2px;
@@ -1339,7 +1339,7 @@ html[dir='rtl'] .badge {
 
 .imported .filename-label,
 .copied .filename-label {
-  -webkit-margin-end: 14px;
+  margin-inline-end: 14px;
 }
 
 /* Padding counterweights negative margins of items, thus eliminating scroll
@@ -1494,7 +1494,6 @@ li[renaming=''] .badge {
 }
 
 .table-header-sort-image-desc::after {
-  -webkit-padding-start: 13px;
   background-image: -webkit-image-set(
     url(../images/files/ui/sort_desc.png) 1x,
     url(../images/files/ui/2x/sort_desc.png) 2x);
@@ -1502,12 +1501,12 @@ li[renaming=''] .badge {
   background-repeat: no-repeat;
   color: #888;
   content: '\00a0';
+  padding-inline-start: 13px;
   position: relative;
   top: 1px;
 }
 
 .table-header-sort-image-asc::after {
-  -webkit-padding-start: 13px;
   background-image: -webkit-image-set(
     url(../images/files/ui/sort_asc.png) 1x,
     url(../images/files/ui/2x/sort_asc.png) 2x);
@@ -1515,6 +1514,7 @@ li[renaming=''] .badge {
   background-repeat: no-repeat;
   color: #888;
   content: '\00a0';
+  padding-inline-start: 13px;
   position: relative;
   top: -1px;
 }
@@ -1567,14 +1567,14 @@ li[renaming=''] .badge {
 }
 
 .status-icon {
-  -webkit-margin-end: 10px;
   height: 24px;
+  margin-inline-end: 10px;
   width: 24px;
 }
 
 #list-container li .detail-icon {
-  -webkit-margin-end: 6px;
   height: 28px;
+  margin-inline-end: 6px;
   width: 28px;
 }
 
@@ -1659,11 +1659,11 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 }
 
 #filename-input-box {
-  -webkit-margin-end: 30px;
-  -webkit-margin-start: 30px;
   align-items: center;
   display: flex;
   flex: auto;
+  margin-inline-end: 30px;
+  margin-inline-start: 30px;
 }
 
 body:not([type='saveas-file']) #filename-input-box {
@@ -1728,7 +1728,7 @@ cr-menu#file-context-menu {
 }
 
 cr-menu#file-context-menu > :not(hr) {
-  -webkit-padding-end: 8px;
+  padding-inline-end: 8px;
 }
 
 cr-menu#file-context-menu.toolbar-menu > .hide-on-toolbar {
@@ -1857,9 +1857,9 @@ body[drive='error'] #unmounted-panel > .error,
 }
 
 #volume-space-info-contents > div {
-  -webkit-margin-start: 15px;
   display: flex;
   flex: auto;
+  margin-inline-start: 15px;
 }
 
 #list-container .table-header-inner {
@@ -1872,7 +1872,7 @@ body[drive='error'] #unmounted-panel > .error,
 
 #list-container .table-header-cell:first-child {
   -webkit-box-sizing: border-box;
-  -webkit-padding-start: 8px;
+  padding-inline-start: 8px;
 }
 
 #new-folder-button {
@@ -1927,13 +1927,13 @@ body[drive='error'] #unmounted-panel > .error,
 }
 
 list.autocomplete-suggestions {
-  -webkit-margin-start: -36px;
   background-color: white;
   border-radius: 3px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
   box-sizing: border-box;  /* To match the width with the search box's. */
   color: rgb(90, 90, 90);
   flex: none;
+  margin-inline-start: -36px;
   margin-top: 10px;
   overflow: hidden;
   padding: 8px 0;
@@ -1985,7 +1985,7 @@ list.autocomplete-suggestions > [lead] {
 
 #gear-menu > cr-menu-item:not(.menuitem-button),
 #sort-menu > cr-menu-item {
-  -webkit-margin-end: 50px;
+  margin-inline-end: 50px;
 }
 
 #suggest-app-dialog {
@@ -2061,7 +2061,7 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #conflict-confirm-dialog input[type=checkbox] {
-  -webkit-margin-start: -2px;
+  margin-inline-start: -2px;
   width: auto;
 }
 
@@ -2129,10 +2129,10 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center li {
-  -webkit-padding-end: 12px;
   display: flex;
   /* This must not be margin-bottom to calculate parent's height correctly. */
   padding-bottom: 16px;
+  padding-inline-end: 12px;
 }
 
 #progress-center label {
@@ -2149,10 +2149,10 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center .progress-frame {
-  -webkit-padding-end: 12px;
-  -webkit-padding-start: 16px;
   flex: 1 0 0;
   overflow: hidden;
+  padding-inline-end: 12px;
+  padding-inline-start: 16px;
 }
 
 #progress-center .progress-bar {
@@ -2199,14 +2199,14 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center button.close {
-  -webkit-margin-end: 12px;
-  -webkit-margin-start: auto;
   background: -webkit-image-set(
       url(../images/files/ui/expand_more_active.png) 1x,
       url(../images/files/ui/2x/expand_more_active.png) 2x)
       no-repeat;
   display: block;
   margin-bottom: 20px;
+  margin-inline-end: 12px;
+  margin-inline-start: auto;
 }
 
 #progress-center button.open {
