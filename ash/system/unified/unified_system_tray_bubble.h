@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/shelf/shelf_observer.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_bubble_base.h"
@@ -38,6 +39,7 @@ class UnifiedSystemTrayView;
 class UnifiedSystemTrayBubble : public TrayBubbleBase,
                                 public ash::ScreenLayoutObserver,
                                 public views::WidgetObserver,
+                                public ShelfObserver,
                                 public ::wm::ActivationChangeObserver,
                                 public TimeToClickRecorder::Delegate,
                                 public TabletModeObserver {
@@ -99,6 +101,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
+
+  // ShelfObserver:
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
  private:
   friend class UnifiedSystemTrayTestApi;
