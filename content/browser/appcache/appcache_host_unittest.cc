@@ -590,7 +590,7 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
 
   AppCacheBackendImpl backend(&service_, kProcessIdForTest);
   backend.set_frontend_for_testing(&mock_frontend_);
-  backend.RegisterHostForTesting(kHostIdForTest, kRenderFrameIdForTest);
+  backend.RegisterHost(kHostIdForTest, kRenderFrameIdForTest);
 
   blink::mojom::AppCacheBackendPtr backend_ptr;
   mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(
@@ -639,7 +639,7 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
 
   AppCacheBackendImpl backend(&service_, kProcessIdForTest);
   backend.set_frontend_for_testing(&mock_frontend_);
-  backend.RegisterHostForTesting(kHostIdForTest, kRenderFrameIdForTest);
+  backend.RegisterHost(kHostIdForTest, kRenderFrameIdForTest);
 
   blink::mojom::AppCacheBackendPtr backend_ptr;
   mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(
