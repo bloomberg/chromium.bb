@@ -1650,9 +1650,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
       &x->eob_costs[eob_multi_size][plane_type];
 
   const int shift = av1_get_tx_scale(tx_size);
-  const int64_t rdmult =
-      ((x->rdmult * plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8))) +
-       2) >>
+  const int rshift =
       (sharpness +
        (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
             ? 7 - mbmi->segment_id
@@ -1661,6 +1659,11 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                 cpi->oxcf.deltaq_mode > NO_DELTA_Q && x->sb_energy_level < 0
             ? (3 - x->sb_energy_level)
             : 0));
+  const int64_t rdmult =
+      (((int64_t)x->rdmult *
+        (plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8)))) +
+       2) >>
+      rshift;
 
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
@@ -1798,7 +1801,8 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   const int shift = av1_get_tx_scale(tx_size);
   const int64_t rdmult =
-      ((x->rdmult * plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8))) +
+      (((int64_t)x->rdmult * plane_rd_mult[is_inter][plane_type]
+        << (2 * (xd->bd - 8))) +
        2) >>
       2;
   uint8_t levels_buf[TX_PAD_2D];
