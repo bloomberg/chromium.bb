@@ -20,7 +20,7 @@ namespace keys = manifest_keys;
 
 std::string GetInvalidManifestKeyError(base::StringPiece key) {
   return ErrorUtils::FormatErrorMessage(errors::kInvalidManifestKey, key);
-};
+}
 
 const char kDefaultSandboxedPageCSP[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "

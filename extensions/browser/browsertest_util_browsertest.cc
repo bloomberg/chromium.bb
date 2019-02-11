@@ -36,7 +36,7 @@ class ExtensionBrowsertestUtilTest : public ShellApiTest {
     // TODO(michaelpg): Implement a real extension readiness observer.
     ResultCatcher catcher;
     ASSERT_TRUE(catcher.GetNextResult());
-  };
+  }
 
  protected:
   const Extension* extension() const { return extension_.get(); }

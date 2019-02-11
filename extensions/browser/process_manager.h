@@ -39,7 +39,7 @@ class DevToolsAgentHost;
 class RenderFrameHost;
 class SiteInstance;
 class WebContents;
-};
+}  // namespace content
 
 namespace extensions {
 
