@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
-Subject: [PATCH 01/45] Modify default VFS to support WebDatabase.
+Subject: [PATCH 1/7] Modify default VFS to support WebDatabase.
 
 The renderer WebDatabase implementation needs to broker certain requests
 to the browser.  This modifies SQLite to allow monkey-patching the VFS
@@ -141,10 +141,10 @@ index aafc89f7d2d5..76743781a019 100644
 +
  #endif /* SQLITE_OS_WIN */
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index cf17bc015fa7..11622a49697f 100644
+index fd6046dfe169..3d6b63e006a0 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -8378,6 +8378,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
+@@ -8407,6 +8407,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
 
@@ -175,5 +175,5 @@ index cf17bc015fa7..11622a49697f 100644
  ** CAPI3REF: String LIKE Matching
  *
 --
-2.18.0
+2.20.0
 
