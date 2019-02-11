@@ -56,9 +56,10 @@ public class AccessorySheetControllerTest {
     @Mock
     private RecyclerView mMockRecyclerView;
 
-    private final Tab[] mTabs =
-            new Tab[] {new Tab(null, null, 0, 0, null), new Tab(null, null, 0, 0, null),
-                    new Tab(null, null, 0, 0, null), new Tab(null, null, 0, 0, null)};
+    private final Tab[] mTabs = new Tab[] {new Tab("Passwords", null, null, 0, 0, null),
+            new Tab("Passwords", null, null, 0, 0, null),
+            new Tab("Passwords", null, null, 0, 0, null),
+            new Tab("Passwords", null, null, 0, 0, null)};
 
     private AccessorySheetCoordinator mCoordinator;
     private AccessorySheetMediator mMediator;

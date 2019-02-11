@@ -23,8 +23,10 @@ class PasswordAccessorySheetModernViewBinder {
         switch (viewType) {
             case AccessorySheetDataPiece.Type.PASSWORD_INFO:
                 return new PasswordInfoViewHolder(parent);
-            case AccessorySheetDataPiece.Type.TITLE: // Intentional fallthrough.
-            case AccessorySheetDataPiece.Type.FOOTER_COMMAND: // Intentional fallthrough.
+            case AccessorySheetDataPiece.Type.TITLE:
+                return new AccessorySheetTabViewBinder.TitleViewHolder(
+                        parent, R.layout.keyboard_accessory_sheet_tab_title);
+            case AccessorySheetDataPiece.Type.FOOTER_COMMAND:
                 return AccessorySheetTabViewBinder.create(parent, viewType);
         }
         assert false : "Unhandled type of data piece: " + viewType;

@@ -68,7 +68,7 @@ public class AccessorySheetTabViewTest {
                             mActivityTestRule.getActivity().findViewById(
                                     R.id.keyboard_accessory_sheet_stub)));
             accessorySheet.addTab(new KeyboardAccessoryData.Tab(
-                    null, null, layout, AccessoryTabType.ALL, listener));
+                    "Passwords", null, null, layout, AccessoryTabType.ALL, listener));
             accessorySheet.setHeight(
                     mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
                             R.dimen.keyboard_accessory_sheet_height));

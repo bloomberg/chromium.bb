@@ -50,7 +50,7 @@ public class KeyboardAccessoryTabLayoutControllerTest {
     private KeyboardAccessoryTabLayoutView mMockView;
 
     private final KeyboardAccessoryData.Tab mTestTab =
-            new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
+            new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null);
 
     private KeyboardAccessoryTabLayoutCoordinator mCoordinator;
     private PropertyModel mModel;

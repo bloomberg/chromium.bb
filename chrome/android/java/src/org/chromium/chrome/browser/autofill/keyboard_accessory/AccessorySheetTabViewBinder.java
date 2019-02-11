@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -60,7 +61,11 @@ class AccessorySheetTabViewBinder {
      */
     static class TitleViewHolder extends ElementViewHolder<String, LinearLayout> {
         TitleViewHolder(ViewGroup parent) {
-            super(parent, R.layout.keyboard_accessory_sheet_tab_title);
+            this(parent, R.layout.keyboard_accessory_sheet_tab_legacy_title);
+        }
+
+        TitleViewHolder(ViewGroup parent, @LayoutRes int layout) {
+            super(parent, layout);
         }
 
         @Override

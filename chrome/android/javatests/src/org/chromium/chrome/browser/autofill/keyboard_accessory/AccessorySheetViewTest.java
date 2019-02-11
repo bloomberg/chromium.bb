@@ -116,7 +116,7 @@ public class AccessorySheetViewTest {
     @MediumTest
     public void testAddingTabToModelRendersTabsView() throws InterruptedException {
         final String kSampleAction = "Some Action";
-        mModel.get(TABS).add(new Tab(null, null, R.layout.empty_accessory_sheet,
+        mModel.get(TABS).add(new Tab("Passwords", null, null, R.layout.empty_accessory_sheet,
                 AccessoryTabType.PASSWORDS, new Tab.Listener() {
                     @Override
                     public void onTabCreated(ViewGroup view) {
@@ -221,8 +221,8 @@ public class AccessorySheetViewTest {
     }
 
     private Tab createTestTabWithTextView(String textViewCaption) {
-        return new Tab(null, null, R.layout.empty_accessory_sheet, AccessoryTabType.PASSWORDS,
-                new Tab.Listener() {
+        return new Tab("Passwords", null, null, R.layout.empty_accessory_sheet,
+                AccessoryTabType.PASSWORDS, new Tab.Listener() {
                     @Override
                     public void onTabCreated(ViewGroup view) {
                         TextView sampleTextView = new TextView(mActivityTestRule.getActivity());

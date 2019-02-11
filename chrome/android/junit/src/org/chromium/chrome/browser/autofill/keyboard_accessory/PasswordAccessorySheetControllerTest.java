@@ -32,11 +32,14 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.ui.modelutil.ListObservable;
+
+import java.util.HashMap;
 
 /**
  * Controller tests for the password accessory sheet.
@@ -109,6 +112,7 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testSplitsTabDataToList() {
+        setAutofillFeature(false);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData = new AccessorySheetData("Passwords for this site");
         testData.getUserInfoList().add(new UserInfo(null));
@@ -127,6 +131,34 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("Passwords for this site")));
         assertThat(mSheetDataPieces.get(1).getDataPiece(), is(testData.getUserInfoList().get(0)));
         assertThat(mSheetDataPieces.get(2).getDataPiece(), is(testData.getFooterCommands().get(0)));
+    }
+
+    @Test
+    public void testUsesTabTitleOnlyForEmptyListsForModernDesign() {
+        setAutofillFeature(true);
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        final AccessorySheetData testData = new AccessorySheetData("No passwords for this");
+        mCoordinator.registerDataProvider(testProvider);
+
+        // Providing only FooterCommands and no User Info shows the title as empty state:
+        testData.getFooterCommands().add(new FooterCommand("Manage passwords", result -> {}));
+        testProvider.notifyObservers(testData);
+
+        assertThat(mSheetDataPieces.size(), is(2));
+        assertThat(getType(mSheetDataPieces.get(0)), is(TITLE));
+        assertThat(getType(mSheetDataPieces.get(1)), is(FOOTER_COMMAND));
+        assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("No passwords for this")));
+
+        // As soon UserInfo is available, discard the title.
+        testData.getUserInfoList().add(new UserInfo(null));
+        testData.getUserInfoList().get(0).addField(new UserInfo.Field("Name", "Name", false, null));
+        testData.getUserInfoList().get(0).addField(
+                new UserInfo.Field("Password", "Password for Name", true, field -> {}));
+        testProvider.notifyObservers(testData);
+
+        assertThat(mSheetDataPieces.size(), is(2));
+        assertThat(getType(mSheetDataPieces.get(0)), is(PASSWORD_INFO));
+        assertThat(getType(mSheetDataPieces.get(1)), is(FOOTER_COMMAND));
     }
 
     @Test
@@ -191,5 +223,11 @@ public class PasswordAccessorySheetControllerTest {
                         KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS,
                         type),
                 sample);
+    }
+
+    private void setAutofillFeature(boolean enabled) {
+        HashMap<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, enabled);
+        ChromeFeatureList.setTestFeatures(features);
     }
 }

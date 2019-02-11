@@ -10,11 +10,15 @@
     android:fillViewport="true"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
+    android:padding="0dp"
     android:orientation="vertical">
+
+    <View style="@style/HorizontalDivider"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/tab_title"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
         android:paddingStart="@dimen/keyboard_accessory_suggestion_padding"
         android:paddingEnd="@dimen/keyboard_accessory_suggestion_padding"
         android:paddingTop="@dimen/keyboard_accessory_suggestion_offset"
@@ -25,5 +29,12 @@
         app:leading="@dimen/text_size_large_leading"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"/>
+
+    <View style="@style/HorizontalDivider"
+        android:id="@+id/title_divider"
+        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
+        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
+        android:layout_marginStart="@dimen/keyboard_accessory_suggestion_padding"
+        android:layout_marginEnd="@dimen/keyboard_accessory_suggestion_padding" />
 
 </LinearLayout>

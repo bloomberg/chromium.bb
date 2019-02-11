@@ -59,6 +59,7 @@ public class KeyboardAccessoryData {
      * accessory. Typically, a tab is responsible to change the accessory sheet below the accessory.
      */
     public final static class Tab {
+        private final String mTitle;
         private final Drawable mIcon;
         private final @Nullable String mOpeningAnnouncement;
         private final String mContentDescription;
@@ -82,20 +83,29 @@ public class KeyboardAccessoryData {
             void onTabShown();
         }
 
-        public Tab(Drawable icon, String contentDescription, @LayoutRes int tabLayout,
+        public Tab(String title, Drawable icon, String contentDescription, @LayoutRes int tabLayout,
                 @AccessoryTabType int recordingType, @Nullable Listener listener) {
-            this(icon, contentDescription, null, tabLayout, recordingType, listener);
+            this(title, icon, contentDescription, null, tabLayout, recordingType, listener);
         }
 
-        public Tab(Drawable icon, String contentDescription, @Nullable String openingAnnouncement,
-                @LayoutRes int tabLayout, @AccessoryTabType int recordingType,
-                @Nullable Listener listener) {
+        public Tab(String title, Drawable icon, String contentDescription,
+                @Nullable String openingAnnouncement, @LayoutRes int tabLayout,
+                @AccessoryTabType int recordingType, @Nullable Listener listener) {
+            mTitle = title;
             mIcon = icon;
             mContentDescription = contentDescription;
             mOpeningAnnouncement = openingAnnouncement;
             mTabLayout = tabLayout;
             mListener = listener;
             mRecordingType = recordingType;
+        }
+
+        /**
+         * Returns the title describing the source of the tab's content.
+         * @return A {@link String}
+         */
+        public String getTitle() {
+            return mTitle;
         }
 
         /**
