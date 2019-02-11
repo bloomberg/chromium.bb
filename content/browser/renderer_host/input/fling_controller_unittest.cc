@@ -56,6 +56,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
   // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
+    wheel_event_count_++;
     last_sent_wheel_ = wheel_event.event;
     first_wheel_event_sent_ = true;
 
@@ -131,11 +132,12 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
 
  protected:
   std::unique_ptr<FakeFlingController> fling_controller_;
+  int wheel_event_count_ = 0;
   WebMouseWheelEvent last_sent_wheel_;
   WebGestureEvent last_sent_gesture_;
-  bool last_fling_cancel_filtered_;
-  bool scheduled_next_fling_progress_;
-  bool notified_client_after_fling_stop_;
+  bool last_fling_cancel_filtered_ = false;
+  bool scheduled_next_fling_progress_ = false;
+  bool notified_client_after_fling_stop_ = false;
   bool first_wheel_event_sent_ = false;
   int sent_scroll_gesture_count_ = 0;
 
@@ -392,6 +394,51 @@ TEST_P(FlingControllerTest, GestureFlingWithNegativeTimeDelta) {
   EXPECT_EQ(WebGestureEvent::kMomentumPhase,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
+}
+
+// Regression test for https://crbug.com/924279
+TEST_P(FlingControllerTest, TouchpadFlingWithOldEvent) {
+  // Only the code path that uses compositor animation observers is affected.
+  if (NeedsBeginFrameForFlingProgress())
+    return;
+
+  // Create a fling start event.
+  base::TimeTicks event_time = NowTicks();
+  WebGestureEvent fling_start(WebInputEvent::kGestureFlingStart, 0, event_time,
+                              blink::kWebGestureDeviceTouchpad);
+  fling_start.data.fling_start.velocity_x = 0.f;
+  fling_start.data.fling_start.velocity_y = -1000.f;
+  GestureEventWithLatencyInfo fling_start_with_latency(fling_start);
+
+  // Move time forward. Assume a frame occurs here.
+  AdvanceTime(1.f);
+  base::TimeTicks last_frame_time = NowTicks();
+
+  // Start the fling animation later, as if there was a delay in event dispatch.
+  AdvanceTime(1.f);
+  ASSERT_FALSE(fling_controller_->FilterGestureEvent(fling_start_with_latency));
+  fling_controller_->ProcessGestureFlingStart(fling_start_with_latency);
+  EXPECT_TRUE(FlingInProgress());
+
+  // Initial scroll was sent.
+  EXPECT_EQ(1, wheel_event_count_);
+  wheel_event_count_ = 0;
+
+  // Move time forward a little.
+  AdvanceTime(1.f);
+
+  // Simulate the compositor animation observer calling ProgressFling with the
+  // last frame time. That frame time is after the event time, but before the
+  // animation start time.
+  ProgressFling(last_frame_time);
+
+  // No scrolls were sent.
+  EXPECT_EQ(0, wheel_event_count_);
+
+  // Additional ProgressFling calls generate scroll events as normal.
+  AdvanceTime();
+  ProgressFling(NowTicks());
+  EXPECT_GT(wheel_event_count_, 0);
 }
 
 #if defined(OS_LINUX)

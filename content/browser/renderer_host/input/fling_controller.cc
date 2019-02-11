@@ -163,6 +163,7 @@ void FlingController::ProcessGestureFlingStart(
   TRACE_EVENT_ASYNC_BEGIN2("input", kFlingTraceName, this, "vx", vx, "vy", vy);
 
   has_fling_animation_started_ = false;
+  last_progress_time_ = base::TimeTicks();
   fling_in_progress_ = true;
   fling_booster_ = std::make_unique<ui::FlingBooster>(
       current_fling_parameters_.velocity,
@@ -227,8 +228,9 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
   // the first OnAnimationStep call has the time of the last frame before
   // AddAnimationObserver call rather than time of the first frame after
   // AddAnimationObserver call. Do not advance the fling when current_time is
-  // less than the GFS event timestamp.
-  if (current_time <= current_fling_parameters_.start_time) {
+  // less than last fling progress time or less than the GFS event timestamp.
+  if (current_time < last_progress_time_ ||
+      current_time <= current_fling_parameters_.start_time) {
     ScheduleFlingProgress();
     return;
   }
@@ -242,6 +244,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
         std::abs(delta_to_scroll.y()) > kMinInertialScrollDelta) {
       GenerateAndSendFlingProgressEvents(delta_to_scroll);
       has_fling_animation_started_ = true;
+      last_progress_time_ = current_time;
     }
     // As long as the fling curve is active, the fling progress must get
     // scheduled even when the last delta to scroll was zero.
@@ -354,6 +357,7 @@ void FlingController::CancelCurrentFling() {
   bool had_active_fling = !!fling_curve_;
   fling_curve_.reset();
   has_fling_animation_started_ = false;
+  last_progress_time_ = base::TimeTicks();
   fling_in_progress_ = false;
 
   // Extract the last event filtered by the fling booster if it exists.
@@ -415,6 +419,7 @@ bool FlingController::UpdateCurrentFlingState(
   current_fling_parameters_.global_point = fling_start_event.PositionInScreen();
   current_fling_parameters_.modifiers = fling_start_event.GetModifiers();
   current_fling_parameters_.source_device = fling_start_event.SourceDevice();
+  // NOTE: This time may be more than a frame in the past.
   current_fling_parameters_.start_time = fling_start_event.TimeStamp();
 
   if (velocity.IsZero() && fling_start_event.SourceDevice() !=

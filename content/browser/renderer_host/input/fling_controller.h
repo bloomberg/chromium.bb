@@ -172,6 +172,9 @@ class CONTENT_EXPORT FlingController {
   // for determining if the fling start time should be re-initialized.
   bool has_fling_animation_started_;
 
+  // The last time fling progress events were sent.
+  base::TimeTicks last_progress_time_;
+
   // The clock used; overridable for tests.
   const base::TickClock* clock_;
 
