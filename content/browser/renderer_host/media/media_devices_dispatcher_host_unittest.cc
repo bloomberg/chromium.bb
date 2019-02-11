@@ -537,4 +537,4 @@ TEST_P(MediaDevicesDispatcherHostTest, Salt) {
 INSTANTIATE_TEST_CASE_P(,
                         MediaDevicesDispatcherHostTest,
                         testing::Values(GURL(), GURL("https://test.com")));
-};  // namespace content
+}  // namespace content

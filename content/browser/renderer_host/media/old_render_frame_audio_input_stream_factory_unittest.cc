@@ -57,9 +57,9 @@ class FakeAudioInputDelegate : public media::AudioInputDelegate {
 
   ~FakeAudioInputDelegate() override {}
 
-  int GetStreamId() override { return 0; };
-  void OnRecordStream() override{};
-  void OnSetVolume(double volume) override{};
+  int GetStreamId() override { return 0; }
+  void OnRecordStream() override {}
+  void OnSetVolume(double volume) override {}
   void OnSetOutputDeviceForAec(const std::string& output_device_id) override {}
 
  private:
