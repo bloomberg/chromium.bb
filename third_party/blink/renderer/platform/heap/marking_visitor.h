@@ -171,8 +171,6 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
 
   // Unused cross-component visit methods.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
-  void Visit(DOMWrapperMap<ScriptWrappable>*,
-             const ScriptWrappable* key) override {}
 
  private:
   // Exact version of the marking write barriers.

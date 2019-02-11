@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
@@ -180,15 +179,6 @@ void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
   if (!object)
     return;
   desc.callback(this, desc.base_object_payload);
-}
-
-void V8EmbedderGraphBuilder::Visit(DOMWrapperMap<ScriptWrappable>* wrapper_map,
-                                   const ScriptWrappable* key) {
-  // Add an edge from the current parent to the V8 object.
-  v8::Local<v8::Value> v8_value =
-      wrapper_map->NewLocal(isolate_, const_cast<ScriptWrappable*>(key));
-  if (!v8_value.IsEmpty())
-    graph_->AddEdge(current_parent_, GraphNode(v8_value));
 }
 
 v8::EmbedderGraph::Node* V8EmbedderGraphBuilder::GraphNode(

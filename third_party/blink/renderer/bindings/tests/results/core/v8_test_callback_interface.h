@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class ScriptWrappable;
 class TestInterfaceEmpty;
 
 class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {

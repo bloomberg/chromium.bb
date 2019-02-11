@@ -19,6 +19,7 @@
 namespace blink {
 
 class Node;
+class ScriptWrappable;
 
 CORE_EXPORT extern const WrapperTypeInfo _wrapper_type_info;
 
