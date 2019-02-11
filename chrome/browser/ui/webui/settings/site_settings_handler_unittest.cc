@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
@@ -492,7 +493,13 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
                   site_settings::SiteSettingSource::kDefault, 3U);
 }
 
-TEST_F(SiteSettingsHandlerTest, GetAllSites) {
+// Flaky on CrOS and Linux. https://crbug.com/930481
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_GetAllSites DISABLED_GetAllSites
+#else
+#define MAYBE_GetAllSites GetAllSites
+#endif
+TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   base::ListValue get_all_sites_args;
   get_all_sites_args.AppendString(kCallbackId);
   base::Value category_list(base::Value::Type::LIST);
