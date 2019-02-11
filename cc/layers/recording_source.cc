@@ -128,10 +128,6 @@ void RecordingSource::SetRequiresClear(bool requires_clear) {
   requires_clear_ = requires_clear;
 }
 
-const DisplayItemList* RecordingSource::GetDisplayItemList() {
-  return display_list_.get();
-}
-
 scoped_refptr<RasterSource> RecordingSource::CreateRasterSource() const {
   return scoped_refptr<RasterSource>(new RasterSource(this));
 }
