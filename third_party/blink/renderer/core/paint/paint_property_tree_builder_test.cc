@@ -6489,4 +6489,33 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
   }
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       ColumnSpanAllUnderContainPaintAndClipPath) {
+  // This test doesn't apply in CompositeAfterPaint mode.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div style="columns: 2; width: 200px">
+      <div id="clip-path" style="clip-path: circle(70%); background: blue">
+        <div style="contain: paint">
+          <div id="span-all" style="column-span: all; will-change: transform">
+            column-span: all
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  // TODO(crbug.com/803649): For now we don't let the span-all to escape clips
+  // across an effect having output clip.
+  const auto* clip_path_properties = PaintPropertiesForElement("clip-path");
+  const auto& span_all_state = GetLayoutObjectByElementId("span-all")
+                                   ->FirstFragment()
+                                   .LocalBorderBoxProperties();
+  EXPECT_EQ(clip_path_properties->MaskClip(),
+            span_all_state.Clip().Parent()->Parent());
+  EXPECT_EQ(clip_path_properties->Effect(), span_all_state.Effect().Parent());
+}
+
 }  // namespace blink
