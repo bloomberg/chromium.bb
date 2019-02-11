@@ -124,11 +124,15 @@ class PluginVmImageManager : public KeyedService {
 
   ~PluginVmImageManager() override;
 
-  download::DownloadParams GetDownloadParams();
+  GURL GetPluginVmImageDownloadUrl();
+  download::DownloadParams GetDownloadParams(const GURL& url);
 
   void OnStartDownload(const std::string& download_guid,
                        download::DownloadParams::StartResult start_result);
   bool IsDownloading();
+  // Returns true in case downloaded PluginVm image archive passes verification
+  // and false otherwise.
+  bool VerifyDownload(std::string downloaded_archive_hash);
 
   bool UnzipDownloadedPluginVmImageArchive();
   bool IsUnzippingCancelled();

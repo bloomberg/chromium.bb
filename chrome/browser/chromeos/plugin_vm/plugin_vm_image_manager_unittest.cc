@@ -275,6 +275,8 @@ TEST_F(PluginVmImageManagerTest, UnzipNonExistingImageTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, CancelUnzippingTest) {
+  EXPECT_CALL(*download_observer_, OnUnzippingFailed());
+
   // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
@@ -289,6 +291,15 @@ TEST_F(PluginVmImageManagerTest, CancelUnzippingTest) {
                                                 .AppendASCII(kPvmDir)
                                                 .AppendASCII(kPluginVmImageDir);
   EXPECT_FALSE(base::DirectoryExists(plugin_vm_image_unzipped));
+}
+
+TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
+  SetPluginVmImagePref("", kHash);
+
+  EXPECT_CALL(*download_observer_, OnDownloadFailed());
+
+  manager_->StartDownload();
+  test_browser_thread_bundle_.RunUntilIdle();
 }
 
 }  // namespace plugin_vm
