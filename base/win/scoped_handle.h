@@ -8,6 +8,7 @@
 #include "base/win/windows_types.h"
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -84,7 +85,7 @@ class GenericScopedHandle {
   }
 
   // Transfers ownership away from this object.
-  Handle Take() {
+  Handle Take() WARN_UNUSED_RESULT {
     Handle temp = handle_;
     handle_ = Traits::NullHandle();
     if (Traits::IsHandleValid(temp)) {

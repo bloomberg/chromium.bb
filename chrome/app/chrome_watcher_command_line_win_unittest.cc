@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/win/scoped_handle.h"
@@ -36,8 +37,8 @@ class TestChromeWatcherCommandLineGenerator
   // the same handle. This function allows the generator handles to be released
   // before they are subsequently claimed by an interpreter.
   void ReleaseHandlesWithoutClosing() {
-    on_initialized_event_handle_.Take();
-    parent_process_handle_.Take();
+    ignore_result(on_initialized_event_handle_.Take());
+    ignore_result(parent_process_handle_.Take());
   }
 };
 
