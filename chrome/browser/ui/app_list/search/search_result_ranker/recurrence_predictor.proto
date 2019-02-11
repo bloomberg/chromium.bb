@@ -4,23 +4,27 @@
 
 syntax = "proto2";
 
+import "frecency_store.proto";
+
 option optimize_for = LITE_RUNTIME;
 
 package app_list;
 
 // Fake predictor used for testing.
 message FakePredictorProto {
-  map<uint32, float> counts = 1;
+  // Maps targets to their score.
+  map<string, float> counts = 1;
 }
 
-// Frecency predictor. Uses the targets stored in the ranker, so serialises
-// nothing of its own.
-message FrecencyPredictorProto {}
+// Zero-state frecency predictor.
+message ZeroStateFrecencyPredictorProto {
+  optional FrecencyStoreProto targets = 1;
+}
 
 // Represents the serialisation of one particular predictor.
 message RecurrencePredictorProto {
   oneof predictor {
     FakePredictorProto fake_predictor = 1;
-    FrecencyPredictorProto frecency_predictor = 2;
+    ZeroStateFrecencyPredictorProto zero_state_frecency_predictor = 2;
   }
 }
