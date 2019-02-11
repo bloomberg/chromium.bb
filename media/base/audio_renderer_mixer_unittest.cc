@@ -97,7 +97,7 @@ class AudioRendererMixerTest
                                const OutputDeviceInfo& sink_info,
                                scoped_refptr<AudioRendererSink> sink) final {
     return mixer_.get();
-  };
+  }
 
   void ReturnMixer(AudioRendererMixer* mixer) override {
     EXPECT_EQ(mixer_.get(), mixer);
