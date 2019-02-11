@@ -209,18 +209,19 @@ void PresentationServiceImpl::StartPresentation(
     const std::vector<GURL>& presentation_urls,
     NewPresentationCallback callback) {
   DVLOG(2) << "StartPresentation";
-  if (!controller_delegate_) {
-    std::move(callback).Run(
-        /** PresentationConnectionResultPtr */ nullptr,
-        PresentationError::New(PresentationErrorType::NO_AVAILABLE_SCREENS,
-                               "No screens found."));
-    return;
-  }
 
   // There is a StartPresentation request in progress. To avoid queueing up
   // requests, the incoming request is rejected.
   if (start_presentation_request_id_ != kInvalidRequestId) {
     InvokeNewPresentationCallbackWithError(std::move(callback));
+    return;
+  }
+
+  if (!controller_delegate_) {
+    std::move(callback).Run(
+        /** PresentationConnectionResultPtr */ nullptr,
+        PresentationError::New(PresentationErrorType::NO_AVAILABLE_SCREENS,
+                               "No screens found."));
     return;
   }
 
