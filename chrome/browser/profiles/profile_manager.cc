@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -53,7 +54,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -82,7 +82,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/driver/sync_service.h"
@@ -1344,7 +1343,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
       profile->GetPath());
 
-  GaiaCookieManagerServiceFactory::GetForProfile(profile)->InitCookieListener();
+  IdentityManagerFactory::GetForProfile(profile)->StartObservingCookieChanges();
   AccountFetcherServiceFactory::GetForProfile(profile)->OnProfileLoaded();
   AccountReconcilorFactory::GetForProfile(profile);
 
