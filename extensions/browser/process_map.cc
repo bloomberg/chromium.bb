@@ -16,8 +16,6 @@ namespace extensions {
 
 // Item
 struct ProcessMap::Item {
-  Item() {}
-
   Item(const std::string& extension_id, int process_id,
        int site_instance_id)
       : extension_id(extension_id),
