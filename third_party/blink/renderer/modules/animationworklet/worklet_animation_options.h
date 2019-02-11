@@ -18,7 +18,7 @@ class MODULES_EXPORT WorkletAnimationOptions final
   explicit WorkletAnimationOptions(scoped_refptr<SerializedScriptValue>);
   std::unique_ptr<cc::AnimationOptions> Clone() const override;
 
-  scoped_refptr<SerializedScriptValue> GetData() { return data_; };
+  scoped_refptr<SerializedScriptValue> GetData() { return data_; }
   ~WorkletAnimationOptions() override;
 
  private:
