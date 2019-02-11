@@ -52,7 +52,7 @@ def CallAndRecordIfStale(
       'record paths must end in \'.stamp\' so that they are easy to find '
       'and delete')
 
-  new_metadata = _Metadata()
+  new_metadata = _Metadata(track_entries=pass_changes or PRINT_EXPLANATIONS)
   new_metadata.AddStrings(input_strings)
 
   for path in input_paths:
@@ -222,7 +222,12 @@ class Changes(object):
 
 
 class _Metadata(object):
-  """Data model for tracking change metadata."""
+  """Data model for tracking change metadata.
+
+  Args:
+    track_entries: Enables per-file change tracking. Slower, but required for
+        Changes functionality.
+  """
   # Schema:
   # {
   #   "files-md5": "VALUE",
@@ -241,7 +246,8 @@ class _Metadata(object):
   #   ],
   #   "input-strings": ["a", "b", ...],
   # }
-  def __init__(self):
+  def __init__(self, track_entries=False):
+    self._track_entries = track_entries
     self._files_md5 = None
     self._strings_md5 = None
     self._files = []
@@ -256,18 +262,20 @@ class _Metadata(object):
     obj = json.load(fileobj)
     ret._files_md5 = obj['files-md5']
     ret._strings_md5 = obj['strings-md5']
-    ret._files = obj['input-files']
-    ret._strings = obj['input-strings']
+    ret._files = obj.get('input-files', [])
+    ret._strings = obj.get('input-strings', [])
     return ret
 
   def ToFile(self, fileobj):
     """Serializes metadata to the given file object."""
     obj = {
-        "files-md5": self.FilesMd5(),
-        "strings-md5": self.StringsMd5(),
-        "input-files": self._files,
-        "input-strings": self._strings,
+        'files-md5': self.FilesMd5(),
+        'strings-md5': self.StringsMd5(),
     }
+    if self._track_entries:
+      obj['input-files'] = sorted(self._files, key=lambda e: e['path'])
+      obj['input-strings'] = self._strings
+
     json.dump(obj, fileobj, indent=2)
 
   def _AssertNotQueried(self):

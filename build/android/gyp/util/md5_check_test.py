@@ -119,7 +119,10 @@ class TestMd5Check(unittest.TestCase):
     CheckCallAndRecord(True, 'removing a string should trigger call')
 
     input_strings.append('a brand new string')
-    CheckCallAndRecord(True, 'added input string should trigger call')
+    CheckCallAndRecord(
+        True,
+        'added input string should trigger call',
+        added_or_modified_only=False)
 
     _WriteZipFile(input_file2.name, [('path/1.txt', '1')])
     CheckCallAndRecord(True, 'added subpath should trigger call',
