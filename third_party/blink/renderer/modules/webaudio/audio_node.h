@@ -152,7 +152,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // Like process(), but only causes the automations to process; the
   // normal processing of the node is bypassed.  By default, we assume
   // no AudioParams need to be updated.
-  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process){};
+  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process) {}
 
   // No significant resources should be allocated until initialize() is called.
   // Processing may not occur until a node is initialized.

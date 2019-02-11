@@ -55,7 +55,7 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
     visitor->Trace(constructor_);
     visitor->Trace(process_);
     visitor->Trace(audio_param_descriptors_);
-  };
+  }
   const char* NameInHeapSnapshot() const override {
     return "AudioWorkletProcessorDefinition";
   }

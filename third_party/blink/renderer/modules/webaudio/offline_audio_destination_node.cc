@@ -394,7 +394,7 @@ void OfflineAudioDestinationHandler::RestartRendering() {
   // The rendering thread might have been changed, so we need to set up the
   // task runner again.
   PrepareTaskRunnerForRendering();
-};
+}
 
 // ----------------------------------------------------------------
 

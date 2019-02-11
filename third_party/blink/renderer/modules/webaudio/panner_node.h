@@ -219,13 +219,13 @@ class PannerNode final : public AudioNode {
   void Trace(blink::Visitor*) override;
 
   // Uses a 3D cartesian coordinate system
-  AudioParam* positionX() const { return position_x_; };
-  AudioParam* positionY() const { return position_y_; };
-  AudioParam* positionZ() const { return position_z_; };
+  AudioParam* positionX() const { return position_x_; }
+  AudioParam* positionY() const { return position_y_; }
+  AudioParam* positionZ() const { return position_z_; }
 
-  AudioParam* orientationX() const { return orientation_x_; };
-  AudioParam* orientationY() const { return orientation_y_; };
-  AudioParam* orientationZ() const { return orientation_z_; };
+  AudioParam* orientationX() const { return orientation_x_; }
+  AudioParam* orientationY() const { return orientation_y_; }
+  AudioParam* orientationZ() const { return orientation_z_; }
 
   String panningModel() const;
   void setPanningModel(const String&);
