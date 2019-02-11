@@ -1058,26 +1058,27 @@ class TabletModeControllerForceTabletModeTest
 
 // Verify when the force touch view mode flag is turned on, tablet mode is on
 // initially, and opening the lid to less than 180 degress or setting tablet
-// mode to off will not turn off tablet mode.
+// mode to off will not turn off tablet mode. The internal keyboard and trackpad
+// should still work as it makes testing easier.
 TEST_F(TabletModeControllerForceTabletModeTest, ForceTabletModeTest) {
   EXPECT_EQ(TabletModeController::UiMode::kTabletMode, forced_ui_mode());
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 
   OpenLidToAngle(30.0f);
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 
   SetTabletMode(false);
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 
   // Tests that attaching a external mouse will not change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 }
 
 TEST_F(TabletModeControllerForceTabletModeTest, DockInForcedTabletMode) {
