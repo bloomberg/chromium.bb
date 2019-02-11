@@ -2041,55 +2041,6 @@ TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
                                       std::string("/dir1/dir2/xxx"))));
 }
 
-TEST_F(CookieMonsterTest, UniqueCreationTime) {
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, nullptr, &net_log_));
-  CookieOptions options;
-
-  // Add in three cookies through every public interface to the
-  // CookieMonster and confirm that none of them have duplicate
-  // creation times.
-
-  // SetCookieWithCreationTime and SetCookieWithCreationTimeAndOptions
-  // are not included as they aren't going to be public for very much
-  // longer.
-
-  // SetCookie, SetCookieWithOptions
-
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "SetCookie1=A"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "SetCookie2=A"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "SetCookie3=A"));
-
-  EXPECT_TRUE(SetCookieWithOptions(cm.get(), http_www_foo_.url(),
-                                   "setCookieWithOptions1=A", options));
-  EXPECT_TRUE(SetCookieWithOptions(cm.get(), http_www_foo_.url(),
-                                   "setCookieWithOptions2=A", options));
-  EXPECT_TRUE(SetCookieWithOptions(cm.get(), http_www_foo_.url(),
-                                   "setCookieWithOptions3=A", options));
-
-  // Now we check
-  CookieList cookie_list(GetAllCookies(cm.get()));
-  EXPECT_EQ(6u, cookie_list.size());
-  typedef std::map<int64_t, CanonicalCookie> TimeCookieMap;
-  TimeCookieMap check_map;
-  for (CookieList::const_iterator it = cookie_list.begin();
-       it != cookie_list.end(); it++) {
-    const int64_t creation_date = it->CreationDate().ToInternalValue();
-    TimeCookieMap::const_iterator existing_cookie_it(
-        check_map.find(creation_date));
-    EXPECT_TRUE(existing_cookie_it == check_map.end())
-        << "Cookie " << it->Name() << " has same creation date ("
-        << it->CreationDate().ToInternalValue()
-        << ") as previously entered cookie "
-        << existing_cookie_it->second.Name();
-
-    if (existing_cookie_it == check_map.end()) {
-      check_map.insert(
-          TimeCookieMap::value_type(it->CreationDate().ToInternalValue(), *it));
-    }
-  }
-}
-
 // Mainly a test of GetEffectiveDomain, or more specifically, of the
 // expected behavior of GetEffectiveDomain within the CookieMonster.
 TEST_F(CookieMonsterTest, GetKey) {

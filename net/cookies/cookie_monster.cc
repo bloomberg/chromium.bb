@@ -748,11 +748,8 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
   VLOG(net::cookie_util::kVlogSetCookies)
       << "SetCookie() line: " << cookie_line;
 
-  Time creation_time = CurrentTime();
-  last_time_seen_ = creation_time;
-
   std::unique_ptr<CanonicalCookie> cc(
-      CanonicalCookie::Create(url, cookie_line, creation_time, options));
+      CanonicalCookie::Create(url, cookie_line, Time::Now(), options));
 
   if (!cc.get()) {
     VLOG(net::cookie_util::kVlogSetCookies)
@@ -1090,7 +1087,7 @@ void CookieMonster::FindCookiesForRegistryControlledHost(
     std::vector<CanonicalCookie*>* cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  Time current_time(CurrentTime());
+  Time current_time = Time::Now();
 
   // Retrieve all cookies for a given key
   const std::string key(GetKey(url.host_piece()));
@@ -1121,7 +1118,7 @@ void CookieMonster::FilterCookiesWithOptions(
   // Probe to save statistics relatively frequently.  We do it here rather
   // than in the set path as many websites won't set cookies, and we
   // want to collect statistics whenever the browser's being used.
-  Time current_time(CurrentTime());
+  Time current_time = Time::Now();
   RecordPeriodicStats(current_time);
 
   for (std::vector<CanonicalCookie*>::iterator it = cookie_ptrs->begin();
@@ -1288,15 +1285,10 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   const std::string key(GetKey(cc->Domain()));
 
-  // TODO(mmenke): This class assumes each cookie to have a unique creation
-  // time. Allowing the caller to set the creation time violates that
-  // assumption. Worth fixing? Worth noting that time changes between browser
-  // restarts can cause the same issue.
   base::Time creation_date = cc->CreationDate();
   if (creation_date.is_null()) {
-    creation_date = CurrentTime();
+    creation_date = Time::Now();
     cc->SetCreationDate(creation_date);
-    last_time_seen_ = creation_date;
   }
   bool already_expired = cc->IsExpired(creation_date);
 
@@ -1342,9 +1334,6 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
     if (!creation_date_to_inherit.is_null()) {
       cc->SetCreationDate(creation_date_to_inherit);
-      // |last_time_seen_| is intentionally not updated, as moving it into the
-      // past might cause duplicate cookie creation dates. See
-      // `CookieMonster::CurrentTime()` for details.
     }
 
     InternalInsertCookie(key, std::move(cc), true);
@@ -1855,14 +1844,6 @@ void CookieMonster::InitializeHistograms() {
       "Cookie.TimeBlockedOnLoad", base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMinutes(1), 50,
       base::Histogram::kUmaTargetedHistogramFlag);
-}
-
-// The system resolution is not high enough, so we can have multiple
-// set cookies that result in the same system time.  When this happens, we
-// increment by one Time unit.  Let's hope computers don't get too fast.
-Time CookieMonster::CurrentTime() {
-  return std::max(Time::Now(), Time::FromInternalValue(
-                                   last_time_seen_.ToInternalValue() + 1));
 }
 
 void CookieMonster::DoCookieCallback(base::OnceClosure callback) {
