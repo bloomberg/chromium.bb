@@ -1788,6 +1788,43 @@ TEST_F(SplitViewControllerTest, PinnedWindowDisallowsSplitView) {
   EXPECT_FALSE(ShouldAllowSplitView());
 }
 
+// Test that if split view ends while the divider is dragged to where a snapped
+// window is sliding off the screen because it has reached minimum size, then
+// the offset is cleared.
+TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+
+  const gfx::Rect bounds(0, 0, 300, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  aura::test::TestWindowDelegate* delegate =
+      static_cast<aura::test::TestWindowDelegate*>(window->delegate());
+
+  // Set the screen orientation to LANDSCAPE_PRIMARY
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+
+  gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  delegate->set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
+
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+  gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
+  split_view_controller()->Resize(resize_point);
+  ASSERT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
+  EndSplitView();
+  EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
+}
+
 // TestShellObserver which tracks how many overview items there are when
 // overview mode is about to end.
 class TestOverviewItemsOnOverviewModeEndObserver : public ShellObserver {
