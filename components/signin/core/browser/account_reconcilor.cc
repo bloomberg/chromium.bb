@@ -369,7 +369,7 @@ void AccountReconcilor::OnRefreshTokensLoaded() {
 }
 
 void AccountReconcilor::OnErrorStateOfRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
+    const CoreAccountInfo& account_info,
     const GoogleServiceAuthError& error) {
   // Gaia cookies may be invalidated server-side and the client does not get any
   // notification when this happens.

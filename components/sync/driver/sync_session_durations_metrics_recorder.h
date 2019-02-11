@@ -44,7 +44,7 @@ class SyncSessionDurationsMetricsRecorder
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info,
+      const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,

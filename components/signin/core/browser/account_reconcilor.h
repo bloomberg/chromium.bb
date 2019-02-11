@@ -279,7 +279,7 @@ class AccountReconcilor : public KeyedService,
   void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnRefreshTokensLoaded() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info,
+      const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
