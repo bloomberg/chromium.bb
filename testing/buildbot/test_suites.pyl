@@ -3882,48 +3882,6 @@
       },
     },
 
-    'network_service_chromeos_fyi_gtests': {
-      'network_service_browser_tests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'browser_tests',
-      },
-      'network_service_components_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'test': 'components_browsertests',
-      },
-      'network_service_content_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-        'test': 'content_browsertests',
-      },
-      'network_service_extensions_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'test': 'extensions_browsertests',
-      },
-      'network_service_interactive_ui_tests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-        'test': 'interactive_ui_tests',
-      },
-    },
-
     'network_service_fyi_gtests': {
       'network_service_web_request_proxy_browser_tests': {
         'args': [
@@ -4944,7 +4902,7 @@
       'aura_gtests',
       'mash_fyi_chromium_gtests',
       'mojo_chromiumos_specific_gtests',
-      'network_service_chromeos_fyi_gtests',
+      'network_service_gtests',
       'viz_chromeos_fyi_gtests',
       'viz_chromeos_gtests',
       'viz_gtests',
