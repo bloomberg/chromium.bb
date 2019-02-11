@@ -132,6 +132,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // this call will hang.
   void WaitForWorkersIdleForTesting(size_t n);
 
+  // Waits until at least |n| workers are idle.
+  void WaitForWorkersIdleLockRequiredForTesting(size_t n)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
@@ -176,23 +180,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void OnCanScheduleSequence(
       SequenceAndTransaction sequence_and_transaction) override;
 
-  // Pushes the Sequence in |sequence_and_transaction| to |priority_queue_|.
-  void PushSequenceToPriorityQueue(
+  // Pushes the Sequence in |sequence_and_transaction| to |priority_queue_| and
+  // wakes up workers as appropriate.
+  void PushSequenceAndWakeUpWorkers(
       SequenceAndTransaction sequence_and_transaction);
-
-  // Waits until at least |n| workers are idle.
-  void WaitForWorkersIdleLockRequiredForTesting(size_t n)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
-  // Wakes up the last worker from this worker pool to go idle, if any.
-  // Otherwise, creates and starts a worker, if permitted, and wakes it up.
-  void WakeUpOneWorker();
-
-  // Performs the same action as WakeUpOneWorker(), except:
-  // - Asserts |lock_| is acquired rather than acquires it.
-  // - Uses |executor| to delay waking up and starting the worker.
-  void WakeUpOneWorkerLockRequired(SchedulerWorkerActionExecutor* executor)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Creates a worker and schedules its start, if needed, to maintain one idle
   // worker, |max_tasks_| permitting.
@@ -207,9 +198,17 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired(
       SchedulerWorkerActionExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Returns the number of workers in the pool that should not run tasks due to
-  // the pool being over capacity.
-  size_t NumberOfExcessWorkersLockRequired() const
+  // Returns the number of workers that are awake (i.e. not on the idle stack).
+  size_t GetNumAwakeWorkersLockRequired() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Returns the desired number of awake workers, given current workload and
+  // concurrency limits.
+  size_t GetDesiredNumAwakeWorkersLockRequired() const
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Ensures that there are at least GetDesiredNumAwakeWorkersLockRequired()
+  // awake workers.
+  void EnsureEnoughWorkersLockRequired(SchedulerWorkerActionExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Examines the list of SchedulerWorkers and increments |max_tasks_| for each
@@ -319,25 +318,21 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // All workers owned by this worker pool.
   std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);
 
-  // The maximum number of tasks that can run concurrently in this pool. Workers
-  // can be added as needed up until there are |max_tasks_| workers.
+  // Maximum number of tasks of any priority / BEST_EFFORT priority that can run
+  // concurrently in this pool.
   size_t max_tasks_ GUARDED_BY(lock_) = 0;
+  size_t max_best_effort_tasks_ GUARDED_BY(lock_) = 0;
 
-  // The maximum number of best-effort tasks that can run concurrently in this
-  // pool.
-  int max_best_effort_tasks_ GUARDED_BY(lock_) = 0;
+  // Number of tasks of any priority / BEST_EFFORT priority that are currently
+  // running in this pool.
+  size_t num_running_tasks_ GUARDED_BY(lock_) = 0;
+  size_t num_running_best_effort_tasks_ GUARDED_BY(lock_) = 0;
 
-  // The number of best-effort tasks that are currently running in this pool.
-  int num_running_best_effort_tasks_ GUARDED_BY(lock_) = 0;
-
-  // Number of workers that are within the scope of a MAY_BLOCK
-  // ScopedBlockingCall but haven't caused a max task increase yet.
-  int num_pending_may_block_workers_ GUARDED_BY(lock_) = 0;
-
-  // Number of workers that are running a TaskPriority::BEST_EFFORT task and are
-  // within the scope of a MAY_BLOCK ScopedBlockingCall but haven't caused a max
-  // task increase yet.
-  int num_pending_best_effort_may_block_workers_ GUARDED_BY(lock_) = 0;
+  // Number of workers running a task of any priority / BEST_EFFORT priority
+  // that are within the scope of a MAY_BLOCK ScopedBlockingCall but haven't
+  // caused a max tasks increase yet.
+  int num_unresolved_may_block_ GUARDED_BY(lock_) = 0;
+  int num_unresolved_best_effort_may_block_ GUARDED_BY(lock_) = 0;
 
   // Stack of idle workers. Initially, all workers are on this stack. A worker
   // is removed from the stack before its WakeUp() function is called and when
@@ -349,10 +344,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Signaled when a worker is added to the idle workers stack.
   std::unique_ptr<ConditionVariable> idle_workers_stack_cv_for_testing_
       GUARDED_BY(lock_);
-
-  // Number of wake ups that occurred before Start(). Never modified after
-  // Start() (i.e. can be read without synchronization after Start()).
-  int num_wake_ups_before_start_ GUARDED_BY(lock_) = 0;
 
   // Stack that contains the timestamps of when workers get cleaned up.
   // Timestamps get popped off the stack as new workers are added.

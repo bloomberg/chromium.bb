@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <atomic>
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -29,6 +30,7 @@
 #include "base/task/task_features.h"
 #include "base/task/task_scheduler/delayed_task_manager.h"
 #include "base/task/task_scheduler/scheduler_task_runner_delegate.h"
+#include "base/task/task_scheduler/scheduler_worker_observer.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_scheduler/sequence_sort_key.h"
@@ -69,6 +71,7 @@ constexpr size_t kNumTasksPostedPerThread = 150;
 // is allowed to cleanup.
 constexpr TimeDelta kReclaimTimeForCleanupTests =
     TimeDelta::FromMilliseconds(500);
+constexpr size_t kLargeNumber = 512;
 
 class TaskSchedulerWorkerPoolImplTestBase
     : public SchedulerWorkerPool::Delegate {
@@ -97,23 +100,28 @@ class TaskSchedulerWorkerPoolImplTestBase
     mock_scheduler_task_runner_delegate_.SetWorkerPool(worker_pool_.get());
   }
 
-  void StartWorkerPool(
-      TimeDelta suggested_reclaim_time,
-      size_t max_tasks,
-      Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>()) {
+  void StartWorkerPool(TimeDelta suggested_reclaim_time,
+                       size_t max_tasks,
+                       Optional<int> max_best_effort_tasks = nullopt,
+                       SchedulerWorkerObserver* worker_observer = nullptr,
+                       Optional<TimeDelta> may_block_threshold = nullopt) {
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(
-        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time), max_tasks,
-        service_thread_.task_runner(), nullptr,
+        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time),
+        max_best_effort_tasks ? max_best_effort_tasks.value() : max_tasks,
+        service_thread_.task_runner(), worker_observer,
         SchedulerWorkerPoolImpl::WorkerEnvironment::NONE, may_block_threshold);
   }
 
   void CreateAndStartWorkerPool(
       TimeDelta suggested_reclaim_time = TimeDelta::Max(),
       size_t max_tasks = kMaxTasks,
-      Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>()) {
+      Optional<int> max_best_effort_tasks = nullopt,
+      SchedulerWorkerObserver* worker_observer = nullptr,
+      Optional<TimeDelta> may_block_threshold = nullopt) {
     CreateWorkerPool();
-    StartWorkerPool(suggested_reclaim_time, max_tasks, may_block_threshold);
+    StartWorkerPool(suggested_reclaim_time, max_tasks, max_best_effort_tasks,
+                    worker_observer, may_block_threshold);
   }
 
   Thread service_thread_;
@@ -1181,6 +1189,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
   threads_continue.Signal();
   task_tracker_.FlushForTesting();
 }
+
 // Verify that workers become idle when the pool is over-capacity and that
 // those workers do no work.
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
@@ -1259,6 +1268,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockUnblockPremature) {
   // ScopedBlockingCall never increases the max tasks.
   CreateAndStartWorkerPool(TimeDelta::Max(),  // |suggested_reclaim_time|
                            kMaxTasks,         // |max_tasks|
+                           nullopt,           // |max_best_effort_tasks|
+                           nullptr,           // |worker_observer|
                            TimeDelta::Max()   // |may_block_threshold|
   );
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
@@ -1544,10 +1555,9 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
 // is honored.
 TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBestEffortTasks) {
   constexpr int kMaxBestEffortTasks = kMaxTasks / 2;
-  worker_pool_->Start(
-      SchedulerWorkerPoolParams(kMaxTasks, base::TimeDelta::Max()),
-      kMaxBestEffortTasks, service_thread_.task_runner(), nullptr,
-      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+  StartWorkerPool(TimeDelta::Max(),      // |suggested_reclaim_time|
+                  kMaxTasks,             // |max_tasks|
+                  kMaxBestEffortTasks);  // |max_best_effort_tasks|
   const scoped_refptr<TaskRunner> foreground_runner =
       test::CreateTaskRunnerWithTraits({MayBlock()},
                                        &mock_scheduler_task_runner_delegate_);
@@ -1594,8 +1604,111 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBestEffortTasks) {
   unblock_best_effort_tasks.Signal();
   extra_best_effort_task_running.Wait();
 
-  // Tear down.
+  // Wait for all tasks to complete before exiting to avoid invalid accesses.
   task_tracker_.FlushForTesting();
+}
+
+// Verify that flooding the pool with BEST_EFFORT tasks doesn't cause the
+// creation of more than |max_best_effort_tasks| + 1 workers.
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest,
+       FloodBestEffortTasksDoesNotCreateTooManyWorkers) {
+  constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
+  StartWorkerPool(TimeDelta::Max(),      // |suggested_reclaim_time|
+                  kMaxTasks,             // |max_tasks|
+                  kMaxBestEffortTasks);  // |max_best_effort_tasks|
+
+  const scoped_refptr<TaskRunner> runner =
+      test::CreateTaskRunnerWithTraits({TaskPriority::BEST_EFFORT, MayBlock()},
+                                       &mock_scheduler_task_runner_delegate_);
+
+  for (size_t i = 0; i < kLargeNumber; ++i) {
+    runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                       EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(),
+                                 kMaxBestEffortTasks + 1);
+                     }));
+  }
+
+  // Wait for all tasks to complete before exiting to avoid invalid accesses.
+  task_tracker_.FlushForTesting();
+}
+
+namespace {
+
+// A SchedulerWorkerObserver that lets one worker start, then waits until
+// UnblockWorkers() is called before letting any other workers start.
+class HoldWorkersObserver : public SchedulerWorkerObserver {
+ public:
+  HoldWorkersObserver() = default;
+
+  void UnblockWorkers() { unblock_workers_.Signal(); }
+
+  // SchedulerWorkerObserver:
+  void OnSchedulerWorkerMainEntry() override {
+    bool expected = false;
+    if (allowed_first_worker_.compare_exchange_strong(expected, true))
+      return;
+    test::WaitWithoutBlockingObserver(&unblock_workers_);
+  }
+  void OnSchedulerWorkerMainExit() override {}
+
+ private:
+  std::atomic_bool allowed_first_worker_{false};
+  WaitableEvent unblock_workers_;
+
+  DISALLOW_COPY_AND_ASSIGN(HoldWorkersObserver);
+};
+
+}  // namespace
+
+// Previously, a WILL_BLOCK ScopedBlockingCall unconditionally woke up a worker
+// if the priority queue was non-empty. Sometimes, that caused multiple workers
+// to be woken up for the same sequence. This test verifies that it is no longer
+// the case:
+// 1. Post task A that blocks until an event is signaled.
+// 2. Post task B. It can't be scheduled because the 1st worker is busy and
+//    the 2nd worker is blocked by HoldWorkersObserver.
+// 3. Signal the event so that task A enters a first WILL_BLOCK
+//    ScopedBlockingCall. This should no-op because there are already enough
+//    workers (previously, a worker would be woken up because the priority
+//    queue isn't empty).
+// 4. Task A enters a second WILL_BLOCK ScopedBlockingCall. This should no-op
+//    because there are already enough workers.
+// 5. Unblock HoldWorkersObserver and wait for all tasks to complete.
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest,
+       RepeatedWillBlockDoesNotCreateTooManyWorkers) {
+  constexpr size_t kNumWorkers = 2U;
+  HoldWorkersObserver worker_observer;
+  StartWorkerPool(TimeDelta::Max(),   // |suggested_reclaim_time|
+                  kNumWorkers,        // |max_tasks|
+                  nullopt,            // |max_best_effort_tasks|
+                  &worker_observer);  // |worker_observer|
+  const scoped_refptr<TaskRunner> runner = test::CreateTaskRunnerWithTraits(
+      {MayBlock()}, &mock_scheduler_task_runner_delegate_);
+
+  WaitableEvent hold_will_block_task;
+  runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        test::WaitWithoutBlockingObserver(&hold_will_block_task);
+        for (size_t i = 0; i < kLargeNumber; ++i) {
+          // Number of workers should not increase when there is enough capacity
+          // to accommodate queued and running sequences.
+          ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+          EXPECT_EQ(kNumWorkers, worker_pool_->NumberOfWorkersForTesting());
+        }
+
+        worker_observer.UnblockWorkers();
+      }));
+
+  runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                     EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(),
+                               kNumWorkers);
+                   }));
+  hold_will_block_task.Signal();
+
+  // Join the pool to avoid invalid accesses to |worker_observer|.
+  task_tracker_.FlushForTesting();
+  worker_pool_->JoinForTesting();
+  worker_pool_.reset();
 }
 
 namespace {
