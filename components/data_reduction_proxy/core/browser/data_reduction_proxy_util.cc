@@ -348,24 +348,6 @@ ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme) {
   }
 }
 
-HTTPSLitePagePreviewInfo_Status
-ProtoLitePageRedirectStatusFromLitePageRedirectStatus(
-    previews::ServerLitePageStatus status) {
-  switch (status) {
-    case previews::ServerLitePageStatus::kUnknown:
-      return HTTPSLitePagePreviewInfo_Status_UNKNOWN;
-    case previews::ServerLitePageStatus::kSuccess:
-      return HTTPSLitePagePreviewInfo_Status_SUCCESS;
-    case previews::ServerLitePageStatus::kBypass:
-      return HTTPSLitePagePreviewInfo_Status_BYPASS;
-    case previews::ServerLitePageStatus::kRedirect:
-      return HTTPSLitePagePreviewInfo_Status_REDIRECT;
-    case previews::ServerLitePageStatus::kFailure:
-      return HTTPSLitePagePreviewInfo_Status_FAILURE;
-    case previews::ServerLitePageStatus::kControl:
-      return HTTPSLitePagePreviewInfo_Status_CONTROL;
-  }
-}
 
 void TimeDeltaToDuration(const base::TimeDelta& time_delta,
                          Duration* duration) {

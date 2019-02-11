@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
 
 namespace data_reduction_proxy {
 

@@ -44,8 +44,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/test_previews_decider.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

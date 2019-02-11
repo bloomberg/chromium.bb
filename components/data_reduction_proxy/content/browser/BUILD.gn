@@ -10,6 +10,8 @@ static_library("browser") {
     "content_lofi_ui_service.h",
     "content_resource_type_provider.cc",
     "content_resource_type_provider.h",
+    "data_reduction_proxy_page_load_timing.cc",
+    "data_reduction_proxy_page_load_timing.h",
     "data_reduction_proxy_pingback_client_impl.cc",
     "data_reduction_proxy_pingback_client_impl.h",
   ]
