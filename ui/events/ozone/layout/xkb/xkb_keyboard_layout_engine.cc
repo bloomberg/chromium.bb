@@ -824,9 +824,11 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
                {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
                {ui::EF_ALTGR_DOWN, "Mod5"},
                {ui::EF_MOD3_DOWN, "Mod3"},
-               {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS}};
+               {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS},
+               {ui::EF_NUM_LOCK_ON, XKB_MOD_NAME_NUM}};
   xkb_flag_map_.clear();
   xkb_flag_map_.reserve(base::size(flags));
+  xkb_mod_mask_t num_lock_mask = 0;
   for (size_t i = 0; i < base::size(flags); ++i) {
     xkb_mod_index_t index = xkb_keymap_mod_get_index(keymap, flags[i].xkb_name);
     if (index == XKB_MOD_INVALID) {
@@ -835,16 +837,13 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
       xkb_mod_mask_t flag = static_cast<xkb_mod_mask_t>(1) << index;
       XkbFlagMapEntry e = {flags[i].ui_flag, flag, index};
       xkb_flag_map_.push_back(e);
+      if (flags[i].ui_flag == EF_NUM_LOCK_ON)
+        num_lock_mask = flag;
     }
   }
-
 #if defined(OS_CHROMEOS)
   // Update num lock mask.
-  num_lock_mod_mask_ = 0;
-  xkb_mod_index_t num_mod_index =
-      xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
-  if (num_mod_index != XKB_MOD_INVALID)
-    num_lock_mod_mask_ = static_cast<xkb_mod_mask_t>(1) << num_mod_index;
+  num_lock_mod_mask_ = num_lock_mask;
 #endif
 }
 
