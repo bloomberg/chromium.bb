@@ -34,6 +34,55 @@ Important information to include:
 </event>
 ```
 
+### Controlling the Aggregation of Metrics
+
+Control of which metrics are included in the History table is done via the same
+[`tools/metrics/ukm/ukm.xml`](https://cs.chromium.org/chromium/src/tools/metrics/ukm/ukm.xml)
+file in the Chromium codebase. To have a metric aggregated, `<aggregation>` and
+`<history>` tags need to be added.
+
+```
+<event name="Goat.Teleported">
+  <metric name="Duration">
+    ...
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+    ...
+  </metric>
+</event>
+```
+
+Supported statistic types are:
+
+*   `<quantiles type="std-percentiles"/>`: Calculates the "standard percentiles"
+    for the values which are 1, 5, 10, 25, 50, 75, 90, 95, and 99%ile.
+*   `<enumeration/>`: Calculates the proportions of all values individually. The
+    proportions indicate the relative frequency of each bucket and are
+    calculated independently for each metric over each aggregation. The
+    proportions will sum to 1.0 for an enumeration that emits only one result
+    per page-load if it emits anything at all. An enumeration emitted more than
+    once on a page will result in proportions that total greater than 1.0.
+
+There can also be one or more `index` tags which define additional aggregation
+keys. These are a comma-separated list of keys that is appended to the standard
+set. These additional keys are optional but, if present, are always present
+together. In other words, "fields=profile.county,profile.form_factory" will
+cause all the standard aggregations plus each with *both* country *and*
+form_factor but **not** with all the standard aggregations (see above) plus only
+one of them. If individual and combined versions are desired, use multiple index
+tags.
+
+Currently supported additional index fields are:
+
+*   `profile.country`
+*   `profile.form_factor`
+
 ## Get UkmRecorder instance
 
 In order to record UKM events, your code needs a UkmRecorder object, defined by [//services/metrics/public/cpp/ukm_recorder.h](https://cs.chromium.org/chromium/src/services/metrics/public/cpp/ukm_recorder.h)
