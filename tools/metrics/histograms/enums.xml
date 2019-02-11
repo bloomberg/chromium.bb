@@ -30819,6 +30819,7 @@ from previous Chrome versions.
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
   <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
+  <int value="-1776351704" label="DesktopPWAsOmniboxInstall:disabled"/>
   <int value="-1774818943" label="VrWebInputEditing:enabled"/>
   <int value="-1772942854" label="LongPressBackForHistory:enabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
@@ -32064,6 +32065,7 @@ from previous Chrome versions.
   <int value="379428799" label="security-chip-animation"/>
   <int value="380372760" label="V8Orinoco:disabled"/>
   <int value="385969127" label="disable-win32k-lockdown"/>
+  <int value="386138870" label="DesktopPWAsOmniboxInstall:enabled"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
   <int value="387233614" label="HomePageButtonForceEnabled:disabled"/>
   <int value="388786873" label="EnableUnifiedMultiDeviceSettings:enabled"/>

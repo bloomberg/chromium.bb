@@ -2088,6 +2088,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsStayInWindowName,
      flag_descriptions::kDesktopPWAsStayInWindowDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsStayInWindow)},
+    {"enable-desktop-pwas-omnibox-install",
+     flag_descriptions::kDesktopPWAsOmniboxInstallName,
+     flag_descriptions::kDesktopPWAsOmniboxInstallDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsOmniboxInstall)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
      SINGLE_VALUE_TYPE_AND_VALUE(
