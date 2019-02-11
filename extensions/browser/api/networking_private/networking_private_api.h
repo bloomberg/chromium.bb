@@ -35,7 +35,7 @@ class NetworkingPrivateGetPropertiesFunction
  public:
   NetworkingPrivateGetPropertiesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getProperties",
-                             NETWORKINGPRIVATE_GETPROPERTIES);
+                             NETWORKINGPRIVATE_GETPROPERTIES)
 
  protected:
   ~NetworkingPrivateGetPropertiesFunction() override;
@@ -56,7 +56,7 @@ class NetworkingPrivateGetManagedPropertiesFunction
  public:
   NetworkingPrivateGetManagedPropertiesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getManagedProperties",
-                             NETWORKINGPRIVATE_GETMANAGEDPROPERTIES);
+                             NETWORKINGPRIVATE_GETMANAGEDPROPERTIES)
 
  protected:
   ~NetworkingPrivateGetManagedPropertiesFunction() override;
@@ -76,7 +76,7 @@ class NetworkingPrivateGetStateFunction : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateGetStateFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getState",
-                             NETWORKINGPRIVATE_GETSTATE);
+                             NETWORKINGPRIVATE_GETSTATE)
 
  protected:
   ~NetworkingPrivateGetStateFunction() override;
@@ -97,7 +97,7 @@ class NetworkingPrivateSetPropertiesFunction
  public:
   NetworkingPrivateSetPropertiesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.setProperties",
-                             NETWORKINGPRIVATE_SETPROPERTIES);
+                             NETWORKINGPRIVATE_SETPROPERTIES)
 
  protected:
   ~NetworkingPrivateSetPropertiesFunction() override;
@@ -118,7 +118,7 @@ class NetworkingPrivateCreateNetworkFunction
  public:
   NetworkingPrivateCreateNetworkFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.createNetwork",
-                             NETWORKINGPRIVATE_CREATENETWORK);
+                             NETWORKINGPRIVATE_CREATENETWORK)
 
  protected:
   ~NetworkingPrivateCreateNetworkFunction() override;
@@ -139,7 +139,7 @@ class NetworkingPrivateForgetNetworkFunction
  public:
   NetworkingPrivateForgetNetworkFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.forgetNetwork",
-                             NETWORKINGPRIVATE_FORGETNETWORK);
+                             NETWORKINGPRIVATE_FORGETNETWORK)
 
  protected:
   ~NetworkingPrivateForgetNetworkFunction() override;
@@ -159,7 +159,7 @@ class NetworkingPrivateGetNetworksFunction : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateGetNetworksFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getNetworks",
-                             NETWORKINGPRIVATE_GETNETWORKS);
+                             NETWORKINGPRIVATE_GETNETWORKS)
 
  protected:
   ~NetworkingPrivateGetNetworksFunction() override;
@@ -180,7 +180,7 @@ class NetworkingPrivateGetVisibleNetworksFunction
  public:
   NetworkingPrivateGetVisibleNetworksFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getVisibleNetworks",
-                             NETWORKINGPRIVATE_GETVISIBLENETWORKS);
+                             NETWORKINGPRIVATE_GETVISIBLENETWORKS)
 
  protected:
   ~NetworkingPrivateGetVisibleNetworksFunction() override;
@@ -201,7 +201,7 @@ class NetworkingPrivateGetEnabledNetworkTypesFunction
  public:
   NetworkingPrivateGetEnabledNetworkTypesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getEnabledNetworkTypes",
-                             NETWORKINGPRIVATE_GETENABLEDNETWORKTYPES);
+                             NETWORKINGPRIVATE_GETENABLEDNETWORKTYPES)
 
  protected:
   ~NetworkingPrivateGetEnabledNetworkTypesFunction() override;
@@ -219,7 +219,7 @@ class NetworkingPrivateGetDeviceStatesFunction
  public:
   NetworkingPrivateGetDeviceStatesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getDeviceStates",
-                             NETWORKINGPRIVATE_GETDEVICESTATES);
+                             NETWORKINGPRIVATE_GETDEVICESTATES)
 
  protected:
   ~NetworkingPrivateGetDeviceStatesFunction() override;
@@ -237,7 +237,7 @@ class NetworkingPrivateEnableNetworkTypeFunction
  public:
   NetworkingPrivateEnableNetworkTypeFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.enableNetworkType",
-                             NETWORKINGPRIVATE_ENABLENETWORKTYPE);
+                             NETWORKINGPRIVATE_ENABLENETWORKTYPE)
 
  protected:
   ~NetworkingPrivateEnableNetworkTypeFunction() override;
@@ -255,7 +255,7 @@ class NetworkingPrivateDisableNetworkTypeFunction
  public:
   NetworkingPrivateDisableNetworkTypeFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.disableNetworkType",
-                             NETWORKINGPRIVATE_DISABLENETWORKTYPE);
+                             NETWORKINGPRIVATE_DISABLENETWORKTYPE)
 
  protected:
   ~NetworkingPrivateDisableNetworkTypeFunction() override;
@@ -273,7 +273,7 @@ class NetworkingPrivateRequestNetworkScanFunction
  public:
   NetworkingPrivateRequestNetworkScanFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.requestNetworkScan",
-                             NETWORKINGPRIVATE_REQUESTNETWORKSCAN);
+                             NETWORKINGPRIVATE_REQUESTNETWORKSCAN)
 
  protected:
   ~NetworkingPrivateRequestNetworkScanFunction() override;
@@ -290,7 +290,7 @@ class NetworkingPrivateStartConnectFunction : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateStartConnectFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.startConnect",
-                             NETWORKINGPRIVATE_STARTCONNECT);
+                             NETWORKINGPRIVATE_STARTCONNECT)
 
  protected:
   ~NetworkingPrivateStartConnectFunction() override;
@@ -311,7 +311,7 @@ class NetworkingPrivateStartDisconnectFunction
  public:
   NetworkingPrivateStartDisconnectFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.startDisconnect",
-                             NETWORKINGPRIVATE_STARTDISCONNECT);
+                             NETWORKINGPRIVATE_STARTDISCONNECT)
 
  protected:
   ~NetworkingPrivateStartDisconnectFunction() override;
@@ -332,7 +332,7 @@ class NetworkingPrivateStartActivateFunction
  public:
   NetworkingPrivateStartActivateFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.startActivate",
-                             NETWORKINGPRIVATE_STARTACTIVATE);
+                             NETWORKINGPRIVATE_STARTACTIVATE)
 
  protected:
   ~NetworkingPrivateStartActivateFunction() override;
@@ -353,7 +353,7 @@ class NetworkingPrivateVerifyDestinationFunction
  public:
   NetworkingPrivateVerifyDestinationFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyDestination",
-                             NETWORKINGPRIVATE_VERIFYDESTINATION);
+                             NETWORKINGPRIVATE_VERIFYDESTINATION)
 
  protected:
   ~NetworkingPrivateVerifyDestinationFunction() override;
@@ -374,7 +374,7 @@ class NetworkingPrivateVerifyAndEncryptDataFunction
  public:
   NetworkingPrivateVerifyAndEncryptDataFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndEncryptData",
-                             NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA);
+                             NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA)
 
  protected:
   ~NetworkingPrivateVerifyAndEncryptDataFunction() override;
@@ -395,7 +395,7 @@ class NetworkingPrivateSetWifiTDLSEnabledStateFunction
  public:
   NetworkingPrivateSetWifiTDLSEnabledStateFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.setWifiTDLSEnabledState",
-                             NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE);
+                             NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE)
 
  protected:
   ~NetworkingPrivateSetWifiTDLSEnabledStateFunction() override;
@@ -416,7 +416,7 @@ class NetworkingPrivateGetWifiTDLSStatusFunction
  public:
   NetworkingPrivateGetWifiTDLSStatusFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getWifiTDLSStatus",
-                             NETWORKINGPRIVATE_GETWIFITDLSSTATUS);
+                             NETWORKINGPRIVATE_GETWIFITDLSSTATUS)
 
  protected:
   ~NetworkingPrivateGetWifiTDLSStatusFunction() override;
@@ -436,7 +436,7 @@ class NetworkingPrivateGetCaptivePortalStatusFunction
  public:
   NetworkingPrivateGetCaptivePortalStatusFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getCaptivePortalStatus",
-                             NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS);
+                             NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS)
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -456,7 +456,7 @@ class NetworkingPrivateUnlockCellularSimFunction
  public:
   NetworkingPrivateUnlockCellularSimFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.unlockCellularSim",
-                             NETWORKINGPRIVATE_UNLOCKCELLULARSIM);
+                             NETWORKINGPRIVATE_UNLOCKCELLULARSIM)
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -476,7 +476,7 @@ class NetworkingPrivateSetCellularSimStateFunction
  public:
   NetworkingPrivateSetCellularSimStateFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.setCellularSimState",
-                             NETWORKINGPRIVATE_SETCELLULARSIMSTATE);
+                             NETWORKINGPRIVATE_SETCELLULARSIMSTATE)
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -496,7 +496,7 @@ class NetworkingPrivateSelectCellularMobileNetworkFunction
  public:
   NetworkingPrivateSelectCellularMobileNetworkFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.selectCellularMobileNetwork",
-                             NETWORKINGPRIVATE_SELECTCELLULARMOBILENETWORK);
+                             NETWORKINGPRIVATE_SELECTCELLULARMOBILENETWORK)
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -517,7 +517,7 @@ class NetworkingPrivateGetGlobalPolicyFunction
  public:
   NetworkingPrivateGetGlobalPolicyFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getGlobalPolicy",
-                             NETWORKINGPRIVATE_GETGLOBALPOLICY);
+                             NETWORKINGPRIVATE_GETGLOBALPOLICY)
 
  protected:
   ~NetworkingPrivateGetGlobalPolicyFunction() override;
@@ -534,7 +534,7 @@ class NetworkingPrivateGetCertificateListsFunction
  public:
   NetworkingPrivateGetCertificateListsFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getCertificateLists",
-                             NETWORKINGPRIVATE_GETCERTIFICATELISTS);
+                             NETWORKINGPRIVATE_GETCERTIFICATELISTS)
 
  protected:
   ~NetworkingPrivateGetCertificateListsFunction() override;

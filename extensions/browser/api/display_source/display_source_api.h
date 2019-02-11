@@ -15,7 +15,7 @@ class DisplaySourceGetAvailableSinksFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("displaySource.getAvailableSinks",
-                             DISPLAYSOURCE_GETAVAILABLESINKS);
+                             DISPLAYSOURCE_GETAVAILABLESINKS)
   DisplaySourceGetAvailableSinksFunction() = default;
 
  protected:
@@ -33,7 +33,7 @@ class DisplaySourceRequestAuthenticationFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("displaySource.requestAuthentication",
-                             DISPLAYSOURCE_REQUESTAUTHENTICATION);
+                             DISPLAYSOURCE_REQUESTAUTHENTICATION)
   DisplaySourceRequestAuthenticationFunction() = default;
 
  protected:

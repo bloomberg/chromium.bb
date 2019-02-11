@@ -570,7 +570,7 @@ class SocketGetJoinedGroupsFunction : public SocketAsyncApiFunction {
 
 class SocketSecureFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("socket.secure", SOCKET_SECURE);
+  DECLARE_EXTENSION_FUNCTION("socket.secure", SOCKET_SECURE)
   SocketSecureFunction();
 
  protected:

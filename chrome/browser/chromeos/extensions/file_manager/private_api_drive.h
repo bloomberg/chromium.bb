@@ -200,9 +200,8 @@ class FileManagerPrivateSearchDriveMetadataFunction
 class FileManagerPrivateGetDriveConnectionStateFunction
     : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileManagerPrivate.getDriveConnectionState",
-      FILEMANAGERPRIVATE_GETDRIVECONNECTIONSTATE);
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getDriveConnectionState",
+                             FILEMANAGERPRIVATE_GETDRIVECONNECTIONSTATE)
 
  protected:
   ~FileManagerPrivateGetDriveConnectionStateFunction() override = default;
@@ -233,7 +232,7 @@ class FileManagerPrivateInternalRequestDriveShareFunction
     : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.requestDriveShare",
-                             FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE);
+                             FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE)
 
  protected:
   ~FileManagerPrivateInternalRequestDriveShareFunction() override = default;

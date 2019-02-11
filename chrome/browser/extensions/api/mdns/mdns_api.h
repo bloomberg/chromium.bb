@@ -129,7 +129,7 @@ class MdnsForceDiscoveryFunction : public UIThreadExtensionFunction {
   // UIThreadExtensionFunction override.
   ResponseAction Run() override;
 
-  DECLARE_EXTENSION_FUNCTION("mdns.forceDiscovery", MDNS_FORCEDISCOVERY);
+  DECLARE_EXTENSION_FUNCTION("mdns.forceDiscovery", MDNS_FORCEDISCOVERY)
   DISALLOW_COPY_AND_ASSIGN(MdnsForceDiscoveryFunction);
 };
 

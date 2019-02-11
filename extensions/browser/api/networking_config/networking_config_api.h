@@ -19,7 +19,7 @@ class NetworkingConfigSetNetworkFilterFunction
   ResponseAction Run() override;
 
   DECLARE_EXTENSION_FUNCTION("networking.config.setNetworkFilter",
-                             NETWORKING_CONFIG_SETNETWORKFILTER);
+                             NETWORKING_CONFIG_SETNETWORKFILTER)
 
  protected:
   ~NetworkingConfigSetNetworkFilterFunction() override;
@@ -38,7 +38,7 @@ class NetworkingConfigFinishAuthenticationFunction
   ResponseAction Run() override;
 
   DECLARE_EXTENSION_FUNCTION("networking.config.finishAuthentication",
-                             NETWORKING_CONFIG_FINISHAUTHENTICATION);
+                             NETWORKING_CONFIG_FINISHAUTHENTICATION)
 
  protected:
   ~NetworkingConfigFinishAuthenticationFunction() override;

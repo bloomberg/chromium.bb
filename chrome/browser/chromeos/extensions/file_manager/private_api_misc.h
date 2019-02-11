@@ -114,8 +114,7 @@ class FileManagerPrivateInternalZipSelectionFunction
 // for all apps. crbug.com/227175.
 class FileManagerPrivateZoomFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.zoom",
-                             FILEMANAGERPRIVATE_ZOOM);
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.zoom", FILEMANAGERPRIVATE_ZOOM)
 
  protected:
   ~FileManagerPrivateZoomFunction() override = default;
@@ -128,7 +127,7 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
     : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.requestWebStoreAccessToken",
-                             FILEMANAGERPRIVATE_REQUESTWEBSTOREACCESSTOKEN);
+                             FILEMANAGERPRIVATE_REQUESTWEBSTOREACCESSTOKEN)
 
   FileManagerPrivateRequestWebStoreAccessTokenFunction();
 
@@ -148,7 +147,7 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
 class FileManagerPrivateGetProfilesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getProfiles",
-                             FILEMANAGERPRIVATE_GETPROFILES);
+                             FILEMANAGERPRIVATE_GETPROFILES)
 
  protected:
   ~FileManagerPrivateGetProfilesFunction() override = default;
@@ -162,7 +161,7 @@ class FileManagerPrivateOpenInspectorFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.openInspector",
-                             FILEMANAGERPRIVATE_OPENINSPECTOR);
+                             FILEMANAGERPRIVATE_OPENINSPECTOR)
 
  protected:
   ~FileManagerPrivateOpenInspectorFunction() override = default;
@@ -175,7 +174,7 @@ class FileManagerPrivateOpenSettingsSubpageFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.openSettingsSubpage",
-                             FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE);
+                             FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE)
 
  protected:
   ~FileManagerPrivateOpenSettingsSubpageFunction() override = default;
@@ -470,7 +469,7 @@ class FileManagerPrivateDetectCharacterEncodingFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.detectCharacterEncoding",
-                             FILEMANAGERPRIVATE_DETECTCHARACTERENCODING);
+                             FILEMANAGERPRIVATE_DETECTCHARACTERENCODING)
 
  protected:
   ~FileManagerPrivateDetectCharacterEncodingFunction() override = default;

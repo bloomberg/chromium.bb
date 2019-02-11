@@ -92,7 +92,7 @@ class BookmarksSearchFunction : public BookmarksFunction {
 
 class BookmarksRemoveFunction : public BookmarksStubFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE);
+  DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE)
 
  protected:
   ~BookmarksRemoveFunction() override {}

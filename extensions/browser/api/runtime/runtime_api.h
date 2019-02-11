@@ -292,8 +292,7 @@ class RuntimeRestartAfterDelayFunction : public UIThreadExtensionFunction {
 
 class RuntimeGetPlatformInfoFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo",
-                             RUNTIME_GETPLATFORMINFO);
+  DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo", RUNTIME_GETPLATFORMINFO)
 
  protected:
   ~RuntimeGetPlatformInfoFunction() override {}

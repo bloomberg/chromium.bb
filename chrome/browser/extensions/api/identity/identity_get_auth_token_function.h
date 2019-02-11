@@ -52,7 +52,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public OAuth2MintTokenFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getAuthToken",
-                             EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
+                             EXPERIMENTAL_IDENTITY_GETAUTHTOKEN)
 
   IdentityGetAuthTokenFunction();
 

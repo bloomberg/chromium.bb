@@ -221,7 +221,7 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
 class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.requestFileSystem",
-                             FILESYSTEM_REQUESTFILESYSTEM);
+                             FILESYSTEM_REQUESTFILESYSTEM)
 
  protected:
   ~FileSystemRequestFileSystemFunction() override {}
@@ -234,7 +234,7 @@ class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
 class FileSystemGetVolumeListFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.getVolumeList",
-                             FILESYSTEM_GETVOLUMELIST);
+                             FILESYSTEM_GETVOLUMELIST)
 
  protected:
   ~FileSystemGetVolumeListFunction() override {}
@@ -268,7 +268,7 @@ class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
 class FileSystemGetVolumeListFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.getVolumeList",
-                             FILESYSTEM_GETVOLUMELIST);
+                             FILESYSTEM_GETVOLUMELIST)
   FileSystemGetVolumeListFunction();
 
  protected:

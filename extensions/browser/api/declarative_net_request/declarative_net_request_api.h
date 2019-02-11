@@ -45,7 +45,7 @@ class DeclarativeNetRequestAddAllowedPagesFunction
  public:
   DeclarativeNetRequestAddAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addAllowedPages",
-                             DECLARATIVENETREQUEST_ADDALLOWEDPAGES);
+                             DECLARATIVENETREQUEST_ADDALLOWEDPAGES)
 
  protected:
   ~DeclarativeNetRequestAddAllowedPagesFunction() override;
@@ -64,7 +64,7 @@ class DeclarativeNetRequestRemoveAllowedPagesFunction
  public:
   DeclarativeNetRequestRemoveAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeAllowedPages",
-                             DECLARATIVENETREQUEST_REMOVEALLOWEDPAGES);
+                             DECLARATIVENETREQUEST_REMOVEALLOWEDPAGES)
 
  protected:
   ~DeclarativeNetRequestRemoveAllowedPagesFunction() override;
@@ -83,7 +83,7 @@ class DeclarativeNetRequestGetAllowedPagesFunction
  public:
   DeclarativeNetRequestGetAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getAllowedPages",
-                             DECLARATIVENETREQUEST_GETALLOWEDPAGES);
+                             DECLARATIVENETREQUEST_GETALLOWEDPAGES)
 
  protected:
   ~DeclarativeNetRequestGetAllowedPagesFunction() override;

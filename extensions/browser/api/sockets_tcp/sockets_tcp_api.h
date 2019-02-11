@@ -251,7 +251,7 @@ class SocketsTcpGetSocketsFunction : public TCPSocketAsyncApiFunction {
 
 class SocketsTcpSecureFunction : public TCPSocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("sockets.tcp.secure", SOCKETS_TCP_SECURE);
+  DECLARE_EXTENSION_FUNCTION("sockets.tcp.secure", SOCKETS_TCP_SECURE)
 
   SocketsTcpSecureFunction();
 

@@ -129,7 +129,7 @@ class BluetoothPrivateDisconnectAllFunction
     : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.disconnectAll",
-                             BLUETOOTHPRIVATE_DISCONNECTALL);
+                             BLUETOOTHPRIVATE_DISCONNECTALL)
   BluetoothPrivateDisconnectAllFunction();
 
   // BluetoothExtensionFunction overrides:
@@ -151,7 +151,7 @@ class BluetoothPrivateDisconnectAllFunction
 class BluetoothPrivateForgetDeviceFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.forgetDevice",
-                             BLUETOOTHPRIVATE_FORGETDEVICE);
+                             BLUETOOTHPRIVATE_FORGETDEVICE)
   BluetoothPrivateForgetDeviceFunction();
 
   // BluetoothExtensionFunction overrides:

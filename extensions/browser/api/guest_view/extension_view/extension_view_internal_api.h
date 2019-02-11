@@ -33,7 +33,7 @@ class ExtensionViewInternalLoadSrcFunction
     : public ExtensionViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extensionViewInternal.loadSrc",
-                             EXTENSIONVIEWINTERNAL_LOADSRC);
+                             EXTENSIONVIEWINTERNAL_LOADSRC)
   ExtensionViewInternalLoadSrcFunction() {}
 
  protected:
@@ -50,7 +50,7 @@ class ExtensionViewInternalLoadSrcFunction
 class ExtensionViewInternalParseSrcFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extensionViewInternal.parseSrc",
-                             EXTENSIONVIEWINTERNAL_PARSESRC);
+                             EXTENSIONVIEWINTERNAL_PARSESRC)
   ExtensionViewInternalParseSrcFunction() {}
 
  protected:
