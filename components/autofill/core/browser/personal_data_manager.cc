@@ -533,7 +533,7 @@ void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
   sync_service_ = nullptr;
 }
 
-AccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
+CoreAccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
   // If butter is enabled or the feature to get the Payment Identity from Sync
   // is enabled, return the account of the active signed-in user irrespective of
   // whether they enabled sync or not.

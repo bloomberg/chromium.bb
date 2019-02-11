@@ -55,7 +55,7 @@ void TestSyncService::SetLocalSyncEnabled(bool local_sync_enabled) {
 }
 
 void TestSyncService::SetAuthenticatedAccountInfo(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   account_info_ = account_info;
 }
 
@@ -133,7 +133,7 @@ bool TestSyncService::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
 }
 
-AccountInfo TestSyncService::GetAuthenticatedAccountInfo() const {
+CoreAccountInfo TestSyncService::GetAuthenticatedAccountInfo() const {
   return account_info_;
 }
 

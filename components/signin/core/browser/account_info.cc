@@ -54,6 +54,10 @@ CoreAccountInfo& CoreAccountInfo::operator=(const CoreAccountInfo& other) =
 CoreAccountInfo& CoreAccountInfo::operator=(CoreAccountInfo&& other) noexcept =
     default;
 
+bool CoreAccountInfo::IsEmpty() const {
+  return account_id.empty() && email.empty() && gaia.empty();
+}
+
 AccountInfo::AccountInfo() = default;
 
 AccountInfo::~AccountInfo() = default;
@@ -67,9 +71,9 @@ AccountInfo& AccountInfo::operator=(const AccountInfo& other) = default;
 AccountInfo& AccountInfo::operator=(AccountInfo&& other) noexcept = default;
 
 bool AccountInfo::IsEmpty() const {
-  return account_id.empty() && email.empty() && gaia.empty() &&
-         hosted_domain.empty() && full_name.empty() && given_name.empty() &&
-         locale.empty() && picture_url.empty();
+  return CoreAccountInfo::IsEmpty() && hosted_domain.empty() &&
+         full_name.empty() && given_name.empty() && locale.empty() &&
+         picture_url.empty();
 }
 
 bool AccountInfo::IsValid() const {

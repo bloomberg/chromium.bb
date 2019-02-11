@@ -17,7 +17,7 @@ class AccountInfoGetter {
   // Returns the account info that should be used when communicating with the
   // Payments server. The AccountInfo could be empty if there is no account to
   // be used by the Payments server.
-  virtual AccountInfo GetAccountInfoForPaymentsServer() const = 0;
+  virtual CoreAccountInfo GetAccountInfoForPaymentsServer() const = 0;
 
   // Returns true - When user is both signed-in and enabled sync.
   // Returns false - When user is not signed-in or does not have sync the

@@ -1878,7 +1878,7 @@ void ProfileSyncService::GetAllNodes(
   }
 }
 
-AccountInfo ProfileSyncService::GetAuthenticatedAccountInfo() const {
+CoreAccountInfo ProfileSyncService::GetAuthenticatedAccountInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return auth_manager_->GetActiveAccountInfo().account_info;
 }

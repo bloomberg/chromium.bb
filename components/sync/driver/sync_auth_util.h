@@ -15,9 +15,9 @@ namespace syncer {
 
 struct SyncAccountInfo {
   SyncAccountInfo();
-  SyncAccountInfo(const AccountInfo& account_info, bool is_primary);
+  SyncAccountInfo(const CoreAccountInfo& account_info, bool is_primary);
 
-  AccountInfo account_info;
+  CoreAccountInfo account_info;
   bool is_primary = false;
 };
 

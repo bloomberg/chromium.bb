@@ -34,6 +34,9 @@ struct CoreAccountInfo {
   std::string email;
 
   bool is_under_advanced_protection = false;
+
+  // Returns true if all fields in the account info are empty.
+  bool IsEmpty() const;
 };
 
 // Stores all the information known about an account. Part of the information
