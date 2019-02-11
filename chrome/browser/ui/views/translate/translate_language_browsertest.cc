@@ -74,7 +74,7 @@ using translate::test_utils::GetCurrentModel;
 
 using LanguageInfo = language::UrlLanguageHistogram::LanguageInfo;
 
-};  // namespace
+}  // namespace
 
 class TranslateLanguageBrowserTest : public InProcessBrowserTest {
  public:

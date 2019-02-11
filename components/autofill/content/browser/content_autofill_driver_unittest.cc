@@ -208,7 +208,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetFocusRequiresScroll(bool require) override {}
 
-  void SetQueryPasswordSuggestion(bool query) override{};
+  void SetQueryPasswordSuggestion(bool query) override {}
 
   void GetElementFormAndFieldData(
       const std::vector<std::string>& selectors,

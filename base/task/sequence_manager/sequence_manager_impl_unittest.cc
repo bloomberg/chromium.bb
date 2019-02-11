@@ -137,13 +137,13 @@ class FixtureWithMockTaskRunner final : public Fixture {
 
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner() const {
     return test_task_runner_;
-  };
+  }
 
   SequenceManagerForTest* sequence_manager() const override {
     return sequence_manager_.get();
   }
 
-  void DestroySequenceManager() override { sequence_manager_.reset(); };
+  void DestroySequenceManager() override { sequence_manager_.reset(); }
 
  private:
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
@@ -203,7 +203,7 @@ class FixtureWithWithMockMessagePump : public Fixture {
   void DestroySequenceManager() override {
     pump_ = nullptr;
     sequence_manager_.reset();
-  };
+  }
 
  private:
   MockTimeMessagePump* pump_ = nullptr;

@@ -53,8 +53,8 @@ CreateResultReceiver(Arg* arg_out) {
 template base::Callback<void(SyncStatusCode)>
 AssignAndQuitCallback(base::RunLoop*, SyncStatusCode*);
 
-#define INSTANTIATE_RECEIVER(type)                                  \
-  template base::Callback<void(type)> CreateResultReceiver(type*);
+#define INSTANTIATE_RECEIVER(type) \
+  template base::Callback<void(type)> CreateResultReceiver(type*)
 INSTANTIATE_RECEIVER(SyncStatusCode);
 INSTANTIATE_RECEIVER(google_apis::DriveApiErrorCode);
 INSTANTIATE_RECEIVER(std::unique_ptr<RemoteFileSyncService::OriginStatusMap>);

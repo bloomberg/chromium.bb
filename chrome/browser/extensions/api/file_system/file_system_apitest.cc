@@ -85,7 +85,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
   void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
     PlatformAppBrowserTest::TearDown();
-  };
+  }
 
  protected:
   base::FilePath TempFilePath(const std::string& destination_name,

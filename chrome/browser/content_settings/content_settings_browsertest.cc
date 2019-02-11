@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsStrictSecureCookiesBrowserTest, Cookies) {
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("/setsecurecookie.html"));
   EXPECT_FALSE(GetSiteSettingsCookieContainer(browser())->cookies()->empty());
-};
+}
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
   GURL url("data:text/html,<title>Data URL</title><script>alert(1)</script>");

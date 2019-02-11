@@ -144,7 +144,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
   return std::move(http_response);
 }
 
-};  // namespace
+}  // namespace
 
 ExtensionApiTest::ExtensionApiTest() {
   embedded_test_server()->RegisterRequestHandler(

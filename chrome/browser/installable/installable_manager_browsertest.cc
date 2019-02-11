@@ -80,7 +80,7 @@ class LazyWorkerInstallableManager : public InstallableManager {
   ~LazyWorkerInstallableManager() override {}
 
  protected:
-  void OnWaitingForServiceWorker() override { quit_closure_.Run(); };
+  void OnWaitingForServiceWorker() override { quit_closure_.Run(); }
 
  private:
   base::Closure quit_closure_;

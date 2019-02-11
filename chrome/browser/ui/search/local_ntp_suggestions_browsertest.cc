@@ -37,7 +37,7 @@ class MockSearchSuggestService : public SearchSuggestService {
     return search_suggest_data_;
   }
 
-  void SuggestionsDisplayed() override { impression_count_++; };
+  void SuggestionsDisplayed() override { impression_count_++; }
 
   int impression_count() { return impression_count_; }
 

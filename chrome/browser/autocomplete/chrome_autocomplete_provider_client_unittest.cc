@@ -37,7 +37,7 @@ metrics::OmniboxInputType TestSchemeClassifier::GetInputTypeForScheme(
                         : metrics::OmniboxInputType::URL;
 }
 
-};  // namespace
+}  // namespace
 
 class ChromeAutocompleteProviderClientTest : public testing::Test {
  public:

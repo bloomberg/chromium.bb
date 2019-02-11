@@ -11,7 +11,7 @@ namespace autofill {
 
 class TestAutofillProvider : public AutofillProvider {
  public:
-  ~TestAutofillProvider() override{};
+  ~TestAutofillProvider() override {}
 
   // AutofillProvider:
   void OnQueryFormFieldAutofill(AutofillHandlerProxy* handler,

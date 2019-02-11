@@ -18,7 +18,7 @@ class SecureOriginWhiteListTest : public testing::Test {
   void TearDown() override {
     // Ensure that we reset the whitelisted origins without any flags applied.
     content::ResetSchemesAndOriginsWhitelist();
-  };
+  }
 };
 
 TEST_F(SecureOriginWhiteListTest, UnsafelyTreatInsecureOriginAsSecure) {

@@ -81,7 +81,7 @@ class OpenMenuListener : public views::ContextMenuController {
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override {
     opened_menu_ = true;
-  };
+  }
 
   bool opened_menu() const { return opened_menu_; }
 

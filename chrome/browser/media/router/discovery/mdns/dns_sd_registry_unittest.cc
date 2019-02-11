@@ -54,7 +54,7 @@ class TestDnsSdRegistry : public DnsSdRegistry {
     MockDnsSdDeviceLister* lister = new MockDnsSdDeviceLister();
     listers_[service_type] = lister;
     return lister;
-  };
+  }
 
  private:
   std::map<std::string, MockDnsSdDeviceLister*> listers_;

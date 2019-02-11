@@ -518,7 +518,7 @@ const char kTestPagePath[] = "/drag_and_drop/page.html";
 class DragAndDropBrowserTest : public InProcessBrowserTest,
                                public testing::WithParamInterface<bool> {
  public:
-  DragAndDropBrowserTest(){};
+  DragAndDropBrowserTest() {}
 
   struct DragImageBetweenFrames_TestState;
   void DragImageBetweenFrames_Step2(DragImageBetweenFrames_TestState*);

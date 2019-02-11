@@ -46,7 +46,7 @@ const char kOnSpeak[] = "ttsEngine.onSpeak";
 const char kOnStop[] = "ttsEngine.onStop";
 const char kOnPause[] = "ttsEngine.onPause";
 const char kOnResume[] = "ttsEngine.onResume";
-};  // namespace tts_engine_events
+}  // namespace tts_engine_events
 
 namespace {
 

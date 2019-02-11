@@ -10,7 +10,7 @@
 
 namespace base {
 class ListValue;
-};
+}
 
 class BookmarksMessageHandler : public content::WebUIMessageHandler {
  public:

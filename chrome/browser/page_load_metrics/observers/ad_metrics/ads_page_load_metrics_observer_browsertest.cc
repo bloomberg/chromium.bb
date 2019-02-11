@@ -470,7 +470,7 @@ class AdsPageLoadMetricsTestWaiter
     }
     return num_ad_resources >= expected_minimum_num_ad_resources_ &&
            PageLoadMetricsTestWaiter::ExpectationsSatisfied();
-  };
+  }
 
  private:
   int expected_minimum_num_ad_resources_ = 0;

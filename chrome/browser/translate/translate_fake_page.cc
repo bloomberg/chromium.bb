@@ -42,7 +42,7 @@ FakePageImpl::FakePageImpl()
     : called_translate_(false),
       called_revert_translation_(false),
       binding_(this) {}
-FakePageImpl::~FakePageImpl(){};
+FakePageImpl::~FakePageImpl() {}
 
 translate::mojom::PagePtr FakePageImpl::BindToNewPagePtr() {
   binding_.Close();

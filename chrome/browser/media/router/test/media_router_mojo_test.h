@@ -233,7 +233,7 @@ class MockMediaController : public mojom::MediaController,
       mojom::HangoutsMediaRouteControllerRequest controller_request) override {
     hangouts_binding_.Bind(std::move(controller_request));
     ConnectHangoutsMediaRouteController();
-  };
+  }
   MOCK_METHOD0(ConnectHangoutsMediaRouteController, void());
   MOCK_METHOD1(SetLocalPresent, void(bool local_present));
 

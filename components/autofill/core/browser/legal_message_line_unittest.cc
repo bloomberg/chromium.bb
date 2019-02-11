@@ -114,7 +114,7 @@ TEST_P(LegalMessageLineTest, Parsing) {
                           GetParam().escape_apostrophes);
 
   EXPECT_EQ(GetParam().expected_lines, actual_lines);
-};
+}
 
 INSTANTIATE_TEST_CASE_P(
     TestCases,

@@ -168,7 +168,7 @@ bool SupportsRegistryValidation() {
           chrome_prefs::internals::                                            \
               kSettingsEnforcementGroupEnforceAlwaysWithDSE,                   \
           chrome_prefs::internals::                                            \
-              kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
+              kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE))
 
 // A base fixture designed such that implementations do two things:
 //  1) Override all three pure-virtual methods below to setup, attack, and

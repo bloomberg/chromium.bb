@@ -1937,7 +1937,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                                                                          \
   INSTANTIATE_TEST_SUITE_P(                                              \
       IncognitoProfileMainNetworkContext, TestFixture,                   \
-      ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile)));
+      ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile)))
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(

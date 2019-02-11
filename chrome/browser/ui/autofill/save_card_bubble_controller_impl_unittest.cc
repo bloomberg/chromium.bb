@@ -47,7 +47,7 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
 
   // Overriding because parent function requires a browser window to redirect
   // properly, which is not available in unit tests.
-  void ShowPaymentsSettingsPage() override{};
+  void ShowPaymentsSettingsPage() override {}
 
   explicit TestSaveCardBubbleControllerImpl(content::WebContents* web_contents)
       : SaveCardBubbleControllerImpl(web_contents) {}

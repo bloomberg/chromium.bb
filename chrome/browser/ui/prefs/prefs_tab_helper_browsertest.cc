@@ -76,6 +76,4 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, WebPrefs) {
             prefs->GetString(prefs::kWebKitStandardFontFamilyKorean));
   EXPECT_EQ("Tinos", prefs->GetString(prefs::kWebKitStandardFontFamily));
   EXPECT_EQ("DejaVu Sans", prefs->GetString(prefs::kWebKitSansSerifFontFamily));
-};
-
-
+}

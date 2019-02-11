@@ -369,7 +369,7 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
 
   base::MockCallback<base::RepeatingCallback<void(bool)>>* active_callback() {
     return &active_callback_;
-  };
+  }
 
  private:
   autofill::TestAutofillClock test_clock_;

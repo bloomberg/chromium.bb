@@ -2825,7 +2825,7 @@ MATCHER_P2(MatchesShader, flags, scale, "") {
   EXPECT_EQ(flags.getShader()->ty(), xy[1]);
 
   return true;
-};
+}
 
 TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   std::vector<SkSize> src_rect_offset = {

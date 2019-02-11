@@ -100,7 +100,7 @@ const char kTypeErrorResult[] = "TypeError";
 #define EXPECT_WV_PROPRIETARY EXPECT_UNSUPPORTED
 #endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
-};  // namespace
+}  // namespace
 
 class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
  protected:
