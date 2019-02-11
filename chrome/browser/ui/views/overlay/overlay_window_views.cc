@@ -590,17 +590,15 @@ void OverlayWindowViews::Close() {
   views::Widget::Close();
 }
 
-void OverlayWindowViews::Show() {
-#if defined(OS_CHROMEOS)
+void OverlayWindowViews::ShowInactive() {
   views::Widget::ShowInactive();
+#if defined(OS_CHROMEOS)
   // For rounded corners.
   if (ash::features::IsPipRoundedCornersEnabled()) {
     decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
         GetNativeWindow(), GetNativeWindow(), GetRootView()->layer(),
         ash::kPipRoundedCornerRadius);
   }
-#else
-  views::Widget::Show();
 #endif
 
   // If this is not the first time the window is shown, this will be a no-op.
