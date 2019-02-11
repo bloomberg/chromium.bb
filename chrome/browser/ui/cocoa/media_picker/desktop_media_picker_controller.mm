@@ -63,9 +63,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
 @interface DesktopMediaPickerController ()
 
 // Populate the window with controls and views.
-- (void)initializeContentsWithAppName:(const base::string16&)appName
-                           targetName:(const base::string16&)targetName
-                         requestAudio:(bool)requestAudio;
+- (void)initializeContentsWithParams:(const DesktopMediaPicker::Params&)params;
 
 // Add |NSSegmentControl| for source type switch.
 - (void)createTypeButtonAtOrigin:(NSPoint)origin;
@@ -113,11 +111,8 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
 
 - (id)initWithSourceLists:
           (std::vector<std::unique_ptr<DesktopMediaList>>)sourceLists
-                   parent:(NSWindow*)parent
                  callback:(const DesktopMediaPicker::DoneCallback&)callback
-                  appName:(const base::string16&)appName
-               targetName:(const base::string16&)targetName
-             requestAudio:(bool)requestAudio {
+                   params:(const DesktopMediaPicker::Params&)params {
   const NSUInteger kStyleMask =
       NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window(
@@ -125,8 +120,8 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
                                   styleMask:kStyleMask
                                     backing:NSBackingStoreBuffered
                                       defer:NO]);
-
   if ((self = [super initWithWindow:window])) {
+    NSWindow* parent = params.parent.GetNativeNSWindow();
     [parent addChildWindow:window ordered:NSWindowAbove];
     [window setDelegate:self];
 
@@ -150,9 +145,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
       }
     }
 
-    [self initializeContentsWithAppName:appName
-                             targetName:targetName
-                           requestAudio:requestAudio];
+    [self initializeContentsWithParams:params];
     doneCallback_ = callback;
 
     bridge_.reset(new DesktopMediaPickerBridge(self));
@@ -173,9 +166,7 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
   [super dealloc];
 }
 
-- (void)initializeContentsWithAppName:(const base::string16&)appName
-                           targetName:(const base::string16&)targetName
-                         requestAudio:(bool)requestAudio {
+- (void)initializeContentsWithParams:(const DesktopMediaPicker::Params&)params {
   // Use flipped coordinates to facilitate manual layout.
   base::scoped_nsobject<FlippedView> content(
       [[FlippedView alloc] initWithFrame:NSZeroRect]);
@@ -189,12 +180,13 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
 
   // Set the dialog's description.
   NSString* descriptionText;
-  if (appName == targetName) {
-    descriptionText = l10n_util::GetNSStringF(
-        IDS_DESKTOP_MEDIA_PICKER_TEXT, appName);
+  if (params.app_name == params.target_name) {
+    descriptionText =
+        l10n_util::GetNSStringF(IDS_DESKTOP_MEDIA_PICKER_TEXT, params.app_name);
   } else {
-    descriptionText = l10n_util::GetNSStringF(
-        IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED, appName, targetName);
+    descriptionText =
+        l10n_util::GetNSStringF(IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED,
+                                params.app_name, params.target_name);
   }
   NSTextField* description =
       [self createTextFieldWithText:descriptionText
@@ -211,10 +203,15 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
   origin.y +=
       NSHeight([imageBrowserScroll_ frame]) + kDesktopMediaPickerControlSpacing;
 
-  if (requestAudio) {
+  if (params.request_audio) {
     [self createAudioCheckboxAtOrigin:origin];
     origin.y += NSHeight([audioShareCheckbox_ frame]) +
                 kDesktopMediaPickerControlSpacing;
+    if (params.approve_audio_by_default) {
+      [audioShareCheckbox_ setState:NSOnState];
+    } else {
+      [audioShareCheckbox_ setState:NSOffState];
+    }
   }
 
   [self createActionButtonsAtOrigin:origin];
@@ -367,7 +364,6 @@ NSString* const kDesktopMediaPickerTitleId = @"title";
   [audioShareCheckbox_ setFrameOrigin:origin];
   [audioShareCheckbox_ setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
   [audioShareCheckbox_ setButtonType:NSSwitchButton];
-  [audioShareCheckbox_ setState:NSOnState];
   [audioShareCheckbox_
       setTitle:l10n_util::GetNSString(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE)];
   [audioShareCheckbox_ sizeToFit];

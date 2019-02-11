@@ -198,7 +198,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   if (params.request_audio) {
     audio_share_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
-    audio_share_checkbox_->SetChecked(true);
+    audio_share_checkbox_->SetChecked(params.approve_audio_by_default);
   }
 
   // Focus on the first non-null media_list.
