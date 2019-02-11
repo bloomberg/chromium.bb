@@ -561,10 +561,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // the constructor.
   void InitializeHistograms();
 
-  // The resolution of our time isn't enough, so we do something
-  // ugly and increment when we've seen the same time twice.
-  base::Time CurrentTime();
-
   // Defers the callback until the full coookie database has been loaded. If
   // it's already been loaded, runs the callback synchronously.
   void DoCookieCallback(base::OnceClosure callback);
@@ -623,8 +619,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   NetLogWithSource net_log_;
 
   scoped_refptr<PersistentCookieStore> store_;
-
-  base::Time last_time_seen_;
 
   // Minimum delay after updating a cookie's LastAccessDate before we will
   // update it again.
