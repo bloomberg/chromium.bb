@@ -794,7 +794,7 @@ TEST_P(PaintAndRasterInvalidationTest,
             &child_layout_view->ContainerForPaintInvalidation());
   EXPECT_EQ(LayoutRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
-};
+}
 
 TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EnableCompositing();
@@ -844,7 +844,7 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EXPECT_FALSE(target->Parent()->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
-};
+}
 
 TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   EnableCompositing();
@@ -945,7 +945,7 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
-};
+}
 
 TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   SetUpHTML(*this);

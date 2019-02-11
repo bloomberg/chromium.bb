@@ -36,7 +36,7 @@ class AppliedDecorationPainter final {
         decoration_info_(decoration_info),
         decoration_(decoration),
         double_offset_(double_offset),
-        wavy_offset_factor_(wavy_offset_factor){};
+        wavy_offset_factor_(wavy_offset_factor) {}
 
   void Paint();
   FloatRect Bounds();

@@ -66,7 +66,7 @@ class LayoutObjectFilter {
   explicit LayoutObjectFilter(const LayoutObject* layout_object)
       : layout_object_(layout_object) {
     DCHECK(layout_object);
-  };
+  }
   bool IsCollectible(const NGPaintFragment* fragment) const {
     return fragment->GetLayoutObject() == layout_object_;
   }
