@@ -14,6 +14,7 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/mus/text_input_client_impl.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/mojo/ime_type_converters.h"
@@ -58,6 +59,20 @@ ws::mojom::TextInputClientDataPtr GetTextInputClientData(
   gfx::Range editable_selection_range;
   if (client->GetEditableSelectionRange(&editable_selection_range))
     data->editable_selection_range = editable_selection_range;
+
+  const size_t kFirstCommand =
+      static_cast<size_t>(ui::TextEditCommand::FIRST_COMMAND);
+  static_assert(kFirstCommand == 0,
+                "ui::TextEditCommand is used as index to a vector. "
+                "FIRST_COMMAND must have a numeric value of 0.");
+  const size_t kLastCommand =
+      static_cast<size_t>(ui::TextEditCommand::LAST_COMMAND);
+  std::vector<bool> edit_command_enabled(kLastCommand);
+  for (size_t i = kFirstCommand; i < kLastCommand; ++i) {
+    edit_command_enabled[i] =
+        client->IsTextEditCommandEnabled(static_cast<ui::TextEditCommand>(i));
+  }
+  data->edit_command_enabled = std::move(edit_command_enabled);
 
   return data;
 }
@@ -138,6 +153,8 @@ void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
       client->GetTextInputType(), client->GetTextInputMode(),
       client->GetTextDirection(), client->GetTextInputFlags());
   input_method_->OnTextInputStateChanged(std::move(text_input_state));
+
+  OnTextInputClientDataChanged(client);
 }
 
 void InputMethodMus::OnCaretBoundsChanged(const ui::TextInputClient* client) {

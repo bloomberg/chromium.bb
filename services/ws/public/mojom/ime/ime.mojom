@@ -128,6 +128,11 @@ struct TextInputClientData {
   bool has_composition_text;
   gfx.mojom.Range? composition_text_range;
   gfx.mojom.Range? editable_selection_range;
+  // Contains a boolean indicating the enabled state of each of the
+  // ui::TextEditCommands, where the index is the command. For example,
+  // edit_command_enabled[TextCommand::DELETE_BACKWARD] gives the enabled
+  // state of TextCommand::DELETE_BACKWARD.
+  array<bool>? edit_command_enabled;
 };
 
 // Represents how a text client gets focused. Corresponds to
