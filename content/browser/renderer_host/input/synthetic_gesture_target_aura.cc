@@ -188,6 +188,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
 
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());
+  mouse_event.SetClickCount(web_mouse_event.click_count);
   ui::EventDispatchDetails details =
       event_injector_.Inject(window->GetHost(), &mouse_event);
   if (details.dispatcher_destroyed)

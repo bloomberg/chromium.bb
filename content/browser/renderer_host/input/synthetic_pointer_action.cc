@@ -76,7 +76,7 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
         synthetic_pointer_driver_->Press(
             param.position().x(), param.position().y(), param.pointer_id(),
             param.button(), param.key_modifiers(), param.width(),
-            param.height(), param.rotation_angle(), param.force());
+            param.height(), param.rotation_angle(), param.force(), timestamp);
         break;
       case SyntheticPointerActionParams::PointerActionType::MOVE:
         synthetic_pointer_driver_->Move(
