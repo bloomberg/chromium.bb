@@ -80,8 +80,14 @@ gfx::Matrix3F LeastSquaresPredictor::GetXMatrix() const {
 }
 
 bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
+                                               bool is_resampling,
                                                InputData* result) const {
-  if (!HasPrediction() || predict_time - time_.back() > kMaxResampleTime)
+  if (!HasPrediction())
+    return false;
+
+  // For resampling, we don't want to predict too far away because the result
+  // will likely be inaccurate in that case.
+  if (is_resampling && predict_time - time_.back() > kMaxResampleTime)
     return false;
 
   gfx::Matrix3F time_matrix = GetXMatrix();

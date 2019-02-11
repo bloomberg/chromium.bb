@@ -125,7 +125,8 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   gfx::PointF predicted_accumulated_delta = current_accumulated_delta_;
   InputPredictor::InputData result;
   if (predictor_->HasPrediction() &&
-      predictor_->GeneratePrediction(time_stamp, &result)) {
+      predictor_->GeneratePrediction(time_stamp, true /* is_resampling */,
+                                     &result)) {
     predicted_accumulated_delta = result.pos;
     gesture_event->SetTimeStamp(time_stamp);
   }
@@ -168,7 +169,8 @@ void ScrollPredictor::ComputeAccuracy(const WebScopedInputEvent& event) {
   temporary_accumulated_delta_.Offset(gesture_event.data.scroll_update.delta_x,
                                       gesture_event.data.scroll_update.delta_y);
   if (predictor_->HasPrediction() &&
-      predictor_->GeneratePrediction(event->TimeStamp(), &predict_result)) {
+      predictor_->GeneratePrediction(
+          event->TimeStamp(), false /* is_resampling */, &predict_result)) {
     float distance =
         (predict_result.pos - gfx::PointF(temporary_accumulated_delta_))
             .Length();
