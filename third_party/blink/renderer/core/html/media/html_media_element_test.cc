@@ -476,10 +476,17 @@ TEST_P(HTMLMediaElementTest, ContextPaused) {
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   EXPECT_FALSE(Media()->paused());
-  GetExecutionContext()->PausePausableObjects(PauseState::kFrozen);
+  GetExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kFrozenAutoResumeMedia);
   EXPECT_TRUE(Media()->paused());
-  GetExecutionContext()->UnpausePausableObjects();
+  GetExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kRunning);
   EXPECT_FALSE(Media()->paused());
+  GetExecutionContext()->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  EXPECT_TRUE(Media()->paused());
+  GetExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kRunning);
+  EXPECT_TRUE(Media()->paused());
 }
 
 }  // namespace blink

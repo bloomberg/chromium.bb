@@ -1754,14 +1754,9 @@ void LocalFrame::ForciblyPurgeV8Memory() {
 }
 
 void LocalFrame::PauseContext() {
-  // TODO(dtapuska): Eventually get rid of PauseState.
-  PauseState pause_state =
-      lifecycle_state_ == mojom::FrameLifecycleState::kFrozenAutoResumeMedia
-          ? PauseState::kFrozen
-          : PauseState::kPaused;
   if (Document* document = GetDocument()) {
     document->Fetcher()->SetDefersLoading(true);
-    document->PauseScheduledTasks(pause_state);
+    document->SetLifecycleState(lifecycle_state_);
   }
   Loader().SetDefersLoading(true);
   GetFrameScheduler()->SetPaused(true);
@@ -1770,7 +1765,7 @@ void LocalFrame::PauseContext() {
 void LocalFrame::UnpauseContext() {
   if (Document* document = GetDocument()) {
     document->Fetcher()->SetDefersLoading(false);
-    document->UnpauseScheduledTasks();
+    document->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
   }
   Loader().SetDefersLoading(false);
   GetFrameScheduler()->SetPaused(false);

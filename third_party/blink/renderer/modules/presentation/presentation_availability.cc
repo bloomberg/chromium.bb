@@ -24,7 +24,7 @@ PresentationAvailability* PresentationAvailability::Take(
   PresentationAvailability* presentation_availability =
       MakeGarbageCollected<PresentationAvailability>(
           resolver->GetExecutionContext(), urls, value);
-  presentation_availability->PauseIfNeeded();
+  presentation_availability->UpdateStateIfNeeded();
   presentation_availability->UpdateListening();
   return presentation_availability;
 }
@@ -33,7 +33,7 @@ PresentationAvailability::PresentationAvailability(
     ExecutionContext* execution_context,
     const WTF::Vector<KURL>& urls,
     bool value)
-    : PausableObject(execution_context),
+    : ContextLifecycleStateObserver(execution_context),
       PageVisibilityObserver(To<Document>(execution_context)->GetPage()),
       urls_(urls),
       value_(value),
@@ -48,7 +48,7 @@ const AtomicString& PresentationAvailability::InterfaceName() const {
 }
 
 ExecutionContext* PresentationAvailability::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void PresentationAvailability::AddedEventListener(
@@ -76,12 +76,12 @@ bool PresentationAvailability::HasPendingActivity() const {
   return state_ != State::kInactive;
 }
 
-void PresentationAvailability::ContextUnpaused() {
-  SetState(State::kActive);
-}
-
-void PresentationAvailability::ContextPaused(PauseState) {
-  SetState(State::kSuspended);
+void PresentationAvailability::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    SetState(State::kActive);
+  else
+    SetState(State::kSuspended);
 }
 
 void PresentationAvailability::ContextDestroyed(ExecutionContext*) {
@@ -123,7 +123,7 @@ bool PresentationAvailability::value() const {
 void PresentationAvailability::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

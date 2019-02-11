@@ -90,7 +90,7 @@ void VRController::OnRequestDeviceReturned(
   device->GetImmersiveVRDisplayInfo(WTF::Bind(
       &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
 
-  display_ = MakeGarbageCollected<VRDisplay>(navigator_vr_, std::move(device));
+  display_ = VRDisplay::Create(navigator_vr_, std::move(device));
 
   if (pending_listening_for_activate_) {
     SetListeningForActivate(pending_listening_for_activate_);

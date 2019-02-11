@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/execution_context/pause_state.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"

@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -25,13 +25,16 @@ class ThreadScheduler;
 
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollectedFinalized<ScriptedIdleTaskController>,
-      public PausableObject,
+      public ContextLifecycleStateObserver,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
  public:
   static ScriptedIdleTaskController* Create(ExecutionContext* context) {
-    return MakeGarbageCollected<ScriptedIdleTaskController>(context);
+    ScriptedIdleTaskController* controller =
+        MakeGarbageCollected<ScriptedIdleTaskController>(context);
+    controller->UpdateStateIfNeeded();
+    return controller;
   }
 
   explicit ScriptedIdleTaskController(ExecutionContext*);
@@ -76,10 +79,9 @@ class CORE_EXPORT ScriptedIdleTaskController
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);
   void CancelCallback(CallbackId);
 
-  // PausableObject interface.
+  // ContextLifecycleStateObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
-  void ContextPaused(PauseState) override;
-  void ContextUnpaused() override;
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   void CallbackFired(CallbackId,
                      TimeTicks deadline,
@@ -88,6 +90,8 @@ class CORE_EXPORT ScriptedIdleTaskController
  private:
   friend class internal::IdleRequestCallbackWrapper;
 
+  void ContextPaused();
+  void ContextUnpaused();
   void ScheduleCallback(scoped_refptr<internal::IdleRequestCallbackWrapper>,
                         long long timeout_millis);
 

@@ -24,60 +24,54 @@
  *
  */
 
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 
-PausableObject::PausableObject(ExecutionContext* execution_context)
-    : ContextLifecycleObserver(execution_context, kPausableObjectType)
-#if DCHECK_IS_ON()
-      ,
-      pause_if_needed_called_(false)
-#endif
-{
+ContextLifecycleStateObserver::ContextLifecycleStateObserver(
+    ExecutionContext* execution_context)
+    : ContextLifecycleObserver(execution_context, kStateObjectType) {
   DCHECK(!execution_context || execution_context->IsContextThread());
-  InstanceCounters::IncrementCounter(InstanceCounters::kPausableObjectCounter);
+  InstanceCounters::IncrementCounter(
+      InstanceCounters::kContextLifecycleStateObserverCounter);
 }
 
-PausableObject::~PausableObject() {
-  InstanceCounters::DecrementCounter(InstanceCounters::kPausableObjectCounter);
+ContextLifecycleStateObserver::~ContextLifecycleStateObserver() {
+  InstanceCounters::DecrementCounter(
+      InstanceCounters::kContextLifecycleStateObserverCounter);
 
 #if DCHECK_IS_ON()
-  DCHECK(pause_if_needed_called_);
+  DCHECK(update_state_if_needed_called_);
 #endif
 }
 
-void PausableObject::PauseIfNeeded() {
+void ContextLifecycleStateObserver::UpdateStateIfNeeded() {
 #if DCHECK_IS_ON()
-  DCHECK(!pause_if_needed_called_);
-  pause_if_needed_called_ = true;
+  DCHECK(!update_state_if_needed_called_);
+  update_state_if_needed_called_ = true;
 #endif
-  if (ExecutionContext* context = GetExecutionContext())
-    context->PausePausableObjectIfNeeded(this);
+  if (ExecutionContext* context = GetExecutionContext()) {
+#if DCHECK_IS_ON()
+    DCHECK(context->Contains(this));
+#endif
+    mojom::FrameLifecycleState pause_state = context->ContextPauseState();
+    if (pause_state != mojom::FrameLifecycleState::kRunning)
+      ContextLifecycleStateChanged(pause_state);
+  }
 }
 
-void PausableObject::ContextPaused(PauseState) {}
-
-void PausableObject::ContextUnpaused() {}
-
-void PausableObject::DidMoveToNewExecutionContext(ExecutionContext* context) {
+void ContextLifecycleStateObserver::DidMoveToNewExecutionContext(
+    ExecutionContext* context) {
   SetContext(context);
 
   if (context->IsContextDestroyed()) {
     ContextDestroyed(context);
     return;
   }
-
-  base::Optional<PauseState> pause_state = context->ContextPauseState();
-  if (pause_state) {
-    ContextPaused(pause_state.value());
-    return;
-  }
-
-  ContextUnpaused();
+  ContextLifecycleStateChanged(context->ContextPauseState());
 }
 
 }  // namespace blink

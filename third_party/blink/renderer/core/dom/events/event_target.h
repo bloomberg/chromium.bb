@@ -108,8 +108,8 @@ class CORE_EXPORT EventTargetData final
 //   file.
 // - Override EventTarget::interfaceName() and getExecutionContext(). The former
 //   will typically return EventTargetNames::YourClassName. The latter will
-//   return PausableObject::executionContext (if you are an
-//   PausableObject)
+//   return ContextLifecycleObserver::executionContext (if you are an
+//   ContextLifecycleObserver)
 //   or the document you're in.
 // - Your trace() method will need to call EventTargetWithInlineData::trace
 //   depending on the base class of your class.

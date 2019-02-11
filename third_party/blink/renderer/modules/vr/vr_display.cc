@@ -127,13 +127,11 @@ void SessionClientBinding::Trace(blink::Visitor* visitor) {
 
 VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
                      device::mojom::blink::XRDevicePtr device)
-    : PausableObject(navigator_vr->GetDocument()),
+    : ContextLifecycleStateObserver(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       capabilities_(MakeGarbageCollected<VRDisplayCapabilities>()),
       device_ptr_(std::move(device)),
       display_client_binding_(this) {
-  PauseIfNeeded();  // Initialize SuspendabaleObject.
-
   // Request a non-immersive session immediately as WebVR 1.1 expects to be able
   // to get non-immersive poses as soon as the display is returned.
   device::mojom::blink::XRSessionOptionsPtr options =
@@ -151,8 +149,9 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
 
 VRDisplay::~VRDisplay() = default;
 
-void VRDisplay::ContextUnpaused() {
-  RequestVSync();
+void VRDisplay::ContextLifecycleStateChanged(mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    RequestVSync();
 }
 
 VRController* VRDisplay::Controller() {
@@ -1160,7 +1159,7 @@ const AtomicString& VRDisplay::InterfaceName() const {
 }
 
 void VRDisplay::ContextDestroyed(ExecutionContext* context) {
-  PausableObject::ContextDestroyed(context);
+  ContextLifecycleStateObserver::ContextDestroyed(context);
   ForceExitPresent();
   scripted_animation_controller_.Clear();
 }

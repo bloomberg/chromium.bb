@@ -236,7 +236,7 @@ static void SetInvalidStateErrorForSendMethod(ExceptionState& exception_state) {
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
-    : PausableObject(context),
+    : ContextLifecycleStateObserver(context),
       state_(kConnecting),
       buffered_amount_(0),
       consumed_buffered_amount_(0),
@@ -278,7 +278,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
   }
 
   DOMWebSocket* websocket = MakeGarbageCollected<DOMWebSocket>(context);
-  websocket->PauseIfNeeded();
+  websocket->UpdateStateIfNeeded();
 
   if (protocols.IsNull()) {
     Vector<String> protocols_vector;
@@ -672,7 +672,7 @@ const AtomicString& DOMWebSocket::InterfaceName() const {
 }
 
 ExecutionContext* DOMWebSocket::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
@@ -690,17 +690,18 @@ bool DOMWebSocket::HasPendingActivity() const {
   return channel_ || !event_queue_->IsEmpty();
 }
 
-void DOMWebSocket::ContextPaused(PauseState) {
-  event_queue_->Pause();
-}
+void DOMWebSocket::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning) {
+    event_queue_->Unpause();
 
-void DOMWebSocket::ContextUnpaused() {
-  event_queue_->Unpause();
-
-  // If |consumed_buffered_amount_| was updated while the object was paused then
-  // the changes to |buffered_amount_| will not yet have been applied. Post
-  // another task to update it.
-  PostBufferedAmountUpdateTask();
+    // If |consumed_buffered_amount_| was updated while the object was paused
+    // then the changes to |buffered_amount_| will not yet have been applied.
+    // Post another task to update it.
+    PostBufferedAmountUpdateTask();
+  } else {
+    event_queue_->Pause();
+  }
 }
 
 void DOMWebSocket::DidConnect(const String& subprotocol,
@@ -896,7 +897,7 @@ void DOMWebSocket::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_queue_);
   WebSocketChannelClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

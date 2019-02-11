@@ -48,9 +48,9 @@ ScriptPromise IdleManager::query(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::IdleMonitorPtr monitor_ptr;
-  IdleStatus* status = MakeGarbageCollected<IdleStatus>(
-      ExecutionContext::From(script_state), threshold_seconds,
-      mojo::MakeRequest(&monitor_ptr));
+  IdleStatus* status =
+      IdleStatus::Create(ExecutionContext::From(script_state),
+                         threshold_seconds, mojo::MakeRequest(&monitor_ptr));
 
   requests_.insert(resolver);
   service_->AddMonitor(

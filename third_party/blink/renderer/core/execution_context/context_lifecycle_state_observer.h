@@ -24,60 +24,62 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
 
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-// A PausableObject responds to situations where Blink is running a nested event
-// loop. At such times, the page should be responsive, but only in a limited
-// sense: the browser should redraw the page as necessary, but should not run
-// timer callbacks, finish promise resolution, fire events, or perform other
-// activity, especially activity which may run script.
+// A ContextLifecycleStateObserver responds to situations where Blink is
+// pausing a context or freezing a frame.
 //
-// Pausing can happen in cases such as:
+// Context lifecycle state changes can happen in cases such as:
 // - modal dialogs during script execution (e.g. window.alert, window.print)
 // - script execution stopped at a debugger breakpoint
+// - frozen contexts (resource coordinator background tasks, iframe freezing)
 //
 // The scheduler will automatically suspend certain task queues for the duration
 // that the page is paused.
 //
 // Objects with asynchronous activity, especially activity that may have an
 // observable effect on web-visible state, on should suspend that activity while
-// the page is paused by overriding ContextPaused() and ContextUnpaused().
+// the page is paused by overriding ContextLifecycleStateChanged().
 //
 // https://html.spec.whatwg.org/multipage/webappapis.html#pause
-class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
+// https://wicg.github.io/page-lifecycle/spec.html
+class CORE_EXPORT ContextLifecycleStateObserver
+    : public ContextLifecycleObserver {
  public:
-  explicit PausableObject(ExecutionContext*);
+  explicit ContextLifecycleStateObserver(ExecutionContext*);
 
-  // PauseIfNeeded() should be called exactly once after object construction
-  // to synchronize the suspend state with that in ExecutionContext.
-  void PauseIfNeeded();
+  // UpdateStateIfNeeded() should be called exactly once after object
+  // construction to synchronize the suspend state with that in
+  // ExecutionContext.
+  void UpdateStateIfNeeded();
 #if DCHECK_IS_ON()
-  bool PauseIfNeededCalled() const { return pause_if_needed_called_; }
+  bool UpdateStateIfNeededCalled() const {
+    return update_state_if_needed_called_;
+  }
 #endif
 
-  // These methods have an empty default implementation so that subclasses
-  // which don't need special treatment can skip implementation.
-  virtual void ContextPaused(PauseState);
-  virtual void ContextUnpaused();
+  virtual void ContextLifecycleStateChanged(
+      mojom::FrameLifecycleState state) = 0;
 
   void DidMoveToNewExecutionContext(ExecutionContext*);
 
  protected:
-  virtual ~PausableObject();
+  virtual ~ContextLifecycleStateObserver();
 
  private:
 #if DCHECK_IS_ON()
-  bool pause_if_needed_called_;
+  bool update_state_if_needed_called_ = false;
 #endif
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_

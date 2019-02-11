@@ -2844,7 +2844,7 @@ void Document::Shutdown() {
 
   probe::documentDetached(this);
 
-  // FIXME: consider using PausableObject.
+  // FIXME: consider using ContextLifecycleStateObserver.
   if (scripted_animation_controller_)
     scripted_animation_controller_->ClearDocumentPointer();
   scripted_animation_controller_.Clear();
@@ -7045,7 +7045,8 @@ ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
     // don't have an attached frame and if execution context is destroyed.
     if (!frame_ || !frame_->IsAttached() ||
         ExecutionContext::IsContextDestroyed()) {
-      scripted_idle_task_controller_->ContextPaused(PauseState::kFrozen);
+      scripted_idle_task_controller_->ContextLifecycleStateChanged(
+          mojom::FrameLifecycleState::kFrozen);
     }
   }
   return *scripted_idle_task_controller_;

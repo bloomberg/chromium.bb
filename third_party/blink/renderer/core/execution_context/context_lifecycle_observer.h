@@ -54,8 +54,8 @@ class LocalFrame;
 //   objects, it should be a PausableObject.
 // * If an object additionally must suspend its activity during pause (see
 //   context_lifecycle_state_observer.h), it should be a
-//   PausableObject (and thus, transitively, also a
-//   PausableObject).
+//   ContextLifecycleStateObserver (and thus, transitively, also a
+//   ContextLifecycleObserver).
 //
 // If your object has activity which requires that it be kept alive, even if no
 // other object has a reference to it, consider whether your object should also
@@ -98,7 +98,7 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 //
 // If there is ongoing activity associated with the object, consider whether it
 // needs to be paused when execution is suspended (see
-// PausableObject).
+// ContextLifecycleStateObserver).
 //
 // If none of the above applies, prefer the simpler ContextClient.
 class CORE_EXPORT ContextLifecycleObserver
@@ -116,7 +116,7 @@ class CORE_EXPORT ContextLifecycleObserver
 
   enum Type {
     kGenericType,
-    kPausableObjectType,
+    kStateObjectType,
   };
 
   Type ObserverType() const { return observer_type_; }

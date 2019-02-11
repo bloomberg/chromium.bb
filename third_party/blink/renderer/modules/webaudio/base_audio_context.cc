@@ -87,7 +87,7 @@ BaseAudioContext* BaseAudioContext::Create(
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document,
                                    enum ContextType context_type)
-    : PausableObject(document),
+    : ContextLifecycleStateObserver(document),
       destination_node_(nullptr),
       uuid_(CreateCanonicalUUIDString()),
       is_cleared_(false),
@@ -176,13 +176,13 @@ void BaseAudioContext::Uninitialize() {
   DCHECK_EQ(active_source_nodes_.size(), 0u);
 }
 
-void BaseAudioContext::ContextPaused(PauseState pause_state) {
-  if (pause_state == PauseState::kFrozen)
+void BaseAudioContext::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    destination()->GetAudioDestinationHandler().Resume();
+  else if (state == mojom::FrameLifecycleState::kFrozen ||
+           state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia)
     destination()->GetAudioDestinationHandler().Pause();
-}
-
-void BaseAudioContext::ContextUnpaused() {
-  destination()->GetAudioDestinationHandler().Resume();
 }
 
 void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
@@ -908,7 +908,7 @@ const AtomicString& BaseAudioContext::InterfaceName() const {
 }
 
 ExecutionContext* BaseAudioContext::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void BaseAudioContext::StartRendering() {
@@ -936,7 +936,7 @@ void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(periodic_wave_triangle_);
   visitor->Trace(audio_worklet_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 const SecurityOrigin* BaseAudioContext::GetSecurityOrigin() const {

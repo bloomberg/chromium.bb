@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 
 #include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,74 +38,80 @@
 
 namespace blink {
 
-class MockPausableObject final
-    : public GarbageCollectedFinalized<MockPausableObject>,
-      public PausableObject {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPausableObject);
+class MockContextLifecycleStateObserver final
+    : public GarbageCollectedFinalized<MockContextLifecycleStateObserver>,
+      public ContextLifecycleStateObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(MockContextLifecycleStateObserver);
 
  public:
-  explicit MockPausableObject(ExecutionContext* context)
-      : PausableObject(context) {}
+  explicit MockContextLifecycleStateObserver(ExecutionContext* context)
+      : ContextLifecycleStateObserver(context) {}
 
   void Trace(blink::Visitor* visitor) override {
-    PausableObject::Trace(visitor);
+    ContextLifecycleStateObserver::Trace(visitor);
   }
 
-  MOCK_METHOD0(Pause, void());
-  MOCK_METHOD0(Unpause, void());
+  MOCK_METHOD1(ContextLifecycleStateChanged, void(mojom::FrameLifecycleState));
   MOCK_METHOD1(ContextDestroyed, void(ExecutionContext*));
 };
 
-class PausableObjectTest : public testing::Test {
+class ContextLifecycleStateObserverTest : public testing::Test {
  protected:
-  PausableObjectTest();
+  ContextLifecycleStateObserverTest();
 
   Document& SrcDocument() const { return src_page_holder_->GetDocument(); }
   Document& DestDocument() const { return dest_page_holder_->GetDocument(); }
-  MockPausableObject& PausableObject() { return *pausable_object_; }
+  MockContextLifecycleStateObserver& Observer() { return *observer_; }
 
  private:
   std::unique_ptr<DummyPageHolder> src_page_holder_;
   std::unique_ptr<DummyPageHolder> dest_page_holder_;
-  Persistent<MockPausableObject> pausable_object_;
+  Persistent<MockContextLifecycleStateObserver> observer_;
 };
 
-PausableObjectTest::PausableObjectTest()
+ContextLifecycleStateObserverTest::ContextLifecycleStateObserverTest()
     : src_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
       dest_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
-      pausable_object_(MakeGarbageCollected<MockPausableObject>(
+      observer_(MakeGarbageCollected<MockContextLifecycleStateObserver>(
           &src_page_holder_->GetDocument())) {
-  pausable_object_->PauseIfNeeded();
+  observer_->UpdateStateIfNeeded();
 }
 
-TEST_F(PausableObjectTest, NewContextObserved) {
-  unsigned initial_src_count = SrcDocument().PausableObjectCount();
-  unsigned initial_dest_count = DestDocument().PausableObjectCount();
+TEST_F(ContextLifecycleStateObserverTest, NewContextObserved) {
+  unsigned initial_src_count =
+      SrcDocument().ContextLifecycleStateObserverCount();
+  unsigned initial_dest_count =
+      DestDocument().ContextLifecycleStateObserverCount();
 
-  EXPECT_CALL(PausableObject(), Unpause());
-  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
+                              mojom::FrameLifecycleState::kRunning));
+  Observer().DidMoveToNewExecutionContext(&DestDocument());
 
-  EXPECT_EQ(initial_src_count - 1, SrcDocument().PausableObjectCount());
-  EXPECT_EQ(initial_dest_count + 1, DestDocument().PausableObjectCount());
+  EXPECT_EQ(initial_src_count - 1,
+            SrcDocument().ContextLifecycleStateObserverCount());
+  EXPECT_EQ(initial_dest_count + 1,
+            DestDocument().ContextLifecycleStateObserverCount());
 }
 
-TEST_F(PausableObjectTest, MoveToActiveDocument) {
-  EXPECT_CALL(PausableObject(), Unpause());
-  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
+TEST_F(ContextLifecycleStateObserverTest, MoveToActiveDocument) {
+  EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
+                              mojom::FrameLifecycleState::kRunning));
+  Observer().DidMoveToNewExecutionContext(&DestDocument());
 }
 
-TEST_F(PausableObjectTest, MoveToSuspendedDocument) {
-  DestDocument().PauseScheduledTasks(PauseState::kFrozen);
+TEST_F(ContextLifecycleStateObserverTest, MoveToSuspendedDocument) {
+  DestDocument().SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
 
-  EXPECT_CALL(PausableObject(), Pause());
-  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
+                              mojom::FrameLifecycleState::kFrozen));
+  Observer().DidMoveToNewExecutionContext(&DestDocument());
 }
 
-TEST_F(PausableObjectTest, MoveToStoppedDocument) {
+TEST_F(ContextLifecycleStateObserverTest, MoveToStoppedDocument) {
   DestDocument().Shutdown();
 
-  EXPECT_CALL(PausableObject(), ContextDestroyed(&DestDocument()));
-  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(Observer(), ContextDestroyed(&DestDocument()));
+  Observer().DidMoveToNewExecutionContext(&DestDocument());
 }
 
 }  // namespace blink

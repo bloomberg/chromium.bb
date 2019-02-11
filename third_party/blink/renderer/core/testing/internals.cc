@@ -1675,9 +1675,10 @@ unsigned Internals::mediaKeySessionCount() {
       InstanceCounters::kMediaKeySessionCounter);
 }
 
-unsigned Internals::pausableObjectCount(Document* document) {
+unsigned Internals::contextLifecycleStateObserverObjectCount(
+    Document* document) {
   DCHECK(document);
-  return document->PausableObjectCount();
+  return document->ContextLifecycleStateObserverCount();
 }
 
 static unsigned EventHandlerCount(

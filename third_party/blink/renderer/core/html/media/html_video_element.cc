@@ -105,7 +105,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
   HTMLVideoElement* video = MakeGarbageCollected<HTMLVideoElement>(document);
   video->EnsureUserAgentShadowRoot();
-  video->PauseIfNeeded();
+  video->UpdateStateIfNeeded();
   return video;
 }
 
