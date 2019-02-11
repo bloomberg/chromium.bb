@@ -56,7 +56,7 @@ class MockDeviceMotionController final
 
   const DeviceMotionData* data() {
     return motion_pump_->LatestDeviceMotionData();
-  };
+  }
 
   DeviceMotionEventPump* motion_pump() { return motion_pump_.Get(); }
 

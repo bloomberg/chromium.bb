@@ -66,7 +66,7 @@ class MockDeviceOrientationController final
 
   const DeviceOrientationData* data() {
     return orientation_pump_->LatestDeviceOrientationData();
-  };
+  }
 
   DeviceOrientationEventPump* orientation_pump() {
     return orientation_pump_.Get();
