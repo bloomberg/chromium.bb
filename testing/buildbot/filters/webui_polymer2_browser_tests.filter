@@ -89,6 +89,7 @@ CrElementsToastTest.*
 CrElementsToggleTest.*
 CrElementsToolbarSearchFieldTest.*
 CrExtensionsActivityLogTest.*
+CrExtensionsActivityLogHistoryTest.*
 CrExtensionsActivityLogItemTest.*
 CrExtensionsA11yTest.*
 CrExtensionsA11yTestWithMultipleExensions.*
