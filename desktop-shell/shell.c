@@ -3559,14 +3559,15 @@ rotate_grab_motion(struct weston_pointer_grab *grab,
 		container_of(grab, struct rotate_grab, base.grab);
 	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = rotate->base.shsurf;
-	struct weston_surface *surface =
-		weston_desktop_surface_get_surface(shsurf->desktop_surface);
+	struct weston_surface *surface;
 	float cx, cy, dx, dy, cposx, cposy, dposx, dposy, r;
 
 	weston_pointer_move(pointer, event);
 
 	if (!shsurf)
 		return;
+
+	surface = weston_desktop_surface_get_surface(shsurf->desktop_surface);
 
 	cx = 0.5f * surface->width;
 	cy = 0.5f * surface->height;
