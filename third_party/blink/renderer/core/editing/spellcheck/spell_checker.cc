@@ -620,9 +620,9 @@ Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
     int word_end = iterator->next();
     if (word_end < 0)
       break;
-    int word_length = word_end - word_start;
-    int misspelling_location = -1;
-    int misspelling_length = 0;
+    size_t word_length = word_end - word_start;
+    size_t misspelling_location = 0;
+    size_t misspelling_length = 0;
     if (WebTextCheckClient* text_checker_client = GetTextCheckerClient()) {
       // SpellCheckWord will write (0, 0) into the output vars, which is what
       // our caller expects if the word is spelled correctly.
@@ -633,7 +633,7 @@ Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
       misspelling_location = 0;
     }
     if (misspelling_length > 0) {
-      DCHECK_GE(misspelling_location, 0);
+      DCHECK_GE(misspelling_location, 0u);
       DCHECK_LE(misspelling_location + misspelling_length, word_length);
       TextCheckingResult misspelling;
       misspelling.decoration = kTextDecorationTypeSpelling;

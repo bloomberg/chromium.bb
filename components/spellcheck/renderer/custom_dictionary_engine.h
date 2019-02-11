@@ -26,8 +26,8 @@ class CustomDictionaryEngine {
   // |misspelling_start| and |misspelling_len| to indicate a misspelling.
   // Returns true if there are no misspellings, otherwise returns false.
   bool SpellCheckWord(const base::string16& text,
-                      int misspelling_start,
-                      int misspelling_len);
+                      size_t misspelling_start,
+                      size_t misspelling_len);
 
   // Update custom dictionary words.
   void OnCustomDictionaryChanged(const std::set<std::string>& words_added,

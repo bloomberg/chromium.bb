@@ -90,8 +90,8 @@ class SpellCheckProvider
   bool IsSpellCheckingEnabled() const override;
   void CheckSpelling(
       const blink::WebString& text,
-      int& offset,
-      int& length,
+      size_t& offset,
+      size_t& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
   void RequestCheckingOfText(
       const blink::WebString& text,
@@ -106,7 +106,7 @@ class SpellCheckProvider
 
   // Returns whether |text| has word characters, i.e. whether a spellchecker
   // needs to check this text.
-  bool HasWordCharacters(const base::string16& text, int index) const;
+  bool HasWordCharacters(const base::string16& text, size_t index) const;
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnRespondTextCheck(

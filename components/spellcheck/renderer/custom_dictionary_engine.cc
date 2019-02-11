@@ -35,15 +35,12 @@ void CustomDictionaryEngine::OnCustomDictionaryChanged(
     dictionary_.erase(base::UTF8ToUTF16(word));
 }
 
-bool CustomDictionaryEngine::SpellCheckWord(
-    const base::string16& text,
-    int misspelling_start,
-    int misspelling_len) {
+bool CustomDictionaryEngine::SpellCheckWord(const base::string16& text,
+                                            size_t misspelling_start,
+                                            size_t misspelling_len) {
   // The text to be checked is empty on OSX(async) right now.
   // TODO(groby): Fix as part of async hook-up. (http://crbug.com/178241)
-  return
-      misspelling_start >= 0 &&
-      misspelling_len > 0 &&
-      size_t(misspelling_start + misspelling_len) <= text.length() &&
-      dictionary_.count(text.substr(misspelling_start, misspelling_len)) > 0;
+  return misspelling_len > 0 &&
+         misspelling_start + misspelling_len <= text.length() &&
+         dictionary_.count(text.substr(misspelling_start, misspelling_len)) > 0;
 }

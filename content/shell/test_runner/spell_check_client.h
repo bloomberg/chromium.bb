@@ -44,8 +44,8 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   bool IsSpellCheckingEnabled() const override;
   void CheckSpelling(
       const blink::WebString& text,
-      int& offset,
-      int& length,
+      size_t& offset,
+      size_t& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
   void RequestCheckingOfText(
       const blink::WebString& text,

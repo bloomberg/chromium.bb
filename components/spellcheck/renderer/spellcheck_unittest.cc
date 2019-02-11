@@ -188,8 +188,8 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     //   * false: the input string has one or more invalid words.
     bool expected_result;
     // The position and the length of the first invalid word.
-    int misspelling_start;
-    int misspelling_length;
+    size_t misspelling_start;
+    size_t misspelling_length;
   } kTestCases[] = {
     // Empty strings.
     {L"", true},
@@ -406,12 +406,11 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     size_t input_length = 0;
     if (kTestCases[i].input)
       input_length = wcslen(kTestCases[i].input);
-    int misspelling_start;
-    int misspelling_length;
+    size_t misspelling_start;
+    size_t misspelling_length;
     bool result = spell_check()->SpellCheckWord(
-        base::WideToUTF16(kTestCases[i].input).c_str(), kNoOffset,
-        static_cast<int>(input_length), kNoTag, &misspelling_start,
-        &misspelling_length, nullptr);
+        base::WideToUTF16(kTestCases[i].input).c_str(), kNoOffset, input_length,
+        kNoTag, &misspelling_start, &misspelling_length, nullptr);
 
     EXPECT_EQ(kTestCases[i].expected_result, result);
     EXPECT_EQ(kTestCases[i].misspelling_start, misspelling_start);
@@ -455,12 +454,11 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     size_t input_length = 0;
     if (test_case.input)
       input_length = wcslen(test_case.input);
-    int misspelling_start;
-    int misspelling_length;
+    size_t misspelling_start;
+    size_t misspelling_length;
     bool result = spell_check()->SpellCheckWord(
-        base::WideToUTF16(test_case.input).c_str(), kNoOffset,
-        static_cast<int>(input_length), kNoTag, &misspelling_start,
-        &misspelling_length, &suggestions);
+        base::WideToUTF16(test_case.input).c_str(), kNoOffset, input_length,
+        kNoTag, &misspelling_start, &misspelling_length, &suggestions);
 
     // Check for spelling.
     EXPECT_EQ(test_case.expected_result, result);
@@ -830,12 +828,11 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     if (kTestCases[i].input)
       input_length = wcslen(kTestCases[i].input);
 
-    int misspelling_start = 0;
-    int misspelling_length = 0;
+    size_t misspelling_start = 0;
+    size_t misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
-        base::WideToUTF16(kTestCases[i].input).c_str(), kNoOffset,
-        static_cast<int>(input_length), kNoTag, &misspelling_start,
-        &misspelling_length, nullptr);
+        base::WideToUTF16(kTestCases[i].input).c_str(), kNoOffset, input_length,
+        kNoTag, &misspelling_start, &misspelling_length, nullptr);
 
     EXPECT_TRUE(result)
         << "\""
@@ -844,8 +841,8 @@ TEST_F(SpellCheckTest, SpellCheckText) {
         << "\" is misspelled in "
         << kTestCases[i].language
         << ".";
-    EXPECT_EQ(0, misspelling_start);
-    EXPECT_EQ(0, misspelling_length);
+    EXPECT_EQ(0u, misspelling_start);
+    EXPECT_EQ(0u, misspelling_length);
   }
 }
 
@@ -887,14 +884,14 @@ TEST_F(SpellCheckTest, MisspelledWords) {
     ReinitializeSpellCheck(kTestCases[i].language);
 
     base::string16 word(base::WideToUTF16(kTestCases[i].input));
-    int word_length = static_cast<int>(word.length());
-    int misspelling_start = 0;
-    int misspelling_length = 0;
+    size_t word_length = word.length();
+    size_t misspelling_start = 0;
+    size_t misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
         word.c_str(), kNoOffset, word_length, kNoTag, &misspelling_start,
         &misspelling_length, nullptr);
     EXPECT_FALSE(result);
-    EXPECT_EQ(0, misspelling_start);
+    EXPECT_EQ(0u, misspelling_start);
     EXPECT_EQ(word_length, misspelling_length);
   }
 }
@@ -1298,12 +1295,12 @@ TEST_F(SpellCheckTest, EnglishWords) {
       if (kTestCases[i].input)
         input_length = strlen(kTestCases[i].input);
 
-      int misspelling_start = 0;
-      int misspelling_length = 0;
+      size_t misspelling_start = 0;
+      size_t misspelling_length = 0;
       bool result = spell_check()->SpellCheckWord(
           base::ASCIIToUTF16(kTestCases[i].input).c_str(), kNoOffset,
-          static_cast<int>(input_length), kNoTag, &misspelling_start,
-          &misspelling_length, nullptr);
+          input_length, kNoTag, &misspelling_start, &misspelling_length,
+          nullptr);
 
       EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].input <<
           " in " << kLocales[j];
@@ -1342,12 +1339,12 @@ TEST_F(SpellCheckTest, NoSuggest) {
 
     // First check that the NOSUGGEST flag didn't mark this word as not being in
     // the dictionary.
-    int misspelling_start = 0;
-    int misspelling_length = 0;
+    size_t misspelling_start = 0;
+    size_t misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
         base::ASCIIToUTF16(test_case.suggestion).c_str(), kNoOffset,
-        static_cast<int>(suggestion_length), kNoTag, &misspelling_start,
-        &misspelling_length, nullptr);
+        suggestion_length, kNoTag, &misspelling_start, &misspelling_length,
+        nullptr);
 
     EXPECT_EQ(test_case.should_pass, result)
         << test_case.suggestion << " in " << test_case.locale;
@@ -1360,7 +1357,7 @@ TEST_F(SpellCheckTest, NoSuggest) {
       input_length = strlen(test_case.input);
     result = spell_check()->SpellCheckWord(
         base::ASCIIToUTF16(test_case.input).c_str(), kNoOffset,
-        static_cast<int>(input_length), kNoTag, &misspelling_start,
+        input_length, kNoTag, &misspelling_start,
         &misspelling_length, &suggestions);
     // Input word should be a misspelling.
     EXPECT_FALSE(result) << test_case.input << " is not a misspelling in "
@@ -1443,8 +1440,8 @@ TEST_F(SpellCheckTest, LogicalSuggestions) {
   };
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {
-    int misspelling_start = 0;
-    int misspelling_length = 0;
+    size_t misspelling_start = 0;
+    size_t misspelling_length = 0;
     std::vector<base::string16> suggestions;
     EXPECT_FALSE(spell_check()->SpellCheckWord(
         base::ASCIIToUTF16(kTestCases[i].misspelled).c_str(),

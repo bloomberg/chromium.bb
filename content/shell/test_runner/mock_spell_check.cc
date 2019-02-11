@@ -32,8 +32,8 @@ MockSpellCheck::MockSpellCheck() : initialized_(false) {}
 MockSpellCheck::~MockSpellCheck() {}
 
 bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
-                                    int* misspelled_offset,
-                                    int* misspelled_length) {
+                                    size_t* misspelled_offset,
+                                    size_t* misspelled_length) {
   DCHECK(misspelled_offset);
   DCHECK(misspelled_length);
 
