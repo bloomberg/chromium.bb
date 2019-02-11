@@ -16,7 +16,7 @@ namespace sequence_manager {
 
 struct PLATFORM_EXPORT TaskQueueWithVoters {
   explicit TaskQueueWithVoters(scoped_refptr<TestTaskQueue> task_queue)
-      : queue(std::move(task_queue)){};
+      : queue(std::move(task_queue)) {}
 
   scoped_refptr<TestTaskQueue> queue;
   std::vector<std::unique_ptr<TaskQueue::QueueEnabledVoter>> voters;

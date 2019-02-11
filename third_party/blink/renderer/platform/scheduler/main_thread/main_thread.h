@@ -13,7 +13,7 @@
 
 namespace blink {
 class ThreadScheduler;
-};
+}
 
 namespace blink {
 namespace scheduler {

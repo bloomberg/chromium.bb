@@ -33,7 +33,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
       std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
       base::Optional<base::Time> initial_virtual_time)
       : MainThreadSchedulerImpl(std::move(sequence_manager),
-                                initial_virtual_time){};
+                                initial_virtual_time) {}
 
   using MainThreadSchedulerImpl::SetCurrentUseCaseForTest;
 };
