@@ -2378,10 +2378,14 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
         // output clip of the object's effect, we can't skip fragment clip if
         // between this object and the container there is any effect that has
         // an output clip. TODO(crbug.com/803649): Fix this workaround.
-        const auto& clip_container_effect =
-            clip_container.FirstFragment().PostIsolationEffect();
-        for (const auto* effect = context_.fragments[0].current_effect;
-             effect != &clip_container_effect; effect = effect->Parent()) {
+        const auto& clip_container_effect = clip_container.FirstFragment()
+                                                .LocalBorderBoxProperties()
+                                                .Effect()
+                                                .Unalias();
+        for (const auto* effect =
+                 &context_.fragments[0].current_effect->Unalias();
+             effect && effect != &clip_container_effect;
+             effect = SafeUnalias(effect->Parent())) {
           if (effect->OutputClip())
             return;
         }
