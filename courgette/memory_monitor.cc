@@ -27,7 +27,7 @@ struct H {
     if (s > 1000000000) return base::StringPrintf("%.3gG", s/(1000000000.0));
     if (s > 1000000) return base::StringPrintf("%.3gM", s/(1000000.));
     if (s > 9999) return base::StringPrintf("%.3gk", s/(1000.));
-    return base::IntToString((int)s);
+    return base::NumberToString(s);
   }
 
   void tick(size_t w, char sign) {

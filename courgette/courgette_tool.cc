@@ -259,7 +259,7 @@ void DisassembleAdjustDiff(const base::FilePath& old_file,
     if (status != bsdiff::OK)
       Problem("-xxx failed.");
 
-    std::string append = std::string("-") + base::IntToString(i);
+    std::string append = std::string("-") + base::NumberToString(i);
 
     WriteSinkToFile(&patch_stream,
                     output_file_root.InsertBeforeExtensionASCII(append));
