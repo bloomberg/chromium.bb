@@ -1315,7 +1315,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id3,
                                                                      false);
-};
+}
 
 namespace {
 
