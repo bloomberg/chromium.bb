@@ -29,7 +29,7 @@ class TestSyncService : public SyncService {
   void SetDisableReasons(int disable_reasons);
   void SetTransportState(TransportState transport_state);
   void SetLocalSyncEnabled(bool local_sync_enabled);
-  void SetAuthenticatedAccountInfo(const AccountInfo& account_info);
+  void SetAuthenticatedAccountInfo(const CoreAccountInfo& account_info);
   void SetIsAuthenticatedAccountPrimary(bool is_primary);
   void SetSetupInProgress(bool in_progress);
   void SetAuthError(const GoogleServiceAuthError& auth_error);
@@ -52,7 +52,7 @@ class TestSyncService : public SyncService {
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;
-  AccountInfo GetAuthenticatedAccountInfo() const override;
+  CoreAccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
 
@@ -108,7 +108,7 @@ class TestSyncService : public SyncService {
   int disable_reasons_ = DISABLE_REASON_NONE;
   TransportState transport_state_ = TransportState::ACTIVE;
   bool local_sync_enabled_ = false;
-  AccountInfo account_info_;
+  CoreAccountInfo account_info_;
   bool account_is_primary_ = true;
   bool setup_in_progress_ = false;
   GoogleServiceAuthError auth_error_;

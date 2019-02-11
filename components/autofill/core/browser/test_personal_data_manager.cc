@@ -248,7 +248,8 @@ bool TestPersonalDataManager::IsSyncFeatureEnabled() const {
   return sync_feature_enabled_;
 }
 
-AccountInfo TestPersonalDataManager::GetAccountInfoForPaymentsServer() const {
+CoreAccountInfo TestPersonalDataManager::GetAccountInfoForPaymentsServer()
+    const {
   return account_info_;
 }
 

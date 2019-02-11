@@ -55,7 +55,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   CreditCard* GetCreditCardByNumber(const std::string& number) override;
   bool IsDataLoaded() const override;
   bool IsSyncFeatureEnabled() const override;
-  AccountInfo GetAccountInfoForPaymentsServer() const override;
+  CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
 
   // Unique to TestPersonalDataManager:
 
@@ -115,7 +115,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void SetSyncFeatureEnabled(bool enabled) { sync_feature_enabled_ = enabled; }
 
-  void SetAccountInfoForPayments(const AccountInfo& account_info) {
+  void SetAccountInfoForPayments(const CoreAccountInfo& account_info) {
     account_info_ = account_info;
   }
 
@@ -130,7 +130,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_wallet_import_enabled_;
   bool sync_feature_enabled_ = false;
   bool sync_service_initialized_ = false;
-  AccountInfo account_info_;
+  CoreAccountInfo account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };

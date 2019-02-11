@@ -124,7 +124,7 @@ syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
 syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
   // TODO(crbug.com/814787): Once the ChromeOS test setup is fixed, we can just
   // use |sync_account_| directly here.
-  const AccountInfo account_info = GetActiveAccountInfo().account_info;
+  const CoreAccountInfo& account_info = GetActiveAccountInfo().account_info;
 
   syncer::SyncCredentials credentials;
   credentials.account_id = account_info.account_id;

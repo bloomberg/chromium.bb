@@ -124,7 +124,7 @@ class PersonalDataManager : public KeyedService,
   void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // AccountInfoGetter:
-  AccountInfo GetAccountInfoForPaymentsServer() const override;
+  CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
   bool IsSyncFeatureEnabled() const override;
 
   // GaiaCookieManagerService::Observer:
