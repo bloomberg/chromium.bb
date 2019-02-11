@@ -680,7 +680,7 @@ Status ExecuteGetPageSource(Session* session,
                             Timeout* timeout) {
   const char kGetPageSource[] =
       "function() {"
-      "  return document.documentElement.outerHTML;"
+      "  return new XMLSerializer().serializeToString(document);"
       "}";
   base::ListValue args;
   return web_view->CallFunction(
