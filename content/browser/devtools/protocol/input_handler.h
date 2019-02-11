@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 
+#include <memory>
+#include <set>
+
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -14,6 +17,8 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/input.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
+#include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/browser/render_widget_host.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -126,6 +131,18 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
  private:
   class InputInjector;
 
+  SyntheticPointerActionParams PrepareSyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType pointer_action_type,
+      int id,
+      const std::string& button_name,
+      double x,
+      double y,
+      int key_modifiers,
+      float radius_x = 1.f,
+      float radius_y = 1.f,
+      float rotation_angle = 0.f,
+      float force = 1.f);
+
   void SynthesizeRepeatingScroll(
       base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
@@ -157,7 +174,8 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   float page_scale_factor_;
   int last_id_;
   bool ignore_input_events_ = false;
-  base::flat_map<int, blink::WebTouchPoint> touch_points_;
+  std::set<int> pointer_ids_;
+  std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
   base::WeakPtrFactory<InputHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandler);

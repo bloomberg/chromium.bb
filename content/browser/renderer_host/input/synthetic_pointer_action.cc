@@ -27,9 +27,11 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
       gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
 
     if (!synthetic_pointer_driver_) {
-      synthetic_pointer_driver_ =
+      owned_synthetic_pointer_driver_ =
           SyntheticPointerDriver::Create(gesture_source_type_);
+      synthetic_pointer_driver_ = owned_synthetic_pointer_driver_.get();
     }
+
     state_ = GestureState::RUNNING;
   }
 
@@ -67,6 +69,7 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
   DCHECK_LT(num_actions_dispatched_, params_.params.size());
   SyntheticPointerActionListParams::ParamList& param_list =
       params_.params[num_actions_dispatched_];
+
   for (const SyntheticPointerActionParams& param : param_list) {
     if (!synthetic_pointer_driver_->UserInputCheck(param))
       return GestureState::INVALID;
