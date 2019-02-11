@@ -548,7 +548,7 @@ void WebPagePopupImpl::ClosePopup() {
 
     DestroyPage();
 
-    // m_widgetClient might be 0 because this widget might be already closed.
+    // |widget_client_| might be 0 because this widget might be already closed.
     if (widget_client_ && !close_already_called) {
       // closeWidgetSoon() will call this->close() later.
       widget_client_->CloseWidgetSoon();

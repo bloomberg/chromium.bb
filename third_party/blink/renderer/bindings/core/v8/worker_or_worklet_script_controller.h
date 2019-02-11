@@ -127,7 +127,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
 
   scoped_refptr<RejectedPromises> rejected_promises_;
 
-  // |m_executionState| refers to a stack object that evaluate() allocates;
+  // |execution_state_| refers to a stack object that evaluate() allocates;
   // evaluate() ensuring that the pointer reference to it is removed upon
   // returning. Hence kept as a bare pointer here, and not a Persistent with
   // Oilpan enabled; stack scanning will visit the object and

@@ -257,7 +257,7 @@ bool operator==(const PositionTemplate<Strategy>& a,
     return false;
 
   if (!a.IsOffsetInAnchor()) {
-    // Note: |m_offset| only has meaning when
+    // Note: |offset_| only has meaning when
     // |PositionAnchorType::OffsetInAnchor|.
     return true;
   }

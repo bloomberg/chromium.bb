@@ -268,7 +268,7 @@ bool DocumentTimeline::NeedsAnimationTimingUpdate() {
       std::isnan(last_current_time_internal_))
     return false;
 
-  // We allow m_lastCurrentTimeInternal to advance here when there
+  // We allow |last_current_time_internal_| to advance here when there
   // are no animations to allow animations spawned during style
   // recalc to not invalidate this flag.
   if (animations_needing_update_.IsEmpty())

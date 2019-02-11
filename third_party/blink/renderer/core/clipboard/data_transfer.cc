@@ -91,7 +91,7 @@ class DraggedNodeImageBuilder {
 #if DCHECK_IS_ON()
     DCHECK_EQ(dom_tree_version_, node_->GetDocument().DomTreeVersion());
 #endif
-    // Construct layout object for |m_node| with pseudo class "-webkit-drag"
+    // Construct layout object for |node_| with pseudo class "-webkit-drag"
     local_frame_->View()->UpdateAllLifecyclePhasesExceptPaint();
     LayoutObject* const dragged_layout_object = node_->GetLayoutObject();
     if (!dragged_layout_object)
@@ -263,7 +263,7 @@ void DataTransfer::setEffectAllowed(const String& effect) {
   if (ConvertEffectAllowedToDragOperation(effect) == kDragOperationPrivate) {
     // This means that there was no conversion, and the effectAllowed that
     // we are passed isn't a valid effectAllowed, so we should ignore it,
-    // and not set m_effectAllowed.
+    // and not set |effect_allowed_|.
 
     // The attribute must ignore any attempts to set it to a value other than
     // none, copy, copyLink, copyMove, link, linkMove, move, all, and

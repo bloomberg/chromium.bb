@@ -109,7 +109,7 @@ class CORE_EXPORT SelectorQuery {
   CSSSelectorList selector_list_;
   // Contains the list of CSSSelector's to match, but without ones that could
   // never match like pseudo elements, div::before. This can be empty, while
-  // m_selectorList will never be empty as SelectorQueryCache::add would have
+  // |selector_list_| will never be empty as SelectorQueryCache::add would have
   // thrown an exception.
   Vector<const CSSSelector*> selectors_;
   AtomicString selector_id_;

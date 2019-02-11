@@ -93,7 +93,7 @@ bool WebInputMethodControllerImpl::FinishComposingText(
   // all the time. For instance, resetInputMethod call on RenderViewImpl could
   // be after losing the focus on frame. But since we return the core frame
   // in WebViewImpl::focusedLocalFrameInWidget(), we will reach here with
-  // |m_webLocalFrame| not focused on page.
+  // |web_frame_| not focused on page.
 
   if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported())
     return plugin->FinishComposingText(selection_behavior);

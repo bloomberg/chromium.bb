@@ -240,7 +240,7 @@ VisiblePosition SelectionModifier::PositionForPlatform(
   // FIXME: VisibleSelection should be fixed to ensure as an invariant that
   // base/extent always point to the same nodes as start/end, but which points
   // to which depends on the value of isBaseFirst. Then this can be changed
-  // to just return m_sel.extent().
+  // to just return selection_.extent().
   return selection_.IsBaseFirst() ? selection_.VisibleEnd()
                                   : selection_.VisibleStart();
 }

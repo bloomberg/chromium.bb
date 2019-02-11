@@ -449,8 +449,8 @@ void PointerEventFactory::Clear() {
   pointer_id_last_position_mapping_.clear();
 
   // Always add mouse pointer in initialization and never remove it.
-  // No need to add it to m_pointerIncomingIdMapping as it is not going to be
-  // used with the existing APIs
+  // No need to add it to |pointer_incoming_id_mapping_| as it is not going to
+  // be used with the existing APIs
   primary_id_[ToInt(WebPointerProperties::PointerType::kMouse)] = kMouseId;
   pointer_id_mapping_[kMouseId] = PointerAttributes(
       IncomingId(WebPointerProperties::PointerType::kMouse, 0), false, true);
@@ -461,7 +461,7 @@ void PointerEventFactory::Clear() {
 PointerId PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
                                                      bool is_active_buttons,
                                                      bool hovering) {
-  // Do not add extra mouse pointer as it was added in initialization
+  // Do not add extra mouse pointer as it was added in initialization.
   if (p.GetPointerType() == WebPointerProperties::PointerType::kMouse) {
     pointer_id_mapping_[kMouseId] =
         PointerAttributes(p, is_active_buttons, true);
@@ -475,7 +475,7 @@ PointerId PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
     return mapped_id;
   }
   int type_int = p.PointerTypeInt();
-  // We do not handle the overflow of m_currentId as it should be very rare
+  // We do not handle the overflow of |current_id_| as it should be very rare.
   PointerId mapped_id = current_id_++;
   if (!id_count_[type_int])
     primary_id_[type_int] = mapped_id;
@@ -487,7 +487,7 @@ PointerId PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
 }
 
 bool PointerEventFactory::Remove(const PointerId mapped_id) {
-  // Do not remove mouse pointer id as it should always be there
+  // Do not remove mouse pointer id as it should always be there.
   if (mapped_id == kMouseId ||
       pointer_id_mapping_.find(mapped_id) == pointer_id_mapping_.end())
     return false;

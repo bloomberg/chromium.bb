@@ -177,10 +177,10 @@ TEST_F(WebMeaningfulLayoutsTest,
   test::RunPendingTasks();
   EXPECT_EQ(0, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 
-  // We serve the SVG file and check visuallyNonEmptyLayoutCount() before
-  // mainResource.finish() because finishing the main resource causes
+  // We serve the SVG file and check VisuallyNonEmptyLayoutCount() before
+  // main_resource.Finish() because finishing the main resource causes
   // |FrameView::m_isVisuallyNonEmpty| to be true and
-  // visuallyNonEmptyLayoutCount() to be 1 irrespective of the SVG sizes.
+  // VisuallyNonEmptyLayoutCount() to be 1 irrespective of the SVG sizes.
   svg_resource.Start();
   svg_resource.Write(
       "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"65536\" "

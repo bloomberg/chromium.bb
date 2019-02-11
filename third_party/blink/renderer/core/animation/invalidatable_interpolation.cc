@@ -25,7 +25,7 @@ void InvalidatableInterpolation::Interpolate(int, double fraction) {
   if (is_conversion_cached_ && cached_pair_conversion_)
     cached_pair_conversion_->InterpolateValue(fraction, cached_value_);
   // We defer the interpolation to ensureValidConversion() if
-  // m_cachedPairConversion is null.
+  // |cached_pair_conversion_| is null.
 }
 
 std::unique_ptr<PairwisePrimitiveInterpolation>

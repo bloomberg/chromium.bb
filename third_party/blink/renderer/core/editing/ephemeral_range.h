@@ -107,7 +107,7 @@ class EphemeralRangeTemplate final {
 
   Node* CommonAncestorContainer() const;
 
-  // Returns true if |m_startPosition| == |m_endPosition| or |isNull()|.
+  // Returns true if |start_position_| == |end_position_| or |isNull()|.
   bool IsCollapsed() const;
   bool IsNull() const {
     DCHECK(IsValid());
