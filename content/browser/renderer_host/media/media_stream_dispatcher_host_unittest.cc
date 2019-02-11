@@ -901,4 +901,4 @@ TEST_F(MediaStreamDispatcherHostTest, Salt) {
   EXPECT_EQ(group_id2, host_->opened_device_.group_id);
 }
 
-};  // namespace content
+}  // namespace content
