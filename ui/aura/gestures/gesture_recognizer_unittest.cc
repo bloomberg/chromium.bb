@@ -146,7 +146,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     flags_ = 0;
   }
 
-  const std::vector<ui::EventType>& events() const { return events_; };
+  const std::vector<ui::EventType>& events() const { return events_; }
 
   bool tap() const { return tap_; }
   bool tap_down() const { return tap_down_; }
