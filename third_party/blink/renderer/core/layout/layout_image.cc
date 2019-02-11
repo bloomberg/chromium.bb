@@ -53,37 +53,6 @@ namespace blink {
 namespace {
 constexpr float kmax_oversize_ratio = 2.0f;
 
-bool CheckForOptimizedImagePolicy(const Document& document,
-                                  ImageResourceContent* new_image) {
-  // Render the image as a placeholder image if the document does not have the
-  // 'legacy-image-formats' feature enabled, and the image is not one of the
-  // allowed formats.
-  if (!new_image->IsAcceptableContentType()) {
-    document.CountPotentialFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kLegacyImageFormats);
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-        !document.IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kLegacyImageFormats,
-            ReportOptions::kReportOnFailure)) {
-      return true;
-    }
-  }
-  // Render the image as a placeholder image if the document does not have the
-  // 'unoptimized-images' feature enabled and the image is not
-  // sufficiently-well-compressed.
-  if (!new_image->IsAcceptableCompressionRatio()) {
-    document.CountPotentialFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kUnoptimizedImages);
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-        !document.IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kUnoptimizedImages,
-            ReportOptions::kReportOnFailure)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool CheckForOversizedImagesPolicy(const Document& document,
                                    ImageResourceContent* new_image,
                                    LayoutImage* layout_image) {
@@ -121,7 +90,6 @@ LayoutImage::LayoutImage(Element* element)
       did_increment_visually_non_empty_pixel_count_(false),
       is_generated_content_(false),
       image_device_pixel_ratio_(1.0f),
-      is_legacy_format_or_unoptimized_image_(false),
       is_oversized_image_(false) {}
 
 LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
@@ -278,9 +246,11 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
   if (DocumentBeingDestroyed())
     return;
 
-  // Check for optimized image policies.
-  if (IsHTMLImageElement(GetNode()))
-    ValidateImagePolicies();
+  // Check for oversized-images policy.
+  if (IsHTMLImageElement(GetNode()) && image_resource_->CachedImage()) {
+    is_oversized_image_ = CheckForOversizedImagesPolicy(
+        GetDocument(), image_resource_->CachedImage(), this);
+  }
 
   if (new_image == image_resource_->CachedImage()) {
     // tell any potential compositing layers
@@ -491,16 +461,9 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
 }
 
 bool LayoutImage::IsImagePolicyViolated() const {
-  return is_oversized_image_ || is_legacy_format_or_unoptimized_image_;
-}
-
-void LayoutImage::ValidateImagePolicies() {
-  if (image_resource_ && image_resource_->CachedImage()) {
-    is_oversized_image_ = CheckForOversizedImagesPolicy(
-        GetDocument(), image_resource_->CachedImage(), this);
-    is_legacy_format_or_unoptimized_image_ = CheckForOptimizedImagePolicy(
-        GetDocument(), image_resource_->CachedImage());
-  }
+  DCHECK(ToHTMLImageElementOrNull(GetNode()));
+  return is_oversized_image_ ||
+         ToHTMLImageElement(GetNode())->IsImagePolicyViolated();
 }
 
 void LayoutImage::UpdateAfterLayout() {
@@ -508,8 +471,11 @@ void LayoutImage::UpdateAfterLayout() {
   Node* node = GetNode();
 
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    // Check for optimized image policies.
-    ValidateImagePolicies();
+    // Check for oversized-images policy.
+    if (image_resource_ && image_resource_->CachedImage()) {
+      is_oversized_image_ = CheckForOversizedImagesPolicy(
+          GetDocument(), image_resource_->CachedImage(), this);
+    }
 
     // Report violation of unsized-media policy.
     media_element_parser_helpers::ReportUnsizedMediaViolation(
