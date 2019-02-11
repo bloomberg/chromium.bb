@@ -112,8 +112,10 @@ class CORE_EXPORT DisplayLockContext final
   bool IsSearchable() const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
-  // lock is locked any time the state is not kUnlocked.
-  bool IsLocked() const { return state_ != kUnlocked; }
+  // lock is locked any time the state is not kUnlocked or kPendingAcquire.
+  bool IsLocked() const {
+    return state_ != kUnlocked && state_ != kPendingAcquire;
+  }
 
   // Called when the layout tree is attached. This is used to verify
   // containment.
