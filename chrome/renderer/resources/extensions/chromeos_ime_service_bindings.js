@@ -255,7 +255,8 @@ class ImeService {
           .connectToImeEngine(
               imeSpec, mojo.makeRequest(this.activeEngine_),
               this.clientChannel_.getChannelPtr(), extra)
-          .then((bound) => {
+          .then((result) => {
+            const bound = result && result['success'];
             if (bound && onConnectionError) {
               this.activeEngine_.ptr.setConnectionErrorHandler(
                   onConnectionError);
