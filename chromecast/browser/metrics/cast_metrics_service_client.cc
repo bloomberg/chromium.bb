@@ -202,7 +202,7 @@ std::string CastMetricsServiceClient::GetVersionString() {
   std::string version_string(PRODUCT_VERSION);
 
   version_string.append("-K");
-  version_string.append(base::IntToString(build_number));
+  version_string.append(base::NumberToString(build_number));
 
   const ::metrics::SystemProfileProto::Channel channel = GetChannel();
   CHECK(!CAST_IS_DEBUG_BUILD() ||

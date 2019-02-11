@@ -346,7 +346,7 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
 
   if (params->window_id != kCastWindowId) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(params->window_id))));
+        keys::kWindowNotFoundError, base::NumberToString(params->window_id))));
   }
 
   return RespondNow(OneArgument(CreateWindowValueForExtension(
@@ -374,7 +374,7 @@ ExtensionFunction::ResponseAction TabsGetSelectedFunction::Run() {
 
   if (window_id != kCastWindowId) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id))));
+        keys::kWindowNotFoundError, base::NumberToString(window_id))));
   }
 
   int index = GetActiveWebContentsIndex();
@@ -395,7 +395,7 @@ ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
     window_id = *params->window_id;
   if (window_id != kCastWindowId)
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id))));
+        keys::kWindowNotFoundError, base::NumberToString(window_id))));
 
   return RespondNow(OneArgument(CreateTabList(GetTabList(), extension())));
 }
@@ -466,7 +466,7 @@ ExtensionFunction::ResponseAction TabsGetFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id, &tab_index);
   if (!contents) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id))));
+        keys::kTabNotFoundError, base::NumberToString(tab_id))));
   }
 
   return RespondNow(ArgumentList(tabs::Get::Results::Create(
@@ -500,7 +500,7 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
     window_id = *params->highlight_info.window_id;
   if (window_id != kCastWindowId) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id))));
+        keys::kWindowNotFoundError, base::NumberToString(window_id))));
   }
 
   int active_index = GetActiveWebContentsIndex();
@@ -546,7 +546,7 @@ bool TabsHighlightFunction::HighlightTab(const std::vector<ActiveWebview>& tabs,
   // Make sure the index is in range.
   if (index >= 0 && index < static_cast<int>(tabs.size())) {
     *error = ErrorUtils::FormatErrorMessage(keys::kTabIndexNotFoundError,
-                                            base::IntToString(index));
+                                            base::NumberToString(index));
     return false;
   }
 
@@ -569,7 +569,7 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id);
   if (!contents) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id))));
+        keys::kTabNotFoundError, base::NumberToString(tab_id))));
   }
   web_contents_ = contents->web_view->web_contents();
 
@@ -697,7 +697,7 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id);
   if (!contents) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id))));
+        keys::kTabNotFoundError, base::NumberToString(tab_id))));
   }
 
   contents->web_view->web_contents()->GetController().Reload(
@@ -773,9 +773,9 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
   content::RenderFrameHost* rfh =
       ExtensionApiFrameIdMap::GetRenderFrameHostById(contents, frame_id);
   if (!rfh) {
-    *error = ErrorUtils::FormatErrorMessage(keys::kFrameNotFoundError,
-                                            base::IntToString(frame_id),
-                                            base::IntToString(execute_tab_id_));
+    *error = ErrorUtils::FormatErrorMessage(
+        keys::kFrameNotFoundError, base::NumberToString(frame_id),
+        base::NumberToString(execute_tab_id_));
     return false;
   }
 
@@ -850,7 +850,7 @@ ExtensionFunction::ResponseAction TabsSetZoomFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id);
   if (!contents) {
     error = ErrorUtils::FormatErrorMessage(keys::kTabNotFoundError,
-                                           base::IntToString(tab_id));
+                                           base::NumberToString(tab_id));
     return RespondNow(Error(error));
   }
 
@@ -884,7 +884,7 @@ ExtensionFunction::ResponseAction TabsGetZoomFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id);
   if (!contents) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id))));
+        keys::kTabNotFoundError, base::NumberToString(tab_id))));
   }
 
   WebContents* web_contents = contents->web_view->web_contents();
@@ -905,7 +905,7 @@ ExtensionFunction::ResponseAction TabsSetZoomSettingsFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id);
   if (!contents) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id))));
+        keys::kTabNotFoundError, base::NumberToString(tab_id))));
   }
 
   WebContents* web_contents = contents->web_view->web_contents();
@@ -958,7 +958,7 @@ ExtensionFunction::ResponseAction TabsGetZoomSettingsFunction::Run() {
   const ActiveWebview* contents = GetWebViewForTab(tab_id);
   if (!contents) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, base::IntToString(tab_id))));
+        keys::kTabNotFoundError, base::NumberToString(tab_id))));
   }
 
   WebContents* web_contents = contents->web_view->web_contents();
