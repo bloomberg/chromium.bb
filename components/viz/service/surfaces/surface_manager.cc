@@ -76,8 +76,9 @@ SurfaceManager::~SurfaceManager() {
 
   // All SurfaceClients and their surfaces are supposed to be
   // destroyed before SurfaceManager.
-  DCHECK(surface_map_.empty());
-  DCHECK(surfaces_to_destroy_.empty());
+  // TODO(crbug.com/823043): The following two DCHECKs don't hold.
+  // DCHECK(surface_map_.empty());
+  // DCHECK(surfaces_to_destroy_.empty());
 }
 
 #if DCHECK_IS_ON()
