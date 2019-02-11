@@ -1276,7 +1276,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   EXPECT_EQ("A", get_callback.cookies()[0].Name());
   EXPECT_EQ("B", get_callback.cookies()[0].Value());
   EXPECT_EQ("subdomain.gopheriffic.com", get_callback.cookies()[0].Domain());
-};
+}
 
 TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
   // Test to make sure we don't leak pending operations when initialization
