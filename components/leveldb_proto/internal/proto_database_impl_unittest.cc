@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/internal/proto_database_wrapper.h"
+#include "components/leveldb_proto/internal/proto_database_impl.h"
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -53,7 +53,7 @@ class TestSharedProtoDatabaseProvider : public SharedProtoDatabaseProvider {
                                     std::move(provider_weak_ptr)) {}
 };
 
-class ProtoDatabaseWrapperTest : public testing::Test {
+class ProtoDatabaseImplTest : public testing::Test {
  public:
   void SetUp() override {
     temp_dir_ = std::make_unique<base::ScopedTempDir>();
@@ -71,13 +71,13 @@ class ProtoDatabaseWrapperTest : public testing::Test {
     shared_db_temp_dir_.reset();
   }
 
-  std::unique_ptr<ProtoDatabaseWrapper<TestProto>> CreateWrapper(
+  std::unique_ptr<ProtoDatabaseImpl<TestProto>> CreateWrapper(
       const std::string& client_namespace,
       const std::string& type_prefix,
       const base::FilePath& db_dir,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       std::unique_ptr<SharedProtoDatabaseProvider> db_provider) {
-    return std::make_unique<ProtoDatabaseWrapper<TestProto>>(
+    return std::make_unique<ProtoDatabaseImpl<TestProto>>(
         client_namespace, type_prefix, db_dir, task_runner,
         std::move(db_provider));
   }
@@ -98,16 +98,16 @@ class ProtoDatabaseWrapperTest : public testing::Test {
         GetTestThreadTaskRunner(), db_provider->weak_factory_.GetWeakPtr());
   }
 
-  // Uses ProtoDatabaseWrapper's 3 parameter Init to bypass the check that gets
+  // Uses ProtoDatabaseImpl's 3 parameter Init to bypass the check that gets
   // |use_shared_db|'s value.
-  void InitWrapper(ProtoDatabaseWrapper<TestProto>* wrapper,
+  void InitWrapper(ProtoDatabaseImpl<TestProto>* wrapper,
                    const std::string& client_name,
                    bool use_shared_db,
                    Callbacks::InitStatusCallback callback) {
     wrapper->Init(client_name, use_shared_db, std::move(callback));
   }
 
-  void InitWrapperAndWait(ProtoDatabaseWrapper<TestProto>* wrapper,
+  void InitWrapperAndWait(ProtoDatabaseImpl<TestProto>* wrapper,
                           const std::string& client_name,
                           bool use_shared_db,
                           Enums::InitStatus expect_status) {
@@ -117,7 +117,7 @@ class ProtoDatabaseWrapperTest : public testing::Test {
         base::BindOnce(
             [](base::OnceClosure closure, Enums::InitStatus expect_status,
                Enums::InitStatus status) {
-              ASSERT_EQ(status, expect_status);
+              EXPECT_EQ(status, expect_status);
               std::move(closure).Run();
             },
             init_loop.QuitClosure(), expect_status));
@@ -126,7 +126,7 @@ class ProtoDatabaseWrapperTest : public testing::Test {
 
   // Just uses each entry's key to fill out the id/data fields in TestProto as
   // well.
-  void AddDataToWrapper(ProtoDatabaseWrapper<TestProto>* wrapper,
+  void AddDataToWrapper(ProtoDatabaseImpl<TestProto>* wrapper,
                         std::vector<std::string>* entry_keys) {
     auto data_set =
         std::make_unique<std::vector<std::pair<std::string, TestProto>>>();
@@ -149,7 +149,7 @@ class ProtoDatabaseWrapperTest : public testing::Test {
     data_loop.Run();
   }
 
-  void VerifyDataInWrapper(ProtoDatabaseWrapper<TestProto>* wrapper,
+  void VerifyDataInWrapper(ProtoDatabaseImpl<TestProto>* wrapper,
                            std::vector<std::string>* entry_keys) {
     base::RunLoop load_loop;
     wrapper->LoadKeysAndEntries(base::BindOnce(
@@ -171,7 +171,7 @@ class ProtoDatabaseWrapperTest : public testing::Test {
   void UpdateClientMetadata(
       SharedDBMetadataProto::MigrationStatus migration_status) {
     base::RunLoop init_wait;
-    auto client = shared_db_->GetClientForTesting<TestProto>(
+    auto client = shared_db_->GetClientForTesting(
         kDefaultNamespace, kDefaultTypePrefix, /*create_if_missing=*/true,
         base::BindOnce(
             [](base::OnceClosure closure, Enums::InitStatus status,
@@ -199,7 +199,7 @@ class ProtoDatabaseWrapperTest : public testing::Test {
   SharedDBMetadataProto::MigrationStatus GetClientMigrationStatus() {
     SharedDBMetadataProto::MigrationStatus migration_status;
     base::RunLoop init_wait;
-    auto client = shared_db_->GetClientForTesting<TestProto>(
+    auto client = shared_db_->GetClientForTesting(
         kDefaultNamespace, kDefaultTypePrefix, /*create_if_missing=*/true,
         base::BindOnce(
             [](base::OnceClosure closure,
@@ -233,7 +233,7 @@ class ProtoDatabaseWrapperTest : public testing::Test {
   std::unique_ptr<base::ScopedTempDir> shared_db_temp_dir_;
 };
 
-TEST_F(ProtoDatabaseWrapperTest, FailsBothDatabases) {
+TEST_F(ProtoDatabaseImplTest, FailsBothDatabases) {
   auto db_provider = CreateProviderNoSharedDB();
   auto shared_db_provider = CreateSharedProvider(db_provider.get());
   auto wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
@@ -243,7 +243,7 @@ TEST_F(ProtoDatabaseWrapperTest, FailsBothDatabases) {
                      Enums::InitStatus::kError);
 }
 
-TEST_F(ProtoDatabaseWrapperTest, SucceedsWithUnique_DontUseShared_NoSharedDB) {
+TEST_F(ProtoDatabaseImplTest, SucceedsWithUnique_DontUseShared_NoSharedDB) {
   auto db_provider = CreateProviderNoSharedDB();
   auto shared_db_provider = CreateSharedProvider(db_provider.get());
   auto wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
@@ -253,7 +253,7 @@ TEST_F(ProtoDatabaseWrapperTest, SucceedsWithUnique_DontUseShared_NoSharedDB) {
                      Enums::InitStatus::kOK);
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Fails_UseShared_NoSharedDB_NoUniqueDB) {
+TEST_F(ProtoDatabaseImplTest, Fails_UseShared_NoSharedDB_NoUniqueDB) {
   auto db_provider = CreateProviderNoSharedDB();
   auto wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
                                temp_dir(), GetTestThreadTaskRunner(),
@@ -262,7 +262,7 @@ TEST_F(ProtoDatabaseWrapperTest, Fails_UseShared_NoSharedDB_NoUniqueDB) {
                      Enums::InitStatus::kError);
 }
 
-TEST_F(ProtoDatabaseWrapperTest, SucceedsWithUnique_UseShared_NoSharedDB) {
+TEST_F(ProtoDatabaseImplTest, SucceedsWithUnique_UseShared_NoSharedDB) {
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider = CreateProviderNoSharedDB();
   auto unique_wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
@@ -280,7 +280,7 @@ TEST_F(ProtoDatabaseWrapperTest, SucceedsWithUnique_UseShared_NoSharedDB) {
                      Enums::InitStatus::kOK);
 }
 
-TEST_F(ProtoDatabaseWrapperTest, SucceedsWithShared_UseShared_HasSharedDB) {
+TEST_F(ProtoDatabaseImplTest, SucceedsWithShared_UseShared_HasSharedDB) {
   auto db_provider = CreateProviderWithSharedDB();
   auto wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
                                temp_dir(), GetTestThreadTaskRunner(),
@@ -289,7 +289,7 @@ TEST_F(ProtoDatabaseWrapperTest, SucceedsWithShared_UseShared_HasSharedDB) {
                      Enums::InitStatus::kOK);
 }
 
-TEST_F(ProtoDatabaseWrapperTest, SucceedsWithUnique_DontUseShared_HasSharedDB) {
+TEST_F(ProtoDatabaseImplTest, SucceedsWithUnique_DontUseShared_HasSharedDB) {
   auto db_provider = CreateProviderWithSharedDB();
   auto wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
                                temp_dir(), GetTestThreadTaskRunner(),
@@ -299,7 +299,7 @@ TEST_F(ProtoDatabaseWrapperTest, SucceedsWithUnique_DontUseShared_HasSharedDB) {
 }
 
 // Migration tests:
-TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_UniqueToShared) {
+TEST_F(ProtoDatabaseImplTest, Migration_EmptyDBs_UniqueToShared) {
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider_noshared = CreateProviderNoSharedDB();
   auto unique_wrapper =
@@ -323,7 +323,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_UniqueToShared) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_SharedToUnique) {
+TEST_F(ProtoDatabaseImplTest, Migration_EmptyDBs_SharedToUnique) {
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider = CreateProviderWithSharedDB();
   auto shared_wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
@@ -343,7 +343,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_SharedToUnique) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared) {
+TEST_F(ProtoDatabaseImplTest, Migration_UniqueToShared) {
   auto data_set = std::make_unique<std::vector<std::string>>();
   data_set->emplace_back("entry1");
   data_set->emplace_back("entry2");
@@ -374,7 +374,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique) {
+TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique) {
   auto data_set = std::make_unique<std::vector<std::string>>();
   data_set->emplace_back("entry1");
   data_set->emplace_back("entry2");
@@ -404,7 +404,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared_UniqueObsolete) {
+TEST_F(ProtoDatabaseImplTest, Migration_UniqueToShared_UniqueObsolete) {
   auto data_set = std::make_unique<std::vector<std::string>>();
   data_set->emplace_back("entry1");
   data_set->emplace_back("entry2");
@@ -440,7 +440,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared_UniqueObsolete) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared_SharedObsolete) {
+TEST_F(ProtoDatabaseImplTest, Migration_UniqueToShared_SharedObsolete) {
   auto data_set = std::make_unique<std::vector<std::string>>();
   data_set->emplace_back("entry1");
   data_set->emplace_back("entry2");
@@ -488,7 +488,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared_SharedObsolete) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique_SharedObsolete) {
+TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique_SharedObsolete) {
   auto data_set = std::make_unique<std::vector<std::string>>();
   data_set->emplace_back("entry1");
   data_set->emplace_back("entry2");
@@ -524,7 +524,7 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique_SharedObsolete) {
             GetClientMigrationStatus());
 }
 
-TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique_UniqueObsolete) {
+TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique_UniqueObsolete) {
   auto data_set = std::make_unique<std::vector<std::string>>();
   data_set->emplace_back("entry1");
   data_set->emplace_back("entry2");

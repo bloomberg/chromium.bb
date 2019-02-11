@@ -5,24 +5,19 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_H_
 #define COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_H_
 
-#include <queue>
+#include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/task_runner_util.h"
-#include "components/leveldb_proto/internal/leveldb_database.h"
 #include "components/leveldb_proto/internal/proto/shared_db_metadata.pb.h"
-#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/internal/shared_proto_database_client.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
-
-class SharedDBMetadataProto;
 
 // Controls a single LevelDB database to be used by many clients, and provides
 // a way to get SharedProtoDatabaseClients that allow shared access to the
@@ -36,8 +31,7 @@ class SharedProtoDatabase
 
   // Always returns a SharedProtoDatabaseClient pointer, but that should ONLY
   // be used if the callback returns success.
-  template <typename T>
-  std::unique_ptr<SharedProtoDatabaseClient<T>> GetClientForTesting(
+  std::unique_ptr<SharedProtoDatabaseClient> GetClientForTesting(
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
@@ -45,12 +39,11 @@ class SharedProtoDatabase
 
   // A version of GetClient that returns the client in a callback instead of
   // giving back a client instance immediately.
-  template <typename T>
   void GetClientAsync(
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
+      base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>)>
           callback);
 
   void GetDatabaseInitStatusAsync(const std::string& client_db_id,
@@ -65,7 +58,7 @@ class SharedProtoDatabase
   friend class base::RefCountedThreadSafe<SharedProtoDatabase>;
   friend class ProtoDatabaseProvider;
 
-  friend class ProtoDatabaseWrapperTest;
+  friend class ProtoDatabaseImplTest;
   friend class SharedProtoDatabaseTest;
   friend class SharedProtoDatabaseClientTest;
 
@@ -100,8 +93,7 @@ class SharedProtoDatabase
 
   void ProcessInitRequests(Enums::InitStatus status);
 
-  template <typename T>
-  std::unique_ptr<SharedProtoDatabaseClient<T>> GetClientInternal(
+  std::unique_ptr<SharedProtoDatabaseClient> GetClientInternal(
       const std::string& client_namespace,
       const std::string& type_prefix);
 
@@ -124,7 +116,7 @@ class SharedProtoDatabase
   void OnMetadataInitComplete(bool create_shared_db_if_missing,
                               int attempt,
                               bool corruption,
-                              Enums::InitStatus status);
+                              bool success);
   void OnGetGlobalMetadata(bool create_shared_db_if_missing,
                            bool corruption,
                            bool success,
@@ -170,87 +162,17 @@ class SharedProtoDatabase
   std::unique_ptr<LevelDB> db_;
   std::unique_ptr<ProtoLevelDBWrapper> db_wrapper_;
 
-  std::unique_ptr<LevelDB> metadata_db_;
-  std::unique_ptr<ProtoLevelDBWrapper> metadata_db_wrapper_;
+  std::unique_ptr<ProtoDatabase<SharedDBMetadataProto>> metadata_db_wrapper_;
   std::unique_ptr<SharedDBMetadataProto> metadata_;
 
   // Used to return to the Init callback in the case of an error, so we can
   // report corruptions.
   Enums::InitStatus init_status_ = Enums::InitStatus::kNotInitialized;
 
-  std::queue<std::unique_ptr<InitRequest>> outstanding_init_requests_;
+  base::queue<std::unique_ptr<InitRequest>> outstanding_init_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
 };
-
-template <typename T>
-void GetClientInitCallback(
-    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
-        callback,
-    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
-    Enums::InitStatus status,
-    SharedDBMetadataProto::MigrationStatus migration_status) {
-  // |current_task_runner| is valid because Init already takes the current
-  // TaskRunner as a parameter and uses that to trigger this callback when it's
-  // finished.
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
-  if (status != Enums::InitStatus::kOK && status != Enums::InitStatus::kCorrupt)
-    client.reset();
-  // Set migration status of client. The metadata database was already updated.
-  if (client)
-    client->set_migration_status(migration_status);
-  current_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(client)));
-}
-
-template <typename T>
-void SharedProtoDatabase::GetClientAsync(
-    const std::string& client_namespace,
-    const std::string& type_prefix,
-    bool create_if_missing,
-    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
-        callback) {
-  auto client = GetClientInternal<T>(client_namespace, type_prefix);
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
-  SharedProtoDatabaseClient<T>* client_ptr = client.get();
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SharedProtoDatabase::Init, this, create_if_missing,
-                     client_ptr->client_db_id(),
-                     base::BindOnce(&GetClientInitCallback<T>,
-                                    std::move(callback), std::move(client)),
-                     std::move(current_task_runner)));
-}
-
-// TODO(thildebr): Need to pass the client name into this call as well, and use
-// it with the pending requests too so we can clean up the database.
-template <typename T>
-std::unique_ptr<SharedProtoDatabaseClient<T>>
-SharedProtoDatabase::GetClientForTesting(const std::string& client_namespace,
-                                         const std::string& type_prefix,
-                                         bool create_if_missing,
-                                         SharedClientInitCallback callback) {
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
-  auto client = GetClientInternal<T>(client_namespace, type_prefix);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SharedProtoDatabase::Init, this, create_if_missing,
-                     client->client_db_id(), std::move(callback),
-                     std::move(current_task_runner)));
-  return client;
-}
-
-template <typename T>
-std::unique_ptr<SharedProtoDatabaseClient<T>>
-SharedProtoDatabase::GetClientInternal(const std::string& client_namespace,
-                                       const std::string& type_prefix) {
-  return base::WrapUnique(new SharedProtoDatabaseClient<T>(
-      std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get()),
-      client_namespace, type_prefix, this));
-}
 
 }  // namespace leveldb_proto
 

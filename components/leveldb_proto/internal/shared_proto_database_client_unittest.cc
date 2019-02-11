@@ -4,13 +4,15 @@
 
 #include "components/leveldb_proto/internal/shared_proto_database_client.h"
 
+#include <set>
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/internal/shared_proto_database.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
@@ -47,15 +49,14 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
   LevelDB* GetLevelDB() const { return db_->GetLevelDBForTesting(); }
 
-  template <typename T>
-  std::unique_ptr<SharedProtoDatabaseClient<T>> GetClient(
+  std::unique_ptr<SharedProtoDatabaseClient> GetClient(
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
       Callbacks::InitStatusCallback callback,
       SharedDBMetadataProto::MigrationStatus expected_migration_status =
           SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED) {
-    return db_->GetClientForTesting<T>(
+    return db_->GetClientForTesting(
         client_namespace, type_prefix, create_if_missing,
         base::BindOnce(
             [](SharedDBMetadataProto::MigrationStatus expected_migration_status,
@@ -67,8 +68,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
             expected_migration_status, std::move(callback)));
   }
 
-  template <typename T>
-  std::unique_ptr<SharedProtoDatabaseClient<T>> GetClientAndWait(
+  std::unique_ptr<SharedProtoDatabaseClient> GetClientAndWait(
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
@@ -76,16 +76,16 @@ class SharedProtoDatabaseClientTest : public testing::Test {
       SharedDBMetadataProto::MigrationStatus expected_migration_status =
           SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED) {
     base::RunLoop loop;
-    auto client = GetClient<T>(
-        client_namespace, type_prefix, create_if_missing,
-        base::BindOnce(
-            [](Enums::InitStatus* status_out, base::OnceClosure closure,
-               Enums::InitStatus status) {
-              *status_out = status;
-              std::move(closure).Run();
-            },
-            status, loop.QuitClosure()),
-        expected_migration_status);
+    auto client =
+        GetClient(client_namespace, type_prefix, create_if_missing,
+                  base::BindOnce(
+                      [](Enums::InitStatus* status_out,
+                         base::OnceClosure closure, Enums::InitStatus status) {
+                        *status_out = status;
+                        std::move(closure).Run();
+                      },
+                      status, loop.QuitClosure()),
+                  expected_migration_status);
     loop.Run();
     return client;
   }
@@ -107,12 +107,12 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   }
 
   bool ContainsEntries(const leveldb_proto::KeyVector& db_keys,
-                       const std::vector<TestProto>& entries,
+                       const ValueVector& entries,
                        const std::string& client_namespace,
                        const std::string& type_prefix) {
     std::set<std::string> entry_id_set;
     for (auto& entry : entries)
-      entry_id_set.insert(entry.id());
+      entry_id_set.insert(entry);
 
     // Entry IDs don't include the full prefix, so we don't look for that here.
     auto prefix =
@@ -124,15 +124,16 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     return true;
   }
 
-  void UpdateEntries(SharedProtoDatabaseClient<TestProto>* client,
+  void UpdateEntries(SharedProtoDatabaseClient* client,
                      const leveldb_proto::KeyVector& keys,
                      const leveldb_proto::KeyVector& keys_to_remove,
                      bool expect_success) {
-    auto entries = std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>();
+    auto entries =
+        std::make_unique<ProtoDatabase<std::string>::KeyEntryVector>();
     for (auto& key : keys) {
-      TestProto proto;
-      proto.set_id(client->prefix_ + key);
-      entries->emplace_back(std::make_pair(key, std::move(proto)));
+      std::string value;
+      value = client->prefix_ + key;
+      entries->emplace_back(std::make_pair(key, std::move(value)));
     }
 
     auto entries_to_remove = std::make_unique<leveldb_proto::KeyVector>();
@@ -151,16 +152,16 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     update_entries_loop.Run();
   }
 
-  void UpdateEntriesWithRemoveFilter(
-      SharedProtoDatabaseClient<TestProto>* client,
-      const leveldb_proto::KeyVector& keys,
-      const KeyFilter& delete_key_filter,
-      bool expect_success) {
-    auto entries = std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>();
+  void UpdateEntriesWithRemoveFilter(SharedProtoDatabaseClient* client,
+                                     const leveldb_proto::KeyVector& keys,
+                                     const KeyFilter& delete_key_filter,
+                                     bool expect_success) {
+    auto entries =
+        std::make_unique<ProtoDatabase<std::string>::KeyEntryVector>();
     for (auto& key : keys) {
-      TestProto proto;
-      proto.set_id(client->prefix_ + key);
-      entries->emplace_back(std::make_pair(key, std::move(proto)));
+      std::string value;
+      value = client->prefix_ + key;
+      entries->emplace_back(std::make_pair(key, std::move(value)));
     }
 
     base::RunLoop update_entries_loop;
@@ -177,19 +178,19 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
   // This fills in for all the LoadEntriesX functions because they all call this
   // one.
-  void LoadEntriesWithFilter(SharedProtoDatabaseClient<TestProto>* client,
+  void LoadEntriesWithFilter(SharedProtoDatabaseClient* client,
                              const KeyFilter& key_filter,
                              const leveldb::ReadOptions& options,
                              const std::string& target_prefix,
                              bool expect_success,
-                             std::unique_ptr<std::vector<TestProto>>* entries) {
+                             std::unique_ptr<ValueVector>* entries) {
     base::RunLoop load_entries_loop;
     client->LoadEntriesWithFilter(
         key_filter, options, target_prefix,
         base::BindOnce(
-            [](std::unique_ptr<std::vector<TestProto>>* entries_ptr,
+            [](std::unique_ptr<ValueVector>* entries_ptr,
                base::OnceClosure signal, bool expect_success, bool success,
-               std::unique_ptr<std::vector<TestProto>> entries) {
+               std::unique_ptr<ValueVector> entries) {
               ASSERT_EQ(success, expect_success);
               entries_ptr->reset(entries.release());
               std::move(signal).Run();
@@ -198,19 +199,18 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     load_entries_loop.Run();
   }
 
-  void LoadKeysAndEntriesInRange(
-      SharedProtoDatabaseClient<TestProto>* client,
-      const std::string& start,
-      const std::string& end,
-      bool expect_success,
-      std::unique_ptr<std::map<std::string, TestProto>>* entries) {
+  void LoadKeysAndEntriesInRange(SharedProtoDatabaseClient* client,
+                                 const std::string& start,
+                                 const std::string& end,
+                                 bool expect_success,
+                                 std::unique_ptr<KeyValueMap>* entries) {
     base::RunLoop load_entries_in_range_loop;
     client->LoadKeysAndEntriesInRange(
         start, end,
         base::BindOnce(
-            [](std::unique_ptr<std::map<std::string, TestProto>>* entries_ptr,
+            [](std::unique_ptr<KeyValueMap>* entries_ptr,
                base::OnceClosure signal, bool expect_success, bool success,
-               std::unique_ptr<std::map<std::string, TestProto>> entries) {
+               std::unique_ptr<KeyValueMap> entries) {
               ASSERT_EQ(success, expect_success);
               *entries_ptr = std::move(entries);
               std::move(signal).Run();
@@ -219,14 +219,13 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     load_entries_in_range_loop.Run();
   }
 
-  void LoadKeys(SharedProtoDatabaseClient<TestProto>* client,
+  void LoadKeys(SharedProtoDatabaseClient* client,
                 bool expect_success,
-                std::unique_ptr<std::vector<std::string>>* keys) {
+                std::unique_ptr<KeyVector>* keys) {
     base::RunLoop load_keys_loop;
     client->LoadKeys(base::BindOnce(
-        [](std::unique_ptr<std::vector<std::string>>* keys_ptr,
-           base::OnceClosure signal, bool expect_success, bool success,
-           std::unique_ptr<std::vector<std::string>> keys) {
+        [](std::unique_ptr<KeyVector>* keys_ptr, base::OnceClosure signal,
+           bool expect_success, bool success, std::unique_ptr<KeyVector> keys) {
           ASSERT_EQ(success, expect_success);
           keys_ptr->reset(keys.release());
           std::move(signal).Run();
@@ -235,17 +234,16 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     load_keys_loop.Run();
   }
 
-  std::unique_ptr<TestProto> GetEntry(
-      SharedProtoDatabaseClient<TestProto>* client,
-      const std::string& key,
-      bool expect_success) {
-    std::unique_ptr<TestProto> entry;
+  std::unique_ptr<std::string> GetEntry(SharedProtoDatabaseClient* client,
+                                        const std::string& key,
+                                        bool expect_success) {
+    std::unique_ptr<std::string> entry;
     base::RunLoop get_key_loop;
     client->GetEntry(
         key, base::BindOnce(
-                 [](std::unique_ptr<TestProto>* entry_ptr,
+                 [](std::unique_ptr<std::string>* entry_ptr,
                     base::OnceClosure signal, bool expect_success, bool success,
-                    std::unique_ptr<TestProto> entry) {
+                    std::unique_ptr<std::string> entry) {
                    ASSERT_EQ(success, expect_success);
                    entry_ptr->reset(entry.release());
                    std::move(signal).Run();
@@ -255,8 +253,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
     return entry;
   }
 
-  void Destroy(SharedProtoDatabaseClient<TestProto>* client,
-               bool expect_success) {
+  void Destroy(SharedProtoDatabaseClient* client, bool expect_success) {
     base::RunLoop destroy_loop;
     client->Destroy(base::BindOnce(
         [](bool expect_success, base::OnceClosure signal, bool success) {
@@ -288,7 +285,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   }
 
   void UpdateMetadataAsync(
-      SharedProtoDatabaseClient<TestProto>* client,
+      SharedProtoDatabaseClient* client,
       SharedDBMetadataProto::MigrationStatus migration_status) {
     base::RunLoop wait_loop;
     Callbacks::UpdateCallback wait_callback = base::BindOnce(
@@ -312,9 +309,8 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
 TEST_F(SharedProtoDatabaseClientTest, InitSuccess) {
   auto status = Enums::InitStatus::kError;
-  auto client =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                 true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   client->Init("client", base::BindOnce([](Enums::InitStatus status) {
@@ -324,9 +320,8 @@ TEST_F(SharedProtoDatabaseClientTest, InitSuccess) {
 
 TEST_F(SharedProtoDatabaseClientTest, InitFail) {
   auto status = Enums::InitStatus::kError;
-  auto client =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  false /* create_if_missing */, &status);
+  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                 false /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kInvalidOperation);
 
   client->Init("client", base::BindOnce([](Enums::InitStatus status) {
@@ -338,16 +333,15 @@ TEST_F(SharedProtoDatabaseClientTest, InitFail) {
 // removes prefixed entries correctly.
 TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
   auto status = Enums::InitStatus::kError;
-  auto client =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                 true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list = {"entry1", "entry2", "entry3"};
+  KeyVector key_list = {"entry1", "entry2", "entry3"};
   UpdateEntries(client.get(), key_list, leveldb_proto::KeyVector(), true);
 
   // Make sure those entries are in the LevelDB with the appropriate prefix.
-  std::vector<std::string> keys;
+  KeyVector keys;
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 3U);
@@ -368,20 +362,18 @@ TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
 TEST_F(SharedProtoDatabaseClientTest,
        UpdateEntries_DeletesCorrectClientEntries) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list = {"entry1", "entry2", "entry3"};
+  KeyVector key_list = {"entry1", "entry2", "entry3"};
   UpdateEntries(client_a.get(), key_list, leveldb_proto::KeyVector(), true);
   UpdateEntries(client_b.get(), key_list, leveldb_proto::KeyVector(), true);
 
-  std::vector<std::string> keys;
+  KeyVector keys;
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 6U);
@@ -402,15 +394,14 @@ TEST_F(SharedProtoDatabaseClientTest,
 TEST_F(SharedProtoDatabaseClientTest,
        UpdateEntriesWithRemoveFilter_DeletesCorrectEntries) {
   auto status = Enums::InitStatus::kError;
-  auto client =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                 true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list = {"entry1", "entry2", "testentry3"};
+  KeyVector key_list = {"entry1", "entry2", "testentry3"};
   UpdateEntries(client.get(), key_list, leveldb_proto::KeyVector(), true);
 
-  std::vector<std::string> keys;
+  KeyVector keys;
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 3U);
@@ -433,30 +424,27 @@ TEST_F(SharedProtoDatabaseClientTest,
 
 TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list_a = {"entry123", "entry2123", "testentry3"};
+  KeyVector key_list_a = {"entry123", "entry2123", "testentry3"};
   UpdateEntries(client_a.get(), key_list_a, leveldb_proto::KeyVector(), true);
-  std::vector<std::string> key_list_b = {"testentry124", "entry2124",
-                                         "testentry4"};
+  KeyVector key_list_b = {"testentry124", "entry2124", "testentry4"};
   UpdateEntries(client_b.get(), key_list_b, leveldb_proto::KeyVector(), true);
 
-  std::unique_ptr<std::vector<TestProto>> entries;
-  LoadEntriesWithFilter(client_a.get(), KeyFilter(), leveldb::ReadOptions(),
-                        std::string(), true, &entries);
+  std::unique_ptr<ValueVector> entries;
+  LoadEntriesWithFilter(client_a.get(), leveldb_proto::KeyFilter(),
+                        leveldb::ReadOptions(), std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 3U);
   ASSERT_TRUE(ContainsEntries(key_list_a, *entries, kDefaultNamespace,
                               kDefaultTypePrefix));
 
-  LoadEntriesWithFilter(client_b.get(), KeyFilter(), leveldb::ReadOptions(),
-                        std::string(), true, &entries);
+  LoadEntriesWithFilter(client_b.get(), leveldb_proto::KeyFilter(),
+                        leveldb::ReadOptions(), std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 3U);
   ASSERT_TRUE(ContainsEntries(key_list_b, *entries, kDefaultNamespace2,
                               kDefaultTypePrefix));
@@ -476,31 +464,28 @@ TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
 
 TEST_F(SharedProtoDatabaseClientTest, LoadKeysAndEntriesInRange) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list_a = {"entry0", "entry1",           "entry2",
-                                         "entry3", "entry3notinrange", "entry4",
-                                         "entry5"};
+  KeyVector key_list_a = {"entry0",           "entry1", "entry2", "entry3",
+                          "entry3notinrange", "entry4", "entry5"};
   UpdateEntries(client_a.get(), key_list_a, leveldb_proto::KeyVector(), true);
-  std::vector<std::string> key_list_b = {"entry2", "entry3", "entry4"};
+  KeyVector key_list_b = {"entry2", "entry3", "entry4"};
   UpdateEntries(client_b.get(), key_list_b, leveldb_proto::KeyVector(), true);
 
-  std::unique_ptr<std::map<std::string, TestProto>> keys_and_entries_a;
+  std::unique_ptr<KeyValueMap> keys_and_entries_a;
   LoadKeysAndEntriesInRange(client_a.get(), "entry1", "entry3", true,
                             &keys_and_entries_a);
 
-  std::unique_ptr<std::map<std::string, TestProto>> keys_and_entries_b;
+  std::unique_ptr<KeyValueMap> keys_and_entries_b;
   LoadKeysAndEntriesInRange(client_b.get(), "entry0", "entry1", true,
                             &keys_and_entries_b);
 
-  std::vector<TestProto> entries;
+  ValueVector entries;
 
   for (auto& pair : *keys_and_entries_a) {
     entries.push_back(pair.second);
@@ -514,23 +499,19 @@ TEST_F(SharedProtoDatabaseClientTest, LoadKeysAndEntriesInRange) {
 
 TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list_a = {"entry123", "entry2123", "testentry3",
-                                         "testing"};
+  KeyVector key_list_a = {"entry123", "entry2123", "testentry3", "testing"};
   UpdateEntries(client_a.get(), key_list_a, leveldb_proto::KeyVector(), true);
-  std::vector<std::string> key_list_b = {"testentry124", "entry2124",
-                                         "testentry4"};
+  KeyVector key_list_b = {"testentry124", "entry2124", "testentry4"};
   UpdateEntries(client_b.get(), key_list_b, leveldb_proto::KeyVector(), true);
 
-  std::unique_ptr<std::vector<std::string>> keys;
+  std::unique_ptr<KeyVector> keys;
   LoadKeys(client_a.get(), true, &keys);
   ASSERT_EQ(keys->size(), 4U);
   ASSERT_TRUE(ContainsKeys(*keys, key_list_a, std::string(), std::string()));
@@ -541,16 +522,14 @@ TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {
 
 TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list = {"a", "b", "c"};
+  KeyVector key_list = {"a", "b", "c"};
   // Add the same entries to both because we want to make sure we only get the
   // entries from the proper client.
   UpdateEntries(client_a.get(), key_list, leveldb_proto::KeyVector(), true);
@@ -563,28 +542,25 @@ TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
 
   for (auto& key : key_list) {
     auto entry = GetEntry(client_a.get(), key, true);
-    ASSERT_EQ(entry->id(), a_prefix + key);
+    ASSERT_EQ(*entry, a_prefix + key);
     entry = GetEntry(client_b.get(), key, true);
-    ASSERT_EQ(entry->id(), b_prefix + key);
+    ASSERT_EQ(*entry, b_prefix + key);
   }
 }
 
 TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace1, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace1, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_c =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_c = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> test_keys = {"a", "b", "c"};
+  KeyVector test_keys = {"a", "b", "c"};
   UpdateEntries(client_a.get(), test_keys, leveldb_proto::KeyVector(), true);
   UpdateEntries(client_b.get(), test_keys, leveldb_proto::KeyVector(), true);
   UpdateEntries(client_c.get(), test_keys, leveldb_proto::KeyVector(), true);
@@ -592,7 +568,7 @@ TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
   // Check that the original list does not clear any data from test DBs.
   DestroyObsoleteClientsAndWait(nullptr /* client_list */);
 
-  std::vector<std::string> keys;
+  KeyVector keys;
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   EXPECT_EQ(keys.size(), test_keys.size() * 3);
@@ -626,23 +602,21 @@ TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
 
 TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  std::vector<std::string> key_list = {"a", "b", "c"};
+  KeyVector key_list = {"a", "b", "c"};
   // Add the same entries to both because we want to make sure we only destroy
   // the entries from the proper client.
   UpdateEntries(client_a.get(), key_list, leveldb_proto::KeyVector(), true);
   UpdateEntries(client_b.get(), key_list, leveldb_proto::KeyVector(), true);
 
   // Delete only client A.
-  std::vector<std::string> keys;
+  KeyVector keys;
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), key_list.size() * 2);
@@ -668,23 +642,20 @@ TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
 
 TEST_F(SharedProtoDatabaseClientTest, UpdateClientMetadataAsync) {
   auto status = Enums::InitStatus::kError;
-  auto client_a =
-      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
             client_a->migration_status());
 
-  auto client_b =
-      GetClientAndWait<TestProto>(kDefaultNamespace1, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_b = GetClientAndWait(kDefaultNamespace1, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
             client_b->migration_status());
 
-  auto client_c =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_c = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
             client_c->migration_status());
@@ -699,19 +670,18 @@ TEST_F(SharedProtoDatabaseClientTest, UpdateClientMetadataAsync) {
   client_b.reset();
   client_c.reset();
 
-  auto client_d = GetClientAndWait<TestProto>(
+  auto client_d = GetClientAndWait(
       kDefaultNamespace, kDefaultTypePrefix, true /* create_if_missing */,
       &status, SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
 
-  auto client_e = GetClientAndWait<TestProto>(
+  auto client_e = GetClientAndWait(
       kDefaultNamespace1, kDefaultTypePrefix, true /* create_if_missing */,
       &status, SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
 
-  auto client_f =
-      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &status);
+  auto client_f = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+                                   true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
 
   UpdateMetadataAsync(client_d.get(),

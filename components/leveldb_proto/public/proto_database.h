@@ -38,6 +38,14 @@ class Callbacks {
   using DestroyCallback = base::OnceCallback<void(bool)>;
   using OnCreateCallback = base::OnceCallback<void(ProtoLevelDBWrapper*)>;
 
+  // TODO(ssid): This should be moved to internal folder.
+  using LoadCallback =
+      base::OnceCallback<void(bool, std::unique_ptr<std::vector<std::string>>)>;
+  using GetCallback =
+      base::OnceCallback<void(bool, std::unique_ptr<std::string>)>;
+  using LoadKeysAndEntriesCallback = base::OnceCallback<
+      void(bool, std::unique_ptr<std::map<std::string, std::string>>)>;
+
   template <typename T>
   class Internal {
    public:
