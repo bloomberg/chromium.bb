@@ -1313,21 +1313,29 @@ bool IsRoleWithValueInterface(AtkRole role) {
          role == ATK_ROLE_SPIN_BUTTON;
 }
 
-}  // namespace
+static void SetWeakGPtrToAtkObject(AtkObject** weak_pointer,
+                                   AtkObject* new_value) {
+  if (*weak_pointer == new_value)
+    return;
+
+  if (*weak_pointer) {
+    g_object_remove_weak_pointer(G_OBJECT(*weak_pointer),
+                                 reinterpret_cast<void**>(weak_pointer));
+  }
+
+  *weak_pointer = new_value;
+
+  if (new_value) {
+    g_object_add_weak_pointer(G_OBJECT(new_value),
+                              reinterpret_cast<void**>(weak_pointer));
+  }
+}
 
 static void SetActiveTopLevelFrame(AtkObject* new_top_level_frame) {
-  if (g_active_top_level_frame)
-    g_object_remove_weak_pointer(
-        G_OBJECT(g_active_top_level_frame),
-        reinterpret_cast<void**>(&g_active_top_level_frame));
-
-  g_active_top_level_frame = new_top_level_frame;
-
-  if (g_active_top_level_frame)
-    g_object_add_weak_pointer(
-        G_OBJECT(g_active_top_level_frame),
-        reinterpret_cast<void**>(&g_active_top_level_frame));
+  SetWeakGPtrToAtkObject(&g_active_top_level_frame, new_top_level_frame);
 }
+
+}  // namespace
 
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
@@ -2031,6 +2039,16 @@ void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
 AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
   AtkRelationSet* relation_set = atk_relation_set_new();
 
+  if (embedded_document_) {
+    atk_relation_set_add_relation_by_type(relation_set, ATK_RELATION_EMBEDS,
+                                          embedded_document_);
+  }
+
+  if (embedding_window_) {
+    atk_relation_set_add_relation_by_type(
+        relation_set, ATK_RELATION_EMBEDDED_BY, embedding_window_);
+  }
+
   // For each possible relation defined by an IntAttribute, we test that
   // attribute and then look for reverse relations. AddRelationToSet handles
   // discarding self-referential relations.
@@ -2081,6 +2099,9 @@ AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
     g_current_selected = nullptr;
 
   DestroyAtkObjects();
+
+  SetWeakGPtrToAtkObject(&embedded_document_, nullptr);
+  SetWeakGPtrToAtkObject(&embedding_window_, nullptr);
 }
 
 void AXPlatformNodeAuraLinux::Destroy() {
@@ -2622,6 +2643,16 @@ std::string AXPlatformNodeAuraLinux::GetTextForATK() {
     return AXPlatformNodeBase::GetText();
 
   return base::UTF16ToUTF8(hypertext_.hypertext);
+}
+
+void AXPlatformNodeAuraLinux::SetEmbeddedDocument(
+    AtkObject* new_embedded_document) {
+  SetWeakGPtrToAtkObject(&embedded_document_, new_embedded_document);
+}
+
+void AXPlatformNodeAuraLinux::SetEmbeddingWindow(
+    AtkObject* new_embedding_window) {
+  SetWeakGPtrToAtkObject(&embedding_window_, new_embedding_window);
 }
 
 }  // namespace ui

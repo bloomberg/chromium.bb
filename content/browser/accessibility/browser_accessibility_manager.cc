@@ -290,12 +290,12 @@ const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() {
 }
 
 void BrowserAccessibilityManager::OnWindowFocused() {
-  if (this == GetRootManager())
+  if (IsRootTree())
     FireFocusEventsIfNeeded();
 }
 
 void BrowserAccessibilityManager::OnWindowBlurred() {
-  if (this == GetRootManager()) {
+  if (IsRootTree()) {
     last_focused_node_ = nullptr;
     last_focused_manager_ = nullptr;
   }
@@ -1159,7 +1159,7 @@ BrowserAccessibilityDelegate*
 }
 
 bool BrowserAccessibilityManager::IsRootTree() {
-  return delegate() && delegate()->AccessibilityGetAcceleratedWidget();
+  return GetRootManager() == this;
 }
 
 ui::AXTreeUpdate

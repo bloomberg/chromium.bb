@@ -104,6 +104,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void UpdateHypertext();
   const AXHypertext& GetHypertext();
 
+  void SetEmbeddedDocument(AtkObject* new_document);
+  void SetEmbeddingWindow(AtkObject* new_embedding_window);
+
  protected:
   AXHypertext hypertext_;
 
@@ -145,6 +148,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // We own a reference to these ref-counted objects.
   AtkObject* atk_object_ = nullptr;
   AtkHyperlink* atk_hyperlink_ = nullptr;
+
+  // Some weak pointers which help us track ATK embeds / embedded by relations.
+  AtkObject* embedded_document_ = nullptr;
+  AtkObject* embedding_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };
