@@ -25,8 +25,7 @@ class CSVTable {
   // defined in RFC 4180, with the following limitations/relaxations:
   //   * The input should be UTF-8 encoded. No code points should be escaped.
   //   * The first line must be a header that contains the column names.
-  //   * Records may be separated by either LF or CRLF sequences. Each CRLF will
-  //     be converted to LF characters inside quotes.
+  //   * Records may be separated by either LF or CRLF sequences.
   //   * Inconsistent number of fields within records is handled gracefully.
   //     Extra fields are ignored. Missing fields will have no corresponding
   //     key-value pair in the record.

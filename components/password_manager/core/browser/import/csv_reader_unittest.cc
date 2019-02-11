@@ -104,7 +104,7 @@ TEST(CSVReaderTest, Positive) {
           "\",\",\",,\"\n",
           {"left", "right"},
           {{{"left", "A\rB"}, {"right", "B\nC"}},
-           {{"left", "C\nD"}, {"right", "D\n"}},
+           {{"left", "C\r\nD"}, {"right", "D\n"}},
            {{"left", ","}, {"right", ",,"}}},
       },
       {
@@ -143,11 +143,19 @@ TEST(CSVReaderTest, Positive) {
            {{"left", ""}, {"middle", ""}, {"right", "gamma"}}},
       },
       {
-          "CRLFTreatedAsAndConvertedToLF",
+          "CRLFTreatedAsLF",
           "left,right\r\n"
           "\"\r\",\"\r\n\"\r\n",
           {"left", "right"},
-          {{{"left", "\r"}, {"right", "\n"}}},
+          {{{"left", "\r"}, {"right", "\r\n"}}},
+      },
+      {
+          "CRAloneIgnored",
+          "left,right\r"
+          "A,B\r\n"
+          "1,2,3",
+          {"left", "right\rA", "B"},
+          {{{"B", "3"}, {"left", "1"}, {"right\rA", "2"}}},
       },
       {
           "LastValueForRepeatedColumnNamesIsPreserved",
@@ -167,13 +175,13 @@ TEST(CSVReaderTest, Positive) {
           "foo,bar\n"
           "\n"
           "a,b\n"
-          "\r"
+          "\r\n"
           "c,d\r\r\r\r\r\r\r\r\n"
           "e,f",
           {"foo", "bar"},
           {
               {{"bar", "b"}, {"foo", "a"}},
-              {{"bar", "d"}, {"foo", "c"}},
+              {{"bar", "d\r\r\r\r\r\r\r"}, {"foo", "c"}},
               {{"bar", "f"}, {"foo", "e"}},
           },
       },

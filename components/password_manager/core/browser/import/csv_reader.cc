@@ -16,24 +16,27 @@
 namespace {
 
 // Returns all the characters from the start of |input| until the first '\n',
-// '\r' (exclusive) or the end of |input|. Cuts the returned part (inclusive the
-// line breaks) from |input|. Skips blocks of matching quotes. Examples:
+// "\r\n" (exclusive) or the end of |input|. Cuts the returned part (inclusive
+// the line breaks) from |input|. Skips blocks of matching quotes. Examples:
 // old input -> returned value, new input
 // "ab\ncd" -> "ab", "cd"
-// "\r\n" -> "", "\n"
+// "\r\n" -> "", ""
 // "abcd" -> "abcd", ""
+// "\r" -> "\r", ""
 // "a\"\n\"b" -> "a\"\n\"b", ""
 base::StringPiece ConsumeLine(base::StringPiece* input) {
   DCHECK(input);
   DCHECK(!input->empty());
 
   bool inside_quotes = false;
+  bool last_char_was_CR = false;
   for (size_t current = 0; current < input->size(); ++current) {
-    switch ((*input)[current]) {
+    char c = (*input)[current];
+    switch (c) {
       case '\n':
-      case '\r':
         if (!inside_quotes) {
-          base::StringPiece ret(input->data(), current);
+          const size_t eol_start = last_char_was_CR ? current - 1 : current;
+          base::StringPiece ret(input->data(), eol_start);
           *input = input->substr(current + 1);
           return ret;
         }
@@ -44,6 +47,7 @@ base::StringPiece ConsumeLine(base::StringPiece* input) {
       default:
         break;
     }
+    last_char_was_CR = (c == '\r');
   }
 
   // The whole |*input| is one line.
@@ -296,12 +300,8 @@ bool CSVTable::ReadCSV(base::StringPiece csv) {
   records_.clear();
   column_names_.clear();
 
-  // Normalize EOL sequences so that we uniformly use a single LF character.
-  std::string normalized_csv(csv);
-  base::ReplaceSubstringsAfterOffset(&normalized_csv, 0, "\r\n", "\n");
-
   // Read header row.
-  CSVParser parser(normalized_csv);
+  CSVParser parser(csv);
   if (!parser.HasMoreRows()) {
     // The empty CSV is a special case. It can be seen as having one row, with a
     // single field, which is an empty string.
@@ -316,10 +316,9 @@ bool CSVTable::ReadCSV(base::StringPiece csv) {
   while (parser.HasMoreRows()) {
     if (!parser.ParseNextCSVRow(&fields))
       return false;
-    // If there are more line-breaking characters ('\r' or '\n') in sequence,
-    // the row parser will see an empty row in between each successive two of
-    // those. Discard such results, because those are useless for importing
-    // passwords.
+    // If there are more line-breaking characters in sequence, the row parser
+    // will see an empty row in between each successive two of those. Discard
+    // such results, because those are useless for importing passwords.
     if (fields.size() == 1 && fields[0].empty())
       continue;
 
