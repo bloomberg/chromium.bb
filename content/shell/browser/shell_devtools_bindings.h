@@ -33,7 +33,7 @@ class NavigationHandle;
 class ShellDevToolsDelegate {
  public:
   virtual void Close() = 0;
-  virtual ~ShellDevToolsDelegate(){};
+  virtual ~ShellDevToolsDelegate() {}
 };
 
 class WebContents;
