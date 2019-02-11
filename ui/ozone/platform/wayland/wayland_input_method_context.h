@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
@@ -43,6 +46,8 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
   void OnKeysym(uint32_t key, uint32_t state, uint32_t modifiers) override;
 
  private:
+  void UpdatePreeditText(const base::string16& preedit_text);
+
   WaylandConnection* connection_ = nullptr;  // TODO(jani) Handle this better
 
   // Delegate interface back to IME code in ui.
