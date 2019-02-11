@@ -46,7 +46,7 @@ class WidgetElementTest : public views::ViewsTestBase {
   }
 
  protected:
-  views::Widget* widget() { return widget_; };
+  views::Widget* widget() { return widget_; }
   WidgetElement* element() { return element_.get(); }
   MockUIElementDelegate* delegate() { return delegate_.get(); }
 
