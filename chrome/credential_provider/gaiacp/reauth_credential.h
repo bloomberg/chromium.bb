@@ -25,10 +25,6 @@ class ATL_NO_VTABLE CReauthCredential
   HRESULT FinalConstruct();
   void FinalRelease();
 
- protected:
-  const CComBSTR& get_os_username() const { return os_username_; }
-  const CComBSTR& get_os_user_sid() const { return os_user_sid_; }
-
  private:
   // This class does not say it implements ICredentialProviderCredential2.
   // It only implements ICredentialProviderCredential.  Otherwise the

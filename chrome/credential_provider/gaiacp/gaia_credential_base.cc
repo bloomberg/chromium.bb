@@ -653,12 +653,6 @@ void CGaiaCredentialBase::ResetInternalState() {
   needs_to_update_windows_password_ = false;
   needs_windows_password_ = false;
 
-  // Don't reset user_sid_ or username_ as those are set for existing gaia
-  // users in CReauthCredential::SetGaiaUserInfo so that the user account
-  // matching the email can always be found for that credential even when the
-  // user cancels signin. These two members are reset in CGaiaCredential to
-  // allow changing between different users when cancelling signin on an
-  // unknown gaia user.
   TerminateLogonProcess();
 
   if (events_) {
