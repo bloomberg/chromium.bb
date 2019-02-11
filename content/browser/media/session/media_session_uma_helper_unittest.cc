@@ -29,7 +29,7 @@ class MediaSessionUmaHelperTest : public testing::Test {
 
   MediaSessionUmaHelper& media_session_uma_helper() {
     return media_session_uma_helper_;
-  };
+  }
 
   std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
       const std::string& name) {
