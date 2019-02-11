@@ -46,6 +46,7 @@ class CrOSTest(object):
     self.tast = opts.tast
     self.results_dir = opts.results_dir
     self.test_that_args = opts.test_that_args
+    self.test_timeout = opts.test_timeout
 
     self.remote_cmd = opts.remote_cmd
     self.host_cmd = opts.host_cmd
@@ -195,6 +196,8 @@ class CrOSTest(object):
     if self._device.log_level == 'debug':
       cmd += ['-verbose']
     cmd += ['run', '-build=false', '-waituntilready',]
+    if self.test_timeout > 0:
+      cmd += ['-timeout=%d' % self.test_timeout]
     if self._device.is_vm:
       cmd += ['-extrauseflags=tast_vm']
     if self.results_dir:
@@ -379,6 +382,8 @@ def ParseCommandLine(argv):
                       help='Autotest results directory.')
   parser.add_argument('--test_that-args', action='append_option_value',
                       help='Args to pass directly to test_that for autotest.')
+  parser.add_argument('--test-timeout', type=int, default=0,
+                      help='Timeout for running all tests (for --tast).')
 
   opts = parser.parse_args(argv)
 

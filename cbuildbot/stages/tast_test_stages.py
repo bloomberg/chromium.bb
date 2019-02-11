@@ -155,9 +155,10 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
         with timeout_util.Timeout(suite.timeout, reason_message=reason):
           self._RunSuite(suite.test_exprs,
                          os.path.join(base_chroot_results_dir,
-                                      suite.suite_name))
+                                      suite.suite_name),
+                         suite.timeout)
 
-  def _RunSuite(self, test_exprs, suite_chroot_results_dir):
+  def _RunSuite(self, test_exprs, suite_chroot_results_dir, timeout):
     """Runs a collection of tests.
 
     Args:
@@ -167,6 +168,10 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
       suite_chroot_results_dir: String containing path of directory where the
                                 tast command should store test results,
                                 relative to chroot.
+      timeout: Integer containing timeout in seconds to pass to Tast. This is
+               used to let the Tast process reserve adequate time to collect
+               system information after running tests so that it can exit
+               cleanly instead of being killed.
 
     Raises:
       failures_lib.TestFailure if an internal error is encountered.
@@ -175,7 +180,8 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     results_dir = self._MakeChrootPathAbsolute(suite_chroot_results_dir)
     cmd = ['./cros_run_vm_test', '--no-display', '--copy-on-write', '--debug',
            '--board=%s' % self._current_board, '--image-path=%s' % vm_path,
-           '--results-dir=%s' % results_dir, '--tast'] + test_exprs
+           '--results-dir=%s' % results_dir, '--test-timeout=%d' % timeout,
+           '--tast'] + test_exprs
 
     result = cros_build_lib.RunCommand(
         cmd, error_code_ok=True, cwd=constants.CHROMITE_BIN_DIR,
