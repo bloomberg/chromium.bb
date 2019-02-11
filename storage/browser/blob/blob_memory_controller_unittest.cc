@@ -54,7 +54,7 @@ class BlobMemoryControllerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::ThreadRestrictions::SetIOAllowed(false);
-  };
+  }
 
   void TearDown() override {
     files_created_.clear();
