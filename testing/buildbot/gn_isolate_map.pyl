@@ -1097,18 +1097,6 @@
     "label": "//headless:headless_browsertests",
     "type": "console_test_launcher",
   },
-  "headless_lib": {
-    "label": "//headless:headless_lib",
-    "type": "additional_compile_target",
-  },
-  "headless_shell": {
-    "label": "//headless:headless_shell",
-    "type": "additional_compile_target",
-  },
-  "headless_tests": {
-    "label": "//headless:headless_tests",
-    "type": "additional_compile_target",
-  },
   "headless_unittests": {
     "label": "//headless:headless_unittests",
     "type": "console_test_launcher",

@@ -1047,18 +1047,6 @@
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
-      'Headless Linux (dbg)': {
-        'additional_compile_targets': [
-          'headless_lib',
-          'headless_shell',
-          'headless_tests',
-        ],
-        'test_suites': {
-          'gtest_tests': 'headless_linux_gtests',
-          'scripts': 'headless_linux_scripts',
-        },
-        'use_swarming': False,
-      },
       'Jumbo Linux x64': {
         'additional_compile_targets': [
           'all',

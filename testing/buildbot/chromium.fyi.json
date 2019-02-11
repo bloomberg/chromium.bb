@@ -988,43 +988,6 @@
       }
     ]
   },
-  "Headless Linux (dbg)": {
-    "additional_compile_targets": [
-      "headless_lib",
-      "headless_shell",
-      "headless_tests"
-    ],
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_headless_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "headless_unittests"
-      }
-    ],
-    "scripts": [
-      {
-        "name": "headless_python_unittests",
-        "script": "headless_python_unittests.py"
-      }
-    ]
-  },
   "Jumbo Linux x64": {
     "additional_compile_targets": [
       "all"
