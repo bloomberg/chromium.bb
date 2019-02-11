@@ -583,7 +583,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
 
 class ErrorStreamCountingObserver : download::DownloadItem::Observer {
  public:
-  ErrorStreamCountingObserver() : item_(nullptr), count_(0){};
+  ErrorStreamCountingObserver() : item_(nullptr), count_(0) {}
 
   ~ErrorStreamCountingObserver() override {
     if (item_)
