@@ -47,36 +47,40 @@ Polymer({
 
   /**
    * @param {Page} currentPage
+   * @param {String} searchTerm
    * @private
    */
-  selectedRouteId_: function(currentPage) {
-    switch (currentPage.pageType) {
-      case (PageType.MAIN):
-        return 'main-view';
+  selectedRouteId_: function(currentPage, searchTerm) {
+    if (searchTerm) {
+      return 'search-view';
+    }
+    // This is to prevent console error caused by currentPage being undefined.
+    if (currentPage) {
+      switch (currentPage.pageType) {
+        case (PageType.MAIN):
+          return 'main-view';
 
-      case (PageType.NOTIFICATIONS):
-        return 'notifications-view';
+        case (PageType.NOTIFICATIONS):
+          return 'notifications-view';
 
-      case (PageType.SEARCH):
-        return 'search-view';
+        case (PageType.DETAIL):
+          const state = this.getState();
+          const selectedAppType =
+              state.apps[assert(state.currentPage.selectedAppId)].type;
+          switch (selectedAppType) {
+            case (AppType.kWeb):
+              return 'pwa-permission-view';
+            case (AppType.kExtension):
+              return 'chrome-app-permission-view';
+            case (AppType.kArc):
+              return 'arc-permission-view';
+            default:
+              assertNotReached();
+          }
 
-      case (PageType.DETAIL):
-        const state = this.getState();
-        const selectedAppType =
-            state.apps[assert(state.currentPage.selectedAppId)].type;
-        switch (selectedAppType) {
-          case (AppType.kWeb):
-            return 'pwa-permission-view';
-          case (AppType.kExtension):
-            return 'chrome-app-permission-view';
-          case (AppType.kArc):
-            return 'arc-permission-view';
-          default:
-            assertNotReached();
-        }
-
-      default:
-        assertNotReached();
+        default:
+          assertNotReached();
+      }
     }
   },
 });

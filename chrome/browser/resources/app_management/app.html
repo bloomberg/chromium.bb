@@ -34,7 +34,7 @@
         on-search-changed="onSearchChanged_">
     </cr-toolbar>
     <app-management-dom-switch id="view-selector"
-        route="[[selectedRouteId_(currentPage_)]]">
+        route="[[selectedRouteId_(currentPage_, searchTerm_)]]">
       <template>
         <app-management-main-view route-id="main-view">
         </app-management-main-view>

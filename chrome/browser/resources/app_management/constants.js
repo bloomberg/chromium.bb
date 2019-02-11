@@ -23,7 +23,6 @@ const PageType = {
   MAIN: 0,
   DETAIL: 1,
   NOTIFICATIONS: 2,
-  SEARCH: 3,
 };
 
 /**
