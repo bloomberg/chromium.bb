@@ -236,4 +236,59 @@ TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   EXPECT_FALSE(gfx::test::AreImagesEqual(image_99, image_100));
 }
 
+// Tests that positive time-to-full and time-to-empty estimates are honored.
+TEST_F(PowerStatusTest, PositiveBatteryTimeEstimates) {
+  constexpr auto kTime = base::TimeDelta::FromSeconds(120);
+
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_time_to_full_sec(kTime.InSeconds());
+  power_status_->SetProtoForTesting(prop);
+  base::Optional<base::TimeDelta> time = power_status_->GetBatteryTimeToFull();
+  ASSERT_TRUE(time);
+  EXPECT_EQ(kTime, *time);
+
+  prop.Clear();
+  prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  prop.set_battery_time_to_empty_sec(kTime.InSeconds());
+  power_status_->SetProtoForTesting(prop);
+  time = power_status_->GetBatteryTimeToEmpty();
+  ASSERT_TRUE(time);
+  EXPECT_EQ(kTime, *time);
+}
+
+// Tests that missing time-to-full and time-to-empty estimates (which powerd
+// sends when no battery is present) and negative ones (which powerd sends when
+// the battery current is close to zero) are disregarded:
+// https://crbug.com/930358
+TEST_F(PowerStatusTest, MissingBatteryTimeEstimates) {
+  // No battery.
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
+  power_status_->SetProtoForTesting(prop);
+  base::Optional<base::TimeDelta> time = power_status_->GetBatteryTimeToFull();
+  EXPECT_FALSE(time) << *time << " returned despite missing battery";
+  time = power_status_->GetBatteryTimeToEmpty();
+  EXPECT_FALSE(time) << *time << " returned despite missing battery";
+
+  // Battery is charging, but negative estimate provided.
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_time_to_full_sec(-1);
+  power_status_->SetProtoForTesting(prop);
+  time = power_status_->GetBatteryTimeToFull();
+  EXPECT_FALSE(time) << *time << " returned despite negative estimate";
+
+  // Battery is discharging, but negative estimate provided.
+  prop.Clear();
+  prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  prop.set_battery_time_to_empty_sec(-1);
+  power_status_->SetProtoForTesting(prop);
+  time = power_status_->GetBatteryTimeToEmpty();
+  EXPECT_FALSE(time) << *time << " returned despite negative estimate";
+}
+
 }  // namespace ash

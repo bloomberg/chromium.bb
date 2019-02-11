@@ -69,25 +69,25 @@ std::unique_ptr<Notification> CreateNotification(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_PERCENT),
       static_cast<double>(status.GetRoundedBatteryPercent()) / 100.0);
 
-  const base::TimeDelta time = status.IsBatteryCharging()
-                                   ? status.GetBatteryTimeToFull()
-                                   : status.GetBatteryTimeToEmpty();
+  const base::Optional<base::TimeDelta> time =
+      status.IsBatteryCharging() ? status.GetBatteryTimeToFull()
+                                 : status.GetBatteryTimeToEmpty();
   base::string16 time_message;
   if (status.IsUsbChargerConnected()) {
     time_message = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
-  } else if (power_utils::ShouldDisplayBatteryTime(time) &&
+  } else if (time && power_utils::ShouldDisplayBatteryTime(*time) &&
              !status.IsBatteryDischargingOnLinePower()) {
     if (status.IsBatteryCharging()) {
       base::string16 duration;
-      if (!TimeDurationFormat(time, base::DURATION_WIDTH_NARROW, &duration))
-        LOG(ERROR) << "Failed to format duration " << time;
+      if (!TimeDurationFormat(*time, base::DURATION_WIDTH_NARROW, &duration))
+        LOG(ERROR) << "Failed to format duration " << *time;
       time_message = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL, duration);
     } else {
       // This is a low battery warning prompting the user in minutes.
       time_message = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
-                                            ui::TimeFormat::LENGTH_LONG, time);
+                                            ui::TimeFormat::LENGTH_LONG, *time);
     }
   }
 

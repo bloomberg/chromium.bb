@@ -278,11 +278,23 @@ bool PowerStatus::IsBatteryTimeBeingCalculated() const {
   return proto_.is_calculating_battery_time();
 }
 
-base::TimeDelta PowerStatus::GetBatteryTimeToEmpty() const {
+base::Optional<base::TimeDelta> PowerStatus::GetBatteryTimeToEmpty() const {
+  // powerd omits the field if no battery is present and sends -1 if it couldn't
+  // compute a reasonable estimate.
+  if (!proto_.has_battery_time_to_empty_sec() ||
+      proto_.battery_time_to_empty_sec() < 0) {
+    return base::nullopt;
+  }
   return base::TimeDelta::FromSeconds(proto_.battery_time_to_empty_sec());
 }
 
-base::TimeDelta PowerStatus::GetBatteryTimeToFull() const {
+base::Optional<base::TimeDelta> PowerStatus::GetBatteryTimeToFull() const {
+  // powerd omits the field if no battery is present and sends -1 if it couldn't
+  // compute a reasonable estimate.
+  if (!proto_.has_battery_time_to_full_sec() ||
+      proto_.battery_time_to_full_sec() < 0) {
+    return base::nullopt;
+  }
   return base::TimeDelta::FromSeconds(proto_.battery_time_to_full_sec());
 }
 
@@ -389,7 +401,7 @@ base::string16 PowerStatus::GetAccessibleNameString(
     return battery_percentage_accessible;
 
   base::string16 battery_time_accessible = base::string16();
-  const base::TimeDelta time =
+  const base::Optional<base::TimeDelta> time =
       IsBatteryCharging() ? GetBatteryTimeToFull() : GetBatteryTimeToEmpty();
 
   if (IsUsbChargerConnected()) {
@@ -398,10 +410,10 @@ base::string16 PowerStatus::GetAccessibleNameString(
   } else if (IsBatteryTimeBeingCalculated()) {
     battery_time_accessible = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
-  } else if (power_utils::ShouldDisplayBatteryTime(time) &&
+  } else if (time && power_utils::ShouldDisplayBatteryTime(*time) &&
              !IsBatteryDischargingOnLinePower()) {
     int hour = 0, min = 0;
-    power_utils::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
+    power_utils::SplitTimeIntoHoursAndMinutes(*time, &hour, &min);
     base::string16 minute =
         min < 10 ? base::ASCIIToUTF16("0") + base::NumberToString16(min)
                  : base::NumberToString16(min);
@@ -432,14 +444,15 @@ std::pair<base::string16, base::string16> PowerStatus::GetStatusStrings()
       status =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
     } else {
-      base::TimeDelta time = IsBatteryCharging() ? GetBatteryTimeToFull()
+      base::Optional<base::TimeDelta> time = IsBatteryCharging()
+                                                 ? GetBatteryTimeToFull()
                                                  : GetBatteryTimeToEmpty();
-      if (power_utils::ShouldDisplayBatteryTime(time) &&
+      if (time && power_utils::ShouldDisplayBatteryTime(*time) &&
           !IsBatteryDischargingOnLinePower()) {
         base::string16 duration;
-        if (!base::TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC,
+        if (!base::TimeDurationFormat(*time, base::DURATION_WIDTH_NUMERIC,
                                       &duration))
-          LOG(ERROR) << "Failed to format duration " << time;
+          LOG(ERROR) << "Failed to format duration " << *time;
         status = l10n_util::GetStringFUTF16(
             IsBatteryCharging()
                 ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT
