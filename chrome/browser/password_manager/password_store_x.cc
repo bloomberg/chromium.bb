@@ -522,7 +522,16 @@ PasswordStoreX::MigrationToLoginDBStep PasswordStoreX::CopyBackendToLoginDB(
   for (auto& form : forms) {
     PasswordStoreChangeList changes = login_db->AddLogin(*form);
     if (changes.empty() || changes.back().type() != PasswordStoreChange::ADD) {
-      return FAILED_WRITE_TO_ENCRYPTED;
+      // AddLogin() would fail if the form has empty |origin|, empty
+      // |signon_realm|, is a duplicate blacklisting or there was an IO error.
+      // All of these cases are not supported and can be dropped.
+      if (form->signon_realm.empty() || form->origin.is_empty() ||
+          form->blacklisted_by_user) {
+        LOG(WARNING) << "Dropped a credential during migration away from the "
+                        "native backend";
+      } else {
+        return FAILED_WRITE_TO_ENCRYPTED;
+      }
     }
   }
 
