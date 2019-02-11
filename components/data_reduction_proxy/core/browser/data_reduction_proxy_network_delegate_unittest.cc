@@ -49,9 +49,6 @@
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
-#include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_features.h"
-#include "components/previews/core/test_previews_decider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -745,9 +742,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_info.UseNamedProxy(proxy);
     }
 
-    // Needed as a parameter, but functionality is not tested.
-    previews::TestPreviewsDecider test_previews_decider(true);
-
     {
       // Main frame loaded. Lo-Fi should be used.
       net::HttpRequestHeaders headers;
@@ -1053,11 +1047,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
 TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   Init(USE_INSECURE_PROXY);
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviews,
-       features::kDataReductionProxyDecidesTransform},
-      {});
-
   base::HistogramTester histogram_tester;
 
   std::string response_headers =
