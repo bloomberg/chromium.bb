@@ -15,10 +15,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/dbus/dbus_thread_linux.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/dbus/dbus_thread_linux.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -377,7 +377,7 @@ class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
   }
 
   void InvokeAction(uint32_t dbus_id, const std::string& action) {
-    chrome::GetDBusTaskRunner()->PostTask(
+    dbus_thread_linux::GetTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&NotificationPlatformBridgeLinuxTest::DoInvokeAction,
                        base::Unretained(this), dbus_id, action));

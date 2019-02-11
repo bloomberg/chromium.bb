@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dbus/dbus_thread_linux.h"
+#include "components/dbus/dbus_thread_linux.h"
 
 #include "base/task/lazy_task_runner.h"
 
-namespace chrome {
+namespace dbus_thread_linux {
 
 namespace {
 
@@ -22,8 +22,8 @@ base::LazySingleThreadTaskRunner g_dbus_thread_task_runner =
 
 }  // namespace
 
-scoped_refptr<base::SingleThreadTaskRunner> GetDBusTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
   return g_dbus_thread_task_runner.Get();
 }
 
-}  // namespace chrome
+}  // namespace dbus_thread_linux
