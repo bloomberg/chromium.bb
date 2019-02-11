@@ -346,4 +346,7 @@ interface LoginScreenClient {
   // the login screen / OOBE. |reverse| is true when the focus moves in the
   // reversed direction.
   OnFocusLeavingSystemTray(bool reverse);
+
+  // Used by Ash to signal that user activity occurred on the login screen.
+  OnUserActivity();
 };

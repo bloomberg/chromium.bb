@@ -94,6 +94,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD0(ShowAccountAccessHelpApp, void());
   MOCK_METHOD0(FocusOobeDialog, void());
   MOCK_METHOD1(OnFocusLeavingSystemTray, void(bool reverse));
+  MOCK_METHOD0(OnUserActivity, void());
 
  private:
   bool authenticate_user_callback_result_ = true;

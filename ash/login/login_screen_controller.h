@@ -91,6 +91,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void ShowResetScreen();
   void ShowAccountAccessHelpApp();
   void FocusOobeDialog();
+  void NotifyUserActivity();
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);

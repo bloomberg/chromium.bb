@@ -563,6 +563,10 @@ void LoginScreenController::FocusOobeDialog() {
   login_screen_client_->FocusOobeDialog();
 }
 
+void LoginScreenController::NotifyUserActivity() {
+  login_screen_client_->OnUserActivity();
+}
+
 void LoginScreenController::OnAuthenticateComplete(
     OnAuthenticateCallback callback,
     bool success) {

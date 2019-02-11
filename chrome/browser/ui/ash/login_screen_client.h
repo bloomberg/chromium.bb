@@ -114,6 +114,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void ShowResetScreen() override;
   void ShowAccountAccessHelpApp() override;
   void OnFocusLeavingSystemTray(bool reverse) override;
+  void OnUserActivity() override;
 
  private:
   void SetPublicSessionKeyboardLayout(
