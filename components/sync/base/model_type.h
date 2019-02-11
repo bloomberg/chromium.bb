@@ -138,6 +138,8 @@ enum ModelType {
   USER_CONSENTS,
   // Tabs sent between devices.
   SEND_TAB_TO_SELF,
+  // Commit only security events.
+  SECURITY_EVENTS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -217,7 +219,7 @@ constexpr ModelTypeSet ProtocolTypes() {
       DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES, APP_LIST,
       DEPRECATED_WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
       PRINTERS, READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS, MOUNTAIN_SHARES,
-      USER_CONSENTS, SEND_TAB_TO_SELF);
+      USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -285,7 +287,7 @@ constexpr bool IsControlType(ModelType model_type) {
 
 // Types that may commit data, but should never be included in a GetUpdates.
 constexpr ModelTypeSet CommitOnlyTypes() {
-  return ModelTypeSet(USER_EVENTS, USER_CONSENTS);
+  return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS);
 }
 
 ModelTypeNameMap GetUserSelectableTypeNameMap();
