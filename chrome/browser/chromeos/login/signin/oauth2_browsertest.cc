@@ -41,7 +41,6 @@
 #include "components/account_id/account_id.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
