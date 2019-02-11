@@ -1853,13 +1853,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
 }
 #endif
 
-// Flaky on Chrome OS only. TODO(https://crbug.com/823043) fix it.
-#if defined(OS_CHROMEOS)
-#define MAYBE_WindowOpenClose1 DISABLED_WindowOpenClose1
-#else
-#define MAYBE_WindowOpenClose1 WindowOpenClose1
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose1) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose1) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
