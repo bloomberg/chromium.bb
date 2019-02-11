@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_MODEL_H_
 #define COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_MODEL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/observer_list.h"
@@ -32,10 +33,19 @@ class SendTabToSelfModel {
       const std::string& guid) const = 0;
 
   // Adds |url| at the top of the entries. The entry title will be a
-  // trimmed copy of |title|.
+  // trimmed copy of |title|. Allows clients to modify the state of the model
+  // as driven by user behaviors.
   virtual const SendTabToSelfEntry* AddEntry(const GURL& url,
                                              const std::string& title,
                                              base::Time navigation_time) = 0;
+
+  // Remove entry with |guid| from entries. Allows clients to modify the state
+  // of the  model as driven by user behaviors.
+  virtual void DeleteEntry(const std::string& guid) = 0;
+
+  // Dismiss entry with |guid| from entries. Allows clients to modify the state
+  // of the  model as driven by user behaviors.
+  virtual void DismissEntry(const std::string& guid) = 0;
 
   // Observer registration methods. The model will remove all observers upon
   // destruction automatically.

@@ -54,10 +54,16 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::MergeSyncData(
 base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
+  std::vector<const SendTabToSelfEntry*> added;
+  std::vector<std::string> removed;
   for (syncer::EntityChange& change : entity_changes) {
     if (change.type() == syncer::EntityChange::ACTION_DELETE) {
       entries_.erase(change.storage_key());
+      removed.push_back(change.storage_key());
     } else {
+      // syncer::EntityChange::ACTION_UPDATE is not supported by this bridge
+      DCHECK(change.type() == syncer::EntityChange::ACTION_ADD);
+
       const sync_pb::SendTabToSelfSpecifics& specifics =
           change.data().specifics.send_tab_to_self();
       // TODO(jeffreycohen): FromProto expects a valid entry. External data
@@ -65,11 +71,15 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
       std::unique_ptr<SendTabToSelfEntry> entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());
       // This entry is new. Add it to the model.
+      added.push_back(entry.get());
       entries_[entry->GetGUID()] = std::move(entry);
     }
   }
-  if (!entity_changes.empty()) {
-    NotifySendTabToSelfModelChanged();
+  if (!removed.empty()) {
+    NotifySendTabToSelfEntryDeleted(removed);
+  }
+  if (!added.empty()) {
+    NotifySendTabToSelfEntryAdded(added);
   }
   return base::nullopt;
 }
@@ -175,14 +185,49 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   const SendTabToSelfEntry* result =
       entries_.emplace(guid, std::move(entry)).first->second.get();
-  NotifySendTabToSelfModelChanged();
+
+  NotifySendTabToSelfEntryAdded(std::vector<const SendTabToSelfEntry*>{result});
 
   return result;
 }
 
-void SendTabToSelfBridge::NotifySendTabToSelfModelChanged() {
-  for (SendTabToSelfModelObserver& observer : observers_)
-    observer.SendTabToSelfModelChanged();
+void SendTabToSelfBridge::DeleteEntry(const std::string& guid) {
+  // Assure that an entry with that guid exists.
+  if (GetEntryByGUID(guid) == nullptr) {
+    return;
+  }
+
+  DCHECK(change_processor()->IsTrackingMetadata());
+  syncer::InMemoryMetadataChangeList metadata_change_list;
+  change_processor()->Delete(guid, &metadata_change_list);
+
+  entries_.erase(guid);
+
+  NotifySendTabToSelfEntryDeleted(std::vector<std::string>{guid});
+}
+
+void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
+  // Assure that an entry with that guid exists.
+  if (GetEntryByGUID(guid) == nullptr) {
+    return;
+  }
+
+  NOTIMPLEMENTED();
+  // TODO(jeffreycohen) Implement once there is local storage.
+}
+
+void SendTabToSelfBridge::NotifySendTabToSelfEntryAdded(
+    const std::vector<const SendTabToSelfEntry*>& new_entries) {
+  for (SendTabToSelfModelObserver& observer : observers_) {
+    observer.SendTabToSelfEntriesAdded(new_entries);
+  }
+}
+
+void SendTabToSelfBridge::NotifySendTabToSelfEntryDeleted(
+    const std::vector<std::string>& guids) {
+  for (SendTabToSelfModelObserver& observer : observers_) {
+    observer.SendTabToSelfEntriesRemoved(guids);
+  }
 }
 
 }  // namespace send_tab_to_self
