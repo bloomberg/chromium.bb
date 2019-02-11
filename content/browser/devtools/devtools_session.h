@@ -87,11 +87,11 @@ class DevToolsSession : public protocol::FrontendChannel,
 
   // blink::mojom::DevToolsSessionHost implementation.
   void DispatchProtocolResponse(
-      const std::string& message,
+      blink::mojom::DevToolsMessagePtr message,
       int call_id,
       blink::mojom::DevToolsSessionStatePtr updates) override;
   void DispatchProtocolNotification(
-      const std::string& message,
+      blink::mojom::DevToolsMessagePtr message,
       blink::mojom::DevToolsSessionStatePtr updates) override;
 
   // DevToolsExternalAgentProxy implementation.
