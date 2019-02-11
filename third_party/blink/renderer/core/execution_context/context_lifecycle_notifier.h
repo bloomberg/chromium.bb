@@ -29,24 +29,26 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_NOTIFIER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/pause_state.h"
 #include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 
 namespace blink {
 
 class ContextLifecycleObserver;
+class ContextLifecycleStateObserver;
 class ExecutionContext;
-class PausableObject;
 
 class CORE_EXPORT ContextLifecycleNotifier
     : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
  public:
-  void NotifyResumingPausableObjects();
-  void NotifySuspendingPausableObjects(PauseState state);
+  void NotifyContextLifecycleStateChanged(mojom::FrameLifecycleState state);
 
-  unsigned PausableObjectCount() const;
+  unsigned ContextLifecycleStateObserverCount() const;
 
+#if DCHECK_IS_ON()
+  bool Contains(ContextLifecycleStateObserver*) const;
+#endif
  protected:
   // Need a default constructor to link core and modules separately.
   // If no default constructor, we will see an error: "constructor for
@@ -55,9 +57,6 @@ class CORE_EXPORT ContextLifecycleNotifier
   // constructor ExecutionContext::ExecutionContext()".
   ContextLifecycleNotifier() = default;
 
-#if DCHECK_IS_ON()
-  bool Contains(PausableObject*) const;
-#endif
   DISALLOW_COPY_AND_ASSIGN(ContextLifecycleNotifier);
 };
 

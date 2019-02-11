@@ -214,7 +214,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElementPersistentTest;
 
-  // PausableObject functions.
+  // ContextLifecycleStateObserver functions.
   void ContextDestroyed(ExecutionContext*) final;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;

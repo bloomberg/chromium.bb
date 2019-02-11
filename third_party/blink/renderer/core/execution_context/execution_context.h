@@ -34,11 +34,11 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/execution_context/pause_state.h"
 #include "third_party/blink/renderer/core/loader/console_logger_impl_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
@@ -71,7 +71,6 @@ class FrameOrWorkerScheduler;
 class InterfaceInvalidator;
 class KURL;
 class LocalDOMWindow;
-class PausableObject;
 class PublicURLManager;
 class ResourceFetcher;
 class SecurityContext;
@@ -197,28 +196,23 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual void RemoveURLFromMemoryCache(const KURL&);
 
-  void PausePausableObjects(PauseState);
-  void UnpausePausableObjects();
-  void StopPausableObjects();
+  void SetLifecycleState(mojom::FrameLifecycleState);
   void NotifyContextDestroyed() override;
 
-  void PauseScheduledTasks(PauseState);
-  void UnpauseScheduledTasks();
-
   // TODO(haraken): Remove these methods by making the customers inherit from
-  // PausableObject. PausableObject is a standard way to observe context
-  // suspension/resumption.
+  // ContextLifecycleObserver. ContextLifecycleObserver is a standard way to
+  // observe context suspension/resumption.
   virtual bool TasksNeedPause() { return false; }
   virtual void TasksWerePaused() {}
   virtual void TasksWereUnpaused() {}
 
-  bool IsContextPaused() const { return pause_state_.has_value(); }
+  bool IsContextPaused() const {
+    return lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
+  }
   bool IsContextDestroyed() const { return is_context_destroyed_; }
-  base::Optional<PauseState> ContextPauseState() const { return pause_state_; }
-
-  // Called after the construction of an PausableObject to synchronize
-  // pause state.
-  void PausePausableObjectIfNeeded(PausableObject*);
+  mojom::FrameLifecycleState ContextPauseState() const {
+    return lifecycle_state_;
+  }
 
   // Gets the next id in a circular sequence from 1 to 2^31-1.
   int CircularSequentialID();
@@ -289,7 +283,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool in_dispatch_error_event_;
   HeapVector<Member<ErrorEvent>> pending_exceptions_;
 
-  base::Optional<PauseState> pause_state_;
+  mojom::FrameLifecycleState lifecycle_state_ =
+      mojom::FrameLifecycleState::kRunning;
   bool is_context_destroyed_;
 
   Member<PublicURLManager> public_url_manager_;

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/modules/vr/vr_display_capabilities.h"
 #include "third_party/blink/renderer/modules/vr/vr_layer_init.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_frame_transport.h"
@@ -75,13 +75,21 @@ enum VREye { kVREyeNone, kVREyeLeft, kVREyeRight };
 
 class VRDisplay final : public EventTargetWithInlineData,
                         public ActiveScriptWrappable<VRDisplay>,
-                        public PausableObject,
+                        public ContextLifecycleStateObserver,
                         public device::mojom::blink::VRDisplayClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(VRDisplay);
   USING_PRE_FINALIZER(VRDisplay, Dispose);
 
  public:
+  static VRDisplay* Create(NavigatorVR* navigator,
+                           device::mojom::blink::XRDevicePtr device) {
+    VRDisplay* display =
+        MakeGarbageCollected<VRDisplay>(navigator, std::move(device));
+    display->UpdateStateIfNeeded();
+    return display;
+  }
+
   VRDisplay(NavigatorVR*, device::mojom::blink::XRDevicePtr);
   ~VRDisplay() override;
 
@@ -130,8 +138,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  // PausableObject:
-  void ContextUnpaused() override;
+  // ContextLifecycleStateObserver:
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr, bool is_immersive);
   void OnExitPresent(bool is_immersive);

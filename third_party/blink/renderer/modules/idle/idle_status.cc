@@ -13,14 +13,21 @@
 
 namespace blink {
 
+IdleStatus* IdleStatus::Create(ExecutionContext* context,
+                               uint32_t threshold,
+                               mojom::blink::IdleMonitorRequest request) {
+  auto* status =
+      MakeGarbageCollected<IdleStatus>(context, threshold, std::move(request));
+  status->UpdateStateIfNeeded();
+  return status;
+}
+
 IdleStatus::IdleStatus(ExecutionContext* context,
                        uint32_t threshold,
                        mojom::blink::IdleMonitorRequest request)
-    : PausableObject(context),
+    : ContextLifecycleStateObserver(context),
       threshold_(threshold),
-      binding_(this, std::move(request)) {
-  PauseIfNeeded();
-}
+      binding_(this, std::move(request)) {}
 
 void IdleStatus::Init(IdleState state) {
   state_ = state;
@@ -44,12 +51,12 @@ bool IdleStatus::HasPendingActivity() const {
   return binding_.is_bound();
 }
 
-void IdleStatus::ContextUnpaused() {
-  StartMonitoring();
-}
-
-void IdleStatus::ContextPaused(PauseState) {
-  StopMonitoring();
+void IdleStatus::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    StartMonitoring();
+  else
+    StopMonitoring();
 }
 
 void IdleStatus::ContextDestroyed(ExecutionContext*) {
@@ -101,7 +108,7 @@ void IdleStatus::Update(IdleState state) {
 
 void IdleStatus::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

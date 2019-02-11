@@ -28,45 +28,30 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 
 #include "base/auto_reset.h"
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 
 namespace blink {
 
-void ContextLifecycleNotifier::NotifyResumingPausableObjects() {
+void ContextLifecycleNotifier::NotifyContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
   ForEachObserver([&](ContextLifecycleObserver* observer) {
-    if (observer->ObserverType() !=
-        ContextLifecycleObserver::kPausableObjectType)
+    if (observer->ObserverType() != ContextLifecycleObserver::kStateObjectType)
       return;
-    PausableObject* pausable_object = static_cast<PausableObject*>(observer);
+    ContextLifecycleStateObserver* state_observer =
+        static_cast<ContextLifecycleStateObserver*>(observer);
 #if DCHECK_IS_ON()
-    DCHECK_EQ(pausable_object->GetExecutionContext(), Context());
-    DCHECK(pausable_object->PauseIfNeededCalled());
+    DCHECK_EQ(state_observer->GetExecutionContext(), Context());
+    DCHECK(state_observer->UpdateStateIfNeededCalled());
 #endif
-    pausable_object->ContextUnpaused();
+    state_observer->ContextLifecycleStateChanged(state);
   });
 }
 
-void ContextLifecycleNotifier::NotifySuspendingPausableObjects(
-    PauseState state) {
-  ForEachObserver([&](ContextLifecycleObserver* observer) {
-    if (observer->ObserverType() !=
-        ContextLifecycleObserver::kPausableObjectType)
-      return;
-    PausableObject* pausable_object = static_cast<PausableObject*>(observer);
-#if DCHECK_IS_ON()
-    DCHECK_EQ(pausable_object->GetExecutionContext(), Context());
-    DCHECK(pausable_object->PauseIfNeededCalled());
-#endif
-    pausable_object->ContextPaused(state);
-  });
-}
-
-unsigned ContextLifecycleNotifier::PausableObjectCount() const {
+unsigned ContextLifecycleNotifier::ContextLifecycleStateObserverCount() const {
   DCHECK(!IsIteratingOverObservers());
   unsigned pausable_objects = 0;
   ForEachObserver([&](ContextLifecycleObserver* observer) {
-    if (observer->ObserverType() !=
-        ContextLifecycleObserver::kPausableObjectType)
+    if (observer->ObserverType() != ContextLifecycleObserver::kStateObjectType)
       return;
     pausable_objects++;
   });
@@ -74,15 +59,16 @@ unsigned ContextLifecycleNotifier::PausableObjectCount() const {
 }
 
 #if DCHECK_IS_ON()
-bool ContextLifecycleNotifier::Contains(PausableObject* object) const {
+bool ContextLifecycleNotifier::Contains(
+    ContextLifecycleStateObserver* object) const {
   DCHECK(!IsIteratingOverObservers());
   bool found = false;
   ForEachObserver([&](ContextLifecycleObserver* observer) {
-    if (observer->ObserverType() !=
-        ContextLifecycleObserver::kPausableObjectType)
+    if (observer->ObserverType() != ContextLifecycleObserver::kStateObjectType)
       return;
-    PausableObject* pausable_object = static_cast<PausableObject*>(observer);
-    if (pausable_object == object)
+    ContextLifecycleStateObserver* state_observer =
+        static_cast<ContextLifecycleStateObserver*>(observer);
+    if (state_observer == object)
       found = true;
   });
   return found;

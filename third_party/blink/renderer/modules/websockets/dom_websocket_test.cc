@@ -82,7 +82,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
   static DOMWebSocketWithMockChannel* Create(ExecutionContext* context) {
     DOMWebSocketWithMockChannel* websocket =
         MakeGarbageCollected<DOMWebSocketWithMockChannel>(context);
-    websocket->PauseIfNeeded();
+    websocket->UpdateStateIfNeeded();
     return websocket;
   }
 

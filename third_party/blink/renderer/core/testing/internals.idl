@@ -155,7 +155,7 @@ enum EffectiveConnectionType {
 
     unsigned long mediaKeysCount();
     unsigned long mediaKeySessionCount();
-    unsigned long pausableObjectCount(Document document);
+    unsigned long contextLifecycleStateObserverObjectCount(Document document);
     unsigned long wheelEventHandlerCount(Document document);
     unsigned long scrollEventHandlerCount(Document document);
     unsigned long touchStartOrMoveEventHandlerCount(Document document);

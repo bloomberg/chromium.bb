@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -77,41 +77,25 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
   return ToExecutionContext(info.Holder()->CreationContext());
 }
 
-void ExecutionContext::PausePausableObjects(PauseState state) {
-  DCHECK(!pause_state_);
-  pause_state_ = state;
-  NotifySuspendingPausableObjects(state);
-}
+void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
+  bool was_paused = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
+  lifecycle_state_ = state;
+  NotifyContextLifecycleStateChanged(state);
+  bool paused = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
 
-void ExecutionContext::UnpausePausableObjects() {
-  DCHECK(pause_state_.has_value());
-  pause_state_.reset();
-  NotifyResumingPausableObjects();
+  if (was_paused == paused)
+    return;
+
+  if (paused)
+    TasksWerePaused();
+  else
+    TasksWereUnpaused();
 }
 
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   invalidator_.reset();
   ContextLifecycleNotifier::NotifyContextDestroyed();
-}
-
-void ExecutionContext::PauseScheduledTasks(PauseState state) {
-  PausePausableObjects(state);
-  TasksWerePaused();
-}
-
-void ExecutionContext::UnpauseScheduledTasks() {
-  UnpausePausableObjects();
-  TasksWereUnpaused();
-}
-
-void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
-#if DCHECK_IS_ON()
-  DCHECK(Contains(object));
-#endif
-  // Ensure all PausableObjects are paused also newly created ones.
-  if (pause_state_)
-    object->ContextPaused(pause_state_.value());
 }
 
 void ExecutionContext::DispatchErrorEvent(

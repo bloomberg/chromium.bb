@@ -32,7 +32,7 @@ const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
 const int kInitialNumberOfLiveResourceFetchers = 1;
-const int kInitialNumberOfLivePausableObject = 0;
+const int kInitialNumberOfLiveContextLifecycleStateObservers = 0;
 
 // This includes not only about:blank's context but also ScriptRegexp (e.g.
 // created by isValidEmailAddress in EmailInputType.cpp). The leak detector
@@ -48,8 +48,8 @@ LeakDetector::LeakDetector() : weak_factory_(this) {
   previous_result_->number_of_live_layout_objects =
       kInitialNumberOfLiveLayoutObjects;
   previous_result_->number_of_live_resources = kInitialNumberOfLiveResources;
-  previous_result_->number_of_live_pausable_objects =
-      kInitialNumberOfLivePausableObject;
+  previous_result_->number_of_live_context_lifecycle_state_observers =
+      kInitialNumberOfLiveContextLifecycleStateObservers;
   previous_result_->number_of_live_script_promises =
       kInitialNumberOfScriptPromises;
   previous_result_->number_of_live_frames = kInitialNumberOfLiveFrames;
@@ -118,12 +118,14 @@ void LeakDetector::OnLeakDetectionComplete(
       list->AppendInteger(result->number_of_live_resources);
       detail.Set("numberOfLiveResources", std::move(list));
     }
-    if (previous_result_->number_of_live_pausable_objects <
-        result->number_of_live_pausable_objects) {
+    if (previous_result_->number_of_live_context_lifecycle_state_observers <
+        result->number_of_live_context_lifecycle_state_observers) {
       auto list = std::make_unique<base::ListValue>();
-      list->AppendInteger(previous_result_->number_of_live_pausable_objects);
-      list->AppendInteger(result->number_of_live_pausable_objects);
-      detail.Set("numberOfLivePausableObjects", std::move(list));
+      list->AppendInteger(
+          previous_result_->number_of_live_context_lifecycle_state_observers);
+      list->AppendInteger(
+          result->number_of_live_context_lifecycle_state_observers);
+      detail.Set("numberOfLiveContextLifecycleStateObservers", std::move(list));
     }
     if (previous_result_->number_of_live_script_promises <
         result->number_of_live_script_promises) {

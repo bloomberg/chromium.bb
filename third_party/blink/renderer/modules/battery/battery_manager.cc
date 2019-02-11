@@ -16,14 +16,15 @@ namespace blink {
 BatteryManager* BatteryManager::Create(ExecutionContext* context) {
   BatteryManager* battery_manager =
       MakeGarbageCollected<BatteryManager>(context);
-  battery_manager->PauseIfNeeded();
+  battery_manager->UpdateStateIfNeeded();
   return battery_manager;
 }
 
 BatteryManager::~BatteryManager() = default;
 
 BatteryManager::BatteryManager(ExecutionContext* context)
-    : PausableObject(context), PlatformEventController(To<Document>(context)) {}
+    : ContextLifecycleStateObserver(context),
+      PlatformEventController(To<Document>(context)) {}
 
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
   if (!battery_property_) {
@@ -96,14 +97,15 @@ bool BatteryManager::HasLastData() {
   return BatteryDispatcher::Instance().LatestData();
 }
 
-void BatteryManager::ContextPaused(PauseState) {
-  has_event_listener_ = false;
-  StopUpdating();
-}
-
-void BatteryManager::ContextUnpaused() {
-  has_event_listener_ = true;
-  StartUpdating();
+void BatteryManager::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning) {
+    has_event_listener_ = true;
+    StartUpdating();
+  } else {
+    has_event_listener_ = false;
+    StopUpdating();
+  }
 }
 
 void BatteryManager::ContextDestroyed(ExecutionContext*) {
@@ -124,7 +126,7 @@ void BatteryManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(battery_property_);
   PlatformEventController::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

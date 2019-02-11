@@ -9,7 +9,7 @@
 #include "third_party/blink/public/platform/modules/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -19,7 +19,7 @@ namespace blink {
 
 class IdleStatus final : public EventTargetWithInlineData,
                          public ActiveScriptWrappable<IdleStatus>,
-                         public PausableObject,
+                         public ContextLifecycleStateObserver,
                          public mojom::blink::IdleMonitor {
   USING_GARBAGE_COLLECTED_MIXIN(IdleStatus);
   DEFINE_WRAPPERTYPEINFO();
@@ -32,10 +32,13 @@ class IdleStatus final : public EventTargetWithInlineData,
   // Constructed by the IdleManager when queried by script, but not returned
   // to script until the monitor has been registered by the service and
   // returned an initial state.
+  static IdleStatus* Create(ExecutionContext* context,
+                            uint32_t threshold,
+                            mojom::blink::IdleMonitorRequest request);
+
   IdleStatus(ExecutionContext*,
              uint32_t threshold,
              mojom::blink::IdleMonitorRequest);
-
   ~IdleStatus() override;
   void Dispose();
 
@@ -49,9 +52,8 @@ class IdleStatus final : public EventTargetWithInlineData,
   // ActiveScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  // PausableObject implementation.
-  void ContextPaused(PauseState) override;
-  void ContextUnpaused() override;
+  // ContextLifecycleStateObserver implementation.
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
   void ContextDestroyed(ExecutionContext*) override;
 
   // IdleStatus IDL interface.

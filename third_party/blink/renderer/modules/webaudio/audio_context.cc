@@ -66,7 +66,7 @@ AudioContext* AudioContext::Create(Document& document,
 
   AudioContext* audio_context =
       MakeGarbageCollected<AudioContext>(document, latency_hint);
-  audio_context->PauseIfNeeded();
+  audio_context->UpdateStateIfNeeded();
 
   if (!audio_utilities::IsValidAudioBufferSampleRate(
           audio_context->sampleRate())) {

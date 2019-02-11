@@ -448,7 +448,7 @@ void HTMLMediaElement::OnMediaControlsEnabledChange(Document* document) {
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document),
-      PausableObject(&document),
+      ContextLifecycleStateObserver(&document),
       load_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                   this,
                   &HTMLMediaElement::LoadTimerFired),
@@ -602,7 +602,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // load event from within the destructor.
   old_document.DecrementLoadEventDelayCount();
 
-  PausableObject::DidMoveToNewExecutionContext(&GetDocument());
+  ContextLifecycleStateObserver::DidMoveToNewExecutionContext(&GetDocument());
   HTMLElement::DidMoveToNewDocument(old_document);
 }
 
@@ -3558,15 +3558,15 @@ void HTMLMediaElement::ClearMediaPlayer() {
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 }
 
-void HTMLMediaElement::ContextPaused(PauseState pause_state) {
-  if (pause_state == PauseState::kFrozen && playing_) {
+void HTMLMediaElement::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia && playing_) {
     paused_by_context_paused_ = true;
     pause();
-  }
-}
-
-void HTMLMediaElement::ContextUnpaused() {
-  if (paused_by_context_paused_) {
+  } else if (state == mojom::FrameLifecycleState::kFrozen && playing_) {
+    pause();
+  } else if (state == mojom::FrameLifecycleState::kRunning &&
+             paused_by_context_paused_) {
     paused_by_context_paused_ = false;
     Play();
   }
@@ -3989,7 +3989,7 @@ void HTMLMediaElement::Trace(Visitor* visitor) {
       this);
   Supplementable<HTMLMediaElement>::Trace(visitor);
   HTMLElement::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 void HTMLMediaElement::CreatePlaceholderTracksIfNecessary() {

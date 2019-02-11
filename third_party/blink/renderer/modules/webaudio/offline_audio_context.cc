@@ -93,7 +93,7 @@ OfflineAudioContext* OfflineAudioContext::Create(
       MakeGarbageCollected<OfflineAudioContext>(document, number_of_channels,
                                                 number_of_frames, sample_rate,
                                                 exception_state);
-  audio_context->PauseIfNeeded();
+  audio_context->UpdateStateIfNeeded();
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: OfflineAudioContext::OfflineAudioContext()\n",

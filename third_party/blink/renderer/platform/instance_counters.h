@@ -38,24 +38,24 @@
 
 namespace blink {
 
-#define INSTANCE_COUNTERS_LIST(V) \
-  V(AudioHandler)                 \
-  V(Document)                     \
-  V(Frame)                        \
-  V(JSEventListener)              \
-  V(LayoutObject)                 \
-  V(MediaKeySession)              \
-  V(MediaKeys)                    \
-  V(Node)                         \
-  V(Resource)                     \
-  V(ScriptPromise)                \
-  V(PausableObject)               \
-  V(V8PerContextData)             \
-  V(WorkerGlobalScope)            \
-  V(UACSSResource)                \
-  V(RTCPeerConnection)            \
-  V(ResourceFetcher)              \
-  V(AdSubframe)                   \
+#define INSTANCE_COUNTERS_LIST(V)  \
+  V(AudioHandler)                  \
+  V(Document)                      \
+  V(Frame)                         \
+  V(JSEventListener)               \
+  V(LayoutObject)                  \
+  V(MediaKeySession)               \
+  V(MediaKeys)                     \
+  V(Node)                          \
+  V(Resource)                      \
+  V(ScriptPromise)                 \
+  V(ContextLifecycleStateObserver) \
+  V(V8PerContextData)              \
+  V(WorkerGlobalScope)             \
+  V(UACSSResource)                 \
+  V(RTCPeerConnection)             \
+  V(ResourceFetcher)               \
+  V(AdSubframe)                    \
   V(DetachedScriptState)
 
 // Atomic counters of the number of instances of objects that exist.
