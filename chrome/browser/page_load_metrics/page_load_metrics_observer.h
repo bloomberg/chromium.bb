@@ -86,15 +86,16 @@ struct FailedProvisionalLoadInfo {
 // element are examples of user initiation actions.
 struct UserInitiatedInfo {
   static UserInitiatedInfo NotUserInitiated() {
-    return UserInitiatedInfo(false, false);
+    return UserInitiatedInfo(false, false, false);
   }
 
   static UserInitiatedInfo BrowserInitiated() {
-    return UserInitiatedInfo(true, false);
+    return UserInitiatedInfo(true, false, false);
   }
 
-  static UserInitiatedInfo RenderInitiated(bool user_gesture) {
-    return UserInitiatedInfo(false, user_gesture);
+  static UserInitiatedInfo RenderInitiated(bool user_gesture,
+                                           bool user_input_event) {
+    return UserInitiatedInfo(false, user_gesture, user_input_event);
   }
 
   // Whether the associated action was initiated from the browser process, as
@@ -104,11 +105,23 @@ struct UserInitiatedInfo {
 
   // Whether the associated action was initiated by a user, according to user
   // gesture tracking in content and Blink, as reported by NavigationHandle.
+  // This is based on the heuristic the popup blocker uses.
   bool user_gesture;
 
+  // Whether an input even directly led to the navigation, according to
+  // input start time tracking in the renderer, as reported by NavigationHandle.
+  // Note that this metric is still experimental and may not be fully
+  // implemented. All known issues are blocking crbug.com/889220. Currently
+  // all known gaps affect browser-side navigations.
+  bool user_input_event;
+
  private:
-  UserInitiatedInfo(bool browser_initiated, bool user_gesture)
-      : browser_initiated(browser_initiated), user_gesture(user_gesture) {}
+  UserInitiatedInfo(bool browser_initiated,
+                    bool user_gesture,
+                    bool user_input_event)
+      : browser_initiated(browser_initiated),
+        user_gesture(user_gesture),
+        user_input_event(user_input_event) {}
 };
 
 struct PageLoadExtraInfo {
