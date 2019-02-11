@@ -27,6 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import copy
 import sys
 
 from blinkbuild.name_style_converter import NameStyleConverter
@@ -57,6 +58,12 @@ class RuntimeFeatureWriter(json5_generator.Writer):
             for dependant_name in feature['depends_on']:
                 enabled_condition += ' && ' + self._data_member_name(dependant_name)
             feature['enabled_condition'] = enabled_condition
+            # If 'status' is a dict, add the values for all the not-mentioned platforms too.
+            if isinstance(feature['status'], dict):
+                feature['status'] = self._status_with_all_platforms(feature['status'])
+            # Specify the type of status
+            feature['status_type'] = "dict" if isinstance(feature['status'], dict) else "str"
+
         self._standard_features = [feature for feature in self._features if not feature['custom']]
         self._origin_trial_features = [feature for feature in self._features if feature['origin_trial_feature_name']]
         self._header_guard = self.make_header_guard(self._relative_output_dir + self.file_basename + '.h')
@@ -71,10 +78,25 @@ class RuntimeFeatureWriter(json5_generator.Writer):
         # which is how we're referring to them in this generator.
         return self.json5_file.parameters['status']['valid_values']
 
+    def _status_with_all_platforms(self, status):
+        new_status = copy.deepcopy(status)
+        default = new_status['default'] if 'default' in new_status else ''
+        new_status['default'] = default
+        for platform in self._platforms():
+            if platform not in new_status:
+                new_status[platform] = default
+        return new_status
+
+    def _platforms(self):
+        # Remove all occurrences of 'default' from 'valid_keys'
+        platforms = self.json5_file.parameters['status']['valid_keys']
+        return [platform for platform in platforms if platform != 'default']
+
     def _template_inputs(self):
         return {
             'features': self._features,
             'feature_sets': self._feature_sets(),
+            'platforms': self._platforms(),
             'input_files': self._input_files,
             'standard_features': self._standard_features,
             'origin_trial_controlled_features': self._origin_trial_features,
