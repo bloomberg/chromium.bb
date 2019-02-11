@@ -14,10 +14,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store_change_unittest.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -229,6 +231,64 @@ TEST_F(CookieStoreIOSTest, SetCookieCallsHookWhenSynchronized) {
   EXPECT_EQ("ghi", cookies_changed_[2].Value());
   EXPECT_FALSE(cookies_removed_[2]);
   DeleteSystemCookie(kTestCookieURLFooBar, "abc");
+}
+
+TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
+  // Make sure DeleteCanonicalCookieAsync does not rely on creation time.
+  GetCookies(base::BindOnce(&IgnoreList));
+  ClearCookies();
+  SetCookie("abc=def");
+
+  // Match options to what SetCookie uses.
+  CookieOptions options;
+  options.set_include_httponly();
+
+  // Time is different, though.
+  base::Time not_now = base::Time::Now() - base::TimeDelta::FromDays(30);
+
+  // Semantics for CookieMonster::DeleteCanonicalCookieAsync don't match deletes
+  // for same key if cookie value changed.  Document CookieStoreIOS compat.
+  std::unique_ptr<CanonicalCookie> non_equiv_cookie = CanonicalCookie::Create(
+      kTestCookieURLFooBar, "abc=wfg", not_now, options);
+  base::RunLoop run_loop;
+  store_->DeleteCanonicalCookieAsync(
+      *non_equiv_cookie, base::BindLambdaForTesting([&](uint32_t deleted) {
+        EXPECT_EQ(0U, deleted);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // Cookie should still exist.
+  base::RunLoop run_loop2;
+  GetCookies(base::BindLambdaForTesting(
+      [&](const CookieList& cookies, const CookieStatusList& excluded_list) {
+        ASSERT_EQ(1u, cookies.size());
+        EXPECT_EQ("abc", cookies[0].Name());
+        EXPECT_EQ("def", cookies[0].Value());
+        run_loop2.Quit();
+      }));
+  run_loop2.Run();
+
+  // Now delete equivalent one with non-matching ctime.
+  std::unique_ptr<CanonicalCookie> equiv_cookie = CanonicalCookie::Create(
+      kTestCookieURLFooBar, "abc=def", not_now, options);
+
+  base::RunLoop run_loop3;
+  store_->DeleteCanonicalCookieAsync(
+      *equiv_cookie, base::BindLambdaForTesting([&](uint32_t deleted) {
+        EXPECT_EQ(1U, deleted);
+        run_loop3.Quit();
+      }));
+  run_loop3.Run();
+
+  // Cookie should no longer exist.
+  base::RunLoop run_loop4;
+  GetCookies(base::BindLambdaForTesting(
+      [&](const CookieList& cookies, const CookieStatusList& excluded_list) {
+        EXPECT_EQ(0u, cookies.size());
+        run_loop4.Quit();
+      }));
+  run_loop4.Run();
 }
 
 TEST_F(CookieStoreIOSTest, DeleteCallsHook) {
