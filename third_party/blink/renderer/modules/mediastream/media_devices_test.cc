@@ -130,7 +130,7 @@ class MockMediaDevicesDispatcherHost
       bool subscribe_audio_output,
       mojom::blink::MediaDevicesListenerPtr listener) override {
     listener_ = std::move(listener);
-  };
+  }
 
   mojom::blink::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     mojom::blink::MediaDevicesDispatcherHostPtr ptr;
