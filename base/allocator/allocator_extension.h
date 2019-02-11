@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_ALLOCATOR_EXTENSION_H_
 
 #include <stddef.h> // for size_t
+#include <string>
 
 #include "base/base_export.h"
 #include "build/build_config.h"
@@ -26,6 +27,21 @@ BASE_EXPORT void ReleaseFreeMemory();
 // allocator implementation.
 // |name| or |value| cannot be NULL
 BASE_EXPORT bool GetNumericProperty(const char* name, size_t* value);
+
+// Set the named property's |value|. Returns true if the property is known and
+// writable. Returns false if the property is not a valid property name for the
+// current allocator implementation, or is not writable. |name| cannot be NULL.
+BASE_EXPORT bool SetNumericProperty(const char* name, size_t value);
+
+// Outputs to |writer| a sample of live objects and the stack traces
+// that allocated these objects.  The format of the returned output
+// is equivalent to the output of the heap profiler and can
+// therefore be passed to "pprof".
+// NOTE: by default, the allocator does not do any heap sampling, and this
+//       function will always return an empty sample.  To get useful
+//       data from GetHeapSample, you must also set the numeric property
+//       "tcmalloc.sampling_period_bytes" to a value such as 524288.
+BASE_EXPORT void GetHeapSample(std::string* writer);
 
 BASE_EXPORT bool IsHeapProfilerRunning();
 

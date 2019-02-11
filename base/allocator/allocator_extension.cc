@@ -34,6 +34,19 @@ bool GetNumericProperty(const char* name, size_t* value) {
   return false;
 }
 
+bool SetNumericProperty(const char* name, size_t value) {
+#if defined(USE_TCMALLOC)
+  return ::MallocExtension::instance()->SetNumericProperty(name, value);
+#endif
+  return false;
+}
+
+void GetHeapSample(std::string* writer) {
+#if defined(USE_TCMALLOC)
+  ::MallocExtension::instance()->GetHeapSample(writer);
+#endif
+}
+
 bool IsHeapProfilerRunning() {
 #if defined(USE_TCMALLOC)
   return ::IsHeapProfilerRunning();
