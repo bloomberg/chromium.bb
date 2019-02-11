@@ -152,13 +152,14 @@ GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
     gaia::GaiaSource source)
     : request_type_(request_type), account_ids_(account_ids), source_(source) {}
 
-GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
-    const GaiaCookieManagerService::GaiaCookieRequest& other)
-    : request_type_(other.request_type()),
-      account_ids_(other.account_ids()),
-      source_(other.source()) {}
-
 GaiaCookieManagerService::GaiaCookieRequest::~GaiaCookieRequest() {}
+
+GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
+    GaiaCookieRequest&&) = default;
+
+GaiaCookieManagerService::GaiaCookieRequest&
+GaiaCookieManagerService::GaiaCookieRequest::operator=(GaiaCookieRequest&&) =
+    default;
 
 const std::string GaiaCookieManagerService::GaiaCookieRequest::GetAccountID() {
   DCHECK_EQ(request_type_, GaiaCookieRequestType::ADD_ACCOUNT);
@@ -614,7 +615,7 @@ void GaiaCookieManagerService::LogOutAllAccounts(gaia::GaiaSource source) {
 
       // Keep all requests except for ADD_ACCOUNTS.
       if (it->request_type() != GaiaCookieRequestType::ADD_ACCOUNT)
-        requests_to_keep.push_back(*it);
+        requests_to_keep.push_back(std::move(*it));
 
       // Verify a LOG_OUT isn't already queued.
       if (it->request_type() == GaiaCookieRequestType::LOG_OUT)
@@ -628,8 +629,9 @@ void GaiaCookieManagerService::LogOutAllAccounts(gaia::GaiaSource source) {
     // Remove all but the executing request. Re-add all requests being kept.
     if (requests_.size() > 1) {
       requests_.erase(requests_.begin() + 1, requests_.end());
-      requests_.insert(requests_.end(), requests_to_keep.begin(),
-                       requests_to_keep.end());
+      requests_.insert(requests_.end(),
+                       std::make_move_iterator(requests_to_keep.begin()),
+                       std::make_move_iterator(requests_to_keep.end()));
     }
   }
 
