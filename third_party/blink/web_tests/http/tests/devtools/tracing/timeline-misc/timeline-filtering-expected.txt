@@ -10,15 +10,16 @@ Initial:
  bar07
   foo08
   foo09
- foo10
-  bar11
-  bar12
- foo13
-  foo14
-  bar15
- foo16
-  foo17
-  foo18
+ Program
+  foo10
+   bar11
+   bar12
+  foo13
+   foo14
+   bar15
+  foo16
+   foo17
+   foo18
 
 Filtered by 'bar':
  bar01

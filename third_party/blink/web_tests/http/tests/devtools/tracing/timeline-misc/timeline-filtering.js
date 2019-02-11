@@ -286,7 +286,8 @@
   view.updateContents(Timeline.TimelineSelection.fromRange(
       model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
   function printEventMessage(event, level) {
-    TestRunner.addResult(' '.repeat(level) + event.args['data'].message);
+    const text = event.args['data'] && event.args['data']['message'] || event.name;
+    TestRunner.addResult(' '.repeat(level) + text);
   }
 
   function dumpRecords() {
