@@ -679,7 +679,7 @@ HTMLFrameOwnerElement* FrameOwnerElement(const FocusCandidate& candidate) {
   return candidate.IsFrameOwnerElement()
              ? ToHTMLFrameOwnerElement(candidate.visible_node)
              : nullptr;
-};
+}
 
 // The visual viewport's rect (given in the root frame's coordinate space).
 LayoutRect RootViewport(const LocalFrame* current_frame) {
