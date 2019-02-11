@@ -196,7 +196,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void Trace(blink::Visitor*) override;
 
-  CanvasColorParams ColorParamsForTest() const { return ColorParams(); };
+  CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
  protected:
   void NeedsFinalizeFrame() override {
