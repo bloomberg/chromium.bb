@@ -128,6 +128,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   }
 
   tray->tray_event_filter()->AddBubble(this);
+  tray->shelf()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
 }
@@ -137,6 +138,7 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   tray_->tray_event_filter()->RemoveBubble(this);
+  tray_->shelf()->RemoveObserver(this);
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
@@ -296,6 +298,11 @@ void UnifiedSystemTrayBubble::OnTabletModeStarted() {
 }
 
 void UnifiedSystemTrayBubble::OnTabletModeEnded() {
+  UpdateBubbleBounds();
+}
+
+void UnifiedSystemTrayBubble::OnAutoHideStateChanged(
+    ShelfAutoHideState new_state) {
   UpdateBubbleBounds();
 }
 
