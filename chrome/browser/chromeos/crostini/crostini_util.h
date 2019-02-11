@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -24,6 +25,12 @@ class ImageSkia;
 class Profile;
 
 namespace crostini {
+
+// A unique identifier for our containers. This is <vm_name, container_name>.
+using ContainerId = std::pair<std::string, std::string>;
+
+// Return" (<vm_name>, <container_name>)".
+std::string ContainerIdToString(const ContainerId& container_id);
 
 // Returns true if crostini is allowed to run for |profile|.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
