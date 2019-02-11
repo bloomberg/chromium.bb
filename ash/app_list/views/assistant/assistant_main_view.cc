@@ -6,11 +6,11 @@
 
 #include <memory>
 
+#include "ash/app_list/views/assistant/assistant_main_stage.h"
 #include "ash/app_list/views/assistant/dialog_plate.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
-#include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -83,7 +83,7 @@ void AssistantMainView::InitLayout() {
   AddChildView(dialog_plate_);
 
   // Main stage.
-  main_stage_ = new ash::AssistantMainStage(delegate_);
+  main_stage_ = new AssistantMainStage(delegate_);
   AddChildView(main_stage_);
 
   layout->SetFlexForView(main_stage_, 1);

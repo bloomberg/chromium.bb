@@ -40,6 +40,8 @@ component("app_list") {
     "views/apps_grid_view.cc",
     "views/apps_grid_view.h",
     "views/apps_grid_view_folder_delegate.h",
+    "views/assistant/assistant_main_stage.cc",
+    "views/assistant/assistant_main_stage.h",
     "views/assistant/assistant_main_view.cc",
     "views/assistant/assistant_main_view.h",
     "views/assistant/assistant_page_view.cc",
