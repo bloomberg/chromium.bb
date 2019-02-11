@@ -164,6 +164,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsInvalidVariableValue() const {
     return class_type_ == kInvalidVariableValueClass;
   }
+  bool IsAxisValue() const { return class_type_ == kAxisClass; }
 
   bool HasFailedOrCanceledSubresources() const;
   bool MayContainUrl() const;
@@ -249,6 +250,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kImageSetClass,
     kGridLineNamesClass,
     kGridAutoRepeatClass,
+    kAxisClass,
     // Do not append non-list class types here.
   };
 

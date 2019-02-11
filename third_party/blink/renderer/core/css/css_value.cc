@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/css/css_value.h"
 
+#include "third_party/blink/renderer/core/css/css_axis_value.h"
 #include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
@@ -150,6 +151,8 @@ inline static bool CompareCSSValues(const CSSValue& first,
 bool CSSValue::operator==(const CSSValue& other) const {
   if (class_type_ == other.class_type_) {
     switch (GetClassType()) {
+      case kAxisClass:
+        return CompareCSSValues<CSSAxisValue>(*this, other);
       case kBasicShapeCircleClass:
         return CompareCSSValues<CSSBasicShapeCircleValue>(*this, other);
       case kBasicShapeEllipseClass:
@@ -258,6 +261,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
 
 String CSSValue::CssText() const {
   switch (GetClassType()) {
+    case kAxisClass:
+      return ToCSSAxisValue(this)->CustomCSSText();
     case kBasicShapeCircleClass:
       return ToCSSBasicShapeCircleValue(this)->CustomCSSText();
     case kBasicShapeEllipseClass:
@@ -363,6 +368,9 @@ String CSSValue::CssText() const {
 
 void CSSValue::FinalizeGarbageCollectedObject() {
   switch (GetClassType()) {
+    case kAxisClass:
+      ToCSSAxisValue(this)->~CSSAxisValue();
+      return;
     case kBasicShapeCircleClass:
       ToCSSBasicShapeCircleValue(this)->~CSSBasicShapeCircleValue();
       return;
@@ -517,6 +525,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
 
 void CSSValue::Trace(blink::Visitor* visitor) {
   switch (GetClassType()) {
+    case kAxisClass:
+      ToCSSAxisValue(this)->TraceAfterDispatch(visitor);
+      return;
     case kBasicShapeCircleClass:
       ToCSSBasicShapeCircleValue(this)->TraceAfterDispatch(visitor);
       return;

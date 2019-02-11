@@ -30,6 +30,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
+#include "third_party/blink/renderer/core/css/css_axis_value.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -1568,14 +1569,16 @@ Rotation StyleBuilderConverter::ConvertRotation(const CSSValue& value) {
   }
 
   const CSSValueList& list = ToCSSValueList(value);
-  DCHECK(list.length() == 1 || list.length() == 4);
+  DCHECK(list.length() == 1 || list.length() == 2);
   double x = 0;
   double y = 0;
   double z = 1;
-  if (list.length() == 4) {
-    x = ToCSSPrimitiveValue(list.Item(0)).GetDoubleValue();
-    y = ToCSSPrimitiveValue(list.Item(1)).GetDoubleValue();
-    z = ToCSSPrimitiveValue(list.Item(2)).GetDoubleValue();
+  if (list.length() == 2) {
+    // axis angle
+    const CSSAxisValue& axis = ToCSSAxisValue(list.Item(0));
+    x = axis.X();
+    y = axis.Y();
+    z = axis.Z();
   }
   double angle =
       ToCSSPrimitiveValue(list.Item(list.length() - 1)).ComputeDegrees();

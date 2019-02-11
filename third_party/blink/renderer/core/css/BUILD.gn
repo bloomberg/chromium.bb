@@ -17,6 +17,8 @@ blink_core_sources("css") {
     "binary_data_font_face_source.h",
     "computed_style_css_value_mapping.cc",
     "computed_style_css_value_mapping.h",
+    "css_axis_value.cc",
+    "css_axis_value.h",
     "css_basic_shape_values.cc",
     "css_basic_shape_values.h",
     "css_border_image.cc",
