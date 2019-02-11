@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -384,6 +385,16 @@ class IdentityManager : public SigninManagerBase::Observer,
   // NOTE: In normal usage, this method SHOULD NOT be called for getting the
   // account id. It's only for replacement of production code.
   std::string LegacySeedAccountInfo(const AccountInfo& info);
+
+#if defined(OS_IOS)
+  // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
+  // iOS, it's necessary to force-trigger the processing of cookie changes
+  // from the client as the normal mechanism for internally observing them
+  // is not wired up.
+  // TODO(https://crbug.com/930582) : Remove the need to expose this method
+  // or move it to the network::CookieManager.
+  void ForceTriggerOnCookieChange();
+#endif
 
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);

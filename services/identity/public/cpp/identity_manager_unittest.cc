@@ -1528,6 +1528,20 @@ TEST_F(IdentityManagerTest, LegacySeedAccountInfo) {
   EXPECT_EQ(account_info.gaia, kTestGaiaId2);
 }
 
+#if defined(OS_IOS)
+TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+      run_loop.QuitClosure());
+
+  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
+  // Forces the processing of OnCookieChange and it calls
+  // OnGaiaAccountsInCookieUpdated.
+  identity_manager()->ForceTriggerOnCookieChange();
+  run_loop.Run();
+}
+#endif
+
 #if !defined(OS_CHROMEOS)
 TEST_F(
     IdentityManagerTest,
