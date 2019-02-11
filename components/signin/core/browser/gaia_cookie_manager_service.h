@@ -84,8 +84,9 @@ class GaiaCookieManagerService : public KeyedService,
   // Contains the information and parameters for any request.
   class GaiaCookieRequest {
    public:
-    GaiaCookieRequest(const GaiaCookieRequest& other);
     ~GaiaCookieRequest();
+    GaiaCookieRequest(GaiaCookieRequest&&);
+    GaiaCookieRequest& operator=(GaiaCookieRequest&&);
 
     GaiaCookieRequestType request_type() const { return request_type_; }
     const std::vector<std::string>& account_ids() const { return account_ids_; }
@@ -109,9 +110,11 @@ class GaiaCookieManagerService : public KeyedService,
                       const std::vector<std::string>& account_ids,
                       gaia::GaiaSource source);
 
-    const GaiaCookieRequestType request_type_;
-    const std::vector<std::string> account_ids_;
-    const gaia::GaiaSource source_;
+    GaiaCookieRequestType request_type_;
+    std::vector<std::string> account_ids_;
+    gaia::GaiaSource source_;
+
+    DISALLOW_COPY_AND_ASSIGN(GaiaCookieRequest);
   };
 
   class Observer {
