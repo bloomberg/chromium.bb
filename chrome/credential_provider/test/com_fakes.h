@@ -98,6 +98,7 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
   const CComBSTR& password() const { return password_; }
   const CComBSTR& sid() const { return sid_; }
   bool credentials_changed_fired() const { return credentials_changed_fired_; }
+  void ResetCredentialsChangedFired() { credentials_changed_fired_ = FALSE; }
 
   // IGaiaCredentialProvider
   IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;

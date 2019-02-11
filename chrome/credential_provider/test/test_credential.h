@@ -103,6 +103,11 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
       const base::CommandLine& command_line,
       CGaiaCredentialBase::UIProcessInfo* uiprocinfo) override;
 
+  // Overrides to directly save to a fake scoped user profile.
+  HRESULT ForkSaveAccountInfoStub(
+      const std::unique_ptr<base::DictionaryValue>& dict,
+      BSTR* status_text) override;
+
   void ResetInternalState() override;
 
   std::string gls_email_;
@@ -229,6 +234,13 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
 }
 
 template <class T>
+HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(
+    const std::unique_ptr<base::DictionaryValue>& dict,
+    BSTR* status_text) {
+  return CGaiaCredentialBase::SaveAccountInfo(*dict);
+}
+
+template <class T>
 HRESULT CTestCredentialBase<T>::OnUserAuthenticated(BSTR authentication_info,
                                                     BSTR* status_text) {
   HRESULT hr = T::OnUserAuthenticated(authentication_info, status_text);
@@ -265,6 +277,57 @@ template <class T>
 void CTestCredentialBase<T>::ResetInternalState() {
   gls_process_started_ = false;
   T::ResetInternalState();
+}
+
+// This class is used to implement a test credential based off a fully
+// implemented CGaiaCredentialBase class.
+template <class T>
+class ATL_NO_VTABLE CTestCredentialForBaseInherited
+    : public CTestCredentialBase<T> {
+ public:
+  DECLARE_NO_REGISTRY()
+
+  CTestCredentialForBaseInherited();
+  ~CTestCredentialForBaseInherited();
+
+ private:
+  BEGIN_COM_MAP(CTestCredentialForBaseInherited)
+  COM_INTERFACE_ENTRY(IGaiaCredential)
+  COM_INTERFACE_ENTRY(ICredentialProviderCredential)
+  COM_INTERFACE_ENTRY(ICredentialProviderCredential2)
+  COM_INTERFACE_ENTRY(ITestCredential)
+  END_COM_MAP()
+};
+
+template <class T>
+CTestCredentialForBaseInherited<T>::CTestCredentialForBaseInherited() = default;
+
+template <class T>
+CTestCredentialForBaseInherited<T>::~CTestCredentialForBaseInherited() =
+    default;
+
+template <class T>
+HRESULT CreateBaseInheritedCredential(
+    ICredentialProviderCredential** credential) {
+  return CComCreator<CComObject<testing::CTestCredentialForBaseInherited<T>>>::
+      CreateInstance(nullptr, IID_ICredentialProviderCredential,
+                     reinterpret_cast<void**>(credential));
+}
+
+template <class T>
+HRESULT CreateBaseInheritedCredentialWithProvider(
+    IGaiaCredentialProvider* provider,
+    IGaiaCredential** gaia_credential,
+    ICredentialProviderCredential** credential) {
+  HRESULT hr = CreateBaseInheritedCredential<T>(credential);
+  if (SUCCEEDED(hr)) {
+    hr = (*credential)
+             ->QueryInterface(IID_IGaiaCredential,
+                              reinterpret_cast<void**>(gaia_credential));
+    if (SUCCEEDED(hr))
+      hr = (*gaia_credential)->Initialize(provider);
+  }
+  return hr;
 }
 
 // This class is used to implement a test credential based off a fully

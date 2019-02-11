@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -65,27 +66,34 @@ base::string16 GetEmailDomains() {
   return base::string16(&email_domains[0]);
 }
 
-// Choose a suitable username for the given gaia account.  If a username has
-// already been created for this gaia account, the same username is returned.
-// Otherwise a new one is generated, derived from the email.
+// Tries to find a user associated to the gaia_id stored in |result| under the
+// key |kKeyId|. If one exists, then this function will fill out |gaia_id|,
+// |username| and |sid| with the user's information. If not
+// this function will try to generate a new username derived from the email
+// and fill out only |gaia_id| and |username|. |sid| will be empty until the
+// user is created later on.
 void MakeUsernameForAccount(const base::DictionaryValue* result,
+                            base::string16* gaia_id,
                             wchar_t* username,
-                            DWORD length) {
+                            DWORD username_length,
+                            wchar_t* sid,
+                            DWORD sid_length) {
+  DCHECK(gaia_id);
+  DCHECK(username);
+  DCHECK(sid);
+
+  *gaia_id = GetDictString(result, kKeyId);
   // First try to detect if this gaia account has been used to create an OS
   // user already.  If so, return the OS username of that user.
-  wchar_t sid[128];
-  HRESULT hr =
-      GetSidFromId(GetDictString(result, kKeyId), sid, base::size(sid));
+  HRESULT hr = GetSidFromId(*gaia_id, sid, sid_length);
   if (SUCCEEDED(hr)) {
-    hr = OSUserManager::Get()->FindUserBySID(sid, username, length);
+    hr = OSUserManager::Get()->FindUserBySID(sid, username, username_length);
     if (SUCCEEDED(hr))
       return;
-
-    LOGFN(INFO) << "FindUserBySID hr=" << putHR(hr);
-  } else {
-    LOGFN(INFO) << "GetSidFromId: id not found";
   }
-
+  LOGFN(INFO) << "No existing user found associated to gaia id:" << *gaia_id;
+  username[0] = 0;
+  sid[0] = 0;
   // Create a username based on the email address.  Usernames are more
   // restrictive than emails, so some transformations are needed.  This tries
   // to preserve the email as much as possible in the username while respecting
@@ -130,7 +138,7 @@ void MakeUsernameForAccount(const base::DictionaryValue* result,
       c = L'_';
   }
 
-  wcscpy_s(username, length, os_username.c_str());
+  wcscpy_s(username, username_length, os_username.c_str());
 }
 
 // Waits for the login UI to completes and returns the result of the operation.
@@ -334,6 +342,80 @@ HRESULT BuildCredPackAuthenticationBuffer(
   return S_OK;
 }
 
+// Creates a new windows OS user with the given |base_username|, |fullname| and
+// |password| on the local machine.  Returns the SID of the new user.
+// If a user with |base_username| already exists, the function will try to
+// generate a new indexed username up to |max_attempts| before failing.
+// The actual username used for the new user will be filled in |final_username|
+// if successful.
+HRESULT CreateNewUser(OSUserManager* manager,
+                      const wchar_t* base_username,
+                      const wchar_t* password,
+                      const wchar_t* fullname,
+                      const wchar_t* comment,
+                      bool add_to_users_group,
+                      int max_attempts,
+                      BSTR* final_username,
+                      BSTR* sid) {
+  DCHECK(manager);
+  DCHECK(base_username);
+  DCHECK(password);
+  DCHECK(fullname);
+  DCHECK(comment);
+  DCHECK(final_username);
+  DCHECK(sid);
+  wchar_t new_username[kWindowsUsernameBufferLength];
+  errno_t err = wcscpy_s(new_username, base::size(new_username), base_username);
+  if (err != 0) {
+    LOGFN(ERROR) << "wcscpy_s errno=" << err;
+    return E_FAIL;
+  }
+
+  // Keep trying to create the user account until an unused username can be
+  // found or |max_attempts| has been reached.
+  for (int i = 0; i < max_attempts; ++i) {
+    CComBSTR new_sid;
+    DWORD error;
+    HRESULT hr = manager->AddUser(new_username, password, fullname, comment,
+                                  add_to_users_group, &new_sid, &error);
+    if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
+      base::string16 next_username = base_username;
+      base::string16 next_username_suffix =
+          base::NumberToString16(i + kInitialDuplicateUsernameIndex);
+      // Create a new user name that fits in |kWindowsUsernameBufferLength|
+      if (next_username.size() + next_username_suffix.size() >
+          (kWindowsUsernameBufferLength - 1)) {
+        next_username =
+            next_username.substr(0, (kWindowsUsernameBufferLength - 1) -
+                                        next_username_suffix.size()) +
+            next_username_suffix;
+      } else {
+        next_username += next_username_suffix;
+      }
+      LOGFN(INFO) << "Username '" << new_username
+                  << "' already exists. Trying '" << next_username << "'";
+
+      errno_t err = wcscpy_s(new_username, base::size(new_username),
+                             next_username.c_str());
+      if (err != 0) {
+        LOGFN(ERROR) << "wcscpy_s errno=" << err;
+        return E_FAIL;
+      }
+
+      continue;
+    } else if (FAILED(hr)) {
+      LOGFN(ERROR) << "manager->AddUser hr=" << putHR(hr);
+      return hr;
+    }
+
+    *sid = ::SysAllocString(new_sid);
+    *final_username = ::SysAllocString(new_username);
+    return S_OK;
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserExists);
+}
+
 }  // namespace
 
 CGaiaCredentialBase::UIProcessInfo::UIProcessInfo() {}
@@ -400,60 +482,41 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
       return hr;
     }
 
-    constexpr int kMaxAttempts = 10;
-
+    CComBSTR sid_string;
+    CComBSTR gaia_username;
     // Keep trying to create the special Gaia account used to run the UI until
-    // an unused username can be found or kMaxAttempts has been reached.
-    for (int i = 0; sid == nullptr && i < kMaxAttempts; ++i) {
-      CComBSTR sid_string;
-      base::string16 fullname(
-          GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME_BASE));
-      base::string16 comment(GetStringResource(IDS_GAIA_ACCOUNT_COMMENT_BASE));
-      hr = CreateNewUser(manager, gaia_username, password, fullname.c_str(),
-                         comment.c_str(), /*add_to_users_group=*/false,
-                         &sid_string);
-      if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
-        base::string16 next_username = kDefaultGaiaAccountName;
-        next_username += base::NumberToString16(i);
-        LOGFN(INFO) << "Username '" << gaia_username
-                    << "' already exists. Trying '" << next_username << "'";
+    // an unused username can be found or kMaxUsernameAttempts has been reached.
+    hr =
+        CreateNewUser(manager, kDefaultGaiaAccountName, password,
+                      GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME_BASE).c_str(),
+                      GetStringResource(IDS_GAIA_ACCOUNT_COMMENT_BASE).c_str(),
+                      /*add_to_users_group=*/false, kMaxUsernameAttempts,
+                      &gaia_username, &sid_string);
 
-        errno_t err = wcscpy_s(gaia_username, base::size(gaia_username),
-                               next_username.c_str());
-        if (err != 0) {
-          LOGFN(ERROR) << "wcscpy_s errno=" << err;
-          return E_FAIL;
-        }
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr);
+      return hr;
+    }
 
-        continue;
-      } else if (FAILED(hr)) {
-        LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr);
-        return hr;
-      }
+    if (!::ConvertStringSidToSid(sid_string, &sid)) {
+      hr = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "ConvertStringSidToSid hr=" << putHR(hr);
+      return hr;
+    }
 
-      // Save the password in a machine secret area.
-      hr = policy->StorePrivateData(kLsaKeyGaiaPassword, password);
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "Failed to store gaia user password in LSA hr="
-                     << putHR(hr);
-        return hr;
-      }
+    // Save the password in a machine secret area.
+    hr = policy->StorePrivateData(kLsaKeyGaiaPassword, password);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed to store gaia user password in LSA hr="
+                   << putHR(hr);
+      return hr;
+    }
 
-      if (!::ConvertStringSidToSid(sid_string, &sid)) {
-        hr = HRESULT_FROM_WIN32(::GetLastError());
-        LOGFN(ERROR) << "ConvertStringSidToSid hr=" << putHR(hr);
-        return hr;
-      }
-
-      // Save the gaia username in a machine secret area.
-      hr = policy->StorePrivateData(kLsaKeyGaiaUsername, gaia_username);
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "Failed to store gaia user name in LSA hr="
-                     << putHR(hr);
-        return hr;
-      }
-
-      break;
+    // Save the gaia username in a machine secret area.
+    hr = policy->StorePrivateData(kLsaKeyGaiaUsername, gaia_username);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed to store gaia user name in LSA hr=" << putHR(hr);
+      return hr;
     }
   }
 
@@ -563,10 +626,7 @@ HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
       break;
     }
     case FID_PROVIDER_LABEL: {
-      UINT label_resource_id = IDS_AUTH_FID_PROVIDER_LABEL_BASE;
-      if (user_sid_.Length())
-        label_resource_id = IDS_EXISTING_AUTH_FID_PROVIDER_LABEL_BASE;
-      base::string16 label(GetStringResource(label_resource_id));
+      base::string16 label(GetStringResource(IDS_AUTH_FID_PROVIDER_LABEL_BASE));
       hr = ::SHStrDupW(label.c_str(), value);
       break;
     }
@@ -586,6 +646,7 @@ HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
 
 void CGaiaCredentialBase::ResetInternalState() {
   LOGFN(INFO);
+  username_.Empty();
   password_.Empty();
   current_windows_password_.Empty();
   authentication_results_.reset();
@@ -603,27 +664,13 @@ void CGaiaCredentialBase::ResetInternalState() {
   if (events_) {
     wchar_t* default_status_text = nullptr;
     GetStringValue(FID_DESCRIPTION, &default_status_text);
-    events_->SetFieldState(this, FID_DESCRIPTION,
-                           CPFS_DISPLAY_IN_SELECTED_TILE);
     events_->SetFieldString(this, FID_DESCRIPTION, default_status_text);
     events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD, CPFS_HIDDEN);
     events_->SetFieldString(this, FID_CURRENT_PASSWORD_FIELD,
                             current_windows_password_);
-    events_->SetFieldState(this, FID_SUBMIT, CPFS_DISPLAY_IN_SELECTED_TILE);
     events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_DESCRIPTION);
     UpdateSubmitButtonInteractiveState();
   }
-}
-
-HRESULT CGaiaCredentialBase::GetEmailForReauth(wchar_t* email, size_t length) {
-  if (email == nullptr)
-    return E_POINTER;
-
-  if (length < 1)
-    return E_INVALIDARG;
-
-  email[0] = 0;
-  return S_OK;
 }
 
 HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
@@ -675,33 +722,29 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
   return S_OK;
 }
 
-HRESULT CGaiaCredentialBase::GetGlsCommandline(
-    const wchar_t* email,
+HRESULT CGaiaCredentialBase::GetUserGlsCommandline(
     base::CommandLine* command_line) {
-  DCHECK(email);
+  return S_OK;
+}
+
+HRESULT CGaiaCredentialBase::GetGlsCommandline(
+    base::CommandLine* command_line) {
   HRESULT hr = GetBaseGlsCommandline(command_line);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "GetBaseGlsCommandline hr=" << putHR(hr);
     return hr;
   }
 
-  command_line->AppendSwitchNative(kPrefillEmailSwitch, email);
-
-  // If an email pattern is specified, pass it to the GLS.
+  // If email domains are specified, pass them to the GLS.
   base::string16 email_domains = GetEmailDomains();
   if (email_domains[0])
     command_line->AppendSwitchNative(kEmailDomainsSwitch, email_domains);
 
-  // If this is an existing user with an SID, try to get its gaia id and pass
-  // it to the GLS for verification.
-  if (user_sid_.Length()) {
-    LOGFN(INFO) << "Existing user sid: " << user_sid_;
-    base::string16 gaia_id;
-    if (GetIdFromSid(OLE2CW(user_sid_), &gaia_id) == S_OK)
-      command_line->AppendSwitchNative(kGaiaIdSwitch, gaia_id);
-    LOGFN(INFO) << "Existing user gaia id: " << gaia_id;
+  hr = GetUserGlsCommandline(command_line);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetBaseGlsCommandline hr=" << putHR(hr);
+    return hr;
   }
-
   LOGFN(INFO) << "Command line: " << command_line->GetCommandLineString();
   return S_OK;
 }
@@ -805,21 +848,6 @@ void CGaiaCredentialBase::TellOmahaDidRun() {
 }
 
 // static
-HRESULT CGaiaCredentialBase::CreateNewUser(OSUserManager* manager,
-                                           const wchar_t* username,
-                                           const wchar_t* password,
-                                           const wchar_t* fullname,
-                                           const wchar_t* comment,
-                                           bool add_to_users_group,
-                                           BSTR* sid) {
-  DWORD error;
-  HRESULT hr = manager->AddUser(username, password, fullname, comment,
-                                add_to_users_group, sid, &error);
-  LOGFN(INFO) << "hr=" << putHR(hr) << " username=" << username;
-  return hr;
-}
-
-// static
 BSTR CGaiaCredentialBase::AllocErrorString(UINT id) {
   CComBSTR str(GetStringResource(id).c_str());
   return str.Detach();
@@ -868,11 +896,11 @@ HRESULT CGaiaCredentialBase::SetDeselected(void) {
   LOGFN(INFO);
 
   // Cancel logon so that the next time this credential is clicked everything
-  // has to be re-entered by the user. This prevents a Windows password entered
-  // into the password field by the user from being persisted too long. The
-  // behaviour is similar to that of the normal windows password text box.
-  // Whenever a different user is selected and then the original credential
-  // is selected again, the password is cleared.
+  // has to be re-entered by the user. This prevents a Windows password
+  // entered into the password field by the user from being persisted too
+  // long. The behaviour is similar to that of the normal windows password
+  // text box. Whenever a different user is selected and then the original
+  // credential is selected again, the password is cleared.
   ResetInternalState();
 
   return S_OK;
@@ -974,7 +1002,6 @@ HRESULT CGaiaCredentialBase::SetStringValue(DWORD field_id,
                                             const wchar_t* psz) {
   USES_CONVERSION;
 
-  // No editable strings.
   HRESULT hr = E_INVALIDARG;
   switch (field_id) {
     case FID_CURRENT_PASSWORD_FIELD:
@@ -1017,7 +1044,8 @@ HRESULT CGaiaCredentialBase::GetSerialization(
   *status_text = nullptr;
   *status_icon = CPSI_NONE;
 
-  // This may be a long running function so disable user input while processing.
+  // This may be a long running function so disable user input while
+  // processing.
   if (events_) {
     events_->SetFieldInteractiveState(this, FID_SUBMIT, CPFIS_DISABLED);
     events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
@@ -1036,10 +1064,10 @@ HRESULT CGaiaCredentialBase::GetSerialization(
     *status_icon = CPSI_ERROR;
     *cpgsr = CPGSR_RETURN_NO_CREDENTIAL_FINISHED;
   } else if (hr == S_FALSE) {
-    // If HandleAutologon returns S_FALSE, then there was not enough information
-    // to log the user on or they need to update their password and gave an
-    // invalid old password.  Display the Gaia sign in page if there is not
-    // sufficient Gaia credentials or just return
+    // If HandleAutologon returns S_FALSE, then there was not enough
+    // information to log the user on or they need to update their password
+    // and gave an invalid old password.  Display the Gaia sign in page if
+    // there is not sufficient Gaia credentials or just return
     // CPGSR_NO_CREDENTIAL_NOT_FINISHED to wait for the user to try a new
     // password.
 
@@ -1104,15 +1132,8 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
   LOGFN(INFO);
 
-  wchar_t email[64];
-  HRESULT hr = GetEmailForReauth(email, base::size(email));
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetEmailForReauth hr=" << putHR(hr);
-    return hr;
-  }
-
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  hr = GetGlsCommandline(email, &command_line);
+  HRESULT hr = GetGlsCommandline(&command_line);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "GetGlsCommandline hr=" << putHR(hr);
     return hr;
@@ -1152,15 +1173,17 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
 
   // Background thread takes ownership of |uiprocinfo|.
   unsigned int wait_thread_id;
-  uintptr_t wait_thread = _beginthreadex(
-      nullptr, 0, WaitForLoginUI, uiprocinfo.release(), 0, &wait_thread_id);
+  UIProcessInfo* puiprocinfo = uiprocinfo.release();
+  uintptr_t wait_thread = _beginthreadex(nullptr, 0, WaitForLoginUI,
+                                         puiprocinfo, 0, &wait_thread_id);
   if (wait_thread != 0) {
     LOGFN(INFO) << "Started wait thread id=" << wait_thread_id;
     ::CloseHandle((HANDLE)wait_thread);
   } else {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "Unable to start wait thread hr=" << putHR(hr);
-    ::TerminateProcess(uiprocinfo->procinfo.process_handle(), kUiecKilled);
+    ::TerminateProcess(puiprocinfo->procinfo.process_handle(), kUiecKilled);
+    delete puiprocinfo;
     return hr;
   }
 
@@ -1267,8 +1290,8 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
 
   // Don't create a job here with UI restrictions, since win10 does not allow
   // nested jobs unless all jobs don't specify UI restrictions.  Since chrome
-  // will set a job with UI restrictions for renderer/gpu/etc processes, setting
-  // one here causes chrome to fail.
+  // will set a job with UI restrictions for renderer/gpu/etc processes,
+  // setting one here causes chrome to fail.
 
   // Environment is fully set up for UI, so let it go.
   if (::ResumeThread(uiprocinfo->procinfo.thread_handle()) ==
@@ -1283,10 +1306,10 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   // a handle to it.  Otherwise, the desktop will be destroyed and the process
   // will fail to start.
   //
-  // WaitForInputIdle() return immediately with an error if the process created
-  // is a console app.  In production this will not be the case, however in
-  // tests this may happen.  However, tests are not concerned with the
-  // destruction of the desktop since one is not created.
+  // WaitForInputIdle() return immediately with an error if the process
+  // created is a console app.  In production this will not be the case,
+  // however in tests this may happen.  However, tests are not concerned with
+  // the destruction of the desktop since one is not created.
   DWORD ret = ::WaitForInputIdle(uiprocinfo->procinfo.process_handle(), 10000);
   if (ret != 0)
     LOGFN(INFO) << "WaitForInputIdle, ret=" << ret;
@@ -1449,9 +1472,13 @@ HRESULT CGaiaCredentialBase::ReportResult(
               << " substatus=" << putHR(substatus);
 
   if (status == STATUS_SUCCESS && authentication_results_) {
-    // Update the password in |authentication_results_| with the real Windows
-    // password for the user so that the SaveAccountInfo process can correctly
-    // sign in to the user account.
+    // Update the sid, username and password in |authentication_results_| with
+    // the real Windows information for the user so that the SaveAccountInfo
+    // process can correctly sign in to the user account.
+    authentication_results_->SetKey(
+        kKeySID, base::Value(base::UTF16ToUTF8((BSTR)user_sid_)));
+    authentication_results_->SetKey(
+        kKeyUsername, base::Value(base::UTF16ToUTF8((BSTR)username_)));
     authentication_results_->SetKey(
         kKeyPassword, base::Value(base::UTF16ToUTF8((BSTR)password_)));
 
@@ -1470,15 +1497,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
 }
 
 HRESULT CGaiaCredentialBase::GetUserSid(wchar_t** sid) {
-  USES_CONVERSION;
-  DCHECK(sid);
-  LOGFN(INFO) << "sid=" << OLE2CW(user_sid_);
-
-  HRESULT hr = ::SHStrDupW(OLE2CW(user_sid_), sid);
-  if (FAILED(hr))
-    LOGFN(ERROR) << "SHStrDupW hr=" << putHR(hr);
-
-  return hr;
+  *sid = nullptr;
+  return S_FALSE;
 }
 
 HRESULT CGaiaCredentialBase::Initialize(IGaiaCredentialProvider* provider) {
@@ -1506,103 +1526,63 @@ void CGaiaCredentialBase::TerminateLogonProcess() {
   }
 }
 
-HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
-                                                  BSTR password,
-                                                  BSTR fullname,
-                                                  BSTR* sid,
-                                                  BSTR* error_text) {
-  USES_CONVERSION;
-
+HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
+    const base::DictionaryValue* result,
+    BSTR* username,
+    BSTR* password,
+    BSTR* sid,
+    BSTR* error_text) {
   LOGFN(INFO);
+  DCHECK(username);
+  DCHECK(password);
+  DCHECK(sid);
   DCHECK(error_text);
   DCHECK(sid);
 
   *error_text = nullptr;
+  base::string16 local_password = GetDictString(result, kKeyPassword);
 
-  // Check if the user exists and if the passwords match.
-  OSUserManager* manager = OSUserManager::Get();
-  HRESULT checkpassword_hr =
-      manager->IsWindowsPasswordValid(username, password);
-  // If result is S_OK (0) then the user exists and the current Gaia password
-  // given is the same as the Windows password.
-  // If result is S_FALSE (1) then the user exists but the current password
-  // given through Gaia does not match the Windows password.
-  if (SUCCEEDED(checkpassword_hr)) {
-    // Make sure the user name that was already set matches the one that is
-    // found.
-    if (username_.Length() > 0 && username_ != username) {
-      LOGFN(ERROR) << "Username found '" << username << "' does not match the "
-                   << "username that is set '" << username_ << "'";
-      *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
-      return E_UNEXPECTED;
-    }
+  wchar_t found_username[kWindowsUsernameBufferLength];
+  wchar_t found_sid[kWindowsSidBufferLength];
+  base::string16 gaia_id;
+  MakeUsernameForAccount(result, &gaia_id, found_username,
+                         base::size(found_username), found_sid,
+                         base::size(found_sid));
 
-    // A return of S_FALSE means the passwords do not match, log it here and
-    // continue.
-    if (checkpassword_hr == S_FALSE)
-      LOGFN(INFO) << "User password has changed for=" << username;
+  // If an existing user associated to the gaia id was found, make sure that
+  // it is valid for this credential.
+  if (found_sid[0]) {
+    HRESULT hr = ValidateExistingUser(found_username, found_sid, error_text);
 
-    PSID found_sid;
-    HRESULT hr = manager->GetUserSID(username, &found_sid);
     if (FAILED(hr)) {
-      LOGFN(ERROR) << "Failed find SID for existing user with username '"
-                   << username << "' hr=" << putHR(hr);
-      *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
-      return E_UNEXPECTED;
+      LOGFN(ERROR) << "ValidateExistingUser hr=" << putHR(hr);
+      return hr;
     }
 
-    wchar_t* sid_string;
-    if (::ConvertSidToStringSid(found_sid, &sid_string)) {
-      BSTR found_sid = ::SysAllocString(W2OLE(sid_string));
-      ::LocalFree(sid_string);
+    *username = ::SysAllocString(found_username);
+    *password = ::SysAllocString(local_password.c_str());
+    *sid = ::SysAllocString(found_sid);
 
-      // If an SID is present for this credential, it must match the one that
-      // was found.
-      if (user_sid_.Length() > 0 && user_sid_ != found_sid) {
-        LOGFN(ERROR) << "SID found '" << found_sid << "' does not match the "
-                     << "username that is set '" << user_sid_ << "'";
-        *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
-        return E_UNEXPECTED;
-      } else {
-        *sid = found_sid;
-      }
-    } else {
-      checkpassword_hr = HRESULT_FROM_WIN32(::GetLastError());
-    }
-    ::LocalFree(found_sid);
-
-    return checkpassword_hr;
+    return S_OK;
   }
 
-  // The only other error that is accepted is NERR_UserNotFound which means a
-  // new user needs to be added.
-  if (checkpassword_hr != HRESULT_FROM_WIN32(NERR_UserNotFound)) {
-    LOGFN(ERROR) << "Unable to check password for '" << username
-                 << "' hr=" << putHR(checkpassword_hr);
-    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
-    return checkpassword_hr;
-  }
-
-  // Fail if a user_sid_ or username_ was specified but no user was found. This
-  // should not happen.
-  if (user_sid_.Length() || username_.Length()) {
-    LOGFN(ERROR) << "Failed to find existing user '" << username << "'";
-    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
-    return E_UNEXPECTED;
-  }
-
+  base::string16 local_fullname = GetDictString(result, kKeyFullname);
   base::string16 comment(GetStringResource(IDS_USER_ACCOUNT_COMMENT_BASE));
-  HRESULT hr = CreateNewUser(OSUserManager::Get(), OLE2CW(username),
-                             OLE2CW(password), OLE2CW(fullname),
-                             comment.c_str(), /*add_to_users_group=*/true, sid);
+  HRESULT hr = CreateNewUser(
+      OSUserManager::Get(), found_username, local_password.c_str(),
+      local_fullname.c_str(), comment.c_str(),
+      /*add_to_users_group=*/true, kMaxUsernameAttempts, username, sid);
 
-  DCHECK_NE(hr, HRESULT_FROM_WIN32(NERR_UserExists));
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr)
-                 << " account=" << OLE2CW(username);
+  // May return user exists if this is the anonymous credential and the
+  // maximum attempts to generate a new username has been reached.
+  if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
+    LOGFN(ERROR) << "Could not find a new username based on desired username '"
+                 << found_username << "'. Maximum attempts reached.";
     *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
+    return hr;
   }
 
+  *password = ::SysAllocString(local_password.c_str());
   return hr;
 }
 
@@ -1611,9 +1591,9 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   USES_CONVERSION;
   DCHECK(status_text);
 
-  // Logon UI process is no longer needed and should already be finished by now
-  // so clear the handle so that calls to HandleAutoLogon do not block further
-  // processing thinking that there is still a logon process active.
+  // Logon UI process is no longer needed and should already be finished by
+  // now so clear the handle so that calls to HandleAutoLogon do not block
+  // further processing thinking that there is still a logon process active.
   logon_ui_process_ = INVALID_HANDLE_VALUE;
 
   // Convert the string to a base::Dictionary and add the calculated username
@@ -1637,33 +1617,21 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
     return hr;
   }
-
-  wchar_t username[kWindowsUsernameBufferLength];
-  MakeUsernameForAccount(dict.get(), username, base::size(username));
-
-  dict->SetString(kKeyUsername, username);
-
-  // From this point the code assume the dictionary |dict| is valid.
-  base::string16 new_username = GetDictString(dict, kKeyUsername);
-  base::string16 password = GetDictString(dict, kKeyPassword);
-
-  CComBSTR sid;
-  hr = ValidateOrCreateUser(
-      CComBSTR(W2COLE(new_username.c_str())),
-      CComBSTR(W2COLE(password.c_str())),
-      CComBSTR(W2COLE(GetDictString(dict, kKeyFullname).c_str())), &sid,
-      status_text);
+  // The value in |dict| is now known to contain everything that is needed
+  // from the GLS. Try to validate the user that wants to sign in and then
+  // add additional information into |dict| as needed.
+  hr = ValidateOrCreateUser(dict.get(), &username_, &password_, &user_sid_,
+                            status_text);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "ValidateOrCreateUser hr=" << putHR(hr);
     return hr;
   }
 
-  // user_sid_ should have been verified to match or is empty in call to
-  // ValidateOrCreateUser.
-  DCHECK(user_sid_.Length() == 0 || user_sid_ == sid);
+  authentication_results_ = std::move(dict);
 
-  dict->SetString(kKeyUsername, new_username);
-  dict->SetString(kKeySID, OLE2CA(sid));
+  result_status_ = STATUS_SUCCESS;
+  result_substatus_ = STATUS_SUCCESS;
+  result_status_text_.clear();
 
   // Disable the submit button. Either the signon will succeed with the given
   // credentials or a password update will be needed and that flow will handle
@@ -1672,29 +1640,20 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     events_->SetFieldInteractiveState(this, FID_SUBMIT, CPFIS_DISABLED);
 
   // Check if the credentials are valid for the user. If they aren't show the
-  // password update prompt and continue without authenticating on the provider.
-  bool password_stale = hr == S_FALSE;
-  if (password_stale) {
+  // password update prompt and continue without authenticating on the
+  // provider.
+  if (!AreCredentialsValid()) {
     needs_to_update_windows_password_ = true;
     DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
+    return S_FALSE;
   }
-
-  username_ = new_username.c_str();
-  password_ = password.c_str();
-  user_sid_ = sid;
-  authentication_results_ = std::move(dict);
-
-  result_status_ = STATUS_SUCCESS;
-  result_substatus_ = STATUS_SUCCESS;
-  result_status_text_.clear();
 
   // When this function returns, winlogon will be told to logon to the newly
   // created account.  This is important, as the save account info process
   // can't actually save the info until the user's profile is created, which
   // happens on first logon.
   return provider_->OnUserAuthenticated(static_cast<IGaiaCredential*>(this),
-                                        username_, password_, sid,
-                                        password_stale ? FALSE : TRUE);
+                                        username_, password_, user_sid_, TRUE);
 }
 
 HRESULT CGaiaCredentialBase::ReportError(LONG status,
@@ -1747,6 +1706,13 @@ void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
                                       CPFIS_FOCUSED);
     events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_CURRENT_PASSWORD_FIELD);
   }
+}
+
+HRESULT CGaiaCredentialBase::ValidateExistingUser(
+    const base::string16& username,
+    const base::string16& sid,
+    BSTR* error_text) {
+  return S_OK;
 }
 
 }  // namespace credential_provider

@@ -25,7 +25,6 @@ class FilePath;
 namespace credential_provider {
 
 class OSProcessManager;
-class OSUserManager;
 
 enum FIELDID {
   FID_DESCRIPTION,
@@ -75,16 +74,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   CGaiaCredentialBase();
   ~CGaiaCredentialBase();
 
-  // Creates a new windows OS user with the given username, fullname, and
-  // password on the local machine.  Returns the SID of the new user.
-  static HRESULT CreateNewUser(OSUserManager* manager,
-                               const wchar_t* username,
-                               const wchar_t* password,
-                               const wchar_t* fullname,
-                               const wchar_t* comment,
-                               bool add_to_users_group,
-                               BSTR* sid);
-
   // Members to access user credentials.
   const CComBSTR& get_username() const { return username_; }
   const CComBSTR& get_password() const { return password_; }
@@ -129,11 +118,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                              BSTR status_text) override;
 
   // Gets the string value for the given credential UI field.
-  HRESULT GetStringValueImpl(DWORD field_id, wchar_t** value);
-
-  // Derived classes should implement this function to return an email address
-  // only when reauthenticating the user.
-  virtual HRESULT GetEmailForReauth(wchar_t* email, size_t length);
+  virtual HRESULT GetStringValueImpl(DWORD field_id, wchar_t** value);
 
   // Resets the state of the credential, forgetting any username or password
   // that may have been set previously.  Derived classes may override to
@@ -141,8 +126,23 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // class method.
   virtual void ResetInternalState();
 
+  // Gets the base portion of the command line to run the Gaia Logon stub.
+  // This portion of the command line would only include the executable and
+  // any executable specific arguments needed to correctly start the GLS.
+  virtual HRESULT GetBaseGlsCommandline(base::CommandLine* command_line);
+
+  // Gets the user specific portion of the command line to run the Gaia Logon
+  // stub. This portion of the command line could include additional information
+  // such as the user's email and their gaia id.
+  virtual HRESULT GetUserGlsCommandline(base::CommandLine* command_line);
+
   // Display error message to the user.  Virtual so that tests can override.
   virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
+
+  // Forks a stub process to save account information for a user.
+  virtual HRESULT ForkSaveAccountInfoStub(
+      const std::unique_ptr<base::DictionaryValue>& dict,
+      BSTR* status_text);
 
   // Forks the logon stub process and waits for it to start.
   virtual HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,
@@ -150,14 +150,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                     UIProcessInfo* uiprocinfo);
 
  private:
-  // Gets the base portion of the command line to run the Gaia Logon stub.
-  // This portion of the command line would only include the executable and
-  // any executable specific arguments needed to correctly start the GLS.
-  virtual HRESULT GetBaseGlsCommandline(base::CommandLine* command_line);
   // Gets the full command line to run the Gaia Logon stub (GLS). This
   // function calls GetBaseGlsCommandline.
-  HRESULT GetGlsCommandline(const wchar_t* email,
-                            base::CommandLine* command_line);
+  HRESULT GetGlsCommandline(base::CommandLine* command_line);
 
   // Called from GetSerialization() to handle auto-logon.  If the credential
   // has enough information in internal state to auto-logon, the two arguments
@@ -179,11 +174,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Gaia account.
   static HRESULT CreateGaiaLogonToken(base::win::ScopedHandle* token,
                                       PSID* sid);
-
-  // Forks a stub process to save account information for a user.
-  static HRESULT ForkSaveAccountInfoStub(
-      const std::unique_ptr<base::DictionaryValue>& dict,
-      BSTR* status_text);
 
   // The param is a pointer to a UIProcessInfo struct.  This function must
   // release the memory for this structure using delete operator.
@@ -241,21 +231,26 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // switches credentials in the middle of a sign in through the GLS.
   void TerminateLogonProcess();
 
-  // Checks if the information for the given |username| is valid and creates it
-  // if it does not exist.
-  // Returns S_OK if the user exists and the given |password| is a valid windows
-  // login password for the user or if the user does not exist and it was
-  // created successfully.
-  // Returns S_FALSE if the user exists but the given |password| is not the
-  // right password to signin to the Windows account. Otherwise an error result
-  // depending on the failure. On failure |error_text| will be allocated and
-  // filled with an error message. The caller must take ownership of this
-  // memory. On success (S_OK or S_FALSE) |sid| will be allocated and filled
-  // with the sid of the created or existing user. The caller must take
-  // ownership of this memory.
-  HRESULT ValidateOrCreateUser(BSTR username,
-                               BSTR password,
-                               BSTR fullname,
+  // Checks whether this credential can sign in the user specified by
+  // |username|, |sid|, For the default anonymous gaia credential this function
+  // will return S_OK. For implementers that are associated to a specific user,
+  // this function should verify if the |username| and |sid| matches the
+  // username and sid stored in the credential. If these verifications fail then
+  // the function should return an error code which will cause sign in to fail.
+  virtual HRESULT ValidateExistingUser(const base::string16& username,
+                                       const base::string16& sid,
+                                       BSTR* error_text);
+
+  // Checks the information given in |result| to determine if a user can be
+  // created or re-used.
+  // Returns S_OK if a valid was found or a new user was created. Also allocates
+  // and fills |username|, |password|, |sid| with the information for the user.
+  // The caller must take ownership of this memory.
+  // On failure |error_text| will be allocated and filled with an error message.
+  // The caller must take ownership of this memory.
+  HRESULT ValidateOrCreateUser(const base::DictionaryValue* result,
+                               BSTR* username,
+                               BSTR* password,
                                BSTR* sid,
                                BSTR* error_text);
 

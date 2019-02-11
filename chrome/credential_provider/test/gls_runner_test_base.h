@@ -31,6 +31,7 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeOSProcessManager fake_os_process_manager_;
   FakeOSUserManager fake_os_user_manager_;
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
+  FakeScopedUserProfileFactory fake_scoped_user_profile_factory_;
   registry_util::RegistryOverrideManager registry_override_;
   FakeGlsRunHelper run_helper_;
 };
