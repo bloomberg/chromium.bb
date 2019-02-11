@@ -566,7 +566,7 @@ TEST_P(GCMMessageCryptographerTest, AuthSecretAffectsPRK) {
   EXPECT_EQ(kExamplePlaintext, second_plaintext);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GCMMessageCryptographerTestBase,
     GCMMessageCryptographerTest,
     ::testing::Values(GCMMessageCryptographer::Version::DRAFT_03,
