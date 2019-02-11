@@ -52,7 +52,7 @@ class AudibleMetricsTest : public RenderViewHostTestHarness {
 
   base::SimpleTestTickClock* clock() { return &clock_; }
 
-  AudibleMetrics* audible_metrics() { return audible_metrics_.get(); };
+  AudibleMetrics* audible_metrics() { return audible_metrics_.get(); }
 
   const base::UserActionTester& user_action_tester() const {
     return user_action_tester_;
