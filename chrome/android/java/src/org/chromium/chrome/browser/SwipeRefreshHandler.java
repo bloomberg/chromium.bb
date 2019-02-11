@@ -103,7 +103,8 @@ public class SwipeRefreshHandler
     private SwipeRefreshHandler(Tab tab) {
         super(tab);
         mTab = tab;
-        mNavigationEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.GESTURE_NAVIGATION);
+        mNavigationEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION);
     }
 
     private void initSwipeRefreshLayout() {

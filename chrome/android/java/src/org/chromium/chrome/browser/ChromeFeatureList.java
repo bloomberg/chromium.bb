@@ -224,7 +224,6 @@ public abstract class ChromeFeatureList {
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String FCM_INVALIDATIONS = "FCMInvalidations";
-    public static final String GESTURE_NAVIGATION = "GestureNavigation";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
@@ -271,6 +270,7 @@ public abstract class ChromeFeatureList {
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE =
             "OmniboxVoiceSearchAlwaysVisible";
+    public static final String OVERSCROLL_HISTORY_NAVIGATION = "OverscrollHistoryNavigation";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String PASSWORDS_KEYBOARD_ACCESSORY = "PasswordsKeyboardAccessory";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";

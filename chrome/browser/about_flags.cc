@@ -209,9 +209,9 @@ namespace {
 const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_ANDROID)
 const unsigned kOsAura = kOsWin | kOsLinux | kOsCrOS;
-#endif  // USE_AURA
+#endif  // USE_AURA || OS_ANDROID
 
 const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
@@ -1658,11 +1658,13 @@ const FeatureEntry kFeatureEntries[] = {
          "1",
          autofill::switches::kWalletServiceUseSandbox,
          "0")},
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_ANDROID)
     {"overscroll-history-navigation",
      flag_descriptions::kOverscrollHistoryNavigationName,
-     flag_descriptions::kOverscrollHistoryNavigationDescription, kOsAura,
+     flag_descriptions::kOverscrollHistoryNavigationDescription,
+     kOsAura | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
+#if !defined(OS_ANDROID)
     {"overscroll-start-threshold",
      flag_descriptions::kOverscrollStartThresholdName,
      flag_descriptions::kOverscrollStartThresholdDescription, kOsAura,
@@ -1670,7 +1672,8 @@ const FeatureEntry kFeatureEntries[] = {
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
      MULTI_VALUE_TYPE(kPullToRefreshChoices)},
-#endif  // USE_AURA
+#endif  // !OS_ANDROID
+#endif  // USE_AURA || OS_ANDROID
     {"enable-touch-drag-drop", flag_descriptions::kTouchDragDropName,
      flag_descriptions::kTouchDragDropDescription, kOsWin | kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchDragDrop,
@@ -4079,9 +4082,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
      flag_descriptions::kEphemeralTabDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEphemeralTab)},
-    {"enable-gesture-navigation", flag_descriptions::kGestureNavigationName,
-     flag_descriptions::kGestureNavigationDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kGestureNavigation)},
     {"safe-browsing-telemetry-for-apk-downloads",
      flag_descriptions::kSafeBrowsingTelemetryForApkDownloadsName,
      flag_descriptions::kSafeBrowsingTelemetryForApkDownloadsDescription,

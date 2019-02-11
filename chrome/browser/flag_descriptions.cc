@@ -2483,10 +2483,6 @@ const char kForegroundNotificationManagerDescription[] =
     "Enable foreground notification manager to handle foreground service and "
     "notification.";
 
-const char kGestureNavigationName[] = "History navigation with gesture";
-const char kGestureNavigationDescription[] =
-    "Enable history navigation with horizontal gesture.";
-
 const char kGrantNotificationsToDSEName[] =
     "Grant notifications to the Default Search Engine";
 const char kGrantNotificationsToDSENameDescription[] =

@@ -55,7 +55,7 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     public HistoryNavigationLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.GESTURE_NAVIGATION)) return;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)) return;
         if (context instanceof ChromeActivity) {
             mTabProvider = ((ChromeActivity) context).getActivityTabProvider();
             mDetector = new GestureDetector(getContext(), new SideNavGestureListener());

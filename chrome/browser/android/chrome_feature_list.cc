@@ -73,6 +73,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kGenericSensorExtraClasses,
     &features::kIncognitoStrings,
     &features::kMaterialDesignIncognitoNTP,
+    &features::kOverscrollHistoryNavigation,
     &features::kPermissionDelegation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kServiceWorkerPaymentApps,
@@ -123,7 +124,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadHomeShowStorageInfo,
     &kEphemeralTab,
     &kExploreSites,
-    &kGestureNavigation,
     &kHandleMediaIntents,
     &kHideUserDataFromIncognitoNotifications,
     &kHomePageButtonForceEnabled,
@@ -330,9 +330,6 @@ const base::Feature kExploreSites{"ExploreSites",
 
 const base::Feature kForegroundNotificationManager{
     "ForegroundNotificationManager", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kGestureNavigation{"GestureNavigation",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
