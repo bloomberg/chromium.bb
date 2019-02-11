@@ -82,7 +82,7 @@ class MenuControllerTestApi {
   MenuControllerTestApi();
   ~MenuControllerTestApi();
 
-  MenuController* controller() { return controller_.get(); };
+  MenuController* controller() { return controller_.get(); }
 
   // Clears out the current and pending states, without notifying the associated
   // menu items.
