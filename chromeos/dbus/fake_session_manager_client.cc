@@ -95,8 +95,8 @@ std::vector<std::string> ReadCreateStateKeysStub(const base::FilePath& path) {
     // Create stub state keys on the fly.
     for (int i = 0; i < 5; ++i) {
       contents += crypto::SHA256HashString(
-          base::IntToString(i) +
-          base::Int64ToString(base::Time::Now().ToJavaTime()));
+          base::NumberToString(i) +
+          base::NumberToString(base::Time::Now().ToJavaTime()));
     }
     StoreFiles({{path, contents}});
   }

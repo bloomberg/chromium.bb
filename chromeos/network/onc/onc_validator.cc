@@ -226,7 +226,7 @@ std::unique_ptr<base::Value> Validator::MapEntry(
     const OncValueSignature& signature,
     const base::Value& onc_value,
     bool* error) {
-  std::string index_as_string = base::IntToString(index);
+  std::string index_as_string = base::NumberToString(index);
   path_.push_back(index_as_string);
   std::unique_ptr<base::Value> result =
       Mapper::MapEntry(index, signature, onc_value, error);

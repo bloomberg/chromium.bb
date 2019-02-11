@@ -169,7 +169,7 @@ TEST(ONCUtils, ProxySettingsToProxyConfig) {
 
   int index = 0;
   for (const base::Value& test_case : list_of_tests->GetList()) {
-    SCOPED_TRACE("Test case #" + base::IntToString(index++));
+    SCOPED_TRACE("Test case #" + base::NumberToString(index++));
 
     ASSERT_TRUE(test_case.is_dict());
 
@@ -193,7 +193,7 @@ TEST(ONCUtils, ProxyConfigToOncProxySettings) {
 
   int index = 0;
   for (const base::Value& test_case : list_of_tests->GetList()) {
-    SCOPED_TRACE("Test case #" + base::IntToString(index++));
+    SCOPED_TRACE("Test case #" + base::NumberToString(index++));
 
     const base::Value* shill_proxy_config = test_case.FindKey("ProxyConfig");
     ASSERT_TRUE(shill_proxy_config);

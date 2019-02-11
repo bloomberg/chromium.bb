@@ -94,7 +94,7 @@ class NetworkCertMigratorTest : public testing::Test {
         test_client_cert_.get(), &slot_id);
     ASSERT_FALSE(test_client_cert_pkcs11_id_.empty());
     ASSERT_NE(-1, slot_id);
-    test_client_cert_slot_id_ = base::IntToString(slot_id);
+    test_client_cert_slot_id_ = base::NumberToString(slot_id);
   }
 
   void SetupNetworkHandlers() {

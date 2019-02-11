@@ -289,7 +289,7 @@ bool GetGeolocationFromResponse(bool http_success,
   }
   if (status_code != net::HTTP_OK) {
     std::string message = "Returned error code ";
-    message += base::IntToString(status_code);
+    message += base::NumberToString(status_code);
     PrintGeolocationError(server_url, message, position);
     RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_NOT_OK);
     return false;
@@ -317,7 +317,7 @@ std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
   if (!access_point.timestamp.is_null()) {
     access_point_dictionary->SetKey(
         kAge,
-        base::Value(base::Int64ToString(
+        base::Value(base::NumberToString(
             (base::Time::Now() - access_point.timestamp).InMilliseconds())));
   }
 
@@ -341,7 +341,7 @@ std::unique_ptr<base::DictionaryValue> CreateCellTowerDictionary(
   if (!cell_tower.timestamp.is_null()) {
     cell_tower_dictionary->SetKey(
         kAge,
-        base::Value(base::Int64ToString(
+        base::Value(base::NumberToString(
             (base::Time::Now() - cell_tower.timestamp).InMilliseconds())));
   }
   return cell_tower_dictionary;

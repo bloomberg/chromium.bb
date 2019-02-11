@@ -60,8 +60,8 @@ class GeolocationHandlerTest : public testing::Test {
     std::string mac_address =
         base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
                            idx, 0, 0, 0, 0, 0);
-    std::string channel = base::IntToString(idx);
-    std::string strength = base::IntToString(idx * 10);
+    std::string channel = base::NumberToString(idx);
+    std::string strength = base::NumberToString(idx * 10);
     properties.SetKey(shill::kGeoMacAddressProperty, base::Value(mac_address));
     properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));
     properties.SetKey(shill::kGeoSignalStrengthProperty, base::Value(strength));
@@ -76,10 +76,10 @@ class GeolocationHandlerTest : public testing::Test {
     // Multiplications, additions, and string concatenations
     // are intended solely to differentiate the various fields
     // in a predictable way, while preserving 3 digits for MCC and MNC.
-    std::string ci = base::IntToString(idx) + "D3A15F2";
-    std::string lac = "7FF" + base::IntToString(idx);
-    std::string mcc = base::IntToString(idx * 100);
-    std::string mnc = base::IntToString(idx * 100 + 1);
+    std::string ci = base::NumberToString(idx) + "D3A15F2";
+    std::string lac = "7FF" + base::NumberToString(idx);
+    std::string mcc = base::NumberToString(idx * 100);
+    std::string mnc = base::NumberToString(idx * 100 + 1);
 
     properties.SetKey(shill::kGeoCellIdProperty, base::Value(ci));
     properties.SetKey(shill::kGeoLocationAreaCodeProperty, base::Value(lac));
