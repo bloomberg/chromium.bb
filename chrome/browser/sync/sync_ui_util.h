@@ -10,10 +10,6 @@
 
 class Profile;
 
-namespace identity {
-class IdentityManager;
-}
-
 namespace syncer {
 class SyncService;
 }  // namespace syncer
@@ -43,22 +39,26 @@ enum AvatarSyncErrorType {
   NO_SYNC_ERROR,                     // No sync error.
   MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
   UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
-  SUPERVISED_USER_AUTH_ERROR,        // Auth token error for supervised users.
-  AUTH_ERROR,                        // Authentication error.
-  UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
-  PASSPHRASE_ERROR,                  // Sync passphrase error.
-  SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
+  // TODO(crbug.com/911153): Remove this value. It is never returned, but some
+  // clients still check for it.
+  SUPERVISED_USER_AUTH_ERROR,  // Auth token error for supervised users.
+  AUTH_ERROR,                  // Authentication error.
+  UPGRADE_CLIENT_ERROR,        // Out-of-date client error.
+  PASSPHRASE_ERROR,            // Sync passphrase error.
+  SETTINGS_UNCONFIRMED_ERROR,  // Sync settings dialog not confirmed yet.
 };
 
-// Create status and link labels for the current status labels and link text
-// by querying |service|.
+// Returns the high-level sync status, and populates status and link label
+// strings for the current sync status by querying |profile|.
 // |status_label| and |link_label| must either be both null or both non-null.
 MessageType GetStatusLabels(Profile* profile,
-                            const syncer::SyncService* service,
-                            identity::IdentityManager* identity_manager,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type);
+
+// Convenience version of GetStatusLabels for when you're not interested in the
+// actual labels, only in the return value.
+MessageType GetStatus(Profile* profile);
 
 #if !defined(OS_CHROMEOS)
 // Gets the error message and button label for the sync errors that should be
@@ -68,10 +68,6 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     int* content_string_id,
     int* button_string_id);
 #endif
-
-MessageType GetStatus(Profile* profile,
-                      const syncer::SyncService* service,
-                      identity::IdentityManager* identity_manager);
 
 // Whether sync is currently blocked from starting because the sync
 // confirmation dialog hasn't been shown. Note that once the dialog is

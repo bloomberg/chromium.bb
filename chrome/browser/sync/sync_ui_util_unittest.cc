@@ -2,40 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/sync/engine/sync_engine.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using syncer::TestSyncService;
-using ::testing::_;
-using ::testing::AtMost;
-using ::testing::NiceMock;
-using ::testing::Return;
-using ::testing::ReturnRef;
-using ::testing::SetArgPointee;
+
+namespace {
 
 // A number of distinct states of the SyncService can be generated for tests.
 enum DistinctState {
@@ -50,8 +43,6 @@ enum DistinctState {
   STATUS_CASE_SYNC_DISABLED_BY_POLICY,
   NUMBER_OF_STATUS_CASES
 };
-
-namespace {
 
 const char kTestGaiaId[] = "gaia-id-test_user@test.com";
 const char kTestUser[] = "test_user@test.com";
@@ -203,13 +194,31 @@ sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
   }
 }
 
+std::unique_ptr<KeyedService> BuildTestSyncService(
+    content::BrowserContext* context) {
+  return std::make_unique<TestSyncService>();
+}
+
+std::unique_ptr<TestingProfile> BuildTestingProfile() {
+  return IdentityTestEnvironmentProfileAdaptor::
+      CreateProfileForIdentityTestEnvironment(
+          {{ProfileSyncServiceFactory::GetInstance(),
+            base::BindRepeating(&BuildTestSyncService)}});
+}
+
+std::unique_ptr<TestingProfile> BuildSignedInTestingProfile() {
+  std::unique_ptr<TestingProfile> profile = BuildTestingProfile();
+  IdentityTestEnvironmentProfileAdaptor identity_adaptor(profile.get());
+  identity_adaptor.identity_test_env()->SetPrimaryAccount(kTestUser);
+  return profile;
+}
+
 // This test ensures that each distinctive SyncService status will return a
 // unique combination of status and link messages from GetStatusLabels().
 TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    std::unique_ptr<Profile> profile = IdentityTestEnvironmentProfileAdaptor::
-        CreateProfileForIdentityTestEnvironment();
+    std::unique_ptr<Profile> profile = BuildTestingProfile();
 
     IdentityTestEnvironmentProfileAdaptor env_adaptor(profile.get());
     identity::IdentityTestEnvironment* environment =
@@ -227,13 +236,14 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     // Need a primary account signed in before calling GetDistinctCase().
     environment->MakePrimaryAccountAvailable(kTestUser);
 
-    TestSyncService service;
-    GetDistinctCase(&service, identity_manager, idx);
+    TestSyncService* service = static_cast<TestSyncService*>(
+        ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+    GetDistinctCase(service, identity_manager, idx);
     base::string16 status_label;
     base::string16 link_label;
     sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-    sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
-                                  &status_label, &link_label, &action_type);
+    sync_ui_util::GetStatusLabels(profile.get(), &status_label, &link_label,
+                                  &action_type);
 
     EXPECT_EQ(GetActionTypeforDistinctCase(idx), action_type)
         << "Wrong action returned for case #" << idx;
@@ -256,22 +266,21 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
 }
 
 TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
-  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile.get());
+  std::unique_ptr<Profile> profile = BuildSignedInTestingProfile();
 
-  TestSyncService service;
-  service.SetFirstSetupComplete(true);
-  service.SetDisableReasons(
+  TestSyncService* service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+  service->SetFirstSetupComplete(true);
+  service->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
 
   // First time action is not set. We should get unrecoverable error.
-  service.SetDetailedSyncStatus(true, syncer::SyncStatus());
+  service->SetDetailedSyncStatus(true, syncer::SyncStatus());
 
   base::string16 link_label;
   base::string16 unrecoverable_error_status_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
+  sync_ui_util::GetStatusLabels(profile.get(),
                                 &unrecoverable_error_status_label, &link_label,
                                 &action_type);
 
@@ -282,11 +291,10 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   // from previous one.
   syncer::SyncStatus status;
   status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
-  service.SetDetailedSyncStatus(true, status);
+  service->SetDetailedSyncStatus(true, status);
   base::string16 upgrade_client_status_label;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
-                                &upgrade_client_status_label, &link_label,
-                                &action_type);
+  sync_ui_util::GetStatusLabels(profile.get(), &upgrade_client_status_label,
+                                &link_label, &action_type);
   // Expect an explicit 'client upgrade' action.
   EXPECT_EQ(sync_ui_util::UPGRADE_CLIENT, action_type);
 
@@ -294,24 +302,23 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
 }
 
 TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
-  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile.get());
+  std::unique_ptr<Profile> profile = BuildSignedInTestingProfile();
 
-  TestSyncService service;
-  service.SetFirstSetupComplete(true);
-  service.SetDisableReasons(
+  TestSyncService* service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+  service->SetFirstSetupComplete(true);
+  service->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
 
   // Set action to UPGRADE_CLIENT.
   syncer::SyncStatus status;
   status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
-  service.SetDetailedSyncStatus(true, status);
+  service->SetDetailedSyncStatus(true, status);
 
   base::string16 first_actionable_error_status_label;
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
+  sync_ui_util::GetStatusLabels(profile.get(),
                                 &first_actionable_error_status_label,
                                 &link_label, &action_type);
   // Expect a 'client upgrade' call to action.
@@ -319,11 +326,11 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
 
   // This time set action to ENABLE_SYNC_ON_ACCOUNT.
   status.sync_protocol_error.action = syncer::ENABLE_SYNC_ON_ACCOUNT;
-  service.SetDetailedSyncStatus(true, status);
+  service->SetDetailedSyncStatus(true, status);
 
   base::string16 second_actionable_error_status_label;
   action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
+  sync_ui_util::GetStatusLabels(profile.get(),
                                 &second_actionable_error_status_label,
                                 &link_label, &action_type);
   // Expect a passive message instead of a call to action.
@@ -334,21 +341,19 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
 }
 
 TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
-  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile.get());
+  std::unique_ptr<Profile> profile = BuildSignedInTestingProfile();
 
-  TestSyncService service;
-  service.SetFirstSetupComplete(false);
-  ASSERT_TRUE(sync_ui_util::ShouldRequestSyncConfirmation(&service));
+  TestSyncService* service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+  service->SetFirstSetupComplete(false);
+  ASSERT_TRUE(sync_ui_util::ShouldRequestSyncConfirmation(service));
 
   base::string16 actionable_error_status_label;
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
 
-  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
-                                &actionable_error_status_label, &link_label,
-                                &action_type);
+  sync_ui_util::GetStatusLabels(profile.get(), &actionable_error_status_label,
+                                &link_label, &action_type);
 
   EXPECT_EQ(action_type, sync_ui_util::CONFIRM_SYNC_SETTINGS);
 }

@@ -54,12 +54,7 @@ bool ShouldShowCookieException(Profile* profile) {
   }
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
-    // TODO(http://crbug.com/890796): Migrate this part once sync_ui_util has
-    // been migrated to the IdentityManager.
-    sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
-        profile, ProfileSyncServiceFactory::GetSyncServiceForProfile(profile),
-        IdentityManagerFactory::GetForProfile(profile));
-    return sync_status == sync_ui_util::SYNCED;
+    return sync_ui_util::GetStatus(profile) == sync_ui_util::SYNCED;
   }
 #endif
   return false;
