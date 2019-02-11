@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.init;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.lifecycle.ActivityResultWithNativeObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
@@ -32,6 +34,8 @@ public class ActivityLifecycleDispatcher {
             new ObserverList<>();
     private final ObserverList<WindowFocusChangedObserver> mWindowFocusChangesObservers =
             new ObserverList<>();
+    private final ObserverList<ActivityResultWithNativeObserver>
+            mActivityResultWithNativeObservers = new ObserverList<>();
 
     /**
      * Registers an observer.
@@ -60,6 +64,10 @@ public class ActivityLifecycleDispatcher {
         if (observer instanceof WindowFocusChangedObserver) {
             mWindowFocusChangesObservers.addObserver((WindowFocusChangedObserver) observer);
         }
+        if (observer instanceof ActivityResultWithNativeObserver) {
+            mActivityResultWithNativeObservers.addObserver(
+                    (ActivityResultWithNativeObserver) observer);
+        }
     }
 
     /**
@@ -86,6 +94,10 @@ public class ActivityLifecycleDispatcher {
         }
         if (observer instanceof WindowFocusChangedObserver) {
             mWindowFocusChangesObservers.removeObserver((WindowFocusChangedObserver) observer);
+        }
+        if (observer instanceof ActivityResultWithNativeObserver) {
+            mActivityResultWithNativeObservers.removeObserver(
+                    (ActivityResultWithNativeObserver) observer);
         }
     }
 
@@ -146,6 +158,12 @@ public class ActivityLifecycleDispatcher {
     void dispatchOnWindowFocusChanged(boolean hasFocus) {
         for (WindowFocusChangedObserver observer: mWindowFocusChangesObservers) {
             observer.onWindowFocusChanged(hasFocus);
+        }
+    }
+
+    void dispatchOnActivityResultWithNative(int requestCode, int resultCode, Intent data) {
+        for (ActivityResultWithNativeObserver observer : mActivityResultWithNativeObservers) {
+            observer.onActivityResultWithNative(requestCode, resultCode, data);
         }
     }
 }

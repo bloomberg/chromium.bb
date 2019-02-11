@@ -609,6 +609,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
                 && mWindowAndroid.onActivityResult(requestCode, resultCode, intent)) {
             return true;
         }
+        mLifecycleDispatcher.dispatchOnActivityResultWithNative(requestCode, resultCode, intent);
         super.onActivityResult(requestCode, resultCode, intent);
         return false;
     }

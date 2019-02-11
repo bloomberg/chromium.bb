@@ -878,6 +878,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/jsdialog/JavascriptModalDialog.java",
   "java/src/org/chromium/chrome/browser/jsdialog/JavascriptTabModalDialog.java",
   "java/src/org/chromium/chrome/browser/language/LanguageAskPrompt.java",
+  "java/src/org/chromium/chrome/browser/lifecycle/ActivityResultWithNativeObserver.java",
   "java/src/org/chromium/chrome/browser/lifecycle/Destroyable.java",
   "java/src/org/chromium/chrome/browser/lifecycle/InflationObserver.java",
   "java/src/org/chromium/chrome/browser/lifecycle/LifecycleObserver.java",
