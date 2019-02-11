@@ -114,9 +114,6 @@ interface AppCacheFrontend {
   // a particular host. This is sent in reply to AppCacheHostMsg_SelectCache.
   CacheSelected(int32 host_id, AppCacheInfo info);
 
-  // Notifies the renderer of an AppCache status change.
-  StatusChanged(array<int32> host_ids, AppCacheStatus status);
-
   // Notifies the renderer of an AppCache event other than the
   // progress event which has a seperate message.
   EventRaised(array<int32> host_ids, AppCacheEventID event_id);

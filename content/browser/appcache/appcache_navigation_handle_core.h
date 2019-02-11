@@ -61,8 +61,6 @@ class AppCacheNavigationHandleCore : public blink::mojom::AppCacheFrontend {
   // AppCacheHost is not registered with the AppCacheBackend.
   void CacheSelected(int32_t host_id,
                      blink::mojom::AppCacheInfoPtr info) override;
-  void StatusChanged(const std::vector<int32_t>& host_ids,
-                     blink::mojom::AppCacheStatus status) override;
   void EventRaised(const std::vector<int32_t>& host_ids,
                    blink::mojom::AppCacheEventID event_id) override;
   void ProgressEventRaised(const std::vector<int32_t>& host_ids,

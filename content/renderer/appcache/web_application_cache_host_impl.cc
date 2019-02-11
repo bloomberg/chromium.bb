@@ -94,11 +94,6 @@ void WebApplicationCacheHostImpl::OnCacheSelected(
   client_->DidChangeCacheAssociation();
 }
 
-void WebApplicationCacheHostImpl::OnStatusChanged(
-    blink::mojom::AppCacheStatus status) {
-  // TODO(michaeln): delete me, not used
-}
-
 void WebApplicationCacheHostImpl::OnEventRaised(
     blink::mojom::AppCacheEventID event_id) {
   DCHECK_NE(event_id,

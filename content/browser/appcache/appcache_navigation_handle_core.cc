@@ -94,13 +94,6 @@ void AppCacheNavigationHandleCore::CacheSelected(
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::StatusChanged(
-    const std::vector<int>& host_ids,
-    blink::mojom::AppCacheStatus status) {
-  // Should never be called.
-  DCHECK(false);
-}
-
 void AppCacheNavigationHandleCore::EventRaised(
     const std::vector<int>& host_ids,
     blink::mojom::AppCacheEventID event_id) {

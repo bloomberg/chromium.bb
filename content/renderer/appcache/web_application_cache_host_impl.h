@@ -35,7 +35,6 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   virtual void OnCacheSelected(const blink::mojom::AppCacheInfo& info);
-  void OnStatusChanged(blink::mojom::AppCacheStatus);
   void OnEventRaised(blink::mojom::AppCacheEventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
   void OnErrorEventRaised(const blink::mojom::AppCacheErrorDetails& details);
