@@ -449,13 +449,6 @@ void IdentityManager::OnAddAccountToCookieCompleted(
   }
 }
 
-void IdentityManager::OnSetAccountsInCookieCompleted(
-    const GoogleServiceAuthError& error) {
-  for (auto& observer : observer_list_) {
-    observer.OnSetAccountsInCookieCompleted(error);
-  }
-}
-
 void IdentityManager::OnGaiaCookieDeletedByUserAction() {
   for (auto& observer : observer_list_) {
     observer.OnAccountsCookieDeletedByUserAction();

@@ -286,7 +286,7 @@ class AccountReconcilorTest : public ::testing::Test {
       const ContentSettingsPattern& primary_pattern);
 
   void SimulateSetAccountsInCookieCompleted(
-      identity::IdentityManager::Observer* observer,
+      AccountReconcilor* reconcilor,
       const GoogleServiceAuthError& error);
 
   void SetAccountConsistency(signin::AccountConsistencyMethod method);
@@ -456,9 +456,9 @@ void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
 }
 
 void AccountReconcilorTest::SimulateSetAccountsInCookieCompleted(
-    identity::IdentityManager::Observer* observer,
+    AccountReconcilor* reconcilor,
     const GoogleServiceAuthError& error) {
-  observer->OnSetAccountsInCookieCompleted(error);
+  reconcilor->OnSetAccountsInCookieCompleted(error);
 }
 
 void AccountReconcilorTest::SimulateCookieContentSettingsChanged(

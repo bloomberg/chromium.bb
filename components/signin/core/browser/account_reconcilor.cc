@@ -399,8 +399,13 @@ void AccountReconcilor::PerformSetCookiesAction(
   VLOG(1) << "AccountReconcilor::PerformSetCookiesAction: "
           << base::JoinString(parameters.accounts_to_send, " ");
   // TODO (https://crbug.com/890321): pass mode to GaiaCookieManagerService.
-  cookie_manager_service_->SetAccountsInCookie(parameters.accounts_to_send,
-                                               delegate_->GetGaiaApiSource());
+  //
+  // Using Unretained is safe here because the CookieManagerService outlives
+  // the AccountReconcilor.
+  cookie_manager_service_->SetAccountsInCookie(
+      parameters.accounts_to_send, delegate_->GetGaiaApiSource(),
+      base::BindOnce(&AccountReconcilor::OnSetAccountsInCookieCompleted,
+                     base::Unretained(this)));
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {

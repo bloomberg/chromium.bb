@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -288,11 +289,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return error_from_add_account_to_cookie_completed_callback_;
   }
 
-  const GoogleServiceAuthError&
-  error_from_set_accounts_in_cookie_completed_callback() const {
-    return error_from_set_accounts_in_cookie_completed_callback_;
-  }
-
   const GoogleServiceAuthError& error_from_signin_failed_callback() const {
     return google_signin_failed_error_;
   }
@@ -379,10 +375,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     account_from_add_account_to_cookie_completed_callback_ = account_id;
     error_from_add_account_to_cookie_completed_callback_ = error;
   }
-  void OnSetAccountsInCookieCompleted(
-      const GoogleServiceAuthError& error) override {
-    error_from_set_accounts_in_cookie_completed_callback_ = error;
-  }
   void OnAccountsCookieDeletedByUserAction() override {
     std::move(on_cookie_deleted_by_user_callback_).Run();
   }
@@ -431,7 +423,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
   std::string account_from_add_account_to_cookie_completed_callback_;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback_;
-  GoogleServiceAuthError error_from_set_accounts_in_cookie_completed_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
   bool is_inside_batch_ = false;
   bool was_called_account_removed_with_info_callback_ = false;
@@ -2177,9 +2168,16 @@ TEST_F(IdentityManagerTest,
   const std::vector<std::string> account_ids = {kTestAccountId,
                                                 kTestAccountId2};
 
+  GoogleServiceAuthError error_from_set_accounts_in_cookie_completed_callback;
+  auto completion_callback = base::BindLambdaForTesting(
+      [&error_from_set_accounts_in_cookie_completed_callback](
+          const GoogleServiceAuthError& error) {
+        error_from_set_accounts_in_cookie_completed_callback = error;
+      });
+
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
-                                                     gaia::GaiaSource::kChrome);
+  gaia_cookie_manager_service()->SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample success cookie response.
   std::string data =
@@ -2204,8 +2202,7 @@ TEST_F(IdentityManagerTest,
 
   SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
 
-  EXPECT_EQ(identity_manager_observer()
-                ->error_from_set_accounts_in_cookie_completed_callback(),
+  EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback,
             GoogleServiceAuthError::AuthErrorNone());
 }
 
@@ -2216,9 +2213,16 @@ TEST_F(IdentityManagerTest,
   const std::vector<std::string> account_ids = {kTestAccountId,
                                                 kTestAccountId2};
 
+  GoogleServiceAuthError error_from_set_accounts_in_cookie_completed_callback;
+  auto completion_callback = base::BindLambdaForTesting(
+      [&error_from_set_accounts_in_cookie_completed_callback](
+          const GoogleServiceAuthError& error) {
+        error_from_set_accounts_in_cookie_completed_callback = error;
+      });
+
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
-                                                     gaia::GaiaSource::kChrome);
+  gaia_cookie_manager_service()->SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample an erroneous response.
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
@@ -2226,9 +2230,7 @@ TEST_F(IdentityManagerTest,
 
   SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
 
-  EXPECT_EQ(identity_manager_observer()
-                ->error_from_set_accounts_in_cookie_completed_callback(),
-            error);
+  EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback, error);
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
@@ -2238,8 +2240,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
                                                 kTestAccountId2};
 
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
-                                                     gaia::GaiaSource::kChrome);
+  gaia_cookie_manager_service()->SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   // Sample success cookie response.
   std::string data =
@@ -2288,8 +2291,9 @@ TEST_F(IdentityManagerTest, StartObservingCookieChanges) {
   identity_manager()->StartObservingCookieChanges();
 
   // Needed to insert request in the queue.
-  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
-                                                     gaia::GaiaSource::kChrome);
+  gaia_cookie_manager_service()->SetAccountsInCookie(
+      account_ids, gaia::GaiaSource::kChrome,
+      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
 
   // Sample success cookie response.
   std::string data =
