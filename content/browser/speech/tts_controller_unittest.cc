@@ -58,9 +58,9 @@ class MockTtsControllerDelegate : public TtsControllerDelegate {
   void UpdateUtteranceDefaultsFromPrefs(content::TtsUtterance* utterance,
                                         double* rate,
                                         double* pitch,
-                                        double* volume) override{};
+                                        double* volume) override {}
 
-  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override{};
+  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override {}
 
   content::TtsEngineDelegate* GetTtsEngineDelegate() override {
     return nullptr;
