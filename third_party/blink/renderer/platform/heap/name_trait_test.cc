@@ -21,7 +21,7 @@ class ClassWithName : public NameClient {
  public:
   ClassWithName(const char* name) : name_(name) {}
 
-  const char* NameInHeapSnapshot() const final { return name_; };
+  const char* NameInHeapSnapshot() const final { return name_; }
 
  private:
   const char* name_;
