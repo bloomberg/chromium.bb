@@ -636,10 +636,13 @@ ServiceManagerContext::ServiceManagerContext(
       &out_of_process_services);
 
   if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
-    RegisterInProcessService(packaged_services_connection_.get(),
-                             tracing::mojom::kServiceName,
-                             service_manager_thread_task_runner_,
-                             base::BindRepeating(&CreateTracingService));
+    RegisterInProcessService(
+        packaged_services_connection_.get(), tracing::mojom::kServiceName,
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+             base::WithBaseSyncPrimitives(),
+             base::TaskPriority::USER_BLOCKING}),
+        base::BindRepeating(&CreateTracingService));
   } else {
     out_of_process_services[tracing::mojom::kServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Tracing Service");

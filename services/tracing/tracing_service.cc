@@ -25,11 +25,9 @@ namespace tracing {
 class ServiceListener : public service_manager::mojom::ServiceManagerListener {
  public:
   ServiceListener(service_manager::Connector* connector,
-                  scoped_refptr<base::SequencedTaskRunner> task_runner,
                   AgentRegistry* agent_registry)
       : binding_(this),
         connector_(connector),
-        task_runner_(task_runner),
         agent_registry_(agent_registry) {
     service_manager::mojom::ServiceManagerPtr service_manager;
     connector_->BindInterface(service_manager::mojom::kServiceName,
@@ -55,7 +53,6 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
         mojo::MakeRequest(&new_connection_request->perfetto_service));
 
     agent_registry_->BindAgentRegistryRequest(
-        task_runner_,
         mojo::MakeRequest(&new_connection_request->agent_registry));
 
     traced_process->ConnectToTracingService(std::move(new_connection_request));
@@ -85,22 +82,13 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
  private:
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
   service_manager::Connector* connector_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   AgentRegistry* agent_registry_;
 };
 
 TracingService::TracingService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+    : service_binding_(this, std::move(request)) {}
 
-TracingService::~TracingService() {
-  task_runner_->DeleteSoon(FROM_HERE, std::move(tracing_agent_registry_));
-
-  if (perfetto_tracing_coordinator_) {
-    task_runner_->DeleteSoon(FROM_HERE,
-                             std::move(perfetto_tracing_coordinator_));
-  }
-}
+TracingService::~TracingService() = default;
 
 void TracingService::OnDisconnected() {
   CloseAgentConnectionsAndTerminate();
@@ -110,13 +98,10 @@ void TracingService::OnStart() {
   tracing_agent_registry_ = std::make_unique<AgentRegistry>();
 
   if (TracingUsesPerfettoBackend()) {
-    task_runner_ = tracing::PerfettoService::GetInstance()->task_runner();
-
     auto perfetto_coordinator = std::make_unique<PerfettoTracingCoordinator>(
         tracing_agent_registry_.get(),
         base::BindRepeating(&TracingService::OnCoordinatorConnectionClosed,
-                            base::Unretained(this),
-                            base::SequencedTaskRunnerHandle::Get()));
+                            base::Unretained(this)));
     registry_.AddInterface(
         base::BindRepeating(&PerfettoTracingCoordinator::BindCoordinatorRequest,
                             base::Unretained(perfetto_coordinator.get())));
@@ -125,7 +110,7 @@ void TracingService::OnStart() {
     auto tracing_coordinator = std::make_unique<Coordinator>(
         tracing_agent_registry_.get(),
         base::BindRepeating(&TracingService::OnCoordinatorConnectionClosed,
-                            base::Unretained(this), nullptr));
+                            base::Unretained(this)));
     registry_.AddInterface(
         base::BindRepeating(&Coordinator::BindCoordinatorRequest,
                             base::Unretained(tracing_coordinator.get())));
@@ -133,8 +118,7 @@ void TracingService::OnStart() {
   }
 
   service_listener_ = std::make_unique<ServiceListener>(
-      service_binding_.GetConnector(), task_runner_,
-      tracing_agent_registry_.get());
+      service_binding_.GetConnector(), tracing_agent_registry_.get());
 }
 
 void TracingService::OnBindInterface(
@@ -145,29 +129,13 @@ void TracingService::OnBindInterface(
                           source_info);
 }
 
-void TracingService::OnCoordinatorConnectionClosed(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  // TODO(oysteine): Running TracingService and Perfetto on different
-  // sequences is getting messy; refactor so that the service manager
-  // runs the tracing service on a single threaded taskrunner so
-  // Perfetto can use the same.
-  if (task_runner && !task_runner->RunsTasksInCurrentSequence()) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&TracingService::OnCoordinatorConnectionClosed,
-                       base::Unretained(this), nullptr));
-    return;
-  }
-
+void TracingService::OnCoordinatorConnectionClosed() {
   service_binding_.RequestClose();
 }
 
 void TracingService::CloseAgentConnectionsAndTerminate() {
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&AgentRegistry::DisconnectAllAgents,
-                     base::Unretained(tracing_agent_registry_.get())),
-      base::BindOnce(&TracingService::Terminate, base::Unretained(this)));
+  tracing_agent_registry_->DisconnectAllAgents();
+  Terminate();
 }
 
 }  // namespace tracing

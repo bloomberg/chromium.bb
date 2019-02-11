@@ -47,7 +47,6 @@ class PerfettoTracingCoordinator : public Coordinator {
   void RequestBufferUsage(RequestBufferUsageCallback callback) override;
 
  private:
-  void BindOnSequence(mojom::CoordinatorRequest request);
   void OnTracingOverCallback();
   void OnClientConnectionError() override;
 

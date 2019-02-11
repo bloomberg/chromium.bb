@@ -202,14 +202,6 @@ void PerfettoTracingCoordinator::OnClientConnectionError() {
 void PerfettoTracingCoordinator::BindCoordinatorRequest(
     mojom::CoordinatorRequest request,
     const service_manager::BindSourceInfo& source_info) {
-  PerfettoService::GetInstance()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&PerfettoTracingCoordinator::BindOnSequence,
-                                base::Unretained(this), std::move(request)));
-}
-
-void PerfettoTracingCoordinator::BindOnSequence(
-    mojom::CoordinatorRequest request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(
       base::BindOnce(&PerfettoTracingCoordinator::OnClientConnectionError,

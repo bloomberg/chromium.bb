@@ -271,7 +271,7 @@ Coordinator::Coordinator(AgentRegistry* agent_registry,
                          const base::RepeatingClosure& on_disconnect_callback)
     : on_disconnect_callback_(std::move(on_disconnect_callback)),
       binding_(this),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
       // USER_VISIBLE because the task posted from StopAndFlushInternal() is
       // required to stop tracing from the UI.
       // TODO(fdoray): Once we have support for dynamic priorities
