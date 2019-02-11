@@ -151,6 +151,11 @@ bool Converter<std::string>::FromV8(Isolate* isolate,
   return true;
 }
 
+Local<Value> Converter<Local<Function>>::ToV8(Isolate* isolate,
+                                              Local<Function> val) {
+  return val.As<Value>();
+}
+
 bool Converter<Local<Function>>::FromV8(Isolate* isolate,
                                         Local<Value> val,
                                         Local<Function>* out) {
