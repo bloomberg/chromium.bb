@@ -23,9 +23,10 @@ cr.define('app_management', function() {
               'ahfgeienlihckogmohjhadlkjgocpleb', {title: 'Web Store'}),
           app_management.FakePageHandler.createApp(
               'aohghmighlieiainnegkcijnfilokake',
-              {title: 'Docs', type: apps.mojom.AppType.kExtension}),
+              {title: 'Docs', type: AppType.kArc}),
           app_management.FakePageHandler.createApp(
-              'blpcfgokakmgnkcojhhkbfbldkacnbeo', {title: 'Youtube'}),
+              'blpcfgokakmgnkcojhhkbfbldkacnbeo',
+              {title: 'Youtube', type: AppType.kCrostini}),
           app_management.FakePageHandler.createApp(
               'pjkljhegncpnkpknbcohdijeoejaedia', {title: 'Gmail'}),
           app_management.FakePageHandler.createApp(

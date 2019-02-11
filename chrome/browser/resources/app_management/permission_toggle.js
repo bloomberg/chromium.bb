@@ -11,21 +11,26 @@ Polymer({
     app: Object,
 
     /**
-     * TODO(rekanorman) Change the annotation when app type can be correctly
-     * sent.
-     * A string version of the permission type, corresponding to a value of
-     * the PwaPermissionType enum.
+     * A string version of the permission type. Must be a value of the
+     * permission type enum corresponding to the AppType of app_.
+     * E.g. A value of PwaPermissionType if app_.type === AppType.kWeb.
      * @type {string}
      */
     permissionType: String,
   },
 
   /**
-   * @param {String} appId
+   * @param {App} app
    * @param {string} permissionType
    * @return {boolean}
    */
   getPermissionValueBool_: function(app, permissionType) {
+    if (app === undefined || permissionType === undefined) {
+      return false;
+    }
+
+    assert(app);
+
     return app_management.util.getPermissionValueBool(app, permissionType);
   },
 
@@ -33,10 +38,13 @@ Polymer({
    * @private
    */
   togglePermission_: function() {
+    assert(this.app);
+
     /** @type {!Permission} */
     let newPermission;
 
-    switch (app_management.util.getPermissionValueType(this.app)) {
+    switch (app_management.util.getPermission(this.app, this.permissionType)
+                .valueType) {
       case PermissionValueType.kBool:
         newPermission =
             this.getNewPermissionBoolean_(this.app, this.permissionType);
@@ -54,16 +62,16 @@ Polymer({
   },
 
   /**
-   * @private
    * @param {App} app
    * @param {string} permissionType
    * @return {!Permission}
+   * @private
    */
   getNewPermissionBoolean_: function(app, permissionType) {
     /** @type {number} */
     let newPermissionValue;
 
-    switch (app_management.util.getPermissionValue(app, permissionType)) {
+    switch (app_management.util.getPermission(app, permissionType).value) {
       case Bool.kFalse:
         newPermissionValue = Bool.kTrue;
         break;
@@ -75,20 +83,20 @@ Polymer({
     }
 
     return app_management.util.createPermission(
-        PwaPermissionType[permissionType], PermissionValueType.kBool,
-        newPermissionValue);
+        app_management.util.permissionTypeHandle(app, permissionType),
+        PermissionValueType.kBool, newPermissionValue);
   },
 
   /**
    * @param {App} app
    * @param {string} permissionType
-   * @private
    * @return {!Permission}
+   * @private
    */
   getNewPermissionTriState_: function(app, permissionType) {
     let newPermissionValue;
 
-    switch (app_management.util.getPermissionValue(app, permissionType)) {
+    switch (app_management.util.getPermission(app, permissionType).value) {
       case TriState.kBlock:
         newPermissionValue = TriState.kAllow;
         break;
@@ -107,7 +115,7 @@ Polymer({
     }
 
     return app_management.util.createPermission(
-        PwaPermissionType[permissionType], PermissionValueType.kTriState,
-        newPermissionValue);
+        app_management.util.permissionTypeHandle(app, permissionType),
+        PermissionValueType.kTriState, newPermissionValue);
   },
 });

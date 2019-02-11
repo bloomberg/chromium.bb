@@ -49,7 +49,7 @@
         <app-management-app-item app="[[item]]">
           <app-management-permission-toggle slot="right-content"
               app="[[item]]"
-              permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
+              permission-type="[[notificationsPermissionType_(item)]]">
           </app-management-permission-toggle>
         </app-management-app-item>
       </template>
@@ -59,7 +59,7 @@
           <app-management-app-item app="[[item]]">
             <app-management-permission-toggle slot="right-content"
                 app="[[item]]"
-                permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
+                permission-type="[[notificationsPermissionType_(item)]]">
             </app-management-permission-toggle>
           </app-management-app-item>
         </template>

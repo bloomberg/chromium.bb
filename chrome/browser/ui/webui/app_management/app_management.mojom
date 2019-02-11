@@ -53,10 +53,21 @@ interface Page {
   OnAppRemoved(string app_id);
 };
 
-// This enum takes the important permission values from the
-// contents_settings_type.h ContentSettingsType enum. The App Publisher is
+// Permission Type Enums for each App Publisher. The App Publishers are
 // required to provide these values so the WebUI can map permission ID to
 // permission value.
+
+// This enum shows the ARC permission values currently supported over the
+// App Service. It should always match the AppPermission enum in
+// app_permissions.mojom
+enum ArcPermissionType {
+  CAMERA,
+  LOCATION,
+  MICROPHONE,
+};
+
+// This enum takes the important permission values from the
+// contents_settings_type.h ContentSettingsType enum.
 enum PwaPermissionType {
   CONTENT_SETTINGS_TYPE_GEOLOCATION = 5,
   CONTENT_SETTINGS_TYPE_NOTIFICATIONS = 6,

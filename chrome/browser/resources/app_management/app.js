@@ -61,14 +61,16 @@ Polymer({
         return 'search-view';
 
       case (PageType.DETAIL):
-        const state = app_management.Store.getInstance().data;
+        const state = this.getState();
         const selectedAppType =
-            state.apps[state.currentPage.selectedAppId].type;
+            state.apps[assert(state.currentPage.selectedAppId)].type;
         switch (selectedAppType) {
           case (AppType.kWeb):
             return 'pwa-permission-view';
           case (AppType.kExtension):
             return 'chrome-app-permission-view';
+          case (AppType.kArc):
+            return 'arc-permission-view';
           default:
             assertNotReached();
         }

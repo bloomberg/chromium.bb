@@ -12,6 +12,7 @@ if (!is_android) {
       ":api_listener",
       ":app",
       ":app_item",
+      ":arc_permission_view",
       ":browser_proxy",
       ":chrome_app_permission_view",
       ":constants",
@@ -52,6 +53,7 @@ if (!is_android) {
   js_library("app") {
     deps = [
       ":actions",
+      ":arc_permission_view",
       ":browser_proxy",
       ":constants",
       ":dom_switch",
@@ -72,6 +74,17 @@ if (!is_android) {
       ":actions",
       ":store_client",
       "//ui/webui/resources/js:load_time_data",
+    ]
+  }
+
+  js_library("arc_permission_view") {
+    deps = [
+      ":constants",
+      ":fake_page_handler",
+      ":metadata_view",
+      ":permission_item",
+      ":permission_view_header",
+      ":store_client",
     ]
   }
 
@@ -131,8 +144,10 @@ if (!is_android) {
   js_library("notifications_view") {
     deps = [
       ":app_item",
+      ":constants",
       ":fake_page_handler",
       ":store_client",
+      ":util",
     ]
   }
 

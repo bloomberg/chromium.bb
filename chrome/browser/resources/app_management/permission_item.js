@@ -16,8 +16,9 @@ Polymer({
     permissionLabel: String,
 
     /**
-     * A string version of the permission type, corresponding to a value of
-     * the PwaPermissionType enum.
+     * A string version of the permission type. Must be a value of the
+     * permission type enum corresponding to the AppType of app_.
+     * E.g. A value of PwaPermissionType if app_.type === AppType.kWeb.
      * @type {string}
      */
     permissionType: String,
@@ -27,7 +28,9 @@ Polymer({
      */
     app_: Object,
 
-    /** @type {string} */
+    /**
+     * @type {string}
+     */
     icon: String,
   },
 
