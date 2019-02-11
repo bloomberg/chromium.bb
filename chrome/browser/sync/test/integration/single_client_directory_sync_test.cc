@@ -80,7 +80,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   FilePath directory_path = sync_service->GetSyncClientForTest()
-                                ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   ASSERT_TRUE(FolderContainsFiles(directory_path));
   sync_service->StopAndClear();
@@ -116,7 +115,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Now corrupt the database.
   FilePath directory_path = sync_service->GetSyncClientForTest()
-                                ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   const FilePath sync_db(directory_path.Append(
       syncer::syncable::Directory::kSyncDatabaseFilename));

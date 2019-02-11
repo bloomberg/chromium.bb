@@ -24,10 +24,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace syncer {
-class SyncClient;
-}
-
 ACTION_P(Notify, type) {
   content::NotificationService::current()->Notify(
       type,
@@ -43,10 +39,6 @@ ACTION(QuitUIMessageLoop) {
 // Helper methods for constructing ProfileSyncService mocks.
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(Profile* profile);
-browser_sync::ProfileSyncService::InitParams
-CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<syncer::SyncClient> sync_client,
-    Profile* profile);
 
 // Helper routine to be used in conjunction with
 // BrowserContextKeyedServiceFactory::SetTestingFactory().

@@ -15,10 +15,9 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_manager.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
-#include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_syncable_service.h"
@@ -30,31 +29,31 @@ namespace syncer {
 
 namespace {
 
+using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 
-class SyncSharedChangeProcessorTest : public testing::Test,
-                                      public FakeSyncClient {
+class SyncSharedChangeProcessorTest : public testing::Test {
  public:
   SyncSharedChangeProcessorTest()
-      : FakeSyncClient(&factory_),
-        model_thread_("dbthread"),
-        did_connect_(false) {}
+      : model_thread_("dbthread"), did_connect_(false) {}
 
   ~SyncSharedChangeProcessorTest() override {
     EXPECT_FALSE(db_syncable_service_);
   }
 
-  // FakeSyncClient override.
-  base::WeakPtr<SyncableService> GetSyncableServiceForType(
-      ModelType type) override {
+ protected:
+  base::WeakPtr<SyncableService> GetSyncableServiceForType(ModelType type) {
+    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     return db_syncable_service_->AsWeakPtr();
   }
 
- protected:
   void SetUp() override {
     test_user_share_.SetUp();
     shared_change_processor_ = new SharedChangeProcessor(AUTOFILL);
+    ON_CALL(sync_client_, GetSyncableServiceForType(AUTOFILL))
+        .WillByDefault(testing::Invoke(
+            this, &SyncSharedChangeProcessorTest::GetSyncableServiceForType));
     ASSERT_TRUE(model_thread_.Start());
     ASSERT_TRUE(model_thread_.task_runner()->PostTask(
         FROM_HERE,
@@ -115,7 +114,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
     DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
-        this, &processor_factory_, test_user_share_.user_share(),
+        &sync_client_, &processor_factory_, test_user_share_.user_share(),
         std::make_unique<DataTypeErrorHandlerMock>(),
         base::WeakPtr<SyncMergeResult>()));
     did_connect_ = true;
@@ -124,7 +123,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   base::test::ScopedTaskEnvironment task_environment_;
   base::Thread model_thread_;
   TestUserShare test_user_share_;
-  NiceMock<SyncApiComponentFactoryMock> factory_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
 
@@ -133,6 +131,8 @@ class SyncSharedChangeProcessorTest : public testing::Test,
 
   // Used only on DB thread.
   std::unique_ptr<FakeSyncableService> db_syncable_service_;
+
+  testing::NiceMock<SyncClientMock> sync_client_;
 };
 
 // Simply connect the shared change processor.  It should succeed, and

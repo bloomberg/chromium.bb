@@ -18,7 +18,6 @@
 
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<syncer::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state) {
   browser_sync::ProfileSyncService::InitParams init_params;
 
@@ -26,8 +25,7 @@ CreateProfileSyncServiceParamsForTest(
       IdentityManagerFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
   init_params.sync_client =
-      sync_client ? std::move(sync_client)
-                  : std::make_unique<IOSChromeSyncClient>(browser_state);
+      std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::DoNothing();
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   init_params.debug_identifier = browser_state->GetDebugName();
@@ -39,5 +37,5 @@ std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     web::BrowserState* context) {
   return std::make_unique<browser_sync::ProfileSyncServiceMock>(
       CreateProfileSyncServiceParamsForTest(
-          nullptr, ios::ChromeBrowserState::FromBrowserState(context)));
+          ios::ChromeBrowserState::FromBrowserState(context)));
 }

@@ -27,9 +27,6 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
   SyncApiComponentFactoryMock();
   ~SyncApiComponentFactoryMock() override;
 
-  MOCK_METHOD2(CreateCommonDataTypeControllers,
-               DataTypeController::TypeVector(ModelTypeSet disabled_types,
-                                              SyncService* sync_service));
   MOCK_METHOD6(CreateDataTypeManager,
                std::unique_ptr<DataTypeManager>(
                    ModelTypeSet,
@@ -38,12 +35,11 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
                    const DataTypeEncryptionHandler*,
                    ModelTypeConfigurer*,
                    DataTypeManagerObserver*));
-  MOCK_METHOD4(CreateSyncEngine,
+  MOCK_METHOD3(CreateSyncEngine,
                std::unique_ptr<SyncEngine>(
                    const std::string& name,
                    invalidation::InvalidationService* invalidator,
-                   const base::WeakPtr<SyncPrefs>& sync_prefs,
-                   const base::FilePath& sync_folder));
+                   const base::WeakPtr<SyncPrefs>& sync_prefs));
   MOCK_METHOD2(
       CreateBookmarkSyncComponents,
       SyncComponents(std::unique_ptr<DataTypeErrorHandler> error_handler,

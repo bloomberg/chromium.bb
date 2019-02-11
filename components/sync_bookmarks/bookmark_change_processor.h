@@ -25,10 +25,13 @@ class RefCountedMemory;
 }  // namespace base
 
 namespace syncer {
-class SyncClient;
 class WriteNode;
 class WriteTransaction;
 }  // namespace syncer
+
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
 
 namespace sync_bookmarks {
 
@@ -40,7 +43,6 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
                                 public syncer::ChangeProcessor {
  public:
   BookmarkChangeProcessor(
-      syncer::SyncClient* sync_client,
       BookmarkModelAssociator* model_associator,
       std::unique_ptr<syncer::DataTypeErrorHandler> error_handler);
   ~BookmarkChangeProcessor() override;
@@ -92,10 +94,11 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
 
   // Updates the title, URL, creation time and favicon of the bookmark |node|
   // with data taken from the |sync_node| sync node.
-  static void UpdateBookmarkWithSyncData(const syncer::BaseNode& sync_node,
-                                         bookmarks::BookmarkModel* model,
-                                         const bookmarks::BookmarkNode* node,
-                                         syncer::SyncClient* sync_client);
+  static void UpdateBookmarkWithSyncData(
+      const syncer::BaseNode& sync_node,
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node,
+      favicon::FaviconService* favicon_service);
 
   // Creates a bookmark node under the given parent node from the given sync
   // node. Returns the newly created node.  The created node is placed at the
@@ -104,7 +107,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
       const syncer::BaseNode* sync_node,
       const bookmarks::BookmarkNode* parent,
       bookmarks::BookmarkModel* model,
-      syncer::SyncClient* sync_client,
+      favicon::FaviconService* favicon_service,
       int index);
 
   // Overload of CreateBookmarkNode function above that helps to avoid
@@ -115,20 +118,20 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
       const syncer::BaseNode* sync_node,
       const bookmarks::BookmarkNode* parent,
       bookmarks::BookmarkModel* model,
-      syncer::SyncClient* sync_client,
+      favicon::FaviconService* favicon_service,
       int index);
 
   // Sets the favicon of the given bookmark node from the given sync node.
   static void SetBookmarkFavicon(const syncer::BaseNode* sync_node,
                                  const bookmarks::BookmarkNode* bookmark_node,
-                                 syncer::SyncClient* sync_client);
+                                 favicon::FaviconService* favicon_service);
 
   // Applies the 1x favicon |bitmap_data| and |icon_url| to |bookmark_node|.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
   // for the bookmark in question.
   static void ApplyBookmarkFavicon(
       const bookmarks::BookmarkNode* bookmark_node,
-      syncer::SyncClient* sync_client,
+      favicon::FaviconService* favicon_service,
       const GURL& icon_url,
       const scoped_refptr<base::RefCountedMemory>& bitmap_data);
 
@@ -240,8 +243,6 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // The bookmark model we are processing changes from.  Non-null when
   // |running_| is true.
   bookmarks::BookmarkModel* bookmark_model_;
-
-  syncer::SyncClient* sync_client_;
 
   // The two models should be associated according to this ModelAssociator.
   BookmarkModelAssociator* model_associator_;

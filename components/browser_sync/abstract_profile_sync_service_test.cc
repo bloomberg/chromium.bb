@@ -143,7 +143,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
       profile_sync_service_bundle_.fake_invalidation_service(),
       sync_service_->sync_prefs()->AsWeakPtr(),
       std::move(initialization_success_callback));
-  EXPECT_CALL(*components, CreateSyncEngine(_, _, _, _))
+  EXPECT_CALL(*components, CreateSyncEngine(_, _, _))
       .WillOnce(Return(ByMove(std::move(engine))));
 
   sync_service_->sync_prefs()->SetFirstSetupComplete();

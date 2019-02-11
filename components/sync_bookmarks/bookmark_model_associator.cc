@@ -20,7 +20,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -297,12 +296,14 @@ void BookmarkModelAssociator::Context::MarkForVersionUpdate(
 
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
-    syncer::SyncClient* sync_client,
+    BookmarkUndoService* bookmark_undo_service,
+    favicon::FaviconService* favicon_service,
     syncer::UserShare* user_share,
     std::unique_ptr<syncer::DataTypeErrorHandler> unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
-      sync_client_(sync_client),
+      bookmark_undo_service_(bookmark_undo_service),
+      favicon_service_(favicon_service),
       user_share_(user_share),
       unrecoverable_error_handler_(std::move(unrecoverable_error_handler)),
       expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
@@ -314,6 +315,18 @@ BookmarkModelAssociator::BookmarkModelAssociator(
 
 BookmarkModelAssociator::~BookmarkModelAssociator() {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+bookmarks::BookmarkModel* BookmarkModelAssociator::GetBookmarkModel() {
+  return bookmark_model_;
+}
+
+favicon::FaviconService* BookmarkModelAssociator::GetFaviconService() {
+  return favicon_service_;
+}
+
+BookmarkUndoService* BookmarkModelAssociator::GetBookmarkUndoService() {
+  return bookmark_undo_service_;
 }
 
 syncer::SyncError BookmarkModelAssociator::DisassociateModels() {
@@ -436,8 +449,7 @@ syncer::SyncError BookmarkModelAssociator::AssociateModels(
     syncer::SyncMergeResult* syncer_merge_result) {
   // Since any changes to the bookmark model made here are not user initiated,
   // these change should not be undoable and so suspend the undo tracking.
-  ScopedSuspendBookmarkUndo suspend_undo(
-      sync_client_->GetBookmarkUndoServiceIfExists());
+  ScopedSuspendBookmarkUndo suspend_undo(bookmark_undo_service_);
 
   Context context(local_merge_result, syncer_merge_result);
 
@@ -681,7 +693,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
                         (parent_node->GetChild(index) == child_node);
       if (!is_in_sync) {
         BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
-            sync_child_node, bookmark_model_, child_node, sync_client_);
+            sync_child_node, bookmark_model_, child_node, favicon_service_);
         bookmark_model_->Move(child_node, parent_node, index);
         context->IncrementLocalItemsModified();
         context->MarkForVersionUpdate(child_node);
@@ -755,7 +767,7 @@ const BookmarkNode* BookmarkModelAssociator::CreateBookmarkNode(
   base::string16 bookmark_title = base::UTF8ToUTF16(sync_title);
   const BookmarkNode* child_node = BookmarkChangeProcessor::CreateBookmarkNode(
       bookmark_title, url, sync_child_node, parent_node, bookmark_model_,
-      sync_client_, bookmark_index);
+      favicon_service_, bookmark_index);
   if (!child_node) {
     *error = unrecoverable_error_handler_->CreateAndUploadError(
         FROM_HERE, "Failed to create bookmark node with title " + sync_title +

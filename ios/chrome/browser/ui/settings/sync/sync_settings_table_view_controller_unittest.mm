@@ -124,7 +124,7 @@ class SyncSettingsTableViewControllerTest
       web::BrowserState* context) {
     browser_sync::ProfileSyncService::InitParams init_params =
         CreateProfileSyncServiceParamsForTest(
-            nullptr, ios::ChromeBrowserState::FromBrowserState(context));
+            ios::ChromeBrowserState::FromBrowserState(context));
     return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
         std::move(init_params));
   }

@@ -162,13 +162,15 @@ PasswordSyncableServiceBasedModelTypeController::
         const base::RepeatingClosure& dump_stack,
         scoped_refptr<PasswordStore> password_store,
         syncer::SyncService* sync_service,
-        syncer::SyncClient* sync_client)
+        syncer::SyncClient* sync_client,
+        const base::RepeatingClosure& state_changed_callback)
     : PasswordSyncableServiceBasedModelTypeController(
           std::move(store_factory),
           dump_stack,
           std::move(password_store),
           sync_service,
           sync_client,
+          state_changed_callback,
           base::MakeRefCounted<ModelCryptographerImpl>()) {}
 
 PasswordSyncableServiceBasedModelTypeController::
@@ -181,7 +183,7 @@ void PasswordSyncableServiceBasedModelTypeController::LoadModels(
   sync_service_->AddObserver(this);
   NonUiSyncableServiceBasedModelTypeController::LoadModels(configure_context,
                                                            model_load_callback);
-  sync_client_->GetPasswordStateChangedCallback().Run();
+  state_changed_callback_.Run();
 }
 
 void PasswordSyncableServiceBasedModelTypeController::Stop(
@@ -191,7 +193,7 @@ void PasswordSyncableServiceBasedModelTypeController::Stop(
   sync_service_->RemoveObserver(this);
   NonUiSyncableServiceBasedModelTypeController::Stop(shutdown_reason,
                                                      std::move(callback));
-  sync_client_->GetPasswordStateChangedCallback().Run();
+  state_changed_callback_.Run();
 }
 
 std::unique_ptr<syncer::SyncEncryptionHandler::Observer>
@@ -206,7 +208,7 @@ PasswordSyncableServiceBasedModelTypeController::GetEncryptionObserverProxy() {
 void PasswordSyncableServiceBasedModelTypeController::OnStateChanged(
     syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
-  sync_client_->GetPasswordStateChangedCallback().Run();
+  state_changed_callback_.Run();
 }
 
 PasswordSyncableServiceBasedModelTypeController::
@@ -216,6 +218,7 @@ PasswordSyncableServiceBasedModelTypeController::
         scoped_refptr<PasswordStore> password_store,
         syncer::SyncService* sync_service,
         syncer::SyncClient* sync_client,
+        const base::RepeatingClosure& state_changed_callback,
         scoped_refptr<ModelCryptographerImpl> model_cryptographer)
     : NonUiSyncableServiceBasedModelTypeController(
           syncer::PASSWORDS,
@@ -228,7 +231,8 @@ PasswordSyncableServiceBasedModelTypeController::
       background_task_runner_(password_store->GetBackgroundTaskRunner()),
       model_cryptographer_(model_cryptographer),
       sync_service_(sync_service),
-      sync_client_(sync_client) {
+      sync_client_(sync_client),
+      state_changed_callback_(state_changed_callback) {
   DCHECK(sync_service_);
   DCHECK(sync_client_);
   DCHECK(model_cryptographer_);

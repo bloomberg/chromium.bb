@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/sync/driver/non_ui_syncable_service_based_model_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -35,7 +35,8 @@ class PasswordSyncableServiceBasedModelTypeController
       const base::RepeatingClosure& dump_stack,
       scoped_refptr<PasswordStore> password_store,
       syncer::SyncService* sync_service,
-      syncer::SyncClient* sync_client);
+      syncer::SyncClient* sync_client,
+      const base::RepeatingClosure& state_changed_callback);
   ~PasswordSyncableServiceBasedModelTypeController() override;
 
   // DataTypeController overrides.
@@ -60,12 +61,14 @@ class PasswordSyncableServiceBasedModelTypeController
       scoped_refptr<PasswordStore> password_store,
       syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
+      const base::RepeatingClosure& state_changed_callback,
       scoped_refptr<ModelCryptographerImpl> model_cryptographer);
 
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   const scoped_refptr<ModelCryptographerImpl> model_cryptographer_;
   syncer::SyncService* const sync_service_;
   syncer::SyncClient* const sync_client_;
+  const base::RepeatingClosure state_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncableServiceBasedModelTypeController);
 };

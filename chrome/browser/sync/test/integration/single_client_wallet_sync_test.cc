@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/notification_service.h"

@@ -19,7 +19,6 @@
 namespace syncer {
 class ModelTypeController;
 class ModelTypeControllerDelegate;
-class SyncClient;
 class SyncService;
 }
 
@@ -37,11 +36,13 @@ class BookmarkSyncService;
 
 namespace browser_sync {
 
+class BrowserSyncClient;
+
 class ProfileSyncComponentsFactoryImpl
     : public syncer::SyncApiComponentFactory {
  public:
   ProfileSyncComponentsFactoryImpl(
-      syncer::SyncClient* sync_client,
+      BrowserSyncClient* sync_client,
       version_info::Channel channel,
       const char* history_disabled_pref,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
@@ -54,10 +55,14 @@ class ProfileSyncComponentsFactoryImpl
       sync_bookmarks::BookmarkSyncService* bookmark_sync_service);
   ~ProfileSyncComponentsFactoryImpl() override;
 
-  // SyncApiComponentFactory implementation:
+  // Creates and returns enabled datatypes and their controllers.
+  // |disabled_types| allows callers to prevent certain types from being
+  // created (e.g. to honor command-line flags).
   syncer::DataTypeController::TypeVector CreateCommonDataTypeControllers(
       syncer::ModelTypeSet disabled_types,
-      syncer::SyncService* sync_service) override;
+      syncer::SyncService* sync_service);
+
+  // SyncApiComponentFactory implementation:
   std::unique_ptr<syncer::DataTypeManager> CreateDataTypeManager(
       syncer::ModelTypeSet initial_types,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -69,8 +74,7 @@ class ProfileSyncComponentsFactoryImpl
   std::unique_ptr<syncer::SyncEngine> CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_data_folder) override;
+      const base::WeakPtr<syncer::SyncPrefs>& sync_prefs) override;
   syncer::SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
       std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
       syncer::UserShare* user_share) override;
@@ -105,7 +109,7 @@ class ProfileSyncComponentsFactoryImpl
       syncer::SyncService* sync_service);
 
   // Client/platform specific members.
-  syncer::SyncClient* const sync_client_;
+  BrowserSyncClient* const sync_client_;
   const version_info::Channel channel_;
   const char* history_disabled_pref_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;

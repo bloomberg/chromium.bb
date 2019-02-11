@@ -163,12 +163,7 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
 
 }  // namespace
 
-ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {}
-
-ChromeSyncClient::~ChromeSyncClient() {
-}
-
-void ChromeSyncClient::Initialize() {
+ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   profile_web_data_service_ =
@@ -192,17 +187,16 @@ void ChromeSyncClient::Initialize() {
   password_store_ = PasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
-  // Component factory may already be set in tests.
-  if (!GetSyncApiComponentFactory()) {
-    component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
-        this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI}),
-        web_data_service_thread_, profile_web_data_service_,
-        account_web_data_service_, password_store_,
-        BookmarkSyncServiceFactory::GetForProfile(profile_));
-  }
+  component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
+      this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
+      web_data_service_thread_, profile_web_data_service_,
+      account_web_data_service_, password_store_,
+      BookmarkSyncServiceFactory::GetForProfile(profile_));
 }
+
+ChromeSyncClient::~ChromeSyncClient() {}
 
 PrefService* ChromeSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -267,10 +261,6 @@ history::HistoryService* ChromeSyncClient::GetHistoryService() {
 sync_sessions::SessionSyncService* ChromeSyncClient::GetSessionSyncService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return SessionSyncServiceFactory::GetForProfile(profile_);
-}
-
-bool ChromeSyncClient::HasPasswordStore() {
-  return password_store_ != nullptr;
 }
 
 autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
@@ -471,8 +461,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   return controllers;
 }
 
-BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
-  return BookmarkUndoServiceFactory::GetForProfileIfExists(profile_);
+BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
+  return BookmarkUndoServiceFactory::GetForProfile(profile_);
 }
 
 invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
@@ -688,11 +678,6 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
 syncer::SyncApiComponentFactory*
 ChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
-}
-
-void ChromeSyncClient::SetSyncApiComponentFactoryForTesting(
-    std::unique_ptr<syncer::SyncApiComponentFactory> component_factory) {
-  component_factory_ = std::move(component_factory);
 }
 
 }  // namespace browser_sync

@@ -108,15 +108,12 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
   password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
-  // Component factory may already be set in tests.
-  if (!GetSyncApiComponentFactory()) {
-    component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-        this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-        db_thread_, profile_web_data_service_, account_web_data_service_,
-        password_store_,
-        ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
-  }
+  component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
+      this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+      db_thread_, profile_web_data_service_, account_web_data_service_,
+      password_store_,
+      ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
@@ -163,11 +160,6 @@ IOSChromeSyncClient::GetSessionSyncService() {
   return SessionSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
-bool IOSChromeSyncClient::HasPasswordStore() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return password_store_ != nullptr;
-}
-
 autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return autofill::PersonalDataManagerFactory::GetForBrowserState(
@@ -188,9 +180,8 @@ IOSChromeSyncClient::CreateDataTypeControllers(
       GetDisabledTypesFromCommandLine(), sync_service);
 }
 
-BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
-  return ios::BookmarkUndoServiceFactory::GetForBrowserStateIfExists(
-      browser_state_);
+BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoService() {
+  return ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state_);
 }
 
 invalidation::InvalidationService*
@@ -348,9 +339,4 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
 syncer::SyncApiComponentFactory*
 IOSChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
-}
-
-void IOSChromeSyncClient::SetSyncApiComponentFactoryForTesting(
-    std::unique_ptr<syncer::SyncApiComponentFactory> component_factory) {
-  component_factory_ = std::move(component_factory);
 }

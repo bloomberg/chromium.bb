@@ -29,7 +29,6 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -249,10 +248,8 @@ void SetFaviconImpl(Profile* profile,
     favicon_service->SetFavicons({node->url()}, icon_url,
                                  favicon_base::IconType::kFavicon, image);
     } else {
-      browser_sync::ProfileSyncService* pss =
-          ProfileSyncServiceFactory::GetForProfile(profile);
       sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-          node, pss->GetSyncClientForTest(), icon_url, image.As1xPNGBytes());
+          node, favicon_service, icon_url, image.As1xPNGBytes());
     }
 
     // Wait for the favicon for |node| to be invalidated.
@@ -295,10 +292,8 @@ void DeleteFaviconMappingsImpl(Profile* profile,
     favicon_service->DeleteFaviconMappings({node->url()},
                                            favicon_base::IconType::kFavicon);
   } else {
-    browser_sync::ProfileSyncService* pss =
-        ProfileSyncServiceFactory::GetForProfile(profile);
     sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-        node, pss->GetSyncClientForTest(), /*icon_url=*/GURL(),
+        node, favicon_service, /*icon_url=*/GURL(),
         scoped_refptr<base::RefCountedString>(new base::RefCountedString()));
   }
 

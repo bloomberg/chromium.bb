@@ -11,6 +11,7 @@
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 
 namespace syncer {
+class ModelTypeStoreService;
 class SyncClient;
 class SyncService;
 }  // namespace syncer
@@ -28,6 +29,7 @@ class HistoryDeleteDirectivesModelTypeController
   HistoryDeleteDirectivesModelTypeController(
       const base::RepeatingClosure& dump_stack,
       syncer::SyncService* sync_service,
+      syncer::ModelTypeStoreService* model_type_store_service,
       syncer::SyncClient* sync_client);
   ~HistoryDeleteDirectivesModelTypeController() override;
 

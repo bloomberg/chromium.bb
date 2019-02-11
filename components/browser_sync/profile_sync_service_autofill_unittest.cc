@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -42,7 +43,9 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/engine/data_type_debug_info_listener.h"
+#include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/read_node.h"
@@ -82,11 +85,12 @@ using syncer::syncable::UNITTEST;
 using syncer::syncable::WriterTag;
 using syncer::syncable::WriteTransaction;
 using testing::_;
+using testing::ByMove;
 using testing::DoAll;
 using testing::ElementsAre;
 using testing::Not;
-using testing::SetArgPointee;
 using testing::Return;
+using testing::SetArgPointee;
 
 namespace browser_sync {
 
@@ -369,8 +373,6 @@ class ProfileSyncServiceAutofillTest
         profile_sync_service_bundle()->pref_service()->registry());
 
     data_type_thread()->Start();
-    profile_sync_service_bundle()->set_db_thread(
-        data_type_thread()->task_runner());
 
     web_database_ = std::make_unique<WebDatabaseFake>(&autofill_table_);
     web_data_wrapper_ = std::make_unique<MockWebDataServiceWrapper>(
@@ -398,16 +400,6 @@ class ProfileSyncServiceAutofillTest
                                  /*is_off_the_record=*/false);
 
     web_data_service_->StartSyncableService();
-
-    ProfileSyncServiceBundle::SyncClientBuilder builder(
-        profile_sync_service_bundle());
-    builder.SetPersonalDataManager(personal_data_manager_.get());
-    builder.SetSyncableServiceCallback(base::BindRepeating(
-        &ProfileSyncServiceAutofillTest::GetSyncableServiceForType,
-        base::Unretained(this)));
-    builder.set_activate_model_creation();
-    sync_client_owned_ = builder.Build();
-    sync_client_ = sync_client_owned_.get();
   }
 
   ~ProfileSyncServiceAutofillTest() override {
@@ -434,21 +426,37 @@ class ProfileSyncServiceAutofillTest
     profile_sync_service_bundle()
         ->identity_test_env()
         ->MakePrimaryAccountAvailable("test_user@gmail.com");
-    CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
-    EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
-                CreateCommonDataTypeControllers(_, _))
-        .WillOnce(testing::InvokeWithoutArgs([=]() {
-          syncer::DataTypeController::TypeVector controllers;
-          controllers.push_back(
-              std::make_unique<AutofillProfileDataTypeController>(
-                  data_type_thread()->task_runner(), base::DoNothing(),
-                  sync_service(), sync_client_, web_data_service_));
-          return controllers;
+    std::unique_ptr<syncer::SyncClientMock> sync_client =
+        profile_sync_service_bundle()->CreateSyncClientMock();
+    syncer::SyncClientMock* sync_client_copy = sync_client.get();
+    CreateSyncService(std::move(sync_client), std::move(callback));
+
+    syncer::DataTypeController::TypeVector controllers;
+    controllers.push_back(std::make_unique<AutofillProfileDataTypeController>(
+        data_type_thread()->task_runner(), /*dump_stack=*/base::DoNothing(),
+        sync_service(), sync_client_copy,
+        base::BindLambdaForTesting([&]() -> autofill::PersonalDataManager* {
+          return personal_data_manager_.get();
+        }),
+        web_data_service_));
+
+    ON_CALL(*sync_client_copy, GetSyncableServiceForType(AUTOFILL_PROFILE))
+        .WillByDefault(testing::Invoke([=](syncer::ModelType) {
+          return AutofillProfileSyncableService::FromWebDataService(
+                     web_data_service_.get())
+              ->AsWeakPtr();
         }));
-    EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
-                CreateDataTypeManager(_, _, _, _, _, _))
-        .WillOnce(ReturnNewDataTypeManagerWithDebugListener(
+    ON_CALL(*sync_client_copy, CreateDataTypeControllers(_))
+        .WillByDefault(Return(ByMove(std::move(controllers))));
+    ON_CALL(*sync_client_copy, CreateModelWorkerForGroup(syncer::GROUP_DB))
+        .WillByDefault(
+            Return(base::MakeRefCounted<syncer::SequencedModelWorker>(
+                data_type_thread()->task_runner(), syncer::GROUP_DB)));
+
+    ON_CALL(*profile_sync_service_bundle()->component_factory(),
+            CreateDataTypeManager(_, _, _, _, _, _))
+        .WillByDefault(ReturnNewDataTypeManagerWithDebugListener(
             syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
 
     EXPECT_CALL(personal_data_manager(), IsDataLoaded())
@@ -526,14 +534,6 @@ class ProfileSyncServiceAutofillTest
  private:
   friend class AddAutofillProfileHelper;
 
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) {
-    DCHECK(type == AUTOFILL_PROFILE);
-    return AutofillProfileSyncableService::FromWebDataService(
-               web_data_service_.get())
-        ->AsWeakPtr();
-  }
-
   AutofillTableMock autofill_table_;
   std::unique_ptr<WebDatabaseFake> web_database_;
   std::unique_ptr<MockWebDataServiceWrapper> web_data_wrapper_;
@@ -541,11 +541,6 @@ class ProfileSyncServiceAutofillTest
   std::unique_ptr<MockPersonalDataManager> personal_data_manager_;
   syncer::DataTypeAssociationStats association_stats_;
   base::WeakPtrFactory<DataTypeDebugInfoListener> debug_ptr_factory_;
-  // |sync_client_owned_| keeps the created client until it is passed to the
-  // created ProfileSyncService. |sync_client_| just keeps a weak reference to
-  // the client the whole time.
-  std::unique_ptr<syncer::FakeSyncClient> sync_client_owned_;
-  syncer::FakeSyncClient* sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceAutofillTest);
 };

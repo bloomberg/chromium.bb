@@ -192,7 +192,9 @@ void ModelTypeRegistry::RegisterDirectoryType(ModelType type,
   DCHECK(data_type_debug_info_emitter_map_.find(type) ==
          data_type_debug_info_emitter_map_.end());
   DCHECK_NE(GROUP_NON_BLOCKING, group);
-  DCHECK(workers_map_.find(group) != workers_map_.end());
+  DCHECK(workers_map_.find(group) != workers_map_.end())
+      << " for " << ModelTypeToString(type) << " group "
+      << ModelSafeGroupToString(group);
 
   auto worker = workers_map_.find(group)->second;
   DCHECK(GetEmitter(type) == nullptr);

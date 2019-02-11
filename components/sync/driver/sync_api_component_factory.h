@@ -14,10 +14,6 @@
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/syncable_service.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
@@ -32,8 +28,6 @@ class DataTypeManager;
 class DataTypeManagerObserver;
 class SyncEngine;
 class SyncPrefs;
-class SyncService;
-class SyncableService;
 struct UserShare;
 
 // This factory provides sync driver code with the model type specific sync/api
@@ -61,13 +55,6 @@ class SyncApiComponentFactory {
     std::unique_ptr<ChangeProcessor> change_processor;
   };
 
-  // Creates and returns enabled datatypes and their controllers.
-  // |disabled_types| allows callers to prevent certain types from being
-  // created (e.g. to honor command-line flags).
-  virtual DataTypeController::TypeVector CreateCommonDataTypeControllers(
-      ModelTypeSet disabled_types,
-      SyncService* sync_service) = 0;
-
   virtual std::unique_ptr<DataTypeManager> CreateDataTypeManager(
       ModelTypeSet initial_types,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
@@ -80,8 +67,7 @@ class SyncApiComponentFactory {
   virtual std::unique_ptr<SyncEngine> CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder) = 0;
+      const base::WeakPtr<SyncPrefs>& sync_prefs) = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

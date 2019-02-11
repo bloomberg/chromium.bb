@@ -803,8 +803,6 @@ static_library("test_support_driver") {
     "driver/fake_data_type_controller.h",
     "driver/fake_generic_change_processor.cc",
     "driver/fake_generic_change_processor.h",
-    "driver/fake_sync_client.cc",
-    "driver/fake_sync_client.h",
     "driver/fake_sync_service.cc",
     "driver/fake_sync_service.h",
     "driver/frontend_data_type_controller_mock.cc",

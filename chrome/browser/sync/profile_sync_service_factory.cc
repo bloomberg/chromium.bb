@@ -183,7 +183,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       client_factory_
           ? client_factory_->Run(profile)
           : std::make_unique<browser_sync::ChromeSyncClient>(profile);
-  sync_client->Initialize();
 
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
