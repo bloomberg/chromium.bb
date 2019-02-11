@@ -554,6 +554,8 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
             EXTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions',
             INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal',
         ))
+    self.match_branch_name = self.PatchObject(git, 'MatchBranchName',
+                                              return_value=['branch'])
     self.get_current_branch = self.PatchObject(git, 'GetCurrentBranch',
                                                return_value='local-branch')
     self.get_git_repo_revision = self.PatchObject(git, 'GetGitRepoRevision',
@@ -706,6 +708,16 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
         [mock.call('/root/manifest')])
     self.assertEqual(actual, 'local-branch')
 
+  def testBranchExists(self):
+    checkout = CrosCheckout('/root')
+    project = self.ProjectFor(PROJECTS.MANIFEST_INTERNAL)
+
+    actual = checkout.BranchExists(project, 'my-branch')
+    self.assertTrue(actual)
+    self.assertEqual(
+        self.match_branch_name.call_args_list,
+        [mock.call('/root/manifest-internal', 'my-branch')])
+
 
 class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
   """Tests core functionality of Branch class."""
@@ -832,7 +844,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
   def testCreateDiesOnNonzeroPatchNumber(self):
     """Test WhichVersionShouldBump dies on X.X.X version."""
     self.SetVersion('1.2.3')
-    with self.assertRaises(BranchError):
+    with self.assertRaises(AssertionError):
       Branch('new-branch', self.checkout).Create()
 
   def testCreatePushesToRemote(self):
@@ -982,6 +994,22 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.PatchObject(Branch, 'Delete')
     self.PatchObject(repo_util.Repository, 'Manifest',
                      return_value=self.full_manifest)
+    self.PatchObject(CrosCheckout, 'BranchExists', return_value=False)
+
+  def testCreateDiesWhenNonzeroPatchNumber(self):
+    """Test create validates zero patch number."""
+    with self.assertRaises(BranchError):
+      self.RunCommandMock(['create', '--version', '1.2.3', '--release'])
+
+  def testCreateDiesWhenVersionAlreadyBranched(self):
+    """Test create validates version has no existing branches."""
+    branch_exists = self.PatchObject(CrosCheckout, 'BranchExists',
+                                     return_value=True)
+    with self.assertRaises(BranchError):
+      self.RunCommandMock(['create', '--version', '1.2.0', '--release'])
+    self.assertEqual(
+        branch_exists.call_args_list,
+        [mock.call(mock.ANY, '.*-1\\.2\\.B$')])
 
   def testCreateReleaseCommandParses(self):
     """Test `cros branch create` parses with '--release' flag."""

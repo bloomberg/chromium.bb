@@ -352,6 +352,19 @@ class CrosCheckout(object):
     """
     return git.GetGitRepoRevision(self.AbsoluteProjectPath(project))
 
+  def BranchExists(self, project, pattern):
+    """Determines if any branch exists that matches the given pattern.
+
+    Args:
+      project: The repo_manifest.Project in question.
+      pattern: Name pattern of the branch in question.
+
+    Returns:
+      True if a matching branch exists on the remote.
+    """
+    matches = git.MatchBranchName(self.AbsoluteProjectPath(project), pattern)
+    return len(matches) != 0
+
 
 class Branch(object):
   """Represents a branch of chromiumos, which may or may not exist yet.
@@ -409,6 +422,21 @@ class Branch(object):
         for proj in filter(CanBranchProject, self.checkout.manifest.Projects())
     ]
 
+  def _ValidateBranches(self, branches):
+    """Validates that branches do not already exist.
+
+    Args:
+      branches: Collection of ProjectBranch objects to valdiate.
+
+    Raises:
+      BranchError if any branch exists.
+    """
+    for project, branch in branches:
+      if self.checkout.BranchExists(project, branch):
+        raise BranchError(
+            'Branch %s exists for %s. '
+            'Please rerun with --force to proceed.' % (branch, project.name))
+
   def _CreateLocalBranches(self, branches):
     """Create git branches for all branchable projects in the local checkout.
 
@@ -438,8 +466,7 @@ class Branch(object):
   def _WhichVersionShouldBump(self):
     """Returns which version is incremented by builds on a new branch."""
     vinfo = self.checkout.ReadVersion()
-    if int(vinfo.patch_number):
-      raise BranchError('Cannot bump version with nonzero patch number.')
+    assert not int(vinfo.patch_number)
     return 'patch' if int(vinfo.branch_build_number) else 'branch'
 
   def _PushBranchesToRemote(self, branches, dry_run=True, force=False):
@@ -464,7 +491,6 @@ class Branch(object):
       if force:
         cmd.append('--force')
 
-      # TODO(evanhernandez): Add check to see if branch exists.
       self.checkout.RunGit(project, cmd)
 
   def _DeleteBranchesOnRemote(self, branches, dry_run=True):
@@ -491,6 +517,10 @@ class Branch(object):
       force: Whether or not to overwrite an existing branch.
     """
     branches = self._ProjectBranches(self.name)
+
+    if not force:
+      self._ValidateBranches(branches)
+
     self._CreateLocalBranches(branches)
     self._RepairManifestRepositories(branches)
     self._PushBranchesToRemote(branches, dry_run=not push, force=force)
@@ -515,6 +545,10 @@ class Branch(object):
       force: Whether or not to overwrite an existing branch.
     """
     new_branches = self._ProjectBranches(self.name, original=original)
+
+    if not force:
+      self._ValidateBranches(new_branches)
+
     self._CreateLocalBranches(new_branches)
     self._RepairManifestRepositories(new_branches)
     self._PushBranchesToRemote(new_branches, dry_run=not push, force=force)
@@ -748,16 +782,36 @@ Delete Examples:
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
+
+      # Handle sync and perform validations.
       if self.options.file:
         checkout.SyncFile(self.options.file)
       else:
+        # First, check that the version is valid.
+        vinfo = manifest_version.VersionInfo(
+            version_string=self.options.version)
+        if int(vinfo.patch_number):
+          raise BranchError('Cannot branch version with nonzero patch number.')
+
+        # Second, check that we did not already branch from this version.
+        # manifest-internal serves as the sentinel project.
+        manifest_internal = checkout.manifest.GetUniqueProject(
+            'chromeos/manifest-internal')
+        pattern = '.*-%s\\.B$' % '\\.'.join(
+            str(comp) for comp in vinfo.VersionComponents() if comp)
+        if checkout.BranchExists(manifest_internal, pattern):
+          raise BranchError('Already branched %s.' % self.options.version)
+
+        # Good to sync.
         checkout.SyncVersion(self.options.version)
 
+      # Determine what kind of branch we will create.
       if self.options.name:
         branch = Branch(self.options.name, checkout)
       else:
         branch = self.options.cls(checkout)
 
+      # Do it!
       branch.Create(push=self.options.push, force=self.options.force)
 
     elif self.options.subcommand == 'rename':
