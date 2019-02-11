@@ -724,11 +724,7 @@ TEST_F(TabletModeControllerTest, RecordLidAngle) {
 TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  // TODO(sammiequon): Investigate whether RunUntilIdle() calls like this one
-  // are really necessary. Remove them or add a comment explaining the purpose.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   OpenLidToAngle(300.0f);
   EXPECT_TRUE(IsTabletModeStarted());
@@ -739,7 +735,6 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Attach a external mouse.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Open lid to tent mode. Verify that tablet mode is not started.
@@ -752,9 +747,7 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
 TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in tablet mode.
   OpenLidToAngle(300.0f);
@@ -765,13 +758,11 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // events are still blocked because the keyboard is still facing the bottom.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Verify that after unplugging the mouse, tablet mode will resume.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 }
@@ -781,9 +772,7 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
 TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in laptop mode.
   OpenLidToAngle(30.0f);
@@ -793,14 +782,12 @@ TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
   // Attach external mouse doesn't change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
   // Now remove the external mouse. It still should maintain in laptop mode
   // because its lid angle is still in laptop mode.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
@@ -822,7 +809,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseInDockedMode) {
   // Set the current list of devices with an external mouse.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
 
   // Deactivate internal display to simulate Docked Mode.
   std::vector<display::ManagedDisplayInfo> all_displays;
@@ -843,8 +829,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseInDockedMode) {
 
   // Detach the external mouse.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
-
   // Still expect clamshell mode.
   EXPECT_FALSE(IsTabletModeStarted());
 }
@@ -854,9 +838,7 @@ TEST_F(TabletModeControllerTest, ExternalMouseInDockedMode) {
 TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in laptop mode.
   OpenLidToAngle(30.0f);
@@ -866,7 +848,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Attach external mouse doesn't change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -880,14 +861,12 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Remove the external mouse should enter tablet mode now. The internal input
   // events should still be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Attach the mouse again should enter clamshell mode again.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
@@ -900,7 +879,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Now remove the mouse. The device should stay in clamshell mode and the
   // internal events should not be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
@@ -911,9 +889,7 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
 TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in laptop mode.
   SetTabletMode(false);
@@ -923,7 +899,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Attach external mouse doesn't change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -937,14 +912,12 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Remove the external mouse should enter tablet mode now. The internal input
   // events should still be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Attach the mouse again should enter clamshell mode again.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
@@ -957,7 +930,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Now remove the mouse. The device should stay in clamshell mode and the
   // internal events should not be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
@@ -967,10 +939,8 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
 TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
   ws::InputDeviceClientTestApi().SetTouchpadDevices({});
-  base::RunLoop().RunUntilIdle();
 
   OpenLidToAngle(300.0f);
   EXPECT_TRUE(IsTabletModeStarted());
@@ -981,7 +951,6 @@ TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
   // Attach a external touchpad.
   ws::InputDeviceClientTestApi().SetTouchpadDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -992,7 +961,6 @@ TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
 
   // Verify that after unplugging the touchpad, tablet mode will resume.
   ws::InputDeviceClientTestApi().SetTouchpadDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 }
@@ -1076,7 +1044,6 @@ TEST_F(TabletModeControllerForceTabletModeTest, ForceTabletModeTest) {
   // Tests that attaching a external mouse will not change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
