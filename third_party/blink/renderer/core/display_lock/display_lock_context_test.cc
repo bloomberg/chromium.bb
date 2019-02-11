@@ -142,13 +142,13 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
     element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
-  // We should be in pending acquire state, which means we would allow things
-  // like style and layout but disallow paint.
+  // We should be in pending acquire state. In this mode, we're still
+  // technically not locked.
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -228,12 +228,13 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   }
 
   // We should be in pending acquire state, which means we would allow things
-  // like style and layout but disallow paint.
+  // like style and layout but disallow paint. This is still considered an
+  // unlocked state.
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -309,12 +310,13 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   }
 
   // We should be in pending acquire state, which means we would allow things
-  // like style and layout but disallow paint.
+  // like style and layout but disallow paint. This is sitll considered an
+  // unlocked state.
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -391,6 +393,8 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
     one->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
+  UpdateAllLifecyclePhasesForTest();
+
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -399,6 +403,8 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
     two->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
+  UpdateAllLifecyclePhasesForTest();
+
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
 
@@ -406,9 +412,6 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
     ScriptState::Scope scope(script_state);
     three->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
-
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 3);
 
   UpdateAllLifecyclePhasesForTest();
 
