@@ -114,7 +114,7 @@ TEST(EndpointerTest, TestEnergyEndpointerEvents) {
   RunEndpointerEventsTest(&frame_processor);
 
   endpointer.EndSession();
-};
+}
 
 // Test endpointer wrapper class.
 class EndpointerFrameProcessor : public FrameProcessor {
