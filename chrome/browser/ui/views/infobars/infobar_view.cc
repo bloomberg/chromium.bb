@@ -51,11 +51,11 @@ enum class LabelType {
   kLabel,
   kLink,
 };
-DEFINE_UI_CLASS_PROPERTY_TYPE(LabelType);
+DEFINE_UI_CLASS_PROPERTY_TYPE(LabelType)
 
 namespace {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone);
+DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone)
 
 // IDs of the colors to use for infobar elements.
 constexpr int kInfoBarLabelBackgroundColor = ThemeProperties::COLOR_INFOBAR;
