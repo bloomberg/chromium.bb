@@ -413,6 +413,9 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::USER_EVENTS));
   }
 
+  // TODO(crbug.com/919489): Enable security events once their controller
+  // delegate is wired properly.
+
   // Forward both on-disk and in-memory storage modes to the same delegate,
   // since behavior for USER_CONSENTS does not differ (they are always
   // persisted).

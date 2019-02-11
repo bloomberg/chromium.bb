@@ -170,6 +170,9 @@ void SyncWalletDataRecordClearedEntitiesCount(size_t count);
       case ::syncer::SEND_TAB_TO_SELF:                           \
         PER_DATA_TYPE_MACRO("SendTabToSelf");                    \
         break;                                                   \
+      case ::syncer::SECURITY_EVENTS:                            \
+        PER_DATA_TYPE_MACRO("SecurityEvents");                   \
+        break;                                                   \
       default:                                                   \
         NOTREACHED() << "Unknown datatype "                      \
                      << ::syncer::ModelTypeToString(datatype);   \

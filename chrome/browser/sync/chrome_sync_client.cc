@@ -607,6 +607,10 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
+    case syncer::SECURITY_EVENTS:
+      // TODO(crbug.com/919489): Return the real delegate once it is wired to
+      // the security event service.
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForProfile(profile_)
           ->GetControllerDelegate();

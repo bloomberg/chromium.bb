@@ -151,6 +151,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {SEND_TAB_TO_SELF, "SEND_TAB_TO_SELF", "send_tab_to_self",
      "Send Tab To Self", sync_pb::EntitySpecifics::kSendTabToSelfFieldNumber,
      42},
+    {SECURITY_EVENTS, "SECURITY_EVENT", "security_events", "Security Events",
+     sync_pb::EntitySpecifics::kSecurityEventFieldNumber, 43},
     // ---- Proxy types ----
     {PROXY_TABS, "", "", "Tabs", -1, 25},
     // ---- Control Types ----
@@ -163,11 +165,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
               "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
 
-static_assert(43 == syncer::MODEL_TYPE_COUNT,
+static_assert(44 == syncer::MODEL_TYPE_COUNT,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(43 == syncer::MODEL_TYPE_COUNT,
+static_assert(44 == syncer::MODEL_TYPE_COUNT,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -282,6 +284,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case USER_EVENTS:
       specifics->mutable_user_event();
       break;
+    case SECURITY_EVENTS:
+      specifics->mutable_security_event();
+      break;
     case MOUNTAIN_SHARES:
       specifics->mutable_mountain_share();
       break;
@@ -355,7 +360,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(43 == MODEL_TYPE_COUNT,
+  static_assert(44 == MODEL_TYPE_COUNT,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -438,6 +443,8 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return EXPERIMENTS;
   if (specifics.has_send_tab_to_self())
     return SEND_TAB_TO_SELF;
+  if (specifics.has_security_event())
+    return SECURITY_EVENTS;
 
   return UNSPECIFIED;
 }
@@ -456,7 +463,7 @@ ModelTypeNameMap GetUserSelectableTypeNameMap() {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(43 == MODEL_TYPE_COUNT,
+  static_assert(44 == MODEL_TYPE_COUNT,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -489,6 +496,7 @@ ModelTypeSet EncryptableUserTypes() {
   // server-side.
   encryptable_user_types.Remove(USER_EVENTS);
   encryptable_user_types.Remove(USER_CONSENTS);
+  encryptable_user_types.Remove(SECURITY_EVENTS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.

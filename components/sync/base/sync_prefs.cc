@@ -397,6 +397,7 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
     case ARC_PACKAGE:
     case PRINTERS:
     case USER_EVENTS:
+    case SECURITY_EVENTS:
     case MOUNTAIN_SHARES:
     case USER_CONSENTS:
     case SEND_TAB_TO_SELF:
