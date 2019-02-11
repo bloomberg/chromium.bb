@@ -168,7 +168,8 @@ class OverviewSessionTest : public AshTestBase {
   aura::Window* GetOverviewWindowForMinimizedState(int index,
                                                    aura::Window* window) {
     OverviewItem* item = GetWindowItemForWindow(index, window);
-    return item->GetOverviewWindowForMinimizedStateForTest();
+    views::Widget* widget = minimized_widget(item);
+    return widget ? widget->GetNativeWindow() : nullptr;
   }
 
   gfx::Rect GetTransformedBounds(aura::Window* window) {
