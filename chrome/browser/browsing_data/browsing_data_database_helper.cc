@@ -73,47 +73,35 @@ void BrowsingDataDatabaseHelper::DeleteDatabase(const url::Origin& origin) {
           tracker_, origin, net::CompletionCallback()));
 }
 
-CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::PendingDatabaseInfo(
-    const GURL& origin)
-    : origin(origin) {}
-
-CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::~PendingDatabaseInfo() {}
-
-bool CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::operator<(
-    const PendingDatabaseInfo& other) const {
-  return origin < other.origin;
-}
-
 CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
     Profile* profile)
     : BrowsingDataDatabaseHelper(profile) {
 }
 
-void CannedBrowsingDataDatabaseHelper::AddDatabase(const GURL& origin) {
+void CannedBrowsingDataDatabaseHelper::Add(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!BrowsingDataHelper::HasWebScheme(origin))
+  if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
     return;  // Non-websafe state is not considered browsing data.
-  pending_database_info_.insert(PendingDatabaseInfo(origin));
+  pending_origins_.insert(origin);
 }
 
 void CannedBrowsingDataDatabaseHelper::Reset() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  pending_database_info_.clear();
+  pending_origins_.clear();
 }
 
 bool CannedBrowsingDataDatabaseHelper::empty() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return pending_database_info_.empty();
+  return pending_origins_.empty();
 }
 
-size_t CannedBrowsingDataDatabaseHelper::GetDatabaseCount() const {
+size_t CannedBrowsingDataDatabaseHelper::GetCount() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return pending_database_info_.size();
+  return pending_origins_.size();
 }
 
-const std::set<CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo>&
-CannedBrowsingDataDatabaseHelper::GetPendingDatabaseInfo() {
-  return pending_database_info_;
+const std::set<url::Origin>& CannedBrowsingDataDatabaseHelper::GetOrigins() {
+  return pending_origins_;
 }
 
 void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
@@ -121,9 +109,8 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
   DCHECK(!callback.is_null());
 
   std::list<StorageUsageInfo> result;
-  for (const PendingDatabaseInfo& info : pending_database_info_) {
-    result.push_back(content::StorageUsageInfo(url::Origin::Create(info.origin),
-                                               0, base::Time()));
+  for (const auto& origin : pending_origins_) {
+    result.emplace_back(origin, 0, base::Time());
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
@@ -132,11 +119,7 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
 
 void CannedBrowsingDataDatabaseHelper::DeleteDatabase(
     const url::Origin& origin) {
-  GURL origin_url = origin.GetURL();
-  base::EraseIf(pending_database_info_,
-                [&origin_url](const PendingDatabaseInfo& info) {
-                  return info.origin == origin_url;
-                });
+  pending_origins_.erase(origin);
   BrowsingDataDatabaseHelper::DeleteDatabase(origin);
 }
 

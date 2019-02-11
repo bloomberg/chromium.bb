@@ -30,6 +30,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -134,15 +135,14 @@ TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
   // TODO(crbug.com/929456): This helper is not attached anywhere to
   // be able to observe deletions.
   // Add service workers.
-  scoped_refptr<CannedBrowsingDataCacheStorageHelper> helper(
-      new CannedBrowsingDataCacheStorageHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile())
-              ->GetCacheStorageContext()));
+  auto helper = base::MakeRefCounted<CannedBrowsingDataCacheStorageHelper>(
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetCacheStorageContext());
 
   for (const TestCase& test_case : kTestCases)
-    helper->AddCacheStorage(GURL(test_case.worker_url));
+    helper->Add(url::Origin::Create(GURL(test_case.worker_url)));
 
-  ASSERT_EQ(base::size(kTestCases), helper->GetCacheStorageCount());
+  ASSERT_EQ(base::size(kTestCases), helper->GetCount());
 
   // Delete service workers and wait for completion.
   base::RunLoop run_loop;
@@ -152,14 +152,14 @@ TEST_F(SigninManagerAndroidTest, DISABLED_DeleteGoogleServiceWorkerCaches) {
   run_loop.Run();
 
   // Test whether the correct service worker caches were deleted.
-  std::set<std::string> remaining_cache_storages;
-  for (const auto& info : helper->GetCacheStorageUsageInfo())
-    remaining_cache_storages.insert(info.origin.spec());
+  std::set<url::Origin> remaining_cache_storages = helper->GetOrigins();
 
   // TODO(crbug.com/929456): If deleted, the key should not be present.
   for (const TestCase& test_case : kTestCases) {
-    EXPECT_EQ(test_case.should_be_deleted,
-              base::ContainsKey(remaining_cache_storages, test_case.worker_url))
+    EXPECT_EQ(
+        test_case.should_be_deleted,
+        base::ContainsKey(remaining_cache_storages,
+                          url::Origin::Create(GURL(test_case.worker_url))))
         << test_case.worker_url << " should "
         << (test_case.should_be_deleted ? "" : "NOT ")
         << "be deleted, but it was"

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -65,14 +68,14 @@ size_t LocalSharedObjectsContainer::GetObjectCount() const {
   size_t count = 0;
   count += appcaches()->GetAppCacheCount();
   count += cookies()->GetCookieCount();
-  count += databases()->GetDatabaseCount();
-  count += file_systems()->GetFileSystemCount();
-  count += indexed_dbs()->GetIndexedDBCount();
-  count += local_storages()->GetLocalStorageCount();
-  count += service_workers()->GetServiceWorkerCount();
+  count += databases()->GetCount();
+  count += file_systems()->GetCount();
+  count += indexed_dbs()->GetCount();
+  count += local_storages()->GetCount();
+  count += service_workers()->GetCount();
   count += shared_workers()->GetSharedWorkerCount();
-  count += cache_storages()->GetCacheStorageCount();
-  count += session_storages()->GetLocalStorageCount();
+  count += cache_storages()->GetCount();
+  count += session_storages()->GetCount();
   return count;
 }
 
@@ -108,39 +111,26 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   // Count local storages for the domain of the given |origin|.
-  const std::set<GURL> local_storage_info =
-      local_storages()->GetLocalStorageInfo();
-  for (auto it = local_storage_info.begin(); it != local_storage_info.end();
-       ++it) {
-    if (SameDomainOrHost(origin, *it))
+  for (const auto& storage_origin : local_storages()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 
   // Count session storages for the domain of the given |origin|.
-  const std::set<GURL> urls = session_storages()->GetLocalStorageInfo();
-  for (auto it = urls.begin(); it != urls.end(); ++it) {
-    if (SameDomainOrHost(origin, *it))
+  for (const auto& storage_origin : session_storages()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 
   // Count indexed dbs for the domain of the given |origin|.
-  typedef CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo
-      StorageUsageInfo;
-  const std::set<StorageUsageInfo>& indexed_db_info =
-      indexed_dbs()->GetIndexedDBInfo();
-  for (auto it = indexed_db_info.begin(); it != indexed_db_info.end(); ++it) {
-    if (SameDomainOrHost(origin, it->origin))
+  for (const auto& storage_origin : indexed_dbs()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 
   // Count service workers for the domain of the given |origin|.
-  typedef CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo
-      ServiceWorkerInfo;
-  const std::set<ServiceWorkerInfo>& service_worker_info =
-      service_workers()->GetServiceWorkerUsageInfo();
-  for (auto it = service_worker_info.begin(); it != service_worker_info.end();
-       ++it) {
-    if (SameDomainOrHost(origin, it->origin))
+  for (const auto& storage_origin : service_workers()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 
@@ -154,31 +144,20 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   // Count cache storages for the domain of the given |origin|.
-  typedef CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo
-      CacheStorageInfo;
-  const std::set<CacheStorageInfo>& cache_storage_info =
-      cache_storages()->GetCacheStorageUsageInfo();
-  for (const CacheStorageInfo& it : cache_storage_info) {
-    if (SameDomainOrHost(origin, it.origin))
+  for (const auto& storage_origin : cache_storages()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 
   // Count filesystems for the domain of the given |origin|.
-  typedef BrowsingDataFileSystemHelper::FileSystemInfo FileSystemInfo;
-  typedef std::list<FileSystemInfo> FileSystemInfoList;
-  const FileSystemInfoList& file_system_info =
-      file_systems()->GetFileSystemInfo();
-  for (auto it = file_system_info.begin(); it != file_system_info.end(); ++it) {
-    if (SameDomainOrHost(origin, it->origin.GetURL()))
+  for (const auto& storage_origin : file_systems()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 
   // Count databases for the domain of the given |origin|.
-  typedef CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo DatabaseInfo;
-  const std::set<DatabaseInfo>& database_list =
-      databases()->GetPendingDatabaseInfo();
-  for (auto it = database_list.begin(); it != database_list.end(); ++it) {
-    if (SameDomainOrHost(origin, it->origin))
+  for (const auto& storage_origin : databases()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
       ++count;
   }
 

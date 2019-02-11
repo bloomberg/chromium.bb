@@ -79,29 +79,27 @@ CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
     : BrowsingDataLocalStorageHelper(profile) {
 }
 
-void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
-    const GURL& origin_url) {
-  if (!HasStorageScheme(origin_url))
+void CannedBrowsingDataLocalStorageHelper::Add(const url::Origin& origin) {
+  if (!HasStorageScheme(origin.GetURL()))
     return;
-  pending_local_storage_info_.insert(origin_url);
-  url::Origin origin = url::Origin::Create(origin_url);
+  pending_origins_.insert(origin);
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
-  pending_local_storage_info_.clear();
+  pending_origins_.clear();
 }
 
 bool CannedBrowsingDataLocalStorageHelper::empty() const {
-  return pending_local_storage_info_.empty();
+  return pending_origins_.empty();
 }
 
-size_t CannedBrowsingDataLocalStorageHelper::GetLocalStorageCount() const {
-  return pending_local_storage_info_.size();
+size_t CannedBrowsingDataLocalStorageHelper::GetCount() const {
+  return pending_origins_.size();
 }
 
-const std::set<GURL>&
-CannedBrowsingDataLocalStorageHelper::GetLocalStorageInfo() const {
-  return pending_local_storage_info_;
+const std::set<url::Origin>& CannedBrowsingDataLocalStorageHelper::GetOrigins()
+    const {
+  return pending_origins_;
 }
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
@@ -110,9 +108,8 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
   DCHECK(!callback.is_null());
 
   std::list<content::StorageUsageInfo> result;
-  for (const GURL& url : pending_local_storage_info_)
-    result.push_back(
-        content::StorageUsageInfo(url::Origin::Create(url), 0, base::Time()));
+  for (const auto& origin : pending_origins_)
+    result.emplace_back(origin, 0, base::Time());
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(std::move(callback), result));
@@ -121,7 +118,7 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
 void CannedBrowsingDataLocalStorageHelper::DeleteOrigin(
     const url::Origin& origin,
     base::OnceClosure callback) {
-  pending_local_storage_info_.erase(origin.GetURL());
+  pending_origins_.erase(origin);
   BrowsingDataLocalStorageHelper::DeleteOrigin(origin, std::move(callback));
 }
 

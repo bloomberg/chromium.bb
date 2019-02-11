@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataCacheStorageHelperTest,
 
   scoped_refptr<CannedBrowsingDataCacheStorageHelper> helper(
       new CannedBrowsingDataCacheStorageHelper(CacheStorageContext()));
-  helper->AddCacheStorage(origin1);
-  helper->AddCacheStorage(origin2);
+  helper->Add(url::Origin::Create(origin1));
+  helper->Add(url::Origin::Create(origin2));
 
   TestCompletionCallback callback;
   helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
@@ -59,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataCacheStorageHelperTest, CannedUnique) {
 
   scoped_refptr<CannedBrowsingDataCacheStorageHelper> helper(
       new CannedBrowsingDataCacheStorageHelper(CacheStorageContext()));
-  helper->AddCacheStorage(origin);
-  helper->AddCacheStorage(origin);
+  helper->Add(url::Origin::Create(origin));
+  helper->Add(url::Origin::Create(origin));
 
   TestCompletionCallback callback;
   helper->StartFetching(base::Bind(&TestCompletionCallback::callback,

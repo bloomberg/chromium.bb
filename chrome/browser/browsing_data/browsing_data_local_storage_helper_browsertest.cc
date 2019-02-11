@@ -153,8 +153,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
 
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
       new CannedBrowsingDataLocalStorageHelper(browser()->profile()));
-  helper->AddLocalStorage(origin1);
-  helper->AddLocalStorage(origin2);
+  helper->Add(url::Origin::Create(origin1));
+  helper->Add(url::Origin::Create(origin2));
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -175,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
 
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
       new CannedBrowsingDataLocalStorageHelper(browser()->profile()));
-  helper->AddLocalStorage(origin);
-  helper->AddLocalStorage(origin);
+  helper->Add(url::Origin::Create(origin));
+  helper->Add(url::Origin::Create(origin));
 
   TestCompletionCallback callback;
   helper->StartFetching(

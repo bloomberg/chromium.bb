@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -72,19 +73,6 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
   indexed_db_context_->DeleteForOrigin(url::Origin::Create(origin));
 }
 
-CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::PendingIndexedDBInfo(
-    const GURL& origin)
-    : origin(origin) {}
-
-CannedBrowsingDataIndexedDBHelper::
-PendingIndexedDBInfo::~PendingIndexedDBInfo() {
-}
-
-bool CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::operator<(
-    const PendingIndexedDBInfo& other) const {
-  return origin < other.origin;
-}
-
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
     content::IndexedDBContext* context)
     : BrowsingDataIndexedDBHelper(context) {
@@ -92,28 +80,28 @@ CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
 
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
-void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(const GURL& origin) {
-  if (!BrowsingDataHelper::HasWebScheme(origin))
+void CannedBrowsingDataIndexedDBHelper::Add(const url::Origin& origin) {
+  if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
     return;  // Non-websafe state is not considered browsing data.
 
-  pending_indexed_db_info_.insert(PendingIndexedDBInfo(origin));
+  pending_origins_.insert(origin);
 }
 
 void CannedBrowsingDataIndexedDBHelper::Reset() {
-  pending_indexed_db_info_.clear();
+  pending_origins_.clear();
 }
 
 bool CannedBrowsingDataIndexedDBHelper::empty() const {
-  return pending_indexed_db_info_.empty();
+  return pending_origins_.empty();
 }
 
-size_t CannedBrowsingDataIndexedDBHelper::GetIndexedDBCount() const {
-  return pending_indexed_db_info_.size();
+size_t CannedBrowsingDataIndexedDBHelper::GetCount() const {
+  return pending_origins_.size();
 }
 
-const std::set<CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo>&
-CannedBrowsingDataIndexedDBHelper::GetIndexedDBInfo() const  {
-  return pending_indexed_db_info_;
+const std::set<url::Origin>& CannedBrowsingDataIndexedDBHelper::GetOrigins()
+    const {
+  return pending_origins_;
 }
 
 void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
@@ -121,9 +109,8 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
   DCHECK(!callback.is_null());
 
   std::list<StorageUsageInfo> result;
-  for (const PendingIndexedDBInfo& pending_info : pending_indexed_db_info_)
-    result.emplace_back(url::Origin::Create(pending_info.origin), 0,
-                        base::Time());
+  for (const auto& origin : pending_origins_)
+    result.emplace_back(origin, 0, base::Time());
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(std::move(callback), result));
@@ -131,12 +118,6 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
 
 void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(
     const GURL& origin) {
-  for (auto it = pending_indexed_db_info_.begin();
-       it != pending_indexed_db_info_.end();) {
-    if (it->origin == origin)
-      pending_indexed_db_info_.erase(it++);
-    else
-      ++it;
-  }
+  pending_origins_.erase(url::Origin::Create(origin));
   BrowsingDataIndexedDBHelper::DeleteIndexedDB(origin);
 }

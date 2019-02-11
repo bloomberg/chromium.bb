@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 struct StorageUsageInfo;
@@ -64,30 +65,16 @@ class BrowsingDataCacheStorageHelper
 
 // This class is an implementation of BrowsingDataCacheStorageHelper that does
 // not fetch its information from the Cache Storage context, but is passed the
-// info as a parameter.
+// info by a call when accessed.
 class CannedBrowsingDataCacheStorageHelper
     : public BrowsingDataCacheStorageHelper {
  public:
-  // Contains information about a Cache Storage.
-  struct PendingCacheStorageUsageInfo {
-    PendingCacheStorageUsageInfo(const GURL& origin,
-                                 int64_t total_size_bytes,
-                                 const base::Time& last_modified);
-    ~PendingCacheStorageUsageInfo();
-
-    bool operator<(const PendingCacheStorageUsageInfo& other) const;
-
-    GURL origin;
-    int64_t total_size_bytes;
-    base::Time last_modified;
-  };
-
   explicit CannedBrowsingDataCacheStorageHelper(
       content::CacheStorageContext* context);
 
   // Add a Cache Storage to the set of canned Cache Storages that is
   // returned by this helper.
-  void AddCacheStorage(const GURL& origin);
+  void Add(const url::Origin& origin);
 
   // Clear the list of canned Cache Storages.
   void Reset();
@@ -96,12 +83,10 @@ class CannedBrowsingDataCacheStorageHelper
   bool empty() const;
 
   // Returns the number of currently stored Cache Storages.
-  size_t GetCacheStorageCount() const;
+  size_t GetCount() const;
 
   // Returns the current list of Cache Storages.
-  const std::set<
-      CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo>&
-  GetCacheStorageUsageInfo() const;
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataCacheStorageHelper methods.
   void StartFetching(FetchCallback callback) override;
@@ -110,7 +95,7 @@ class CannedBrowsingDataCacheStorageHelper
  private:
   ~CannedBrowsingDataCacheStorageHelper() override;
 
-  std::set<PendingCacheStorageUsageInfo> pending_cache_storage_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataCacheStorageHelper);
 };
