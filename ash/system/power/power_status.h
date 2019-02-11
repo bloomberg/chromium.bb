@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -146,8 +147,12 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Returns the estimated time until the battery is empty (if line power
   // is disconnected) or full (if line power is connected). These estimates
   // should only be used if IsBatteryTimeBeingCalculated() returns false.
-  base::TimeDelta GetBatteryTimeToEmpty() const;
-  base::TimeDelta GetBatteryTimeToFull() const;
+  //
+  // Irrespective of IsBatteryTimeBeingCalculated(), estimates may be
+  // unavailable if powerd didn't provide them because the battery current was
+  // close to zero (resulting in time estimates approaching infinity).
+  base::Optional<base::TimeDelta> GetBatteryTimeToEmpty() const;
+  base::Optional<base::TimeDelta> GetBatteryTimeToFull() const;
 
   // Returns true if line power (including a charger of any type) is connected.
   bool IsLinePowerConnected() const;

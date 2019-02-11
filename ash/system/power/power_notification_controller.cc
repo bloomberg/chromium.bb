@@ -185,10 +185,20 @@ bool PowerNotificationController::UpdateNotificationState() {
 }
 
 bool PowerNotificationController::UpdateNotificationStateForRemainingTime() {
+  const base::Optional<base::TimeDelta> remaining_time =
+      PowerStatus::Get()->GetBatteryTimeToEmpty();
+
+  // Check that powerd actually provided an estimate. It doesn't if the battery
+  // current is so close to zero that the estimate would be huge.
+  if (!remaining_time) {
+    notification_state_ = NOTIFICATION_NONE;
+    return false;
+  }
+
   // The notification includes a rounded minutes value, so round the estimate
   // received from the power manager to match.
-  const int remaining_minutes = static_cast<int>(
-      PowerStatus::Get()->GetBatteryTimeToEmpty().InSecondsF() / 60.0 + 0.5);
+  const int remaining_minutes =
+      static_cast<int>(remaining_time->InSecondsF() / 60.0 + 0.5);
 
   if (remaining_minutes >= kNoWarningMinutes ||
       PowerStatus::Get()->IsBatteryFull()) {
