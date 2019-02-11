@@ -25,7 +25,7 @@ var allTests = [
     assertTrue('width' in okButton.location, 'no width in location');
 
     rootNode.addEventListener(
-        EventType.CHILDREN_CHANGED, assertOkButtonLocation);
+        EventType.LAYOUT_COMPLETE, assertOkButtonLocation);
     chrome.tabs.executeScript({ 'code':
           'document.querySelector("button")' +
           '.setAttribute("style", "position: absolute; left: 100; top: 150; ' +

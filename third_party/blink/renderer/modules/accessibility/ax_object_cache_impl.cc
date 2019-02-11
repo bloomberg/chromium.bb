@@ -237,12 +237,30 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
   AXID node_id = node_object_mapping_.at(node);
   DCHECK(!HashTraits<AXID>::IsDeletedValue(node_id));
 
-  if (layout_object && node_id && !layout_id) {
-    // This can happen if an AXNodeObject is created for a node that's not
-    // laid out, but later something changes and it gets a layoutObject (like if
-    // it's reparented).
+  if (layout_object && node_id && !layout_id && !IsMenuListOption(node) &&
+      !IsHTMLAreaElement(node)) {
+    // This can happen if an AXNodeObject is created for a node that's not laid
+    // out, but later something changes and it gets a layoutObject (like if it's
+    // reparented). It's also possible the layout object changed.
+    // In any case, reuse the ax_id since the node didn't change.
     Remove(node_id);
-    return nullptr;
+
+    // Note that this codepath can be reached when |layout_object| is about to
+    // be destroyed.
+
+    // This potentially misses root LayoutObject re-creation, but we have no way
+    // of knowing whether the |layout_object| in those cases is still valid.
+    if (!layout_object->Parent())
+      return nullptr;
+
+    layout_object_mapping_.Set(layout_object, node_id);
+    AXObject* new_obj = CreateFromRenderer(layout_object);
+    ids_in_use_.insert(node_id);
+    new_obj->SetAXObjectID(node_id);
+    objects_.Set(node_id, new_obj);
+    new_obj->Init();
+    new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+    return new_obj;
   }
 
   if (layout_id)
@@ -427,6 +445,12 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   if (AXObject* obj = Get(layout_object))
     return obj;
 
+  // Area elements are never created based on layout objects (see |Get|), so we
+  // really should never get here.
+  Node* node = layout_object->GetNode();
+  if (node && (IsMenuListOption(node) || IsHTMLAreaElement(node)))
+    return nullptr;
+
   AXObject* new_obj = CreateFromRenderer(layout_object);
 
   // Will crash later if we have two objects for the same layoutObject.
@@ -437,8 +461,10 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   layout_object_mapping_.Set(layout_object, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
-  if (layout_object->GetNode())
-    MaybeNewRelationTarget(layout_object->GetNode(), new_obj);
+  if (node) {
+    node_object_mapping_.Set(node, axid);
+    MaybeNewRelationTarget(node, new_obj);
+  }
 
   return new_obj;
 }
@@ -573,10 +599,8 @@ void AXObjectCacheImpl::Remove(Node* node) {
   Remove(ax_id);
   node_object_mapping_.erase(node);
 
-  if (node->GetLayoutObject()) {
+  if (node->GetLayoutObject())
     Remove(node->GetLayoutObject());
-    return;
-  }
 }
 
 void AXObjectCacheImpl::Remove(AbstractInlineTextBox* inline_text_box) {
