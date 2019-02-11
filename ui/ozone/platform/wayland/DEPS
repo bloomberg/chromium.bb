@@ -4,6 +4,7 @@ include_rules = [
   "+ui/base/ui_base_features.h",
   "+ui/base/ime/character_composer.h",
   "+ui/base/ime/composition_text.h",
+  "+ui/base/ime/ime_text_span.h",
   "+ui/base/ime/linux/linux_input_method_context.h",
   "+ui/base/ime/linux/linux_input_method_context_factory.h",
   "+mojo/public",
