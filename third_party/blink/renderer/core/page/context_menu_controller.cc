@@ -408,7 +408,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       description.Split('\n', suggestions);
       data.dictionary_suggestions = suggestions;
     } else if (spell_checker.GetTextCheckerClient()) {
-      int misspelled_offset, misspelled_length;
+      size_t misspelled_offset, misspelled_length;
       spell_checker.GetTextCheckerClient()->CheckSpelling(
           data.misspelled_word, misspelled_offset, misspelled_length,
           &data.dictionary_suggestions);

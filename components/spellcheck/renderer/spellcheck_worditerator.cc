@@ -364,8 +364,8 @@ bool SpellcheckWordIterator::SetText(const base::char16* text, size_t length) {
 
 SpellcheckWordIterator::WordIteratorStatus SpellcheckWordIterator::GetNextWord(
     base::string16* word_string,
-    int* word_start,
-    int* word_length) {
+    size_t* word_start,
+    size_t* word_length) {
   DCHECK(!!text_);
 
   word_string->clear();
@@ -414,8 +414,8 @@ void SpellcheckWordIterator::Reset() {
   iterator_.reset();
 }
 
-bool SpellcheckWordIterator::Normalize(int input_start,
-                                       int input_length,
+bool SpellcheckWordIterator::Normalize(size_t input_start,
+                                       size_t input_length,
                                        base::string16* output_string) const {
   // We use NFKC (Normalization Form, Compatible decomposition, followed by
   // canonical Composition) defined in Unicode Standard Annex #15 to normalize
@@ -424,7 +424,8 @@ bool SpellcheckWordIterator::Normalize(int input_start,
   // spellchecker and we need manual normalization as well. The normalized
   // text does not have to be NUL-terminated since its characters are copied to
   // string16, which adds a NUL character when we need.
-  icu::UnicodeString input(FALSE, &text_[input_start], input_length);
+  icu::UnicodeString input(FALSE, &text_[input_start],
+                           base::checked_cast<int32_t>(input_length));
   UErrorCode status = U_ZERO_ERROR;
   icu::UnicodeString output;
   icu::Normalizer::normalize(input, UNORM_NFKC, 0, output, status);

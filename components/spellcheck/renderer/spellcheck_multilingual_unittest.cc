@@ -31,8 +31,8 @@ struct SpellcheckTestCase {
   // A string of text for checking.
   const wchar_t* input;
   // The position and the length of the first misspelled word, if any.
-  int expected_misspelling_start;
-  int expected_misspelling_length;
+  size_t expected_misspelling_start;
+  size_t expected_misspelling_length;
 };
 
 base::FilePath GetHunspellDirectory() {
@@ -82,8 +82,8 @@ class MultilingualSpellCheckTest : public testing::Test {
     ReinitializeSpellCheck(languages);
 
     for (size_t i = 0; i < num_test_cases; ++i) {
-      int misspelling_start = 0;
-      int misspelling_length = 0;
+      size_t misspelling_start = 0;
+      size_t misspelling_length = 0;
       static_cast<blink::WebTextCheckClient*>(provider())
           ->CheckSpelling(blink::WebString::FromUTF16(
                               base::WideToUTF16(test_cases[i].input)),
@@ -225,8 +225,8 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     // A string of text for checking.
     const wchar_t* input;
     // The position and the length of the first invalid word.
-    int expected_misspelling_start;
-    int expected_misspelling_length;
+    size_t expected_misspelling_start;
+    size_t expected_misspelling_length;
     // A comma separated string of suggested words that should occur, in their
     // expected order.
     const wchar_t* expected_suggestions;
@@ -240,8 +240,8 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {
     blink::WebVector<blink::WebString> suggestions;
-    int misspelling_start;
-    int misspelling_length;
+    size_t misspelling_start;
+    size_t misspelling_length;
     static_cast<blink::WebTextCheckClient*>(provider())
         ->CheckSpelling(
             blink::WebString::FromUTF16(base::WideToUTF16(kTestCases[i].input)),

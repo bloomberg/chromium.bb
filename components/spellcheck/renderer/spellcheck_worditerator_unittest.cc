@@ -35,8 +35,8 @@ base::string16 GetRulesForLanguage(const std::string& language) {
 
 WordIteratorStatus GetNextNonSkippableWord(SpellcheckWordIterator* iterator,
                                            base::string16* word_string,
-                                           int* word_start,
-                                           int* word_length) {
+                                           size_t* word_start,
+                                           size_t* word_length) {
   WordIteratorStatus status = SpellcheckWordIterator::IS_SKIPPABLE;
   while (status == SpellcheckWordIterator::IS_SKIPPABLE)
     status = iterator->GetNextWord(word_string, word_start, word_length);
@@ -174,7 +174,7 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
         base::string16(1, ' '), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     base::string16 actual_word;
-    int actual_start, actual_len;
+    size_t actual_start, actual_len;
     size_t index = 0;
     for (SpellcheckWordIterator::WordIteratorStatus status =
              iterator.GetNextWord(&actual_word, &actual_start, &actual_len);
@@ -210,13 +210,13 @@ TEST(SpellcheckWordIteratorTest, RuleSetConsistency) {
   // iterator.GetNextWord() calls get stuck in an infinite loop. Therefore, this
   // test succeeds if this call returns without timeouts.
   base::string16 actual_word;
-  int actual_start, actual_len;
+  size_t actual_start, actual_len;
   WordIteratorStatus status = GetNextNonSkippableWord(
       &iterator, &actual_word, &actual_start, &actual_len);
 
   EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_END_OF_TEXT, status);
-  EXPECT_EQ(0, actual_start);
-  EXPECT_EQ(0, actual_len);
+  EXPECT_EQ(0u, actual_start);
+  EXPECT_EQ(0u, actual_len);
 }
 
 // Vertify our SpellcheckWordIterator can treat ASCII numbers as word characters
@@ -274,7 +274,7 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
     EXPECT_TRUE(iterator.SetText(input_word.c_str(), input_word.length()));
 
     base::string16 actual_word;
-    int actual_start, actual_len;
+    size_t actual_start, actual_len;
     WordIteratorStatus status = GetNextNonSkippableWord(
         &iterator, &actual_word, &actual_start, &actual_len);
 
@@ -319,15 +319,14 @@ TEST(SpellcheckWordIteratorTest, TypographicalApostropheIsPartOfWord) {
     EXPECT_TRUE(iterator.SetText(input_word.c_str(), input_word.length()));
 
     base::string16 actual_word;
-    int actual_start, actual_len;
+    size_t actual_start, actual_len;
     WordIteratorStatus status = GetNextNonSkippableWord(
         &iterator, &actual_word, &actual_start, &actual_len);
 
     EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_WORD, status);
     EXPECT_EQ(expected_word, actual_word);
-    EXPECT_LE(0, actual_start);
-    EXPECT_EQ(expected_word.length(),
-              static_cast<base::string16::size_type>(actual_len));
+    EXPECT_LE(0u, actual_start);
+    EXPECT_EQ(expected_word.length(), actual_len);
   }
 }
 
