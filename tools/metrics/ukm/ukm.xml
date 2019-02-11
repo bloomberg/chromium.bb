@@ -125,6 +125,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AmpPageLoad" singular="True">
+  <owner>sullivan@chromium.org</owner>
+  <metric name="MainFrameAmpPageLoad">
+    <summary>
+      True if the page loaded in the main frame is an AMP document (has an amp
+      attribute in the html element). Will not be recorded for non-AMP frames.
+      Note that most AMP documents are loaded in a subframe from a reader like
+      Google Search; this metric measures sites that are using AMP as a
+      site-wide framework and not a reader experience.
+    </summary>
+  </metric>
+  <metric name="SubFrameAmpPageLoad">
+    <summary>
+      True if the page loaded in any subframe is an AMP document (has an amp
+      attribute in the html element). Will not be recorded for non-AMP frames.
+      Note that most AMP documents are loaded in a subframe from a reader like
+      Google Search; this metric measures usage of such readers.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.CardUploadDecision">
   <owner>sebsg@chromium.org</owner>
   <metric name="UploadDecision">
