@@ -32,6 +32,12 @@ AppCacheBackendImpl::~AppCacheBackendImpl() {
 }
 
 void AppCacheBackendImpl::RegisterHost(int32_t id, int32_t render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (GetHost(id)) {
+    mojo::ReportBadMessage("ACDH_REGISTER");
+    return;
+  }
+
   // The AppCacheHost could have been precreated in which case we want to
   // register it with the backend here.
   std::unique_ptr<AppCacheHost> host =
@@ -40,12 +46,6 @@ void AppCacheBackendImpl::RegisterHost(int32_t id, int32_t render_frame_id) {
     RegisterPrecreatedHost(std::move(host), render_frame_id);
     return;
   }
-
-  if (GetHost(id)) {
-    mojo::ReportBadMessage("ACDH_REGISTER");
-    return;
-  }
-
   hosts_[id] = std::make_unique<AppCacheHost>(id, process_id(), render_frame_id,
                                               frontend_, service_);
 }
