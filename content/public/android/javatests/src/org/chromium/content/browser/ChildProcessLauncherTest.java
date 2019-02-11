@@ -162,11 +162,6 @@ public class ChildProcessLauncherTest {
             mOnRunMainHelper.notifyCalled();
         }
 
-        @Override
-        public void onDestroy() {
-            Assert.assertEquals(0, mOnDestroyHelper.getCallCount());
-        }
-
         public void waitForOnConnectionSetupCalled() throws InterruptedException, TimeoutException {
             mOnConnectionSetupHelper.waitForCallback(0 /* currentCallCount */);
         }

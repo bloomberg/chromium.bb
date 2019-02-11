@@ -31,7 +31,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -88,8 +87,6 @@ public abstract class ChildProcessService extends Service {
     // Called once the service is bound and all service related member variables have been set.
     // Only set once in bind(), does not require synchronization.
     private boolean mServiceBound;
-
-    private final Semaphore mActivitySemaphore = new Semaphore(1);
 
     // Interface to send notifications to the parent process.
     private IParentProcess mParentProcess;
@@ -276,15 +273,13 @@ public abstract class ChildProcessService extends Service {
                                 "Android.WebView.SplitApkWorkaroundResult",
                                 sSplitApkWorkaroundResult, SplitApkWorkaroundResult.NUM_ENTRIES);
                     }
-                    if (mActivitySemaphore.tryAcquire()) {
-                        mDelegate.runMain();
-                        try {
-                            mParentProcess.reportCleanExit();
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "Failed to call clean exit callback.", e);
-                        }
-                        nativeExitChildProcess();
+                    mDelegate.runMain();
+                    try {
+                        mParentProcess.reportCleanExit();
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Failed to call clean exit callback.", e);
                     }
+                    nativeExitChildProcess();
                 } catch (InterruptedException e) {
                     Log.w(TAG, "%s startup failed: %s", MAIN_THREAD_NAME, e);
                 }
@@ -297,26 +292,7 @@ public abstract class ChildProcessService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "Destroying ChildProcessService pid=%d", Process.myPid());
-        if (mActivitySemaphore.tryAcquire()) {
-            // TODO(crbug.com/457406): This is a bit hacky, but there is no known better solution
-            // as this service will get reused (at least if not sandboxed).
-            // In fact, we might really want to always exit() from onDestroy(), not just from
-            // the early return here.
-            System.exit(0);
-            return;
-        }
-        synchronized (mLibraryInitializedLock) {
-            try {
-                while (!mLibraryInitialized) {
-                    // Avoid a potential race in calling through to native code before the library
-                    // has loaded.
-                    mLibraryInitializedLock.wait();
-                }
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-        }
-        mDelegate.onDestroy();
+        System.exit(0);
     }
 
     /*

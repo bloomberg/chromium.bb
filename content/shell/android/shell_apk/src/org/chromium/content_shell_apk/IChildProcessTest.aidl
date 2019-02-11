@@ -20,6 +20,4 @@ interface IChildProcessTest {
   oneway void onBeforeMain(in String[] commandLine);
 
   oneway void onRunMain();
-
-  oneway void onDestroy();
 }

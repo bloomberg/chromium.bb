@@ -178,13 +178,6 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     }
 
     @Override
-    public void onDestroy() {
-        // Try to shutdown the MainThread gracefully, but it might not have a
-        // chance to exit normally.
-        nativeShutdownMainThread();
-    }
-
-    @Override
     public void runMain() {
         ContentMain.start(false);
     }
@@ -253,8 +246,6 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
      * @param cpuFeatures The CPU features.
      */
     private native void nativeInitChildProcess(int cpuCount, long cpuFeatures);
-
-    private native void nativeShutdownMainThread();
 
     // Retrieves the FD IDs to keys map and set it by calling setFileDescriptorsIdsToKeys().
     private native void nativeRetrieveFileDescriptorsIdsToKeys();
