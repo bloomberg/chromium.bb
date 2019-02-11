@@ -337,7 +337,7 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
     }
 
     return false;
-  };
+  }
 
   void TaskX() {
     download::GetDownloadTaskRunner()->PostTask(
