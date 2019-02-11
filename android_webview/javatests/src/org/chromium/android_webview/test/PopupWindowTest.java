@@ -28,6 +28,9 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests for pop up window flow.
  */
@@ -272,6 +275,72 @@ public class PopupWindowTest {
         Assert.assertEquals("\"\"",
                 mActivityTestRule.executeJavaScriptAndWaitForResult(
                         popupContents, popupContentsClient, jsGetSelection));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPopupWindowHasUserGestureForUserInitiated() throws Throwable {
+        runPopupUserGestureTest(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPopupWindowHasUserGestureForUserInitiatedNoOpener() throws Throwable {
+        runPopupUserGestureTest(false);
+    }
+
+    private void runPopupUserGestureTest(boolean hasOpener) throws Throwable {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mParentContents.getSettings().setJavaScriptEnabled(true);
+            mParentContents.getSettings().setSupportMultipleWindows(true);
+            mParentContents.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        });
+
+        final String body = String.format(Locale.US,
+                "<a href=\"popup.html\" id=\"link\" %s target=\"_blank\">example.com</a>",
+                hasOpener ? "" : "rel=\"noopener noreferrer\"");
+        final String mainHtml = CommonResources.makeHtmlPageFrom("", body);
+        final String openerUrl = mWebServer.setResponse("/popupOpener.html", mainHtml, null);
+        final String popupUrl = mWebServer.setResponse("/popup.html",
+                CommonResources.makeHtmlPageFrom(
+                        "<title>" + POPUP_TITLE + "</title>", "This is a popup window"),
+                null);
+
+        mParentContentsClient.getOnCreateWindowHelper().setReturnValue(true);
+        mActivityTestRule.loadUrlSync(
+                mParentContents, mParentContentsClient.getOnPageFinishedHelper(), openerUrl);
+
+        TestAwContentsClient.OnCreateWindowHelper onCreateWindowHelper =
+                mParentContentsClient.getOnCreateWindowHelper();
+        int currentCallCount = onCreateWindowHelper.getCallCount();
+        DOMUtils.clickNode(mParentContents.getWebContents(), "link");
+        onCreateWindowHelper.waitForCallback(
+                currentCallCount, 1, AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
+        Assert.assertTrue(onCreateWindowHelper.getIsUserGesture());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPopupWindowNoUserGestureForJsInitiated() throws Throwable {
+        final String popupPath = "/popup.html";
+        final String openerPageHtml = CommonResources.makeHtmlPageFrom("",
+                "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  var newWindow = window.open('" + popupPath + "');"
+                        + "}</script>");
+
+        final String popupPageHtml = CommonResources.makeHtmlPageFrom(
+                "<title>" + POPUP_TITLE + "</title>", "This is a popup window");
+
+        mActivityTestRule.triggerPopup(mParentContents, mParentContentsClient, mWebServer,
+                openerPageHtml, popupPageHtml, popupPath, "tryOpenWindow()");
+        TestAwContentsClient.OnCreateWindowHelper onCreateWindowHelper =
+                mParentContentsClient.getOnCreateWindowHelper();
+        Assert.assertFalse(onCreateWindowHelper.getIsUserGesture());
     }
 
     // Copied from imeTest.java.

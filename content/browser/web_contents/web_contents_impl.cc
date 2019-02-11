@@ -2666,6 +2666,7 @@ void WebContentsImpl::CreateNewWindow(
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool has_user_gesture,
     SessionStorageNamespace* session_storage_namespace) {
   // We should have zero valid routing ids, or three valid routing IDs.
   DCHECK_EQ((render_view_route_id == MSG_ROUTING_NONE),
@@ -2827,7 +2828,7 @@ void WebContentsImpl::CreateNewWindow(
       gfx::Rect initial_rect;  // Report an empty initial rect.
       delegate_->AddNewContents(this, std::move(owning_contents_impl),
                                 params.disposition, initial_rect,
-                                params.mimic_user_gesture, &was_blocked);
+                                has_user_gesture, &was_blocked);
       // The delegate may delete |new_contents_impl| during AddNewContents().
       if (!weak_new_contents)
         return;
@@ -2841,7 +2842,7 @@ void WebContentsImpl::CreateNewWindow(
       load_params->referrer = params.referrer.To<Referrer>();
       load_params->transition_type = ui::PAGE_TRANSITION_LINK;
       load_params->is_renderer_initiated = true;
-      load_params->has_user_gesture = params.mimic_user_gesture;
+      load_params->has_user_gesture = has_user_gesture;
 
       if (delegate_ && !is_guest &&
           !delegate_->ShouldResumeRequestsForCreatedWindow()) {

@@ -3618,10 +3618,11 @@ void RenderFrameHostImpl::CreateNewWindow(
           effective_transient_activation_state, params->opener_suppressed,
           &no_javascript_access);
 
+  bool was_consumed = false;
   if (can_create_window) {
     // Consume activation even w/o User Activation v2, to sync other renderers
     // with calling renderer.
-    frame_tree_node_->UpdateUserActivationState(
+    was_consumed = frame_tree_node_->UpdateUserActivationState(
         blink::UserActivationUpdateType::kConsumeTransientActivation);
   }
 
@@ -3690,9 +3691,13 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   DCHECK(IsRenderFrameLive());
 
+  bool opened_by_user_activation = params->mimic_user_gesture;
+  if (base::FeatureList::IsEnabled(features::kUserActivationV2))
+    opened_by_user_activation = was_consumed;
+
   delegate_->CreateNewWindow(this, render_view_route_id, main_frame_route_id,
                              main_frame_widget_route_id, *params,
-                             cloned_namespace.get());
+                             opened_by_user_activation, cloned_namespace.get());
 
   if (main_frame_route_id == MSG_ROUTING_NONE) {
     // Opener suppressed or Javascript access disabled. Never tell the renderer

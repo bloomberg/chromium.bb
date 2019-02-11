@@ -572,6 +572,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
       const mojom::CreateNewWindowParams& params,
+      bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) override;
   void ShowCreatedWindow(int process_id,
                          int main_frame_widget_route_id,
