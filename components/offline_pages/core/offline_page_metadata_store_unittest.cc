@@ -539,7 +539,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
         task_runner_handle_(task_runner_) {
     EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   }
-  ~OfflinePageMetadataStoreTest() override{};
+  ~OfflinePageMetadataStoreTest() override {}
 
  protected:
   void TearDown() override {
