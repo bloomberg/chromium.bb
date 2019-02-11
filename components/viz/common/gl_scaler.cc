@@ -1389,6 +1389,7 @@ void GLScaler::ScalerStage::ScaleToMultipleOutputs(
   // It would be better to stash the existing parameter values, and restore them
   // back later. However, glGetTexParameteriv() currently requires a blocking
   // call to the GPU service, which is extremely costly performance-wise.
+  gl_->ActiveTexture(GL_TEXTURE0);
   gl_->BindTexture(GL_TEXTURE_2D, src_texture);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

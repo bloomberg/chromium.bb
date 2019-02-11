@@ -113,6 +113,12 @@ DirectContextProvider::~DirectContextProvider() {
 
 void DirectContextProvider::Destroy() {
   DCHECK(decoder_);
+  bool have_context = !decoder_->WasContextLost();
+  if (have_context && framebuffer_id_ != 0) {
+    gles2_implementation_->DeleteFramebuffers(1, &framebuffer_id_);
+    framebuffer_id_ = 0;
+  }
+
   // The client gl interface might still be set to current global
   // interface. This will be cleaned up in ApplyContextReleased
   // with AutoCurrentContextRestore.
@@ -122,16 +128,33 @@ void DirectContextProvider::Destroy() {
   gles2_cmd_helper_.reset();
   command_buffer_.reset();
 
-  bool have_context = !decoder_->WasContextLost();
   decoder_->Destroy(have_context);
   decoder_.reset();
 }
 
-void DirectContextProvider::SetGLRendererCopierRequiredState() {
+void DirectContextProvider::SetGLRendererCopierRequiredState(
+    GLuint texture_client_id) {
+  // Get into known state (see
+  // SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider).
   gles2_implementation_->BindFramebuffer(GL_FRAMEBUFFER, 0);
   gles2_implementation_->Disable(GL_SCISSOR_TEST);
   gles2_implementation_->Disable(GL_STENCIL_TEST);
   gles2_implementation_->Disable(GL_BLEND);
+
+  if (texture_client_id) {
+    if (!framebuffer_id_)
+      gles2_implementation_->GenFramebuffers(1, &framebuffer_id_);
+    gles2_implementation_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_id_);
+    gles2_implementation_->FramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_client_id,
+        0);
+    DCHECK_EQ(gles2_implementation_->CheckFramebufferStatus(GL_FRAMEBUFFER),
+              static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE));
+  }
+}
+
+gpu::gles2::TextureManager* DirectContextProvider::texture_manager() {
+  return decoder_->GetContextGroup()->texture_manager();
 }
 
 void DirectContextProvider::AddRef() const {
@@ -285,6 +308,19 @@ void DirectContextProvider::WaitSyncToken(const gpu::SyncToken& sync_token) {
 bool DirectContextProvider::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken& sync_token) {
   return false;
+}
+
+GLuint DirectContextProvider::GenClientTextureId() {
+  const auto& share_group = gles2_implementation_->share_group();
+  auto* id_handler =
+      share_group->GetIdHandler(gpu::gles2::SharedIdNamespaces::kTextures);
+  GLuint client_id;
+  id_handler->MakeIds(gles2_implementation_.get(), 0, 1, &client_id);
+  return client_id;
+}
+
+void DirectContextProvider::DeleteClientTextureId(GLuint client_id) {
+  gles2_implementation_->DeleteTextures(1, &client_id);
 }
 
 }  // namespace viz

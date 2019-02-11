@@ -25,6 +25,7 @@
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/paths.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

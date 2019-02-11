@@ -14,10 +14,14 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace gfx {
 class ColorSpace;
@@ -61,6 +65,11 @@ struct RenderPassGeometry;
 // "source" has ended.
 class VIZ_SERVICE_EXPORT GLRendererCopier {
  public:
+  // Define types to avoid pulling in command buffer GL headers, which conflict
+  // the ui/gl/gl_bindings.h
+  using GLuint = unsigned int;
+  using GLenum = unsigned int;
+
   // |texture_deleter| must outlive this instance.
   GLRendererCopier(scoped_refptr<ContextProvider> context_provider,
                    TextureDeleter* texture_deleter);
@@ -95,6 +104,11 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // finished drawing (after all copy requests have been executed).
   void FreeUnusedCachedResources();
 
+  void set_async_gl_task_runner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    async_gl_task_runner_ = task_runner;
+  }
+
  private:
   friend class GLRendererCopierTest;
 
@@ -108,7 +122,7 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
     // Texture containing a copy of the source framebuffer, if the source
     // framebuffer cannot be used directly.
     GLuint fb_copy_texture = 0;
-    GLenum fb_copy_texture_internal_format = static_cast<GLenum>(GL_NONE);
+    GLenum fb_copy_texture_internal_format = static_cast<GLenum>(0 /*GL_NONE*/);
     gfx::Size fb_copy_texture_size;
 
     // RGBA requests: Scaling, and texture/framebuffer for readback.
@@ -262,13 +276,19 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // efficiently using GL_RGBA or GL_BGRA_EXT format. This starts out as
   // GL_NONE, which means "unknown," and will be determined at the time the
   // first readback request is made.
-  GLenum optimal_readback_format_ = static_cast<GLenum>(GL_NONE);
+  GLenum optimal_readback_format_ = static_cast<GLenum>(0 /*GL_NONE*/);
 
   // Purge cache entries that have not been used after this many calls to
   // FreeUnusedCachedResources(). The choice of 60 is arbitrary, but on most
   // platforms means that a somewhat-to-fully active compositor will cause
   // things to be auto-purged after approx. 1-2 seconds of not being used.
   static constexpr int kKeepalivePeriod = 60;
+
+  // The task runner that is being used to call into GLRendererCopier. This
+  // allows for CopyOutputResults, owned by external entities, to execute
+  // post-destruction clean-up tasks. If null, assume CopyOutputResults are
+  // always destroyed from the same task runner
+  scoped_refptr<base::SingleThreadTaskRunner> async_gl_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRendererCopier);
 };
