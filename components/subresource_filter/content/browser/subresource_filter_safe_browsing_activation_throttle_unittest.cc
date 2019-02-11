@@ -725,7 +725,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     EXPECT_EQ(mojom::ActivationLevel::kDisabled,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
-};
+}
 
 // Only main frames with http/https schemes should activate.
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
@@ -759,7 +759,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     EXPECT_EQ(test_data.expected_activation_level,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
-};
+}
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        ListNotMatched_NoActivation) {
