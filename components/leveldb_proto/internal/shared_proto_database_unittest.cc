@@ -26,7 +26,7 @@ inline void GetClientFromTaskRunner(SharedProtoDatabase* db,
                                     const std::string& client_namespace,
                                     const std::string& type_prefix,
                                     base::OnceClosure closure) {
-  db->GetClientForTesting<TestProto>(
+  db->GetClientForTesting(
       client_namespace, type_prefix, true /* create_if_missing */,
       base::BindOnce(
           [](base::OnceClosure closure, Enums::InitStatus status,
@@ -67,15 +67,14 @@ class SharedProtoDatabaseTest : public testing::Test {
     return db->init_state_ == SharedProtoDatabase::InitState::kSuccess;
   }
 
-  template <typename T>
-  std::unique_ptr<SharedProtoDatabaseClient<T>> GetClientAndWait(
+  std::unique_ptr<SharedProtoDatabaseClient> GetClientAndWait(
       SharedProtoDatabase* db,
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
       Enums::InitStatus* status) {
     base::RunLoop loop;
-    auto client = db->GetClientForTesting<T>(
+    auto client = db->GetClientForTesting(
         client_namespace, type_prefix, create_if_missing,
         base::BindOnce(
             [](Enums::InitStatus* status_out, base::OnceClosure closure,
@@ -107,8 +106,8 @@ class SharedProtoDatabaseTest : public testing::Test {
 
 TEST_F(SharedProtoDatabaseTest, CreateClient_SucceedsWithCreate) {
   auto status = Enums::InitStatus::kError;
-  GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              true /* create_if_missing */, &status);
+  GetClientAndWait(db(), kDefaultNamespace, kDefaultTypePrefix,
+                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 }
 
@@ -119,26 +118,26 @@ TEST_F(SharedProtoDatabaseTest, DISABLED_CreateClient_FailsWithoutCreate) {
 TEST_F(SharedProtoDatabaseTest, CreateClient_FailsWithoutCreate) {
 #endif
   auto status = Enums::InitStatus::kError;
-  GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              false /* create_if_missing */, &status);
+  GetClientAndWait(db(), kDefaultNamespace, kDefaultTypePrefix,
+                   false /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kInvalidOperation);
 }
 
 TEST_F(SharedProtoDatabaseTest,
        CreateClient_SucceedsWithoutCreateIfAlreadyCreated) {
   auto status = Enums::InitStatus::kError;
-  GetClientAndWait<TestProto>(db(), kDefaultNamespace2, kDefaultTypePrefix,
-                              true /* create_if_missing */, &status);
+  GetClientAndWait(db(), kDefaultNamespace2, kDefaultTypePrefix,
+                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              false /* create_if_missing */, &status);
+  GetClientAndWait(db(), kDefaultNamespace, kDefaultTypePrefix,
+                   false /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 }
 
 TEST_F(SharedProtoDatabaseTest, GetClient_DifferentThreads) {
   auto status = Enums::InitStatus::kError;
-  GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              true /* create_if_missing */, &status);
+  GetClientAndWait(db(), kDefaultNamespace, kDefaultTypePrefix,
+                   true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   base::Thread t("test_thread");

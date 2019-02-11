@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/internal/proto_database_impl.h"
 #include "components/leveldb_proto/internal/unique_proto_database.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -97,7 +98,7 @@ class TestDatabase {
   TestDatabase(const std::string& name,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                const base::FilePath& path) {
-    db_.reset(new UniqueProtoDatabase<TestProto>(task_runner));
+    db_.reset(new ProtoDatabaseImpl<TestProto>(task_runner));
     leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
 
     base::RunLoop run_init_db;
@@ -114,11 +115,11 @@ class TestDatabase {
   }
 
   bool is_initialized() const { return is_initialized_; }
-  UniqueProtoDatabase<TestProto>* proto_db() const { return db_.get(); }
+  ProtoDatabaseImpl<TestProto>* proto_db() const { return db_.get(); }
 
  private:
   bool is_initialized_ = false;
-  std::unique_ptr<UniqueProtoDatabase<TestProto>> db_;
+  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db_;
 };
 
 }  // namespace
@@ -546,7 +547,10 @@ class ProtoDBPerfTest : public testing::Test {
   }
 
   bool GetApproximateMemoryUsageOfDB(TestDatabase* db, uint64_t* memory_use) {
-    return db->proto_db()->GetApproximateMemoryUse(memory_use);
+    return db->proto_db()
+        ->db_wrapper_for_testing()
+        ->db_for_testing()
+        ->GetApproximateMemoryUse(memory_use);
   }
 
   std::map<std::string, std::unique_ptr<TestDatabase>> dbs_;

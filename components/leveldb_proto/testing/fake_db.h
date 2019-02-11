@@ -16,14 +16,14 @@
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
 #include "base/test/test_simple_task_runner.h"
-#include "components/leveldb_proto/internal/unique_proto_database.h"
+#include "components/leveldb_proto/internal/proto_database_impl.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 namespace test {
 
 template <typename T>
-class FakeDB : public UniqueProtoDatabase<T> {
+class FakeDB : public ProtoDatabaseImpl<T> {
   using Callback = base::OnceCallback<void(bool)>;
 
  public:
@@ -138,8 +138,7 @@ class FakeDB : public UniqueProtoDatabase<T> {
 
 template <typename T>
 FakeDB<T>::FakeDB(EntryMap* db)
-    : UniqueProtoDatabase<T>(
-          base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
+    : ProtoDatabaseImpl<T>(base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
   db_ = db;
 }
 
