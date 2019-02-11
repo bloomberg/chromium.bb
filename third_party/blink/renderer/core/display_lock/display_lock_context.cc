@@ -61,10 +61,11 @@ DisplayLockContext::DisplayLockContext(Element* element,
                                        ExecutionContext* context)
     : ContextLifecycleObserver(context),
       element_(element),
+      document_(&element_->GetDocument()),
       state_(this),
       weak_factory_(this) {
-  DCHECK(element_->GetDocument().View());
-  element_->GetDocument().View()->RegisterForLifecycleNotifications(this);
+  DCHECK(document_->View());
+  document_->View()->RegisterForLifecycleNotifications(this);
 }
 
 DisplayLockContext::~DisplayLockContext() {
@@ -76,6 +77,7 @@ void DisplayLockContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(commit_resolver_);
   visitor->Trace(acquire_resolver_);
   visitor->Trace(element_);
+  visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -92,14 +94,10 @@ void DisplayLockContext::Dispose() {
   FinishCommitResolver(kDetach);
   FinishAcquireResolver(kDetach);
   CancelTimeoutTask();
-  // TODO(vmpstr): At this point we might not have |element_| anymore, so the
-  // counts might leak. We need to keep track of the document object directly on
-  // the display lock and use that instead of relying on |element_| to clean up
-  // locked counts.
   state_ = kUnlocked;
 
-  if (element_ && element_->GetDocument().View())
-    element_->GetDocument().View()->UnregisterFromLifecycleNotifications(this);
+  if (document_ && document_->View())
+    document_->View()->UnregisterFromLifecycleNotifications(this);
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -558,21 +556,22 @@ bool DisplayLockContext::IsElementDirtyForPrePaint() const {
 
 void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   DCHECK(element_);
+  document_ = &element_->GetDocument();
 
   // Since we're observing the lifecycle updates, ensure that we listen to the
   // right document's view.
   if (old_document.View())
     old_document.View()->UnregisterFromLifecycleNotifications(this);
-  if (element_->GetDocument().View())
-    element_->GetDocument().View()->RegisterForLifecycleNotifications(this);
+  if (document_->View())
+    document_->View()->RegisterForLifecycleNotifications(this);
 
   if (!IsSearchable()) {
     old_document.RemoveActivationBlockingDisplayLock();
-    element_->GetDocument().AddActivationBlockingDisplayLock();
+    document_->AddActivationBlockingDisplayLock();
   }
   if (IsLocked()) {
     old_document.RemoveLockedDisplayLock();
-    element_->GetDocument().AddLockedDisplayLock();
+    document_->AddLockedDisplayLock();
   }
 }
 
@@ -664,8 +663,7 @@ void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_->isConnected());
 
   // Schedule an animation to perform the lifecycle phases.
-  element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
-      element_->GetDocument().GetFrame());
+  document_->GetPage()->Animator().ScheduleVisualUpdate(document_->GetFrame());
 }
 
 void DisplayLockContext::RescheduleTimeoutTask(double delay) {
@@ -693,9 +691,9 @@ void DisplayLockContext::CancelTimeoutTask() {
 }
 
 void DisplayLockContext::TriggerTimeout() {
-  // We might have started to shut down while we're triggering a timeout. In
-  // that case, do nothing.
-  if (!element_ || !element_->GetDocument().Lifecycle().IsActive())
+  // We might have started destroyed the element or started to shut down while
+  // we're triggering a timeout. In that case, do nothing.
+  if (!element_ || !document_->Lifecycle().IsActive())
     return;
   StartCommit();
   timeout_task_is_scheduled_ = false;
@@ -777,11 +775,11 @@ operator=(State new_state) {
 
   state_ = new_state;
 
-  if (!context_->element_)
+  if (!context_->document_)
     return *this;
 
   // Adjust the total number of locked display locks.
-  auto& document = context_->element_->GetDocument();
+  auto& document = *context_->document_;
   if (context_->IsLocked() != was_locked) {
     if (was_locked)
       document.RemoveLockedDisplayLock();
