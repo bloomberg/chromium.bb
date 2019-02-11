@@ -48,7 +48,7 @@ class LearningSessionImplTest : public testing::Test {
     void AddFeatures(const LabelledExample& example,
                      FeatureProvider::LabelledExampleCB cb) override {
       *flag_ptr_ = true;
-    };
+    }
 
     bool* flag_ptr_ = nullptr;
   };
