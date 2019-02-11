@@ -2690,7 +2690,7 @@ bool PersonalDataManager::ProfileChangesAreOnGoing(const std::string& guid) {
 }
 
 bool PersonalDataManager::ProfileChangesAreOnGoing() {
-  for (auto task : ongoing_profile_changes_) {
+  for (const auto& task : ongoing_profile_changes_) {
     if (ProfileChangesAreOnGoing(task.first)) {
       return true;
     }

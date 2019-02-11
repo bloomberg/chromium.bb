@@ -168,8 +168,7 @@ class PersonalDataManager : public KeyedService,
   virtual void RemoveByGUID(const std::string& guid);
 
   // Returns the profile with the specified |guid|, or nullptr if there is no
-  // profile with the specified |guid|. Both web and auxiliary profiles may
-  // be returned.
+  // profile with the specified |guid|.
   virtual AutofillProfile* GetProfileByGUID(const std::string& guid);
 
   // Returns the profile with the specified |guid| from the given |profiles|, or
@@ -391,9 +390,6 @@ class PersonalDataManager : public KeyedService,
   // Records the sync transport consent if the user is in sync transport mode.
   virtual void OnUserAcceptedUpstreamOffer();
 
-  // Triggered when a profile is added/updated/removed on db.
-  void OnAutofillProfileChanged(const AutofillProfileDeepChange& change);
-
   void set_client_profile_validator_for_test(
       AutofillProfileValidator* validator) {
     client_profile_validator_ = validator;
@@ -407,8 +403,6 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            AddCreditCard_CrazyCharacters);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddCreditCard_Invalid);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FirstMiddleLast);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DedupeProfiles_ProfilesToDelete);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
@@ -453,8 +447,6 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DoNotConvertWalletAddressesInEphemeralStorage);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           DeleteDisusedCreditCards_OncePerVersion);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DeleteDisusedCreditCards_DoNothingWhenDisabled);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
@@ -482,12 +474,6 @@ class PersonalDataManager : public KeyedService,
                            RequestProfileServerValidity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfileSuggestions_Validity);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
-                           UpdateProfilesValidityStates_MoveToJapan);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
-                           UpdateProfilesValidityStates_AddUpdateSet);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
-                           UpdateProfilesValidityStates_Dedupe);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -599,14 +585,10 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<AutofillProfile>> web_profiles_;
 
   // Profiles read from the user's account stored on the server.
-  mutable std::vector<std::unique_ptr<AutofillProfile>> server_profiles_;
+  std::vector<std::unique_ptr<AutofillProfile>> server_profiles_;
 
   // Stores the PaymentsCustomerData obtained from the database.
   std::unique_ptr<PaymentsCustomerData> payments_customer_data_;
-
-  // Storage for web profiles.  Contents are weak references.  Lifetime managed
-  // by |web_profiles_|.
-  mutable std::vector<AutofillProfile*> profiles_;
 
   // Cached versions of the local and server credit cards.
   std::vector<std::unique_ptr<CreditCard>> local_credit_cards_;
@@ -749,6 +731,9 @@ class PersonalDataManager : public KeyedService,
   // profile. (equal in the sense of AutofillProfile::EqualForUpdate)
   void UpdateProfileInDB(const AutofillProfile& profile, bool enforced = false);
   void RemoveProfileFromDB(const std::string& guid);
+
+  // Triggered when a profile is added/updated/removed on db.
+  void OnAutofillProfileChanged(const AutofillProfileDeepChange& change);
 
   // Look at the next profile change for profile with guid = |guid|, and handle
   // it.
