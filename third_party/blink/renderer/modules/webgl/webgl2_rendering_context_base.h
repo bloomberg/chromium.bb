@@ -1051,7 +1051,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                 GLint drawbuffer);
 
   /* WebGLRenderingContextBase overrides */
-  unsigned GetMaxWebGLLocationLength() const override { return 1024; };
+  unsigned GetMaxWebGLLocationLength() const override { return 1024; }
   bool ValidateCapability(const char* function_name, GLenum) override;
   bool ValidateBufferTarget(const char* function_name, GLenum target) override;
   bool ValidateAndUpdateBufferBindTarget(const char* function_name,
