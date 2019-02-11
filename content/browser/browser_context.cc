@@ -39,6 +39,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -783,8 +784,8 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
     std::unique_ptr<media::VideoDecodeStatsDBImpl> stats_db =
         media::VideoDecodeStatsDBImpl::Create(
             GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
-    auto new_decode_history =
-        std::make_unique<media::VideoDecodePerfHistory>(std::move(stats_db));
+    auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(
+        std::move(stats_db), BrowserFeatureProvider::GetFactoryCB());
     decode_history = new_decode_history.get();
 
     SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));

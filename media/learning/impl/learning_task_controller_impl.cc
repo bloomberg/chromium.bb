@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/learning/impl/extra_trees_trainer.h"
 #include "media/learning/impl/lookup_table_trainer.h"
 
@@ -20,7 +21,8 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
     : task_(task),
       training_data_(std::make_unique<TrainingData>()),
       feature_provider_(std::move(feature_provider)),
-      reporter_(std::move(reporter)) {
+      reporter_(std::move(reporter)),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
       trainer_ = std::make_unique<ExtraTreesTrainer>();
@@ -34,15 +36,31 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
 void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
-  if (!feature_provider_.is_null()) {
-    // TODO(liberato): BindToCurrentSequence
+  if (feature_provider_) {
+    // TODO(liberato): SequenceBound should make this easier.
     feature_provider_.Post(
         FROM_HERE, &FeatureProvider::AddFeatures, example,
-        base::BindOnce(&LearningTaskControllerImpl::OnExampleReady,
-                       AsWeakPtr()));
+        base::BindOnce(&LearningTaskControllerImpl::OnExampleReadyTrampoline,
+                       task_runner_, AsWeakPtr()));
   } else {
     OnExampleReady(example);
   }
+}
+
+// static
+void LearningTaskControllerImpl::OnExampleReadyTrampoline(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::WeakPtr<LearningTaskControllerImpl> weak_this,
+    LabelledExample example) {
+  if (!task_runner->RunsTasksInCurrentSequence()) {
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&LearningTaskControllerImpl::OnExampleReady,
+                                  std::move(weak_this), std::move(example)));
+    return;
+  }
+
+  if (weak_this)
+    weak_this->OnExampleReady(std::move(example));
 }
 
 void LearningTaskControllerImpl::OnExampleReady(LabelledExample example) {
@@ -79,7 +97,6 @@ void LearningTaskControllerImpl::OnExampleReady(LabelledExample example) {
 
   num_untrained_examples_ = 0;
 
-  // TODO(liberato): don't do this if one is in-flight.
   TrainedModelCB model_cb =
       base::BindOnce(&LearningTaskControllerImpl::OnModelTrained, AsWeakPtr());
   training_is_in_progress_ = true;

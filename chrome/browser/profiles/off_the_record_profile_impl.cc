@@ -499,8 +499,9 @@ OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
 
     auto stats_db = std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(
         seed_db_provider);
-    auto new_decode_history =
-        std::make_unique<media::VideoDecodePerfHistory>(std::move(stats_db));
+    // TODO(liberato): Get the FeatureProviderFactoryCB from BrowserContext.
+    auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(
+        std::move(stats_db), media::learning::FeatureProviderFactoryCB());
     decode_history = new_decode_history.get();
 
     SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));

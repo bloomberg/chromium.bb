@@ -16,6 +16,7 @@
 #include "media/base/video_codecs.h"
 #include "media/capabilities/video_decode_stats_db.h"
 #include "media/capabilities/video_decode_stats_db_provider.h"
+#include "media/learning/impl/feature_provider.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -53,7 +54,10 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
  public:
   static const char kMaxSmoothDroppedFramesPercentParamName[];
 
-  explicit VideoDecodePerfHistory(std::unique_ptr<VideoDecodeStatsDB> db);
+  explicit VideoDecodePerfHistory(
+      std::unique_ptr<VideoDecodeStatsDB> db,
+      learning::FeatureProviderFactoryCB feature_factory_cb =
+          learning::FeatureProviderFactoryCB());
   ~VideoDecodePerfHistory() override;
 
   // Bind the mojo request to this instance. Single instance will be used to
@@ -184,6 +188,9 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
 
   // Optional helper for local learning.
   std::unique_ptr<LearningHelper> learning_helper_;
+
+  // Optional callback to create a FeatureProvider for |learning_helper_|.
+  learning::FeatureProviderFactoryCB feature_factory_cb_;
 
   // Ensures all access to class members come on the same sequence.
   SEQUENCE_CHECKER(sequence_checker_);

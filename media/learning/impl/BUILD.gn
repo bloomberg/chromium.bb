@@ -8,7 +8,9 @@ component("impl") {
     "//media/learning/impl:unit_tests",
 
     # Actual clients.
+    "//content/browser",
     "//media/capabilities",
+    "//media/mojo/services",
   ]
 
   sources = [

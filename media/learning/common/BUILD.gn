@@ -20,6 +20,8 @@ component("common") {
   defines = [ "IS_LEARNING_COMMON_IMPL" ]
 
   sources = [
+    "feature_library.cc",
+    "feature_library.h",
     "labelled_example.cc",
     "labelled_example.h",
     "learning_session.cc",
