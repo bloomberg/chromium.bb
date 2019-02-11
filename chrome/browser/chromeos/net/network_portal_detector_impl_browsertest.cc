@@ -58,7 +58,7 @@ constexpr char kWifiGuid[] = "wifi";
 
 void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
-  CHECK(false) << "Shill Error: " << error_name << " : " << error_message;
+  LOG(FATAL) << "Shill Error: " << error_name << " : " << error_message;
 }
 
 void SetConnected(const std::string& service_path) {
