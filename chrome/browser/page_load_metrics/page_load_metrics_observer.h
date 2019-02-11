@@ -86,16 +86,15 @@ struct FailedProvisionalLoadInfo {
 // element are examples of user initiation actions.
 struct UserInitiatedInfo {
   static UserInitiatedInfo NotUserInitiated() {
-    return UserInitiatedInfo(false, false, false);
+    return UserInitiatedInfo(false, false);
   }
 
   static UserInitiatedInfo BrowserInitiated() {
-    return UserInitiatedInfo(true, false, false);
+    return UserInitiatedInfo(true, false);
   }
 
-  static UserInitiatedInfo RenderInitiated(bool user_gesture,
-                                           bool user_input_event) {
-    return UserInitiatedInfo(false, user_gesture, user_input_event);
+  static UserInitiatedInfo RenderInitiated(bool user_gesture) {
+    return UserInitiatedInfo(false, user_gesture);
   }
 
   // Whether the associated action was initiated from the browser process, as
@@ -107,18 +106,9 @@ struct UserInitiatedInfo {
   // gesture tracking in content and Blink, as reported by NavigationHandle.
   bool user_gesture;
 
-  // Whether the associated action was initiated by a user, based on our
-  // heuristic-driven implementation that tests to see if there was an input
-  // event that happened shortly before the given action.
-  bool user_input_event;
-
  private:
-  UserInitiatedInfo(bool browser_initiated,
-                    bool user_gesture,
-                    bool user_input_event)
-      : browser_initiated(browser_initiated),
-        user_gesture(user_gesture),
-        user_input_event(user_input_event) {}
+  UserInitiatedInfo(bool browser_initiated, bool user_gesture)
+      : browser_initiated(browser_initiated), user_gesture(user_gesture) {}
 };
 
 struct PageLoadExtraInfo {
