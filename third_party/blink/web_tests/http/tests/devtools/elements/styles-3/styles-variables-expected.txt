@@ -1,6 +1,8 @@
 Tests that computed styles expand and allow tracing to style rules.
 
 ==== Computed style for ID1 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 [expanded] 
@@ -19,8 +21,15 @@ div { (user agent stylesheet)
 body { (<style>…</style>)
     --a: red;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 value of --a:  red
 ==== Computed style for ID2 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 [expanded] 
@@ -44,8 +53,15 @@ div { (user agent stylesheet)
 body { (<style>…</style>)
 /-- overloaded --/     --a: red;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 value of --b:  44px
 ==== Computed style for ID3 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 [expanded] 
@@ -74,8 +90,15 @@ div { (user agent stylesheet)
 body { (<style>…</style>)
 /-- overloaded --/     --a: red;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 value of --b:  44px
 ==== Computed style for ID4 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 [expanded] 
@@ -93,6 +116,11 @@ div { (user agent stylesheet)
 [expanded] 
 body { (<style>…</style>)
 /-- overloaded --/     --a: red;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 value of --a: undefined
 

@@ -47,4 +47,9 @@ body { (<style>…</style>)
     /-- overloaded --/     line-height: normal;
     /-- overloaded --/     font-family: Arial, sans-serif;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 

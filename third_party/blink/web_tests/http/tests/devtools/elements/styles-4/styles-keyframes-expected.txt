@@ -20,6 +20,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
 0%, 20% { (<style>…</style>)
@@ -71,6 +76,11 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 ======== @keyframes animName ========
 [expanded] 
@@ -124,6 +134,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
 0%, 20% { (<style>…</style>)
@@ -176,6 +191,11 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
 0%, 20% { (<style>…</style>)
@@ -227,6 +247,11 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 ======== @keyframes animName ========
 [expanded] 

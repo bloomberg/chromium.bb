@@ -23,6 +23,8 @@ background-repeat-y: ;
     initial - #id1 <style>…</style>
 background-size: auto;
     initial - #id1 <style>…</style>
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 font-family: Courier;
@@ -41,6 +43,8 @@ element.style { ()
 ==== Computed style for ID2 ====
 background-color: rgb(0, 0, 255);
     blue - #id2 <style>…</style>
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 font-family: Courier;

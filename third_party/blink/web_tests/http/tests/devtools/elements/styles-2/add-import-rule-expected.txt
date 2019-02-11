@@ -10,6 +10,11 @@ element.style { ()
 span { (<style>…</style>)
     color: red;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 
 == Matched rules after @import added ==
 
@@ -19,5 +24,10 @@ element.style { ()
 [expanded] 
 span { (data:text/css,s…color:green}:1 -> data:text/css,span{color:green}:1:6)
     color: green;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

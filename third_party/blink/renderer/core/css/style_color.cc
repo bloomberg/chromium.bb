@@ -39,8 +39,9 @@ bool StyleColor::IsColorKeyword(CSSValueID id) {
   //   '-internal-inactive-list-box-selection-text'
   //   '-webkit-focus-ring-color'
   //   '-internal-quirk-inherit'
+  //   '-internal-root-color'
   //
-  return (id >= CSSValueAqua && id <= CSSValueInternalQuirkInherit) ||
+  return (id >= CSSValueAqua && id <= CSSValueInternalRootColor) ||
          (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) ||
          id == CSSValueMenu;
 }
