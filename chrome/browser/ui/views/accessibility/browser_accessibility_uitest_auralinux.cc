@@ -37,3 +37,55 @@ IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
     g_object_unref(child);
   }
 }
+
+static AtkObject* FindParentFrame(AtkObject* object) {
+  while (object) {
+    if (atk_object_get_role(object) == ATK_ROLE_FRAME)
+      return object;
+    object = atk_object_get_parent(object);
+  }
+
+  return nullptr;
+}
+
+IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
+                       EmbeddedRelationship) {
+  AtkObject* native_view_accessible =
+      static_cast<BrowserView*>(browser()->window())->GetNativeViewAccessible();
+  EXPECT_NE(nullptr, native_view_accessible);
+
+  AtkObject* window = FindParentFrame(native_view_accessible);
+  EXPECT_NE(nullptr, window);
+
+  AtkRelationSet* relations = atk_object_ref_relation_set(window);
+  ASSERT_TRUE(atk_relation_set_contains(relations, ATK_RELATION_EMBEDS));
+
+  AtkRelation* embeds_relation =
+      atk_relation_set_get_relation_by_type(relations, ATK_RELATION_EMBEDS);
+  EXPECT_NE(nullptr, embeds_relation);
+
+  GPtrArray* targets = atk_relation_get_target(embeds_relation);
+  EXPECT_NE(nullptr, targets);
+  EXPECT_EQ(1u, targets->len);
+
+  AtkObject* target = static_cast<AtkObject*>(g_ptr_array_index(targets, 0));
+  EXPECT_NE(nullptr, target);
+
+  g_object_unref(relations);
+
+  relations = atk_object_ref_relation_set(target);
+  ASSERT_TRUE(atk_relation_set_contains(relations, ATK_RELATION_EMBEDDED_BY));
+
+  AtkRelation* embedded_by_relation = atk_relation_set_get_relation_by_type(
+      relations, ATK_RELATION_EMBEDDED_BY);
+  EXPECT_NE(nullptr, embedded_by_relation);
+
+  targets = atk_relation_get_target(embedded_by_relation);
+  EXPECT_NE(nullptr, targets);
+  EXPECT_EQ(1u, targets->len);
+
+  target = static_cast<AtkObject*>(g_ptr_array_index(targets, 0));
+  ASSERT_EQ(target, window);
+
+  g_object_unref(relations);
+}
