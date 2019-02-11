@@ -1001,9 +1001,13 @@ class BoardSpecificBuilderStage(BuilderStage):
     logging.info('Waiting up to %s for %s ...', timeout_str, pretty_name)
     return self.board_runattrs.GetParallel(board_attr, timeout=timeout)
 
-  def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
+  def GetImageDirSymlink(self, pointer='latest-cbuildbot', buildroot=None):
     """Get the location of the current image."""
-    return os.path.join(self._run.buildroot, 'src', 'build', 'images',
+
+    if not buildroot:
+      buildroot = self._run.buildroot
+
+    return os.path.join(buildroot, 'src', 'build', 'images',
                         self._current_board, pointer)
 
 

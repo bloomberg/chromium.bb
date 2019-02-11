@@ -122,3 +122,7 @@ class FactoryBranchBuilder(BuildSpecBuilder):
     self._RunStage(workspace_stages.WorkspaceDebugSymbolsStage,
                    build_root=self._run.options.workspace,
                    board=board)
+
+    self._RunStage(branch_archive_stages.FactoryArchiveStage,
+                   build_root=self._run.options.workspace,
+                   board=board)

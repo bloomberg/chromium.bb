@@ -14,6 +14,7 @@ from __future__ import print_function
 import datetime
 import json
 import os
+import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
@@ -24,127 +25,76 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 
 
 class UnsafeBuildForPushImage(Exception):
   """Raised if push_image is run against a non-signable build."""
 
 
-class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
+class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
                            generic_stages.BoardSpecificBuilderStage,
                            generic_stages.ArchivingStageMixin):
-  """Generates and publishes firmware specific build artifacts.
+  """Base class for workspace archive stages.
 
-  This stage publishes <board>_firmware_from_source.tar.bz2 to this
-  builds standard build artifacts, and also generates a 'fake' build
-  result (called a Dummy result) that looks like it came from a
-  traditional style firmware builder for a single board on the
-  firmware branch.
-
-  The secondary result only contains firmware_from_source.tar.bz2 and
-  a dummy version of metadata.json.
+  The expectation is that the archive stages will be creating a "dummy" upload
+  that looks like an older style branched infrastructure build would have
+  generated in addtion to a firmwarebranch set of archive results.
   """
-
-  def __init__(self, builder_run, buildstore, build_root, **kwargs):
-    """Initializer.
-
-    Args:
-      builder_run: BuilderRun object.
-      buildstore: BuildStore instance to make DB calls with.
-      build_root: Fully qualified path to use as a string.
-    """
-    super(FirmwareArchiveStage, self).__init__(
-        builder_run, buildstore, build_root=build_root, **kwargs)
-
-    self.dummy_firmware_config = None
-    self.workspace_version_info = None
-    self.firmware_version = None
+  DUMMY_NAME = 'dummy'
 
   @property
-  def metadata_name(self):
+  def dummy_config(self):
     """Uniqify the name across boards."""
-    return '%s_%s' % (self._current_board, constants.METADATA_JSON)
+    if self._run.options.debug:
+      return '%s-%s-tryjob' % (self._current_board, self.DUMMY_NAME)
+    else:
+      return '%s-%s' % (self._current_board, self.DUMMY_NAME)
 
   @property
-  def firmware_name(self):
+  def dummy_version(self):
     """Uniqify the name across boards."""
-    return '%s_%s' % (self._current_board, constants.FIRMWARE_ARCHIVE_NAME)
+    workspace_version_info = self.GetWorkspaceVersionInfo()
+
+    if self._run.options.debug:
+      build_identifier, _ = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
+      return 'R%s-%s-b%s' % (
+          workspace_version_info.chrome_branch,
+          workspace_version_info.VersionString(),
+          build_id)
+    else:
+      return 'R%s-%s' % (
+          workspace_version_info.chrome_branch,
+          workspace_version_info.VersionString())
 
   @property
   def dummy_archive_url(self):
     """Uniqify the name across boards."""
     return os.path.join(
         config_lib.GetSiteParams().ARCHIVE_URL,
-        self.dummy_firmware_config,
-        self.firmware_version)
+        self.dummy_config,
+        self.dummy_version)
 
-  def CreateBoardFirmwareArchive(self):
-    """Create/publish the firmware build artifact for the current board."""
-    logging.info('Create %s', self.firmware_name)
+  def UploadDummyArtifact(self, path):
+    """Upload artifacts to the dummy build results."""
+    logging.info('UploadDummyArtifact: %s', path)
+    with osutils.TempDir(prefix='dummy') as tempdir:
+      artifact_path = os.path.join(
+          tempdir,
+          '%s_%s' % (self._current_board, os.path.basename(path)))
 
-    commands.BuildFirmwareArchive(
-        self._build_root, self._current_board,
-        self.archive_path, self.firmware_name)
-    self.UploadArtifact(self.firmware_name, archive=False)
+      logging.info('Rename: %s -> %s', path, artifact_path)
+      shutil.copyfile(path, artifact_path)
 
-  def CreateBoardMetadataJson(self):
-    """Create/publish the firmware build artifact for the current board."""
-    logging.info('Create %s', self.metadata_name)
+      logging.info('Main artifact from: %s', artifact_path)
+      self.UploadArtifact(artifact_path, archive=True)
 
-    board_metadata_path = os.path.join(self.archive_path, self.metadata_name)
-
-    # Use the metadata for the main build, with selected fields modified.
-    board_metadata = self._run.attrs.metadata.GetDict()
-    board_metadata['boards'] = [self._current_board]
-    board_metadata['branch'] = self._run.config.workspace_branch
-    board_metadata['version_full'] = self.firmware_version
-    board_metadata['version_milestone'] = \
-        self.workspace_version_info.chrome_branch
-    board_metadata['version_platform'] = \
-        self.workspace_version_info.VersionString()
-    board_metadata['version'] = {
-        'platform': self.workspace_version_info.VersionString(),
-        'full': self.firmware_version,
-        'milestone': self.workspace_version_info.chrome_branch,
-    }
-
-    current_time = datetime.datetime.now()
-    current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
-
-    # We report the build as passing, since we can't get here if isn't.
-    board_metadata['status'] = {
-        'status': 'pass',
-        'summary': '',
-        'current-time': current_time_stamp,
-    }
-
-    logging.info('Writing firmware metadata to %s.', board_metadata_path)
-    osutils.WriteFile(board_metadata_path, json.dumps(board_metadata,
-                                                      indent=2, sort_keys=True),
-                      atomic=True, makedirs=True)
-
-    self.UploadArtifact(self.metadata_name, archive=False)
-
-  def CreateBoardBuildResult(self):
-    """Publish a dummy build result for a traditional firmware build."""
-    logging.info('Publish "Dummy" firmware build for GE. %s',
-                 self._current_board)
-
-    # What file are we uploading?
-    firmware_path = os.path.join(self.archive_path, self.firmware_name)
-    metadata_path = os.path.join(self.archive_path, self.metadata_name)
-
-    gs_context = gs.GSContext(acl=self.acl, dry_run=self._run.options.debug)
-    gs_context.CopyInto(firmware_path, self.dummy_archive_url,
-                        filename=constants.FIRMWARE_ARCHIVE_NAME)
-    gs_context.CopyInto(metadata_path, self.dummy_archive_url,
-                        filename=constants.METADATA_JSON)
-
-    dummy_http_url = gs.GsUrlToHttp(self.dummy_archive_url,
-                                    public=False, directory=True)
-
-    label = '%s firmware [%s]' % (self._current_board, self.firmware_version)
-    logging.PrintBuildbotLink(label, dummy_http_url)
+    gs_context = gs.GSContext(dry_run=self._run.options.debug_forced)
+    with timeout_util.Timeout(20 * 60):
+      logging.info('Dummy artifact from: %s', path)
+      gs_context.CopyInto(path, self.dummy_archive_url,
+                          parallel=True, recursive=True)
 
   def PushBoardImage(self):
     """Helper method to run push_image against the dummy boards artifacts."""
@@ -165,29 +115,142 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
         sign_types=self._run.config['sign_types'] or [],
         buildroot=self._build_root)
 
+  def CreateDummyMetadataJson(self):
+    """Create/publish the firmware build artifact for the current board."""
+    workspace_version_info = self.GetWorkspaceVersionInfo()
+
+    # Use the metadata for the main build, with selected fields modified.
+    board_metadata = self._run.attrs.metadata.GetDict()
+    board_metadata['boards'] = [self._current_board]
+    board_metadata['branch'] = self._run.config.workspace_branch
+    board_metadata['version_full'] = self.dummy_version
+    board_metadata['version_milestone'] = \
+        workspace_version_info.chrome_branch
+    board_metadata['version_platform'] = \
+        workspace_version_info.VersionString()
+    board_metadata['version'] = {
+        'platform': workspace_version_info.VersionString(),
+        'full': self.dummy_version,
+        'milestone': workspace_version_info.chrome_branch,
+    }
+
+    current_time = datetime.datetime.now()
+    current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
+
+    # We report the build as passing, since we can't get here if isn't.
+    board_metadata['status'] = {
+        'status': 'pass',
+        'summary': '',
+        'current-time': current_time_stamp,
+    }
+
+    with osutils.TempDir(prefix='metadata') as tempdir:
+      metadata_path = os.path.join(tempdir, constants.METADATA_JSON)
+      logging.info('Writing metadata to %s.', metadata_path)
+      osutils.WriteFile(metadata_path,
+                        json.dumps(board_metadata, indent=2, sort_keys=True),
+                        atomic=True)
+
+      self.UploadDummyArtifact(metadata_path)
+
+
+class FirmwareArchiveStage(WorkspaceArchiveBase):
+  """Generates and publishes firmware specific build artifacts.
+
+  This stage publishes <board>_firmware_from_source.tar.bz2 to this
+  builds standard build artifacts, and also generates a 'fake' build
+  result (called a Dummy result) that looks like it came from a
+  traditional style firmware builder for a single board on the
+  firmware branch.
+
+  The secondary result only contains firmware_from_source.tar.bz2 and
+  a dummy version of metadata.json.
+  """
+  DUMMY_NAME = 'firmware'
+
+  def CreateFirmwareArchive(self):
+    """Create/publish the firmware build artifact for the current board."""
+    with osutils.TempDir(prefix='metadata') as tempdir:
+      firmware_path = os.path.join(tempdir, constants.FIRMWARE_ARCHIVE_NAME)
+
+      logging.info('Create %s', firmware_path)
+
+      commands.BuildFirmwareArchive(
+          self._build_root, self._current_board,
+          self.archive_path, firmware_path)
+
+      self.UploadDummyArtifact(firmware_path)
+
   def PerformStage(self):
     """Archive and publish the firmware build artifacts."""
-    # Populate shared values.
-    self.workspace_version_info = self.GetWorkspaceVersionInfo()
+    logging.info('Firmware board: %s', self._current_board)
+    logging.info('Firmware version: %s', self.dummy_version)
+    logging.info('Archive build as: %s', self.dummy_config)
 
-    if self._run.options.debug:
-      build_identifier, _ = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
-      self.dummy_firmware_config = '%s-firmware-tryjob' % self._current_board
-      self.firmware_version = 'R%s-%s-b%s' % (
-          self.workspace_version_info.chrome_branch,
-          self.workspace_version_info.VersionString(),
-          build_id)
-    else:
-      self.dummy_firmware_config = '%s-firmware' % self._current_board
-      self.firmware_version = 'R%s-%s' % (
-          self.workspace_version_info.chrome_branch,
-          self.workspace_version_info.VersionString())
+    # Link dummy build artifacts from build.
+    dummy_http_url = gs.GsUrlToHttp(self.dummy_archive_url,
+                                    public=False, directory=True)
 
-    logging.info('Firmware version: %s', self.firmware_version)
-    logging.info('Archive firmware build as: %s', self.dummy_firmware_config)
+    label = '%s firmware [%s]' % (self._current_board, self.dummy_version)
+    logging.PrintBuildbotLink(label, dummy_http_url)
 
-    self.CreateBoardFirmwareArchive()
-    self.CreateBoardMetadataJson()
-    self.CreateBoardBuildResult()
+    # Upload all artifacts.
+    self.CreateFirmwareArchive()
+    self.CreateDummyMetadataJson()
+    self.PushBoardImage()
+
+
+class FactoryArchiveStage(WorkspaceArchiveBase):
+  """Generates and publishes factory specific build artifacts."""
+
+  DUMMY_NAME = 'factory'
+
+  def CreateFactoryZip(self):
+    """Create/publish the firmware build artifact for the current board."""
+    logging.info('Create factory_image.zip')
+
+    # TODO: Move this image creation logic back into WorkspaceBuildImages.
+
+    factory_install_symlink = None
+    if 'factory_install' in self._run.config['images']:
+      alias = commands.BuildFactoryInstallImage(
+          self._build_root,
+          self._current_board,
+          extra_env=self._portage_extra_env)
+
+      factory_install_symlink = self.GetImageDirSymlink(alias, self._build_root)
+      if self._run.config['factory_install_netboot']:
+        commands.MakeNetboot(
+            self._build_root,
+            self._current_board,
+            factory_install_symlink)
+
+    # Build and upload factory zip if needed.
+    assert self._run.config['factory_toolkit']
+
+    with osutils.TempDir(prefix='factory_zip') as zip_dir:
+      filename = commands.BuildFactoryZip(
+          self._build_root,
+          self._current_board,
+          zip_dir,
+          factory_install_symlink,
+          self.dummy_version)
+
+      self.UploadDummyArtifact(os.path.join(zip_dir, filename))
+
+  def PerformStage(self):
+    """Archive and publish the factory build artifacts."""
+    logging.info('Factory version: %s', self.dummy_version)
+    logging.info('Archive build as: %s', self.dummy_config)
+
+    # Link dummy build artifacts from build.
+    dummy_http_url = gs.GsUrlToHttp(self.dummy_archive_url,
+                                    public=False, directory=True)
+
+    label = '%s factory [%s]' % (self._current_board, self.dummy_version)
+    logging.PrintBuildbotLink(label, dummy_http_url)
+
+    # factory_image.zip
+    self.CreateFactoryZip()
+    self.CreateDummyMetadataJson()
     self.PushBoardImage()
