@@ -34,9 +34,6 @@ class ATL_NO_VTABLE CGaiaCredential
   END_COM_MAP()
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-  // CGaiaCredentialBase
-  void ResetInternalState() override;
 };
 
 }  // namespace credential_provider

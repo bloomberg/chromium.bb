@@ -402,7 +402,8 @@ TEST_F(GcpSetupTest, ValidLsaWithNoExistingUser) {
   EXPECT_FALSE(fake_scoped_lsa_policy_factory()
                    ->private_data()[kLsaKeyGaiaPassword]
                    .empty());
-  base::string16 expected_gaia_username = L"gaia0";
+  base::string16 expected_gaia_username =
+      L"gaia" + base::NumberToString16(kInitialDuplicateUsernameIndex);
   EXPECT_FALSE(fake_os_user_manager()
                    ->GetUserInfo(expected_gaia_username.c_str())
                    .sid.empty());
@@ -432,7 +433,8 @@ TEST_P(GcpGaiaUserCreationTest, ExistingGaiaUserTest) {
   int last_user_index = std::get<0>(GetParam());
   for (int i = 0; i < last_user_index; ++i) {
     base::string16 existing_gaia_username = kDefaultGaiaAccountName;
-    existing_gaia_username += base::NumberToString16(i);
+    existing_gaia_username +=
+        base::NumberToString16(i + kInitialDuplicateUsernameIndex);
     EXPECT_EQ(S_OK, fake_os_user_manager()->AddUser(
                         existing_gaia_username.c_str(), L"password",
                         L"fullname", L"comment", true, &sid, &error));
@@ -451,7 +453,8 @@ TEST_P(GcpGaiaUserCreationTest, ExistingGaiaUserTest) {
                      ->private_data()[kLsaKeyGaiaPassword]
                      .empty());
     base::string16 expected_gaia_username = kDefaultGaiaAccountName;
-    expected_gaia_username += base::NumberToString16(last_user_index);
+    expected_gaia_username += base::NumberToString16(
+        last_user_index + kInitialDuplicateUsernameIndex);
     EXPECT_FALSE(fake_os_user_manager()
                      ->GetUserInfo(expected_gaia_username.c_str())
                      .sid.empty());
@@ -471,14 +474,16 @@ TEST_P(GcpGaiaUserCreationTest, ExistingGaiaUserTest) {
 // For a max retry of 10, it is possible to create gaia users 'gaia',
 // 'gaia0' ... 'gaia8' before failing. At 'gaia9' the test should fail.
 
-INSTANTIATE_TEST_CASE_P(AvailableGaiaUserName,
-                        GcpGaiaUserCreationTest,
-                        ::testing::Combine(::testing::Range(0, 8),
-                                           ::testing::Values(true)));
+INSTANTIATE_TEST_CASE_P(
+    AvailableGaiaUserName,
+    GcpGaiaUserCreationTest,
+    ::testing::Combine(::testing::Range(0, kMaxUsernameAttempts - 2),
+                       ::testing::Values(true)));
 
-INSTANTIATE_TEST_CASE_P(UnavailableGaiaUserName,
-                        GcpGaiaUserCreationTest,
-                        ::testing::Values(std::make_tuple<int, bool>(9,
-                                                                     false)));
+INSTANTIATE_TEST_CASE_P(
+    UnavailableGaiaUserName,
+    GcpGaiaUserCreationTest,
+    ::testing::Values(std::make_tuple<int, bool>(kMaxUsernameAttempts - 1,
+                                                 false)));
 
 }  // namespace credential_provider

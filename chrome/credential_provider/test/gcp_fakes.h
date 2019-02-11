@@ -182,6 +182,9 @@ class FakeScopedUserProfileFactory {
 };
 
 class FakeScopedUserProfile : public ScopedUserProfile {
+ public:
+  HRESULT SaveAccountInfo(const base::DictionaryValue& properties) override;
+
  private:
   friend class FakeScopedUserProfileFactory;
 
@@ -189,6 +192,8 @@ class FakeScopedUserProfile : public ScopedUserProfile {
                         const base::string16& username,
                         const base::string16& password);
   ~FakeScopedUserProfile() override;
+
+  bool is_valid_ = false;
 };
 
 }  // namespace credential_provider

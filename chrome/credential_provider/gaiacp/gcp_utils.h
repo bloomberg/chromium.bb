@@ -36,6 +36,22 @@ namespace credential_provider {
 // Windows supports a maximum of 20 characters plus null in username.
 constexpr int kWindowsUsernameBufferLength = 21;
 
+// Maximum domain length is 256 characters including null.
+// https://support.microsoft.com/en-ca/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
+constexpr int kWindowsDomainBufferLength = 256;
+
+// According to:
+// https://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
+constexpr int kWindowsSidBufferLength = 184;
+
+// Max number of attempts to find a new username when a user already exists
+// with the same username.
+constexpr int kMaxUsernameAttempts = 10;
+
+// First index to append to a username when another user with the same name
+// already exists.
+constexpr int kInitialDuplicateUsernameIndex = 2;
+
 // Because of some strange dependency problems with windows header files,
 // define STATUS_SUCCESS here instead of including ntstatus.h or SubAuth.h
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)

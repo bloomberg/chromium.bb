@@ -145,8 +145,7 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
   }
 
   for (auto image_size : kProfilePictureSizes) {
-    base::string16 image_size_postfix =
-        base::StringPrintf(L"%i", image_size);
+    base::string16 image_size_postfix = base::StringPrintf(L"%i", image_size);
     base::FilePath target_picture_path = account_picture_path.Append(
         base_picture_filename + image_size_postfix + base_picture_extension);
 
@@ -261,34 +260,49 @@ bool ScopedUserProfile::IsValid() {
   return token_.IsValid();
 }
 
-HRESULT ScopedUserProfile::SaveAccountInfo(
-    const base::DictionaryValue& properties) {
-  LOGFN(INFO);
+HRESULT ScopedUserProfile::ExtractAssociationInformation(
+    const base::DictionaryValue& properties,
+    base::string16* sid,
+    base::string16* id,
+    base::string16* email,
+    base::string16* token_handle) {
+  DCHECK(sid);
+  DCHECK(id);
+  DCHECK(email);
+  DCHECK(token_handle);
 
-  base::string16 sid = GetDictString(&properties, kKeySID);
-  if (sid.empty()) {
+  *sid = GetDictString(&properties, kKeySID);
+  if (sid->empty()) {
     LOGFN(ERROR) << "SID is empty";
     return E_INVALIDARG;
   }
 
-  base::string16 id = GetDictString(&properties, kKeyId);
-  if (id.empty()) {
+  *id = GetDictString(&properties, kKeyId);
+  if (id->empty()) {
     LOGFN(ERROR) << "Id is empty";
     return E_INVALIDARG;
   }
 
-  base::string16 email = GetDictString(&properties, kKeyEmail);
-  if (email.empty()) {
+  *email = GetDictString(&properties, kKeyEmail);
+  if (email->empty()) {
     LOGFN(ERROR) << "Email is empty";
     return E_INVALIDARG;
   }
 
-  base::string16 token_handle = GetDictString(&properties, kKeyTokenHandle);
-  if (token_handle.empty()) {
+  *token_handle = GetDictString(&properties, kKeyTokenHandle);
+  if (token_handle->empty()) {
     LOGFN(ERROR) << "Token handle is empty";
     return E_INVALIDARG;
   }
 
+  return S_OK;
+}
+
+HRESULT ScopedUserProfile::RegisterAssociation(
+    const base::string16& sid,
+    const base::string16& id,
+    const base::string16& email,
+    const base::string16& token_handle) {
   // Save token handle.  This handle will be used later to determine if the
   // the user has changed their password since the account was created.
   HRESULT hr = SetUserProperty(sid, kUserTokenHandle, token_handle);
@@ -308,6 +322,28 @@ HRESULT ScopedUserProfile::SaveAccountInfo(
     LOGFN(ERROR) << "SetUserProperty(email) hr=" << putHR(hr);
     return hr;
   }
+
+  return S_OK;
+}
+
+HRESULT ScopedUserProfile::SaveAccountInfo(
+    const base::DictionaryValue& properties) {
+  LOGFN(INFO);
+
+  base::string16 sid;
+  base::string16 id;
+  base::string16 email;
+  base::string16 token_handle;
+
+  HRESULT hr = ExtractAssociationInformation(properties, &sid, &id, &email,
+                                             &token_handle);
+  if (FAILED(hr))
+    return hr;
+
+  hr = RegisterAssociation(sid, id, email, token_handle);
+
+  if (FAILED(hr))
+    return hr;
 
   // Write account information to the user's hive.
   // NOTE: regular users cannot access the registry entry of other users,

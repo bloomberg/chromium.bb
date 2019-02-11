@@ -372,8 +372,34 @@ std::unique_ptr<ScopedUserProfile> FakeScopedUserProfileFactory::Create(
 
 FakeScopedUserProfile::FakeScopedUserProfile(const base::string16& sid,
                                              const base::string16& username,
-                                             const base::string16& password) {}
+                                             const base::string16& password) {
+  is_valid_ = OSUserManager::Get()->IsWindowsPasswordValid(
+                  username.c_str(), password.c_str()) == S_OK;
+}
 
 FakeScopedUserProfile::~FakeScopedUserProfile() {}
+
+HRESULT FakeScopedUserProfile::SaveAccountInfo(
+    const base::DictionaryValue& properties) {
+  if (!is_valid_)
+    return E_INVALIDARG;
+
+  base::string16 sid;
+  base::string16 id;
+  base::string16 email;
+  base::string16 token_handle;
+
+  HRESULT hr = ExtractAssociationInformation(properties, &sid, &id, &email,
+                                             &token_handle);
+  if (FAILED(hr))
+    return hr;
+
+  hr = RegisterAssociation(sid, id, email, token_handle);
+
+  if (FAILED(hr))
+    return hr;
+
+  return S_OK;
+}
 
 }  // namespace credential_provider
