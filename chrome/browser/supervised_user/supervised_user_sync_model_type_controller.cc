@@ -6,20 +6,21 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/sync/driver/sync_client.h"
+#include "components/browser_sync/browser_sync_client.h"
 #include "components/sync/model/model_type_store_service.h"
 
 SupervisedUserSyncModelTypeController::SupervisedUserSyncModelTypeController(
     syncer::ModelType type,
     const Profile* profile,
     const base::RepeatingClosure& dump_stack,
-    syncer::SyncClient* sync_client)
+    browser_sync::BrowserSyncClient* sync_client)
     : SyncableServiceBasedModelTypeController(
           type,
           sync_client->GetModelTypeStoreService()->GetStoreFactory(),
-          base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                         base::Unretained(sync_client),
-                         type),
+          base::BindOnce(
+              &browser_sync::BrowserSyncClient::GetSyncableServiceForType,
+              base::Unretained(sync_client),
+              type),
           dump_stack),
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USER_SETTINGS ||

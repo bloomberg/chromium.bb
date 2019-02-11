@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 
+#include <utility>
+
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
@@ -14,10 +16,10 @@ namespace password_manager {
 PasswordModelTypeController::PasswordModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
     syncer::SyncService* sync_service,
-    syncer::SyncClient* sync_client)
+    const base::RepeatingClosure& state_changed_callback)
     : ModelTypeController(syncer::PASSWORDS, std::move(delegate_on_disk)),
       sync_service_(sync_service),
-      sync_client_(sync_client) {}
+      state_changed_callback_(state_changed_callback) {}
 
 PasswordModelTypeController::~PasswordModelTypeController() = default;
 
@@ -27,7 +29,7 @@ void PasswordModelTypeController::LoadModels(
   DCHECK(CalledOnValidThread());
   sync_service_->AddObserver(this);
   ModelTypeController::LoadModels(configure_context, model_load_callback);
-  sync_client_->GetPasswordStateChangedCallback().Run();
+  state_changed_callback_.Run();
 }
 
 void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
@@ -35,12 +37,12 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
   DCHECK(CalledOnValidThread());
   sync_service_->RemoveObserver(this);
   ModelTypeController::Stop(shutdown_reason, std::move(callback));
-  sync_client_->GetPasswordStateChangedCallback().Run();
+  state_changed_callback_.Run();
 }
 
 void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
-  sync_client_->GetPasswordStateChangedCallback().Run();
+  state_changed_callback_.Run();
 }
 
 }  // namespace password_manager

@@ -14,16 +14,12 @@
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/sync/device_info/device_info_sync_service_impl.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/model/test_model_type_store_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
-
-namespace history {
-class HistoryService;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -44,54 +40,8 @@ class ProfileSyncServiceBundle {
 
   ~ProfileSyncServiceBundle();
 
-  // Builders
-
-  // Builds a child of FakeSyncClient which overrides some of the client's
-  // accessors to return objects from the bundle.
-  class SyncClientBuilder {
-   public:
-    // Construct the builder and associate with the |bundle| to source objects
-    // from.
-    explicit SyncClientBuilder(ProfileSyncServiceBundle* bundle);
-
-    ~SyncClientBuilder();
-
-    void SetPersonalDataManager(
-        autofill::PersonalDataManager* personal_data_manager);
-
-    // The client will call this callback to produce the SyncableService
-    // specific to |type|.
-    void SetSyncableServiceCallback(
-        const base::RepeatingCallback<base::WeakPtr<syncer::SyncableService>(
-            syncer::ModelType type)>& get_syncable_service_callback);
-
-    void SetHistoryService(history::HistoryService* history_service);
-
-    void SetBookmarkModelCallback(
-        const base::Callback<bookmarks::BookmarkModel*(void)>&
-            get_bookmark_model_callback);
-
-    void set_activate_model_creation() { activate_model_creation_ = true; }
-
-    std::unique_ptr<syncer::FakeSyncClient> Build();
-
-   private:
-    // Associated bundle to source objects from.
-    ProfileSyncServiceBundle* const bundle_;
-
-    autofill::PersonalDataManager* personal_data_manager_;
-    base::Callback<base::WeakPtr<syncer::SyncableService>(
-        syncer::ModelType type)>
-        get_syncable_service_callback_;
-    history::HistoryService* history_service_ = nullptr;
-    base::Callback<bookmarks::BookmarkModel*(void)>
-        get_bookmark_model_callback_;
-    // If set, the built client will be able to build some ModelSafeWorker
-    // instances.
-    bool activate_model_creation_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(SyncClientBuilder);
-  };
+  // Creates a mock sync client that leverages the dependencies in this bundle.
+  std::unique_ptr<syncer::SyncClientMock> CreateSyncClientMock();
 
   // Creates an InitParams instance with the specified |start_behavior| and
   // |sync_client|, and fills the rest with dummy values and objects owned by
@@ -130,19 +80,11 @@ class ProfileSyncServiceBundle {
     return &fake_invalidation_service_;
   }
 
-  base::SequencedTaskRunner* db_thread() { return db_thread_.get(); }
-
-  void set_db_thread(
-      const scoped_refptr<base::SequencedTaskRunner>& db_thread) {
-    db_thread_ = db_thread;
-  }
-
   syncer::DeviceInfoSyncService* device_info_sync_service() {
     return &device_info_sync_service_;
   }
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> db_thread_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   syncer::TestModelTypeStoreService model_type_store_service_;
   syncer::DeviceInfoSyncServiceImpl device_info_sync_service_;

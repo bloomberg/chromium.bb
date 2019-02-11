@@ -494,8 +494,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, sync_client_->GetInvalidationService(),
-      sync_prefs_.AsWeakPtr(),
-      sync_client_->GetModelTypeStoreService()->GetSyncDataPath());
+      sync_prefs_.AsWeakPtr());
 
   // Clear any old errors the first time sync starts.
   if (!IsFirstSetupComplete())
@@ -625,9 +624,8 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
       // the data directory needs to be cleaned up here.
       sync_thread_->task_runner()->PostTask(
           FROM_HERE,
-          base::BindOnce(
-              &syncer::syncable::Directory::DeleteDirectoryFiles,
-              sync_client_->GetModelTypeStoreService()->GetSyncDataPath()));
+          base::BindOnce(&syncer::syncable::Directory::DeleteDirectoryFiles,
+                         sync_client_->GetSyncDataPath()));
     }
     return;
   }

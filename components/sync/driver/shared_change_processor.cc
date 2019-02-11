@@ -145,7 +145,8 @@ base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
   base::WeakPtr<SyncableService> local_service =
       sync_client->GetSyncableServiceForType(type_);
   if (!local_service) {
-    LOG(WARNING) << "SyncableService destroyed before DTC was stopped.";
+    DLOG(WARNING) << "SyncableService destroyed before DTC was stopped for "
+                  << ModelTypeToString(type_);
     disconnected_ = true;
     return base::WeakPtr<SyncableService>();
   }

@@ -14,7 +14,7 @@
 #include "components/sync/driver/frontend_data_type_controller.h"
 
 namespace syncer {
-class SyncClient;
+class SyncApiComponentFactory;
 class SyncService;
 }  // namespace syncer
 
@@ -26,9 +26,12 @@ class BookmarkDataTypeController : public syncer::FrontendDataTypeController,
                                    public history::HistoryServiceObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  BookmarkDataTypeController(const base::Closure& dump_stack,
-                             syncer::SyncService* sync_service,
-                             syncer::SyncClient* sync_client);
+  BookmarkDataTypeController(
+      const base::RepeatingClosure& dump_stack,
+      syncer::SyncService* sync_service,
+      bookmarks::BookmarkModel* bookmark_model,
+      history::HistoryService* history_service,
+      syncer::SyncApiComponentFactory* component_factory);
   ~BookmarkDataTypeController() override;
 
  private:
@@ -52,7 +55,9 @@ class BookmarkDataTypeController : public syncer::FrontendDataTypeController,
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 
-  syncer::SyncClient* const sync_client_;
+  bookmarks::BookmarkModel* const bookmark_model_;
+  history::HistoryService* const history_service_;
+  syncer::SyncApiComponentFactory* const component_factory_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

@@ -13,19 +13,13 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace syncer {
-class SyncClient;
-}
-
 namespace web {
 class BrowserState;
 }
 
-// Helper method for constructing ProfileSyncService mocks. If |sync_client|
-// is null, a fresh one is created.
+// Helper method for constructing ProfileSyncService mocks.
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<syncer::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state);
 
 // Helper routine to be used in conjunction with

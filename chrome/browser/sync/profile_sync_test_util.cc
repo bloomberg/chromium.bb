@@ -33,25 +33,12 @@ using testing::NiceMock;
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
-  auto sync_client = std::make_unique<browser_sync::ChromeSyncClient>(profile);
-
-  sync_client->SetSyncApiComponentFactoryForTesting(
-      std::make_unique<NiceMock<syncer::SyncApiComponentFactoryMock>>());
-
-  ProfileSyncService::InitParams init_params =
-      CreateProfileSyncServiceParamsForTest(std::move(sync_client), profile);
-
-  return init_params;
-}
-
-ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<syncer::SyncClient> sync_client,
-    Profile* profile) {
   ProfileSyncService::InitParams init_params;
 
   init_params.identity_manager = IdentityManagerFactory::GetForProfile(profile);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
-  init_params.sync_client = std::move(sync_client);
+  init_params.sync_client =
+      std::make_unique<browser_sync::ChromeSyncClient>(profile);
   init_params.network_time_update_callback = base::DoNothing();
   bool fcm_invalidations_enabled =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);

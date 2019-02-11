@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -12,7 +13,8 @@
 
 namespace autofill {
 class AutofillWebDataService;
-}
+class PersonalDataManager;
+}  // namespace autofill
 
 namespace syncer {
 class SyncClient;
@@ -25,6 +27,9 @@ namespace browser_sync {
 class AutofillWalletDataTypeController
     : public syncer::AsyncDirectoryTypeController {
  public:
+  using PersonalDataManagerProvider =
+      base::RepeatingCallback<autofill::PersonalDataManager*()>;
+
   // |type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillWalletDataTypeController(
@@ -33,6 +38,7 @@ class AutofillWalletDataTypeController
       const base::Closure& dump_stack,
       syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
+      const PersonalDataManagerProvider& pdm_provider,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillWalletDataTypeController() override;
 
@@ -50,6 +56,9 @@ class AutofillWalletDataTypeController
 
   // Report an error (which will stop the datatype asynchronously).
   void DisableForPolicy();
+
+  // Callback that allows accessing PersonalDataManager lazily.
+  const PersonalDataManagerProvider pdm_provider_;
 
   // Whether the database loaded callback has been registered.
   bool callback_registered_;

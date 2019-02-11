@@ -22,9 +22,9 @@
 #include "components/sync/driver/async_directory_type_controller_mock.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
+#include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/model/fake_syncable_service.h"
 #include "components/sync/model/sync_change.h"
@@ -32,9 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-
-class SyncClient;
-
 namespace {
 
 using base::WaitableEvent;
@@ -175,8 +172,7 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
   DISALLOW_COPY_AND_ASSIGN(AsyncDirectoryTypeControllerFake);
 };
 
-class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
-                                             public FakeSyncClient {
+class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
  public:
   SyncAsyncDirectoryTypeControllerTest()
       : scoped_task_environment_(
@@ -190,7 +186,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
     dtc_mock_ =
         std::make_unique<StrictMock<AsyncDirectoryTypeControllerMock>>();
     non_ui_dtc_ = std::make_unique<AsyncDirectoryTypeControllerFake>(
-        &sync_service_, this, dtc_mock_.get(), change_processor_.get(),
+        &sync_service_, &sync_client_, dtc_mock_.get(), change_processor_.get(),
         backend_thread_.task_runner());
   }
 
@@ -260,6 +256,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   FakeSyncService sync_service_;
+  testing::NiceMock<SyncClientMock> sync_client_;
   // Must be destroyed after non_ui_dtc_.
   FakeSyncableService syncable_service_;
   std::unique_ptr<AsyncDirectoryTypeControllerFake> non_ui_dtc_;

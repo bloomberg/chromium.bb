@@ -25,6 +25,7 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
+    const PersonalDataManagerProvider& pdm_provider,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : AsyncDirectoryTypeController(type,
                                    dump_stack,
@@ -32,6 +33,7 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
                                    sync_client,
                                    syncer::GROUP_DB,
                                    std::move(db_thread)),
+      pdm_provider_(pdm_provider),
       callback_registered_(false),
       web_data_service_(web_data_service),
       currently_enabled_(IsEnabled()) {
@@ -96,8 +98,7 @@ void AutofillWalletDataTypeController::StopModels() {
     if (!sync_service()->CanSyncFeatureStart() ||
         !sync_service()->GetPreferredDataTypes().Has(type()) ||
         !currently_enabled_) {
-      autofill::PersonalDataManager* pdm =
-          sync_client()->GetPersonalDataManager();
+      autofill::PersonalDataManager* pdm = pdm_provider_.Run();
       if (pdm) {
         int count = pdm->GetServerCreditCards().size() +
                     pdm->GetServerProfiles().size() +

@@ -18,6 +18,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/stack.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -37,8 +38,6 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
-#include "components/browser_sync/profile_sync_test_util.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
@@ -56,6 +55,7 @@
 #include "components/sync/syncable/write_transaction.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -355,18 +355,12 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   ProfileSyncServiceBookmarkTest()
       : managed_bookmark_service_(new bookmarks::ManagedBookmarkService(
-            profile_sync_service_bundle_.pref_service(),
+            &pref_service_,
             base::Bind(ReturnEmptyString))),
         local_merge_result_(syncer::BOOKMARKS),
         syncer_merge_result_(syncer::BOOKMARKS) {
     EXPECT_TRUE(data_dir_.CreateUniqueTempDir());
-    ProfileSyncServiceBundle::SyncClientBuilder builder(
-        &profile_sync_service_bundle_);
-    builder.SetBookmarkModelCallback(base::Bind(
-        &ProfileSyncServiceBookmarkTest::model, base::Unretained(this)));
-    sync_client_ = builder.Build();
-    bookmarks::RegisterProfilePrefs(
-        profile_sync_service_bundle_.pref_service()->registry());
+    bookmarks::RegisterProfilePrefs(pref_service_.registry());
   }
 
   ~ProfileSyncServiceBookmarkTest() override {
@@ -454,8 +448,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
                        false);
     }
 
-    model->Load(profile_sync_service_bundle_.pref_service(), data_path,
-                base::ThreadTaskRunnerHandle::Get(),
+    model->Load(&pref_service_, data_path, base::ThreadTaskRunnerHandle::Get(),
                 base::ThreadTaskRunnerHandle::Get());
     bookmarks::test::WaitForBookmarkModelToLoad(model.get());
     return model;
@@ -548,7 +541,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
     // Set up model associator.
     model_associator_ = std::make_unique<BookmarkModelAssociator>(
-        model_.get(), sync_client_.get(), test_user_share_.user_share(),
+        model_.get(), /*bookmark_undo_service=*/nullptr,
+        /*favicon_service=*/nullptr, test_user_share_.user_share(),
         std::make_unique<syncer::DataTypeErrorHandlerMock>(),
         kExpectMobileBookmarks);
 
@@ -795,7 +789,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         std::make_unique<syncer::DataTypeErrorHandlerMock>();
     mock_error_handler_ = error_handler.get();
     change_processor_ = std::make_unique<BookmarkChangeProcessor>(
-        sync_client_.get(), model_associator_.get(), std::move(error_handler));
+        model_associator_.get(), std::move(error_handler));
   }
 
   syncer::DataTypeErrorHandlerMock* mock_error_handler() {
@@ -815,9 +809,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
  private:
   base::TestMessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  ProfileSyncServiceBundle profile_sync_service_bundle_;
-
-  std::unique_ptr<syncer::FakeSyncClient> sync_client_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<BookmarkModel> model_;
   syncer::TestUserShare test_user_share_;
   std::unique_ptr<BookmarkChangeProcessor> change_processor_;

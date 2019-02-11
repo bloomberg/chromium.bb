@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +17,7 @@
 
 namespace autofill {
 class AutofillWebDataService;
+class PersonalDataManager;
 }  // namespace autofill
 
 namespace syncer {
@@ -30,12 +32,16 @@ class AutofillProfileDataTypeController
     : public syncer::AsyncDirectoryTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
+  using PersonalDataManagerProvider =
+      base::RepeatingCallback<autofill::PersonalDataManager*()>;
+
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillProfileDataTypeController(
       scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       const base::Closure& dump_stack,
       syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
+      const PersonalDataManagerProvider& pdm_provider,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillProfileDataTypeController() override;
 
@@ -60,6 +66,9 @@ class AutofillProfileDataTypeController
 
   // Report an error (which will stop the datatype asynchronously).
   void DisableForPolicy();
+
+  // Callback that allows accessing PersonalDataManager lazily.
+  const PersonalDataManagerProvider pdm_provider_;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;

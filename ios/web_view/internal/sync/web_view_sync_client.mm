@@ -126,10 +126,6 @@ sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
   return nullptr;
 }
 
-bool WebViewSyncClient::HasPasswordStore() {
-  return true;
-}
-
 autofill::PersonalDataManager* WebViewSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return WebViewPersonalDataManagerFactory::GetForBrowserState(browser_state_);
@@ -156,7 +152,7 @@ WebViewSyncClient::CreateDataTypeControllers(
   return type_vector;
 }
 
-BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoServiceIfExists() {
+BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoService() {
   return nullptr;
 }
 

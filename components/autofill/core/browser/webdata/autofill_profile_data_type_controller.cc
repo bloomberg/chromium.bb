@@ -27,6 +27,7 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
+    const PersonalDataManagerProvider& pdm_provider,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : AsyncDirectoryTypeController(syncer::AUTOFILL_PROFILE,
                                    dump_stack,
@@ -34,6 +35,7 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
                                    sync_client,
                                    syncer::GROUP_DB,
                                    std::move(db_thread)),
+      pdm_provider_(pdm_provider),
       web_data_service_(web_data_service),
       callback_registered_(false),
       currently_enabled_(IsEnabled()) {
@@ -53,7 +55,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state(), MODEL_STARTING);
 
-  sync_client()->GetPersonalDataManager()->RemoveObserver(this);
+  pdm_provider_.Run()->RemoveObserver(this);
 
   if (!web_data_service_)
     return;
@@ -78,8 +80,7 @@ bool AutofillProfileDataTypeController::StartModels() {
     DisableForPolicy();
     return false;
   }
-  autofill::PersonalDataManager* personal_data =
-      sync_client()->GetPersonalDataManager();
+  autofill::PersonalDataManager* personal_data = pdm_provider_.Run();
 
   // Make sure PDM has the sync service. This is needed because in the account
   // wallet data mode, PDM uses the service to determine whether to use the
@@ -118,7 +119,7 @@ bool AutofillProfileDataTypeController::StartModels() {
 
 void AutofillProfileDataTypeController::StopModels() {
   DCHECK(CalledOnValidThread());
-  sync_client()->GetPersonalDataManager()->RemoveObserver(this);
+  pdm_provider_.Run()->RemoveObserver(this);
 }
 
 bool AutofillProfileDataTypeController::ReadyForStart() const {

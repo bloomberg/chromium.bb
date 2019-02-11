@@ -13,6 +13,7 @@
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync/engine/mock_sync_engine.h"
@@ -77,24 +78,20 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   void CreateSyncService(ProfileSyncService::StartBehavior start_behavior,
                          syncer::ModelTypeSet registered_types =
                              syncer::ModelTypeSet(syncer::BOOKMARKS)) {
-    ProfileSyncServiceBundle::SyncClientBuilder builder(
-        &profile_sync_service_bundle_);
-    ProfileSyncService::InitParams init_params =
-        profile_sync_service_bundle_.CreateBasicInitParams(start_behavior,
-                                                           builder.Build());
+    syncer::DataTypeController::TypeVector controllers;
+    for (syncer::ModelType type : registered_types) {
+      controllers.push_back(
+          std::make_unique<syncer::FakeDataTypeController>(type));
+    }
 
-    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
-        .WillByDefault(InvokeWithoutArgs([=]() {
-          syncer::DataTypeController::TypeVector controllers;
-          for (syncer::ModelType type : registered_types) {
-            controllers.push_back(
-                std::make_unique<syncer::FakeDataTypeController>(type));
-          }
-          return controllers;
-        }));
+    std::unique_ptr<syncer::SyncClientMock> sync_client =
+        profile_sync_service_bundle_.CreateSyncClientMock();
+    ON_CALL(*sync_client, CreateDataTypeControllers(_))
+        .WillByDefault(Return(ByMove(std::move(controllers))));
 
-    sync_service_ =
-        std::make_unique<ProfileSyncService>(std::move(init_params));
+    sync_service_ = std::make_unique<ProfileSyncService>(
+        profile_sync_service_bundle_.CreateBasicInitParams(
+            start_behavior, std::move(sync_client)));
   }
 
   void SimulateTestUserSignin() {
@@ -123,7 +120,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   FakeSyncEngine* SetUpFakeSyncEngine() {
     auto sync_engine = std::make_unique<FakeSyncEngine>();
     FakeSyncEngine* sync_engine_raw = sync_engine.get();
-    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
+    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _))
         .WillByDefault(Return(ByMove(std::move(sync_engine))));
     return sync_engine_raw;
   }
@@ -131,7 +128,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   MockSyncEngine* SetUpMockSyncEngine() {
     auto sync_engine = std::make_unique<NiceMock<MockSyncEngine>>();
     MockSyncEngine* sync_engine_raw = sync_engine.get();
-    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
+    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _))
         .WillByDefault(Return(ByMove(std::move(sync_engine))));
     return sync_engine_raw;
   }
@@ -610,7 +607,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Disable sync through policy.
   sync_prefs()->SetManagedForTest(true);
 
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _, _)).Times(0);
+  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _)).Times(0);
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   sync_service()->Initialize();

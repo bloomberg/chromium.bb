@@ -11,9 +11,9 @@
 
 class Profile;
 
-namespace syncer {
-class SyncClient;
-}
+namespace browser_sync {
+class BrowserSyncClient;
+}  // namespace browser_sync
 
 // A DataTypeController for supervised user sync datatypes, which enables or
 // disables these types based on the profile's IsSupervised state.
@@ -25,7 +25,7 @@ class SupervisedUserSyncModelTypeController
       syncer::ModelType type,
       const Profile* profile,
       const base::RepeatingClosure& dump_stack,
-      syncer::SyncClient* sync_client);
+      browser_sync::BrowserSyncClient* sync_client);
   ~SupervisedUserSyncModelTypeController() override;
 
   // DataTypeController override.
