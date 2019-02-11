@@ -91,9 +91,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(browser()->profile()));
-  helper->AddDatabase(origin1.GetURL());
-  helper->AddDatabase(origin1.GetURL());
-  helper->AddDatabase(origin2.GetURL());
+  helper->Add(origin1);
+  helper->Add(origin1);
+  helper->Add(origin2);
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -114,8 +114,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(browser()->profile()));
-  helper->AddDatabase(origin.GetURL());
-  helper->AddDatabase(origin.GetURL());
+  helper->Add(origin);
+  helper->Add(origin);
 
   TestCompletionCallback callback;
   helper->StartFetching(

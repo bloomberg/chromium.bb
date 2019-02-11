@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -81,52 +82,34 @@ void BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread(
   cache_storage_context_->DeleteForOrigin(origin);
 }
 
-CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo::
-    PendingCacheStorageUsageInfo(const GURL& origin,
-                                 int64_t total_size_bytes,
-                                 const base::Time& last_modified)
-    : origin(origin),
-      total_size_bytes(total_size_bytes),
-      last_modified(last_modified) {}
-
-CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo::
-    ~PendingCacheStorageUsageInfo() {}
-
-bool CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo::
-operator<(const PendingCacheStorageUsageInfo& other) const {
-  return origin < other.origin;
-}
-
 CannedBrowsingDataCacheStorageHelper::CannedBrowsingDataCacheStorageHelper(
     content::CacheStorageContext* context)
     : BrowsingDataCacheStorageHelper(context) {}
 
 CannedBrowsingDataCacheStorageHelper::~CannedBrowsingDataCacheStorageHelper() {}
 
-void CannedBrowsingDataCacheStorageHelper::AddCacheStorage(const GURL& origin) {
-  if (!BrowsingDataHelper::HasWebScheme(origin))
+void CannedBrowsingDataCacheStorageHelper::Add(const url::Origin& origin) {
+  if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
     return;  // Non-websafe state is not considered browsing data.
 
-  pending_cache_storage_info_.insert(
-      PendingCacheStorageUsageInfo(origin, 0, base::Time()));
+  pending_origins_.insert(origin);
 }
 
 void CannedBrowsingDataCacheStorageHelper::Reset() {
-  pending_cache_storage_info_.clear();
+  pending_origins_.clear();
 }
 
 bool CannedBrowsingDataCacheStorageHelper::empty() const {
-  return pending_cache_storage_info_.empty();
+  return pending_origins_.empty();
 }
 
-size_t CannedBrowsingDataCacheStorageHelper::GetCacheStorageCount() const {
-  return pending_cache_storage_info_.size();
+size_t CannedBrowsingDataCacheStorageHelper::GetCount() const {
+  return pending_origins_.size();
 }
 
-const std::set<
-    CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo>&
-CannedBrowsingDataCacheStorageHelper::GetCacheStorageUsageInfo() const {
-  return pending_cache_storage_info_;
+const std::set<url::Origin>& CannedBrowsingDataCacheStorageHelper::GetOrigins()
+    const {
+  return pending_origins_;
 }
 
 void CannedBrowsingDataCacheStorageHelper::StartFetching(
@@ -135,13 +118,8 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
   DCHECK(!callback.is_null());
 
   std::list<StorageUsageInfo> result;
-  for (const PendingCacheStorageUsageInfo& pending_info :
-       pending_cache_storage_info_) {
-    StorageUsageInfo info(url::Origin::Create(pending_info.origin),
-                          pending_info.total_size_bytes,
-                          pending_info.last_modified);
-    result.push_back(info);
-  }
+  for (const auto& origin : pending_origins_)
+    result.emplace_back(origin, 0, base::Time());
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(std::move(callback), result));
@@ -149,12 +127,6 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
 
 void CannedBrowsingDataCacheStorageHelper::DeleteCacheStorage(
     const GURL& origin) {
-  for (auto it = pending_cache_storage_info_.begin();
-       it != pending_cache_storage_info_.end();) {
-    if (it->origin == origin)
-      pending_cache_storage_info_.erase(it++);
-    else
-      ++it;
-  }
+  pending_origins_.erase(url::Origin::Create(origin));
   BrowsingDataCacheStorageHelper::DeleteCacheStorage(origin);
 }

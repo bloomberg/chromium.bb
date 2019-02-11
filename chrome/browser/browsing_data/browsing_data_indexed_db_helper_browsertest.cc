@@ -36,8 +36,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
-  helper->AddIndexedDB(origin1);
-  helper->AddIndexedDB(origin2);
+  helper->Add(url::Origin::Create(origin1));
+  helper->Add(url::Origin::Create(origin2));
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -58,8 +58,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
-  helper->AddIndexedDB(origin);
-  helper->AddIndexedDB(origin);
+  helper->Add(url::Origin::Create(origin));
+  helper->Add(url::Origin::Create(origin));
 
   TestCompletionCallback callback;
   helper->StartFetching(

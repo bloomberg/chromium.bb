@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include <stddef.h>
+
+#include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -21,6 +22,7 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -82,9 +84,9 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
   // Blocks on the run_loop quits.
-  void BlockUntilQuit(base::RunLoop& run_loop) {
-    run_loop.Run();                               // Won't return until Quit().
-    content::RunAllTasksUntilIdle();              // Flush other runners.
+  void BlockUntilQuit(base::RunLoop* run_loop) {
+    run_loop->Run();                  // Won't return until Quit().
+    content::RunAllTasksUntilIdle();  // Flush other runners.
   }
 
   // Callback that should be executed in response to
@@ -108,7 +110,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
             base::Bind(
                 &BrowsingDataFileSystemHelperTest::OpenFileSystemCallback,
                 base::Unretained(this), &run_loop));
-    BlockUntilQuit(run_loop);
+    BlockUntilQuit(&run_loop);
     return open_file_system_result_ == base::File::FILE_OK;
   }
 
@@ -142,7 +144,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     helper_->StartFetching(
         base::Bind(&BrowsingDataFileSystemHelperTest::CallbackStartFetching,
                    base::Unretained(this), &run_loop));
-    BlockUntilQuit(run_loop);
+    BlockUntilQuit(&run_loop);
   }
 
   // Calls StartFetching() on the test's CannedBrowsingDataFileSystemHelper
@@ -152,7 +154,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     canned_helper_->StartFetching(
         base::Bind(&BrowsingDataFileSystemHelperTest::CallbackStartFetching,
                    base::Unretained(this), &run_loop));
-    BlockUntilQuit(run_loop);
+    BlockUntilQuit(&run_loop);
   }
 
   // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
@@ -266,41 +268,39 @@ TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
 // whether or not it currently contains file systems.
 TEST_F(BrowsingDataFileSystemHelperTest, Empty) {
   ASSERT_TRUE(canned_helper_->empty());
-  canned_helper_->AddFileSystem(kOrigin1, kTemporary, 0);
+  canned_helper_->Add(kOrigin1);
   ASSERT_FALSE(canned_helper_->empty());
   canned_helper_->Reset();
   ASSERT_TRUE(canned_helper_->empty());
 }
 
-// Verifies that AddFileSystem correctly adds file systems, and that both
-// the type and usage metadata are reported as provided.
+// Verifies that AddFileSystem correctly adds file systems. The canned helper
+// does not record usage size.
 TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
-  canned_helper_->AddFileSystem(kOrigin1, kPersistent, 200);
-  canned_helper_->AddFileSystem(kOrigin2, kTemporary, 100);
+  canned_helper_->Add(kOrigin1);
+  canned_helper_->Add(kOrigin2);
 
   FetchCannedFileSystems();
 
   EXPECT_EQ(2U, file_system_info_list_->size());
   auto info = file_system_info_list_->begin();
   EXPECT_EQ(kOrigin1, info->origin);
-  EXPECT_TRUE(base::ContainsKey(info->usage_map, kPersistent));
+  EXPECT_FALSE(base::ContainsKey(info->usage_map, kPersistent));
   EXPECT_FALSE(base::ContainsKey(info->usage_map, kTemporary));
-  EXPECT_EQ(200, info->usage_map[kPersistent]);
 
   info++;
   EXPECT_EQ(kOrigin2, info->origin);
   EXPECT_FALSE(base::ContainsKey(info->usage_map, kPersistent));
-  EXPECT_TRUE(base::ContainsKey(info->usage_map, kTemporary));
-  EXPECT_EQ(100, info->usage_map[kTemporary]);
+  EXPECT_FALSE(base::ContainsKey(info->usage_map, kTemporary));
 }
 
 // Verifies that the CannedBrowsingDataFileSystemHelper correctly ignores
 // extension and devtools schemes.
 TEST_F(BrowsingDataFileSystemHelperTest, IgnoreExtensionsAndDevTools) {
   ASSERT_TRUE(canned_helper_->empty());
-  canned_helper_->AddFileSystem(kOriginExt, kTemporary, 0);
+  canned_helper_->Add(kOriginExt);
   ASSERT_TRUE(canned_helper_->empty());
-  canned_helper_->AddFileSystem(kOriginDevTools, kTemporary, 0);
+  canned_helper_->Add(kOriginDevTools);
   ASSERT_TRUE(canned_helper_->empty());
 }
 

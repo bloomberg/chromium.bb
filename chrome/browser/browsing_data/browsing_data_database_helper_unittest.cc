@@ -26,7 +26,7 @@ TEST_F(CannedBrowsingDataDatabaseHelperTest, Empty) {
       new CannedBrowsingDataDatabaseHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddDatabase(origin);
+  helper->Add(url::Origin::Create(origin));
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -43,14 +43,14 @@ TEST_F(CannedBrowsingDataDatabaseHelperTest, Delete) {
       new CannedBrowsingDataDatabaseHelper(&profile));
 
   EXPECT_TRUE(helper->empty());
-  helper->AddDatabase(origin1);
-  helper->AddDatabase(origin2);
-  helper->AddDatabase(origin3);
-  EXPECT_EQ(3u, helper->GetDatabaseCount());
+  helper->Add(url::Origin::Create(origin1));
+  helper->Add(url::Origin::Create(origin2));
+  helper->Add(url::Origin::Create(origin3));
+  EXPECT_EQ(3u, helper->GetCount());
   helper->DeleteDatabase(url::Origin::Create(origin2));
-  EXPECT_EQ(2u, helper->GetDatabaseCount());
+  EXPECT_EQ(2u, helper->GetCount());
   helper->DeleteDatabase(url::Origin::Create(origin2));
-  EXPECT_EQ(2u, helper->GetDatabaseCount());
+  EXPECT_EQ(2u, helper->GetCount());
 }
 
 TEST_F(CannedBrowsingDataDatabaseHelperTest, IgnoreExtensionsAndDevTools) {
@@ -63,9 +63,9 @@ TEST_F(CannedBrowsingDataDatabaseHelperTest, IgnoreExtensionsAndDevTools) {
       new CannedBrowsingDataDatabaseHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddDatabase(origin1);
+  helper->Add(url::Origin::Create(origin1));
   ASSERT_TRUE(helper->empty());
-  helper->AddDatabase(origin2);
+  helper->Add(url::Origin::Create(origin2));
   ASSERT_TRUE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());

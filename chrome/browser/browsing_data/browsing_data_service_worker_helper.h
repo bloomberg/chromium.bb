@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/service_worker_context.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 struct StorageUsageInfo;
@@ -64,29 +65,16 @@ class BrowsingDataServiceWorkerHelper
 
 // This class is an implementation of BrowsingDataServiceWorkerHelper that does
 // not fetch its information from the Service Worker context, but is passed the
-// info as a parameter.
+// info by call when accessed.
 class CannedBrowsingDataServiceWorkerHelper
     : public BrowsingDataServiceWorkerHelper {
  public:
-  // Contains information about a Service Worker.
-  struct PendingServiceWorkerUsageInfo {
-    PendingServiceWorkerUsageInfo(const GURL& origin,
-                                  const std::vector<GURL>& scopes);
-    PendingServiceWorkerUsageInfo(const PendingServiceWorkerUsageInfo& other);
-    ~PendingServiceWorkerUsageInfo();
-
-    bool operator<(const PendingServiceWorkerUsageInfo& other) const;
-
-    GURL origin;
-    std::vector<GURL> scopes;
-  };
-
   explicit CannedBrowsingDataServiceWorkerHelper(
       content::ServiceWorkerContext* context);
 
   // Add a Service Worker to the set of canned Service Workers that is
   // returned by this helper.
-  void AddServiceWorker(const GURL& origin, const std::vector<GURL>& scopes);
+  void Add(const url::Origin& origin);
 
   // Clear the list of canned Service Workers.
   void Reset();
@@ -95,12 +83,10 @@ class CannedBrowsingDataServiceWorkerHelper
   bool empty() const;
 
   // Returns the number of currently stored Service Workers.
-  size_t GetServiceWorkerCount() const;
+  size_t GetCount() const;
 
   // Returns the current list of Service Workers.
-  const std::set<
-      CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo>&
-      GetServiceWorkerUsageInfo() const;
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataServiceWorkerHelper methods.
   void StartFetching(FetchCallback callback) override;
@@ -109,7 +95,7 @@ class CannedBrowsingDataServiceWorkerHelper
  private:
   ~CannedBrowsingDataServiceWorkerHelper() override;
 
-  std::set<PendingServiceWorkerUsageInfo> pending_service_worker_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataServiceWorkerHelper);
 };

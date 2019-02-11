@@ -10,6 +10,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -89,7 +90,8 @@ class BrowsingDataFileSystemHelper
 
 // An implementation of the BrowsingDataFileSystemHelper interface that can
 // be manually populated with data, rather than fetching data from the file
-// systems created in a particular Profile.
+// systems created in a particular Profile. Only kTemporary file systems
+// are supported.
 class CannedBrowsingDataFileSystemHelper
     : public BrowsingDataFileSystemHelper {
  public:
@@ -98,12 +100,8 @@ class CannedBrowsingDataFileSystemHelper
   explicit CannedBrowsingDataFileSystemHelper(Profile* profile);
 
   // Manually adds a filesystem to the set of canned file systems that this
-  // helper returns via StartFetching. If an origin contains both a temporary
-  // and a persistent filesystem, AddFileSystem must be called twice (once for
-  // each file system type).
-  void AddFileSystem(const url::Origin& origin,
-                     storage::FileSystemType type,
-                     int64_t size);
+  // helper returns via StartFetching.
+  void Add(const url::Origin& origin);
 
   // Clear this helper's list of canned filesystems.
   void Reset();
@@ -112,12 +110,10 @@ class CannedBrowsingDataFileSystemHelper
   bool empty() const;
 
   // Returns the number of currently stored filesystems.
-  size_t GetFileSystemCount() const;
+  size_t GetCount() const;
 
   // Returns the current list of filesystems.
-  const std::list<FileSystemInfo>& GetFileSystemInfo() {
-    return file_system_info_;
-  }
+  const std::set<url::Origin>& GetOrigins() const { return pending_origins_; }
 
   // BrowsingDataFileSystemHelper implementation.
   void StartFetching(FetchCallback callback) override;
@@ -132,7 +128,7 @@ class CannedBrowsingDataFileSystemHelper
   ~CannedBrowsingDataFileSystemHelper() override;
 
   // Holds the current list of filesystems returned to the client.
-  std::list<FileSystemInfo> file_system_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataFileSystemHelper);
 };

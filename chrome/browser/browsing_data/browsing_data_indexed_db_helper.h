@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 struct StorageUsageInfo;
@@ -59,27 +60,17 @@ class BrowsingDataIndexedDBHelper
 };
 
 // This class is an implementation of BrowsingDataIndexedDBHelper that does
-// not fetch its information from the indexed database tracker, but gets them
-// passed as a parameter.
+// not fetch its information from the Indexed DB context, but gets them
+// passed by a call when accessed.
 class CannedBrowsingDataIndexedDBHelper
     : public BrowsingDataIndexedDBHelper {
  public:
-  // Contains information about an indexed database.
-  struct PendingIndexedDBInfo {
-    explicit PendingIndexedDBInfo(const GURL& origin);
-    ~PendingIndexedDBInfo();
-
-    bool operator<(const PendingIndexedDBInfo& other) const;
-
-    GURL origin;
-  };
-
   explicit CannedBrowsingDataIndexedDBHelper(
       content::IndexedDBContext* context);
 
   // Add a indexed database to the set of canned indexed databases that is
   // returned by this helper.
-  void AddIndexedDB(const GURL& origin);
+  void Add(const url::Origin& origin);
 
   // Clear the list of canned indexed databases.
   void Reset();
@@ -88,11 +79,10 @@ class CannedBrowsingDataIndexedDBHelper
   bool empty() const;
 
   // Returns the number of currently stored indexed databases.
-  size_t GetIndexedDBCount() const;
+  size_t GetCount() const;
 
   // Returns the current list of indexed data bases.
-  const std::set<CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo>&
-      GetIndexedDBInfo() const;
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataIndexedDBHelper methods.
   void StartFetching(FetchCallback callback) override;
@@ -101,7 +91,7 @@ class CannedBrowsingDataIndexedDBHelper
  private:
   ~CannedBrowsingDataIndexedDBHelper() override;
 
-  std::set<PendingIndexedDBInfo> pending_indexed_db_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataIndexedDBHelper);
 };

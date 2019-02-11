@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -54,8 +54,8 @@ class BrowsingDataLocalStorageHelper
 };
 
 // This class is a thin wrapper around BrowsingDataLocalStorageHelper that does
-// not fetch its information from the local storage tracker, but gets them
-// passed as a parameter during construction.
+// not fetch its information from the local storage context, but gets them
+// passed by a call when accessed.
 class CannedBrowsingDataLocalStorageHelper
     : public BrowsingDataLocalStorageHelper {
  public:
@@ -63,7 +63,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // Add a local storage to the set of canned local storages that is returned
   // by this helper.
-  void AddLocalStorage(const GURL& origin_url);
+  void Add(const url::Origin& origin_url);
 
   // Clear the list of canned local storages.
   void Reset();
@@ -72,10 +72,10 @@ class CannedBrowsingDataLocalStorageHelper
   bool empty() const;
 
   // Returns the number of local storages currently stored.
-  size_t GetLocalStorageCount() const;
+  size_t GetCount() const;
 
   // Returns the set of origins that use local storage.
-  const std::set<GURL>& GetLocalStorageInfo() const;
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataLocalStorageHelper implementation.
   void StartFetching(FetchCallback callback) override;
@@ -85,7 +85,7 @@ class CannedBrowsingDataLocalStorageHelper
  private:
   ~CannedBrowsingDataLocalStorageHelper() override;
 
-  std::set<GURL> pending_local_storage_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataLocalStorageHelper);
 };

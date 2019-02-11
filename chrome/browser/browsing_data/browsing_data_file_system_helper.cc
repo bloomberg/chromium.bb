@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 
 #include <memory>
-#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -165,52 +165,34 @@ CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(
 
 CannedBrowsingDataFileSystemHelper::~CannedBrowsingDataFileSystemHelper() {}
 
-void CannedBrowsingDataFileSystemHelper::AddFileSystem(
-    const url::Origin& origin,
-    const storage::FileSystemType type,
-    const int64_t size) {
+void CannedBrowsingDataFileSystemHelper::Add(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // This canned implementation of AddFileSystem uses an O(n^2) algorithm; which
-  // is fine, as it isn't meant for use in a high-volume context. If it turns
-  // out that we want to start using this in a context with many, many origins,
-  // we should think about reworking the implementation.
-  bool duplicate_origin = false;
-  for (FileSystemInfo& file_system : file_system_info_) {
-    if (file_system.origin == origin) {
-      file_system.usage_map[type] = size;
-      duplicate_origin = true;
-      break;
-    }
-  }
-  if (duplicate_origin)
-    return;
-
   if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
     return;  // Non-websafe state is not considered browsing data.
-
-  FileSystemInfo info(origin);
-  info.usage_map[type] = size;
-  file_system_info_.push_back(info);
+  pending_origins_.insert(origin);
 }
 
 void CannedBrowsingDataFileSystemHelper::Reset() {
-  file_system_info_.clear();
+  pending_origins_.clear();
 }
 
 bool CannedBrowsingDataFileSystemHelper::empty() const {
-  return file_system_info_.empty();
+  return pending_origins_.empty();
 }
 
-size_t CannedBrowsingDataFileSystemHelper::GetFileSystemCount() const {
+size_t CannedBrowsingDataFileSystemHelper::GetCount() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return file_system_info_.size();
+  return pending_origins_.size();
 }
 
 void CannedBrowsingDataFileSystemHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(callback), file_system_info_));
+  std::list<FileSystemInfo> result;
+  for (const auto& origin : pending_origins_)
+    result.emplace_back(origin);
+
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), result));
 }
