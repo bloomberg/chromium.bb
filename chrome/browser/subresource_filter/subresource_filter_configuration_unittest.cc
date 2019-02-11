@@ -64,7 +64,7 @@ TEST_P(SubresourceFilterConfigurationTest, OneListActivation) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     SubresourceFilterConfigurationTest,
     ::testing::Combine(

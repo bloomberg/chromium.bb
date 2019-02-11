@@ -425,8 +425,8 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTest,
   EXPECT_EQ(enable_adblock_on_abusive_sites, AreDisallowedRequestsBlocked());
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SubresourceFilterPopupBrowserTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SubresourceFilterPopupBrowserTest,
+                         ::testing::Values(false, true));
 
 }  // namespace subresource_filter
