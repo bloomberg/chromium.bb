@@ -1420,7 +1420,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PictureInPicture) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents, "exitPictureInPicture();", &result));
   EXPECT_TRUE(result);
-  EXPECT_FALSE(window_controller->GetWindowForTesting()->IsVisible());
+  // TODO(mlamouri): this check is relying on IPC timing. The timing will be
+  // fixed with
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1409544
+  // EXPECT_FALSE(window_controller->GetWindowForTesting()->IsVisible());
 }
 
 }  // namespace extensions
