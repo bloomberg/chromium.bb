@@ -1519,7 +1519,8 @@ unsigned int arf_count = 0;
 #define DEFAULT_GRP_WEIGHT 1.0
 
 void av1_get_second_pass_params(AV1_COMP *cpi,
-                                EncodeFrameParams *const frame_params) {
+                                EncodeFrameParams *const frame_params,
+                                unsigned int frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -1599,7 +1600,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     twopass->fr_content_type = FC_NORMAL;
 
   // Keyframe and section processing.
-  if (rc->frames_to_key == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY)) {
+  if (rc->frames_to_key == 0 || (frame_flags & FRAMEFLAGS_KEY)) {
     FIRSTPASS_STATS this_frame_copy;
     this_frame_copy = this_frame;
     frame_params->frame_type = KEY_FRAME;

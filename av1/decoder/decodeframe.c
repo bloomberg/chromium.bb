@@ -5179,7 +5179,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Inter frame requests nonexistent reference");
 
-        av1_set_frame_refs(cm, lst_ref, gld_ref);
+        av1_set_frame_refs(cm, cm->remapped_ref_idx, lst_ref, gld_ref);
       }
 
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {

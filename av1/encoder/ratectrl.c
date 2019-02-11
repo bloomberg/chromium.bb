@@ -1515,7 +1515,8 @@ static int calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
 
 void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
                                     FRAME_UPDATE_TYPE *const frame_update_type,
-                                    EncodeFrameParams *const frame_params) {
+                                    EncodeFrameParams *const frame_params,
+                                    unsigned int frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -1526,9 +1527,8 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi,
   int sframe_enabled = cpi->oxcf.sframe_enabled;
   // TODO(yaowu): replace the "auto_key && 0" below with proper decision logic.
   if (*frame_update_type != ARF_UPDATE &&
-      (current_frame->frame_number == 0 ||
-       (cpi->frame_flags & FRAMEFLAGS_KEY) || rc->frames_to_key == 0 ||
-       (cpi->oxcf.auto_key && 0))) {
+      (current_frame->frame_number == 0 || (frame_flags & FRAMEFLAGS_KEY) ||
+       rc->frames_to_key == 0 || (cpi->oxcf.auto_key && 0))) {
     frame_params->frame_type = KEY_FRAME;
     rc->this_key_frame_forced =
         current_frame->frame_number != 0 && rc->frames_to_key == 0;
@@ -1658,15 +1658,15 @@ static int calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
 
 void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi,
                                     FRAME_UPDATE_TYPE *const frame_update_type,
-                                    EncodeFrameParams *const frame_params) {
+                                    EncodeFrameParams *const frame_params,
+                                    unsigned int frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   CurrentFrame *const current_frame = &cm->current_frame;
   int target;
   // TODO(yaowu): replace the "auto_key && 0" below with proper decision logic.
-  if ((current_frame->frame_number == 0 ||
-       (cpi->frame_flags & FRAMEFLAGS_KEY) || rc->frames_to_key == 0 ||
-       (cpi->oxcf.auto_key && 0))) {
+  if ((current_frame->frame_number == 0 || (frame_flags & FRAMEFLAGS_KEY) ||
+       rc->frames_to_key == 0 || (cpi->oxcf.auto_key && 0))) {
     frame_params->frame_type = KEY_FRAME;
     rc->this_key_frame_forced =
         current_frame->frame_number != 0 && rc->frames_to_key == 0;

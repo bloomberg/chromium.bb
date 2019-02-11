@@ -3388,344 +3388,6 @@ static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit, int q,
   return force_recode;
 }
 
-#define DUMP_REF_FRAME_IMAGES 0
-
-#if DUMP_REF_FRAME_IMAGES == 1
-static int dump_one_image(AV1_COMMON *cm,
-                          const YV12_BUFFER_CONFIG *const ref_buf,
-                          char *file_name) {
-  int h;
-  FILE *f_ref = NULL;
-
-  if (ref_buf == NULL) {
-    printf("Frame data buffer is NULL.\n");
-    return AOM_CODEC_MEM_ERROR;
-  }
-
-  if ((f_ref = fopen(file_name, "wb")) == NULL) {
-    printf("Unable to open file %s to write.\n", file_name);
-    return AOM_CODEC_MEM_ERROR;
-  }
-
-  // --- Y ---
-  for (h = 0; h < cm->height; ++h) {
-    fwrite(&ref_buf->y_buffer[h * ref_buf->y_stride], 1, cm->width, f_ref);
-  }
-  // --- U ---
-  for (h = 0; h < (cm->height >> 1); ++h) {
-    fwrite(&ref_buf->u_buffer[h * ref_buf->uv_stride], 1, (cm->width >> 1),
-           f_ref);
-  }
-  // --- V ---
-  for (h = 0; h < (cm->height >> 1); ++h) {
-    fwrite(&ref_buf->v_buffer[h * ref_buf->uv_stride], 1, (cm->width >> 1),
-           f_ref);
-  }
-
-  fclose(f_ref);
-
-  return AOM_CODEC_OK;
-}
-
-static void dump_ref_frame_images(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-  MV_REFERENCE_FRAME ref_frame;
-
-  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    char file_name[256] = "";
-    snprintf(file_name, sizeof(file_name), "/tmp/enc_F%d_ref_%d.yuv",
-             cm->current_frame.frame_number, ref_frame);
-    dump_one_image(cm, get_ref_frame_yv12_buf(cpi, ref_frame), file_name);
-  }
-}
-#endif  // DUMP_REF_FRAME_IMAGES == 1
-
-// This function is used to shift the virtual indices of last reference frames
-// as follows:
-// LAST_FRAME -> LAST2_FRAME -> LAST3_FRAME
-// when the LAST_FRAME is updated.
-static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
-  // TODO(isbs): shift the scaled indices as well
-  for (int ref_frame = LAST3_FRAME; ref_frame > LAST_FRAME; --ref_frame) {
-    const int ref_idx = ref_frame - LAST_FRAME;
-    cpi->common.remapped_ref_idx[ref_idx] =
-        cpi->common.remapped_ref_idx[ref_idx - 1];
-
-    if (!cpi->rc.is_src_frame_alt_ref) {
-      memcpy(cpi->interp_filter_selected[ref_frame],
-             cpi->interp_filter_selected[ref_frame - 1],
-             sizeof(cpi->interp_filter_selected[ref_frame - 1]));
-    }
-  }
-}
-
-// This function is used to shift the virtual indices of bwd reference
-// frames as follows:
-// BWD_REF -> ALT2_REF -> EXT_REF
-// to clear a space to store the closest bwdref
-static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
-  // TODO(isbs): shift the scaled indices as well
-  static const int ordered_bwd[3] = { BWDREF_FRAME, ALTREF2_FRAME,
-                                      EXTREF_FRAME };
-
-  for (int i = 2; i > 0; --i) {
-    // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
-           cpi->interp_filter_selected[ordered_bwd[i - 1]],
-           sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1]]));
-
-    cpi->common.remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
-        cpi->common.remapped_ref_idx[ordered_bwd[i - 1] - LAST_FRAME];
-  }
-}
-
-// This function is used to shift the virtual indices of bwd reference
-// frames as follows:
-// BWD_REF <- ALT2_REF <- EXT_REF
-// to update the bwd reference frame for coding the next frame.
-static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
-  // TODO(isbs): shift the scaled indices as well
-  static const int ordered_bwd[3] = { BWDREF_FRAME, ALTREF2_FRAME,
-                                      EXTREF_FRAME };
-
-  for (int i = 0; i < 2; ++i) {
-    // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
-           cpi->interp_filter_selected[ordered_bwd[i + 1]],
-           sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1]]));
-
-    cpi->common.remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
-        cpi->common.remapped_ref_idx[ordered_bwd[i + 1] - LAST_FRAME];
-  }
-}
-
-static void update_reference_frames(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-
-  // NOTE: Save the new show frame buffer index for --test-code=warn, i.e.,
-  //       for the purpose to verify no mismatch between encoder and decoder.
-  if (cm->show_frame) cpi->last_show_frame_buf = cm->cur_frame;
-
-  // In the case of show_existing frame, we will not send fresh flag
-  // to decoder. Any change in the reference frame buffer can be done by
-  // switching the virtual indices.
-  if (cm->show_existing_frame) {
-    // If we are not indicating to the decoder that this frame is
-    // a show_existing_frame, which occurs in error_resilient mode,
-    // we still want to refresh the LAST_FRAME when the current frame
-    // was the source of an ext_arf.
-    cpi->refresh_last_frame =
-        !encode_show_existing_frame(cm) && cpi->rc.is_src_frame_ext_arf;
-    cpi->refresh_golden_frame = 0;
-    cpi->refresh_bwd_ref_frame = 0;
-    cpi->refresh_alt2_ref_frame = 0;
-    cpi->refresh_alt_ref_frame = 0;
-
-    cpi->rc.is_bwd_ref_frame = 0;
-    cpi->rc.is_last_bipred_frame = 0;
-    cpi->rc.is_bipred_frame = 0;
-  }
-
-  // At this point the new frame has been encoded.
-  // If any buffer copy / swapping is signaled it should be done here.
-
-  // Only update all of the reference buffers if a KEY_FRAME is also a
-  // show_frame. This ensures a fwd keyframe does not update all of the buffers
-  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
-      frame_is_sframe(cm)) {
-    for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
-      assign_frame_buffer_p(&cm->ref_frame_map[cm->remapped_ref_idx[ref_frame]],
-                            cm->cur_frame);
-    }
-    return;
-  }
-
-  if (av1_preserve_existing_gf(cpi)) {
-    // We have decided to preserve the previously existing golden frame as our
-    // new ARF frame. However, in the short term in function
-    // av1_bitstream.c::get_refresh_mask() we left it in the GF slot and, if
-    // we're updating the GF with the current decoded frame, we save it to the
-    // ARF slot instead.
-    // We now have to update the ARF with the current frame and swap gld_fb_idx
-    // and alt_fb_idx so that, overall, we've stored the old GF in the new ARF
-    // slot and, if we're updating the GF, the current frame becomes the new GF.
-    int tmp;
-
-    // ARF in general is a better reference than overlay. We shouldkeep ARF as
-    // reference instead of replacing it with overlay.
-
-    if (!cpi->preserve_arf_as_gld) {
-      assign_frame_buffer_p(
-          &cm->ref_frame_map[get_ref_frame_map_idx(cm, ALTREF_FRAME)],
-          cm->cur_frame);
-    }
-
-    tmp = get_ref_frame_map_idx(cm, ALTREF_FRAME);
-    cm->remapped_ref_idx[ALTREF_FRAME - LAST_FRAME] =
-        get_ref_frame_map_idx(cm, GOLDEN_FRAME);
-    cm->remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] = tmp;
-
-    // TODO(zoeliu): Do we need to copy cpi->interp_filter_selected[0] over to
-    // cpi->interp_filter_selected[GOLDEN_FRAME]?
-  } else if (cpi->rc.is_src_frame_ext_arf && encode_show_existing_frame(cm)) {
-#if CONFIG_DEBUG
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    assert(gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE);
-#endif  // CONFIG_DEBUG
-    const int bwdref_to_show =
-        (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
-    // Deal with the special case for showing existing internal ALTREF_FRAME
-    // Refresh the LAST_FRAME with the ALTREF_FRAME and retire the LAST3_FRAME
-    // by updating the virtual indices.
-    const int last3_remapped_idx = get_ref_frame_map_idx(cm, LAST3_FRAME);
-    shift_last_ref_frames(cpi);
-
-    cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
-        get_ref_frame_map_idx(cm, bwdref_to_show);
-
-    memcpy(cpi->interp_filter_selected[LAST_FRAME],
-           cpi->interp_filter_selected[bwdref_to_show],
-           sizeof(cpi->interp_filter_selected[bwdref_to_show]));
-    if (cpi->new_bwdref_update_rule == 1) {
-      lshift_bwd_ref_frames(cpi);
-      // pass outdated forward reference frame (previous LAST3) to the
-      // spared space
-      cm->remapped_ref_idx[EXTREF_FRAME - LAST_FRAME] = last3_remapped_idx;
-    } else {
-      cm->remapped_ref_idx[bwdref_to_show - LAST_FRAME] = last3_remapped_idx;
-    }
-  } else { /* For non key/golden frames */
-    // === ALTREF_FRAME ===
-    if (cpi->refresh_alt_ref_frame) {
-      int arf_idx = get_ref_frame_map_idx(cm, ALTREF_FRAME);
-      assign_frame_buffer_p(&cm->ref_frame_map[arf_idx], cm->cur_frame);
-
-      memcpy(cpi->interp_filter_selected[ALTREF_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-    }
-
-    // === GOLDEN_FRAME ===
-    if (cpi->refresh_golden_frame) {
-      assign_frame_buffer_p(
-          &cm->ref_frame_map[get_ref_frame_map_idx(cm, GOLDEN_FRAME)],
-          cm->cur_frame);
-
-      memcpy(cpi->interp_filter_selected[GOLDEN_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-    }
-
-    // === BWDREF_FRAME ===
-    if (cpi->refresh_bwd_ref_frame) {
-      if (cpi->new_bwdref_update_rule) {
-        // We shift the backward reference frame as follows:
-        // BWDREF -> ALTREF2 -> EXTREF
-        // and assign the newly coded frame to BWDREF so that it always
-        // keeps the nearest future frame
-        const int tmp = get_ref_frame_map_idx(cm, EXTREF_FRAME);
-        assign_frame_buffer_p(&cm->ref_frame_map[tmp], cm->cur_frame);
-
-        rshift_bwd_ref_frames(cpi);
-        cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = tmp;
-      } else {
-        assign_frame_buffer_p(
-            &cm->ref_frame_map[get_ref_frame_map_idx(cm, BWDREF_FRAME)],
-            cm->cur_frame);
-      }
-      memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-    }
-
-    // === ALTREF2_FRAME ===
-    if (cpi->refresh_alt2_ref_frame) {
-      assign_frame_buffer_p(
-          &cm->ref_frame_map[get_ref_frame_map_idx(cm, ALTREF2_FRAME)],
-          cm->cur_frame);
-
-      memcpy(cpi->interp_filter_selected[ALTREF2_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-    }
-  }
-
-  if (cpi->refresh_last_frame) {
-    // NOTE(zoeliu): We have two layers of mapping (1) from the per-frame
-    // reference to the reference frame buffer virtual index; and then (2) from
-    // the virtual index to the reference frame buffer (RefCntBuffer):
-    //
-    // LAST_FRAME,                       ...,     EXTREF_FRAME
-    //      |                                           |
-    //      v                                           v
-    // remapped_ref_idx[LAST_FRAME - 1], ..., remapped_ref_idx[EXTREF_FRAME - 1]
-    //      |                                           |
-    //      v                                           v
-    // ref_frame_map[],                  ...,    ref_frame_map[]
-    //
-    // When refresh_last_frame is set, it is intended to retire LAST3_FRAME,
-    // have the other 2 LAST reference frames shifted as follows:
-    // LAST_FRAME -> LAST2_FRAME -> LAST3_FRAME
-    // , and then have LAST_FRAME refreshed by the newly coded frame.
-    //
-    // To fulfill it, the decoder will be notified to execute following 2 steps:
-    //
-    // (a) To change ref_frame_map[] and have the virtual index of LAST3_FRAME
-    //     to point to the newly coded frame, i.e.
-    //     ref_frame_map[lst_fb_idexes[2]] => cur_frame;
-    //
-    // (b) To change the 1st layer mapping to have LAST_FRAME mapped to the
-    //     original virtual index of LAST3_FRAME and have the other mappings
-    //     shifted as follows:
-    // LAST_FRAME,            LAST2_FRAME,             LAST3_FRAME
-    //      |                      |                        |
-    //      v                      v                        v
-    // remapped_ref_idx[2],   remapped_ref_idx[0],     remapped_ref_idx[1]
-    assign_frame_buffer_p(
-        &cm->ref_frame_map[get_ref_frame_map_idx(cm, LAST3_FRAME)],
-        cm->cur_frame);
-
-    int last3_remapped_idx = get_ref_frame_map_idx(cm, LAST3_FRAME);
-
-    shift_last_ref_frames(cpi);
-    cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] = last3_remapped_idx;
-
-    assert(!encode_show_existing_frame(cm));
-    memcpy(cpi->interp_filter_selected[LAST_FRAME],
-           cpi->interp_filter_selected[0],
-           sizeof(cpi->interp_filter_selected[0]));
-
-    // If the new structure is used, we will always have overlay frames coupled
-    // with bwdref frames. Therefore, we won't have to perform this update
-    // in advance (we do this update when the overlay frame shows up).
-    if (cpi->new_bwdref_update_rule == 0 && cpi->rc.is_last_bipred_frame) {
-      // Refresh the LAST_FRAME with the BWDREF_FRAME and retire the
-      // LAST3_FRAME by updating the virtual indices.
-      //
-      // NOTE: The source frame for BWDREF does not have a holding position as
-      //       the OVERLAY frame for ALTREF's. Hence, to resolve the reference
-      //       virtual index reshuffling for BWDREF, the encoder always
-      //       specifies a LAST_BIPRED right before BWDREF and completes the
-      //       reshuffling job accordingly.
-      last3_remapped_idx = get_ref_frame_map_idx(cm, LAST3_FRAME);
-
-      shift_last_ref_frames(cpi);
-      cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
-          get_ref_frame_map_idx(cm, BWDREF_FRAME);
-      cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = last3_remapped_idx;
-
-      memcpy(cpi->interp_filter_selected[LAST_FRAME],
-             cpi->interp_filter_selected[BWDREF_FRAME],
-             sizeof(cpi->interp_filter_selected[BWDREF_FRAME]));
-    }
-  }
-
-#if DUMP_REF_FRAME_IMAGES == 1
-  // Dump out all reference frame images.
-  dump_ref_frame_images(cpi);
-#endif  // DUMP_REF_FRAME_IMAGES
-}
-
 static void scale_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -4419,6 +4081,10 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
       frame_is_sframe(cm))
     return 0xFF;
 
+  // show_existing_frames don't actually send refresh_frame_flags so set the
+  // flags to 0 to keep things consistent.
+  if (encode_show_existing_frame(cm)) return 0;
+
   int refresh_mask = 0;
 
   // NOTE(zoeliu): When LAST_FRAME is to get refreshed, the decoder will be
@@ -4440,7 +4106,7 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
   refresh_mask |=
       (cpi->refresh_alt2_ref_frame << get_ref_frame_map_idx(cm, ALTREF2_FRAME));
 
-  if (av1_preserve_existing_gf(cpi)) {
+  if (cpi->rc.is_src_frame_alt_ref && !cpi->rc.is_src_frame_ext_arf) {
     // We have decided to preserve the previously existing golden frame as our
     // new ARF frame. However, in the short term we leave it in the GF slot and,
     // if we're updating the GF with the current decoded frame, we save it
@@ -5089,8 +4755,20 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
   return 0;
 }
 
-static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                                     unsigned int *frame_flags) {
+// Refresh reference frame buffers according to refresh_frame_flags.
+static void refresh_reference_frames(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  // All buffers are refreshed for shown keyframes and S-frames.
+
+  for (int ref_frame = 0; ref_frame < REF_FRAMES; ref_frame++) {
+    if (((cm->current_frame.refresh_frame_flags >> ref_frame) & 1) == 1) {
+      assign_frame_buffer_p(&cm->ref_frame_map[ref_frame], cm->cur_frame);
+    }
+  }
+}
+
+static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
+                                     uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -5117,10 +4795,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
 
   if (encode_show_existing_frame(cm)) {
-    // NOTE(zoeliu): In BIDIR_PRED, the existing frame to show is the current
-    //               BWDREF_FRAME in the reference frame buffer.
-    cpi->frame_flags = *frame_flags;
-
     restore_coding_context(cpi);
 
     finalize_encoded_frame(cpi);
@@ -5144,26 +4818,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     dump_filtered_recon_frames(cpi);
 #endif  // DUMP_RECON_FRAMES
 
-    // Update the LAST_FRAME in the reference frame buffer.
-    // NOTE:
-    // (1) For BWDREF_FRAME as the show_existing_frame, the reference frame
-    //     update has been done previously when handling the LAST_BIPRED_FRAME
-    //     right before BWDREF_FRAME (in the display order);
-    // (2) For INTNL_OVERLAY as the show_existing_frame, the reference frame
-    //     update will be done when the following is called, which will
-    //     exchange
-    //     the virtual indexes between LAST_FRAME and ALTREF2_FRAME, so that
-    //     LAST3 will get retired, LAST2 becomes LAST3, LAST becomes LAST2,
-    //     and
-    //     ALTREF2_FRAME will serve as the new LAST_FRAME.
-    update_reference_frames(cpi);
+    // NOTE: Save the new show frame buffer index for --test-code=warn, i.e.,
+    //       for the purpose to verify no mismatch between encoder and decoder.
+    if (cm->show_frame) cpi->last_show_frame_buf = cm->cur_frame;
 
-    // Update frame flags
-    cpi->frame_flags &= ~FRAMEFLAGS_GOLDEN;
-    cpi->frame_flags &= ~FRAMEFLAGS_BWDREF;
-    cpi->frame_flags &= ~FRAMEFLAGS_ALTREF;
-
-    *frame_flags = cpi->frame_flags & ~FRAMEFLAGS_KEY;
+    refresh_reference_frames(cpi);
 
     // Since we allocate a spot for the OVERLAY frame in the gf group, we need
     // to do post-encoding update accordingly.
@@ -5380,7 +5039,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     release_scaled_references(cpi);
   }
 
-  update_reference_frames(cpi);
+  // NOTE: Save the new show frame buffer index for --test-code=warn, i.e.,
+  //       for the purpose to verify no mismatch between encoder and decoder.
+  if (cm->show_frame) cpi->last_show_frame_buf = cm->cur_frame;
+
+  refresh_reference_frames(cpi);
 
 #if CONFIG_ENTROPY_STATS
   av1_accumulate_frame_counts(&aggregate_fc, &cpi->counts);
@@ -5406,30 +5069,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #endif  // EXT_TILE_DEBUG
 #undef EXT_TILE_DEBUG
 
-  if (cpi->refresh_golden_frame == 1)
-    cpi->frame_flags |= FRAMEFLAGS_GOLDEN;
-  else
-    cpi->frame_flags &= ~FRAMEFLAGS_GOLDEN;
-
-  if (cpi->refresh_alt_ref_frame == 1)
-    cpi->frame_flags |= FRAMEFLAGS_ALTREF;
-  else
-    cpi->frame_flags &= ~FRAMEFLAGS_ALTREF;
-
-  if (cpi->refresh_bwd_ref_frame == 1)
-    cpi->frame_flags |= FRAMEFLAGS_BWDREF;
-  else
-    cpi->frame_flags &= ~FRAMEFLAGS_BWDREF;
   cm->last_frame_type = current_frame->frame_type;
 
   av1_rc_postencode_update(cpi, *size);
-
-  if (current_frame->frame_type == KEY_FRAME) {
-    // Tell the caller that the frame was coded as a key frame
-    *frame_flags = cpi->frame_flags | FRAMEFLAGS_KEY;
-  } else {
-    *frame_flags = cpi->frame_flags & ~FRAMEFLAGS_KEY;
-  }
 
   // Store encoded frame's hash table for is_integer_mv() next time
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
@@ -5478,6 +5120,9 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
   cpi->speed = frame_params->speed;
 
+  memcpy(cm->remapped_ref_idx, frame_params->remapped_ref_idx,
+         REF_FRAMES * sizeof(*cm->remapped_ref_idx));
+
   cpi->refresh_last_frame = frame_params->refresh_last_frame;
   cpi->refresh_golden_frame = frame_params->refresh_golden_frame;
   cpi->refresh_bwd_ref_frame = frame_params->refresh_bwd_ref_frame;
@@ -5499,8 +5144,8 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   if (cpi->oxcf.pass == 1) {
     av1_first_pass(cpi, frame_input->ts_duration);
   } else if (cpi->oxcf.pass == 0 || cpi->oxcf.pass == 2) {
-    if (encode_frame_to_data_rate(cpi, &frame_results->size, dest,
-                                  frame_params->frame_flags) != AOM_CODEC_OK) {
+    if (encode_frame_to_data_rate(cpi, &frame_results->size, dest) !=
+        AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
     }
   } else {

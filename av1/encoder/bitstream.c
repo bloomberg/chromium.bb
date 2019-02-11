@@ -2743,21 +2743,14 @@ static int check_frame_refs_short_signaling(AV1_COMMON *const cm) {
 
   // Check whether the encoder side ref frame choices are aligned with that to
   // be derived at the decoder side.
-  int remapped_ref_idx_copy[REF_FRAMES];
-  struct scale_factors ref_scale_factors_copy[REF_FRAMES];
-
-  // Backup the frame refs info
-  memcpy(remapped_ref_idx_copy, cm->remapped_ref_idx,
-         REF_FRAMES * sizeof(*remapped_ref_idx_copy));
-  memcpy(ref_scale_factors_copy, cm->ref_scale_factors,
-         REF_FRAMES * sizeof(*ref_scale_factors_copy));
+  int remapped_ref_idx_decoder[REF_FRAMES];
 
   const int lst_map_idx = get_ref_frame_map_idx(cm, LAST_FRAME);
   const int gld_map_idx = get_ref_frame_map_idx(cm, GOLDEN_FRAME);
 
   // Set up the frame refs mapping indexes according to the
   // frame_refs_short_signaling policy.
-  av1_set_frame_refs(cm, lst_map_idx, gld_map_idx);
+  av1_set_frame_refs(cm, remapped_ref_idx_decoder, lst_map_idx, gld_map_idx);
 
   // We only turn on frame_refs_short_signaling when the encoder side decision
   // on ref frames is identical to that at the decoder side.
@@ -2765,10 +2758,11 @@ static int check_frame_refs_short_signaling(AV1_COMMON *const cm) {
   for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ++ref_idx) {
     // Compare the buffer index between two reference frames indexed
     // respectively by the encoder and the decoder side decisions.
-    RefCntBuffer *ref_frame_buf_copy = NULL;
-    if (remapped_ref_idx_copy[ref_idx] != INVALID_IDX)
-      ref_frame_buf_copy = cm->ref_frame_map[remapped_ref_idx_copy[ref_idx]];
-    if (get_ref_frame_buf(cm, LAST_FRAME + ref_idx) != ref_frame_buf_copy) {
+    RefCntBuffer *ref_frame_buf_new = NULL;
+    if (remapped_ref_idx_decoder[ref_idx] != INVALID_IDX) {
+      ref_frame_buf_new = cm->ref_frame_map[remapped_ref_idx_decoder[ref_idx]];
+    }
+    if (get_ref_frame_buf(cm, LAST_FRAME + ref_idx) != ref_frame_buf_new) {
       frame_refs_short_signaling = 0;
       break;
     }
@@ -2786,13 +2780,6 @@ static int check_frame_refs_short_signaling(AV1_COMMON *const cm) {
   }
 #endif  // 0
 
-  // Restore the frame refs info if frame_refs_short_signaling is off.
-  if (!frame_refs_short_signaling) {
-    memcpy(cm->remapped_ref_idx, remapped_ref_idx_copy,
-           REF_FRAMES * sizeof(*remapped_ref_idx_copy));
-    memcpy(cm->ref_scale_factors, ref_scale_factors_copy,
-           REF_FRAMES * sizeof(*ref_scale_factors_copy));
-  }
   return frame_refs_short_signaling;
 }
 
@@ -2804,6 +2791,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   const SequenceHeader *const seq_params = &cm->seq_params;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   CurrentFrame *const current_frame = &cm->current_frame;
+
+  current_frame->frame_refs_short_signaling = 0;
 
   if (seq_params->still_picture) {
     assert(cm->show_existing_frame == 0);
@@ -2961,25 +2950,25 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
       // NOTE: Error resilient mode turns off frame_refs_short_signaling
       //       automatically.
-      int frame_refs_short_signaling = 0;
 #define FRAME_REFS_SHORT_SIGNALING 0
 #if FRAME_REFS_SHORT_SIGNALING
-      frame_refs_short_signaling =
+      current_frame->frame_refs_short_signaling =
           seq_params->order_hint_info.enable_order_hint;
 #endif  // FRAME_REFS_SHORT_SIGNALING
 
-      if (frame_refs_short_signaling) {
+      if (current_frame->frame_refs_short_signaling) {
         // NOTE(zoeliu@google.com):
         //   An example solution for encoder-side implementation on frame refs
         //   short signaling, which is only turned on when the encoder side
         //   decision on ref frames is identical to that at the decoder side.
-        frame_refs_short_signaling = check_frame_refs_short_signaling(cm);
+        current_frame->frame_refs_short_signaling =
+            check_frame_refs_short_signaling(cm);
       }
 
       if (seq_params->order_hint_info.enable_order_hint)
-        aom_wb_write_bit(wb, frame_refs_short_signaling);
+        aom_wb_write_bit(wb, current_frame->frame_refs_short_signaling);
 
-      if (frame_refs_short_signaling) {
+      if (current_frame->frame_refs_short_signaling) {
         const int lst_ref = get_ref_frame_map_idx(cm, LAST_FRAME);
         aom_wb_write_literal(wb, lst_ref, REF_FRAMES_LOG2);
 
@@ -2989,7 +2978,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
       for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
         assert(get_ref_frame_map_idx(cm, ref_frame) != INVALID_IDX);
-        if (!frame_refs_short_signaling)
+        if (!current_frame->frame_refs_short_signaling)
           aom_wb_write_literal(wb, get_ref_frame_map_idx(cm, ref_frame),
                                REF_FRAMES_LOG2);
         if (seq_params->frame_id_numbers_present_flag) {
