@@ -296,7 +296,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ChromeHistoryPage) {
   WaitForURLOnServer(GURL(chrome::kChromeUIHistoryURL));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
+// Disabling due to flakiness on all platforms, crbug.com/930413.
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       DISABLED_NavigateThenCloseTab) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 
