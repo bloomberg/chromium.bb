@@ -169,9 +169,14 @@ void RemoteTextInputClient::EnsureCaretNotInRect(const gfx::Rect& rect) {
 
 bool RemoteTextInputClient::IsTextEditCommandEnabled(
     ui::TextEditCommand command) const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (!details_->data->edit_command_enabled.has_value())
+    return false;
+
+  const size_t index = static_cast<size_t>(command);
+  if (index >= details_->data->edit_command_enabled->size())
+    return false;
+
+  return details_->data->edit_command_enabled->at(index);
 }
 
 void RemoteTextInputClient::SetTextEditCommandForNextKeyEvent(

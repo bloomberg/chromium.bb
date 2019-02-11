@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/input_method_mus.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/text_edit_commands.h"
 
 namespace aura {
 namespace {
@@ -67,6 +69,7 @@ class TestInputMethod : public ws::mojom::InputMethod {
   void OnTextInputClientDataChanged(
       ws::mojom::TextInputClientDataPtr data) override {
     was_on_text_input_client_data_changed_called_ = true;
+    text_input_client_data_ = std::move(data);
   }
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override {
@@ -95,7 +98,6 @@ class TestInputMethod : public ws::mojom::InputMethod {
 
   bool was_on_text_input_client_data_changed_called() const {
     return was_on_text_input_client_data_changed_called_;
-    ;
   }
 
   bool was_cancel_composition_called() const {
@@ -106,6 +108,10 @@ class TestInputMethod : public ws::mojom::InputMethod {
     return was_show_virtual_keyboard_if_enabled_called_;
   }
 
+  const ws::mojom::TextInputClientDataPtr& text_input_client_data() const {
+    return text_input_client_data_;
+  }
+
  private:
   bool was_on_text_input_state_changed_called_ = false;
   bool was_on_caret_bounds_changed_called_ = false;
@@ -114,7 +120,32 @@ class TestInputMethod : public ws::mojom::InputMethod {
   bool was_show_virtual_keyboard_if_enabled_called_ = false;
   ProcessKeyEventCallbacks process_key_event_callbacks_;
 
+  ws::mojom::TextInputClientDataPtr text_input_client_data_;
+
   DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
+};
+
+// An ui::TextInputClient for test.
+class TestTextInputClient : public ui::DummyTextInputClient {
+ public:
+  TestTextInputClient()
+      : edit_command_enabled_(
+            static_cast<size_t>(ui::TextEditCommand::LAST_COMMAND),
+            false) {}
+
+  ~TestTextInputClient() override = default;
+
+  // ui::DummyTextInputClient:
+  bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override {
+    return edit_command_enabled_[static_cast<size_t>(command)];
+  }
+
+  std::vector<bool>& edit_command_enabled() { return edit_command_enabled_; }
+
+ private:
+  std::vector<bool> edit_command_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
 
 }  // namespace
@@ -425,6 +456,39 @@ TEST_F(InputMethodMusTest, TextInputClientDataUpdate) {
                                                   &focused_input_client);
   EXPECT_FALSE(
       test_input_method.was_on_text_input_client_data_changed_called());
+}
+
+// Tests that TextEditCommand enabled state is pushed to remote side.
+TEST_F(InputMethodMusTest, IsTextEditCommandEnabled) {
+  TestTextInputClient focused_input_client;
+  TestInputMethodDelegate input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, nullptr);
+  input_method_mus.SetFocusedTextInputClient(&focused_input_client);
+
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+
+  const size_t kFirstCommand =
+      static_cast<size_t>(ui::TextEditCommand::FIRST_COMMAND);
+  const size_t kLastCommand =
+      static_cast<size_t>(ui::TextEditCommand::LAST_COMMAND);
+  for (size_t i = kFirstCommand; i < kLastCommand; ++i) {
+    // Update local TestTextInputClient.
+    auto& edit_command_enabled = focused_input_client.edit_command_enabled();
+    std::fill(edit_command_enabled.begin(), edit_command_enabled.end(), false);
+    edit_command_enabled[i] = true;
+
+    // Trigger text input client data update.
+    InputMethodMusTestApi::CallOnCaretBoundsChanged(&input_method_mus,
+                                                    &focused_input_client);
+
+    // Verify remote side gets the same state.
+    ASSERT_TRUE(test_input_method.text_input_client_data());
+    ASSERT_TRUE(test_input_method.text_input_client_data()
+                    ->edit_command_enabled.has_value());
+    EXPECT_EQ(edit_command_enabled, test_input_method.text_input_client_data()
+                                        ->edit_command_enabled.value());
+  }
 }
 
 }  // namespace aura
