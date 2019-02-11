@@ -224,6 +224,8 @@ void WaylandDataDevice::OnDataOffer(void* data,
                                     wl_data_offer* offer) {
   auto* self = static_cast<WaylandDataDevice*>(data);
 
+  self->connection_->UpdateClipboardSequenceNumber();
+
   DCHECK(!self->new_offer_);
   self->new_offer_.reset(new WaylandDataOffer(offer));
 }
