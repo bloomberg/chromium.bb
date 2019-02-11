@@ -194,7 +194,7 @@ class EndToEndAsyncTest : public testing::Test {
       response_strings_.push_back(std::string());
     }
     run_loop_->Quit();
-  };
+  }
 
   // Wait for the given number of errors.
   void WaitForErrors(size_t num_errors) {
