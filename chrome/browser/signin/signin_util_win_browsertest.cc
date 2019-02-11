@@ -15,8 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
@@ -27,8 +26,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 namespace {
 
@@ -208,9 +209,13 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, NoReauthAfterSignout) {
     ASSERT_FALSE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
 
     // Sign user out of browser.
-    SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
-    manager->SignOut(signin_metrics::ProfileSignout::SIGNOUT_TEST,
-                     signin_metrics::SignoutDelete::DELETED);
+    auto* primary_account_mutator =
+        IdentityManagerFactory::GetForProfile(profile)
+            ->GetPrimaryAccountMutator();
+    primary_account_mutator->ClearPrimaryAccount(
+        identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+        signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+        signin_metrics::SignoutDelete::DELETED);
 
     // Even with a refresh token available, no reauth happens if the profile
     // is signed out.
@@ -233,12 +238,9 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, FixReauth) {
     ASSERT_FALSE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
 
     // Make sure the profile stays signed in, but in an auth error state.
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    OAuth2TokenServiceDelegate* delegate = token_service->GetDelegate();
-    SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
-    delegate->UpdateAuthError(
-        manager->GetAuthenticatedAccountId(),
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+        identity_manager, identity_manager->GetPrimaryAccountId(),
         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
             GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                 CREDENTIALS_REJECTED_BY_SERVER));
