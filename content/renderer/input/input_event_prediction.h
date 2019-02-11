@@ -70,11 +70,14 @@ class CONTENT_EXPORT InputEventPrediction {
   // with new events coords.
   void UpdateSinglePointer(const WebPointerProperties& event,
                            base::TimeTicks time);
+
   // Get prediction result of a single predictor based on the predict_time,
   // and apply predicted result to the event. Return false if no prediction
   // available.
   bool GetPointerPrediction(base::TimeTicks predict_time,
-                            WebPointerProperties* event);
+                            WebPointerProperties* event,
+                            bool is_resampling = false);
+
   // Get single predictor based on event id and type. For mouse, reset the
   // predictor, for other pointer type, remove it from mapping.
   void ResetSinglePredictor(const WebPointerProperties& event);

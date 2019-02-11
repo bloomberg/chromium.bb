@@ -42,11 +42,6 @@ class ScrollPredictorTest : public testing::Test {
     scroll_predictor_->predictor_ = std::make_unique<LeastSquaresPredictor>();
   }
 
-  bool GetPrediction(ui::InputPredictor::InputData* result) const {
-    return scroll_predictor_->predictor_->GeneratePrediction(
-        WebInputEvent::GetStaticTimeStampForTests(), result);
-  }
-
   WebScopedInputEvent CreateGestureScrollUpdate(
       float delta_x = 0,
       float delta_y = 0,
@@ -96,7 +91,7 @@ class ScrollPredictorTest : public testing::Test {
     return scroll_predictor_->predictor_->GeneratePrediction(
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
-        result);
+        false /* is_resampling */, result);
   }
 
   gfx::PointF GetLastAccumulatedDelta() {
