@@ -338,8 +338,6 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
       track_based_logical_height += ScrollbarLogicalHeight();
 
     SetLogicalHeight(track_based_logical_height);
-
-    LayoutUnit old_client_after_edge = ClientLogicalBottom();
     UpdateLogicalHeight();
 
     // Once grid's indefinite height is resolved, we can compute the
@@ -374,7 +372,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 
     LayoutPositionedObjects(relayout_children || IsDocumentElement());
 
-    ComputeLayoutOverflow(old_client_after_edge);
+    ComputeLayoutOverflow(ClientLogicalBottom());
   }
 
   UpdateAfterLayout();
