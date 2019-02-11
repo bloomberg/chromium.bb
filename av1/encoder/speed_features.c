@@ -269,6 +269,7 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_single_motion_modes_by_simple_trans = 1;
 
     sf->simple_motion_search_split_only = 1;
+    sf->simple_motion_search_early_term_none = 1;
 
     sf->disable_wedge_search_var_thresh = 0;
     sf->disable_wedge_search_edge_thresh = 0;
@@ -765,6 +766,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   }
   sf->simple_motion_search_split_only = 0;
   sf->simple_motion_search_prune_rect = 0;
+  sf->simple_motion_search_early_term_none = 0;
 
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;
