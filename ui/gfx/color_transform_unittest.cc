@@ -365,7 +365,7 @@ TEST(SimpleColorSpace, Scale) {
   EXPECT_NEAR(tmp.x(), 0.735356983052449f, kEpsilon);
   EXPECT_NEAR(tmp.y(), 0.735356983052449f, kEpsilon);
   EXPECT_NEAR(tmp.z(), 0.735356983052449f, kEpsilon);
-};
+}
 
 TEST(SimpleColorSpace, ToUndefined) {
   ColorSpace null;
