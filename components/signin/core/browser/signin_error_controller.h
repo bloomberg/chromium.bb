@@ -72,7 +72,7 @@ class SigninErrorController : public KeyedService,
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
   const AccountMode account_mode_;
   identity::IdentityManager* identity_manager_;

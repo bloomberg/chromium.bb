@@ -158,7 +158,7 @@ class AccountConsistencyService : public KeyedService,
   // IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_account_info) override;
+      const CoreAccountInfo& previous_account_info) override;
 
   // ActiveStateManager::Observer implementation.
   void OnActive() override;

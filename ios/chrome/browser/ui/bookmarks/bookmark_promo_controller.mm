@@ -108,7 +108,8 @@
 }
 
 // Called when the currently signed-in user for a user has been signed out.
-- (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo {
+- (void)onPrimaryAccountCleared:
+    (const CoreAccountInfo&)previousPrimaryAccountInfo {
   [self updateShouldShowSigninPromo];
 }
 

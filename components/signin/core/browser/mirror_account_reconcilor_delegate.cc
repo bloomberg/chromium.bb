@@ -67,7 +67,7 @@ void MirrorAccountReconcilorDelegate::OnPrimaryAccountSet(
 }
 
 void MirrorAccountReconcilorDelegate::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   reconcilor()->DisableReconcile(true /* logout_all_gaia_accounts */);
 }
 

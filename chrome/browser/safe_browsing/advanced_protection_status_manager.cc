@@ -135,7 +135,7 @@ void AdvancedProtectionStatusManager::OnPrimaryAccountSet(
 }
 
 void AdvancedProtectionStatusManager::OnPrimaryAccountCleared(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   OnAdvancedProtectionDisabled();
 }
 

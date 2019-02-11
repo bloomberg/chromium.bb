@@ -39,7 +39,7 @@ enum class RemoveAccountExpectation { kKeepAll, kRemovePrimary, kRemoveAll };
 // method OnPrimaryAccountCleared is invoked. The parameter will be a
 // reference to the still valid primary account that was cleared.
 using PrimaryAccountClearedCallback =
-    base::RepeatingCallback<void(const AccountInfo&)>;
+    base::RepeatingCallback<void(const CoreAccountInfo&)>;
 
 // This callback will be invoked every time the IdentityManager::Observer
 // method OnPrimaryAccountSigninFailed is invoked. The parameter will be
@@ -75,7 +75,7 @@ class ClearPrimaryAccountTestObserver
   }
 
   // identity::IdentityManager::Observer implementation.
-  void OnPrimaryAccountCleared(const AccountInfo& account_info) override {
+  void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override {
     on_primary_account_cleared_.Run(account_info);
   }
 
@@ -163,7 +163,7 @@ void RunClearPrimaryAccountTest(
   base::RunLoop run_loop;
   PrimaryAccountClearedCallback primary_account_cleared_callback =
       base::BindRepeating([](base::RepeatingClosure quit_closure,
-                             const AccountInfo&) { quit_closure.Run(); },
+                             const CoreAccountInfo&) { quit_closure.Run(); },
                           run_loop.QuitClosure());
 
   // Authentication error should not occur.
@@ -572,7 +572,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_AuthInProgress) {
 
   // No primary account to "clear", so no callback.
   PrimaryAccountClearedCallback primary_account_cleared_callback =
-      base::BindRepeating([](const AccountInfo&) {
+      base::BindRepeating([](const CoreAccountInfo&) {
         FAIL() << "no primary account is set, so nothing should be cleared";
       });
 

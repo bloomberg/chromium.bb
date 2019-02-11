@@ -202,7 +202,8 @@ void RendererUpdater::OnPrimaryAccountSet(const CoreAccountInfo& account_info) {
   UpdateAllRenderers();
 }
 
-void RendererUpdater::OnPrimaryAccountCleared(const AccountInfo& account_info) {
+void RendererUpdater::OnPrimaryAccountCleared(
+    const CoreAccountInfo& account_info) {
   UpdateAllRenderers();
 }
 

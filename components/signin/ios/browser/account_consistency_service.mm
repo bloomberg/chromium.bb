@@ -497,7 +497,7 @@ void AccountConsistencyService::OnPrimaryAccountSet(
 }
 
 void AccountConsistencyService::OnPrimaryAccountCleared(
-    const AccountInfo& previous_account_info) {
+    const CoreAccountInfo& previous_account_info) {
   // There is not need to remove CHROME_CONNECTED cookies on |GoogleSignedOut|
   // events as these cookies will be removed by the GaiaCookieManagerServer
   // right before fetching the Gaia logout request.

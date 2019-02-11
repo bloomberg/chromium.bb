@@ -77,7 +77,7 @@ class IdentityManager : public SigninManagerBase::Observer,
     // Called when when the user moves from having a primary account to no
     // longer having a primary account.
     virtual void OnPrimaryAccountCleared(
-        const AccountInfo& previous_primary_account_info) {}
+        const CoreAccountInfo& previous_primary_account_info) {}
 
     // Called when the user attempts but fails to set their primary
     // account. |error| gives the reason for the failure.

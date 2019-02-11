@@ -40,7 +40,7 @@ class SigninBrowserStateInfoUpdater
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
   identity::IdentityManager* identity_manager_ = nullptr;
   SigninErrorController* signin_error_controller_ = nullptr;

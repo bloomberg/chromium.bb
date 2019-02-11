@@ -715,7 +715,7 @@ void SyncEngine::OnPrimaryAccountSet(
 }
 
 void SyncEngine::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   Reset();
   UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
                      "User signed out.");

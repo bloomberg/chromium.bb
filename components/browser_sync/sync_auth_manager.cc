@@ -251,7 +251,7 @@ void SyncAuthManager::OnPrimaryAccountSet(
 }
 
 void SyncAuthManager::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
   UpdateSyncAccountIfNecessary();

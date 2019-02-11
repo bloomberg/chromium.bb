@@ -625,7 +625,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateIdentitySectionAndNotifyConsumer];
 }
 
-- (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo {
+- (void)onPrimaryAccountCleared:
+    (const CoreAccountInfo&)previousPrimaryAccountInfo {
   [self updateSyncSection:YES];
   [self updateIdentitySectionAndNotifyConsumer];
 }

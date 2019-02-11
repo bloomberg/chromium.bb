@@ -64,7 +64,7 @@ class UnifiedConsentService : public KeyedService,
 
   // IdentityManager::Observer:
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
   friend class UnifiedConsentServiceTest;

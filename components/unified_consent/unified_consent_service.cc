@@ -80,7 +80,7 @@ void UnifiedConsentService::Shutdown() {
 }
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   // By design, clearing the primary account disables URL-keyed data collection.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             false);

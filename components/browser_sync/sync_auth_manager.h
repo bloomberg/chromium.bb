@@ -92,7 +92,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
       const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
