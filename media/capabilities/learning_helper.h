@@ -9,6 +9,7 @@
 #include "base/threading/sequence_bound.h"
 #include "media/base/media_export.h"
 #include "media/capabilities/video_decode_stats_db.h"
+#include "media/learning/impl/feature_provider.h"
 #include "media/learning/impl/learning_session_impl.h"
 
 namespace media {
@@ -17,7 +18,9 @@ namespace media {
 // media::learning LearningTask.
 class MEDIA_EXPORT LearningHelper {
  public:
-  LearningHelper();
+  // |feature_factory| lets us register FeatureProviders with those
+  // LearningTasks that include standard features.
+  LearningHelper(learning::FeatureProviderFactoryCB feature_factory);
   ~LearningHelper();
 
   void AppendStats(const VideoDecodeStatsDB::VideoDescKey& video_key,

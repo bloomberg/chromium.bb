@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/feature_provider.h"
 #include "media/learning/impl/learning_task_controller.h"
@@ -37,6 +38,14 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   void AddExample(const LabelledExample& example) override;
 
  private:
+  // Trampoline method for receiving examples from |feature_provider_|.  Will
+  // chain directly to OnExampleReady if we're on |task_runner| and |weak_thiz|
+  // is non-null, else it will post to |task_runner|.
+  static void OnExampleReadyTrampoline(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::WeakPtr<LearningTaskControllerImpl> weak_this,
+      LabelledExample example);
+
   // Called when a new example has been finished by |feature_provider_|, if
   // needed, to actually add the example.
   void OnExampleReady(LabelledExample example);
@@ -69,6 +78,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   // Optional reporter for training accuracy.
   std::unique_ptr<DistributionReporter> reporter_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   friend class LearningTaskControllerImplTest;
 };
