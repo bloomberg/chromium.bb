@@ -3512,24 +3512,6 @@
     },
 
     # END tests which run on the GPU bots
-
-    'headless_linux_gtests': {
-      'headless_browsertests': {},
-      'headless_unittests': {},
-      'network_service_headless_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'test': 'headless_browsertests',
-      },
-    },
-
-    'headless_linux_scripts': {
-      'headless_python_unittests': {
-        'script': 'headless_python_unittests.py',
-      },
-    },
-
     'layout_ng_gtests': {
       'webkit_unit_tests_ng': {
         'args': [
