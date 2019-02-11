@@ -84,6 +84,7 @@ class CWVSyncControllerTest : public PlatformTest {
         profile_sync_service_bundle_.CreateSyncClientMock();
     init_params.url_loader_factory = browser_state_.GetSharedURLLoaderFactory();
     init_params.network_time_update_callback = base::DoNothing();
+    init_params.identity_manager = identity_test_env_.identity_manager();
     profile_sync_service_ =
         std::make_unique<browser_sync::ProfileSyncServiceMock>(
             std::move(init_params));
@@ -125,7 +126,6 @@ class CWVSyncControllerTest : public PlatformTest {
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState web_state_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
-  std::unique_ptr<browser_sync::ProfileSyncServiceMock> profile_sync_service_;
   AccountTrackerService account_tracker_service_;
   FakeAccountFetcherService account_fetcher_service_;
   TestSigninClient signin_client_;
@@ -139,6 +139,7 @@ class CWVSyncControllerTest : public PlatformTest {
   FakeSigninManager signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;
+  std::unique_ptr<browser_sync::ProfileSyncServiceMock> profile_sync_service_;
   CWVSyncController* sync_controller_;
   syncer::SyncServiceObserver* sync_service_observer_;
 };
